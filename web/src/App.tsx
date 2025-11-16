@@ -8,11 +8,12 @@ import LoginPage from './pages/Login';
 import ProtectedRoute from './components/ProtectedRoute';
 import PatientSearchPage from './pages/PatientSearchPage';
 import PatientDetailPage from './pages/PatientDetailPage';
+import AppointmentsPage from './pages/AppointmentsPage';
+import VisitsPage from './pages/VisitsPage'; // Import the new VisitsPage
 import './App.css'; // Assuming some basic app-wide styles
 
 // Dummy components for demonstration
 const Dashboard = () => <h2>Welcome to the Dashboard!</h2>;
-const VisitsPage = () => <h2>Visits Management</h2>;
 const DeliveryPage = () => <h2>Delivery Management</h2>;
 const SamplesPage = () => <h2>Samples Management</h2>;
 const ResultsPage = () => <h2>Results Management</h2>;
@@ -38,6 +39,7 @@ function App() {
                 {(hasRole('Reception') || hasRole('Admin')) && (
                   <>
                     <li><Link to="/patients" className="text-blue-600 hover:text-blue-800">Patients</Link></li>
+                    <li><Link to="/appointments" className="text-blue-600 hover:text-blue-800">Appointments</Link></li>
                     <li><Link to="/visits" className="text-blue-600 hover:text-blue-800">Visits</Link></li>
                     <li><Link to="/delivery" className="text-blue-600 hover:text-blue-800">Delivery</Link></li>
                   </>
@@ -80,6 +82,7 @@ function App() {
           <Route element={<ProtectedRoute allowedRoles={['Reception', 'Admin']} />}>
             <Route path="/patients" element={<PatientSearchPage />} />
             <Route path="/patients/:id" element={<PatientDetailPage />} />
+            <Route path="/appointments" element={<AppointmentsPage />} />
             <Route path="/visits" element={<VisitsPage />} />
             <Route path="/delivery" element={<DeliveryPage />} />
           </Route>
