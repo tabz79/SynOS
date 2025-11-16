@@ -1,0 +1,1249 @@
+openapi: 3.0.3
+info:
+  title: SynOS API
+  version: 0.3.0
+  description: "Production-ready API skeleton for SynOS (formerly PathOS). \nUses\
+    \ cursor-based pagination, idempotency for POST, optimistic concurrency via ETags/RowVersion,\n\
+    and ProblemDetails errors. **No mock routes.**\n"
+servers:
+- url: https://synos.local/api/v1
+tags:
+- name: Inventory
+- name: Analyzers
+- name: Accreditation
+- name: Outsourcing
+- name: CriticalValues
+- name: Interop
+- name: Public
+- name: Platform
+- name: Imaging
+- name: Reports
+security:
+- BearerAuth: []
+- ApiKeyAuth: []
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+  parameters:
+    CursorLimit:
+      in: query
+      name: limit
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 200
+        default: 50
+      description: Number of records to return (max 200).
+    CursorAfter:
+      in: query
+      name: after
+      schema:
+        type: string
+      description: Cursor token from previous response.
+    IdempotencyKey:
+      in: header
+      name: Idempotency-Key
+      schema:
+        type: string
+      required: true
+      description: Unique key to make POST idempotent (UUID recommended).
+  headers:
+    Location:
+      description: Resource URL of the created entity.
+      schema:
+        type: string
+  schemas:
+    ProblemDetails:
+      type: object
+      properties:
+        type:
+          type: string
+        title:
+          type: string
+        status:
+          type: integer
+        detail:
+          type: string
+        instance:
+          type: string
+        code:
+          type: string
+      required:
+      - title
+      - status
+    CursorPageInventoryItem:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/InventoryItem'
+        nextCursor:
+          type: string
+          nullable: true
+    InventoryItem:
+      type: object
+      properties:
+        itemId:
+          type: string
+          example: ITM_9f12b3
+        name:
+          type: string
+          example: EDTA Tube 2ml
+        type:
+          type: string
+          example: Reagent
+        unit:
+          type: string
+          example: pcs
+        storage:
+          type: string
+          example: RoomTemp
+        reagentCategory:
+          type: string
+          example: Hematology
+        vendorId:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        rowVersion:
+          type: string
+          example: '0x0000000000000F1B'
+      required:
+      - itemId
+      - name
+      - unit
+      - createdAt
+    InventoryLot:
+      type: object
+      properties:
+        lotId:
+          type: string
+          example: LOT_7a12
+        itemId:
+          type: string
+        batchNo:
+          type: string
+          example: BCH-2025-11
+        mfgDate:
+          type: string
+          format: date
+          nullable: true
+        expiry:
+          type: string
+          format: date
+        qtyOnHand:
+          type: integer
+          example: 1200
+        costPerUnit:
+          type: number
+          format: float
+          example: 2.5
+        createdAt:
+          type: string
+          format: date-time
+        rowVersion:
+          type: string
+      required:
+      - lotId
+      - itemId
+      - batchNo
+      - expiry
+      - qtyOnHand
+    InventoryMoveRequest:
+      type: object
+      properties:
+        qty:
+          type: integer
+        moveType:
+          type: string
+          enum:
+          - IN
+          - OUT
+          - ADJUST
+        reason:
+          type: string
+          example: AutoDeduct:REPORT_FINALIZED
+        refEntity:
+          type: string
+          example: Report
+        refId:
+          type: string
+          example: RPT_123
+      required:
+      - qty
+      - moveType
+    AnalyzerConnection:
+      type: object
+      properties:
+        connectionId:
+          type: string
+        vendor:
+          type: string
+          example: Roche
+        model:
+          type: string
+          example: Cobas 6000
+        protocol:
+          type: string
+          example: ASTM
+        port:
+          type: string
+          example: COM3
+        baud:
+          type: integer
+          example: 9600
+        host:
+          type: string
+          example: 10.0.0.50
+        enabled:
+          type: boolean
+        lastMessageAt:
+          type: string
+          format: date-time
+          nullable: true
+    CriticalAlert:
+      type: object
+      properties:
+        alertId:
+          type: string
+        resultId:
+          type: string
+        threshold:
+          type: string
+          example: HB < 6.0
+        notifiedTo:
+          type: string
+          example: Dr. Rao
+        notifiedAt:
+          type: string
+          format: date-time
+        ackBy:
+          type: string
+          nullable: true
+        ackAt:
+          type: string
+          format: date-time
+          nullable: true
+        status:
+          type: string
+          enum:
+          - open
+          - acknowledged
+          - escalated
+    OutsourcePartner:
+      type: object
+      properties:
+        partnerId:
+          type: string
+        name:
+          type: string
+        contact:
+          type: string
+        turnaround:
+          type: string
+          example: 48h
+    CapaItem:
+      type: object
+      properties:
+        capaId:
+          type: string
+        auditId:
+          type: string
+          nullable: true
+        title:
+          type: string
+        owner:
+          type: string
+        due:
+          type: string
+          format: date
+        status:
+          type: string
+          enum:
+          - open
+          - in_progress
+          - closed
+paths:
+  /inventory/items:
+    get:
+      tags:
+      - Inventory
+      summary: List inventory items (cursor)
+      parameters:
+      - $ref: '#/components/parameters/CursorLimit'
+      - $ref: '#/components/parameters/CursorAfter'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CursorPageInventoryItem'
+              examples:
+                sample:
+                  value:
+                    items:
+                    - itemId: ITM_9f12b3
+                      name: EDTA Tube 2ml
+                      type: Reagent
+                      unit: pcs
+                      storage: RoomTemp
+                      reagentCategory: Hematology
+                      createdAt: '2025-11-09T07:40:00Z'
+                      rowVersion: '0x0000000000000F1B'
+                    nextCursor: 2025-11-09T07:39:12Z_ITM_8a1
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+    post:
+      tags:
+      - Inventory
+      summary: Create inventory item
+      parameters:
+      - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InventoryItem'
+            examples:
+              create:
+                value:
+                  name: Fluoride Tube 2ml
+                  type: Reagent
+                  unit: pcs
+                  storage: RoomTemp
+                  reagentCategory: Biochemistry
+      responses:
+        '201':
+          description: Created
+          headers:
+            Location:
+              $ref: '#/components/headers/Location'
+        '409':
+          description: Conflict (duplicate or idempotency replay)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+  /inventory/items/{itemId}/lots:
+    post:
+      tags:
+      - Inventory
+      summary: Add lot/batch to item
+      parameters:
+      - name: itemId
+        in: path
+        required: true
+        schema:
+          type: string
+      - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InventoryLot'
+            examples:
+              create:
+                value:
+                  batchNo: BCH-2025-11
+                  mfgDate: '2025-10-10'
+                  expiry: '2026-10-10'
+                  qtyOnHand: 2000
+                  costPerUnit: 2.5
+      responses:
+        '201':
+          description: Created
+          headers:
+            Location:
+              $ref: '#/components/headers/Location'
+  /inventory/lots/{lotId}/move:
+    post:
+      tags:
+      - Inventory
+      summary: Stock in/out movement
+      parameters:
+      - name: lotId
+        in: path
+        required: true
+        schema:
+          type: string
+      - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InventoryMoveRequest'
+      responses:
+        '201':
+          description: Created
+  /analyzers/connections:
+    get:
+      tags:
+      - Analyzers
+      summary: List configured instruments
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AnalyzerConnection'
+  /analyzers/feed:
+    get:
+      tags:
+      - Analyzers
+      summary: Live result feed (server-sent events)
+      responses:
+        '200':
+          description: OK (text/event-stream)
+          content:
+            text/event-stream:
+              schema:
+                type: string
+              examples:
+                sse:
+                  value: 'event: analyzer
+
+                    data: {"orderId":"ORD_1","paramCode":"HB","value":10.9,"unit":"g/dL","flags":"L"}
+
+                    '
+  /accreditation/documents:
+    get:
+      tags:
+      - Accreditation
+      summary: List controlled documents
+      responses:
+        '200':
+          description: OK
+  /accreditation/capa:
+    post:
+      tags:
+      - Accreditation
+      summary: Open CAPA item
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CapaItem'
+      responses:
+        '201':
+          description: Created
+  /outsourcing/partners:
+    get:
+      tags:
+      - Outsourcing
+      summary: List outsource partners
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/OutsourcePartner'
+  /outsourcing/dispatches:
+    post:
+      tags:
+      - Outsourcing
+      summary: Create sample dispatch
+      parameters:
+      - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                partnerId:
+                  type: string
+                orderIds:
+                  type: array
+                  items:
+                    type: string
+              required:
+              - partnerId
+              - orderIds
+      responses:
+        '201':
+          description: Created
+  /outsourcing/results/import:
+    post:
+      tags:
+      - Outsourcing
+      summary: Import outsourced result PDF
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                dispatchId:
+                  type: string
+                file:
+                  type: string
+                  format: binary
+              required:
+              - dispatchId
+              - file
+      responses:
+        '201':
+          description: Created
+  /critical/alerts:
+    get:
+      tags:
+      - CriticalValues
+      summary: Critical alerts queue
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CriticalAlert'
+    post:
+      tags:
+      - CriticalValues
+      summary: Raise critical alert
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CriticalAlert'
+      responses:
+        '201':
+          description: Created
+  /critical/alerts/{alertId}/ack:
+    post:
+      tags:
+      - CriticalValues
+      summary: Acknowledge critical alert
+      parameters:
+      - name: alertId
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                method:
+                  type: string
+                  example: phone
+                contact:
+                  type: string
+                  example: +91-98XXXXXX
+                note:
+                  type: string
+              required:
+              - method
+      responses:
+        '200':
+          description: OK
+  /interop/hl7/inbound:
+    post:
+      tags:
+      - Interop
+      summary: Receive HL7 v2 message
+      requestBody:
+        required: true
+        content:
+          text/plain:
+            schema:
+              type: string
+      responses:
+        '202':
+          description: Accepted
+  /interop/fhir/Patient:
+    get:
+      tags:
+      - Interop
+      summary: FHIR Patient search (subset)
+      parameters:
+      - in: query
+        name: identifier
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: OK
+  /public/queue:
+    get:
+      tags:
+      - Public
+      summary: Public token board
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  departments:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                        current:
+                          type: string
+                        next:
+                          type: array
+                          items:
+                            type: string
+  /platform/apikeys:
+    post:
+      tags:
+      - Platform
+      summary: Create API key
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                note:
+                  type: string
+              required:
+              - note
+      responses:
+        '201':
+          description: Created
+  /webhooks/report-status:
+    post:
+      tags:
+      - Platform
+      summary: Receive report status webhook (callback)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                reportId:
+                  type: string
+                status:
+                  type: string
+                  enum:
+                  - generated
+                  - signed
+                  - delivered
+                at:
+                  type: string
+                  format: date-time
+              required:
+              - reportId
+              - status
+              - at
+      responses:
+        '200':
+          description: OK
+  /imaging/studies/{studyId}:
+    get:
+      tags:
+      - Imaging
+      summary: Get imaging study metadata and series
+      parameters:
+      - in: path
+        name: studyId
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: OK
+  /imaging/studies/{studyId}/key-images:
+    post:
+      tags:
+      - Imaging
+      summary: Save key-image selections
+      parameters:
+      - in: path
+        name: studyId
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                items:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      seriesUid:
+                        type: string
+                      sopUid:
+                        type: string
+                      frame:
+                        type: integer
+                      reason:
+                        type: string
+              required:
+              - items
+      responses:
+        '201':
+          description: Created
+  /imaging/studies/{studyId}/measurements:
+    post:
+      tags:
+      - Imaging
+      summary: Save viewer measurements
+      parameters:
+      - in: path
+        name: studyId
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                items:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      tool:
+                        type: string
+                      dataJson:
+                        type: string
+                      seriesUid:
+                        type: string
+                      sopUid:
+                        type: string
+                      frame:
+                        type: integer
+              required:
+              - items
+      responses:
+        '201':
+          description: Created
+  /imaging/studies/{studyId}/download:
+    get:
+      tags:
+      - Imaging
+      summary: Download study as DICOMDIR or ZIP
+      parameters:
+      - in: path
+        name: studyId
+        required: true
+        schema:
+          type: string
+      - in: query
+        name: format
+        required: true
+        schema:
+          type: string
+          enum:
+          - dicomdir
+          - zip
+      responses:
+        '200':
+          description: OK
+  /reports/templates:
+    post:
+      tags:
+      - Reports
+      summary: Create/update report template (draft)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Created
+  /reports/templates/{id}/publish:
+    post:
+      tags:
+      - Reports
+      summary: Publish report template version
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: OK
+  /reports/templates/{id}/preview:
+    get:
+      tags:
+      - Reports
+      summary: Preview template with visit data
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+      - in: query
+        name: visitId
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: OK
+  /reports/render:
+    post:
+      tags:
+      - Reports
+      summary: Render a report PDF for a visit using a template
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                visitId:
+                  type: string
+                templateId:
+                  type: string
+              required:
+              - visitId
+              - templateId
+      responses:
+        '201':
+          description: Created
+  /reports/{reportId}/verify:
+    get:
+      tags:
+      - Reports
+      summary: Verify a signed report
+      parameters:
+      - in: path
+        name: reportId
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: OK
+            /backups/manual/create:
+    post:
+      tags:
+      - Backups
+      summary: Start a manual backup
+      responses:
+        '202':
+          description: Accepted
+  /backups/manual/{backupId}/progress:
+    get:
+      tags:
+      - Backups
+      summary: Get backup progress
+      parameters:
+      - in: path
+        name: backupId
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: OK
+  /backups/manual/{backupId}/download:
+    post:
+      tags:
+      - Backups
+      summary: Request download link
+      parameters:
+      - in: path
+        name: backupId
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: OK
+  /backups/manual/{backupId}/restore:
+    post:
+      tags:
+      - Backups
+      summary: Restore from backup
+      parameters:
+      - in: path
+        name: backupId
+        required: true
+        schema:
+          type: string
+      responses:
+        '202':
+          description: Accepted
+  /backups/manual/history:
+    get:
+      tags:
+      - Backups
+      summary: List manual backups
+      responses:
+        '200':
+          description: OK
+  /backups/manual/{backupId}:
+    delete:
+      tags:
+      - Backups
+      summary: Delete manual backup
+      parameters:
+      - in: path
+        name: backupId
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: Deleted
+  # ---------------------------------------------------------------------
+  # Part 10 – Permanent Patient ID, Daily Tokens, Visit History
+  # ---------------------------------------------------------------------
+
+  /patients/search:
+    get:
+      tags: [Patients]
+      summary: Search patients by phone, name or permanent ID
+      parameters:
+        - in: query
+          name: q
+          schema: { type: string }
+          required: true
+      responses:
+        '200': { description: OK }
+
+  /patients:
+    post:
+      tags: [Patients]
+      summary: Create new patient with permanent 6-character ID (Base36)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name: { type: string }
+                phone: { type: string }
+                dob: { type: string, format: date }
+                sex: { type: string }
+      responses:
+        '201': { description: Created }
+
+  /patients/{patientId}:
+    get:
+      tags: [Patients]
+      summary: Get full patient profile + visit history summary
+      parameters:
+        - in: path
+          name: patientId
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: OK }
+
+  /visits:
+    post:
+      tags: [Visits]
+      summary: Create new visit and auto-generate today's token (per dept)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                patientId: { type: string }
+                dept: { type: string }
+                tests:
+                  type: array
+                  items: { type: string }
+      responses:
+        '201': { description: Created }
+
+  /visits/{visitId}:
+    get:
+      tags: [Visits]
+      summary: Get full visit details (orders, samples, reports, delivery logs)
+      parameters:
+        - in: path
+          name: visitId
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: OK }
+
+  /visits/{visitId}/token-call:
+    post:
+      tags: [Visits, Public]
+      summary: Record a token call (NOW SERVING event for lobby screen)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                channel:
+                  type: string
+                  enum: [speaker, display, sms]
+                note: { type: string }
+      responses:
+        '201': { description: Created }
+
+  /public/tokens:
+    get:
+      tags: [Public]
+      summary: Get current & next tokens per department (Lobby Display)
+      responses:
+        '200': { description: OK }
+
+  /patients/{patientId}/full-history:
+    get:
+      tags: [Patients]
+      summary: Complete medical history (visits → orders → results → reports)
+      parameters:
+        - in: path
+          name: patientId
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: OK }
+
+openapi: 3.0.3
+info:
+  title: SynOS API – Part 11 (Analytics, Test Master, Audit)
+  version: 0.1.0
+
+servers:
+  - url: https://synos.local/api/v1
+
+tags:
+  - name: Analytics
+  - name: Admin
+  - name: Audit
+
+paths:
+
+  ##############################
+  # Analytics APIs
+  ##############################
+
+  /analytics/dashboard:
+    get:
+      tags: [Analytics]
+      summary: Role-based dashboard data bundle
+      parameters:
+        - in: query
+          name: role
+          schema: { type: string }
+        - in: query
+          name: date
+          schema:
+            type: string
+            format: date
+      responses:
+        '200': { description: OK }
+
+  /analytics/kpi/{kpiName}:
+    get:
+      tags: [Analytics]
+      summary: Fetch a single KPI
+      parameters:
+        - in: path
+          name: kpiName
+          required: true
+          schema: { type: string }
+        - in: query
+          name: range
+          schema:
+            type: string
+            enum: [today, 7d, 30d]
+      responses:
+        '200': { description: OK }
+
+  /analytics/charts/{chartName}:
+    get:
+      tags: [Analytics]
+      summary: Fetch chart series
+      parameters:
+        - in: path
+          name: chartName
+          required: true
+          schema: { type: string }
+        - in: query
+          name: filters
+          schema: { type: string }
+      responses:
+        '200': { description: OK }
+
+  /analytics/reports:
+    get:
+      tags: [Analytics]
+      summary: Report queues per department
+      parameters:
+        - in: query
+          name: dept
+          schema:
+            type: string
+            enum: [pathology, radiology]
+        - in: query
+          name: status
+          schema:
+            type: string
+            enum: [pending, final]
+      responses:
+        '200': { description: OK }
+
+  ##############################
+  # Test Master + Parameters
+  ##############################
+
+  /admin/tests/import-csv:
+    post:
+      tags: [Admin]
+      summary: Import test & parameter definitions via CSV
+      responses:
+        '202': { description: Accepted }
+
+  /admin/tests:
+    get:
+      tags: [Admin]
+      summary: List all tests
+      responses:
+        '200': { description: OK }
+    post:
+      tags: [Admin]
+      summary: Create a new test
+      responses:
+        '201': { description: Created }
+
+  /admin/tests/{testId}:
+    put:
+      tags: [Admin]
+      summary: Update test details
+      parameters:
+        - in: path
+          name: testId
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: OK }
+
+  /admin/tests/{testId}/parameters:
+    get:
+      tags: [Admin]
+      summary: List parameters for a test
+      parameters:
+        - in: path
+          name: testId
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: OK }
+    post:
+      tags: [Admin]
+      summary: Add a parameter to a test
+      parameters:
+        - in: path
+          name: testId
+          required: true
+          schema: { type: string }
+      responses:
+        '201': { description: Created }
+
+  ##############################
+  # User Management
+  ##############################
+
+  /admin/users:
+    post:
+      tags: [Admin]
+      summary: Create a new user
+      responses:
+        '201': { description: Created }
+
+    get:
+      tags: [Admin]
+      summary: List users (paginated)
+      responses:
+        '200': { description: OK }
+
+  ##############################
+  # Audit Log
+  ##############################
+
+  /audit-logs:
+    get:
+      tags: [Audit]
+      summary: Query audit logs
+      parameters:
+        - in: query
+          name: entity
+          schema: { type: string }
+        - in: query
+          name: userId
+          schema: { type: string }
+        - in: query
+          name: action
+          schema: { type: string }
+        - in: query
+          name: from
+          schema:
+            type: string
+            format: date-time
+        - in: query
+          name: to
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '200': { description: OK }
+
+  /audit-logs/export:
+    post:
+      tags: [Audit]
+      summary: Export audit log to CSV
+      responses:
+        '202': { description: Accepted }

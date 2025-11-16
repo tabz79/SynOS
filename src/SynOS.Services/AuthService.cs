@@ -1,0 +1,179 @@
+using SynOS.Models.DTOs;
+using SynOS.Models.Entities;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
+using System.IdentityModel.Tokens.Jwt;
+using System.Text;
+using Microsoft.IdentityModel.Tokens;
+using System.Security.Claims;
+using System;
+using AutoMapper;
+using SynOS.Data;
+using Microsoft.EntityFrameworkCore;
+using System.Security.Cryptography;
+using System.Linq;
+using BCrypt.Net;
+
+namespace SynOS.Services
+{
+    public class AuthService : IAuthService
+    {
+        private readonly IConfiguration _configuration;
+        private readonly IMapper _mapper;
+        private readonly SynOSDbContext _context;
+
+        public AuthService(IConfiguration configuration, IMapper mapper, SynOSDbContext context)
+        {
+            _configuration = configuration;
+            _mapper = mapper;
+            _context = context;
+        }
+
+        public async Task<LoginResponse> Authenticate(LoginRequest request, string ipAddress)
+        {
+            var user = await _context.Users
+                .Include(u => u.UserRoles)
+                .ThenInclude(ur => ur.Role)
+                .SingleOrDefaultAsync(u => u.Email == request.Email);
+
+            if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
+            {
+                if (user != null)
+                {
+                    user.FailedLoginAttempts++;
+                    if (user.FailedLoginAttempts >= 5)
+                    {
+                        user.LockoutEnd = DateTime.UtcNow.AddMinutes(15);
+                    }
+                    await _context.SaveChangesAsync();
+                }
+                throw new UnauthorizedAccessException("Invalid credentials");
+            }
+
+            if (user.LockoutEnd > DateTime.UtcNow)
+            {
+                throw new UnauthorizedAccessException("Account is locked.");
+            }
+
+            user.FailedLoginAttempts = 0;
+            await _context.SaveChangesAsync();
+
+            var jwtToken = GenerateJwtToken(user);
+            var refreshToken = GenerateRefreshToken(ipAddress);
+            user.RefreshTokens.Add(refreshToken);
+
+            await _context.AuditLogs.AddAsync(new AuditLog { UserId = user.UserId, Action = "Login", Timestamp = DateTime.UtcNow, Details = $"User logged in from IP: {ipAddress}" });
+
+            await _context.SaveChangesAsync();
+
+            return new LoginResponse
+            {
+                AccessToken = jwtToken,
+                RefreshToken = refreshToken.Token,
+                ExpiresIn = _configuration.GetValue<int>("Jwt:ExpiryMinutes") * 60,
+                User = _mapper.Map<UserDto>(user)
+            };
+        }
+
+        public async Task<LoginResponse> RefreshToken(string token, string ipAddress)
+        {
+            var user = await _context.Users
+                .Include(u => u.RefreshTokens)
+                .Include(u => u.UserRoles)
+                .ThenInclude(ur => ur.Role)
+                .SingleOrDefaultAsync(u => u.RefreshTokens.Any(t => t.Token == token));
+
+            if (user == null) throw new UnauthorizedAccessException("Invalid token");
+
+            var refreshToken = user.RefreshTokens.Single(x => x.Token == token);
+
+            if (!refreshToken.IsActive) throw new UnauthorizedAccessException("Invalid token");
+
+            // rotate token
+            var newRefreshToken = GenerateRefreshToken(ipAddress);
+            refreshToken.Revoked = DateTime.UtcNow;
+            refreshToken.RevokedByIp = ipAddress;
+            refreshToken.ReplacedByToken = newRefreshToken.Token;
+            user.RefreshTokens.Add(newRefreshToken);
+
+            _context.Update(user);
+            await _context.SaveChangesAsync();
+
+            var jwtToken = GenerateJwtToken(user);
+            
+            await _context.AuditLogs.AddAsync(new AuditLog { UserId = user.UserId, Action = "RefreshToken", Timestamp = DateTime.UtcNow, Details = $"Token refreshed from IP: {ipAddress}" });
+            await _context.SaveChangesAsync();
+
+
+            return new LoginResponse
+            {
+                AccessToken = jwtToken,
+                RefreshToken = newRefreshToken.Token,
+                ExpiresIn = _configuration.GetValue<int>("Jwt:ExpiryMinutes") * 60,
+                User = _mapper.Map<UserDto>(user)
+            };
+        }
+
+        public async Task<bool> Logout(string token, string ipAddress)
+        {
+            var user = await _context.Users.Include(u => u.RefreshTokens).SingleOrDefaultAsync(u => u.RefreshTokens.Any(t => t.Token == token));
+            if (user == null) return false;
+
+            var refreshToken = user.RefreshTokens.Single(x => x.Token == token);
+            if (!refreshToken.IsActive) return false;
+
+            refreshToken.Revoked = DateTime.UtcNow;
+            refreshToken.RevokedByIp = ipAddress;
+            _context.Update(user);
+            
+            await _context.AuditLogs.AddAsync(new AuditLog { UserId = user.UserId, Action = "Logout", Timestamp = DateTime.UtcNow, Details = $"User logged out from IP: {ipAddress}" });
+            await _context.SaveChangesAsync();
+
+            return true;
+        }
+
+        private string GenerateJwtToken(User user)
+        {
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var key = Encoding.ASCII.GetBytes(_configuration["Jwt:Secret"]);
+            var claims = new ClaimsIdentity(new Claim[]
+            {
+                new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
+                new Claim(ClaimTypes.Email, user.Email),
+                new Claim(ClaimTypes.Name, user.Name),
+            });
+
+            foreach (var userRole in user.UserRoles)
+            {
+                claims.AddClaim(new Claim(ClaimTypes.Role, userRole.Role.Name));
+            }
+
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = claims,
+                Expires = DateTime.UtcNow.AddMinutes(_configuration.GetValue<int>("Jwt:ExpiryMinutes")),
+                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature),
+                Issuer = _configuration["Jwt:Issuer"],
+                Audience = _configuration["Jwt:Audience"]
+            };
+            var token = tokenHandler.CreateToken(tokenDescriptor);
+            return tokenHandler.WriteToken(token);
+        }
+
+        private RefreshToken GenerateRefreshToken(string ipAddress)
+        {
+            using (var rngCryptoServiceProvider = new RNGCryptoServiceProvider())
+            {
+                var randomBytes = new byte[64];
+                rngCryptoServiceProvider.GetBytes(randomBytes);
+                return new RefreshToken
+                {
+                    Token = Convert.ToBase64String(randomBytes),
+                    Expires = DateTime.UtcNow.AddDays(_configuration.GetValue<int>("Jwt:RefreshTokenExpiryDays")),
+                    Created = DateTime.UtcNow,
+                    CreatedByIp = ipAddress
+                };
+            }
+        }
+    }
+}
