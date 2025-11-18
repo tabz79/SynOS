@@ -1,0 +1,622 @@
+PS D:\Projects\SynOS-Synthesized-Lab-Intelligence> dotnet --version
+8.0.416
+PS D:\Projects\SynOS-Synthesized-Lab-Intelligence> dotnet build
+
+Welcome to .NET 8.0!
+---------------------
+SDK Version: 8.0.416
+
+Telemetry
+---------
+The .NET tools collect usage data in order to help us improve your experience. It is collected by Microsoft and shared with the community. You can opt-out of telemetry by setting the DOTNET_CLI_TELEMETRY_OPTOUT environment variable to '1' or 'true' using your favorite shell.
+
+Read more about .NET CLI Tools telemetry: https://aka.ms/dotnet-cli-telemetry
+
+----------------
+Installed an ASP.NET Core HTTPS development certificate.
+To trust the certificate, run 'dotnet dev-certs https --trust'
+Learn about HTTPS: https://aka.ms/dotnet-https
+
+----------------
+Write your first app: https://aka.ms/dotnet-hello-world
+Find out what's new: https://aka.ms/dotnet-whats-new
+Explore documentation: https://aka.ms/dotnet-docs
+Report issues and find source on GitHub: https://github.com/dotnet/core
+Use 'dotnet --help' to see available commands or visit: https://aka.ms/dotnet-cli
+--------------------------------------------------------------------------------------
+  Determining projects to restore...
+  Restored D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\SynOS.Models.csproj (in 437 ms).
+  Restored D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj (in 21.08 sec).
+  Restored D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Data\SynOS.Data.csproj (in 21.08 sec).
+  Restored D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\SynOS.Api.csproj (in 28.42 sec).
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\DTOs\CancelRequestDto.cs(9,23): warning CS8618: Non-nullable property 'Reason' must contain a non-null val
+ue when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Mode 
+ls\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\DTOs\DuplicatePatientDto.cs(8,23): warning CS8618: Non-nullable property 'MRN' must contain a non-null val
+ue when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Mode
+ls\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\DTOs\DuplicatePatientDto.cs(9,23): warning CS8618: Non-nullable property 'FirstName' must contain a non-nu
+ll value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynO 
+S.Models\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\DTOs\DuplicatePatientDto.cs(10,23): warning CS8618: Non-nullable property 'LastName' must contain a non-nu
+ll value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynO
+S.Models\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\DTOs\DuplicatePatientDto.cs(12,23): warning CS8618: Non-nullable property 'PhoneNumber' must contain a non
+-null value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\S 
+ynOS.Models\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\DTOs\AppointmentCreateDto.cs(15,23): warning CS8618: Non-nullable property 'Department' must contain a non
+-null value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\S 
+ynOS.Models\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\DTOs\AppointmentCreateDto.cs(17,23): warning CS8618: Non-nullable property 'Notes' must contain a non-null
+ value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS. 
+Models\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\DTOs\VisitCreateDto.cs(13,23): warning CS8618: Non-nullable property 'Department' must contain a non-null 
+value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.M
+odels\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\DTOs\VisitCreateDto.cs(18,29): warning CS8618: Non-nullable property 'TestCodes' must contain a non-null v
+alue when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Mo 
+dels\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\VisitDayGroup.cs(16,24): warning CS8618: Non-nullable property 'Patient' must contain a non-null 
+value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.M
+odels\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\VisitCancellation.cs(16,22): warning CS8618: Non-nullable property 'Visit' must contain a non-nul
+l value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS 
+.Models\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\VisitCancellation.cs(20,23): warning CS8618: Non-nullable property 'Reason' must contain a non-nu
+ll value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynO
+S.Models\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\VisitCancellation.cs(23,23): warning CS8618: Non-nullable property 'Notes' must contain a non-nul 
+l value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS 
+.Models\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\VisitCancellation.cs(29,21): warning CS8618: Non-nullable property 'CancelledBy' must contain a n
+on-null value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src 
+\SynOS.Models\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\Visit.cs(17,24): warning CS8618: Non-nullable property 'Patient' must contain a non-null value wh 
+en exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Sy 
+nOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\Visit.cs(21,23): warning CS8618: Non-nullable property 'Token' must contain a non-null value when 
+ exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\SynO 
+S.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\Visit.cs(28,23): warning CS8618: Non-nullable property 'Department' must contain a non-null value
+ when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models
+\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\Visit.cs(32,23): warning CS8618: Non-nullable property 'Status' must contain a non-null value whe
+n exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Syn
+OS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\Visit.cs(37,23): warning CS8618: Non-nullable property 'RowVersion' must contain a non-null value
+ when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models
+\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\Visit.cs(39,35): warning CS8618: Non-nullable property 'Orders' must contain a non-null value whe
+n exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Syn
+OS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\Visit.cs(40,37): warning CS8618: Non-nullable property 'Invoices' must contain a non-null value w
+hen exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\S 
+ynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\UserRole.cs(12,21): warning CS8618: Non-nullable property 'User' must contain a non-null value wh
+en exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Sy 
+nOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\UserRole.cs(17,21): warning CS8618: Non-nullable property 'Role' must contain a non-null value wh 
+en exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Sy
+nOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\DTOs\TokenPrintDto.cs(7,23): warning CS8618: Non-nullable property 'Token' must contain a non-null value w
+hen exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\S 
+ynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\DTOs\TokenPrintDto.cs(8,23): warning CS8618: Non-nullable property 'MRN' must contain a non-null value whe
+n exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Syn 
+OS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\DTOs\TokenPrintDto.cs(9,23): warning CS8618: Non-nullable property 'PatientName' must contain a non-null v
+alue when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Mo
+dels\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\User.cs(39,38): warning CS8618: Non-nullable property 'UserRoles' must contain a non-null value w
+hen exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\S 
+ynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\User.cs(40,42): warning CS8618: Non-nullable property 'RefreshTokens' must contain a non-null val
+ue when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Mode
+ls\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\User.cs(41,38): warning CS8618: Non-nullable property 'AuditLogs' must contain a non-null value w
+hen exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\S 
+ynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\User.cs(42,37): warning CS8618: Non-nullable property 'Payments' must contain a non-null value wh
+en exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Sy 
+nOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\User.cs(43,47): warning CS8618: Non-nullable property 'VisitCancellations' must contain a non-nul
+l value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS
+.Models\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\DTOs\SameDayVisitDto.cs(17,23): warning CS8618: Non-nullable property 'Department' must contain a non-null
+ value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.
+Models\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\DTOs\SameDayVisitDto.cs(10,52): warning CS8618: Non-nullable property 'Visits' must contain a non-null val
+ue when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Mode
+ls\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\DTOs\PaymentRequestDto.cs(12,23): warning CS8618: Non-nullable property 'Method' must contain a non-null v
+alue when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Mo 
+dels\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\DTOs\PaymentRequestDto.cs(15,23): warning CS8618: Non-nullable property 'ReceiptNo' must contain a non-nul
+l value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS 
+.Models\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\TokenCounter.cs(14,23): warning CS8618: Non-nullable property 'Department' must contain a non-nul
+l value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS
+.Models\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\DTOs\PatientCreateDto.cs(9,23): warning CS8618: Non-nullable property 'FirstName' must contain a non-null 
+value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.M
+odels\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\DTOs\PatientCreateDto.cs(12,23): warning CS8618: Non-nullable property 'LastName' must contain a non-null 
+value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.M 
+odels\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\DTOs\PatientCreateDto.cs(18,23): warning CS8618: Non-nullable property 'Gender' must contain a non-null va
+lue when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Mod
+els\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\DTOs\PatientCreateDto.cs(20,23): warning CS8618: Non-nullable property 'PhoneNumber' must contain a non-nu
+ll value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynO
+S.Models\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\AuditLog.cs(15,21): warning CS8618: Non-nullable property 'User' must contain a non-null value wh
+en exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Sy
+nOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\AuditLog.cs(19,23): warning CS8618: Non-nullable property 'Action' must contain a non-null value 
+when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\
+SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\AuditLog.cs(25,23): warning CS8618: Non-nullable property 'EntityType' must contain a non-null va
+lue when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Mod 
+els\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\AuditLog.cs(30,23): warning CS8618: Non-nullable property 'Details' must contain a non-null value
+ when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models 
+\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\Appointment.cs(25,24): warning CS8618: Non-nullable property 'Patient' must contain a non-null va
+lue when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Mod 
+els\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\Appointment.cs(32,23): warning CS8618: Non-nullable property 'Department' must contain a non-null
+ value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS. 
+Models\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\Appointment.cs(37,23): warning CS8618: Non-nullable property 'Notes' must contain a non-null valu 
+e when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Model
+s\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\Appointment.cs(45,23): warning CS8618: Non-nullable property 'RowVersion' must contain a non-null
+ value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS. 
+Models\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\CreditNote.cs(16,24): warning CS8618: Non-nullable property 'Invoice' must contain a non-null val
+ue when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Mode 
+ls\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\CreditNote.cs(23,23): warning CS8618: Non-nullable property 'Reason' must contain a non-null valu
+e when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Model 
+s\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\Invoice.cs(17,22): warning CS8618: Non-nullable property 'Visit' must contain a non-null value wh
+en exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Sy 
+nOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\Invoice.cs(36,23): warning CS8618: Non-nullable property 'Status' must contain a non-null value w
+hen exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\S
+ynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\Invoice.cs(42,37): warning CS8618: Non-nullable property 'Payments' must contain a non-null value
+ when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models
+\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\Invoice.cs(43,44): warning CS8618: Non-nullable property 'PartialPayments' must contain a non-nul
+l value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS 
+.Models\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\PartialPayment.cs(16,24): warning CS8618: Non-nullable property 'Invoice' must contain a non-null
+ value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS. 
+Models\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\PartialPayment.cs(23,23): warning CS8618: Non-nullable property 'Method' must contain a non-null 
+value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.M
+odels\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\Patient.cs(15,23): warning CS8618: Non-nullable property 'MRN' must contain a non-null value when
+ exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\SynO 
+S.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\Patient.cs(19,23): warning CS8618: Non-nullable property 'FirstName' must contain a non-null valu 
+e when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Model
+s\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\Patient.cs(23,23): warning CS8618: Non-nullable property 'LastName' must contain a non-null value 
+ when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models
+\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\Patient.cs(29,23): warning CS8618: Non-nullable property 'Gender' must contain a non-null value w 
+hen exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\S 
+ynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\Patient.cs(32,23): warning CS8618: Non-nullable property 'CurrentPhoneNumber' must contain a non-
+null value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\Sy 
+nOS.Models\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\Patient.cs(40,23): warning CS8618: Non-nullable property 'RowVersion' must contain a non-null val 
+ue when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Mode 
+ls\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\Patient.cs(42,49): warning CS8618: Non-nullable property 'PhoneHistory' must contain a non-null v
+alue when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Mo 
+dels\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\Patient.cs(43,42): warning CS8618: Non-nullable property 'Aliases' must contain a non-null value  
+when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\
+SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\Patient.cs(44,49): warning CS8618: Non-nullable property 'ReferrerLinks' must contain a non-null  
+value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.M
+odels\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\PatientAlias.cs(16,24): warning CS8618: Non-nullable property 'Patient' must contain a non-null v
+alue when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Mo 
+dels\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\PatientAlias.cs(20,23): warning CS8618: Non-nullable property 'FirstName' must contain a non-null 
+ value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.
+Models\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\PatientAlias.cs(24,23): warning CS8618: Non-nullable property 'LastName' must contain a non-null 
+value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.M 
+odels\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\PatientPhoneHistory.cs(16,24): warning CS8618: Non-nullable property 'Patient' must contain a non
+-null value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\S 
+ynOS.Models\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\PatientPhoneHistory.cs(20,23): warning CS8618: Non-nullable property 'PhoneNumber' must contain a
+ non-null value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\s
+rc\SynOS.Models\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\Order.cs(16,22): warning CS8618: Non-nullable property 'Visit' must contain a non-null value when
+ exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\SynO 
+S.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\Order.cs(20,23): warning CS8618: Non-nullable property 'TestCode' must contain a non-null value w
+hen exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\S 
+ynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\Order.cs(23,31): warning CS8618: Non-nullable property 'TestDefinition' must contain a non-null v
+alue when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Mo 
+dels\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\Order.cs(27,23): warning CS8618: Non-nullable property 'Department' must contain a non-null value
+ when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models
+\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\Order.cs(31,23): warning CS8618: Non-nullable property 'Status' must contain a non-null value whe
+n exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Syn 
+OS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\TestDefinition.cs(11,23): warning CS8618: Non-nullable property 'TestCode' must contain a non-nul
+l value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS 
+.Models\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\TestDefinition.cs(15,23): warning CS8618: Non-nullable property 'Name' must contain a non-null va
+lue when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Mod
+els\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\TestDefinition.cs(19,23): warning CS8618: Non-nullable property 'Department' must contain a non-n
+ull value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\Syn 
+OS.Models\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\Payment.cs(16,24): warning CS8618: Non-nullable property 'Invoice' must contain a non-null value 
+when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\
+SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\Payment.cs(23,23): warning CS8618: Non-nullable property 'Method' must contain a non-null value w
+hen exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\S 
+ynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\Payment.cs(27,23): warning CS8618: Non-nullable property 'ReceiptNo' must contain a non-null valu
+e when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Model 
+s\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\Payment.cs(35,21): warning CS8618: Non-nullable property 'ReceivedBy' must contain a non-null val
+ue when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Mode 
+ls\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\Role.cs(13,23): warning CS8618: Non-nullable property 'Name' must contain a non-null value when e
+xiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\SynOS.
+Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\Role.cs(14,38): warning CS8618: Non-nullable property 'UserRoles' must contain a non-null value w 
+hen exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\S 
+ynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\PatientReferrerLink.cs(16,24): warning CS8618: Non-nullable property 'Patient' must contain a non
+-null value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\S 
+ynOS.Models\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\PatientReferrerLink.cs(20,23): warning CS8618: Non-nullable property 'ReferrerSystem' must contai
+n a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligenc 
+e\src\SynOS.Models\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\PatientReferrerLink.cs(24,23): warning CS8618: Non-nullable property 'ReferrerPatientId' must con 
+tain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intellig 
+ence\src\SynOS.Models\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\RefreshToken.cs(11,23): warning CS8618: Non-nullable property 'Token' must contain a non-null val 
+ue when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Mode
+ls\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\RefreshToken.cs(15,23): warning CS8618: Non-nullable property 'CreatedByIp' must contain a non-nu 
+ll value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynO
+S.Models\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\RefreshToken.cs(17,23): warning CS8618: Non-nullable property 'RevokedByIp' must contain a non-nu 
+ll value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynO
+S.Models\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\RefreshToken.cs(18,23): warning CS8618: Non-nullable property 'ReplacedByToken' must contain a no 
+n-null value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\
+SynOS.Models\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\RefreshToken.cs(23,21): warning CS8618: Non-nullable property 'User' must contain a non-null valu
+e when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Model 
+s\SynOS.Models.csproj]
+  SynOS.Models -> D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\bin\Debug\net8.0\SynOS.Models.dll
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Data\SynOSDbContext.cs(60,93): error CS1061: 'PatientReferrerLink' does not contain a definition for 'ExternalLab
+Code' and no accessible extension method 'ExternalLabCode' accepting a first argument of type 'PatientReferrerLink' could be found (are you missing a using directive or a 
+n assembly reference?) [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Data\SynOS.Data.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Data\SynOSDbContext.cs(60,112): error CS1061: 'PatientReferrerLink' does not contain a definition for 'ExternalPa
+tientId' and no accessible extension method 'ExternalPatientId' accepting a first argument of type 'PatientReferrerLink' could be found (are you missing a using directive
+ or an assembly reference?) [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Data\SynOS.Data.csproj]
+
+Build FAILED.
+
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\DTOs\CancelRequestDto.cs(9,23): warning CS8618: Non-nullable property 'Reason' must contain a non-null val 
+ue when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Mode 
+ls\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\DTOs\DuplicatePatientDto.cs(8,23): warning CS8618: Non-nullable property 'MRN' must contain a non-null val 
+ue when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Mode 
+ls\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\DTOs\DuplicatePatientDto.cs(9,23): warning CS8618: Non-nullable property 'FirstName' must contain a non-nu 
+ll value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynO 
+S.Models\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\DTOs\DuplicatePatientDto.cs(10,23): warning CS8618: Non-nullable property 'LastName' must contain a non-nu
+ll value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynO
+S.Models\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\DTOs\DuplicatePatientDto.cs(12,23): warning CS8618: Non-nullable property 'PhoneNumber' must contain a non
+-null value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\S 
+ynOS.Models\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\DTOs\AppointmentCreateDto.cs(15,23): warning CS8618: Non-nullable property 'Department' must contain a non
+-null value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\S 
+ynOS.Models\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\DTOs\AppointmentCreateDto.cs(17,23): warning CS8618: Non-nullable property 'Notes' must contain a non-null
+ value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS. 
+Models\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\DTOs\VisitCreateDto.cs(13,23): warning CS8618: Non-nullable property 'Department' must contain a non-null 
+value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.M
+odels\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\DTOs\VisitCreateDto.cs(18,29): warning CS8618: Non-nullable property 'TestCodes' must contain a non-null v
+alue when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Mo
+dels\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\VisitDayGroup.cs(16,24): warning CS8618: Non-nullable property 'Patient' must contain a non-null 
+value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.M
+odels\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\VisitCancellation.cs(16,22): warning CS8618: Non-nullable property 'Visit' must contain a non-nul
+l value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS
+.Models\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\VisitCancellation.cs(20,23): warning CS8618: Non-nullable property 'Reason' must contain a non-nu
+ll value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynO
+S.Models\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\VisitCancellation.cs(23,23): warning CS8618: Non-nullable property 'Notes' must contain a non-nul
+l value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS 
+.Models\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\VisitCancellation.cs(29,21): warning CS8618: Non-nullable property 'CancelledBy' must contain a n
+on-null value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src
+\SynOS.Models\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\Visit.cs(17,24): warning CS8618: Non-nullable property 'Patient' must contain a non-null value wh
+en exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Sy
+nOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\Visit.cs(21,23): warning CS8618: Non-nullable property 'Token' must contain a non-null value when 
+ exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\SynO
+S.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\Visit.cs(28,23): warning CS8618: Non-nullable property 'Department' must contain a non-null value
+ when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models 
+\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\Visit.cs(32,23): warning CS8618: Non-nullable property 'Status' must contain a non-null value whe
+n exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Syn
+OS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\Visit.cs(37,23): warning CS8618: Non-nullable property 'RowVersion' must contain a non-null value 
+ when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models 
+\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\Visit.cs(39,35): warning CS8618: Non-nullable property 'Orders' must contain a non-null value whe
+n exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Syn
+OS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\Visit.cs(40,37): warning CS8618: Non-nullable property 'Invoices' must contain a non-null value w 
+hen exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\S 
+ynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\UserRole.cs(12,21): warning CS8618: Non-nullable property 'User' must contain a non-null value wh 
+en exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Sy 
+nOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\UserRole.cs(17,21): warning CS8618: Non-nullable property 'Role' must contain a non-null value wh 
+en exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Sy 
+nOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\DTOs\TokenPrintDto.cs(7,23): warning CS8618: Non-nullable property 'Token' must contain a non-null value w 
+hen exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\S 
+ynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\DTOs\TokenPrintDto.cs(8,23): warning CS8618: Non-nullable property 'MRN' must contain a non-null value whe 
+n exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Syn 
+OS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\DTOs\TokenPrintDto.cs(9,23): warning CS8618: Non-nullable property 'PatientName' must contain a non-null v
+alue when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Mo 
+dels\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\User.cs(39,38): warning CS8618: Non-nullable property 'UserRoles' must contain a non-null value w 
+hen exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\S 
+ynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\User.cs(40,42): warning CS8618: Non-nullable property 'RefreshTokens' must contain a non-null val
+ue when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Mode 
+ls\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\User.cs(41,38): warning CS8618: Non-nullable property 'AuditLogs' must contain a non-null value w 
+hen exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\S 
+ynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\User.cs(42,37): warning CS8618: Non-nullable property 'Payments' must contain a non-null value wh 
+en exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Sy
+nOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\User.cs(43,47): warning CS8618: Non-nullable property 'VisitCancellations' must contain a non-nul 
+l value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS 
+.Models\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\DTOs\SameDayVisitDto.cs(17,23): warning CS8618: Non-nullable property 'Department' must contain a non-null
+ value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS. 
+Models\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\DTOs\SameDayVisitDto.cs(10,52): warning CS8618: Non-nullable property 'Visits' must contain a non-null val 
+ue when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Mode 
+ls\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\DTOs\PaymentRequestDto.cs(12,23): warning CS8618: Non-nullable property 'Method' must contain a non-null v 
+alue when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Mo 
+dels\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\DTOs\PaymentRequestDto.cs(15,23): warning CS8618: Non-nullable property 'ReceiptNo' must contain a non-nul
+l value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS 
+.Models\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\TokenCounter.cs(14,23): warning CS8618: Non-nullable property 'Department' must contain a non-nul 
+l value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS 
+.Models\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\DTOs\PatientCreateDto.cs(9,23): warning CS8618: Non-nullable property 'FirstName' must contain a non-null  
+value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.M 
+odels\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\DTOs\PatientCreateDto.cs(12,23): warning CS8618: Non-nullable property 'LastName' must contain a non-null  
+value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.M 
+odels\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\DTOs\PatientCreateDto.cs(18,23): warning CS8618: Non-nullable property 'Gender' must contain a non-null va
+lue when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Mod
+els\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\DTOs\PatientCreateDto.cs(20,23): warning CS8618: Non-nullable property 'PhoneNumber' must contain a non-nu
+ll value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynO 
+S.Models\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\AuditLog.cs(15,21): warning CS8618: Non-nullable property 'User' must contain a non-null value wh
+en exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Sy 
+nOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\AuditLog.cs(19,23): warning CS8618: Non-nullable property 'Action' must contain a non-null value  
+when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\ 
+SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\AuditLog.cs(25,23): warning CS8618: Non-nullable property 'EntityType' must contain a non-null va 
+lue when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Mod 
+els\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\AuditLog.cs(30,23): warning CS8618: Non-nullable property 'Details' must contain a non-null value 
+ when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models
+\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\Appointment.cs(25,24): warning CS8618: Non-nullable property 'Patient' must contain a non-null va 
+lue when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Mod 
+els\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\Appointment.cs(32,23): warning CS8618: Non-nullable property 'Department' must contain a non-null 
+ value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.
+Models\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\Appointment.cs(37,23): warning CS8618: Non-nullable property 'Notes' must contain a non-null valu
+e when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Model 
+s\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\Appointment.cs(45,23): warning CS8618: Non-nullable property 'RowVersion' must contain a non-null 
+ value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.
+Models\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\CreditNote.cs(16,24): warning CS8618: Non-nullable property 'Invoice' must contain a non-null val
+ue when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Mode 
+ls\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\CreditNote.cs(23,23): warning CS8618: Non-nullable property 'Reason' must contain a non-null valu 
+e when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Model 
+s\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\Invoice.cs(17,22): warning CS8618: Non-nullable property 'Visit' must contain a non-null value wh
+en exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Sy 
+nOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\Invoice.cs(36,23): warning CS8618: Non-nullable property 'Status' must contain a non-null value w
+hen exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\S 
+ynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\Invoice.cs(42,37): warning CS8618: Non-nullable property 'Payments' must contain a non-null value 
+ when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models 
+\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\Invoice.cs(43,44): warning CS8618: Non-nullable property 'PartialPayments' must contain a non-nul
+l value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS 
+.Models\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\PartialPayment.cs(16,24): warning CS8618: Non-nullable property 'Invoice' must contain a non-null 
+ value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.
+Models\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\PartialPayment.cs(23,23): warning CS8618: Non-nullable property 'Method' must contain a non-null  
+value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.M 
+odels\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\Patient.cs(15,23): warning CS8618: Non-nullable property 'MRN' must contain a non-null value when 
+ exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\SynO 
+S.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\Patient.cs(19,23): warning CS8618: Non-nullable property 'FirstName' must contain a non-null valu
+e when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Model 
+s\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\Patient.cs(23,23): warning CS8618: Non-nullable property 'LastName' must contain a non-null value
+ when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models
+\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\Patient.cs(29,23): warning CS8618: Non-nullable property 'Gender' must contain a non-null value w 
+hen exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\S 
+ynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\Patient.cs(32,23): warning CS8618: Non-nullable property 'CurrentPhoneNumber' must contain a non-
+null value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\Sy 
+nOS.Models\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\Patient.cs(40,23): warning CS8618: Non-nullable property 'RowVersion' must contain a non-null val
+ue when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Mode
+ls\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\Patient.cs(42,49): warning CS8618: Non-nullable property 'PhoneHistory' must contain a non-null v
+alue when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Mo
+dels\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\Patient.cs(43,42): warning CS8618: Non-nullable property 'Aliases' must contain a non-null value 
+when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\ 
+SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\Patient.cs(44,49): warning CS8618: Non-nullable property 'ReferrerLinks' must contain a non-null  
+value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.M 
+odels\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\PatientAlias.cs(16,24): warning CS8618: Non-nullable property 'Patient' must contain a non-null v 
+alue when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Mo 
+dels\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\PatientAlias.cs(20,23): warning CS8618: Non-nullable property 'FirstName' must contain a non-null
+ value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS. 
+Models\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\PatientAlias.cs(24,23): warning CS8618: Non-nullable property 'LastName' must contain a non-null  
+value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.M
+odels\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\PatientPhoneHistory.cs(16,24): warning CS8618: Non-nullable property 'Patient' must contain a non 
+-null value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\S 
+ynOS.Models\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\PatientPhoneHistory.cs(20,23): warning CS8618: Non-nullable property 'PhoneNumber' must contain a 
+ non-null value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\s 
+rc\SynOS.Models\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\Order.cs(16,22): warning CS8618: Non-nullable property 'Visit' must contain a non-null value when 
+ exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\SynO 
+S.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\Order.cs(20,23): warning CS8618: Non-nullable property 'TestCode' must contain a non-null value w 
+hen exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\S
+ynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\Order.cs(23,31): warning CS8618: Non-nullable property 'TestDefinition' must contain a non-null v 
+alue when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Mo
+dels\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\Order.cs(27,23): warning CS8618: Non-nullable property 'Department' must contain a non-null value 
+ when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models 
+\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\Order.cs(31,23): warning CS8618: Non-nullable property 'Status' must contain a non-null value whe 
+n exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Syn
+OS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\TestDefinition.cs(11,23): warning CS8618: Non-nullable property 'TestCode' must contain a non-nul 
+l value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS 
+.Models\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\TestDefinition.cs(15,23): warning CS8618: Non-nullable property 'Name' must contain a non-null va 
+lue when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Mod
+els\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\TestDefinition.cs(19,23): warning CS8618: Non-nullable property 'Department' must contain a non-n
+ull value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\Syn
+OS.Models\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\Payment.cs(16,24): warning CS8618: Non-nullable property 'Invoice' must contain a non-null value  
+when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\ 
+SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\Payment.cs(23,23): warning CS8618: Non-nullable property 'Method' must contain a non-null value w 
+hen exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\S
+ynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\Payment.cs(27,23): warning CS8618: Non-nullable property 'ReceiptNo' must contain a non-null valu 
+e when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Model 
+s\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\Payment.cs(35,21): warning CS8618: Non-nullable property 'ReceivedBy' must contain a non-null val
+ue when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Mode 
+ls\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\Role.cs(13,23): warning CS8618: Non-nullable property 'Name' must contain a non-null value when e 
+xiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\SynOS.
+Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\Role.cs(14,38): warning CS8618: Non-nullable property 'UserRoles' must contain a non-null value w
+hen exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\S 
+ynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\PatientReferrerLink.cs(16,24): warning CS8618: Non-nullable property 'Patient' must contain a non
+-null value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\S 
+ynOS.Models\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\PatientReferrerLink.cs(20,23): warning CS8618: Non-nullable property 'ReferrerSystem' must contai 
+n a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligenc 
+e\src\SynOS.Models\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\PatientReferrerLink.cs(24,23): warning CS8618: Non-nullable property 'ReferrerPatientId' must con 
+tain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intellig 
+ence\src\SynOS.Models\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\RefreshToken.cs(11,23): warning CS8618: Non-nullable property 'Token' must contain a non-null val
+ue when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Mode 
+ls\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\RefreshToken.cs(15,23): warning CS8618: Non-nullable property 'CreatedByIp' must contain a non-nu 
+ll value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynO 
+S.Models\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\RefreshToken.cs(17,23): warning CS8618: Non-nullable property 'RevokedByIp' must contain a non-nu 
+ll value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynO 
+S.Models\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\RefreshToken.cs(18,23): warning CS8618: Non-nullable property 'ReplacedByToken' must contain a no 
+n-null value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\ 
+SynOS.Models\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities\RefreshToken.cs(23,21): warning CS8618: Non-nullable property 'User' must contain a non-null valu
+e when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Model 
+s\SynOS.Models.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Data\SynOSDbContext.cs(60,93): error CS1061: 'PatientReferrerLink' does not contain a definition for 'ExternalLab 
+Code' and no accessible extension method 'ExternalLabCode' accepting a first argument of type 'PatientReferrerLink' could be found (are you missing a using directive or a 
+n assembly reference?) [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Data\SynOS.Data.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Data\SynOSDbContext.cs(60,112): error CS1061: 'PatientReferrerLink' does not contain a definition for 'ExternalPa
+tientId' and no accessible extension method 'ExternalPatientId' accepting a first argument of type 'PatientReferrerLink' could be found (are you missing a using directive 
+ or an assembly reference?) [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Data\SynOS.Data.csproj]
+    92 Warning(s)
+    2 Error(s)
+
+Time Elapsed 00:01:34.22
+PS D:\Projects\SynOS-Synthesized-Lab-Intelligence> dotnet ef migrations list     # see current migrations, note errors
+Could not execute because the specified command or file was not found.
+Possible reasons for this include:
+  * You misspelled a built-in dotnet command.
+  * You intended to execute a .NET program, but dotnet-ef does not exist.
+  * You intended to run a global tool, but a dotnet-prefixed executable with this name could not be found on the PATH.
+PS D:\Projects\SynOS-Synthesized-Lab-Intelligence> dotnet ef migrations add fix_rowversion_and_keys
+Could not execute because the specified command or file was not found.
+Possible reasons for this include:
+  * You misspelled a built-in dotnet command.
+  * You intended to execute a .NET program, but dotnet-ef does not exist.
+  * You intended to run a global tool, but a dotnet-prefixed executable with this name could not be found on the PATH.
+PS D:\Projects\SynOS-Synthesized-Lab-Intelligence> dotnet ef database update
+Could not execute because the specified command or file was not found.
+Possible reasons for this include:
+  * You misspelled a built-in dotnet command.
+  * You intended to execute a .NET program, but dotnet-ef does not exist.
+  * You intended to run a global tool, but a dotnet-prefixed executable with this name could not be found on the PATH.
+PS D:\Projects\SynOS-Synthesized-Lab-Intelligence> 

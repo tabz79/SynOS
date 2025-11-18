@@ -1,0 +1,11 @@
+{
+  "Version": 1,
+  "Hash": "h4DbEO2eCBMsOU5DP+K+SHHhxA8PtUFT6xOHe6RRe7s=",
+  "Source": "SynOS.Api",
+  "BasePath": "_content/SynOS.Api",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": []
+}

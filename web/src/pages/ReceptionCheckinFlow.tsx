@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import PatientSearchForm from '../components/PatientSearchForm';
 import TestSelectionStep from '../components/checkin/TestSelectionStep';
 import ReferralTypeStep from '../components/checkin/ReferralTypeStep';
@@ -6,6 +6,9 @@ import InvoicePreviewStep from '../components/checkin/InvoicePreviewStep';
 import PaymentCaptureModal from '../components/PaymentCaptureModal';
 import TokenPreview from '../components/TokenPreview';
 import apiClient from '../services/apiClient';
+import { v4 as uuidv4 } from 'uuid'; // For generating idempotency key
+import dayjs from 'dayjs'; // For local date handling
+import { useAuth } from '../contexts/AuthContext'; // Import useAuth
 
 interface Patient {
   patientId: string;
@@ -15,28 +18,53 @@ interface Patient {
 }
 
 interface TestDefinition {
-  code: string;
+  testCode: string;
   name: string;
   price: number;
   department: string;
 }
 
-const testDefinitions: TestDefinition[] = [
-  { code: 'CBC', name: 'Complete Blood Count', price: 150, department: 'Pathology' },
-  { code: 'FBS', name: 'Fasting Blood Sugar', price: 100, department: 'Pathology' },
-  { code: 'USG', name: 'Ultrasound Scan', price: 500, department: 'Radiology' },
-  { code: 'XrayChest', name: 'X-Ray Chest', price: 300, department: 'Radiology' },
-  { code: 'CTHead', name: 'CT Scan Head', price: 1000, department: 'Radiology' },
-];
+interface VisitDetails {
+  visitId: string;
+  token: string;
+  invoice: {
+    invoiceId: string;
+    total: number;
+  };
+  patient: {
+    mrn: string;
+    firstName: string;
+    lastName: string;
+  };
+  createdAt: string; // Assuming this is the visit time
+}
 
 const ReceptionCheckinFlow: React.FC = () => {
+  const { user } = useAuth(); // Get current user from AuthContext
   const [step, setStep] = useState(1);
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
+  const [availableTestDefinitions, setAvailableTestDefinitions] = useState<TestDefinition[]>([]);
   const [selectedTests, setSelectedTests] = useState<TestDefinition[]>([]);
   const [referralType, setReferralType] = useState('');
-  const [visitDetails, setVisitDetails] = useState<any | null>(null); // Stores visitId, token, invoice details
+  const [visitDetails, setVisitDetails] = useState<VisitDetails | null>(null); // Stores visitId, token, invoice details
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [loadingTests, setLoadingTests] = useState(true);
+
+  useEffect(() => {
+    const fetchTestDefinitions = async () => {
+      try {
+        const response = await apiClient.get('/admin/tests'); // Assuming an endpoint for test definitions
+        setAvailableTestDefinitions(response.data);
+      } catch (err) {
+        console.error('Failed to fetch test definitions:', err);
+        setError('Failed to load test definitions.');
+      } finally {
+        setLoadingTests(false);
+      }
+    };
+    fetchTestDefinitions();
+  }, []);
 
   const handlePatientSelect = (patient: Patient) => {
     setSelectedPatient(patient);
@@ -59,12 +87,19 @@ const ReceptionCheckinFlow: React.FC = () => {
       return;
     }
 
+    // Generate a unique idempotency key for this request
+    const idempotencyKey = uuidv4();
+
     try {
       const response = await apiClient.post('/visits', {
         patientId: selectedPatient.patientId,
         department: selectedTests[0].department, // Assuming all tests are from same dept for simplicity
-        testCodes: selectedTests.map(t => t.code),
+        testCodes: selectedTests.map(t => t.testCode),
         referrerId: referralType === 'internal' ? 'some-internal-id' : null, // Placeholder
+      }, {
+        headers: {
+          'Idempotency-Key': idempotencyKey,
+        },
       });
       setVisitDetails(response.data);
       setStep(5); // Move to payment step
@@ -88,9 +123,10 @@ const ReceptionCheckinFlow: React.FC = () => {
           </div>
         );
       case 2:
+        if (loadingTests) return <p>Loading tests...</p>;
         return (
           <TestSelectionStep
-            testDefinitions={testDefinitions}
+            testDefinitions={availableTestDefinitions}
             onTestsSelected={handleTestsSelected}
             onBack={() => setStep(1)}
           />
@@ -120,12 +156,13 @@ const ReceptionCheckinFlow: React.FC = () => {
                 Proceed to Payment
               </button>
             )}
-            {showPaymentModal && visitDetails && (
+            {showPaymentModal && visitDetails && user?.userId && ( // Ensure user.userId is available
               <PaymentCaptureModal
-                invoiceId={visitDetails.invoiceId} // Assuming invoiceId is returned with visitDetails
-                totalAmount={visitDetails.invoiceTotal} // Assuming total is returned
+                invoiceId={visitDetails.invoice.invoiceId}
+                totalAmount={visitDetails.invoice.total}
                 onPaymentSuccess={handlePaymentSuccess}
                 onClose={() => setShowPaymentModal(false)}
+                receivedByUserId={user.userId} // Pass the current user's ID
               />
             )}
             <button onClick={() => setStep(4)} className="bg-gray-300 px-4 py-2 rounded mt-4">Back</button>
@@ -135,7 +172,14 @@ const ReceptionCheckinFlow: React.FC = () => {
         return (
           <div>
             <h3 className="text-lg font-semibold mb-4">Step 6: Token Preview</h3>
-            {visitDetails && <TokenPreview token={visitDetails.token} />}
+            {visitDetails && (
+              <TokenPreview
+                token={visitDetails.token}
+                mrn={visitDetails.patient.mrn}
+                patientName={`${visitDetails.patient.firstName} ${visitDetails.patient.lastName}`}
+                visitTime={dayjs(visitDetails.createdAt).format('YYYY-MM-DD HH:mm')}
+              />
+            )}
             <button onClick={() => setStep(7)} className="bg-blue-500 text-white px-4 py-2 rounded mt-4">Done</button>
             <button onClick={() => setStep(5)} className="bg-gray-300 px-4 py-2 rounded mt-4 ml-2">Back</button>
           </div>

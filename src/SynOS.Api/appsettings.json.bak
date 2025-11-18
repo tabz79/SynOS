@@ -1,0 +1,45 @@
+// File: src/SynOS.Api/appsettings.json
+// Author: Gemini
+// Date: 2025-11-13
+
+{
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning"
+    }
+  },
+  "AllowedHosts": "*",
+  "ConnectionStrings": {
+    "SynOS": "Server=localhost;Database=SynOS;User Id=sa;Password=Your_password123;TrustServerCertificate=True;"
+  },
+  "Jwt": {
+    // TODO: REPLACE THIS SECRET IN PRODUCTION
+    "Secret": "REPLACE_THIS_WITH_A_REAL_SECRET_REPLACE_THIS_WITH_A_REAL_SECRET",
+    "Issuer": "SynOS.Api",
+    "Audience": "SynOS.App",
+    "ExpiryMinutes": 1440, // 24 hours
+    "RefreshTokenExpiryDays": 7
+  },
+  "Serilog": {
+    "MinimumLevel": {
+      "Default": "Information",
+      "Override": {
+        "Microsoft": "Warning",
+        "System": "Warning"
+      }
+    },
+    "WriteTo": [
+      { "Name": "Console" }
+      // TODO: Add file sink configuration for production
+      // {
+      //   "Name": "File",
+      //   "Args": {
+      //     "path": "logs/synos-api-.txt",
+      //     "rollingInterval": "Day",
+      //     "outputTemplate": "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj}{NewLine}{Exception}"
+      //   }
+      // }
+    ]
+  }
+}

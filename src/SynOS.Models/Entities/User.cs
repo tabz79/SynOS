@@ -12,7 +12,7 @@ namespace SynOS.Models.Entities
     public class User
     {
         [Key]
-        public int UserId { get; set; }
+        public Guid UserId { get; set; }
 
         [Required]
         [MaxLength(255)]
@@ -36,8 +36,10 @@ namespace SynOS.Models.Entities
         [Timestamp]
         public byte[]? RowVersion { get; set; }
 
-        public ICollection<UserRole> UserRoles { get; set; }
-        public ICollection<RefreshToken> RefreshTokens { get; set; }
-        public ICollection<AuditLog> AuditLogs { get; set; }
+        public ICollection<UserRole> UserRoles { get; set; } = new List<UserRole>();
+        public ICollection<RefreshToken> RefreshTokens { get; set; } = new List<RefreshToken>();
+        public ICollection<AuditLog> AuditLogs { get; set; } = new List<AuditLog>();
+        public ICollection<Payment> Payments { get; set; } = new List<Payment>(); // Added for FK from Payment
+        public ICollection<VisitCancellation> VisitCancellations { get; set; } = new List<VisitCancellation>(); // Added for FK from VisitCancellation
     }
 }

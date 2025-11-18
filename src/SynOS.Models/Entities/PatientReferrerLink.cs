@@ -13,14 +13,22 @@ namespace SynOS.Models.Entities
         public Guid PatientId { get; set; }
 
         [ForeignKey("PatientId")]
-        public Patient Patient { get; set; }
+        public Patient? Patient { get; set; }
 
         [Required]
         [MaxLength(100)]
-        public string ReferrerSystem { get; set; } // e.g., "HospitalA_EMR"
+        public string ReferrerSystem { get; set; } = string.Empty; // e.g., "HospitalA_EMR"
 
         [Required]
         [MaxLength(255)]
-        public string ReferrerPatientId { get; set; } // The ID of the patient in the other system
+        public string ReferrerPatientId { get; set; } = string.Empty; // The ID of the patient in the other system
+
+        [Required]
+        [MaxLength(50)]
+        public string ExternalLabCode { get; set; } = string.Empty;
+
+        [Required]
+        [MaxLength(255)]
+        public string ExternalPatientId { get; set; } = string.Empty;
     }
 }

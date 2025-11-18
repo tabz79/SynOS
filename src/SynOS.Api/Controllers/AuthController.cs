@@ -98,12 +98,12 @@ namespace SynOS.Api.Controllers
             Response.Cookies.Append("refreshToken", token, cookieOptions);
         }
 
-        private string IpAddress()
+        private string? IpAddress()
         {
             if (Request.Headers.ContainsKey("X-Forwarded-For"))
-                return Request.Headers["X-Forwarded-For"];
+                return Request.Headers["X-Forwarded-For"].ToString();
             else
-                return HttpContext.Connection.RemoteIpAddress.MapToIPv4().ToString();
+                return HttpContext.Connection.RemoteIpAddress?.MapToIPv4()?.ToString();
         }
     }
 }

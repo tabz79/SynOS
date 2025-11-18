@@ -1,11 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import apiClient from '../services/apiClient';
 import PaymentCaptureModal from '../components/PaymentCaptureModal';
+import TokenPreview from '../components/TokenPreview';
+import { useAuth } from '../contexts/AuthContext'; // To get current user ID
+import dayjs from 'dayjs';
 
 interface Visit {
   visitId: string;
   token: string;
   patient: {
+    patientId: string;
+    mrn: string;
     firstName: string;
     lastName: string;
   };
@@ -15,15 +20,26 @@ interface Visit {
     status: string;
   };
   status: string;
+  createdAt: string;
+}
+
+interface TokenPrintDetails {
+  token: string;
+  mrn: string;
+  patientName: string;
+  visitTime: string;
 }
 
 const VisitListPage: React.FC = () => {
+  const { user } = useAuth(); // Get current user from AuthContext
   const [visits, setVisits] = useState<Visit[]>([]);
   const [department, setDepartment] = useState('Pathology');
   const [status, setStatus] = useState('PendingPayment');
   const [isLoading, setIsLoading] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [showTokenPreviewModal, setShowTokenPreviewModal] = useState(false);
   const [selectedVisit, setSelectedVisit] = useState<Visit | null>(null);
+  const [tokenPrintDetails, setTokenPrintDetails] = useState<TokenPrintDetails | null>(null);
 
   const fetchVisits = async () => {
     setIsLoading(true);
@@ -52,14 +68,33 @@ const VisitListPage: React.FC = () => {
     fetchVisits(); // Refresh the list
   };
 
-  const handleCancelVisit = async (visitId: string) => {
-    if (window.confirm('Are you sure you want to cancel this visit?')) {
+  const handleCancelVisit = async (visit: Visit) => {
+    if (!user?.userId) {
+      alert('User not authenticated.');
+      return;
+    }
+    if (window.confirm(`Are you sure you want to cancel visit ${visit.token} for ${visit.patient.firstName} ${visit.patient.lastName}?`)) {
       try {
-        await apiClient.post(`/visits/${visitId}/cancel`, { reason: 'Cancelled by reception' });
+        await apiClient.post(`/visits/${visit.visitId}/cancel`, {
+          reason: 'Cancelled by reception',
+          cancelledByUserId: user.userId,
+        });
         fetchVisits(); // Refresh the list
       } catch (error) {
         console.error('Failed to cancel visit:', error);
+        alert('Failed to cancel visit.');
       }
+    }
+  };
+
+  const handlePrintToken = async (visit: Visit) => {
+    try {
+      const response = await apiClient.get(`/visits/${visit.visitId}/token`);
+      setTokenPrintDetails(response.data);
+      setShowTokenPreviewModal(true);
+    } catch (error) {
+      console.error('Failed to fetch token details:', error);
+      alert('Failed to fetch token details for printing.');
     }
   };
 
@@ -72,7 +107,7 @@ const VisitListPage: React.FC = () => {
           <select id="department" value={department} onChange={e => setDepartment(e.target.value)} className="p-2 border rounded">
             <option>Pathology</option>
             <option>Radiology</option>
-            <option>Cardiology</option>
+            <option>Cardiology</option> {/* TODO: Make this dynamic from API */}
           </select>
         </div>
         <div>
@@ -80,7 +115,9 @@ const VisitListPage: React.FC = () => {
           <select id="status" value={status} onChange={e => setStatus(e.target.value)} className="p-2 border rounded">
             <option>PendingPayment</option>
             <option>Paid</option>
+            <option>PartialPayment</option>
             <option>Cancelled</option>
+            <option>Pending</option> {/* Add other relevant statuses */}
           </select>
         </div>
       </div>
@@ -107,13 +144,16 @@ const VisitListPage: React.FC = () => {
                   <td className="py-2 px-4 border-b">${visit.invoice?.total.toFixed(2) || 'N/A'}</td>
                   <td className="py-2 px-4 border-b">{visit.status}</td>
                   <td className="py-2 px-4 border-b">
-                    {visit.status === 'PendingPayment' && (
+                    {(visit.status === 'PendingPayment' || visit.status === 'PartialPayment') && (
                       <button onClick={() => handlePaymentClick(visit)} className="bg-green-500 text-white px-2 py-1 rounded text-sm mr-2">
                         Record Payment
                       </button>
                     )}
+                    <button onClick={() => handlePrintToken(visit)} className="bg-blue-500 text-white px-2 py-1 rounded text-sm mr-2">
+                      Print Token
+                    </button>
                     {visit.status !== 'Cancelled' && (
-                      <button onClick={() => handleCancelVisit(visit.visitId)} className="bg-red-500 text-white px-2 py-1 rounded text-sm">
+                      <button onClick={() => handleCancelVisit(visit)} className="bg-red-500 text-white px-2 py-1 rounded text-sm">
                         Cancel Visit
                       </button>
                     )}
@@ -125,13 +165,28 @@ const VisitListPage: React.FC = () => {
         </div>
       )}
 
-      {showPaymentModal && selectedVisit && (
+      {showPaymentModal && selectedVisit && user?.userId && (
         <PaymentCaptureModal
           invoiceId={selectedVisit.invoice.invoiceId}
           totalAmount={selectedVisit.invoice.total}
           onPaymentSuccess={handlePaymentSuccess}
           onClose={() => setShowPaymentModal(false)}
+          receivedByUserId={user.userId}
         />
+      )}
+
+      {showTokenPreviewModal && tokenPrintDetails && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg relative">
+            <button onClick={() => setShowTokenPreviewModal(false)} className="absolute top-2 right-2 text-gray-600 hover:text-gray-900 text-xl">&times;</button>
+            <TokenPreview
+              token={tokenPrintDetails.token}
+              mrn={tokenPrintDetails.mrn}
+              patientName={tokenPrintDetails.patientName}
+              visitTime={tokenPrintDetails.visitTime}
+            />
+          </div>
+        </div>
       )}
     </div>
   );

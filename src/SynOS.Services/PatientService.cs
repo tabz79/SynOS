@@ -60,7 +60,7 @@ namespace SynOS.Services
                 .ToListAsync();
         }
 
-        public async Task<Patient> GetPatientByIdAsync(Guid id)
+        public async Task<Patient?> GetPatientByIdAsync(Guid id)
         {
             return await _context.Patients.FindAsync(id);
         }
@@ -73,7 +73,7 @@ namespace SynOS.Services
                 .ToListAsync();
         }
 
-        public async Task<Patient> UpdatePhoneAsync(Guid patientId, string newPhone)
+        public async Task<Patient?> UpdatePhoneAsync(Guid patientId, string newPhone)
         {
             var patient = await _context.Patients
                 .Include(p => p.PhoneHistory)
@@ -95,7 +95,7 @@ namespace SynOS.Services
             return patient;
         }
 
-        public async Task<IEnumerable<DuplicatePatientDto>> FindPossibleDuplicatesAsync(Guid patientId)
+        public async Task<IEnumerable<DuplicatePatientDto>?> FindPossibleDuplicatesAsync(Guid patientId)
         {
             var targetPatient = await _context.Patients.FindAsync(patientId);
             if (targetPatient == null) return null;
@@ -140,7 +140,7 @@ namespace SynOS.Services
             };
         }
 
-        public async Task<bool> MergePatientsAsync(Guid targetId, Guid sourceId, int userId)
+        public async Task<bool> MergePatientsAsync(Guid targetId, Guid sourceId, Guid userId)
         {
             var targetPatient = await _context.Patients.FindAsync(targetId);
             var sourcePatient = await _context.Patients.FindAsync(sourceId);

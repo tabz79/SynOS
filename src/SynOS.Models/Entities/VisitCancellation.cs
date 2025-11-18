@@ -13,19 +13,20 @@ namespace SynOS.Models.Entities
         public Guid VisitId { get; set; }
 
         [ForeignKey("VisitId")]
-        public Visit Visit { get; set; }
+        public Visit? Visit { get; set; }
 
         [Required]
-        [MaxLength(100)]
-        public string Reason { get; set; }
+        [StringLength(200)]
+        public string Reason { get; set; } = string.Empty;
 
-        public string Notes { get; set; }
+        [Column(TypeName = "nvarchar(max)")]
+        public string Notes { get; set; } = string.Empty;
 
         [Required]
-        public int CancelledByUserId { get; set; }
+        public Guid CancelledByUserId { get; set; }
 
         [ForeignKey("CancelledByUserId")]
-        public User CancelledBy { get; set; }
+        public User? CancelledBy { get; set; }
 
         public DateTime CancelledAt { get; set; } = DateTime.UtcNow;
     }

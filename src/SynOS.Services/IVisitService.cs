@@ -8,10 +8,10 @@ namespace SynOS.Services
 {
     public interface IVisitService
     {
-        Task<Visit> CreateVisitAsync(VisitCreateDto visitDto);
-        Task<Visit> GetVisitDetailsAsync(Guid visitId);
+        Task<Visit> CreateVisitAsync(VisitCreateDto visitDto, string? idempotencyKey = null);
+        Task<Visit?> GetVisitDetailsAsync(Guid visitId);
         Task<IEnumerable<Visit>> GetVisitsAsync(string department, string status, int limit);
-        Task<Payment> RecordPaymentAsync(Guid visitId, PaymentRequestDto paymentDto, int userId);
-        Task<VisitCancellation> CancelVisitAsync(Guid visitId, CancelRequestDto cancelDto, int userId);
+        Task<Payment?> RecordPaymentAsync(Guid visitId, PaymentRequestDto paymentDto);
+        Task<VisitCancellation> CancelVisitAsync(Guid visitId, CancelRequestDto cancelDto);
     }
 }

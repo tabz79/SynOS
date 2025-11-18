@@ -13,7 +13,7 @@ namespace SynOS.Models.Entities
         public Guid PatientId { get; set; }
 
         [ForeignKey("PatientId")]
-        public Patient Patient { get; set; }
+        public Patient? Patient { get; set; }
 
         [Required]
         public DateTime Day { get; set; }

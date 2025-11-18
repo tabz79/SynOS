@@ -13,19 +13,22 @@ namespace SynOS.Models.Entities
         public Guid VisitId { get; set; }
 
         [ForeignKey("VisitId")]
-        public Visit Visit { get; set; }
+        public Visit? Visit { get; set; }
 
         [Required]
-        [MaxLength(50)]
-        public string TestCode { get; set; }
+        [StringLength(50)]
+        public string TestCode { get; set; } = string.Empty;
+
+        [ForeignKey("TestCode")]
+        public TestDefinition? TestDefinition { get; set; }
 
         [Required]
-        [MaxLength(50)]
-        public string Department { get; set; }
+        [StringLength(50)]
+        public string Department { get; set; } = string.Empty;
 
         [Required]
-        [MaxLength(50)]
-        public string Status { get; set; }
+        [StringLength(50)]
+        public string Status { get; set; } = string.Empty;
 
         [Column(TypeName = "decimal(10, 2)")]
         public decimal Price { get; set; }

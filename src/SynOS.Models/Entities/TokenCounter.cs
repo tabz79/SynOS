@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace SynOS.Models.Entities
 {
@@ -9,15 +10,19 @@ namespace SynOS.Models.Entities
         public Guid CounterId { get; set; }
 
         [Required]
-        [MaxLength(50)]
-        public string Department { get; set; }
+        [StringLength(50)]
+        public string Department { get; set; } = string.Empty;
 
         [Required]
-        public DateTime Day { get; set; }
+        public DateTime Day { get; set; } // Lab local date
 
-        public int LastNumber { get; set; }
+        [Required]
+        [StringLength(1)]
+        public string SeriesLetter { get; set; } = "A";
 
-        public int MaxPerDay { get; set; } = 999;
+        public int LastNumber { get; set; } = 0;
+
+        public int MaxPerSeries { get; set; } = 999;
 
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
     }

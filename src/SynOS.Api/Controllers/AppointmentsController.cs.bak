@@ -1,0 +1,108 @@
+using System;
+using System.Security.Claims;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using SynOS.Api.Authorization;
+using SynOS.Models.DTOs;
+using SynOS.Services;
+
+namespace SynOS.Api.Controllers
+{
+    [ApiController]
+    [Route("api/v1/[controller]")]
+    [Authorize]
+    public class AppointmentsController : ControllerBase
+    {
+        private readonly IAppointmentService _appointmentService;
+
+        public AppointmentsController(IAppointmentService appointmentService)
+        {
+            _appointmentService = appointmentService;
+        }
+
+        [HttpPost]
+        [AuthorizeRoles("Admin", "Reception")]
+        public async Task<IActionResult> CreateAppointment([FromBody] AppointmentCreateDto appointmentDto, [FromHeader(Name = "Idempotency-Key")] string idempotencyKey)
+        {
+            if (string.IsNullOrEmpty(idempotencyKey))
+            {
+                return BadRequest(new { code = "MISSING_IDEMPOTENCY_KEY", message = "Idempotency-Key header is required." });
+            }
+
+            try
+            {
+                var appointment = await _appointmentService.CreateAppointmentAsync(appointmentDto, idempotencyKey);
+                return CreatedAtAction(nameof(GetAppointmentById), new { id = appointment.AppointmentId }, appointment);
+            }
+            catch (InvalidOperationException ex) when (ex.Message == "SLOT_FULL")
+            {
+                return Conflict(new { code = "SLOT_FULL", message = "The requested appointment slot is already booked." });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { code = "VALIDATION_ERROR", message = ex.Message });
+            }
+        }
+
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetAppointmentById(Guid id)
+        {
+            var appointment = await _appointmentService.GetAppointmentByIdAsync(id);
+            if (appointment == null) return NotFound();
+            return Ok(appointment);
+        }
+
+        [HttpGet("upcoming")]
+        public async Task<IActionResult> GetUpcomingAppointments([FromQuery] string department, [FromQuery] DateTime date)
+        {
+            var appointments = await _appointmentService.GetUpcomingAppointmentsAsync(department, date);
+            return Ok(appointments);
+        }
+
+        [HttpGet("/api/v1/patients/{id}/same-day-visits")]
+        public async Task<IActionResult> CheckSameDayVisits(Guid id, [FromQuery] DateTime date)
+        {
+            var result = await _appointmentService.CheckSameDayVisitsAsync(id, date);
+            return Ok(result);
+        }
+
+        [HttpPost("{id}/reschedule")]
+        [AuthorizeRoles("Admin", "Reception")]
+        public async Task<IActionResult> RescheduleAppointment(Guid id, [FromBody] RescheduleRequestDto request)
+        {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (userIdClaim == null || !Guid.TryParse(userIdClaim, out var userId))
+            {
+                return Unauthorized(new { message = "User ID not found or invalid." });
+            }
+            var appointment = await _appointmentService.RescheduleAppointmentAsync(id, request.NewScheduledForUtc, userId);
+            if (appointment == null) return NotFound();
+            return Ok(appointment);
+        }
+
+        [HttpPost("{id}/cancel")]
+        [AuthorizeRoles("Admin", "Reception")]
+        public async Task<IActionResult> CancelAppointment(Guid id, [FromBody] CancelRequestDto request)
+        {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (userIdClaim == null || !Guid.TryParse(userIdClaim, out var userId))
+            {
+                return Unauthorized(new { message = "User ID not found or invalid." });
+            }
+            var appointment = await _appointmentService.CancelAppointmentAsync(id, request.Reason, userId);
+            if (appointment == null) return NotFound();
+            return Ok(appointment);
+        }
+    }
+
+    public class RescheduleRequestDto
+    {
+        public DateTime NewScheduledForUtc { get; set; }
+    }
+
+    public class CancelRequestDto
+    {
+        public string Reason { get; set; } = string.Empty;
+    }
+}

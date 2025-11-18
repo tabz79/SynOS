@@ -9,8 +9,8 @@ using SynOS.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using AutoMapper.Extensions.Microsoft.DependencyInjection;
 using SynOS.Api.Middleware; // Add this using directive
+using Microsoft.Extensions.Logging; // Added for ILogger
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -30,11 +30,11 @@ builder.Services.AddSwaggerGen();
 
 // Configure DbContext
 builder.Services.AddDbContext<SynOSDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("SynOS")));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // Configure JWT Authentication
 var jwtSettings = builder.Configuration.GetSection("Jwt");
-var secret = jwtSettings["Secret"];
+var secret = jwtSettings["Secret"] ?? throw new InvalidOperationException("JWT Secret not configured.");
 
 builder.Services.AddAuthentication(options =>
 {
@@ -61,6 +61,7 @@ builder.Services.AddAutoMapper(typeof(Program)); // Scans for profiles in the as
 
 // Register application services
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IVisitService, VisitService>(); // Register VisitService
 
 // Configure CORS
 builder.Services.AddCors(options =>

@@ -10,11 +10,11 @@ namespace SynOS.Models.DTOs
         public Guid PatientId { get; set; }
 
         [Required]
-        public string Department { get; set; }
+        public string Department { get; set; } = string.Empty;
 
         public Guid? ReferrerId { get; set; }
 
         [Required]
-        public List<string> TestCodes { get; set; }
+        public List<string> TestCodes { get; set; } = new List<string>();
     }
 }

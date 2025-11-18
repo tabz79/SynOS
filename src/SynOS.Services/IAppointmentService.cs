@@ -9,8 +9,9 @@ namespace SynOS.Services
     public interface IAppointmentService
     {
         Task<Appointment> CreateAppointmentAsync(AppointmentCreateDto appointmentDto, string idempotencyKey);
-        Task<Appointment> RescheduleAppointmentAsync(Guid appointmentId, DateTime newScheduledForUtc, int changedById);
-        Task<Appointment> CancelAppointmentAsync(Guid appointmentId, string reason, int cancelledById);
+        Task<Appointment?> GetAppointmentByIdAsync(Guid id);
+        Task<Appointment?> RescheduleAppointmentAsync(Guid appointmentId, DateTime newScheduledForUtc, Guid changedById);
+        Task<Appointment?> CancelAppointmentAsync(Guid appointmentId, string reason, Guid cancelledById);
         Task<IEnumerable<Appointment>> GetUpcomingAppointmentsAsync(string department, DateTime dateLocal);
         Task<SameDayVisitDto> CheckSameDayVisitsAsync(Guid patientId, DateTime dateLocal);
     }

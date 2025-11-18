@@ -12,8 +12,8 @@ namespace SynOS.Models.DTOs
         public DateTime ScheduledFor { get; set; }
 
         [Required]
-        public string Department { get; set; }
+        public string Department { get; set; } = string.Empty;
 
-        public string Notes { get; set; }
+        public string Notes { get; set; } = string.Empty;
     }
 }

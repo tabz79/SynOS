@@ -84,7 +84,12 @@ namespace SynOS.Services
             return appointment;
         }
 
-        public async Task<Appointment> RescheduleAppointmentAsync(Guid appointmentId, DateTime newScheduledForUtc, int changedById)
+        public async Task<Appointment?> GetAppointmentByIdAsync(Guid id)
+        {
+            return await _context.Appointments.FindAsync(id);
+        }
+
+        public async Task<Appointment?> RescheduleAppointmentAsync(Guid appointmentId, DateTime newScheduledForUtc, Guid changedById)
         {
             var appointment = await _context.Appointments.FindAsync(appointmentId);
             if (appointment == null) return null;
@@ -106,7 +111,7 @@ namespace SynOS.Services
             return appointment;
         }
 
-        public async Task<Appointment> CancelAppointmentAsync(Guid appointmentId, string reason, int cancelledById)
+        public async Task<Appointment?> CancelAppointmentAsync(Guid appointmentId, string reason, Guid cancelledById)
         {
             var appointment = await _context.Appointments.FindAsync(appointmentId);
             if (appointment == null) return null;

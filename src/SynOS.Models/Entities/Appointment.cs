@@ -22,23 +22,26 @@ namespace SynOS.Models.Entities
         public Guid PatientId { get; set; }
 
         [ForeignKey("PatientId")]
-        public Patient Patient { get; set; }
+        public Patient? Patient { get; set; }
 
         [Required]
         public DateTime ScheduledFor { get; set; }
 
         [Required]
         [MaxLength(50)]
-        public string Department { get; set; }
+        public string Department { get; set; } = string.Empty;
 
         [Required]
         public AppointmentStatus Status { get; set; } = AppointmentStatus.Booked;
 
-        public string Notes { get; set; }
+        public string Notes { get; set; } = string.Empty;
 
         public DateTime? ReminderSentAt { get; set; }
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+
+        [Timestamp]
+        public byte[]? RowVersion { get; set; }
     }
 }

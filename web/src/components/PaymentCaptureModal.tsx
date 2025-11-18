@@ -6,9 +6,10 @@ interface PaymentCaptureModalProps {
   totalAmount: number;
   onPaymentSuccess: () => void;
   onClose: () => void;
+  receivedByUserId: string; // New prop for the user making the payment
 }
 
-const PaymentCaptureModal: React.FC<PaymentCaptureModalProps> = ({ invoiceId, totalAmount, onPaymentSuccess, onClose }) => {
+const PaymentCaptureModal: React.FC<PaymentCaptureModalProps> = ({ invoiceId, totalAmount, onPaymentSuccess, onClose, receivedByUserId }) => {
   const [amount, setAmount] = useState(totalAmount);
   const [method, setMethod] = useState('Cash');
   const [receiptNo, setReceiptNo] = useState('');
@@ -27,6 +28,7 @@ const PaymentCaptureModal: React.FC<PaymentCaptureModalProps> = ({ invoiceId, to
         amount,
         method,
         receiptNo,
+        receivedByUserId, // Include the user ID
       });
       onPaymentSuccess();
     } catch (err: any) {

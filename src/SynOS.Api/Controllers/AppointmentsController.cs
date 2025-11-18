@@ -48,8 +48,7 @@ namespace SynOS.Api.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetAppointmentById(Guid id)
         {
-            // This endpoint is not in the requirements, but it's good practice to have it for the CreatedAtAction
-            var appointment = await _appointmentService.RescheduleAppointmentAsync(id, DateTime.UtcNow, 0); // This is a hack to get the appointment
+            var appointment = await _appointmentService.GetAppointmentByIdAsync(id);
             if (appointment == null) return NotFound();
             return Ok(appointment);
         }
@@ -72,7 +71,11 @@ namespace SynOS.Api.Controllers
         [AuthorizeRoles("Admin", "Reception")]
         public async Task<IActionResult> RescheduleAppointment(Guid id, [FromBody] RescheduleRequestDto request)
         {
-            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (userIdClaim == null || !Guid.TryParse(userIdClaim, out var userId))
+            {
+                return Unauthorized(new { message = "User ID not found or invalid." });
+            }
             var appointment = await _appointmentService.RescheduleAppointmentAsync(id, request.NewScheduledForUtc, userId);
             if (appointment == null) return NotFound();
             return Ok(appointment);
@@ -82,7 +85,11 @@ namespace SynOS.Api.Controllers
         [AuthorizeRoles("Admin", "Reception")]
         public async Task<IActionResult> CancelAppointment(Guid id, [FromBody] CancelRequestDto request)
         {
-            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (userIdClaim == null || !Guid.TryParse(userIdClaim, out var userId))
+            {
+                return Unauthorized(new { message = "User ID not found or invalid." });
+            }
             var appointment = await _appointmentService.CancelAppointmentAsync(id, request.Reason, userId);
             if (appointment == null) return NotFound();
             return Ok(appointment);
@@ -94,8 +101,8 @@ namespace SynOS.Api.Controllers
         public DateTime NewScheduledForUtc { get; set; }
     }
 
-    public class CancelRequestDto
+    public class CancelAppointmentRequestDto
     {
-        public string Reason { get; set; }
+        public string Reason { get; set; } = string.Empty;
     }
 }

@@ -16,11 +16,13 @@ LOGIN_RESPONSE=$(curl -s -X POST "${AUTH_URL}/login" \
 }')
 
 ACCESS_TOKEN=$(echo "${LOGIN_RESPONSE}" | jq -r '.accessToken')
+ADMIN_USER_ID=$(echo "${LOGIN_RESPONSE}" | jq -r '.user.userId')
+
 if [ -z "$ACCESS_TOKEN" ] || [ "$ACCESS_TOKEN" == "null" ]; then
     echo "Authentication failed. Exiting."
     exit 1
 fi
-echo "Authentication successful."
+echo "Authentication successful. Admin User ID: ${ADMIN_USER_ID}"
 
 # --- Get a Test Patient ID ---
 PATIENT_ID=$(curl -s -X GET "${PATIENT_URL}?q=TC-A00001" \
@@ -33,10 +35,12 @@ fi
 echo "Using Patient ID: ${PATIENT_ID}"
 
 # --- 1. Create Visit ---
-echo -e "\n--- 1. Creating a new visit ---"
+echo -e "\n--- 1. Creating a new visit (Pathology: CBC, FBS) ---"
+IDEMPOTENCY_KEY_1=$(uuidgen) # Generate a unique idempotency key
 CREATE_VISIT_RESPONSE=$(curl -s -X POST "${VISIT_URL}" \
 -H "Content-Type: application/json" \
 -H "Authorization: Bearer ${ACCESS_TOKEN}" \
+-H "Idempotency-Key: ${IDEMPOTENCY_KEY_1}" \
 -d '{ \
     "patientId": "'"${PATIENT_ID}"'", \
     "department": "Pathology", \
@@ -46,12 +50,14 @@ CREATE_VISIT_RESPONSE=$(curl -s -X POST "${VISIT_URL}" \
 echo "${CREATE_VISIT_RESPONSE}" | jq .
 VISIT_ID=$(echo "${CREATE_VISIT_RESPONSE}" | jq -r '.visitId')
 VISIT_TOKEN=$(echo "${CREATE_VISIT_RESPONSE}" | jq -r '.token')
+VISIT_INVOICE_ID=$(echo "${CREATE_VISIT_RESPONSE}" | jq -r '.invoice.invoiceId')
+VISIT_TOTAL_AMOUNT=$(echo "${CREATE_VISIT_RESPONSE}" | jq -r '.invoice.total')
 
 if [ -z "$VISIT_ID" ] || [ "$VISIT_ID" == "null" ]; then
     echo "Visit creation failed. Exiting."
     exit 1
 fi
-echo "Created Visit ID: ${VISIT_ID}, Token: ${VISIT_TOKEN}"
+echo "Created Visit ID: ${VISIT_ID}, Token: ${VISIT_TOKEN}, Invoice ID: ${VISIT_INVOICE_ID}, Total: ${VISIT_TOTAL_AMOUNT}"
 
 # --- 2. Record Payment (Full Payment) ---
 echo -e "\n--- 2. Recording full payment for the visit ---"
@@ -59,9 +65,10 @@ RECORD_PAYMENT_RESPONSE=$(curl -s -X POST "${VISIT_URL}/${VISIT_ID}/payment" \
 -H "Content-Type: application/json" \
 -H "Authorization: Bearer ${ACCESS_TOKEN}" \
 -d '{ \
-    "amount": 250.00, \
+    "amount": '"${VISIT_TOTAL_AMOUNT}"', \
     "method": "Cash", \
-    "receiptNo": "REC-001" \
+    "receiptNo": "REC-001", \
+    "receivedByUserId": "'"${ADMIN_USER_ID}"'" \
 }')
 
 echo "${RECORD_PAYMENT_RESPONSE}" | jq .
@@ -73,52 +80,64 @@ GET_DETAILS_RESPONSE=$(curl -s -X GET "${VISIT_URL}/${VISIT_ID}" \
 
 echo "${GET_DETAILS_RESPONSE}" | jq .
 
-# --- 4. Create another visit for partial payment test ---
-echo -e "\n--- 4. Creating another visit for partial payment test ---"
+# --- 4. Get Visit Token Details ---
+echo -e "\n--- 4. Getting visit token details for printing ---"
+GET_TOKEN_RESPONSE=$(curl -s -X GET "${VISIT_URL}/${VISIT_ID}/token" \
+-H "Authorization: Bearer ${ACCESS_TOKEN}")
+
+echo "${GET_TOKEN_RESPONSE}" | jq .
+
+# --- 5. Create another visit for partial payment test ---
+echo -e "\n--- 5. Creating another visit for partial payment test (Radiology: USG, XRAY_CHEST) ---"
 PATIENT_ID_2=$(curl -s -X GET "${PATIENT_URL}?q=TC-A00002" \
 -H "Authorization: Bearer ${ACCESS_TOKEN}" | jq -r '.[0].patientId')
 
+IDEMPOTENCY_KEY_2=$(uuidgen) # Generate a unique idempotency key
 CREATE_VISIT_RESPONSE_2=$(curl -s -X POST "${VISIT_URL}" \
 -H "Content-Type: application/json" \
 -H "Authorization: Bearer ${ACCESS_TOKEN}" \
+-H "Idempotency-Key: ${IDEMPOTENCY_KEY_2}" \
 -d '{ \
     "patientId": "'"${PATIENT_ID_2}"'", \
     "department": "Radiology", \
-    "testCodes": ["USG", "XrayChest"] \
+    "testCodes": ["USG", "XRAY_CHEST"] \
 }')
 VISIT_ID_2=$(echo "${CREATE_VISIT_RESPONSE_2}" | jq -r '.visitId')
-echo "Created Visit ID for partial payment: ${VISIT_ID_2}"
+VISIT_TOTAL_AMOUNT_2=$(echo "${CREATE_VISIT_RESPONSE_2}" | jq -r '.invoice.total')
+echo "Created Visit ID for partial payment: ${VISIT_ID_2}, Total: ${VISIT_TOTAL_AMOUNT_2}"
 
-# --- 5. Record Partial Payment ---
-echo -e "\n--- 5. Recording partial payment for the second visit ---"
+# --- 6. Record Partial Payment ---
+echo -e "\n--- 6. Recording partial payment for the second visit ---"
 PARTIAL_PAYMENT_RESPONSE=$(curl -s -X POST "${VISIT_URL}/${VISIT_ID_2}/payment" \
 -H "Content-Type: application/json" \
 -H "Authorization: Bearer ${ACCESS_TOKEN}" \
 -d '{ \
-    "amount": 200.00, \
+    "amount": 500.00, \
     "method": "Card", \
-    "receiptNo": "REC-002" \
+    "receiptNo": "REC-002", \
+    "receivedByUserId": "'"${ADMIN_USER_ID}"'" \
 }')
 echo "${PARTIAL_PAYMENT_RESPONSE}" | jq .
 
-# --- 6. Cancel Visit ---
-echo -e "\n--- 6. Cancelling the first visit ---"
+# --- 7. Cancel Visit ---
+echo -e "\n--- 7. Cancelling the first visit ---"
 CANCEL_VISIT_RESPONSE=$(curl -s -X POST "${VISIT_URL}/${VISIT_ID}/cancel" \
 -H "Content-Type: application/json" \
 -H "Authorization: Bearer ${ACCESS_TOKEN}" \
 -d '{ \
-    "reason": "Patient changed mind." \
+    "reason": "Patient changed mind.", \
+    "cancelledByUserId": "'"${ADMIN_USER_ID}"'" \
 }')
 
 echo "${CANCEL_VISIT_RESPONSE}" | jq .
 
-# --- 7. Get Visits by Department and Status ---
-echo -e "\n--- 7. Getting visits for Pathology with status 'Cancelled' ---"
+# --- 8. Get Visits by Department and Status ---
+echo -e "\n--- 8. Getting visits for Pathology with status 'Cancelled' ---"
 GET_CANCELLED_VISITS=$(curl -s -X GET "${VISIT_URL}?dept=Pathology&status=Cancelled" \
 -H "Authorization: Bearer ${ACCESS_TOKEN}")
 echo "${GET_CANCELLED_VISITS}" | jq .
 
-echo -e "\n--- 8. Getting visits for Radiology with status 'PendingPayment' ---"
-GET_PENDING_VISITS=$(curl -s -X GET "${VISIT_URL}?dept=Radiology&status=PendingPayment" \
+echo -e "\n--- 9. Getting visits for Radiology with status 'PartialPayment' ---"
+GET_PENDING_VISITS=$(curl -s -X GET "${VISIT_URL}?dept=Radiology&status=PartialPayment" \
 -H "Authorization: Bearer ${ACCESS_TOKEN}")
 echo "${GET_PENDING_VISITS}" | jq .

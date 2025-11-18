@@ -1,3 +1,4 @@
+using System;
 using System.ComponentModel.DataAnnotations;
 
 namespace SynOS.Models.DTOs
@@ -8,9 +9,12 @@ namespace SynOS.Models.DTOs
         public decimal Amount { get; set; }
 
         [Required]
-        public string Method { get; set; }
+        public string Method { get; set; } = string.Empty;
 
         [Required]
-        public string ReceiptNo { get; set; }
+        public string ReceiptNo { get; set; } = string.Empty;
+
+        [Required]
+        public Guid ReceivedByUserId { get; set; }
     }
 }

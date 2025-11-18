@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 
 interface TestDefinition {
-  code: string;
+  testCode: string;
   name: string;
   price: number;
   department: string;
@@ -18,8 +18,8 @@ const TestSelectionStep: React.FC<TestSelectionStepProps> = ({ testDefinitions, 
 
   const handleTestToggle = (test: TestDefinition) => {
     setSelectedTests(prev =>
-      prev.some(t => t.code === test.code)
-        ? prev.filter(t => t.code !== test.code)
+      prev.some(t => t.testCode === test.testCode)
+        ? prev.filter(t => t.testCode !== test.testCode)
         : [...prev, test]
     );
   };
@@ -38,13 +38,13 @@ const TestSelectionStep: React.FC<TestSelectionStepProps> = ({ testDefinitions, 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {testDefinitions.map(test => (
           <div
-            key={test.code}
+            key={test.testCode}
             className={`p-4 border rounded-md cursor-pointer ${
-              selectedTests.some(t => t.code === test.code) ? 'bg-blue-100 border-blue-500' : 'bg-gray-50'
+              selectedTests.some(t => t.testCode === test.testCode) ? 'bg-blue-100 border-blue-500' : 'bg-gray-50'
             }`}
             onClick={() => handleTestToggle(test)}
           >
-            <p className="font-bold">{test.name} ({test.code})</p>
+            <p className="font-bold">{test.name} ({test.testCode})</p>
             <p className="text-sm text-gray-600">{test.department} - ${test.price}</p>
           </div>
         ))}

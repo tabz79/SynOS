@@ -9,8 +9,8 @@ namespace SynOS.Services
 {
     public interface IAuthService
     {
-        Task<LoginResponse> Authenticate(LoginRequest request, string ipAddress);
-        Task<LoginResponse> RefreshToken(string token, string ipAddress);
-        Task<bool> Logout(string token, string ipAddress);
+        Task<LoginResponse> Authenticate(LoginRequest request, string? ipAddress);
+        Task<LoginResponse> RefreshToken(string token, string? ipAddress);
+        Task<bool> Logout(string token, string? ipAddress);
     }
 }

@@ -8,7 +8,7 @@ interface Patient {
 }
 
 interface TestDefinition {
-  code: string;
+  testCode: string;
   name: string;
   price: number;
   department: string;
@@ -36,7 +36,7 @@ const InvoicePreviewStep: React.FC<InvoicePreviewStepProps> = ({ patient, select
         <p className="font-bold mt-2">Selected Tests:</p>
         <ul>
           {selectedTests.map(test => (
-            <li key={test.code}>{test.name} ({test.department}) - ${test.price.toFixed(2)}</li>
+            <li key={test.testCode}>{test.name} ({test.department}) - ${test.price.toFixed(2)}</li>
           ))}
         </ul>
         <p className="font-bold mt-2">Invoice Summary:</p>

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace SynOS.Models.Entities
 {
@@ -10,34 +11,37 @@ namespace SynOS.Models.Entities
         public Guid PatientId { get; set; }
 
         [Required]
-        [MaxLength(6)]
-        public string MRN { get; set; }
+        [StringLength(6)]
+        public string MRN { get; set; } = string.Empty;
 
         [Required]
-        [MaxLength(100)]
-        public string FirstName { get; set; }
+        [StringLength(100)]
+        public string FirstName { get; set; } = string.Empty;
 
         [Required]
-        [MaxLength(100)]
-        public string LastName { get; set; }
+        [StringLength(100)]
+        public string LastName { get; set; } = string.Empty;
 
         public DateTime DateOfBirth { get; set; }
 
         [Required]
-        [MaxLength(10)]
-        public string Gender { get; set; }
+        [StringLength(10)]
+        public string Gender { get; set; } = string.Empty;
 
-        [MaxLength(20)]
-        public string CurrentPhoneNumber { get; set; }
+        [StringLength(20)]
+        public string CurrentPhoneNumber { get; set; } = string.Empty;
 
         public bool IsSoftDeleted { get; set; } = false;
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
-        public ICollection<PatientPhoneHistory> PhoneHistory { get; set; }
-        public ICollection<PatientAlias> Aliases { get; set; }
-        public ICollection<PatientReferrerLink> ReferrerLinks { get; set; }
+        [Timestamp]
+        public byte[]? RowVersion { get; set; }
+
+        public ICollection<PatientPhoneHistory> PhoneHistory { get; set; } = new List<PatientPhoneHistory>();
+        public ICollection<PatientAlias> Aliases { get; set; } = new List<PatientAlias>();
+        public ICollection<PatientReferrerLink> ReferrerLinks { get; set; } = new List<PatientReferrerLink>();
         
         // Assuming these will be created later
         // public ICollection<Visit> Visits { get; set; }

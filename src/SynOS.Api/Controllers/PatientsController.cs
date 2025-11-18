@@ -71,7 +71,11 @@ namespace SynOS.Api.Controllers
         [AuthorizeRoles("Admin", "Reception")]
         public async Task<IActionResult> Merge([FromBody] MergeRequestDto request, [FromHeader(Name = "Idempotency-Key")] string idempotencyKey)
         {
-            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (userIdClaim == null || !Guid.TryParse(userIdClaim, out var userId))
+            {
+                return Unauthorized(new { message = "User ID not found or invalid." });
+            }
             var success = await _patientService.MergePatientsAsync(request.TargetId, request.SourceId, userId);
             if (!success) return BadRequest(new { code = "MERGE_FAILED", message = "Patient merge failed." });
             return Ok();

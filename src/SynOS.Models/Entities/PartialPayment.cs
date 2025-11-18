@@ -13,14 +13,14 @@ namespace SynOS.Models.Entities
         public Guid InvoiceId { get; set; }
 
         [ForeignKey("InvoiceId")]
-        public Invoice Invoice { get; set; }
+        public Invoice? Invoice { get; set; }
 
-        [Column(TypeName = "decimal(10, 2)")]
+        [Column(TypeName = "decimal(12, 2)")]
         public decimal Amount { get; set; }
 
         [Required]
-        [MaxLength(50)]
-        public string Method { get; set; }
+        [StringLength(50)]
+        public string Method { get; set; } = string.Empty;
 
         public DateTime PaidAt { get; set; } = DateTime.UtcNow;
     }

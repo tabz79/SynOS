@@ -29,7 +29,7 @@ namespace SynOS.Services
             _context = context;
         }
 
-        public async Task<LoginResponse> Authenticate(LoginRequest request, string ipAddress)
+        public async Task<LoginResponse> Authenticate(LoginRequest request, string? ipAddress)
         {
             var user = await _context.Users
                 .Include(u => u.UserRoles)
@@ -75,7 +75,7 @@ namespace SynOS.Services
             };
         }
 
-        public async Task<LoginResponse> RefreshToken(string token, string ipAddress)
+        public async Task<LoginResponse> RefreshToken(string token, string? ipAddress)
         {
             var user = await _context.Users
                 .Include(u => u.RefreshTokens)
@@ -92,7 +92,7 @@ namespace SynOS.Services
             // rotate token
             var newRefreshToken = GenerateRefreshToken(ipAddress);
             refreshToken.Revoked = DateTime.UtcNow;
-            refreshToken.RevokedByIp = ipAddress;
+            refreshToken.RevokedByIp = ipAddress ?? string.Empty; // Handle null ipAddress
             refreshToken.ReplacedByToken = newRefreshToken.Token;
             user.RefreshTokens.Add(newRefreshToken);
 
@@ -114,7 +114,7 @@ namespace SynOS.Services
             };
         }
 
-        public async Task<bool> Logout(string token, string ipAddress)
+        public async Task<bool> Logout(string token, string? ipAddress)
         {
             var user = await _context.Users.Include(u => u.RefreshTokens).SingleOrDefaultAsync(u => u.RefreshTokens.Any(t => t.Token == token));
             if (user == null) return false;
@@ -123,7 +123,7 @@ namespace SynOS.Services
             if (!refreshToken.IsActive) return false;
 
             refreshToken.Revoked = DateTime.UtcNow;
-            refreshToken.RevokedByIp = ipAddress;
+            refreshToken.RevokedByIp = ipAddress ?? string.Empty; // Handle null ipAddress
             _context.Update(user);
             
             await _context.AuditLogs.AddAsync(new AuditLog { UserId = user.UserId, Action = "Logout", Timestamp = DateTime.UtcNow, Details = $"User logged out from IP: {ipAddress}" });
@@ -135,7 +135,8 @@ namespace SynOS.Services
         private string GenerateJwtToken(User user)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
-            var key = Encoding.ASCII.GetBytes(_configuration["Jwt:Secret"]);
+            var jwtSecret = _configuration["Jwt:Secret"] ?? throw new InvalidOperationException("Jwt:Secret not configured");
+            var key = Encoding.ASCII.GetBytes(jwtSecret);
             var claims = new ClaimsIdentity(new Claim[]
             {
                 new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
@@ -145,33 +146,38 @@ namespace SynOS.Services
 
             foreach (var userRole in user.UserRoles)
             {
-                claims.AddClaim(new Claim(ClaimTypes.Role, userRole.Role.Name));
+                claims.AddClaim(new Claim(ClaimTypes.Role, userRole.Role?.Name ?? string.Empty));
             }
+
+            var jwtExpiryMinutes = _configuration.GetValue<int>("Jwt:ExpiryMinutes", 60); // Default to 60 minutes
+            var jwtIssuer = _configuration["Jwt:Issuer"] ?? throw new InvalidOperationException("Jwt:Issuer not configured");
+            var jwtAudience = _configuration["Jwt:Audience"] ?? throw new InvalidOperationException("Jwt:Audience not configured");
 
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = claims,
-                Expires = DateTime.UtcNow.AddMinutes(_configuration.GetValue<int>("Jwt:ExpiryMinutes")),
+                Expires = DateTime.UtcNow.AddMinutes(jwtExpiryMinutes),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature),
-                Issuer = _configuration["Jwt:Issuer"],
-                Audience = _configuration["Jwt:Audience"]
+                Issuer = jwtIssuer,
+                Audience = jwtAudience
             };
             var token = tokenHandler.CreateToken(tokenDescriptor);
             return tokenHandler.WriteToken(token);
         }
 
-        private RefreshToken GenerateRefreshToken(string ipAddress)
+        private RefreshToken GenerateRefreshToken(string? ipAddress)
         {
-            using (var rngCryptoServiceProvider = new RNGCryptoServiceProvider())
+            using (var randomNumberGenerator = RandomNumberGenerator.Create())
             {
                 var randomBytes = new byte[64];
-                rngCryptoServiceProvider.GetBytes(randomBytes);
+                randomNumberGenerator.GetBytes(randomBytes);
+                var refreshTokenExpiryDays = _configuration.GetValue<int>("Jwt:RefreshTokenExpiryDays", 7); // Default to 7 days
                 return new RefreshToken
                 {
                     Token = Convert.ToBase64String(randomBytes),
-                    Expires = DateTime.UtcNow.AddDays(_configuration.GetValue<int>("Jwt:RefreshTokenExpiryDays")),
+                    Expires = DateTime.UtcNow.AddDays(refreshTokenExpiryDays),
                     Created = DateTime.UtcNow,
-                    CreatedByIp = ipAddress
+                    CreatedByIp = ipAddress ?? string.Empty // Handle null ipAddress
                 };
             }
         }

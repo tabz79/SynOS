@@ -14,29 +14,29 @@ namespace SynOS.Models.Entities
         public Guid PatientId { get; set; }
 
         [ForeignKey("PatientId")]
-        public Patient Patient { get; set; }
+        public Patient? Patient { get; set; }
 
         [Required]
-        [MaxLength(10)]
-        public string Token { get; set; }
+        [StringLength(12)] // Increased length for new token format
+        public string Token { get; set; } = string.Empty;
 
         [Required]
-        public DateTime TokenDate { get; set; }
+        public DateTime TokenDate { get; set; } // Lab local date
 
         [Required]
-        [MaxLength(50)]
-        public string Department { get; set; }
+        [StringLength(50)]
+        public string Department { get; set; } = string.Empty;
 
         [Required]
-        [MaxLength(50)]
-        public string Status { get; set; }
+        [StringLength(50)]
+        public string Status { get; set; } = string.Empty;
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         [Timestamp]
-        public uint RowVersion { get; set; }
+        public byte[]? RowVersion { get; set; }
 
-        public ICollection<Order> Orders { get; set; }
-        public ICollection<Invoice> Invoices { get; set; }
+        public ICollection<Order> Orders { get; set; } = new List<Order>();
+        public ICollection<Invoice> Invoices { get; set; } = new List<Invoice>();
     }
 }
