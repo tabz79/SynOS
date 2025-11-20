@@ -134,6 +134,47 @@ namespace SynOS.Data.Migrations
                     b.ToTable("CreditNotes");
                 });
 
+            modelBuilder.Entity("SynOS.Models.Entities.EditLock", b =>
+                {
+                    b.Property<Guid>("LockId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("EntityId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("EntityType")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTimeOffset>("ExpiresAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset>("LockedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("LockedByUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.HasKey("LockId");
+
+                    b.HasIndex("ExpiresAt");
+
+                    b.HasIndex("LockedByUserId");
+
+                    b.HasIndex("EntityType", "EntityId", "Status")
+                        .IsUnique()
+                        .HasFilter("[Status] = 0");
+
+                    b.ToTable("EditLocks");
+                });
+
             modelBuilder.Entity("SynOS.Models.Entities.Invoice", b =>
                 {
                     b.Property<Guid>("InvoiceId")
@@ -772,6 +813,17 @@ namespace SynOS.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("Invoice");
+                });
+
+            modelBuilder.Entity("SynOS.Models.Entities.EditLock", b =>
+                {
+                    b.HasOne("SynOS.Models.Entities.User", "LockedBy")
+                        .WithMany()
+                        .HasForeignKey("LockedByUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("LockedBy");
                 });
 
             modelBuilder.Entity("SynOS.Models.Entities.Invoice", b =>

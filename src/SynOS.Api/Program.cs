@@ -11,6 +11,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using SynOS.Api.Middleware; // Add this using directive
 using Microsoft.Extensions.Logging; // Added for ILogger
+using SynOS.Api.BackgroundServices;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -62,6 +63,9 @@ builder.Services.AddAutoMapper(typeof(Program)); // Scans for profiles in the as
 // Register application services
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IVisitService, VisitService>(); // Register VisitService
+builder.Services.AddScoped<IEditLockService, EditLockService>();
+builder.Services.AddHostedService<ExpiredLockCleanupService>();
+
 
 // Configure CORS
 builder.Services.AddCors(options =>

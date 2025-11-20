@@ -40,6 +40,7 @@ namespace SynOS.Data
         public DbSet<PartialPayment> PartialPayments { get; set; } = null!;
         public DbSet<VisitCancellation> VisitCancellations { get; set; } = null!;
         public DbSet<CreditNote> CreditNotes { get; set; } = null!; // New
+        public DbSet<EditLock> EditLocks { get; set; } = null!;
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -91,6 +92,16 @@ namespace SynOS.Data
             // TestDefinition
             modelBuilder.Entity<TestDefinition>(entity => {
                 entity.HasIndex(e => e.TestCode).IsUnique();
+            });
+
+            // EditLock
+            modelBuilder.Entity<EditLock>(entity =>
+            {
+                entity.HasIndex(e => e.ExpiresAt);
+                entity.HasIndex(e => new { e.EntityType, e.EntityId }) // Index on the two columns
+                    .IsUnique() // Make it unique
+                    .HasFilter("[Status] = 'Active'"); // Apply filter for only active locks
+                entity.Property(e => e.Status).HasConversion<string>().HasMaxLength(20);
             });
         }
     }
