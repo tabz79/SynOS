@@ -217,6 +217,16 @@ namespace SynOS.Services
 
             return ZplLabelGenerator.GenerateLabel(labelData);
         }
+
+        public async Task<SampleBarcodePrintDto> GetSampleBarcodeForPrintingAsync(Guid sampleId)
+        {
+            var zplPayload = await GetZplLabelForSampleAsync(sampleId);
+            return new SampleBarcodePrintDto
+            {
+                SampleId = sampleId,
+                PrintPayload = zplPayload
+            };
+        }
         
         private int CalculateChecksum(string data)
         {

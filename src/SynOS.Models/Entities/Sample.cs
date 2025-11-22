@@ -14,21 +14,21 @@ namespace SynOS.Models.Entities
         public Guid OrderId { get; set; }
 
         [ForeignKey("OrderId")]
-        public virtual Order Order { get; set; }
+        public virtual Order? Order { get; set; }
 
         [Required]
         public TubeType TubeType { get; set; }
 
         [Required]
         [MaxLength(255)]
-        public string Barcode { get; set; }
+        public string Barcode { get; set; } = string.Empty;
 
         public DateTime? CollectedAt { get; set; }
 
         public Guid? CollectedByUserId { get; set; }
 
         [ForeignKey("CollectedByUserId")]
-        public virtual User CollectedBy { get; set; }
+        public virtual User? CollectedBy { get; set; }
 
         [Required]
         public SampleStatus Status { get; set; } = SampleStatus.Pending;

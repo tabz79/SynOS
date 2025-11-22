@@ -18,11 +18,13 @@ namespace SynOS.Api.Controllers
     public class VisitsController : ControllerBase
     {
         private readonly IVisitService _visitService;
-        private readonly ILogger<VisitsController> _logger; // Added for logging
+        private readonly IInvoiceService _invoiceService;
+        private readonly ILogger<VisitsController> _logger;
 
-        public VisitsController(IVisitService visitService, ILogger<VisitsController> logger)
+        public VisitsController(IVisitService visitService, IInvoiceService invoiceService, ILogger<VisitsController> logger)
         {
             _visitService = visitService;
+            _invoiceService = invoiceService;
             _logger = logger;
         }
 
@@ -32,35 +34,26 @@ namespace SynOS.Api.Controllers
         {
             try
             {
-                // Ensure the user ID is set in the DTO for audit/tracking purposes if needed in service
-                // For now, we'll pass it directly to the service if the service needs it.
-                // visitDto.CreatedByUserId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value); // Example if needed
-
                 var visit = await _visitService.CreateVisitAsync(visitDto, idempotencyKey);
                 return CreatedAtAction(nameof(GetVisitDetails), new { id = visit.VisitId }, visit);
             }
             catch (KeyNotFoundException ex)
             {
-                _logger.LogWarning(ex, "Patient not found during visit creation.");
-                return NotFound(new { code = "PATIENT_NOT_FOUND", message = ex.Message });
+                _logger.LogWarning(ex, "Patient or Test not found during visit creation.");
+                return NotFound(new { code = "NOT_FOUND", message = ex.Message });
             }
             catch (InvalidOperationException ex)
             {
                 _logger.LogWarning(ex, "Token limit reached or other invalid operation during visit creation.");
-                return Conflict(new { code = "TOKEN_EXHAUSTED_OR_INVALID_OPERATION", message = ex.Message });
-            }
-            catch (ArgumentException ex)
-            {
-                _logger.LogWarning(ex, "Invalid argument provided for visit creation.");
-                return BadRequest(new { code = "INVALID_ARGUMENT", message = ex.Message });
+                return Conflict(new { code = "BUSINESS_RULE_VIOLATION", message = ex.Message });
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "An unexpected error occurred during visit creation.");
-                return StatusCode(500, new { code = "INTERNAL_SERVER_ERROR", message = ex.Message });
+                return StatusCode(500, new { code = "INTERNAL_SERVER_ERROR", message = "An internal error occurred." });
             }
         }
-
+        
         [HttpGet("{id}")]
         public async Task<IActionResult> GetVisitDetails(Guid id)
         {
@@ -98,35 +91,40 @@ namespace SynOS.Api.Controllers
         {
             try
             {
-                // Get UserId from claims and set it in the DTO
+                var visit = await _visitService.GetVisitDetailsAsync(id);
+                if (visit?.Invoices == null || !visit.Invoices.Any())
+                {
+                    return NotFound(new { code = "INVOICE_NOT_FOUND", message = $"Invoice not found for visit ID {id}." });
+                }
+                
+                var invoiceId = visit.Invoices.First().InvoiceId;
+
                 var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
                 if (userIdClaim == null || !Guid.TryParse(userIdClaim, out var userId))
                 {
                     return Unauthorized(new { message = "User ID not found or invalid." });
                 }
                 paymentDto.ReceivedByUserId = userId;
-                var payment = await _visitService.RecordPaymentAsync(id, paymentDto);
-                return Ok(payment);
+
+                var payment = await _invoiceService.RecordPaymentAsync(invoiceId, paymentDto);
+                return Ok(new ApiResponse<Payment>(payment));
             }
             catch (KeyNotFoundException ex)
             {
-                _logger.LogWarning(ex, "Invoice not found for visit ID {VisitId} during payment recording.", id);
-                return NotFound(new { code = "INVOICE_NOT_FOUND", message = ex.Message });
+                return NotFound(new { code = "NOT_FOUND", message = ex.Message });
             }
             catch (InvalidOperationException ex)
             {
-                _logger.LogWarning(ex, "Invalid operation during payment recording for visit ID {VisitId}.", id);
                 return Conflict(new { code = "INVALID_PAYMENT_OPERATION", message = ex.Message });
             }
             catch (ArgumentException ex)
             {
-                _logger.LogWarning(ex, "Invalid argument provided for payment recording for visit ID {VisitId}.", id);
                 return BadRequest(new { code = "INVALID_ARGUMENT", message = ex.Message });
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "An unexpected error occurred during payment recording for visit ID {VisitId}.", id);
-                return StatusCode(500, new { code = "INTERNAL_SERVER_ERROR", message = ex.Message });
+                return StatusCode(500, new { code = "INTERNAL_SERVER_ERROR", message = "An internal error occurred." });
             }
         }
 
@@ -164,28 +162,21 @@ namespace SynOS.Api.Controllers
         }
 
         [HttpGet("{id}/token")]
-        public async Task<IActionResult> GetVisitToken(Guid id)
+        public async Task<IActionResult> GetVisitTokenForPrinting(Guid id)
         {
             try
             {
-                var visit = await _visitService.GetVisitDetailsAsync(id);
-                if (visit == null) return NotFound(new { code = "VISIT_NOT_FOUND", message = $"Visit with ID {id} not found." });
-                if (visit.Patient == null) return NotFound(new { code = "PATIENT_NOT_FOUND", message = $"Patient for Visit ID {id} not found." });
-
-                // Return a DTO suitable for printing
-                var tokenPrintDto = new TokenPrintDto
-                {
-                    Token = visit.Token,
-                    MRN = visit.Patient.MRN,
-                    PatientName = $"{visit.Patient.FirstName} {visit.Patient.LastName}",
-                    VisitTime = visit.CreatedAt // Or ScheduledFor if applicable
-                };
-                return Ok(tokenPrintDto);
+                var printDto = await _visitService.GetVisitTokenForPrintingAsync(id);
+                return Ok(new ApiResponse<VisitTokenPrintDto>(printDto));
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { code = "NOT_FOUND", message = ex.Message });
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "An unexpected error occurred while getting token for visit ID {VisitId}.", id);
-                return StatusCode(500, new { code = "INTERNAL_SERVER_ERROR", message = ex.Message });
+                _logger.LogError(ex, "An unexpected error occurred while generating token print data for visit ID {VisitId}.", id);
+                return StatusCode(500, new { code = "INTERNAL_SERVER_ERROR", message = "An internal error occurred." });
             }
         }
     }

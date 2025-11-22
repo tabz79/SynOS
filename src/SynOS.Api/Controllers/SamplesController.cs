@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging; // Added for ILogger
 using SynOS.Models.DTOs;
 using SynOS.Models.Entities;
 using SynOS.Services;
@@ -14,10 +15,12 @@ namespace SynOS.Api.Controllers
     public class SamplesController : ControllerBase
     {
         private readonly ISampleService _sampleService;
+        private readonly ILogger<SamplesController> _logger;
 
-        public SamplesController(ISampleService sampleService)
+        public SamplesController(ISampleService sampleService, ILogger<SamplesController> logger)
         {
             _sampleService = sampleService;
+            _logger = logger;
         }
 
         [HttpPost("create-for-visit")]
@@ -56,18 +59,22 @@ namespace SynOS.Api.Controllers
             return Ok(sample);
         }
 
-        [HttpGet("{id}/label")]
-        public async Task<IActionResult> GetSampleLabel(Guid id)
+        [HttpGet("{id}/barcode")]
+        public async Task<IActionResult> GetSampleBarcode(Guid id)
         {
             try
             {
-                var zplString = await _sampleService.GetZplLabelForSampleAsync(id);
-                // Return as plain text, which can be sent to a ZPL printer
-                return Content(zplString, "text/plain");
+                var printDto = await _sampleService.GetSampleBarcodeForPrintingAsync(id);
+                return Ok(new ApiResponse<SampleBarcodePrintDto>(printDto));
             }
             catch (KeyNotFoundException ex)
             {
-                return NotFound(new { message = ex.Message });
+                return NotFound(new { code = "NOT_FOUND", message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An unexpected error occurred while generating barcode for sample ID {SampleId}.", id);
+                return StatusCode(500, new { code = "INTERNAL_SERVER_ERROR", message = "An internal error occurred." });
             }
         }
     }

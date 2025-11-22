@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("SynOS.Models")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+30d9297fef8ea7fee440c0a37a4690df80f472cb")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+ce75e8df2213dfbb9558f8f79ba59af0ffd0d8e8")]
 [assembly: System.Reflection.AssemblyProductAttribute("SynOS.Models")]
 [assembly: System.Reflection.AssemblyTitleAttribute("SynOS.Models")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

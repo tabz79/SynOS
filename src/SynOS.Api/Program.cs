@@ -97,6 +97,7 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IVisitService, VisitService>();
 builder.Services.AddScoped<IEditLockService, EditLockService>();
 builder.Services.AddScoped<ISampleService, SampleService>();
+builder.Services.AddScoped<IInvoiceService, InvoiceService>();
 builder.Services.AddScoped<ISampleNotifier, SampleNotifier>(); // Register notifier
 builder.Services.AddHostedService<ExpiredLockCleanupService>();
 

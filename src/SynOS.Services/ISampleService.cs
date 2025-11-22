@@ -14,5 +14,6 @@ namespace SynOS.Services
         Task<IEnumerable<SampleDto>> GetSampleWorklistAsync(SampleStatus status);
         Task<SampleDto> GetSampleByIdAsync(Guid sampleId);
         Task<string> GetZplLabelForSampleAsync(Guid sampleId);
+        Task<SampleBarcodePrintDto> GetSampleBarcodeForPrintingAsync(Guid sampleId);
     }
 }

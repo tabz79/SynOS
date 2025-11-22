@@ -7,6 +7,7 @@ using SynOS.Data;
 using SynOS.Models.DTOs;
 using SynOS.Models.Entities;
 using Microsoft.Extensions.Logging; // Added for logging
+using SynOS.Services.Utils;
 
 namespace SynOS.Services
 {
@@ -22,6 +23,35 @@ namespace SynOS.Services
         {
             _context = context;
             _logger = logger;
+        }
+
+        public async Task<VisitTokenPrintDto> GetVisitTokenForPrintingAsync(Guid visitId)
+        {
+            var visit = await _context.Visits
+                .Include(v => v.Patient)
+                .Include(v => v.Orders)
+                .ThenInclude(o => o.TestDefinition)
+                .FirstOrDefaultAsync(v => v.VisitId == visitId);
+
+            if (visit == null)
+            {
+                throw new KeyNotFoundException($"Visit with ID {visitId} not found.");
+            }
+
+            var payload = EscPosGenerator.GenerateTokenSlip(visit);
+
+            return new VisitTokenPrintDto
+            {
+                Token = visit.Token,
+                Patient = new PatientPrintDto
+                {
+                    Name = $"{visit.Patient.FirstName} {visit.Patient.LastName}",
+                    Mrn = visit.Patient.MRN
+                },
+                Dept = visit.Department,
+                Time = visit.CreatedAt,
+                PrintPayload = payload
+            };
         }
 
         public async Task<Visit> CreateVisitAsync(VisitCreateDto visitDto, string? idempotencyKey = null)
@@ -128,80 +158,6 @@ namespace SynOS.Services
                 .OrderByDescending(v => v.CreatedAt)
                 .Take(limit)
                 .ToListAsync();
-        }
-
-        public async Task<Payment?> RecordPaymentAsync(Guid visitId, PaymentRequestDto paymentDto)
-        {
-            var invoice = await _context.Invoices
-                                        .Include(i => i.Payments)
-                                        .Include(i => i.PartialPayments)
-                                        .FirstOrDefaultAsync(i => i.VisitId == visitId);
-            if (invoice == null) throw new KeyNotFoundException($"Invoice not found for visit ID {visitId}.");
-
-            // Check if invoice is already fully paid or cancelled
-            if (invoice.Status == "Paid" || invoice.Status == "Cancelled")
-            {
-                throw new InvalidOperationException($"Cannot record payment for invoice in '{invoice.Status}' status.");
-            }
-
-            // Determine if it's a full or partial payment
-            decimal currentPaidAmount = invoice.Payments.Sum(p => p.Amount) + invoice.PartialPayments.Sum(pp => pp.Amount);
-            decimal remainingDue = invoice.Total - currentPaidAmount;
-
-            if (paymentDto.Amount > remainingDue)
-            {
-                _logger.LogWarning("Payment amount {PaymentAmount} exceeds remaining due {RemainingDue} for Invoice {InvoiceId}. Recording full remaining amount.", paymentDto.Amount, remainingDue, invoice.InvoiceId);
-                paymentDto.Amount = remainingDue; // Adjust payment to not overpay
-            }
-
-            if (paymentDto.Amount <= 0)
-            {
-                throw new ArgumentException("Payment amount must be greater than zero.");
-            }
-
-            if (paymentDto.Amount < remainingDue)
-            {
-                var partialPayment = new PartialPayment
-                {
-                    PartialId = Guid.NewGuid(),
-                    InvoiceId = invoice.InvoiceId,
-                    Amount = paymentDto.Amount,
-                    Method = paymentDto.Method,
-                    PaidAt = DateTime.UtcNow
-                };
-                _context.PartialPayments.Add(partialPayment);
-                invoice.Status = "PartialPayment";
-            }
-            else // paymentDto.Amount == remainingDue
-            {
-                var newPayment = new Payment
-                {
-                    PaymentId = Guid.NewGuid(),
-                    InvoiceId = invoice.InvoiceId,
-                    Amount = paymentDto.Amount,
-                    Method = paymentDto.Method,
-                    ReceiptNo = paymentDto.ReceiptNo,
-                    ReceivedAt = DateTime.UtcNow,
-                    ReceivedByUserId = paymentDto.ReceivedByUserId
-                };
-                _context.Payments.Add(newPayment);
-                invoice.Status = "Paid";
-            }
-
-            // Update visit status if invoice is fully paid
-            if (invoice.Status == "Paid")
-            {
-                var visit = await _context.Visits.FindAsync(visitId);
-                if (visit != null) visit.Status = "Paid";
-            }
-
-            await _context.SaveChangesAsync();
-            Payment? paymentResult = _context.Payments.Local.FirstOrDefault(p => p.InvoiceId == invoice.InvoiceId)!;
-            if (paymentResult == null)
-            {
-                throw new InvalidOperationException("Payment was not found in local context after being added.");
-            }
-            return paymentResult;
         }
 
         public async Task<VisitCancellation> CancelVisitAsync(Guid visitId, CancelRequestDto cancelDto)

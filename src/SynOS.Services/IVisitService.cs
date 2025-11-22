@@ -11,7 +11,7 @@ namespace SynOS.Services
         Task<Visit> CreateVisitAsync(VisitCreateDto visitDto, string? idempotencyKey = null);
         Task<Visit?> GetVisitDetailsAsync(Guid visitId);
         Task<IEnumerable<Visit>> GetVisitsAsync(string department, string status, int limit);
-        Task<Payment?> RecordPaymentAsync(Guid visitId, PaymentRequestDto paymentDto);
         Task<VisitCancellation> CancelVisitAsync(Guid visitId, CancelRequestDto cancelDto);
+        Task<VisitTokenPrintDto> GetVisitTokenForPrintingAsync(Guid visitId);
     }
 }

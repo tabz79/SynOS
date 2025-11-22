@@ -11,7 +11,7 @@ namespace SynOS.Models.Entities
 
         [Required]
         [MaxLength(100)]
-        public string EntityType { get; set; }
+        public string EntityType { get; set; } = string.Empty;
 
         [Required]
         public Guid EntityId { get; set; }
@@ -20,7 +20,7 @@ namespace SynOS.Models.Entities
         public Guid LockedByUserId { get; set; }
 
         [ForeignKey("LockedByUserId")]
-        public virtual User LockedBy { get; set; }
+        public virtual User? LockedBy { get; set; }
 
         [Required]
         public DateTimeOffset LockedAt { get; set; }
