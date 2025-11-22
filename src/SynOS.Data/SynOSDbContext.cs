@@ -41,6 +41,8 @@ namespace SynOS.Data
         public DbSet<VisitCancellation> VisitCancellations { get; set; } = null!;
         public DbSet<CreditNote> CreditNotes { get; set; } = null!; // New
         public DbSet<EditLock> EditLocks { get; set; } = null!;
+        public DbSet<Sample> Samples { get; set; } = null!;
+        public DbSet<SampleRejection> SampleRejections { get; set; } = null!;
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -102,6 +104,32 @@ namespace SynOS.Data
                     .IsUnique() // Make it unique
                     .HasFilter("[Status] = 'Active'"); // Apply filter for only active locks
                 entity.Property(e => e.Status).HasConversion<string>().HasMaxLength(20);
+            });
+
+            // Sample and SampleRejection
+            modelBuilder.Entity<Sample>(entity =>
+            {
+                entity.Property(e => e.TubeType).HasConversion<string>().HasMaxLength(20);
+                entity.Property(e => e.Status).HasConversion<string>().HasMaxLength(20);
+                entity.HasIndex(e => e.Barcode).IsUnique();
+            });
+
+            modelBuilder.Entity<SampleRejection>(entity =>
+            {
+                entity.HasOne(sr => sr.Sample)
+                      .WithMany(s => s.Rejections)
+                      .HasForeignKey(sr => sr.SampleId)
+                      .OnDelete(DeleteBehavior.Restrict);
+                
+                entity.HasOne(sr => sr.NewSample)
+                      .WithMany()
+                      .HasForeignKey(sr => sr.NewSampleId)
+                      .OnDelete(DeleteBehavior.NoAction); // Avoid multiple cascade paths
+
+                entity.HasOne(sr => sr.RejectedBy)
+                      .WithMany()
+                      .HasForeignKey(sr => sr.RejectedByUserId)
+                      .OnDelete(DeleteBehavior.Restrict);
             });
         }
     }

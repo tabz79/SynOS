@@ -1,359 +1,174 @@
-first and 2nd execute both returned 200
-console logs:
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api> dotnet run --urls "http://127.0.0.1:59999"
-[15:27:13 INF] ExpiredLockCleanupService is starting.
-[15:27:13 INF] ExpiredLockCleanupService is starting.
-[15:28:13 WRN] Failed to determine the https port for redirect.
-[15:28:13 WRN] Failed to determine the https port for redirect.
-[15:28:14 WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
-[15:28:14 WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api> dotnet ef migrations add AddSamplesAndRejectionsTables -p ../SynOS.Data/SynOS.Data.csproj -s SynOS.Api.csproj -o ../SynOS.Data/migrations Build started... Build succeeded. The name 'AddSamplesAndRejectionsTables' is used by an existing migration. PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api> now im getting this
+Nice, that tells us everything:
+
+The migration already exists (AddSamplesAndRejectionsTables),
+
+It was just never applied to the database.
+
+That’s why there is no Samples table.
+
+So now we just need to apply the migration.
+
+Step 1 – Update the database
+
+Run this from the same folder (src\SynOS.Api):
+
+dotnet ef database update -p ../SynOS.Data/SynOS.Data.csproj -s SynOS.Api.csproj
 
 
-You said:
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api> $server = "(localdb)\MSSQLLocalDB"
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api> $database = "SynOSDb"
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api> $email = "dev@local"
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api> $name = "Dev User (local)"
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api> $passwordHash = "dev-placeholder-hash"  # not used for local tests; must be non-null
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api> $cs = "Server=$server;Database=$database;Trusted_Connection=True;"
+Let it finish.
+If it prints errors, paste them here.
+If it succeeds, you’re done with DB schema.
+
+Step 2 – Quickly confirm the table exists
+
+Back in Azure Data Studio:
+
+In the left tree: SynOSDb → Tables
+
+Right-click Tables → Refresh.
+
+You should now see something like [dbo].[Samples] and [dbo].[SampleRejections].
+
+Step 3 – Retry the API call
+
+Use the same PowerShell snippet:
+
+$token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...your token...'
+
+$body = @{
+  visitId   = '11111111-1111-1111-1111-111111111111'
+  token     = 'TKN-001'
+  orders    = @(
+    @{ orderId = '22222222-2222-2222-2222-222222222222'; testName = 'CBC'; tubeType = 'EDTA' }
+  )
+  createdBy = 'receptionist'
+} | ConvertTo-Json -Depth 6
+
+Invoke-RestMethod -Uri 'http://127.0.0.1:59999/api/v1/samples/create-for-visit' `
+  -Method Post `
+  -Headers @{ Authorization = "Bearer $token" } `
+  -Body $body `
+  -ContentType 'application/json' | ConvertTo-Json -Depth 10
+
+
+Paste the response JSON you get after database update runs.
+If it’s success, we move to testing worklist next; if it’s another error, we debug that.
+
+PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api> dotnet ef migrations add AddSamplesAndRejectionsTables -p ../SynOS.Data/SynOS.Data.csproj -s SynOS.Api.csproj -o ../SynOS.Data/migrations
+Build started...
+Build succeeded.
+The name 'AddSamplesAndRejectionsTables' is used by an existing migration.
+PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api> dotnet ef database update -p ../SynOS.Data/SynOS.Data.csproj -s SynOS.Api.csproj
+Build started...
+Build succeeded.
+[10:09:19 ERR] Failed executing DbCommand (6ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+DROP INDEX [IX_EditLocks_EntityType_EntityId_Status] ON [EditLocks];
+[10:09:19 ERR] Failed executing DbCommand (6ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+DROP INDEX [IX_EditLocks_EntityType_EntityId_Status] ON [EditLocks];
+Microsoft.Data.SqlClient.SqlException (0x80131904): Cannot drop the index 'EditLocks.IX_EditLocks_EntityType_EntityId_Status', because it does not exist or you do not have permission.
+   at Microsoft.Data.SqlClient.SqlConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   at Microsoft.Data.SqlClient.SqlInternalConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   at Microsoft.Data.SqlClient.TdsParser.ThrowExceptionAndWarning(TdsParserStateObject stateObj, Boolean callerHasConnectionLock, Boolean asyncClose)
+   at Microsoft.Data.SqlClient.TdsParser.TryRun(RunBehavior runBehavior, SqlCommand cmdHandler, SqlDataReader dataStream, BulkCopySimpleResultSet bulkCopyHandler, TdsParserStateObject stateObj, Boolean& dataReady)
+   at Microsoft.Data.SqlClient.SqlCommand.RunExecuteNonQueryTds(String methodName, Boolean isAsync, Int32 timeout, Boolean asyncWrite)
+   at Microsoft.Data.SqlClient.SqlCommand.InternalExecuteNonQuery(TaskCompletionSource`1 completion, Boolean sendToPipe, Int32 timeout, Boolean& usedCache, Boolean asyncWrite, Boolean inRetry, String methodName)
+   at Microsoft.Data.SqlClient.SqlCommand.ExecuteNonQuery()
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteNonQuery(RelationalCommandParameterObject parameterObject)
+   at Microsoft.EntityFrameworkCore.Migrations.MigrationCommand.ExecuteNonQuery(IRelationalConnection connection, IReadOnlyDictionary`2 parameterValues)
+   at Microsoft.EntityFrameworkCore.Migrations.Internal.MigrationCommandExecutor.ExecuteNonQuery(IEnumerable`1 migrationCommands, IRelationalConnection connection)
+   at Microsoft.EntityFrameworkCore.Migrations.Internal.Migrator.Migrate(String targetMigration)
+   at Microsoft.EntityFrameworkCore.Design.Internal.MigrationsOperations.UpdateDatabase(String targetMigration, String connectionString, String contextType)
+   at Microsoft.EntityFrameworkCore.Design.OperationExecutor.UpdateDatabaseImpl(String targetMigration, String connectionString, String contextType)
+   at Microsoft.EntityFrameworkCore.Design.OperationExecutor.UpdateDatabase.<>c__DisplayClass0_0.<.ctor>b__0()
+   at Microsoft.EntityFrameworkCore.Design.OperationExecutor.OperationBase.Execute(Action action)
+ClientConnectionId:a9c61705-3f5c-424d-a1c5-5fe1fdaeefde
+Error Number:3701,State:7,Class:11
+Cannot drop the index 'EditLocks.IX_EditLocks_EntityType_EntityId_Status', because it does not exist or you do not have permission.
 PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api>
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api> # helper
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api> function ExecScalar($sql) {
->>   $cn = New-Object System.Data.SqlClient.SqlConnection $cs
->>   $cmd = $cn.CreateCommand()
->>   $cmd.CommandText = $sql
->>   $cn.Open()
->>   $res = $cmd.ExecuteScalar()
->>   $cn.Close()
->>   return $res
->> }
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api>
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api> # 1) check existing
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api> $check = "SELECT UserId FROM dbo.Users WHERE Email = '$email';"
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api> $res = ExecScalar $check
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api>
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api> if ($res -ne $null) {
->>   Write-Host "Existing dev user found:" $res
->>   exit 0
->> }
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api>
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api> # 2) insert new user and return new id
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api> $newId = [guid]::NewGuid().ToString()
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api> $createdAt = (Get-Date).ToString("yyyy-MM-dd HH:mm:ss.fffffff")
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api> $insert = @"
->> INSERT INTO dbo.Users (UserId, Email, PasswordHash, Name, IsActive, CreatedAt, FailedLoginAttempts)
->> VALUES ('${newId}', '${email}', '${passwordHash}', '${name}', 1, '${createdAt}', 0);
->> SELECT '${newId}';
->> "@
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api>
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api> $res2 = ExecScalar $insert
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api> Write-Host "Inserted dev user id:" $res2
-Inserted dev user id: 6cc795ac-c3c1-4a49-b110-a2da5e2a2fc2
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api> $server="(localdb)\MSSQLLocalDB"
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api> $db="SynOSDb"
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api> $query = @"
->> SELECT LockId, EntityType, EntityId, LockedByUserId, LockedAt, ExpiresAt, Status
->> FROM dbo.EditLocks
->> WHERE EntityType = 'Visit' AND EntityId = '11111111-2222-3333-4444-555555555555'
->> ORDER BY LockedAt DESC;
->> "@
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api> $cs = "Server=$server;Database=$db;Trusted_Connection=True;"
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api> $cn = New-Object System.Data.SqlClient.SqlConnection $cs
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api> $cmd = $cn.CreateCommand()
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api> $cmd.CommandText = $query
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api> $cn.Open()
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api> $da = New-Object System.Data.SqlClient.SqlDataAdapter $cmd
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api> $dt = New-Object System.Data.DataTable
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api> $da.Fill($dt) | Out-Null
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api> $cn.Close()
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api> $dt | Format-Table -AutoSize
 
-LockId                               EntityType EntityId                             LockedBy
-                                                                                     UserId
-------                               ---------- --------                             --------
-184ecadd-f5e4-4585-94a2-84efb78772e4 Visit      11111111-2222-3333-4444-555555555555 6cc79...
-a99a37f9-6f63-49fd-8b54-6af51855e5e7 Visit      11111111-2222-3333-4444-555555555555 6cc79...
-af6fd7db-b8dc-4b1d-80cc-4882b95458ca Visit      11111111-2222-3333-4444-555555555555 6cc79...
+Nice, now we’re finally at the real blocker, and it’s clear.
+
+Cannot drop the index 'EditLocks.IX_EditLocks_EntityType_EntityId_Status', because it does not exist…
+
+Meaning:
+One of your old migrations is trying to drop an index on EditLocks that your DB never had (or it was already dropped). So database update dies before it even reaches the new Samples migration.
+
+We’ll fix it by telling EF:
+
+“Only drop that index if it actually exists.”
+
+One small code edit, then dotnet ef database update again.
+
+Step 1 – Open the migration that mentions EditLocks
+
+In your editor (VS / VS Code), go to:
+src/SynOS.Data/migrations
+
+Open the migration files one by one and search for:
+IX_EditLocks_EntityType_EntityId_Status
+
+You’ll find something like this inside Up():
+
+migrationBuilder.DropIndex(
+    name: "IX_EditLocks_EntityType_EntityId_Status",
+    table: "EditLocks");
 
 
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api> $server="(localdb)\MSSQLLocalDB"
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api> $db="SynOSDb"
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api> $query = @"
->> SELECT name, is_unique, filter_definition
->> FROM sys.indexes
->> WHERE object_id = OBJECT_ID('dbo.EditLocks');
->> "@
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api> $cs = "Server=$server;Database=$db;Trusted_Connection=True;"
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api> $cn = New-Object System.Data.SqlClient.SqlConnection $cs
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api> $cmd = $cn.CreateCommand()
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api> $cmd.CommandText = $query
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api> $cn.Open()
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api> $da = New-Object System.Data.SqlClient.SqlDataAdapter $cmd
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api> $dt = New-Object System.Data.DataTable
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api> $da.Fill($dt) | Out-Null
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api> $cn.Close()
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api> $dt | Format-Table -AutoSize
+Remember which migration file this is (filename like 20251113xxxx_EditLocks...cs or similar).
 
-name                                    is_unique filter_definition
-----                                    --------- -----------------
-PK_EditLocks                                 True
-IX_EditLocks_EntityType_EntityId_Active      True ([Status]='Active')
-IX_EditLocks_ExpiresAt                      False
-IX_EditLocks_LockedByUserId                 False
+Step 2 – Replace the DropIndex with a safe SQL check
+
+In that migration’s Up() method, replace the DropIndex call with this:
+
+migrationBuilder.Sql(@"
+IF EXISTS (
+    SELECT 1
+    FROM sys.indexes
+    WHERE name = 'IX_EditLocks_EntityType_EntityId_Status'
+      AND object_id = OBJECT_ID('[dbo].[EditLocks]')
+)
+DROP INDEX [IX_EditLocks_EntityType_EntityId_Status] ON [dbo].[EditLocks];
+");
 
 
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api>
-You said:
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api> $server="(localdb)\MSSQLLocalDB"; $db="SynOSDb"
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api> $q = @"
->> SELECT LockId, EntityType, EntityId, LockedByUserId,
->>        CONVERT(varchar(40), LockedAt, 121) AS LockedAt_UTC,
->>        CONVERT(varchar(40), ExpiresAt, 121) AS ExpiresAt_UTC,
->>        Status, DATALENGTH(Status) AS StatusLength
->> FROM dbo.EditLocks
->> WHERE EntityType='Visit' AND EntityId='11111111-2222-3333-4444-555555555555'
->> ORDER BY LockedAt DESC;
->> "@
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api> $cs = "Server=$server;Database=$db;Trusted_Connection=True;"
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api> $dt = Invoke-Sqlcmd -Query $q -ServerInstance $server -Database $db -ErrorAction Stop
-Invoke-Sqlcmd : The term 'Invoke-Sqlcmd' is not recognized as the name of a cmdlet,
-function, script file, or operable program. Check the spelling of the name, or if a path was
-included, verify that the path is correct and try again.
-At line:1 char:7
-+ $dt = Invoke-Sqlcmd -Query $q -ServerInstance $server -Database $db - ...
-+       ~~~~~~~~~~~~~
-    + CategoryInfo          : ObjectNotFound: (Invoke-Sqlcmd:String) [], CommandNotFoundExce
-   ption
-    + FullyQualifiedErrorId : CommandNotFoundException
+If the same DropIndex appears in Down() as well, you can either:
 
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api> $dt | Format-Table -AutoSize
+Leave it (it almost never runs), or
 
-name                                    is_unique filter_definition
-----                                    --------- -----------------
-PK_EditLocks                                 True
-IX_EditLocks_EntityType_EntityId_Active      True ([Status]='Active')
-IX_EditLocks_ExpiresAt                      False
-IX_EditLocks_LockedByUserId                 False
+Replace it with the same guarded SQL — your call. Not critical for now.
+
+Save the file.
+
+Step 3 – Run database update again
+
+Back in PowerShell in src\SynOS.Api:
+
+dotnet ef database update -p ../SynOS.Data/SynOS.Data.csproj -s SynOS.Api.csproj
 
 
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api> $cn = New-Object System.Data.SqlClient.SqlConnection $cs
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api> $cmd = $cn.CreateCommand()
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api> $cmd.CommandText = $q
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api> $cn.Open()
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api> $da = New-Object System.Data.SqlClient.SqlDataAdapter $cmd
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api> $dt = New-Object System.Data.DataTable
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api> $da.Fill($dt) | Out-Null
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api> $cn.Close()
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api> $dt | Format-Table -AutoSize
+This time, the migration will only drop the index if it exists, so it shouldn’t crash. It should also create the Samples and SampleRejections tables as part of the later migration.
 
-LockId                               EntityType EntityId                             LockedBy
-                                                                                     UserId
-------                               ---------- --------                             --------
-184ecadd-f5e4-4585-94a2-84efb78772e4 Visit      11111111-2222-3333-4444-555555555555 6cc79...
-a99a37f9-6f63-49fd-8b54-6af51855e5e7 Visit      11111111-2222-3333-4444-555555555555 6cc79...
-af6fd7db-b8dc-4b1d-80cc-4882b95458ca Visit      11111111-2222-3333-4444-555555555555 6cc79...
+Step 4 – Quick sanity check in Azure Data Studio
 
+Refresh SynOSDb → Tables.
 
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api> $q2 = @"
->> SELECT COUNT(*) AS ActiveCount
->> FROM dbo.EditLocks
->> WHERE EntityType='Visit' AND EntityId='11111111-2222-3333-4444-555555555555'
->>   AND Status = 'Active' AND ExpiresAt > SYSUTCDATETIME();
->> "@
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api> $cn = New-Object System.Data.SqlClient.SqlConnection $cs
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api> $cmd = $cn.CreateCommand()
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api> $cmd.CommandText = $q2
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api> $cn.Open()
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api> $active = $cmd.ExecuteScalar()
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api> $cn.Close()
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api> "ActiveCount: $active"
-ActiveCount: 0
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api>
-You said:
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api> $server="(localdb)\MSSQLLocalDB"; $db="SynOSDb"
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api> $cs = "Server=$server;Database=$db;Trusted_Connection=True;"
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api> $q = @"
->> SELECT
->>   SYSUTCDATETIME() AS DbNow_UTC,
->>   LockId,
->>   EntityType,
->>   EntityId,
->>   LockedByUserId,
->>   CONVERT(varchar(40), LockedAt, 121) AS LockedAt_UTC,
->>   CONVERT(varchar(40), ExpiresAt, 121) AS ExpiresAt_UTC,
->>   Status,
->>   DATALENGTH(Status) AS StatusLength
->> FROM dbo.EditLocks
->> WHERE EntityType='Visit' AND EntityId='11111111-2222-3333-4444-555555555555'
->> ORDER BY LockedAt DESC;
->> "@
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api>
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api> $cn = New-Object System.Data.SqlClient.SqlConnection $cs
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api> $cmd = $cn.CreateCommand()
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api> $cmd.CommandText = $q
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api> $cn.Open()
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api> $da = New-Object System.Data.SqlClient.SqlDataAdapter $cmd
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api> $dt = New-Object System.Data.DataTable
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api> $da.Fill($dt) | Out-Null
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api> $cn.Close()
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api> $dt | Format-Table -AutoSize
+You should now see [dbo].[Samples] and [dbo].[SampleRejections].
 
-DbNow_UTC           LockId                               EntityType EntityId
----------           ------                               ---------- --------
-20-11-2025 10:29:23 184ecadd-f5e4-4585-94a2-84efb78772e4 Visit      11111111-2222-3333-444...
-20-11-2025 10:29:23 a99a37f9-6f63-49fd-8b54-6af51855e5e7 Visit      11111111-2222-3333-444...
-20-11-2025 10:29:23 af6fd7db-b8dc-4b1d-80cc-4882b95458ca Visit      11111111-2222-3333-444...
+Then re-run your create-for-visit API call with the same PowerShell snippet as before.
 
+What I need from you next
 
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api>
-You said:
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api> $server="(localdb)\MSSQLLocalDB"; $db="SynOSDb"
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api> $cs = "Server=$server;Database=$db;Trusted_Connection=True;"
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api> $q = @"
->> SELECT
->>   SYSUTCDATETIME() AS DbNow_UTC,
->>   LockId,
->>   EntityType,
->>   EntityId,
->>   LockedByUserId,
->>   CONVERT(varchar(40), LockedAt, 121) AS LockedAt_UTC,
->>   CONVERT(varchar(40), ExpiresAt, 121) AS ExpiresAt_UTC,
->>   Status,
->>   DATALENGTH(Status) AS StatusLength
->> FROM dbo.EditLocks
->> WHERE EntityType='Visit' AND EntityId='11111111-2222-3333-4444-555555555555'
->> ORDER BY LockedAt DESC;
->> "@
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api>
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api> $cn = New-Object System.Data.SqlClient.SqlConnection $cs
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api> $cmd = $cn.CreateCommand()
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api> $cmd.CommandText = $q
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api> $cn.Open()
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api> $da = New-Object System.Data.SqlClient.SqlDataAdapter $cmd
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api> $dt = New-Object System.Data.DataTable
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api> $da.Fill($dt) | Out-Null
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api> $cn.Close()
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api>
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api> # Print rows with full column widths
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api> $dt.Rows | ForEach-Object {
->>   $row = $_
->>   "DbNow_UTC:      $($row.DbNow_UTC)"
->>   "LockId:         $($row.LockId)"
->>   "EntityType:     $($row.EntityType)"
->>   "EntityId:       $($row.EntityId)"
->>   "LockedByUserId: $($row.LockedByUserId)"
->>   "LockedAt_UTC:   $($row.LockedAt_UTC)"
->>   "ExpiresAt_UTC:  $($row.ExpiresAt_UTC)"
->>   "Status:         $($row.Status)"
->>   "StatusLength:   $($row.StatusLength)"
->>   "------------------------------------------------------------"
->> }
-DbNow_UTC:      11/20/2025 10:32:35
-LockId:         184ecadd-f5e4-4585-94a2-84efb78772e4
-EntityType:     Visit
-EntityId:       11111111-2222-3333-4444-555555555555
-LockedByUserId: 6cc795ac-c3c1-4a49-b110-a2da5e2a2fc2
-LockedAt_UTC:   2025-11-20 09:58:13.2744519 +00:00
-ExpiresAt_UTC:  2025-11-20 10:04:20.2933285 +00:00
-Status:         Expired
-StatusLength:   14
-------------------------------------------------------------
-DbNow_UTC:      11/20/2025 10:32:35
-LockId:         a99a37f9-6f63-49fd-8b54-6af51855e5e7
-EntityType:     Visit
-EntityId:       11111111-2222-3333-4444-555555555555
-LockedByUserId: 6cc795ac-c3c1-4a49-b110-a2da5e2a2fc2
-LockedAt_UTC:   2025-11-20 09:43:03.1333501 +00:00
-ExpiresAt_UTC:  2025-11-20 09:49:17.3451933 +00:00
-Status:         Expired
-StatusLength:   14
-------------------------------------------------------------
-DbNow_UTC:      11/20/2025 10:32:35
-LockId:         af6fd7db-b8dc-4b1d-80cc-4882b95458ca
-EntityType:     Visit
-EntityId:       11111111-2222-3333-4444-555555555555
-LockedByUserId: 6cc795ac-c3c1-4a49-b110-a2da5e2a2fc2
-LockedAt_UTC:   2025-11-20 09:37:26.6777266 +00:00
-ExpiresAt_UTC:  2025-11-20 09:42:26.6777860 +00:00
-Status:         Expired
-StatusLength:   14
-------------------------------------------------------------
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api>
-You said:
-got this while doing step 2
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api> curl -s -X POST "http://127.0.0.1:59999/api/v1/edit-locks/acquire" -H "Content-Type: application/json" -d '{"entityType":"Visit","entityId":"11111111-2222-3333-4444-555555555555"}' | ConvertFrom-Json | ConvertTo-Json
-Invoke-WebRequest : Cannot bind parameter 'Headers'. Cannot convert the "Content-Type:
-application/json" value of type "System.String" to type "System.Collections.IDictionary".
-At line:1 char:71
-+ ... pi/v1/edit-locks/acquire" -H "Content-Type: application/json" -d '{"e ...
-+                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    + CategoryInfo          : InvalidArgument: (:) [Invoke-WebRequest], ParameterBindingExce
-   ption
-    + FullyQualifiedErrorId : CannotConvertArgumentNoMessage,Microsoft.PowerShell.Commands.I
-   nvokeWebRequestCommand
+Do exactly:
 
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api> curl -s -X POST "http://127.0.0.1:59999/api/v1/edit-locks/acquire" -H "Content-Type: application/json" -d '{"entityType":"Visit","entityId":"11111111-2222-3333-4444-555555555555"}' | ConvertFrom-Json | ConvertTo-Json
-Invoke-WebRequest : Cannot bind parameter 'Headers'. Cannot convert the "Content-Type:
-application/json" value of type "System.String" to type "System.Collections.IDictionary".
-At line:1 char:71
-+ ... pi/v1/edit-locks/acquire" -H "Content-Type: application/json" -d '{"e ...
-+                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    + CategoryInfo          : InvalidArgument: (:) [Invoke-WebRequest], ParameterBindingExce
-   ption
-    + FullyQualifiedErrorId : CannotConvertArgumentNoMessage,Microsoft.PowerShell.Commands.I
-   nvokeWebRequestCommand
+Edit the migration file and replace DropIndex with that migrationBuilder.Sql(...) block.
 
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api>
-You said:
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api> $body = '{"entityType":"Visit","entityId":"11111111-2222-3333-4444-555555555555"}'
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api> $hdr  = @{ 'Content-Type' = 'application/json' }
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api>
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api> $r1 = Invoke-RestMethod -Uri 'http://127.0.0.1:59999/api/v1/edit-locks/acquire' -Method Post -Headers $hdr -Body $body -ErrorAction SilentlyContinue -ResponseHeadersVariable RH1
-Invoke-RestMethod : A parameter cannot be found that matches parameter name
-'ResponseHeadersVariable'.
-At line:1 char:150
-+ ... Body $body -ErrorAction SilentlyContinue -ResponseHeadersVariable RH1
-+                                              ~~~~~~~~~~~~~~~~~~~~~~~~
-    + CategoryInfo          : InvalidArgument: (:) [Invoke-RestMethod], ParameterBindingExce
-   ption
-    + FullyQualifiedErrorId : NamedParameterNotFound,Microsoft.PowerShell.Commands.InvokeRes
-   tMethodCommand
+Run dotnet ef database update again.
 
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api> $r2 = Invoke-RestMethod -Uri 'http://127.0.0.1:59999/api/v1/edit-locks/acquire' -Method Post -Headers $hdr -Body $body -ErrorAction SilentlyContinue -ResponseHeadersVariable RH2
-Invoke-RestMethod : A parameter cannot be found that matches parameter name
-'ResponseHeadersVariable'.
-At line:1 char:150
-+ ... Body $body -ErrorAction SilentlyContinue -ResponseHeadersVariable RH2
-+                                              ~~~~~~~~~~~~~~~~~~~~~~~~
-    + CategoryInfo          : InvalidArgument: (:) [Invoke-RestMethod], ParameterBindingExce
-   ption
-    + FullyQualifiedErrorId : NamedParameterNotFound,Microsoft.PowerShell.Commands.InvokeRes
-   tMethodCommand
+Paste:
 
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api>
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api> "--- First response ---"
---- First response ---
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api> $r1 | ConvertTo-Json -Depth 5
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api> "--- Second response ---"
---- Second response ---
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api> $r2 | ConvertTo-Json -Depth 5
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api>
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api> # also print HTTP status codes (if any) from response headers variables
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api> "First status: $($RH1.StatusCode)"
-First status:
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api> "Second status: $($RH2.StatusCode)"
-Second status:
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api> $server="(localdb)\MSSQLLocalDB"; $db="SynOSDb"; $cs="Server=$server;Database=$db;Trusted_Connection=True;"
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api> $q = "SELECT LockId, LockedByUserId, CONVERT(varchar(40), LockedAt, 121) AS LockedAt_UTC, CONVERT(varchar(40), ExpiresAt, 121) AS ExpiresAt_UTC, Status FROM dbo.EditLocks WHERE EntityType='Visit' AND EntityId='11111111-2222-3333-4444-555555555555' ORDER BY LockedAt DESC;"
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api> $cn = New-Object System.Data.SqlClient.SqlConnection $cs; $cmd = $cn.CreateCommand(); $cmd.CommandText = $q; $cn.Open()
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api> $da = New-Object System.Data.SqlClient.SqlDataAdapter $cmd; $dt = New-Object System.Data.DataTable; $da.Fill($dt) | Out-Null; $cn.Close()
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api> $dt | Format-Table -AutoSize
+The database update output, and
 
-LockId                               LockedByUserId                       LockedAt_UTC
-------                               --------------                       ------------
-184ecadd-f5e4-4585-94a2-84efb78772e4 6cc795ac-c3c1-4a49-b110-a2da5e2a2fc2 2025-11-20 09:58...
-a99a37f9-6f63-49fd-8b54-6af51855e5e7 6cc795ac-c3c1-4a49-b110-a2da5e2a2fc2 2025-11-20 09:43...
-af6fd7db-b8dc-4b1d-80cc-4882b95458ca 6cc795ac-c3c1-4a49-b110-a2da5e2a2fc2 2025-11-20 09:37...
+The result of calling POST /api/v1/samples/create-for-visit (our PowerShell Invoke-RestMethod output).
 
-
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api>
+We’ll move to worklist / collect / reject only after this is green.

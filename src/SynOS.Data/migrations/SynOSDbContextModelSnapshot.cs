@@ -168,9 +168,9 @@ namespace SynOS.Data.Migrations
 
                     b.HasIndex("LockedByUserId");
 
-                    b.HasIndex("EntityType", "EntityId", "Status")
+                    b.HasIndex("EntityType", "EntityId")
                         .IsUnique()
-                        .HasFilter("[Status] = 0");
+                        .HasFilter("[Status] = 'Active'");
 
                     b.ToTable("EditLocks");
                 });
@@ -539,6 +539,88 @@ namespace SynOS.Data.Migrations
                     b.ToTable("Roles");
                 });
 
+            modelBuilder.Entity("SynOS.Models.Entities.Sample", b =>
+                {
+                    b.Property<Guid>("SampleId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Barcode")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<DateTime?>("CollectedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("CollectedByUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("IsRejected")
+                        .HasColumnType("bit");
+
+                    b.Property<Guid>("OrderId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("TubeType")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.HasKey("SampleId");
+
+                    b.HasIndex("Barcode")
+                        .IsUnique();
+
+                    b.HasIndex("CollectedByUserId");
+
+                    b.HasIndex("OrderId");
+
+                    b.ToTable("Samples");
+                });
+
+            modelBuilder.Entity("SynOS.Models.Entities.SampleRejection", b =>
+                {
+                    b.Property<Guid>("RejectionId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("NewSampleId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTime>("RejectedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("RejectedByUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("RequiresRecollection")
+                        .HasColumnType("bit");
+
+                    b.Property<Guid>("SampleId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("RejectionId");
+
+                    b.HasIndex("NewSampleId");
+
+                    b.HasIndex("RejectedByUserId");
+
+                    b.HasIndex("SampleId");
+
+                    b.ToTable("SampleRejections");
+                });
+
             modelBuilder.Entity("SynOS.Models.Entities.TestDefinition", b =>
                 {
                     b.Property<string>("TestCode")
@@ -547,6 +629,10 @@ namespace SynOS.Data.Migrations
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
+
+                    b.Property<int>("DefaultTubeType")
+                        .HasMaxLength(20)
+                        .HasColumnType("int");
 
                     b.Property<string>("Department")
                         .IsRequired()
@@ -930,6 +1016,49 @@ namespace SynOS.Data.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("SynOS.Models.Entities.Sample", b =>
+                {
+                    b.HasOne("SynOS.Models.Entities.User", "CollectedBy")
+                        .WithMany()
+                        .HasForeignKey("CollectedByUserId");
+
+                    b.HasOne("SynOS.Models.Entities.Order", "Order")
+                        .WithMany()
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("CollectedBy");
+
+                    b.Navigation("Order");
+                });
+
+            modelBuilder.Entity("SynOS.Models.Entities.SampleRejection", b =>
+                {
+                    b.HasOne("SynOS.Models.Entities.Sample", "NewSample")
+                        .WithMany()
+                        .HasForeignKey("NewSampleId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.HasOne("SynOS.Models.Entities.User", "RejectedBy")
+                        .WithMany()
+                        .HasForeignKey("RejectedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SynOS.Models.Entities.Sample", "Sample")
+                        .WithMany("Rejections")
+                        .HasForeignKey("SampleId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("NewSample");
+
+                    b.Navigation("RejectedBy");
+
+                    b.Navigation("Sample");
+                });
+
             modelBuilder.Entity("SynOS.Models.Entities.UserRole", b =>
                 {
                     b.HasOne("SynOS.Models.Entities.Role", "Role")
@@ -1009,6 +1138,11 @@ namespace SynOS.Data.Migrations
             modelBuilder.Entity("SynOS.Models.Entities.Role", b =>
                 {
                     b.Navigation("UserRoles");
+                });
+
+            modelBuilder.Entity("SynOS.Models.Entities.Sample", b =>
+                {
+                    b.Navigation("Rejections");
                 });
 
             modelBuilder.Entity("SynOS.Models.Entities.User", b =>

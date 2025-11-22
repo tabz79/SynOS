@@ -6,7 +6,7 @@ namespace SynOS.Models.DTOs
     public class AcquireLockRequestDto
     {
         [Required]
-        public string EntityType { get; set; }
+        public string EntityType { get; set; } = string.Empty;
 
         [Required]
         public Guid EntityId { get; set; }

@@ -1,0 +1,9 @@
+2025-11-22 10:09:19.683 +05:30 [ERR] Failed executing DbCommand (6ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+DROP INDEX [IX_EditLocks_EntityType_EntityId_Status] ON [EditLocks];
+2025-11-22 10:20:49.569 +05:30 [ERR] Failed executing DbCommand (7ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+DROP INDEX [IX_EditLocks_EntityType_EntityId_Status] ON [EditLocks];
+2025-11-22 11:02:03.857 +05:30 [INF] ExpiredLockCleanupService is starting.
+2025-11-22 11:02:17.616 +05:30 [WRN] Failed to determine the https port for redirect.
+2025-11-22 11:14:14.143 +05:30 [INF] ExpiredLockCleanupService is starting.
+2025-11-22 11:14:35.540 +05:30 [WRN] Failed to determine the https port for redirect.
+2025-11-22 11:14:35.583 +05:30 [INF] Health check performed.

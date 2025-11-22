@@ -22,6 +22,10 @@ namespace SynOS.Models.Entities
         [Column(TypeName = "decimal(10, 2)")]
         public decimal Price { get; set; }
 
+        [Required]
+        [StringLength(20)]
+        public TubeType DefaultTubeType { get; set; } = TubeType.Other;
+
         public bool IsActive { get; set; } = true;
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

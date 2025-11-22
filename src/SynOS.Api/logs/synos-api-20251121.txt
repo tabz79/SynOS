@@ -1,0 +1,93 @@
+2025-11-21 18:30:17.559 +05:30 [INF] ExpiredLockCleanupService is starting.
+2025-11-21 18:31:51.931 +05:30 [INF] ExpiredLockCleanupService is starting.
+2025-11-21 18:34:05.709 +05:30 [WRN] Failed to determine the https port for redirect.
+2025-11-21 19:19:08.348 +05:30 [INF] ExpiredLockCleanupService is starting.
+2025-11-21 19:19:47.638 +05:30 [WRN] Failed to determine the https port for redirect.
+2025-11-21 19:42:56.815 +05:30 [ERR] Failed executing DbCommand (133ms) [Parameters=[@__visitId_0='?' (DbType = Guid)], CommandType='"Text"', CommandTimeout='30']
+SELECT [t].[VisitId], [t].[CreatedAt], [t].[Department], [t].[PatientId], [t].[RowVersion], [t].[Status], [t].[Token], [t].[TokenDate], [t0].[OrderId], [t0].[CreatedAt], [t0].[Department], [t0].[Discount], [t0].[Price], [t0].[Status], [t0].[TestCode], [t0].[VisitId], [t0].[TestCode0], [t0].[CreatedAt0], [t0].[DefaultTubeType], [t0].[Department0], [t0].[IsActive], [t0].[Name], [t0].[Price0], [t0].[UpdatedAt]
+FROM (
+    SELECT TOP(1) [v].[VisitId], [v].[CreatedAt], [v].[Department], [v].[PatientId], [v].[RowVersion], [v].[Status], [v].[Token], [v].[TokenDate]
+    FROM [Visits] AS [v]
+    WHERE [v].[VisitId] = @__visitId_0
+) AS [t]
+LEFT JOIN (
+    SELECT [o].[OrderId], [o].[CreatedAt], [o].[Department], [o].[Discount], [o].[Price], [o].[Status], [o].[TestCode], [o].[VisitId], [t1].[TestCode] AS [TestCode0], [t1].[CreatedAt] AS [CreatedAt0], [t1].[DefaultTubeType], [t1].[Department] AS [Department0], [t1].[IsActive], [t1].[Name], [t1].[Price] AS [Price0], [t1].[UpdatedAt]
+    FROM [Orders] AS [o]
+    INNER JOIN [TestDefinitions] AS [t1] ON [o].[TestCode] = [t1].[TestCode]
+) AS [t0] ON [t].[VisitId] = [t0].[VisitId]
+ORDER BY [t].[VisitId], [t0].[OrderId]
+2025-11-21 19:42:56.884 +05:30 [ERR] An exception occurred while iterating over the results of a query for context type 'SynOS.Data.SynOSDbContext'.
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'DefaultTubeType'.
+   at Microsoft.Data.SqlClient.SqlCommand.<>c.<ExecuteDbDataReaderAsync>b__209_0(Task`1 result)
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:81a2aa67-e121-49db-ad3f-75e6cea71f71
+Error Number:207,State:1,Class:16
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'DefaultTubeType'.
+   at Microsoft.Data.SqlClient.SqlCommand.<>c.<ExecuteDbDataReaderAsync>b__209_0(Task`1 result)
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:81a2aa67-e121-49db-ad3f-75e6cea71f71
+Error Number:207,State:1,Class:16
+2025-11-21 19:44:42.746 +05:30 [ERR] Failed executing DbCommand (3ms) [Parameters=[@__visitId_0='?' (DbType = Guid)], CommandType='"Text"', CommandTimeout='30']
+SELECT [t].[VisitId], [t].[CreatedAt], [t].[Department], [t].[PatientId], [t].[RowVersion], [t].[Status], [t].[Token], [t].[TokenDate], [t0].[OrderId], [t0].[CreatedAt], [t0].[Department], [t0].[Discount], [t0].[Price], [t0].[Status], [t0].[TestCode], [t0].[VisitId], [t0].[TestCode0], [t0].[CreatedAt0], [t0].[DefaultTubeType], [t0].[Department0], [t0].[IsActive], [t0].[Name], [t0].[Price0], [t0].[UpdatedAt]
+FROM (
+    SELECT TOP(1) [v].[VisitId], [v].[CreatedAt], [v].[Department], [v].[PatientId], [v].[RowVersion], [v].[Status], [v].[Token], [v].[TokenDate]
+    FROM [Visits] AS [v]
+    WHERE [v].[VisitId] = @__visitId_0
+) AS [t]
+LEFT JOIN (
+    SELECT [o].[OrderId], [o].[CreatedAt], [o].[Department], [o].[Discount], [o].[Price], [o].[Status], [o].[TestCode], [o].[VisitId], [t1].[TestCode] AS [TestCode0], [t1].[CreatedAt] AS [CreatedAt0], [t1].[DefaultTubeType], [t1].[Department] AS [Department0], [t1].[IsActive], [t1].[Name], [t1].[Price] AS [Price0], [t1].[UpdatedAt]
+    FROM [Orders] AS [o]
+    INNER JOIN [TestDefinitions] AS [t1] ON [o].[TestCode] = [t1].[TestCode]
+) AS [t0] ON [t].[VisitId] = [t0].[VisitId]
+ORDER BY [t].[VisitId], [t0].[OrderId]
+2025-11-21 19:44:42.790 +05:30 [ERR] An exception occurred while iterating over the results of a query for context type 'SynOS.Data.SynOSDbContext'.
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'DefaultTubeType'.
+   at Microsoft.Data.SqlClient.SqlCommand.<>c.<ExecuteDbDataReaderAsync>b__209_0(Task`1 result)
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:81a2aa67-e121-49db-ad3f-75e6cea71f71
+Error Number:207,State:1,Class:16
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'DefaultTubeType'.
+   at Microsoft.Data.SqlClient.SqlCommand.<>c.<ExecuteDbDataReaderAsync>b__209_0(Task`1 result)
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:81a2aa67-e121-49db-ad3f-75e6cea71f71
+Error Number:207,State:1,Class:16
