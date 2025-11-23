@@ -94,10 +94,12 @@ builder.Services.AddAutoMapper(typeof(Program)); // Scans for profiles in the as
 
 // Register application services
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IPatientService, PatientService>();
 builder.Services.AddScoped<IVisitService, VisitService>();
 builder.Services.AddScoped<IEditLockService, EditLockService>();
 builder.Services.AddScoped<ISampleService, SampleService>();
 builder.Services.AddScoped<IInvoiceService, InvoiceService>();
+builder.Services.AddScoped<IReceptionFlowService, ReceptionFlowService>();
 builder.Services.AddScoped<ISampleNotifier, SampleNotifier>(); // Register notifier
 builder.Services.AddHostedService<ExpiredLockCleanupService>();
 
