@@ -100,6 +100,7 @@ builder.Services.AddScoped<IEditLockService, EditLockService>();
 builder.Services.AddScoped<ISampleService, SampleService>();
 builder.Services.AddScoped<IInvoiceService, InvoiceService>();
 builder.Services.AddScoped<IReceptionFlowService, ReceptionFlowService>();
+builder.Services.AddScoped<IResultService, ResultService>();
 builder.Services.AddScoped<ISampleNotifier, SampleNotifier>(); // Register notifier
 builder.Services.AddHostedService<ExpiredLockCleanupService>();
 

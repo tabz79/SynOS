@@ -44,6 +44,14 @@ namespace SynOS.Data
         public DbSet<Sample> Samples { get; set; } = null!;
         public DbSet<SampleRejection> SampleRejections { get; set; } = null!;
 
+        // DbSets for Results module
+        public DbSet<Result> Results { get; set; } = null!;
+        public DbSet<ResultFlag> ResultFlags { get; set; } = null!;
+        public DbSet<DeltaCheckConfig> DeltaCheckConfigs { get; set; } = null!;
+        public DbSet<DeltaCheckEvent> DeltaCheckEvents { get; set; } = null!;
+        public DbSet<AutosaveBuffer> AutosaveBuffers { get; set; } = null!;
+        public DbSet<ResultLink> ResultLinks { get; set; } = null!;
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -130,6 +138,37 @@ namespace SynOS.Data
                       .WithMany()
                       .HasForeignKey(sr => sr.RejectedByUserId)
                       .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            // Results Module
+            modelBuilder.Entity<Result>(entity =>
+            {
+                entity.HasIndex(e => new { e.OrderId, e.ParameterCode }).IsUnique();
+                entity.HasOne(e => e.EnteredBy).WithMany().HasForeignKey(e => e.EnteredByUserId).OnDelete(DeleteBehavior.Restrict);
+                entity.HasOne(e => e.VerifiedBy).WithMany().HasForeignKey(e => e.VerifiedByUserId).OnDelete(DeleteBehavior.Restrict);
+                entity.HasOne(e => e.SignedBy).WithMany().HasForeignKey(e => e.SignedByUserId).OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<DeltaCheckConfig>(entity =>
+            {
+                entity.HasIndex(e => e.ParameterCode).IsUnique();
+            });
+
+            modelBuilder.Entity<DeltaCheckEvent>(entity =>
+            {
+                entity.HasOne(e => e.CurrentResult).WithMany().HasForeignKey(e => e.ResultId).OnDelete(DeleteBehavior.Restrict);
+                entity.HasOne(e => e.PreviousResult).WithMany().HasForeignKey(e => e.PreviousResultId).OnDelete(DeleteBehavior.NoAction);
+            });
+
+            modelBuilder.Entity<AutosaveBuffer>(entity =>
+            {
+                entity.HasIndex(e => new { e.UserId, e.EntityType, e.EntityId }).IsUnique();
+            });
+
+            modelBuilder.Entity<ResultLink>(entity =>
+            {
+                entity.HasOne(e => e.FromResult).WithMany().HasForeignKey(e => e.FromResultId).OnDelete(DeleteBehavior.Restrict);
+                entity.HasOne(e => e.ToResult).WithMany().HasForeignKey(e => e.ToResultId).OnDelete(DeleteBehavior.NoAction);
             });
         }
     }
