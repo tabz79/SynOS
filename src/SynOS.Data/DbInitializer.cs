@@ -18,9 +18,24 @@ namespace SynOS.Data
 
             if (!context.Roles.Any()) SeedRolesAndUsers(context);
             if (!context.TestDefinitions.Any()) SeedTestDefinitions(context);
+            if (!context.CriticalRules.Any()) SeedCriticalRules(context);
             if (!context.Patients.Any()) SeedPatients(context);
             if (!context.Appointments.Any()) SeedAppointments(context);
             if (!context.Visits.Any()) SeedVisitsAndTokens(context);
+        }
+
+        private static void SeedCriticalRules(SynOSDbContext context)
+        {
+            var rules = new CriticalRule[]
+            {
+                new CriticalRule { ParameterCode = "WBC", CriticalLow = 2.0m, CriticalHigh = 30.0m, EscalationMinutes = 30, NotificationChannels = "SMS,WHATSAPP,PHONE" },
+                new CriticalRule { ParameterCode = "HEMOGLOBIN", CriticalLow = 5.0m, CriticalHigh = 20.0m, EscalationMinutes = 30, NotificationChannels = "SMS,WHATSAPP" },
+                new CriticalRule { ParameterCode = "GLUCOSE", CriticalLow = 40.0m, CriticalHigh = 500.0m, EscalationMinutes = 15, NotificationChannels = "SMS,EMAIL,PHONE" },
+                new CriticalRule { ParameterCode = "POTASSIUM", CriticalLow = 2.5m, CriticalHigh = 6.5m, EscalationMinutes = 15, NotificationChannels = "SMS,WHATSAPP,PHONE" },
+                new CriticalRule { ParameterCode = "SODIUM", CriticalLow = 120.0m, CriticalHigh = 160.0m, EscalationMinutes = 30, NotificationChannels = "SMS,EMAIL" },
+            };
+            context.CriticalRules.AddRange(rules);
+            context.SaveChanges();
         }
 
         private static void SeedRolesAndUsers(SynOSDbContext context)

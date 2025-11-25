@@ -52,6 +52,13 @@ namespace SynOS.Data
         public DbSet<AutosaveBuffer> AutosaveBuffers { get; set; } = null!;
         public DbSet<ResultLink> ResultLinks { get; set; } = null!;
 
+        // DbSets for Critical Values module
+        public DbSet<CriticalRule> CriticalRules { get; set; } = null!;
+        public DbSet<CriticalAlert> CriticalAlerts { get; set; } = null!;
+        public DbSet<CriticalContact> CriticalContacts { get; set; } = null!;
+        public DbSet<CriticalAudit> CriticalAudits { get; set; } = null!;
+        public DbSet<Referrer> Referrers { get; set; } = null!;
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -156,6 +163,7 @@ namespace SynOS.Data
 
             modelBuilder.Entity<DeltaCheckEvent>(entity =>
             {
+                entity.Property(e => e.DeltaPercentage).HasPrecision(18, 2);
                 entity.HasOne(e => e.CurrentResult).WithMany().HasForeignKey(e => e.ResultId).OnDelete(DeleteBehavior.Restrict);
                 entity.HasOne(e => e.PreviousResult).WithMany().HasForeignKey(e => e.PreviousResultId).OnDelete(DeleteBehavior.NoAction);
             });
@@ -169,6 +177,23 @@ namespace SynOS.Data
             {
                 entity.HasOne(e => e.FromResult).WithMany().HasForeignKey(e => e.FromResultId).OnDelete(DeleteBehavior.Restrict);
                 entity.HasOne(e => e.ToResult).WithMany().HasForeignKey(e => e.ToResultId).OnDelete(DeleteBehavior.NoAction);
+            });
+
+            // Critical Values Module
+            modelBuilder.Entity<CriticalRule>(entity =>
+            {
+                entity.HasIndex(e => e.ParameterCode).IsUnique();
+            });
+            
+            modelBuilder.Entity<CriticalAlert>(entity =>
+            {
+                entity.HasIndex(e => e.Status);
+                entity.HasIndex(e => e.PatientId);
+            });
+            
+            modelBuilder.Entity<CriticalAudit>(entity =>
+            {
+                entity.HasOne(e => e.Alert).WithMany().HasForeignKey(e => e.AlertId).OnDelete(DeleteBehavior.Cascade);
             });
         }
     }

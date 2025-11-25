@@ -16,6 +16,10 @@ namespace SynOS.Models.Entities
         [ForeignKey("PatientId")]
         public Patient? Patient { get; set; }
 
+        public Guid? ReferrerId { get; set; }
+        [ForeignKey("ReferrerId")]
+        public virtual Referrer? Referrer { get; set; }
+
         [Required]
         [StringLength(12)] // Increased length for new token format
         public string Token { get; set; } = string.Empty;

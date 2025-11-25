@@ -166,6 +166,206 @@ namespace SynOS.Data.Migrations
                     b.ToTable("CreditNotes");
                 });
 
+            modelBuilder.Entity("SynOS.Models.Entities.CriticalAlert", b =>
+                {
+                    b.Property<Guid>("AlertId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("AckMethod")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("AckNotes")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTimeOffset?>("AcknowledgedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid?>("AcknowledgedByUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("CriticalThreshold")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTimeOffset?>("EscalatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset?>("NotifiedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("NotifiedTo")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("ParameterCode")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("ParameterName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<Guid>("PatientId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("ReferrerId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ResultId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTimeOffset>("TriggeredAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<decimal>("Value")
+                        .HasColumnType("decimal(18,4)");
+
+                    b.Property<Guid>("VisitId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("AlertId");
+
+                    b.HasIndex("AcknowledgedByUserId");
+
+                    b.HasIndex("PatientId");
+
+                    b.HasIndex("ReferrerId");
+
+                    b.HasIndex("ResultId");
+
+                    b.HasIndex("Status");
+
+                    b.HasIndex("VisitId");
+
+                    b.ToTable("CriticalAlerts");
+                });
+
+            modelBuilder.Entity("SynOS.Models.Entities.CriticalAudit", b =>
+                {
+                    b.Property<Guid>("AuditId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("ActedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid?>("ActedByUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<Guid>("AlertId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Details")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("AuditId");
+
+                    b.HasIndex("ActedByUserId");
+
+                    b.HasIndex("AlertId");
+
+                    b.ToTable("CriticalAudits");
+                });
+
+            modelBuilder.Entity("SynOS.Models.Entities.CriticalContact", b =>
+                {
+                    b.Property<Guid>("ContactId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ContactName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("Email")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Phone")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<int>("Priority")
+                        .HasColumnType("int");
+
+                    b.Property<Guid?>("ReferrerId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("ContactId");
+
+                    b.HasIndex("ReferrerId");
+
+                    b.ToTable("CriticalContacts");
+                });
+
+            modelBuilder.Entity("SynOS.Models.Entities.CriticalRule", b =>
+                {
+                    b.Property<Guid>("RuleId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<decimal?>("CriticalHigh")
+                        .HasColumnType("decimal(18,4)");
+
+                    b.Property<decimal?>("CriticalLow")
+                        .HasColumnType("decimal(18,4)");
+
+                    b.Property<int>("EscalationMinutes")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("NotificationChannels")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("ParameterCode")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<bool>("RequireAcknowledgment")
+                        .HasColumnType("bit");
+
+                    b.HasKey("RuleId");
+
+                    b.HasIndex("ParameterCode")
+                        .IsUnique();
+
+                    b.ToTable("CriticalRules");
+                });
+
             modelBuilder.Entity("SynOS.Models.Entities.DeltaCheckConfig", b =>
                 {
                     b.Property<Guid>("ConfigId")
@@ -202,6 +402,7 @@ namespace SynOS.Data.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<decimal>("DeltaPercentage")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<Guid>("PreviousResultId")
@@ -580,6 +781,25 @@ namespace SynOS.Data.Migrations
                     b.HasIndex("ReceivedByUserId");
 
                     b.ToTable("Payments");
+                });
+
+            modelBuilder.Entity("SynOS.Models.Entities.Referrer", b =>
+                {
+                    b.Property<Guid>("ReferrerId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("ProviderName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.HasKey("ReferrerId");
+
+                    b.ToTable("Referrers");
                 });
 
             modelBuilder.Entity("SynOS.Models.Entities.RefreshToken", b =>
@@ -1013,6 +1233,9 @@ namespace SynOS.Data.Migrations
                     b.Property<Guid>("PatientId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<Guid?>("ReferrerId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
                         .ValueGeneratedOnAddOrUpdate()
@@ -1034,6 +1257,8 @@ namespace SynOS.Data.Migrations
                     b.HasKey("VisitId");
 
                     b.HasIndex("PatientId");
+
+                    b.HasIndex("ReferrerId");
 
                     b.HasIndex("TokenDate", "Department");
 
@@ -1147,6 +1372,71 @@ namespace SynOS.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("Invoice");
+                });
+
+            modelBuilder.Entity("SynOS.Models.Entities.CriticalAlert", b =>
+                {
+                    b.HasOne("SynOS.Models.Entities.User", "AcknowledgedBy")
+                        .WithMany()
+                        .HasForeignKey("AcknowledgedByUserId");
+
+                    b.HasOne("SynOS.Models.Entities.Patient", "Patient")
+                        .WithMany()
+                        .HasForeignKey("PatientId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SynOS.Models.Entities.Referrer", "Referrer")
+                        .WithMany()
+                        .HasForeignKey("ReferrerId");
+
+                    b.HasOne("SynOS.Models.Entities.Result", "Result")
+                        .WithMany()
+                        .HasForeignKey("ResultId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SynOS.Models.Entities.Visit", "Visit")
+                        .WithMany()
+                        .HasForeignKey("VisitId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("AcknowledgedBy");
+
+                    b.Navigation("Patient");
+
+                    b.Navigation("Referrer");
+
+                    b.Navigation("Result");
+
+                    b.Navigation("Visit");
+                });
+
+            modelBuilder.Entity("SynOS.Models.Entities.CriticalAudit", b =>
+                {
+                    b.HasOne("SynOS.Models.Entities.User", "ActedBy")
+                        .WithMany()
+                        .HasForeignKey("ActedByUserId");
+
+                    b.HasOne("SynOS.Models.Entities.CriticalAlert", "Alert")
+                        .WithMany()
+                        .HasForeignKey("AlertId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ActedBy");
+
+                    b.Navigation("Alert");
+                });
+
+            modelBuilder.Entity("SynOS.Models.Entities.CriticalContact", b =>
+                {
+                    b.HasOne("SynOS.Models.Entities.Referrer", "Referrer")
+                        .WithMany()
+                        .HasForeignKey("ReferrerId");
+
+                    b.Navigation("Referrer");
                 });
 
             modelBuilder.Entity("SynOS.Models.Entities.DeltaCheckEvent", b =>
@@ -1422,7 +1712,13 @@ namespace SynOS.Data.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("SynOS.Models.Entities.Referrer", "Referrer")
+                        .WithMany()
+                        .HasForeignKey("ReferrerId");
+
                     b.Navigation("Patient");
+
+                    b.Navigation("Referrer");
                 });
 
             modelBuilder.Entity("SynOS.Models.Entities.VisitCancellation", b =>
