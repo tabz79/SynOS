@@ -429,3 +429,31 @@ ACCEPTANCE CRITERIA (BACKEND VIEW)
 ✅ All actions (notification, acknowledgement, escalation) are logged in CriticalAudit.
 
 ✅ Report delivery is blocked until the alert is Acknowledged (implement the block in your existing report-delivery logic).
+
+Immutable Guardrails (must follow)
+
+DO NOT run any shell commands, builds, or git operations.
+
+If a DB migration or dotnet ef step is needed, only tell the Product Owner to run it; you must not run it.
+
+If a new package is needed, just mention the install command in the TLDR; don’t execute it.
+
+Edit only the files required for this Day 8 printing feature. No drive-by refactors, no formatting churn.
+
+Preserve existing structure and style in each file.
+
+After changes, output only a TLDR terminal-style summary:
+
+What the issue/goal was (1–2 sentences)
+
+What you implemented (1–2 sentences)
+
+Which files changed (names only)
+
+No code diffs, no full file dumps.
+
+Extra guardrail for this task:
+
+Do NOT create or modify anything under web/ or any frontend/React/TSX files.
+
+If you feel UI changes are needed, just mention them in the TLDR as “future UI work”, do not implement.

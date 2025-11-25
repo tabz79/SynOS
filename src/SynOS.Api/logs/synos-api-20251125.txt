@@ -1,0 +1,12 @@
+2025-11-25 09:37:57.084 +05:30 [WRN] No critical contacts found for referrer null of alert "7f056340-a370-43fb-8b3f-1fa6a1bd57f9"
+2025-11-25 10:44:16.571 +05:30 [INF] ExpiredLockCleanupService is starting.
+2025-11-25 10:45:28.355 +05:30 [WRN] Failed to determine the https port for redirect.
+2025-11-25 10:46:15.454 +05:30 [WRN] No critical contacts found for referrer null of alert "732fe6c4-04ad-4f48-9ed4-860cfc9b14bb"
+2025-11-25 18:07:36.860 +05:30 [INF] ExpiredLockCleanupService is starting.
+2025-11-25 18:12:08.997 +05:30 [WRN] Failed to determine the https port for redirect.
+2025-11-25 18:13:01.736 +05:30 [ERR] Error while checking critical value for ResultId "18baef20-8e50-4769-a2c4-9f73d013761d"
+System.NullReferenceException: Object reference not set to an instance of an object.
+   at SynOS.Services.CriticalValueService.CheckAndCreateCriticalAlertAsync(Guid resultId) in D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CriticalValueService.cs:line 46
+   at SynOS.Services.ResultService.EnterResultsAsync(Guid userId, ResultEntryRequestDto request) in D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ResultService.cs:line 92
+2025-11-25 18:37:49.800 +05:30 [INF] ExpiredLockCleanupService is starting.
+2025-11-25 18:38:31.989 +05:30 [WRN] Failed to determine the https port for redirect.

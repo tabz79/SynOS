@@ -245,5 +245,30 @@ namespace SynOS.Services
                 Flag = newResult.Flag
             };
         }
+
+        public async Task DeliverReportAsync(Guid orderId)
+        {
+            // Before delivering a report (e.g., printing, sending via email),
+            // this method should check for unacknowledged critical alerts.
+            
+            // 1. Check if the order has any associated critical alerts:
+            var hasCriticals = await _context.CriticalAlerts.AnyAsync(a => a.Result.OrderId == orderId);
+            
+            // 2. If it does, check if all of them are acknowledged:
+            if (hasCriticals)
+            {
+                var allAcknowledged = !await _context.CriticalAlerts
+                    .AnyAsync(a => a.Result.OrderId == orderId && a.Status != "Acknowledged");
+            
+                if (!allAcknowledged)
+                {
+                    throw new InvalidOperationException("Cannot deliver report. Critical alerts for this order have not been acknowledged by a specialist.");
+                }
+            }
+            
+            // 3. Proceed with report delivery logic...
+            _logger.LogInformation("Report for order {OrderId} is cleared for delivery.", orderId);
+
+        }
     }
 }

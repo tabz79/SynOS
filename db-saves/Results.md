@@ -1,3 +1,3 @@
-|AlertId|ResultId|ParameterCode|ParameterName|Value|CriticalThreshold|PatientId|VisitId|ReferrerId|TriggeredAt|NotifiedTo|NotifiedAt|AcknowledgedByUserId|AcknowledgedAt|AckMethod|AckNotes|EscalatedAt|Status|CreatedAt|
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-|7f056340-a370-43fb-8b3f-1fa6a1bd57f9|18baef20-8e50-4769-a2c4-9f73d013761d|HEMOGLOBIN|Complete Blood Count|4.2000|CriticalLow|6999b105-ef99-45ce-8c78-bafd47b94e27|9cbb2557-05a7-4ee3-9496-d4cca2612007|NULL|2025-11-25 04:07:56.7973359 +00:00||NULL|NULL|NULL|NULL|NULL|NULL|Pending|2025-11-25 04:07:56.7973361 +00:00|
+|(No column name)|
+|---|
+|2|

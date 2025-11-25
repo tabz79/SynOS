@@ -8,9 +8,7 @@ namespace SynOS.Services
     public interface ICriticalValueService
     {
         Task CheckAndCreateCriticalAlertAsync(Guid resultId);
-        Task AcknowledgeAlertAsync(Guid alertId, Guid userId, AcknowledgeAlertRequestDto ackDto);
-        Task EscalateAlertAsync(Guid alertId);
-        Task CheckAndEscalatePendingAlertsAsync();
+        Task AcknowledgeAlertsForOrderAsync(Guid orderId, Guid userId, string notes);
         Task<IEnumerable<CriticalAlertSummaryDto>> GetAlertsByStatusAsync(string status, int limit);
         Task<CriticalAlertDetailDto?> GetAlertDetailsAsync(Guid alertId);
     }

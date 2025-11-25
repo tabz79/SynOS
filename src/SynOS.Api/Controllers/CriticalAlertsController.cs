@@ -35,19 +35,11 @@ namespace SynOS.Api.Controllers
             return Ok(new ApiResponse<object>(details));
         }
 
-        [HttpPost("{id}/acknowledge")]
-        public async Task<IActionResult> AcknowledgeAlert(Guid id, [FromBody] AcknowledgeAlertRequestDto request)
+        [HttpGet("pending-acknowledgment")]
+        public async Task<IActionResult> GetPendingAcknowledgmentAlerts([FromQuery] int limit = 50)
         {
-            var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
-            await _criticalValueService.AcknowledgeAlertAsync(id, userId, request);
-            return Ok();
-        }
-
-        [HttpPost("{id}/escalate")]
-        public async Task<IActionResult> EscalateAlert(Guid id)
-        {
-            await _criticalValueService.EscalateAlertAsync(id);
-            return Ok();
+            var alerts = await _criticalValueService.GetAlertsByStatusAsync("Pending", limit);
+            return Ok(new ApiResponse<object>(alerts));
         }
     }
 }
