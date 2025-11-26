@@ -58,6 +58,8 @@ namespace SynOS.Data
         public DbSet<CriticalContact> CriticalContacts { get; set; } = null!;
         public DbSet<CriticalAudit> CriticalAudits { get; set; } = null!;
         public DbSet<Referrer> Referrers { get; set; } = null!;
+        public DbSet<Report> Reports { get; set; } = null!;
+        public DbSet<ReportVersion> ReportVersions { get; set; } = null!;
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -194,6 +196,20 @@ namespace SynOS.Data
             modelBuilder.Entity<CriticalAudit>(entity =>
             {
                 entity.HasOne(e => e.Alert).WithMany().HasForeignKey(e => e.AlertId).OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // Report Module
+            modelBuilder.Entity<Report>(entity =>
+            {
+                entity.HasIndex(e => e.OrderId).IsUnique();
+                entity.HasOne(e => e.SignedBy).WithMany().HasForeignKey(e => e.SignedByUserId).OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<ReportVersion>(entity =>
+            {
+                entity.HasOne(e => e.Report).WithMany(r => r.ReportVersions).HasForeignKey(e => e.ReportId).OnDelete(DeleteBehavior.Cascade);
+                entity.HasOne(e => e.SignedBy).WithMany().HasForeignKey(e => e.SignedByUserId).OnDelete(DeleteBehavior.Restrict);
+                entity.HasIndex(e => new { e.ReportId, e.VersionNumber }).IsUnique();
             });
         }
     }

@@ -101,6 +101,7 @@ builder.Services.AddScoped<ISampleService, SampleService>();
 builder.Services.AddScoped<IInvoiceService, InvoiceService>();
 builder.Services.AddScoped<IReceptionFlowService, ReceptionFlowService>();
 builder.Services.AddScoped<IResultService, ResultService>();
+builder.Services.AddScoped<IReportService, ReportService>();
 builder.Services.AddScoped<ICriticalValueService, CriticalValueService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<ISampleNotifier, SampleNotifier>(); // Register notifier

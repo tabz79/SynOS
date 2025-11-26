@@ -1,0 +1,148 @@
+PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api> dotnet run --urls "http://127.0.0.1:59999"
+[14:58:43 INF] ExpiredLockCleanupService is starting.
+[14:58:43 INF] ExpiredLockCleanupService is starting.
+[15:00:50 WRN] Failed to determine the https port for redirect.
+[15:00:50 WRN] Failed to determine the https port for redirect.
+[15:11:27 ERR] Failed executing DbCommand (32ms) [Parameters=[@__orderId_0='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+SELECT TOP(1) [r].[ReportId], [r].[CurrentVersion], [r].[Delivered], [r].[DeliveredAt], [r].[Interpretation], [r].[OrderId], [r].[PathologistComments], [r].[Recommendations], [r].[SignedAt], [r].[SignedByUserId], [r].[Status], [o].[OrderId], [o].[CreatedAt], [o].[Department], [o].[Discount], [o].[Price], [o].[Status], [o].[TestCode], [o].[VisitId], [t].[TestCode], [t].[CreatedAt], [t].[DefaultTubeType], [t].[Department], [t].[IsActive], [t].[Name], [t].[Price], [t].[UpdatedAt], [v].[VisitId], [v].[CreatedAt], [v].[Department], [v].[PatientId], [v].[ReferrerId], [v].[RowVersion], [v].[Status], [v].[Token], [v].[TokenDate], [p].[PatientId], [p].[CreatedAt], [p].[CurrentPhoneNumber], [p].[DateOfBirth], [p].[FirstName], [p].[Gender], [p].[IsSoftDeleted], [p].[LastName], [p].[MRN], [p].[RowVersion], [p].[UpdatedAt], [r0].[ReferrerId], [r0].[BankAccount], [r0].[Email], [r0].[IFSC], [r0].[IsActive], [r0].[Phone], [r0].[ProviderName]
+FROM [Reports] AS [r]
+INNER JOIN [Orders] AS [o] ON [r].[OrderId] = [o].[OrderId]
+INNER JOIN [TestDefinitions] AS [t] ON [o].[TestCode] = [t].[TestCode]
+INNER JOIN [Visits] AS [v] ON [o].[VisitId] = [v].[VisitId]
+INNER JOIN [Patients] AS [p] ON [v].[PatientId] = [p].[PatientId]
+LEFT JOIN [Referrers] AS [r0] ON [v].[ReferrerId] = [r0].[ReferrerId]
+WHERE [r].[OrderId] = @__orderId_0
+[15:11:27 ERR] Failed executing DbCommand (32ms) [Parameters=[@__orderId_0='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+SELECT TOP(1) [r].[ReportId], [r].[CurrentVersion], [r].[Delivered], [r].[DeliveredAt], [r].[Interpretation], [r].[OrderId], [r].[PathologistComments], [r].[Recommendations], [r].[SignedAt], [r].[SignedByUserId], [r].[Status], [o].[OrderId], [o].[CreatedAt], [o].[Department], [o].[Discount], [o].[Price], [o].[Status], [o].[TestCode], [o].[VisitId], [t].[TestCode], [t].[CreatedAt], [t].[DefaultTubeType], [t].[Department], [t].[IsActive], [t].[Name], [t].[Price], [t].[UpdatedAt], [v].[VisitId], [v].[CreatedAt], [v].[Department], [v].[PatientId], [v].[ReferrerId], [v].[RowVersion], [v].[Status], [v].[Token], [v].[TokenDate], [p].[PatientId], [p].[CreatedAt], [p].[CurrentPhoneNumber], [p].[DateOfBirth], [p].[FirstName], [p].[Gender], [p].[IsSoftDeleted], [p].[LastName], [p].[MRN], [p].[RowVersion], [p].[UpdatedAt], [r0].[ReferrerId], [r0].[BankAccount], [r0].[Email], [r0].[IFSC], [r0].[IsActive], [r0].[Phone], [r0].[ProviderName]
+FROM [Reports] AS [r]
+INNER JOIN [Orders] AS [o] ON [r].[OrderId] = [o].[OrderId]
+INNER JOIN [TestDefinitions] AS [t] ON [o].[TestCode] = [t].[TestCode]
+INNER JOIN [Visits] AS [v] ON [o].[VisitId] = [v].[VisitId]
+INNER JOIN [Patients] AS [p] ON [v].[PatientId] = [p].[PatientId]
+LEFT JOIN [Referrers] AS [r0] ON [v].[ReferrerId] = [r0].[ReferrerId]
+WHERE [r].[OrderId] = @__orderId_0
+[15:11:27 ERR] An exception occurred while iterating over the results of a query for context type 'SynOS.Data.SynOSDbContext'.
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'Delivered'.
+Invalid column name 'DeliveredAt'.
+   at Microsoft.Data.SqlClient.SqlCommand.<>c.<ExecuteDbDataReaderAsync>b__209_0(Task`1 result)
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:4624e912-e395-4a33-8fe4-2bbe6ae2792f
+Error Number:207,State:1,Class:16
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'Delivered'.
+Invalid column name 'DeliveredAt'.
+   at Microsoft.Data.SqlClient.SqlCommand.<>c.<ExecuteDbDataReaderAsync>b__209_0(Task`1 result)
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:4624e912-e395-4a33-8fe4-2bbe6ae2792f
+Error Number:207,State:1,Class:16
+[15:11:27 ERR] An exception occurred while iterating over the results of a query for context type 'SynOS.Data.SynOSDbContext'.
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'Delivered'.
+Invalid column name 'DeliveredAt'.
+   at Microsoft.Data.SqlClient.SqlCommand.<>c.<ExecuteDbDataReaderAsync>b__209_0(Task`1 result)
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:4624e912-e395-4a33-8fe4-2bbe6ae2792f
+Error Number:207,State:1,Class:16
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'Delivered'.
+Invalid column name 'DeliveredAt'.
+   at Microsoft.Data.SqlClient.SqlCommand.<>c.<ExecuteDbDataReaderAsync>b__209_0(Task`1 result)
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:4624e912-e395-4a33-8fe4-2bbe6ae2792f
+Error Number:207,State:1,Class:16
+PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api> cd D:\Projects\SynOS-Synthesized-Lab-Intelligence
+PS D:\Projects\SynOS-Synthesized-Lab-Intelligence>
+PS D:\Projects\SynOS-Synthesized-Lab-Intelligence> dotnet ef database update -p .\src\SynOS.Data -s .\src\SynOS.Api
+Build started...
+Build succeeded.
+[15:13:38 ERR] Failed executing DbCommand (19ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+CREATE TABLE [Reports] (
+    [ReportId] uniqueidentifier NOT NULL,
+    [OrderId] uniqueidentifier NOT NULL,
+    [Status] nvarchar(50) NOT NULL,
+    [SignedByUserId] uniqueidentifier NULL,
+    [SignedAt] datetimeoffset NULL,
+    [PathologistComments] nvarchar(max) NULL,
+    [Interpretation] nvarchar(max) NULL,
+    [Recommendations] nvarchar(max) NULL,
+    [CurrentVersion] int NOT NULL,
+    [Delivered] bit NOT NULL,
+    [DeliveredAt] datetimeoffset NULL,
+    CONSTRAINT [PK_Reports] PRIMARY KEY ([ReportId]),
+    CONSTRAINT [FK_Reports_Orders_OrderId] FOREIGN KEY ([OrderId]) REFERENCES [Orders] ([OrderId]) ON DELETE CASCADE,
+    CONSTRAINT [FK_Reports_Users_SignedByUserId] FOREIGN KEY ([SignedByUserId]) REFERENCES [Users] ([UserId]) ON DELETE NO ACTION
+);
+[15:13:38 ERR] Failed executing DbCommand (19ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+CREATE TABLE [Reports] (
+    [ReportId] uniqueidentifier NOT NULL,
+    [OrderId] uniqueidentifier NOT NULL,
+    [Status] nvarchar(50) NOT NULL,
+    [SignedByUserId] uniqueidentifier NULL,
+    [SignedAt] datetimeoffset NULL,
+    [PathologistComments] nvarchar(max) NULL,
+    [Interpretation] nvarchar(max) NULL,
+    [Recommendations] nvarchar(max) NULL,
+    [CurrentVersion] int NOT NULL,
+    [Delivered] bit NOT NULL,
+    [DeliveredAt] datetimeoffset NULL,
+    CONSTRAINT [PK_Reports] PRIMARY KEY ([ReportId]),
+    CONSTRAINT [FK_Reports_Orders_OrderId] FOREIGN KEY ([OrderId]) REFERENCES [Orders] ([OrderId]) ON DELETE CASCADE,
+    CONSTRAINT [FK_Reports_Users_SignedByUserId] FOREIGN KEY ([SignedByUserId]) REFERENCES [Users] ([UserId]) ON DELETE NO ACTION
+);
+Microsoft.Data.SqlClient.SqlException (0x80131904): There is already an object named 'Reports' in the database.
+   at Microsoft.Data.SqlClient.SqlConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   at Microsoft.Data.SqlClient.SqlInternalConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   at Microsoft.Data.SqlClient.TdsParser.ThrowExceptionAndWarning(TdsParserStateObject stateObj, Boolean callerHasConnectionLock, Boolean asyncClose)
+   at Microsoft.Data.SqlClient.TdsParser.TryRun(RunBehavior runBehavior, SqlCommand cmdHandler, SqlDataReader dataStream, BulkCopySimpleResultSet bulkCopyHandler, TdsParserStateObject stateObj, Boolean& dataReady)
+   at Microsoft.Data.SqlClient.SqlCommand.RunExecuteNonQueryTds(String methodName, Boolean isAsync, Int32 timeout, Boolean asyncWrite)
+   at Microsoft.Data.SqlClient.SqlCommand.InternalExecuteNonQuery(TaskCompletionSource`1 completion, Boolean sendToPipe, Int32 timeout, Boolean& usedCache, Boolean asyncWrite, Boolean inRetry, String methodName)
+   at Microsoft.Data.SqlClient.SqlCommand.ExecuteNonQuery()
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteNonQuery(RelationalCommandParameterObject parameterObject)
+   at Microsoft.EntityFrameworkCore.Migrations.MigrationCommand.ExecuteNonQuery(IRelationalConnection connection, IReadOnlyDictionary`2 parameterValues)
+   at Microsoft.EntityFrameworkCore.Migrations.Internal.MigrationCommandExecutor.ExecuteNonQuery(IEnumerable`1 migrationCommands, IRelationalConnection connection)
+   at Microsoft.EntityFrameworkCore.Migrations.Internal.Migrator.Migrate(String targetMigration)
+   at Microsoft.EntityFrameworkCore.Design.Internal.MigrationsOperations.UpdateDatabase(String targetMigration, String connectionString, String contextType)
+   at Microsoft.EntityFrameworkCore.Design.OperationExecutor.UpdateDatabaseImpl(String targetMigration, String connectionString, String contextType)
+   at Microsoft.EntityFrameworkCore.Design.OperationExecutor.UpdateDatabase.<>c__DisplayClass0_0.<.ctor>b__0()
+   at Microsoft.EntityFrameworkCore.Design.OperationExecutor.OperationBase.Execute(Action action)
+ClientConnectionId:8e302e4e-c91c-4a77-bb74-8e9bf958fa1e
+Error Number:2714,State:6,Class:16
+There is already an object named 'Reports' in the database.
+PS D:\Projects\SynOS-Synthesized-Lab-Intelligence>

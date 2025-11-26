@@ -1,3 +1,13 @@
-|(No column name)|
+|COLUMN_NAME|
 |---|
-|2|
+|ReportId|
+|OrderId|
+|Status|
+|SignedByUserId|
+|SignedAt|
+|PathologistComments|
+|Interpretation|
+|Recommendations|
+|CurrentVersion|
+|Delivered|
+|DeliveredAt|
