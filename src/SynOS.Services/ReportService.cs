@@ -256,5 +256,65 @@ namespace SynOS.Services
                 _logger.LogInformation("Report for Order ID {OrderId} was already marked as delivered.", orderId);
             }
         }
+
+        public async Task<ReportDataModel?> GetReportDataForPdfAsync(Guid visitId)
+        {
+            var report = await _context.Reports
+                .Include(r => r.Order)
+                    .ThenInclude(o => o.TestDefinition)
+                .Include(r => r.Order)
+                    .ThenInclude(o => o.Visit)
+                        .ThenInclude(v => v.Patient)
+                .Include(r => r.SignedBy) // Include the user who signed the report
+                .FirstOrDefaultAsync(r => r.Order.VisitId == visitId); // Filter by VisitId
+
+            if (report == null || report.Order == null || report.Order.Visit == null || report.Order.Visit.Patient == null)
+            {
+                return null;
+            }
+
+            var patient = report.Order.Visit.Patient;
+            var visit = report.Order.Visit;
+            var order = report.Order;
+
+            var results = await _context.Results
+                .Where(r => r.OrderId == order.OrderId)
+                .Select(r => new ParameterResult
+                {
+                    Name = r.ParameterCode,
+                    Value = r.Value.ToString(),
+                    Unit = r.Unit,
+                    ReferenceRange = r.ReferenceRange,
+                    IsCritical = r.Flag == "C"
+                })
+                .ToListAsync();
+
+            byte[]? signatureImage = null;
+
+            return new ReportDataModel
+            {
+                Modality = order.Department,
+                ReportTitle = $"{order.Department} Report",
+                Patient = new PatientInfo
+                {
+                    Name = $"{patient.FirstName} {patient.LastName}",
+                    PatientId = patient.MRN,
+                    DateOfBirth = patient.DateOfBirth.ToString("yyyy-MM-dd"),
+                    Gender = patient.Gender,
+                    ContactInfo = patient.CurrentPhoneNumber ?? "N/A"
+                },
+                Parameters = results,
+                Comments = report.PathologistComments ?? "",
+                Interpretation = report.Interpretation ?? "",
+                Recommendations = report.Recommendations ?? "",
+                Signature = new SignatureDetails
+                {
+                    DoctorName = report.SignedBy?.Name ?? "Unsigned",
+                    Credentials = "Pathologist",
+                    SignatureImage = signatureImage
+                },
+                VerificationQrCodeContent = $"https://synos.com/verify/{report.ReportId}"
+            };
+        }
     }
 }

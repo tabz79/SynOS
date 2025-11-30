@@ -909,6 +909,72 @@ namespace SynOS.Data.Migrations
                     b.ToTable("Reports");
                 });
 
+            modelBuilder.Entity("SynOS.Models.Entities.ReportTemplate", b =>
+                {
+                    b.Property<Guid>("TemplateId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("CreatedBy")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<bool>("IsDefault")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsPublished")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Modality")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("TemplateJson")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<int>("Version")
+                        .HasColumnType("int");
+
+                    b.HasKey("TemplateId");
+
+                    b.HasIndex("CreatedBy");
+
+                    b.HasIndex("IsDefault")
+                        .HasFilter("[IsDefault] = 1");
+
+                    b.HasIndex("IsDeleted")
+                        .HasFilter("[IsDeleted] = 0");
+
+                    b.HasIndex("IsPublished");
+
+                    b.HasIndex("Modality");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.ToTable("ReportTemplates");
+                });
+
             modelBuilder.Entity("SynOS.Models.Entities.ReportVersion", b =>
                 {
                     b.Property<Guid>("ReportVersionId")
@@ -1694,6 +1760,17 @@ namespace SynOS.Data.Migrations
                     b.Navigation("Order");
 
                     b.Navigation("SignedBy");
+                });
+
+            modelBuilder.Entity("SynOS.Models.Entities.ReportTemplate", b =>
+                {
+                    b.HasOne("SynOS.Models.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("CreatedBy")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("SynOS.Models.Entities.ReportVersion", b =>

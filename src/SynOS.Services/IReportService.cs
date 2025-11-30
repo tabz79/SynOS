@@ -10,5 +10,6 @@ namespace SynOS.Services
         Task SaveFinalResultsAsync(Guid orderId, SaveFinalResultsRequestDto request);
         Task<FinalReportDto> GetFinalReportAsync(Guid orderId);
         Task MarkReportAsDeliveredAsync(Guid orderId);
+        Task<ReportDataModel?> GetReportDataForPdfAsync(Guid visitId);
     }
 }

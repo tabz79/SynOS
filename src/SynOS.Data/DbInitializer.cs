@@ -22,6 +22,114 @@ namespace SynOS.Data
             if (!context.Patients.Any()) SeedPatients(context);
             if (!context.Appointments.Any()) SeedAppointments(context);
             if (!context.Visits.Any()) SeedVisitsAndTokens(context);
+            if (!context.ReportTemplates.Any()) SeedReportTemplates(context);
+        }
+
+        private static void SeedReportTemplates(SynOSDbContext context)
+        {
+            var adminUser = context.Users.First(u => u.Email == "admin@lab.com");
+
+            var templates = new ReportTemplate[]
+            {
+                new ReportTemplate
+                {
+                    TemplateId = Guid.NewGuid(),
+                    Modality = "Pathology",
+                    Name = "Pathology_Standard_1Column",
+                    Description = "Standard one-column report for pathology results.",
+                    TemplateJson = @"{
+                        ""meta"": {
+                            ""name"": ""Pathology_Standard_1Column"",
+                            ""modality"": ""Pathology"",
+                            ""layout"": ""oneColumn"",
+                            ""pageSize"": ""A4"",
+                            ""orientation"": ""Portrait""
+                        },
+                        ""sections"": [
+                            { ""type"": ""Header"", ""title"": ""Pathology Report"", ""showLogo"": true },
+                            { ""type"": ""PatientInfo"", ""showPatientName"": true, ""showPatientId"": true, ""showDateOfBirth"": true, ""showGender"": true, ""showContactInfo"": true },
+                            { ""type"": ""ParameterTable"", ""showReferenceRanges"": true, ""highlightCriticalValues"": true },
+                            { ""type"": ""Comments"", ""title"": ""Lab Comments"", ""visibleIfEmpty"": false },
+                            { ""type"": ""Interpretation"", ""title"": ""Pathologist Interpretation"", ""visibleIfEmpty"": false },
+                            { ""type"": ""SignatureBlock"", ""showDoctorName"": true, ""showCredentials"": true, ""showDigitalSignatureImage"": true },
+                            { ""type"": ""QRCode"", ""size"": 70, ""content"": ""{ReportVerificationLink}"" },
+                            { ""type"": ""Footer"", ""leftText"": ""SynOS Pathology Lab"", ""rightText"": ""Page {PageNumber} of {TotalPages}"" }
+                        ]
+                    }",
+                    Version = 1,
+                    IsPublished = true,
+                    IsDefault = true,
+                    IsDeleted = false,
+                    CreatedBy = adminUser.UserId,
+                    CreatedAt = DateTimeOffset.UtcNow,
+                    UpdatedAt = DateTimeOffset.UtcNow
+                },
+                new ReportTemplate
+                {
+                    TemplateId = Guid.NewGuid(),
+                    Modality = "Pathology",
+                    Name = "Pathology_Detailed_2Column",
+                    Description = "Detailed two-column report for pathology results, including recommendations.",
+                    TemplateJson = @"{
+                        ""meta"": {
+                            ""name"": ""Pathology_Detailed_2Column"",
+                            ""modality"": ""Pathology"",
+                            ""layout"": ""twoColumn"",
+                            ""pageSize"": ""A4"",
+                            ""orientation"": ""Portrait""
+                        },
+                        ""sections"": [
+                            { ""type"": ""Header"", ""title"": ""Detailed Pathology Report"", ""showLogo"": true },
+                            { ""type"": ""PatientInfo"", ""showPatientName"": true, ""showPatientId"": true, ""showDateOfBirth"": true, ""showGender"": true },
+                            { ""type"": ""ParameterTable"", ""showReferenceRanges"": true, ""highlightCriticalValues"": true },
+                            { ""type"": ""Interpretation"", ""title"": ""Pathologist's Interpretation"", ""visibleIfEmpty"": true },
+                            { ""type"": ""Recommendations"", ""title"": ""Recommendations"", ""visibleIfEmpty"": true },
+                            { ""type"": ""SignatureBlock"", ""showDoctorName"": true, ""showCredentials"": true, ""showDigitalSignatureImage"": true },
+                            { ""type"": ""Footer"", ""leftText"": ""SynOS Advanced Pathology"", ""rightText"": ""Generated on {CurrentDate}"" }
+                        ]
+                    }",
+                    Version = 1,
+                    IsPublished = false,
+                    IsDefault = false,
+                    IsDeleted = false,
+                    CreatedBy = adminUser.UserId,
+                    CreatedAt = DateTimeOffset.UtcNow,
+                    UpdatedAt = DateTimeOffset.UtcNow
+                },
+                new ReportTemplate
+                {
+                    TemplateId = Guid.NewGuid(),
+                    Modality = "Radiology",
+                    Name = "Radiology_Standard",
+                    Description = "Standard report for radiology findings.",
+                    TemplateJson = @"{
+                        ""meta"": {
+                            ""name"": ""Radiology_Standard"",
+                            ""modality"": ""Radiology"",
+                            ""layout"": ""oneColumn"",
+                            ""pageSize"": ""A4"",
+                            ""orientation"": ""Portrait""
+                        },
+                        ""sections"": [
+                            { ""type"": ""Header"", ""title"": ""Radiology Report"", ""showLogo"": true },
+                            { ""type"": ""PatientInfo"", ""showPatientName"": true, ""showPatientId"": true, ""showDateOfBirth"": true, ""showGender"": true },
+                            { ""type"": ""Comments"", ""title"": ""Radiologist Findings"", ""visibleIfEmpty"": false },
+                            { ""type"": ""SignatureBlock"", ""showDoctorName"": true, ""showCredentials"": true, ""showDigitalSignatureImage"": true },
+                            { ""type"": ""QRCode"", ""size"": 70, ""content"": ""{ReportVerificationLink}"" },
+                            { ""type"": ""Footer"", ""leftText"": ""SynOS Radiology Unit"", ""rightText"": ""Page {PageNumber}"" }
+                        ]
+                    }",
+                    Version = 1,
+                    IsPublished = true,
+                    IsDefault = true,
+                    IsDeleted = false,
+                    CreatedBy = adminUser.UserId,
+                    CreatedAt = DateTimeOffset.UtcNow,
+                    UpdatedAt = DateTimeOffset.UtcNow
+                }
+            };
+            context.ReportTemplates.AddRange(templates);
+            context.SaveChanges();
         }
 
         private static void SeedCriticalRules(SynOSDbContext context)
