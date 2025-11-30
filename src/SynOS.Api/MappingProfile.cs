@@ -5,6 +5,10 @@
 using AutoMapper;
 using SynOS.Models.DTOs;
 using SynOS.Models.Entities;
+using SynOS.Models.DTOs.ReportTemplateDtos;
+using SynOS.Models.DTOs.ReportTemplateDsl;
+using System.Text.Json;
+using System;
 
 namespace SynOS.Api
 {
@@ -13,7 +17,16 @@ namespace SynOS.Api
         public MappingProfile()
         {
             CreateMap<User, UserDto>();
-            // TODO: Add other mappings as DTOs and Entities are created
+            
+            // ReportTemplate mappings
+            CreateMap<ReportTemplate, ReportTemplateDto>()
+                .ForMember(dest => dest.TemplateDsl, opt => opt.MapFrom(src => (TemplateModel?)null));
+
+            CreateMap<CreateReportTemplateDto, ReportTemplate>()
+                .ForMember(dest => dest.TemplateJson, opt => opt.MapFrom(src => src.TemplateJson));
+
+            CreateMap<UpdateReportTemplateDto, ReportTemplate>()
+                .ForMember(dest => dest.TemplateJson, opt => opt.MapFrom(src => src.TemplateJson));
         }
     }
 }

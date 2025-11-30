@@ -1,8 +1,10 @@
 {
   "version": 2,
-  "dgSpecHash": "lqMa/JL8pcc=",
+  "dgSpecHash": "a//tmbpDn+Q=",
   "success": true,
   "projectFilePath": "D:\\Projects\\SynOS-Synthesized-Lab-Intelligence\\src\\SynOS.Models\\SynOS.Models.csproj",
-  "expectedPackageFiles": [],
+  "expectedPackageFiles": [
+    "C:\\Users\\Asus\\.nuget\\packages\\newtonsoft.json\\13.0.4\\newtonsoft.json.13.0.4.nupkg.sha512"
+  ],
   "logs": []
 }

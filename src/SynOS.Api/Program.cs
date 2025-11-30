@@ -88,7 +88,6 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
-
 // Add AutoMapper
 builder.Services.AddAutoMapper(typeof(Program)); // Scans for profiles in the assembly
 
@@ -105,12 +104,12 @@ builder.Services.AddScoped<IReportService, ReportService>();
 builder.Services.AddScoped<ICriticalValueService, CriticalValueService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<ISampleNotifier, SampleNotifier>(); // Register notifier
+builder.Services.AddScoped<IReportTemplateService, ReportTemplateService>(); // Register new service
+builder.Services.AddScoped<IReportPdfRenderer, QuestPdfReportRenderer>(); // Register new service
 builder.Services.AddHostedService<ExpiredLockCleanupService>();
-
 
 // Add SignalR
 builder.Services.AddSignalR();
-
 
 // Configure CORS
 builder.Services.AddCors(options =>
@@ -143,12 +142,13 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
+// ✅ Always enable Swagger (for now, this is fine for dev/testing)
+app.UseSwagger();
+app.UseSwaggerUI();
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
-
     // Dev-only middleware to bypass auth via header
     app.UseMiddleware<DevHeaderAuthenticationMiddleware>();
 

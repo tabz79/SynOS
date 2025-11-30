@@ -10,3 +10,4 @@ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\obj\Debug\net8.0
 D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\obj\Debug\net8.0\refint\SynOS.Models.dll
 D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\obj\Debug\net8.0\SynOS.Models.pdb
 D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\obj\Debug\net8.0\ref\SynOS.Models.dll
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\obj\Debug\net8.0\SynOS.Models.csproj.AssemblyReference.cache

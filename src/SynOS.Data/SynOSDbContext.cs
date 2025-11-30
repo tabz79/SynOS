@@ -60,6 +60,7 @@ namespace SynOS.Data
         public DbSet<Referrer> Referrers { get; set; } = null!;
         public DbSet<Report> Reports { get; set; } = null!;
         public DbSet<ReportVersion> ReportVersions { get; set; } = null!;
+        public DbSet<ReportTemplate> ReportTemplates { get; set; } = null!;
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -210,6 +211,21 @@ namespace SynOS.Data
                 entity.HasOne(e => e.Report).WithMany(r => r.ReportVersions).HasForeignKey(e => e.ReportId).OnDelete(DeleteBehavior.Cascade);
                 entity.HasOne(e => e.SignedBy).WithMany().HasForeignKey(e => e.SignedByUserId).OnDelete(DeleteBehavior.Restrict);
                 entity.HasIndex(e => new { e.ReportId, e.VersionNumber }).IsUnique();
+            });
+
+            // ReportTemplate Module
+            modelBuilder.Entity<ReportTemplate>(entity =>
+            {
+                entity.HasIndex(e => e.Name).IsUnique();
+                entity.HasIndex(e => e.Modality);
+                entity.HasIndex(e => e.IsPublished);
+                entity.HasIndex(e => e.IsDefault).HasFilter("[IsDefault] = 1");
+                entity.HasIndex(e => e.IsDeleted).HasFilter("[IsDeleted] = 0");
+
+                entity.HasOne(e => e.User)
+                      .WithMany()
+                      .HasForeignKey(e => e.CreatedBy)
+                      .OnDelete(DeleteBehavior.Restrict);
             });
         }
     }
