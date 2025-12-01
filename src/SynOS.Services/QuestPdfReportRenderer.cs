@@ -6,6 +6,7 @@ using System;
 using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
+using QRCoder;
 
 namespace SynOS.Services
 {
@@ -223,16 +224,32 @@ namespace SynOS.Services
         private void RenderSignatureBlock(ColumnDescriptor column, ReportDataModel data, SignatureBlockConfig? config)
         {
             if (config == null) return;
+
             column.Item().PaddingTop(20).AlignRight().Column(sigCol =>
             {
-                if (config.ShowDigitalSignatureImage && data.Signature.SignatureImage != null)
+                if (data.Signature?.SignatureImage != null)
                 {
-                    sigCol.Item().Height(50).Width(150).Image(data.Signature.SignatureImage);
+                    if (config.ShowDigitalSignatureImage)
+                    {
+                        sigCol.Item().Height(50).Width(150).Image(data.Signature.SignatureImage);
+                    }
+                    if (config.ShowDoctorName)
+                    {
+                        sigCol.Item().Text(data.Signature.DoctorName).SemiBold();
+                    }
+                    if (config.ShowCredentials)
+                    {
+                        sigCol.Item().Text(data.Signature.Credentials);
+                    }
+                    if (data.SignedAt.HasValue)
+                    {
+                        sigCol.Item().Text($"Signed at: {data.SignedAt.Value:yyyy-MM-dd HH:mm:ss 'UTC'}");
+                    }
                 }
-                if (config.ShowDoctorName) 
-                    sigCol.Item().Text(data.Signature.DoctorName).SemiBold();
-                if (config.ShowCredentials) 
-                    sigCol.Item().Text(data.Signature.Credentials);
+                else
+                {
+                    sigCol.Item().Text("Not signed");
+                }
             });
         }
 
@@ -240,11 +257,16 @@ namespace SynOS.Services
         {
             if (config == null || string.IsNullOrWhiteSpace(data.VerificationQrCodeContent)) return;
 
+            var qrGenerator = new QRCodeGenerator();
+            var qrCodeData = qrGenerator.CreateQrCode(data.VerificationQrCodeContent, QRCodeGenerator.ECCLevel.Q);
+            var qrCode = new PngByteQRCode(qrCodeData);
+            var qrCodeImage = qrCode.GetGraphic(20);
+
             column.Item().PaddingTop(10).AlignLeft().Column(qrCol =>
             {
                 qrCol.Item().Shrink()
                      .Height(config.Size).Width(config.Size)
-                     .Image(Placeholders.Image(config.Size, config.Size));
+                     .Image(qrCodeImage);
                 qrCol.Item().Text("Scan for verification").FontSize(8);
             });
         }

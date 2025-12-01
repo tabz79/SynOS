@@ -6,11 +6,13 @@ using Microsoft.AspNetCore.Mvc;
 using SynOS.Models.DTOs;
 using SynOS.Services;
 
+using SynOS.Api.Authorization;
+
 namespace SynOS.Api.Controllers
 {
     [ApiController]
     [Route("api/v1/reports")]
-    [Authorize(Roles = "PathTech,Admin")]
+    [AuthorizeRoles("PathTech", "Admin", "Pathologist")]
     public class ReportsController : ControllerBase
     {
         private readonly IReportService _reportService;
@@ -20,9 +22,9 @@ namespace SynOS.Api.Controllers
             _reportService = reportService;
         }
 
-        [HttpPost("{orderId}/sign")]
-        [Authorize(Roles = "PathTech,Admin")] // Example: Only PathTech/Admin can sign
-        public async Task<IActionResult> SignReport(Guid orderId, [FromBody] ReportSignRequestDto request)
+        [HttpPost("{reportId}/sign")]
+        [AuthorizeRoles("Doctor", "Pathologist")]
+        public async Task<IActionResult> SignReport(Guid reportId)
         {
             var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (!Guid.TryParse(userIdString, out var userId))
@@ -32,17 +34,25 @@ namespace SynOS.Api.Controllers
 
             try
             {
-                var reportVersion = await _reportService.SignReportAsync(orderId, userId, request);
-                return Ok(reportVersion);
+                var result = await _reportService.SignReportAsync(reportId, userId);
+                return Ok(result);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
             }
             catch (InvalidOperationException ex)
             {
                 return Conflict(new { message = ex.Message });
             }
+            catch (BadHttpRequestException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
 
+
         [HttpPost("{orderId}/results")]
-        [Authorize(Roles = "PathTech,Admin")] // Example: Only LabTech/Admin can save results
         public async Task<IActionResult> SaveFinalResults(Guid orderId, [FromBody] SaveFinalResultsRequestDto request)
         {
             try
@@ -57,7 +67,6 @@ namespace SynOS.Api.Controllers
         }
 
         [HttpGet("{orderId}")]
-        [Authorize(Roles = "PathTech,Admin,Delivery")] // Example: Multiple roles can view reports
         public async Task<IActionResult> GetFinalReport(Guid orderId)
         {
             try
@@ -72,7 +81,6 @@ namespace SynOS.Api.Controllers
         }
 
         [HttpPost("{orderId}/delivered")]
-        [Authorize(Roles = "Delivery,Admin")] // Example: Only Delivery/Admin can mark as delivered
         public async Task<IActionResult> MarkReportAsDelivered(Guid orderId)
         {
             try

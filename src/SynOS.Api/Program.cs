@@ -16,6 +16,7 @@ using SynOS.Api.Hubs;
 using System.Security.Claims;
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.OpenApi.Models; // Added for Swagger JWT configuration
+using SynOS.Services.Storage;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -106,10 +107,15 @@ builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<ISampleNotifier, SampleNotifier>(); // Register notifier
 builder.Services.AddScoped<IReportTemplateService, ReportTemplateService>(); // Register new service
 builder.Services.AddScoped<IReportPdfRenderer, QuestPdfReportRenderer>(); // Register new service
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddSingleton<IFileStorageService, LocalStorageService>();
 builder.Services.AddHostedService<ExpiredLockCleanupService>();
 
 // Add SignalR
 builder.Services.AddSignalR();
+
+// Add HttpClientFactory
+builder.Services.AddHttpClient();
 
 // Configure CORS
 builder.Services.AddCors(options =>
@@ -183,6 +189,18 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+// Configure static files
+var fileStorageBasePath = app.Configuration["FileStorage:BasePath"];
+if (!string.IsNullOrEmpty(fileStorageBasePath) && Directory.Exists(fileStorageBasePath))
+{
+    app.UseStaticFiles(new StaticFileOptions
+    {
+        FileProvider = new Microsoft.Extensions.FileProviders.PhysicalFileProvider(fileStorageBasePath),
+        RequestPath = "/files" // This must match the PublicBaseUrl path segment
+    });
+}
+
 
 // Add ErrorHandlerMiddleware
 app.UseMiddleware<ErrorHandlerMiddleware>();

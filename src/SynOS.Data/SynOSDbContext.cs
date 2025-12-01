@@ -61,6 +61,7 @@ namespace SynOS.Data
         public DbSet<Report> Reports { get; set; } = null!;
         public DbSet<ReportVersion> ReportVersions { get; set; } = null!;
         public DbSet<ReportTemplate> ReportTemplates { get; set; } = null!;
+        public DbSet<ReportSignature> ReportSignatures { get; set; } = null!;
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -226,6 +227,23 @@ namespace SynOS.Data
                       .WithMany()
                       .HasForeignKey(e => e.CreatedBy)
                       .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            // ReportSignature Module
+            modelBuilder.Entity<ReportSignature>(entity =>
+            {
+                entity.HasIndex(e => e.ReportId);
+                entity.HasIndex(e => e.SignedByUserId);
+
+                entity.HasOne(e => e.Report)
+                    .WithMany() // A report can have multiple signatures over time
+                    .HasForeignKey(e => e.ReportId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(e => e.SignedByUser)
+                    .WithMany() // A user can sign multiple reports
+                    .HasForeignKey(e => e.SignedByUserId)
+                    .OnDelete(DeleteBehavior.Restrict);
             });
         }
     }
