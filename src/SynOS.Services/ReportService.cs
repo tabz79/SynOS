@@ -1,6 +1,8 @@
 using System;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SynOS.Data;
@@ -14,98 +16,101 @@ namespace SynOS.Services
         private readonly SynOSDbContext _context;
         private readonly ILogger<ReportService> _logger;
         private readonly ICriticalValueService _criticalValueService;
+        private readonly IHttpClientFactory _httpClientFactory;
 
-        public ReportService(SynOSDbContext context, ILogger<ReportService> logger, ICriticalValueService criticalValueService)
+        public ReportService(SynOSDbContext context, ILogger<ReportService> logger, ICriticalValueService criticalValueService, IHttpClientFactory httpClientFactory)
         {
             _context = context;
             _logger = logger;
             _criticalValueService = criticalValueService;
+            _httpClientFactory = httpClientFactory;
         }
 
-        public async Task<ReportVersionDto> SignReportAsync(Guid orderId, Guid pathologistId, ReportSignRequestDto metadata)
+        public async Task<ReportSignatureResponseDto> SignReportAsync(Guid reportId, Guid signedByUserId)
         {
-            var hasPendingCriticals = await _context.CriticalAlerts
-                .AnyAsync(a => a.Result.OrderId == orderId && a.Status == "Pending");
-
-            if (hasPendingCriticals)
+            // 1. Precondition checks
+            var user = await _context.Users.FindAsync(signedByUserId);
+            if (user == null || string.IsNullOrEmpty(user.SignatureImageUrl))
             {
-                if (!metadata.ConfirmCriticalValuesReviewed)
-                {
-                    throw new InvalidOperationException("This report has pending critical alerts. To sign, set ConfirmCriticalValuesReviewed = true after reviewing them.");
-                }
-                
-                // Bulk-acknowledge all pending critical alerts for this order
-                await _criticalValueService.AcknowledgeAlertsForOrderAsync(orderId, pathologistId, "Acknowledged at report sign-off.");
+                throw new BadHttpRequestException("User has no signature image configured.");
             }
 
-            // Find or create the report
-            var report = await _context.Reports.FirstOrDefaultAsync(r => r.OrderId == orderId);
+            var report = await _context.Reports
+                .Include(r => r.Order)
+                .FirstOrDefaultAsync(r => r.ReportId == reportId);
+
             if (report == null)
             {
-                report = new Report
-                {
-                    ReportId = Guid.NewGuid(),
-                    OrderId = orderId,
-                    Status = "Draft",
-                    CurrentVersion = 0
-                };
-                _context.Reports.Add(report);
+                throw new KeyNotFoundException("Report not found.");
             }
 
-            // Set Report status
-            report.Status = "Signed";
-            report.SignedByUserId = pathologistId;
-            report.SignedAt = DateTimeOffset.UtcNow;
-            report.PathologistComments = metadata.PathologistComments;
-            report.Interpretation = metadata.Interpretation;
-            report.Recommendations = metadata.Recommendations;
-            report.CurrentVersion += 1;
-
-            // Create ReportVersion
-            var reportVersion = new ReportVersion
+            // Assuming a status like 'Validated' or 'ReadyForSigning'
+            if (report.Status != "Validated" && report.Status != "ReadyForSigning")
             {
-                ReportVersionId = Guid.NewGuid(),
-                ReportId = report.ReportId,
-                VersionNumber = report.CurrentVersion,
-                CreatedAt = DateTimeOffset.UtcNow,
-                SignedByUserId = pathologistId,
-                SignedAt = report.SignedAt.Value
+                throw new InvalidOperationException($"Report is not in a state that can be signed. Current state: {report.Status}");
+            }
+
+            var hasPendingCriticals = await _criticalValueService.HasPendingCriticalAlerts(report.OrderId);
+            if (hasPendingCriticals)
+            {
+                throw new InvalidOperationException("Report has pending critical alerts that must be acknowledged before signing.");
+            }
+
+            // 2. Determine logical report version
+            var newVersion = report.CurrentVersion + 1;
+
+            // 3. Build canonical payload for hashing
+            var timestamp = DateTimeOffset.UtcNow;
+            var canonicalPayload = $"{report.ReportId}:{newVersion}:{signedByUserId}:{timestamp:o}"; // Simple version, can be expanded
+            
+            string signatureHash;
+            using (var sha256 = System.Security.Cryptography.SHA256.Create())
+            {
+                var bytes = System.Text.Encoding.UTF8.GetBytes(canonicalPayload);
+                var hashBytes = sha256.ComputeHash(bytes);
+                signatureHash = BitConverter.ToString(hashBytes).Replace("-", "").ToLowerInvariant();
+            }
+
+            // 4. Insert a row into ReportSignatures
+            var reportSignature = new ReportSignature
+            {
+                ReportId = reportId,
+                SignedByUserId = signedByUserId,
+                SignedAt = timestamp,
+                SignatureImageUrl = user.SignatureImageUrl,
+                SignatureHash = signatureHash,
+                ReportVersion = newVersion,
             };
+            await _context.ReportSignatures.AddAsync(reportSignature);
 
-            _context.ReportVersions.Add(reportVersion);
+            // 5. Update report status
+            report.Status = "Signed";
+            report.CurrentVersion = newVersion;
+            report.SignedByUserId = signedByUserId; // Keep track of the last signer on the main report table
+            report.SignedAt = timestamp;
 
-            // Write CriticalAudit entry for the signing action itself
-            var alertIds = await _context.CriticalAlerts
-                .Where(a => a.Result.OrderId == orderId)
-                .Select(a => a.AlertId)
-                .ToListAsync();
-
-            if (alertIds.Any())
+            // 6. Audit log
+            await _context.AuditLogs.AddAsync(new AuditLog
             {
-                 foreach (var alertId in alertIds)
-                {
-                    _context.CriticalAudits.Add(new CriticalAudit
-                    {
-                        AlertId = alertId,
-                        Action = "SpecialistSigned",
-                        ActedByUserId = pathologistId,
-                        Details = $"Report signed, implicitly acknowledging critical alert."
-                    });
-                }
-            }
+                UserId = signedByUserId,
+                Action = "ReportSigned",
+                Timestamp = DateTime.UtcNow,
+                Details = $"Report {reportId} signed, version {newVersion}"
+            });
 
             await _context.SaveChangesAsync();
-
-            return new ReportVersionDto
+            
+            // 7. Return response
+            return new ReportSignatureResponseDto
             {
-                ReportVersionId = reportVersion.ReportVersionId,
                 ReportId = report.ReportId,
-                VersionNumber = reportVersion.VersionNumber,
-                CreatedAt = reportVersion.CreatedAt,
-                SignedByUserId = reportVersion.SignedByUserId.Value,
-                SignedAt = reportVersion.SignedAt.Value
+                SignedByUserId = signedByUserId,
+                SignedAt = timestamp,
+                SignatureHash = signatureHash,
+                ReportVersion = newVersion
             };
         }
+
 
         public async Task SaveFinalResultsAsync(Guid orderId, SaveFinalResultsRequestDto request)
         {
@@ -265,7 +270,6 @@ namespace SynOS.Services
                 .Include(r => r.Order)
                     .ThenInclude(o => o.Visit)
                         .ThenInclude(v => v.Patient)
-                .Include(r => r.SignedBy) // Include the user who signed the report
                 .FirstOrDefaultAsync(r => r.Order.VisitId == visitId); // Filter by VisitId
 
             if (report == null || report.Order == null || report.Order.Visit == null || report.Order.Visit.Patient == null)
@@ -289,7 +293,47 @@ namespace SynOS.Services
                 })
                 .ToListAsync();
 
-            byte[]? signatureImage = null;
+            // Fetch the latest signature
+            var signature = await _context.ReportSignatures
+                .Include(s => s.SignedByUser)
+                .Where(s => s.ReportId == report.ReportId)
+                .OrderByDescending(s => s.SignedAt)
+                .FirstOrDefaultAsync();
+
+            var signatureDetails = new SignatureDetails();
+            byte[]? signatureImageBytes = null;
+
+            if (signature != null && signature.SignedByUser != null)
+            {
+                signatureDetails.DoctorName = signature.SignedByUser.Name;
+                signatureDetails.Credentials = "Pathologist"; // Placeholder
+
+                if (!string.IsNullOrEmpty(signature.SignatureImageUrl))
+                {
+                    try
+                    {
+                        var httpClient = _httpClientFactory.CreateClient();
+                        signatureImageBytes = await httpClient.GetByteArrayAsync(signature.SignatureImageUrl);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Failed to download signature image from {Url}", signature.SignatureImageUrl);
+                    }
+                }
+            }
+            else
+            {
+                signatureDetails.DoctorName = "Unsigned";
+            }
+            signatureDetails.SignatureImage = signatureImageBytes;
+
+
+            var qrCodeContent = $"{report.ReportId}_{(signature?.ReportVersion ?? report.CurrentVersion)}";
+            if (signature != null)
+            {
+                qrCodeContent = $"{report.ReportId}_{signature.ReportVersion}_{signature.SignatureHash}";
+            }
+
 
             return new ReportDataModel
             {
@@ -307,13 +351,11 @@ namespace SynOS.Services
                 Comments = report.PathologistComments ?? "",
                 Interpretation = report.Interpretation ?? "",
                 Recommendations = report.Recommendations ?? "",
-                Signature = new SignatureDetails
-                {
-                    DoctorName = report.SignedBy?.Name ?? "Unsigned",
-                    Credentials = "Pathologist",
-                    SignatureImage = signatureImage
-                },
-                VerificationQrCodeContent = $"https://synos.com/verify/{report.ReportId}"
+                Signature = signatureDetails,
+                SignedAt = signature?.SignedAt,
+                ReportVersion = signature?.ReportVersion ?? report.CurrentVersion,
+                SignatureHash = signature?.SignatureHash,
+                VerificationQrCodeContent = qrCodeContent
             };
         }
     }

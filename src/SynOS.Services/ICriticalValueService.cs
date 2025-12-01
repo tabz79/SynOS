@@ -11,5 +11,6 @@ namespace SynOS.Services
         Task AcknowledgeAlertsForOrderAsync(Guid orderId, Guid userId, string notes);
         Task<IEnumerable<CriticalAlertSummaryDto>> GetAlertsByStatusAsync(string status, int limit);
         Task<CriticalAlertDetailDto?> GetAlertDetailsAsync(Guid alertId);
+        Task<bool> HasPendingCriticalAlerts(Guid orderId);
     }
 }

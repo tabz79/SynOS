@@ -909,6 +909,45 @@ namespace SynOS.Data.Migrations
                     b.ToTable("Reports");
                 });
 
+            modelBuilder.Entity("SynOS.Models.Entities.ReportSignature", b =>
+                {
+                    b.Property<Guid>("ReportSignatureId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("ReportId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("ReportVersion")
+                        .HasColumnType("int");
+
+                    b.Property<string>("SignatureHash")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("SignatureImageUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTimeOffset>("SignedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("SignedByUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("ReportSignatureId");
+
+                    b.HasIndex("ReportId");
+
+                    b.HasIndex("SignedByUserId");
+
+                    b.ToTable("ReportSignatures");
+                });
+
             modelBuilder.Entity("SynOS.Models.Entities.ReportTemplate", b =>
                 {
                     b.Property<Guid>("TemplateId")
@@ -1356,6 +1395,13 @@ namespace SynOS.Data.Migrations
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("rowversion");
 
+                    b.Property<string>("SignatureImageUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTimeOffset?>("SignatureUpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
                     b.HasKey("UserId");
 
                     b.HasIndex("Email")
@@ -1760,6 +1806,25 @@ namespace SynOS.Data.Migrations
                     b.Navigation("Order");
 
                     b.Navigation("SignedBy");
+                });
+
+            modelBuilder.Entity("SynOS.Models.Entities.ReportSignature", b =>
+                {
+                    b.HasOne("SynOS.Models.Entities.Report", "Report")
+                        .WithMany()
+                        .HasForeignKey("ReportId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SynOS.Models.Entities.User", "SignedByUser")
+                        .WithMany()
+                        .HasForeignKey("SignedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Report");
+
+                    b.Navigation("SignedByUser");
                 });
 
             modelBuilder.Entity("SynOS.Models.Entities.ReportTemplate", b =>

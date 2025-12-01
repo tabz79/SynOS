@@ -15,6 +15,9 @@ namespace SynOS.Services
         public string Recommendations { get; set; } = string.Empty;
         public SignatureDetails Signature { get; set; } = new SignatureDetails();
         public string VerificationQrCodeContent { get; set; } = string.Empty;
+        public int ReportVersion { get; set; }
+        public string? SignatureHash { get; set; }
+        public DateTimeOffset? SignedAt { get; set; }
         // Add other necessary data fields
     }
 

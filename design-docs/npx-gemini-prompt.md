@@ -1,192 +1,251 @@
-CONSTRAINTS (DO NOT VIOLATE)
+📌 STRICT INSTRUCTIONS
 
-- Project name: SynOS (Diagnostic Lab Management System).
-- The current codebase on branch `day13-clean-reporting` BUILDS CLEAN. You must KEEP IT THAT WAY.
+Implement exactly as specified — no shortcuts
 
-- Treat the following as FROZEN and read-only:
-  - All existing entities in src/SynOS.Models/Entities (User, Patient, Visit, Order, Report, Result, etc.).
-  - All existing services in src/SynOS.Services (VisitService, InvoiceService, ReceptionFlowService, ResultService, CriticalValueService, ReportService, AuthService, etc.).
-  - Existing controllers and DTOs not related to report templates.
-  - DbInitializer seeding except when adding the new report templates ONLY.
+No UI changes
 
-- You MUST NOT:
-  - Rename, delete, or change types/nullability of ANY existing properties in ANY existing entities.
-  - Add or remove navigation properties in existing entities.
-  - Modify or refactor logic in existing services or controllers.
-  - Change existing API contracts.
-  - “Fix” nullability warnings by altering existing code outside the reporting module.
+No alternative endpoints
 
-- You MAY:
-  - Add NEW code for the report template engine ONLY:
-    - New entity: ReportTemplate (minimal supporting properties only — do not modify other entities).
-    - New JSON DSL models + DTOs under src/SynOS.Models/DTOs/ReportTemplateDsl and ReportTemplateDtos.
-    - New service interface + implementation:
-      - IReportTemplateService / ReportTemplateService
-      - IReportPdfRenderer / QuestPdfReportRenderer
-    - New controller:
-      - ReportTemplateController
-    - Update SynOSDbContext for:
-      - DbSet<ReportTemplate>
-      - Entity configuration ONLY for ReportTemplate
-    - Update DI configuration to register the new services.
-    - Add minimal seed data for report templates (3 initial templates).
+All business rules must be enforced (critical alerts, states, signature existence)
 
-- QuestPDF implementation constraints:
-  - Use QuestPDF version already installed.
-  - Must compile and return a valid PDF stream.
-  - Implement minimal rendering for:
-    - Header
-    - Patient Info
-    - Parameter table
-    - Comments block
-    - Signature placeholder
-    - Footer
-  - Conditional formatting + advanced positioning can be TODO for now.
+Do not alter existing PDF behavior except adding signature + QR fields
 
-- If ANY compile errors appear:
-  - Fix ONLY inside reporting engine code (ReportTemplate*, renderer, DSL, controller, DbContext config).
-  - NEVER modify existing unrelated entities/services/controllers.
+No file storage hacks — use existing storage layer
 
-- After you finish editing files:
-  - Show a build result summary based on: dotnet build .\src\SynOS.Api\SynOS.Api.csproj
-  - If errors: show FULL PATHS + LINE NUMBERS for each needed fix.
+Keep code style 100% consistent with existing backend structure
 
--------------------------------------------------------------------
-DAY 13 – IMPLEMENT FLEXIBLE REPORT TEMPLATES + QUESTPDF RENDERING
--------------------------------------------------------------------
+If any part seems unclear → ask for clarification, do not assume
 
-You are a senior .NET 8 backend engineer building SynOS — a Diagnostic Lab Management System.
+GOAL OF DAY 13.1:
+- Allow storing per-doctor digital signatures (JPG/PNG).
+- Allow a pathologist to “sign” a report:
+  - Record signer, time, and signature hash immutably.
+  - Use that in the SignatureBlock and QR code when rendering the PDF.
+- Ensure this integrates with existing critical alert rules and final report states.
 
-STACK:
-- .NET 8 Web API
-- EF Core + SQL Server
-- QuestPDF
+IMPORTANT:
+- STILL BACKEND ONLY. No frontend implementation.
+- Design APIs so the future UI can plug in easily.
 
-SCOPE: Backend only (no UI), but APIs must allow a future drag/drop designer.
+--------------------------------
+DATABASE – USERS EXTENSION (SIGNATURE)
+--------------------------------
 
-GOAL:
-Implement a template-driven report engine:
-- Admin-defined templates stored as JSON DSL
-- QuestPDF renders PDFs using visit + patient + results data
+Assume there is a Users table with UserId and Role information.
 
-------------------------------------------------
-DATABASE – ReportTemplates table
-------------------------------------------------
+Extend Users table with:
 
-Name: ReportTemplates
-
-Columns:
-- TemplateId UNIQUEIDENTIFIER (PK, default NEWID())
-- Modality VARCHAR(50) NOT NULL
-- Name VARCHAR(200) NOT NULL UNIQUE
-- Description NVARCHAR(500) NULL
-- TemplateJson NVARCHAR(MAX) NOT NULL
-- Version INT NOT NULL DEFAULT 1
-- IsPublished BIT NOT NULL DEFAULT 0
-- IsDefault BIT NOT NULL DEFAULT 0
-- IsDeleted BIT NOT NULL DEFAULT 0
-- CreatedBy UNIQUEIDENTIFIER NOT NULL  -- FK to Users(UserId)
-- CreatedAt DATETIMEOFFSET NOT NULL DEFAULT SYSUTCDATETIME()
-- UpdatedAt DATETIMEOFFSET NOT NULL DEFAULT SYSUTCDATETIME()
-
-Indexes:
-- IX_ReportTemplates_Modality
-- IX_ReportTemplates_IsPublished
-- IX_ReportTemplates_IsDefault (filtered WHERE IsDefault = 1)
-- IX_ReportTemplates_NotDeleted (filtered WHERE IsDeleted = 0)
+- SignatureImageUrl NVARCHAR(500) NULL  -- URL/path to stored signature image
+- SignatureUpdatedAt DATETIMEOFFSET NULL
 
 Rules:
-- Soft delete only.
-- Only 1 default per modality at a time.
+- SignatureImageUrl may be null if doctor has not provided a signature.
+- Only users with relevant roles (e.g., Pathologist, Radiologist) will typically use it.
 
-------------------------------------------------
-JSON DSL (source of truth for rendering)
-------------------------------------------------
+--------------------------------
+DATABASE – REPORT SIGNATURES
+--------------------------------
 
-Implement CLR models for this structure:
+Create a new table to record who signed which report, when, and with what signature.
 
-{
-  "meta": {
-    "name": "Pathology_Standard_1Column",
-    "modality": "Pathology",
-    "layout": "oneColumn",
-    "pageSize": "A4",
-    "orientation": "Portrait"
-  },
-  "sections": [
-    { "type": "Header", ... },
-    { "type": "PatientInfo", ... },
-    { "type": "ParameterTable", ... },
-    { "type": "Comments", ... },
-    { "type": "Interpretation", ... },
-    { "type": "Recommendations", ... },
-    { "type": "SignatureBlock", ... },
-    { "type": "QRCode", ... },
-    { "type": "Footer", ... }
-  ]
-}
+ReportSignatures
+(
+  ReportSignatureId UNIQUEIDENTIFIER NOT NULL PRIMARY KEY DEFAULT NEWID(),
+  ReportId          UNIQUEIDENTIFIER NOT NULL, -- FK to Reports/FinalReports table (assume exists)
+  SignedByUserId    UNIQUEIDENTIFIER NOT NULL, -- FK to Users(UserId)
+  SignedAt          DATETIMEOFFSET NOT NULL,
+  SignatureImageUrl NVARCHAR(500) NULL,        -- copy of user signature URL at time of sign
+  SignatureHash     NVARCHAR(200) NOT NULL,    -- used in QR code and for verification
+  ReportVersion     INT NOT NULL DEFAULT 1,    -- logical report version at sign time
+  CreatedAt         DATETIMEOFFSET NOT NULL DEFAULT SYSUTCDATETIME()
+)
 
-Validate JSON before saving.
+Indexes:
+- IX_ReportSignatures_ReportId ON ReportSignatures(ReportId);
+- IX_ReportSignatures_SignedByUserId ON ReportSignatures(SignedByUserId);
 
-------------------------------------------------
-SERVICES
-------------------------------------------------
+Behavior:
+- Multiple signatures per report allowed if needed (for corrections / addendums), but:
+  - The “current” signature is the latest one by SignedAt.
+- For now, treat the latest record as the active signature for rendering.
 
-Create IReportTemplateService + implementation:
+--------------------------------
+FILE / SIGNATURE UPLOAD ENDPOINT
+--------------------------------
 
-1) CreateTemplateAsync(...)
-2) GetTemplatesAsync(...)
-3) GetTemplateByIdAsync(...)
-4) UpdateTemplateJsonAsync(...)
-5) PublishTemplateAsync(...)
-6) SetDefaultTemplateAsync(...)
-7) SoftDeleteTemplateAsync(...)
-8) RenderPdfAsync(reportId, templateId = null)
+We need an endpoint for admin onboarding of doctor signatures.
 
-------------------------------------------------
-QUESTPDF RENDERER
-------------------------------------------------
+Endpoint:
+- POST /api/v1/users/{userId}/signature
 
-Create interface IReportPdfRenderer + implementation QuestPdfReportRenderer:
+Behavior:
+- Auth: Admin-only (this is part of onboarding a pathologist).
+- Accept multipart/form-data with a single image file (JPG or PNG).
+- Validate:
+  - File type (MIME, extension).
+  - Reasonable size limits (e.g., <= 512 KB).
+- Store file to configured storage (disk/Blob/S3) and generate a public or internal URL.
+- Update Users.SignatureImageUrl and SignatureUpdatedAt.
+- Return:
+  { userId, signatureImageUrl, updatedAt }
 
-- Task<byte[]> GeneratePdfAsync(ReportDataModel data, TemplateModel template)
+NOTE:
+- Do NOT store raw binary in database; use storage + URL instead.
 
-Data source:
-- Use existing report + results retrieval (read-only, no changes to ReportService).
+--------------------------------
+REPORT SIGNING FLOW (BUSINESS RULES)
+--------------------------------
 
-------------------------------------------------
-CONTROLLER – /api/v1/reports/templates
-------------------------------------------------
+We assume a Reports or FinalReports table exists and report has a lifecycle.
 
-Endpoints:
-- POST /api/v1/reports/templates
-- GET /api/v1/reports/templates
-- GET /api/v1/reports/templates/{id}
-- PUT /api/v1/reports/templates/{id}
-- POST /api/v1/reports/templates/{id}/publish
-- POST /api/v1/reports/templates/{id}/set-default
-- DELETE /api/v1/reports/templates/{id}
-- GET /api/v1/reports/templates/{id}/preview?visitId={visitId}
-- POST /api/v1/reports/render
+New endpoint:
 
-------------------------------------------------
-SEED (DbInitializer)
-------------------------------------------------
+POST /api/v1/reports/{reportId}/sign
 
-3 templates:
-- Pathology_Standard_1Column (Published + Default)
-- Pathology_Detailed_2Column (Unpublished)
-- Radiology_Standard (Published + Default)
+Called when a pathologist (Mr. X) presses “Sign Report” after reviewing.
 
-------------------------------------------------
-ACCEPTANCE CRITERIA
-------------------------------------------------
+Preconditions:
+- Authenticated user must be a doctor/pathologist with permission.
+- Report:
+  - Exists and is in a state that can be signed (e.g., ResultsValidated / ReadyForSigning).
+  - Has all required test results filled (no missing mandatory results).
+  - Has NO pending critical alerts:
+    - Reuse Day 12 logic or service to verify all critical alerts for this report/visit are acknowledged.
+- User:
+  - Has a non-null SignatureImageUrl (otherwise reject with a clear error: “No signature image configured for this user”).
 
-- Database supports template storage + soft delete
-- JSON DSL validates correctly
-- CRUD + publish + default-switch works
-- Preview generates a valid PDF stream
-- Render endpoint chooses correct template based on modality
-- Code remains clean, layered and unit-testable
+Signing Behavior:
+1) Load report aggregate, including:
+   - Patient, visit, tests, results, flags, comments, interpretations, etc.
+2) Determine logical report version:
+   - If Reports table already has a Version column, use/increment it.
+   - If not, you can start with Version = 1 and increment on each re-sign.
+3) Build a canonical string or payload snapshot for hashing:
+   - Include at least:
+     - ReportId
+     - ReportVersion
+     - SignedByUserId
+     - Key parts of the report content (e.g., test results hash).
+     - SignedAt timestamp.
+   - Compute a SignatureHash (e.g., SHA-256) from this canonical payload.
+4) Insert a row into ReportSignatures:
+   - ReportId = given reportId
+   - SignedByUserId = current user
+   - SignedAt = now (UTC)
+   - SignatureImageUrl = current Users.SignatureImageUrl
+   - SignatureHash = computed hash
+   - ReportVersion = determined version
+5) Update report status:
+   - e.g., from "Validated" to "Signed" or "ReadyForRelease".
+6) Audit log:
+   - "ReportSigned" with ReportId, SignedByUserId, SignedAt, ReportVersion.
 
-END PROMPT
+Responses:
+- 200 OK with:
+  {
+    reportId,
+    signedByUserId,
+    signedAt,
+    signatureHash,
+    reportVersion
+  }
+
+Error cases:
+- 400 if user has no signature image configured.
+- 409 if report state is not eligible for signing.
+- 409 if pending critical alerts exist.
+- 404 if report not found.
+
+--------------------------------
+INTEGRATION WITH QUESTPDF RENDERING
+--------------------------------
+
+Update the Day 13 RenderPdfAsync(reportId, templateId = null) behavior to include signature data.
+
+Steps:
+1) Load report aggregate as before.
+2) Load effective template (explicit templateId or default by modality).
+3) Load latest ReportSignatures record for this ReportId (if any), ordered by SignedAt DESC.
+4) Build a ReportPdfContext model that includes:
+   - Report data (patient, visit, tests, flags, comments, etc.).
+   - Signature data (if available):
+     - SignedByUserId
+     - SignedAt
+     - SignatureImageUrl
+     - SignatureHash
+     - ReportVersion
+
+5) Pass this context + TemplateModel to QuestPdfReportRenderer.GeneratePdfAsync.
+
+INSIDE QuestPdfReportRenderer:
+
+- When handling SignatureBlock:
+  - If signature record exists:
+    - Render doctor’s printed name (from Users) and designation if available.
+    - Render signature image from SignatureImageUrl.
+    - Render SignedAt date/time.
+  - If no signature exists:
+    - You can either:
+      - Render “Not signed” placeholder, OR
+      - Skip signature block entirely.
+    - This can be controlled by the template DSL in the future, but for now choose a simple consistent behavior.
+
+- When handling QRCode section:
+  - Use the "data" template from TemplateJson, e.g.:
+    "{reportId}_{version}_{signatureHash}"
+  - Replace placeholders:
+    - {reportId} -> ReportId
+    - {version} -> ReportVersion
+    - {signatureHash} -> SignatureHash (if signed; otherwise something like "UNSIGNED").
+  - Generate QR image from this final string.
+
+--------------------------------
+SECURITY & AUDIT CONSIDERATIONS
+--------------------------------
+
+- Ensure only users with appropriate roles can:
+  - Upload signature images (admin).
+  - Sign reports (doctor/pathologist roles).
+- SignatureHash should be computed using a stable, deterministic process.
+- Do NOT mutate existing ReportSignatures rows; always append a new one if a report is re-signed.
+- Old already-generated PDFs for previous versions should still verify correctly using the stored SignatureHash.
+
+--------------------------------
+ACCEPTANCE CRITERIA (DAY 13.1)
+--------------------------------
+
+- ✅ Admin can upload a signature image (JPG/PNG) for a doctor, and Users.SignatureImageUrl is populated.
+- ✅ POST /reports/{reportId}/sign:
+  - Rejects if:
+    - User has no signature image.
+    - Report has pending critical alerts.
+    - Report is in an invalid state for signing.
+  - On success, creates a ReportSignatures row with proper hash + timestamp.
+- ✅ RenderPdfAsync(reportId, templateId):
+  - If report is signed:
+    - SignatureBlock shows doctor name, signature image, and signed date/time.
+    - QR code embeds reportId, reportVersion, and signatureHash.
+  - If report is not signed:
+    - Behavior is consistent (no crash, deterministic placeholder/absence).
+- ✅ All changes are purely backend and are ready for future frontend integration:
+  - Onboarding UI can call /users/{id}/signature to upload image.
+  - Report viewer UI can call /reports/{reportId}/sign to sign.
+  - Both can call existing /reports/render APIs to download signed PDFs.
+
+The final result of Day 13 + Day 13.1:
+- PDF reports are template-driven, versioned, and can carry a verifiable digital signature of the reporting doctor, enforced by backend rules and critical alert handling.
+
+Immutable Guardrails (must follow)
+
+DO NOT run any shell commands, builds, or git operations.
+If a DB migration or dotnet ef step is needed, only tell the Product Owner to run it; you must not run it.
+If a new package is needed, just mention the install command in the TLDR; don’t execute it.
+Preserve existing structure and style in each file.
+After changes, output only a TLDR terminal-style summary:
+What the issue/goal was (1–2 sentences)
+What you implemented (1–2 sentences)
+Which files changed (names only)
+No code diffs, no full file dumps.
+Extra guardrail for this task:
+Do NOT create or modify anything under web/ or any frontend/React/TSX files.
+If you feel UI changes are needed, just mention them in the TLDR as “future UI work”, do not implement.

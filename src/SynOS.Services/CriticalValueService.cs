@@ -253,5 +253,11 @@ namespace SynOS.Services
                 Audit = auditTrail
             };
         }
+
+        public async Task<bool> HasPendingCriticalAlerts(Guid orderId)
+        {
+            return await _context.CriticalAlerts
+                .AnyAsync(a => a.Result.OrderId == orderId && a.Status == "Pending");
+        }
     }
 }
