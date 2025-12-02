@@ -60,8 +60,46 @@ namespace SynOS.Services.Storage
                 await file.CopyToAsync(stream);
             }
 
-            var publicUrl = $"{_publicBaseUrl}/{subDirectory}/{uniqueFileName}".Replace('\\', '/');
-            return publicUrl;
+            // Return the path relative to _basePath to be stored in the database
+            return Path.Combine(subDirectory, uniqueFileName);
+        }
+
+        public string GetFileUrl(string relativeFilePath)
+        {
+            // relativeFilePath is expected to be the path returned by SaveFileAsync
+            return $"{_publicBaseUrl}/{relativeFilePath}".Replace('\\', '/');
+        }
+
+        public Task<Stream> GetFileStreamAsync(string relativeFilePath)
+        {
+            var fullPath = Path.Combine(_basePath, relativeFilePath);
+            if (!File.Exists(fullPath))
+            {
+                throw new FileNotFoundException($"File not found at {fullPath}", fullPath);
+            }
+            return Task.FromResult<Stream>(new FileStream(fullPath, FileMode.Open, FileAccess.Read));
+        }
+
+        public async Task<string> SaveFileAsync(byte[] data, string fileName, string subDirectory)
+        {
+            if (data == null || data.Length == 0)
+            {
+                throw new ArgumentException("File data is empty.", nameof(data));
+            }
+
+            var targetDirectory = Path.Combine(_basePath, subDirectory);
+            if (!Directory.Exists(targetDirectory))
+            {
+                Directory.CreateDirectory(targetDirectory);
+            }
+            
+            // Note: In a real-world scenario, you might want to sanitize the fileName.
+            var filePath = Path.Combine(targetDirectory, fileName);
+
+            await File.WriteAllBytesAsync(filePath, data);
+
+            // Return the path relative to _basePath
+            return Path.Combine(subDirectory, fileName).Replace('\\', '/');
         }
     }
 }

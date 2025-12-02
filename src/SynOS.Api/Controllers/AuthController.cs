@@ -86,6 +86,22 @@ namespace SynOS.Api.Controllers
             }
         }
 
+        // DEV-ONLY helper to generate bcrypt hashes for seeding users
+        #if DEBUG
+        [HttpGet("dev-hash")]
+        public ActionResult<string> GetDevHash([FromQuery] string password)
+        {
+            if (string.IsNullOrWhiteSpace(password))
+            {
+                return BadRequest("Password is required.");
+            }
+
+            // Use the same bcrypt algorithm the app expects
+            var hash = BCrypt.Net.BCrypt.HashPassword(password);
+            return Ok(hash);
+        }
+        #endif
+
         private void SetTokenCookie(string token)
         {
             var cookieOptions = new CookieOptions

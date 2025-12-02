@@ -17,6 +17,7 @@ using System.Security.Claims;
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.OpenApi.Models; // Added for Swagger JWT configuration
 using SynOS.Services.Storage;
+using SynOS.Services.Stubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -109,6 +110,15 @@ builder.Services.AddScoped<IReportTemplateService, ReportTemplateService>(); // 
 builder.Services.AddScoped<IReportPdfRenderer, QuestPdfReportRenderer>(); // Register new service
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddSingleton<IFileStorageService, LocalStorageService>();
+
+// Register Delivery Module Services
+builder.Services.AddScoped<IDeliveryService, DeliveryService>();
+builder.Services.AddScoped<IWhatsAppSender, StubWhatsAppSender>();
+builder.Services.AddScoped<ISmsSender, StubSmsSender>();
+builder.Services.AddScoped<IEmailSender, StubEmailSender>();
+builder.Services.AddScoped<IPrintService, StubPrintService>();
+
+builder.Services.AddHostedService<NotificationWorkerService>();
 builder.Services.AddHostedService<ExpiredLockCleanupService>();
 
 // Add SignalR

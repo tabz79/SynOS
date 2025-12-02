@@ -63,6 +63,12 @@ namespace SynOS.Data
         public DbSet<ReportTemplate> ReportTemplates { get; set; } = null!;
         public DbSet<ReportSignature> ReportSignatures { get; set; } = null!;
 
+        // DbSets for Delivery Module
+        public DbSet<DeliveryLog> DeliveryLogs { get; set; } = null!;
+        public DbSet<DeliveryAttempt> DeliveryAttempts { get; set; } = null!;
+        public DbSet<DownloadLink> DownloadLinks { get; set; } = null!;
+        public DbSet<NotificationQueue> NotificationQueues { get; set; } = null!;
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -245,6 +251,55 @@ namespace SynOS.Data
                     .HasForeignKey(e => e.SignedByUserId)
                     .OnDelete(DeleteBehavior.Restrict);
             });
+
+            // Delivery Module
+            modelBuilder.Entity<DeliveryLog>(entity =>
+            {
+                entity.Property(e => e.DeliveryMethod).HasConversion<string>();
+                entity.Property(e => e.Status).HasConversion<string>();
+                entity.HasIndex(e => e.ReportId);
+                entity.HasIndex(e => e.DeliveredAt);
+                entity.HasOne(e => e.Report)
+                    .WithMany()
+                    .HasForeignKey(e => e.ReportId)
+                    .OnDelete(DeleteBehavior.Cascade); // Adjust to Restrict if Report should not be deleted if DeliveryLogs exist
+                entity.HasOne(e => e.DeliveredByUser)
+                    .WithMany()
+                    .HasForeignKey(e => e.DeliveredBy)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<DeliveryAttempt>(entity =>
+            {
+                entity.Property(e => e.Status).HasConversion<string>();
+                entity.HasOne(e => e.DeliveryLog)
+                    .WithMany(dl => dl.DeliveryAttempts)
+                    .HasForeignKey(e => e.LogId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            modelBuilder.Entity<DownloadLink>(entity =>
+            {
+                entity.HasIndex(e => e.Token).IsUnique();
+                entity.HasIndex(e => e.ReportId);
+                entity.HasOne(e => e.Report)
+                    .WithMany()
+                    .HasForeignKey(e => e.ReportId)
+                    .OnDelete(DeleteBehavior.Cascade);
+                entity.HasOne(e => e.CreatedByUser)
+                    .WithMany()
+                    .HasForeignKey(e => e.CreatedBy)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<NotificationQueue>(entity =>
+            {
+                entity.Property(e => e.Type).HasConversion<string>();
+                entity.Property(e => e.Status).HasConversion<string>();
+                entity.HasIndex(e => e.Status);
+                entity.HasIndex(e => e.NextRetryAt);
+            });
+
         }
     }
 }

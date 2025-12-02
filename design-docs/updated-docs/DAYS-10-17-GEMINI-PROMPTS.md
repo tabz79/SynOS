@@ -2765,3 +2765,484 @@ OUTPUT:
 ---
 
 **Ready to continue? Next: Days 18-20 prompts!** 🚀
+
+
+Prompt for Gemini (Roles & Access Control)
+Immutable Guardrails (must follow)
+
+- DO NOT run any shell commands, builds, or git operations.
+- If a DB migration or dotnet ef step is needed, only tell the Product Owner to run it; you must not run it.
+- If a new package is needed, just mention the install command in the TLDR; don’t execute it.
+- Preserve existing structure and style in each file.
+- After changes, output only a TLDR terminal-style summary:
+  - What the issue/goal was (1–2 sentences)
+  - What you implemented (1–2 sentences)
+  - Which files changed (names only)
+  No code diffs, no full file dumps.
+- Do NOT create or modify anything under web/ or any frontend/React/TSX files.
+- If you feel UI changes are needed, just mention them in the TLDR as “future UI work”, do not implement.
+
+---
+
+# DAY 14.ROLES: ROLE-BASED ACCESS CONTROL BACKBONE
+
+You are a .NET 8 BACKEND expert building a diagnostic lab system.
+
+STACK:
+- ASP.NET Core .NET 8 Web API
+- EF Core for data access
+- SQL Server
+- Background worker using IHostedService / BackgroundService
+- JWT-based authentication
+
+TASK (BACKEND ONLY):
+
+Implement a proper **role + policy** system for the lab backend.
+
+Goals:
+
+- Every user has a well-defined **Role**.
+- JWT tokens contain the role as a **claim**.
+- Authorization **policies** map roles to backend areas (Reception, Phlebotomy, Pathology, Radiology, Delivery).
+- Controllers are protected with policies, **but existing flows and business logic are NOT changed** in this task.
+- **Admin** has superuser access and can perform any action allowed to other roles.
+
+NO FRONTEND CODE.  
+Everything is backend: DB, models, auth, policies, attributes on controllers.
+
+---
+
+## ROLES (CANONICAL LIST)
+
+Use these exact role names (string values in DB and JWT):
+
+1. `Admin`         – Full access to all backend areas.
+2. `Receptionist`  – Front desk: patient registration, visits, billing.
+3. `Phlebotomist`  – Sample collection and basic lab operations.
+4. `Pathologist`   – Lab result review and report signing (Pathology).
+5. `XRayTech`      – X-Ray imaging technician.
+6. `MriTech`       – MRI imaging technician.
+7. `Radiologist`   – Imaging reporting (X-Ray, CT, MRI, etc.).
+8. `DeliveryDesk`  – Delivery desk operations (Day 14 delivery queue, multi-channel delivery).
+
+All role checking must be **case-sensitive** and use these exact strings.
+
+---
+
+## DATABASE DESIGN – USERS & ROLES
+
+The system already has a `Users` table with columns similar to:
+
+- `UserId` (uniqueidentifier)
+- `Email`
+- `PasswordHash`
+- `Name`
+- `IsActive`
+- `CreatedAt`
+- `FailedLoginAttempts`
+- `LockoutEnd`
+- `RowVersion`
+- `SignatureImageUrl`
+- `SignatureUpdatedAt`
+
+### 1. Add Role column (if missing)
+
+Add a nullable `Role` column on `Users`:
+
+```sql
+ALTER TABLE Users
+ADD Role NVARCHAR(50) NULL;
+
+
+Then update EF Core User entity model to include:
+
+public string? Role { get; set; }
+
+2. Seed / Update Roles for Existing Users
+
+ASSUMPTIONS (adjust if the DB differs):
+
+Existing seeded users:
+
+admin@synos.com
+
+pathologist@lab.com
+
+Set roles:
+
+UPDATE Users SET Role = 'Admin'       WHERE Email = 'admin@synos.com';
+UPDATE Users SET Role = 'Pathologist' WHERE Email = 'pathologist@lab.com';
+
+3. Seed New Users for Each Operational Role
+
+Use the same bcrypt hashing approach as existing users:
+
+Expose a dev-only endpoint (already exists): GET /api/v1/Auth/dev-hash?password=Admin
+
+Use the returned hash (e.g. $2a$11$...) for the new seeded accounts.
+
+Create at least these users:
+
+reception@lab.com → Role = Receptionist
+
+phleb@lab.com → Role = Phlebotomist
+
+xray@lab.com → Role = XRayTech
+
+mri@lab.com → Role = MriTech
+
+radiologist@lab.com → Role = Radiologist
+
+delivery@lab.com → Role = DeliveryDesk
+
+SQL example:
+
+INSERT INTO Users (UserId, Email, PasswordHash, Name, IsActive, CreatedAt, FailedLoginAttempts, LockoutEnd, Role)
+VALUES
+(NEWID(), 'reception@lab.com',   '<HASH_FOR_Admin>', 'Reception User',   1, SYSDATETIME(), 0, NULL, 'Receptionist'),
+(NEWID(), 'phleb@lab.com',       '<HASH_FOR_Admin>', 'Phlebotomy Tech',  1, SYSDATETIME(), 0, NULL, 'Phlebotomist'),
+(NEWID(), 'xray@lab.com',        '<HASH_FOR_Admin>', 'X-Ray Tech',       1, SYSDATETIME(), 0, NULL, 'XRayTech'),
+(NEWID(), 'mri@lab.com',         '<HASH_FOR_Admin>', 'MRI Tech',         1, SYSDATETIME(), 0, NULL, 'MriTech'),
+(NEWID(), 'radiologist@lab.com', '<HASH_FOR_Admin>', 'Radiologist',      1, SYSDATETIME(), 0, NULL, 'Radiologist'),
+(NEWID(), 'delivery@lab.com',    '<HASH_FOR_Admin>', 'Delivery Desk',    1, SYSDATETIME(), 0, NULL, 'DeliveryDesk');
+
+
+(Do not hardcode hashes in code; assume they are seeded via migrations or scripts.)
+
+AUTH SERVICE – EMIT ROLE CLAIM
+
+In the authentication service where JWT tokens are generated (e.g. AuthService.Authenticate() or equivalent), ensure:
+
+The User entity has a Role property.
+
+The JWT includes the role claim:
+
+var claims = new List<Claim>
+{
+    new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
+    new Claim(ClaimTypes.Name, user.Name ?? string.Empty),
+    new Claim(ClaimTypes.Email, user.Email ?? string.Empty)
+    // ... any existing claims
+};
+
+if (!string.IsNullOrEmpty(user.Role))
+{
+    claims.Add(new Claim(ClaimTypes.Role, user.Role));
+}
+
+
+The final JWT payload should contain the role, e.g.:
+
+"role": "Admin"
+
+
+Optionally also emit a custom claim (e.g. "lab_role"), but ClaimTypes.Role is mandatory for policy checks.
+
+AUTHORIZATION POLICIES
+
+Define authorization policies in Program.cs (or the relevant startup file) so that:
+
+Admin can access everything.
+
+Other roles are constrained to their specific area.
+
+Use AddAuthorization(options => { ... }) to add policies:
+
+builder.Services.AddAuthorization(options =>
+{
+    // RECEPTION: Register patients, start visits, billing, payments
+    options.AddPolicy("ReceptionDesk", policy =>
+    {
+        policy.RequireAssertion(ctx =>
+            ctx.User.IsInRole("Receptionist") ||
+            ctx.User.IsInRole("Admin"));
+    });
+
+    // PHLEBOTOMY: Sample collection, worklist, barcodes
+    options.AddPolicy("SampleCollection", policy =>
+    {
+        policy.RequireAssertion(ctx =>
+            ctx.User.IsInRole("Phlebotomist") ||
+            ctx.User.IsInRole("Admin"));
+    });
+
+    // PATHOLOGY: Results entry, review, signing of lab reports
+    options.AddPolicy("PathologyReporting", policy =>
+    {
+        policy.RequireAssertion(ctx =>
+            ctx.User.IsInRole("Pathologist") ||
+            ctx.User.IsInRole("Admin"));
+    });
+
+    // DELIVERY DESK: Delivery queue, multi-channel delivery (Day 14)
+    options.AddPolicy("DeliveryDesk", policy =>
+    {
+        policy.RequireAssertion(ctx =>
+            ctx.User.IsInRole("DeliveryDesk") ||
+            ctx.User.IsInRole("Admin"));
+    });
+
+    // RADIOLOGY (X-Ray, MRI, imaging reporting) – backend skeleton only for now.
+    options.AddPolicy("RadiologyOps", policy =>
+    {
+        policy.RequireAssertion(ctx =>
+            ctx.User.IsInRole("XRayTech") ||
+            ctx.User.IsInRole("MriTech") ||
+            ctx.User.IsInRole("Radiologist") ||
+            ctx.User.IsInRole("Admin"));
+    });
+});
+
+
+IMPORTANT:
+Do NOT change existing business logic or flows in this task.
+Only wire policies and roles; Day 14.1 will refine workflow states and responsibilities.
+
+CONTROLLER PROTECTION (THIN LAYER ONLY)
+
+Attach [Authorize] attributes with appropriate policies to controllers. Do not change method logic; just protect them.
+
+You may need:
+
+using Microsoft.AspNetCore.Authorization;
+
+
+Examples (adjust controller names to actual ones in the project):
+
+Reception API
+[ApiController]
+[Route("api/v1/reception")]
+[Authorize(Policy = "ReceptionDesk")]
+public class ReceptionController : ControllerBase
+{
+    // start-visit, complete-payment, visit-summary...
+}
+
+
+If some patient-management endpoints are shared across roles, keep them at broader [Authorize] or add role-aware policies as needed, but do not break existing behavior unless required.
+
+Samples (Phlebotomy)
+[ApiController]
+[Route("api/v1/samples")]
+[Authorize(Policy = "SampleCollection")]
+public class SamplesController : ControllerBase
+{
+    // create-for-visit, collect, reject, worklist, barcode...
+}
+
+Results & Reports (Pathology)
+[ApiController]
+[Route("api/v1/results")]
+[Authorize(Policy = "PathologyReporting")]
+public class ResultsController : ControllerBase
+{
+    // results entry, autosave, submit, patient history...
+}
+
+[ApiController]
+[Route("api/v1/reports")]
+[Authorize(Policy = "PathologyReporting")]
+public class ReportsController : ControllerBase
+{
+    // sign report, get report, etc.
+}
+
+Delivery Desk (Day 14 Backend)
+[ApiController]
+[Route("api/v1/delivery")]
+[Authorize(Policy = "DeliveryDesk")]
+public class DeliveryController : ControllerBase
+{
+    // delivery queue, print, WhatsApp, SMS, email, handed-over, attempts, resend...
+}
+
+Public Secure Download – NO AUTH
+
+This must remain accessible without JWT; it is protected by token + phone logic instead:
+
+[ApiController]
+[Route("api/v1/public/reports")]
+[AllowAnonymous]
+public class SecureDownloadController : ControllerBase
+{
+    // verify, download (phone-gated)
+}
+
+Radiology Controllers (Backend Skeleton)
+
+If there are radiology-related controllers already present (e.g., X-ray orders, MRI results), protect them with "RadiologyOps":
+
+[ApiController]
+[Route("api/v1/radiology")]
+[Authorize(Policy = "RadiologyOps")]
+public class RadiologyController : ControllerBase
+{
+    // placeholder; do not change logic in this task
+}
+
+
+If these controllers do not yet exist, do not create new modules now; just prepare the policy definitions.
+
+TESTING SCENARIOS (MANUAL VIA SWAGGER)
+
+After implementation, the following scenarios must work:
+
+Admin Superuser
+
+Login as admin@synos.com (Role = Admin).
+
+Can call:
+
+POST /api/v1/reception/start-visit
+
+POST /api/v1/samples/create-for-visit
+
+GET /api/v1/samples/worklist
+
+POST /api/v1/results/...
+
+POST /api/v1/reports/{id}/sign
+
+GET /api/v1/delivery/queue and all delivery actions.
+
+No 403 Forbidden on any of the above.
+
+Receptionist
+
+Login as reception@lab.com (Role = Receptionist).
+
+Can:
+
+Register patient
+
+Start visit
+
+Complete payment
+
+Cannot access:
+
+/api/v1/delivery/* (delivery queue)
+
+/api/v1/results/*
+
+Should get 403 for disallowed areas.
+
+Phlebotomist
+
+Login as phleb@lab.com (Role = Phlebotomist).
+
+Can:
+
+View sample worklist
+
+Collect / reject samples
+
+Cannot:
+
+Start visits (Reception)
+
+Sign reports (Pathology)
+
+Use delivery endpoints.
+
+Pathologist
+
+Login as pathologist@lab.com (Role = Pathologist).
+
+Can:
+
+Use results APIs to enter/submit results
+
+Sign reports
+
+Cannot:
+
+Start visit (Reception)
+
+Use delivery APIs (DeliveryDesk)
+
+Use pure sample-collection operations.
+
+Delivery Desk
+
+Login as delivery@lab.com (Role = DeliveryDesk).
+
+Can:
+
+View delivery queue
+
+Trigger WhatsApp/SMS/Email/Print/HandedOver
+
+Cannot:
+
+Start visits, collect samples, enter results, sign reports.
+
+Public Secure Download
+
+GET /api/v1/public/reports/verify/{token} and .../download/{token}?phone=:
+
+Must work without Authorization header.
+
+Must not redirect to login or return 401 because of missing JWT.
+
+Remains secured purely by token + phone rules from Day 14.
+
+ACCEPTANCE CRITERIA
+
+This Day 14.ROLES task is considered DONE when:
+
+✅ Users table has a Role column and the EF Core User entity exposes it.
+
+✅ The following users exist (either via migrations or DB seeding) with appropriate Role values:
+
+admin@synos.com → Admin
+
+pathologist@lab.com → Pathologist
+
+reception@lab.com → Receptionist
+
+phleb@lab.com → Phlebotomist
+
+xray@lab.com → XRayTech
+
+mri@lab.com → MriTech
+
+radiologist@lab.com → Radiologist
+
+delivery@lab.com → DeliveryDesk
+
+✅ JWT tokens for all users include a role claim matching their DB role.
+
+✅ Authorization policies are defined for:
+
+ReceptionDesk
+
+SampleCollection
+
+PathologyReporting
+
+DeliveryDesk
+
+RadiologyOps
+
+✅ Controllers are appropriately annotated with [Authorize(Policy = "...")] OR [AllowAnonymous] for public endpoints, without changing existing endpoint behavior or main business logic.
+
+✅ Manual testing via Swagger shows:
+
+Admin can access all relevant endpoints without 403.
+
+Other roles are restricted correctly (can access their area, get 403 outside it).
+
+Public secure download remains accessible without JWT and still uses phone + token logic (from Day 14).
+
+✅ No frontend files were modified.
+
+FUTURE WORK (NOT IN THIS TASK, FOR DAY 14.1 AND BEYOND):
+
+Introduce result workflow states (Draft, UnderReview, Signed).
+
+Split responsibilities more strictly between Phlebotomist vs Pathologist.
+
+Add radiology-specific workflows (image upload, modality-specific reporting).
+
+Implement screen-level role behavior on the frontend (React) to match backend policies.
