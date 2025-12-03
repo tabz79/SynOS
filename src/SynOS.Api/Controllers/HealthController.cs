@@ -3,11 +3,13 @@
 // Date: 2025-11-13
 
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization; // Add this using directive
 
 namespace SynOS.Api.Controllers
 {
     [ApiController]
     [Route("[controller]")]
+    [AllowAnonymous] // Health check should be publicly accessible
     public class HealthController : ControllerBase
     {
         private readonly ILogger<HealthController> _logger;

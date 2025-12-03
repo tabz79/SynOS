@@ -11,7 +11,7 @@ namespace SynOS.Api.Controllers
 {
     [ApiController]
     [Route("api/v1/samples")]
-    [Authorize] // Or use a more specific authorization policy
+    [Authorize(Policy = "PhlebotomyPolicy")]
     public class SamplesController : ControllerBase
     {
         private readonly ISampleService _sampleService;

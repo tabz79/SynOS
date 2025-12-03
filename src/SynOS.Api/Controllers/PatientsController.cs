@@ -3,7 +3,7 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using SynOS.Api.Authorization;
+
 using SynOS.Models.DTOs;
 using SynOS.Services;
 
@@ -11,7 +11,7 @@ namespace SynOS.Api.Controllers
 {
     [ApiController]
     [Route("api/v1/[controller]")]
-    [Authorize]
+    [Authorize(Policy = "ReceptionPolicy")]
     public class PatientsController : ControllerBase
     {
         private readonly IPatientService _patientService;
@@ -60,7 +60,7 @@ namespace SynOS.Api.Controllers
         }
 
         [HttpPost("merge-preview")]
-        [AuthorizeRoles("Admin", "Reception")]
+        [Authorize(Policy = "ReceptionPolicy")]
         public async Task<IActionResult> MergePreview([FromBody] MergeRequestDto request)
         {
             var preview = await _patientService.GetMergePreviewAsync(request.TargetId, request.SourceId);
@@ -68,7 +68,7 @@ namespace SynOS.Api.Controllers
         }
 
         [HttpPost("merge")]
-        [AuthorizeRoles("Admin", "Reception")]
+        [Authorize(Policy = "ReceptionPolicy")]
         public async Task<IActionResult> Merge([FromBody] MergeRequestDto request, [FromHeader(Name = "Idempotency-Key")] string idempotencyKey)
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;

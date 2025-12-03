@@ -10,8 +10,7 @@ namespace SynOS.Api.Controllers
 {
     [ApiController]
     [Route("api/v1/edit-locks")]
-    [AllowAnonymous] // DEVELOPER NOTE: Temp for local testing. Remove before commit/merge.
-    [Authorize]
+    [Authorize(Policy = "AdminPolicy")]
     public class EditLocksController : ControllerBase
     {
         private readonly IEditLockService _editLockService;

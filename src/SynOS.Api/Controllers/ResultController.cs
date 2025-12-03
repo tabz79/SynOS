@@ -11,7 +11,7 @@ namespace SynOS.Api.Controllers
 {
     [ApiController]
     [Route("api/v1/results")]
-    [Authorize(Roles = "PathTech,Admin")]
+    [Authorize(Policy = "PhlebotomyPolicy")]
     public class ResultController : ControllerBase
     {
         private readonly IResultService _resultService;

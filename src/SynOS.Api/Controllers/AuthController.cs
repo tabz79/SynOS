@@ -4,11 +4,13 @@ using SynOS.Services;
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Authorization; // Add this using directive
 
 namespace SynOS.Api.Controllers
 {
     [ApiController]
     [Route("api/v1/[controller]")]
+    [AllowAnonymous] // Explicitly allow anonymous access for authentication endpoints
     public class AuthController : ControllerBase
     {
         private readonly IAuthService _authService;

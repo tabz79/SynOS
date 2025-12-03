@@ -31,7 +31,10 @@ Log.Logger = new LoggerConfiguration()
 builder.Host.UseSerilog();
 
 // Add services to the container.
-builder.Services.AddControllers();
+builder.Services.AddControllers().AddJsonOptions(options =>
+{
+    options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+});
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(option =>
 {
@@ -88,6 +91,27 @@ builder.Services.AddAuthentication(options =>
         ValidAudience = audience,
         IssuerSigningKey = securityKey
     };
+});
+
+// Add Authorization Policies
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("AdminPolicy", policy => policy.RequireRole("Admin"));
+    options.AddPolicy("ReceptionPolicy", policy =>
+        policy.RequireAssertion(context =>
+            context.User.IsInRole("Receptionist") || context.User.IsInRole("Admin")));
+    options.AddPolicy("PhlebotomyPolicy", policy =>
+        policy.RequireAssertion(context =>
+            context.User.IsInRole("Phlebotomist") || context.User.IsInRole("Admin")));
+    options.AddPolicy("PathologyPolicy", policy =>
+        policy.RequireAssertion(context =>
+            context.User.IsInRole("Pathologist") || context.User.IsInRole("Admin")));
+    options.AddPolicy("RadiologyPolicy", policy =>
+        policy.RequireAssertion(context =>
+            context.User.IsInRole("Radiologist") || context.User.IsInRole("XRayTech") || context.User.IsInRole("MriTech") || context.User.IsInRole("Admin")));
+    options.AddPolicy("DeliveryPolicy", policy =>
+        policy.RequireAssertion(context =>
+            context.User.IsInRole("DeliveryDesk") || context.User.IsInRole("Admin")));
 });
 
 // Add AutoMapper

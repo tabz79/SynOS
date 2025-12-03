@@ -12,7 +12,7 @@ namespace SynOS.Api.Controllers
 {
     [ApiController]
     [Route("api/v1/reception")]
-    [Authorize(Roles = "Reception,Admin")]
+    [Authorize(Policy = "ReceptionPolicy")]
     public class ReceptionController : ControllerBase
     {
         private readonly IReceptionFlowService _receptionFlowService;

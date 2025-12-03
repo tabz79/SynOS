@@ -12,7 +12,7 @@ namespace SynOS.Api.Controllers
 {
     [ApiController]
     [Route("api/v1/invoices")]
-    [Authorize]
+    [Authorize(Policy = "ReceptionPolicy")]
     public class InvoicesController : ControllerBase
     {
         private readonly IInvoiceService _invoiceService;

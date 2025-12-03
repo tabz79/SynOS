@@ -6,13 +6,13 @@ using Microsoft.AspNetCore.Mvc;
 using SynOS.Models.DTOs;
 using SynOS.Services;
 
-using SynOS.Api.Authorization;
+
 
 namespace SynOS.Api.Controllers
 {
     [ApiController]
     [Route("api/v1/reports")]
-    [AuthorizeRoles("PathTech", "Admin", "Pathologist")]
+    [Authorize(Policy = "PathologyPolicy")]
     public class ReportsController : ControllerBase
     {
         private readonly IReportService _reportService;
@@ -23,7 +23,7 @@ namespace SynOS.Api.Controllers
         }
 
         [HttpPost("{reportId}/sign")]
-        [AuthorizeRoles("Doctor", "Pathologist")]
+        [Authorize(Policy = "PathologyPolicy")]
         public async Task<IActionResult> SignReport(Guid reportId)
         {
             var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);

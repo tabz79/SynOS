@@ -3,7 +3,7 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using SynOS.Api.Authorization;
+
 using SynOS.Models.DTOs;
 using SynOS.Services;
 
@@ -11,7 +11,7 @@ namespace SynOS.Api.Controllers
 {
     [ApiController]
     [Route("api/v1/[controller]")]
-    [Authorize]
+    [Authorize(Policy = "ReceptionPolicy")]
     public class AppointmentsController : ControllerBase
     {
         private readonly IAppointmentService _appointmentService;
@@ -22,7 +22,7 @@ namespace SynOS.Api.Controllers
         }
 
         [HttpPost]
-        [AuthorizeRoles("Admin", "Reception")]
+        [Authorize(Policy = "ReceptionPolicy")]
         public async Task<IActionResult> CreateAppointment([FromBody] AppointmentCreateDto appointmentDto, [FromHeader(Name = "Idempotency-Key")] string idempotencyKey)
         {
             if (string.IsNullOrEmpty(idempotencyKey))
@@ -68,7 +68,7 @@ namespace SynOS.Api.Controllers
         }
 
         [HttpPost("{id}/reschedule")]
-        [AuthorizeRoles("Admin", "Reception")]
+        [Authorize(Policy = "ReceptionPolicy")]
         public async Task<IActionResult> RescheduleAppointment(Guid id, [FromBody] RescheduleRequestDto request)
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -82,7 +82,7 @@ namespace SynOS.Api.Controllers
         }
 
         [HttpPost("{id}/cancel")]
-        [AuthorizeRoles("Admin", "Reception")]
+        [Authorize(Policy = "ReceptionPolicy")]
         public async Task<IActionResult> CancelAppointment(Guid id, [FromBody] CancelRequestDto request)
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;

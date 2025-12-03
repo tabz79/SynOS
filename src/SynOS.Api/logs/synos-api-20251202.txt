@@ -23,3 +23,8 @@
 2025-12-02 15:06:11.773 +05:30 [INF] Notification Worker Service running.
 2025-12-02 15:06:12.034 +05:30 [INF] ExpiredLockCleanupService is starting.
 2025-12-02 15:09:10.697 +05:30 [WRN] Failed to determine the https port for redirect.
+2025-12-02 19:46:14.652 +05:30 [INF] Notification Worker Service running.
+2025-12-02 19:46:14.966 +05:30 [INF] ExpiredLockCleanupService is starting.
+2025-12-02 19:53:42.375 +05:30 [INF] Notification Worker Service stopping gracefully.
+2025-12-02 19:54:16.232 +05:30 [INF] Notification Worker Service running.
+2025-12-02 19:54:16.535 +05:30 [INF] ExpiredLockCleanupService is starting.

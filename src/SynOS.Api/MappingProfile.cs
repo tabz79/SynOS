@@ -1,7 +1,3 @@
-// File: src/SynOS.Api/MappingProfile.cs
-// Author: Gemini
-// Date: 2025-11-13
-
 using AutoMapper;
 using SynOS.Models.DTOs;
 using SynOS.Models.Entities;
@@ -9,6 +5,7 @@ using SynOS.Models.DTOs.ReportTemplateDtos;
 using SynOS.Models.DTOs.ReportTemplateDsl;
 using System.Text.Json;
 using System;
+using System.Linq; // Add this using directive
 
 namespace SynOS.Api
 {
@@ -16,7 +13,8 @@ namespace SynOS.Api
     {
         public MappingProfile()
         {
-            CreateMap<User, UserDto>();
+            CreateMap<User, UserDto>()
+                .ForMember(dest => dest.Role, opt => opt.MapFrom(src => src.UserRoles.Select(ur => ur.Role.Name).FirstOrDefault()));
             
             // ReportTemplate mappings
             CreateMap<ReportTemplate, ReportTemplateDto>()

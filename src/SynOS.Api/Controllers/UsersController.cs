@@ -4,15 +4,16 @@
 
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using SynOS.Api.Authorization;
 using SynOS.Services;
 using System;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization; // Add this using directive
 
 namespace SynOS.Api.Controllers
 {
     [Route("api/v1/users")]
     [ApiController]
+    [Authorize(Policy = "AdminPolicy")] // Only Admin can manage users
     public class UsersController : ControllerBase
     {
         private readonly IUserService _userService;
@@ -29,7 +30,7 @@ namespace SynOS.Api.Controllers
         /// <param name="file">The signature image file (JPG or PNG).</param>
         /// <returns>An object containing the user ID and the new signature URL.</returns>
         [HttpPost("{userId}/signature")]
-        [AuthorizeRoles("Admin")]
+        [Authorize(Policy = "AdminPolicy")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]

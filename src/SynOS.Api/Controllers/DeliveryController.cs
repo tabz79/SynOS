@@ -9,7 +9,7 @@ namespace SynOS.Api.Controllers;
 
 [ApiController]
 [Route("api/v1/delivery")]
-[Authorize] // All endpoints in this controller require authentication
+[Authorize(Policy = "DeliveryPolicy")]
 public class DeliveryController : ControllerBase
 {
     private readonly IDeliveryService _deliveryService;

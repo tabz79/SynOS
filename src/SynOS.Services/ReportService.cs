@@ -56,7 +56,7 @@ namespace SynOS.Services
             }
 
             // Assuming a status like 'Validated' or 'ReadyForSigning'
-            if (report.Status != "Validated" && report.Status != "ReadyForSigning")
+            if (report.Status != "Validated" && report.Status != "ReadyForSignature")
             {
                 throw new InvalidOperationException($"Report is not in a state that can be signed. Current state: {report.Status}");
             }

@@ -4,7 +4,7 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using SynOS.Api.Authorization;
+
 using SynOS.Models.DTOs;
 using SynOS.Models.Entities;
 using Microsoft.Extensions.Logging; // Added for logging
@@ -14,7 +14,7 @@ namespace SynOS.Api.Controllers
 {
     [ApiController]
     [Route("api/v1/[controller]")]
-    [Authorize]
+    [Authorize(Policy = "ReceptionPolicy")]
     public class VisitsController : ControllerBase
     {
         private readonly IVisitService _visitService;
@@ -29,7 +29,7 @@ namespace SynOS.Api.Controllers
         }
 
         [HttpPost]
-        [AuthorizeRoles("Admin", "Reception")]
+        [Authorize(Policy = "ReceptionPolicy")]
         public async Task<IActionResult> CreateVisit([FromBody] VisitCreateDto visitDto, [FromHeader(Name = "Idempotency-Key")] string? idempotencyKey = null)
         {
             try
@@ -86,7 +86,7 @@ namespace SynOS.Api.Controllers
         }
 
         [HttpPost("{id}/payment")]
-        [AuthorizeRoles("Admin", "Reception")]
+        [Authorize(Policy = "ReceptionPolicy")]
         public async Task<IActionResult> RecordPayment(Guid id, [FromBody] PaymentRequestDto paymentDto)
         {
             try
@@ -129,7 +129,7 @@ namespace SynOS.Api.Controllers
         }
 
         [HttpPost("{id}/cancel")]
-        [AuthorizeRoles("Admin", "Reception")]
+        [Authorize(Policy = "ReceptionPolicy")]
         public async Task<IActionResult> CancelVisit(Guid id, [FromBody] SynOS.Models.DTOs.CancelRequestDto cancelDto)
         {
             try
