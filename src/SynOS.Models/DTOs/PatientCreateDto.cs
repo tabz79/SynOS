@@ -17,6 +17,6 @@ namespace SynOS.Models.DTOs
         [Required]
         public string Gender { get; set; } = string.Empty;
 
-        public string PhoneNumber { get; set; } = string.Empty;
+        public string CurrentPhoneNumber { get; set; } = string.Empty;
     }
 }

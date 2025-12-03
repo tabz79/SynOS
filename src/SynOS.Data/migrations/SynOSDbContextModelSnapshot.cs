@@ -366,6 +366,86 @@ namespace SynOS.Data.Migrations
                     b.ToTable("CriticalRules");
                 });
 
+            modelBuilder.Entity("SynOS.Models.Entities.DeliveryAttempt", b =>
+                {
+                    b.Property<Guid>("AttemptId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Attempt")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ErrorMessage")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("LogId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ResponseData")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTimeOffset>("SentAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("AttemptId");
+
+                    b.HasIndex("LogId");
+
+                    b.ToTable("DeliveryAttempts");
+                });
+
+            modelBuilder.Entity("SynOS.Models.Entities.DeliveryLog", b =>
+                {
+                    b.Property<Guid>("LogId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset>("DeliveredAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("DeliveredBy")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("DeliveryMethod")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("RecipientEmail")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("RecipientPhone")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<Guid>("ReportId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TrackingInfo")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("LogId");
+
+                    b.HasIndex("DeliveredAt");
+
+                    b.HasIndex("DeliveredBy");
+
+                    b.HasIndex("ReportId");
+
+                    b.ToTable("DeliveryLogs");
+                });
+
             modelBuilder.Entity("SynOS.Models.Entities.DeltaCheckConfig", b =>
                 {
                     b.Property<Guid>("ConfigId")
@@ -435,6 +515,53 @@ namespace SynOS.Data.Migrations
                     b.HasIndex("ReviewedByUserId");
 
                     b.ToTable("DeltaCheckEvents");
+                });
+
+            modelBuilder.Entity("SynOS.Models.Entities.DownloadLink", b =>
+                {
+                    b.Property<Guid>("LinkId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("CreatedBy")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("DownloadCount")
+                        .HasColumnType("int");
+
+                    b.Property<DateTimeOffset?>("DownloadedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset>("ExpiresAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("MaxDownloads")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("ReportId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Token")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("LinkId");
+
+                    b.HasIndex("CreatedBy");
+
+                    b.HasIndex("ReportId");
+
+                    b.HasIndex("Token")
+                        .IsUnique();
+
+                    b.ToTable("DownloadLinks");
                 });
 
             modelBuilder.Entity("SynOS.Models.Entities.EditLock", b =>
@@ -520,6 +647,59 @@ namespace SynOS.Data.Migrations
                     b.HasIndex("VisitId");
 
                     b.ToTable("Invoices");
+                });
+
+            modelBuilder.Entity("SynOS.Models.Entities.NotificationQueue", b =>
+                {
+                    b.Property<Guid>("QueueId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("ErrorMessage")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("MaxRetries")
+                        .HasColumnType("int");
+
+                    b.Property<DateTimeOffset?>("NextRetryAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("Recipient")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("RetryCount")
+                        .HasColumnType("int");
+
+                    b.Property<DateTimeOffset?>("SentAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<Guid>("TargetId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("QueueId");
+
+                    b.HasIndex("NextRetryAt");
+
+                    b.HasIndex("Status");
+
+                    b.ToTable("NotificationQueues");
                 });
 
             modelBuilder.Entity("SynOS.Models.Entities.Order", b =>
@@ -1650,6 +1830,36 @@ namespace SynOS.Data.Migrations
                     b.Navigation("Referrer");
                 });
 
+            modelBuilder.Entity("SynOS.Models.Entities.DeliveryAttempt", b =>
+                {
+                    b.HasOne("SynOS.Models.Entities.DeliveryLog", "DeliveryLog")
+                        .WithMany("DeliveryAttempts")
+                        .HasForeignKey("LogId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("DeliveryLog");
+                });
+
+            modelBuilder.Entity("SynOS.Models.Entities.DeliveryLog", b =>
+                {
+                    b.HasOne("SynOS.Models.Entities.User", "DeliveredByUser")
+                        .WithMany()
+                        .HasForeignKey("DeliveredBy")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SynOS.Models.Entities.Report", "Report")
+                        .WithMany()
+                        .HasForeignKey("ReportId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("DeliveredByUser");
+
+                    b.Navigation("Report");
+                });
+
             modelBuilder.Entity("SynOS.Models.Entities.DeltaCheckEvent", b =>
                 {
                     b.HasOne("SynOS.Models.Entities.Result", "PreviousResult")
@@ -1673,6 +1883,25 @@ namespace SynOS.Data.Migrations
                     b.Navigation("PreviousResult");
 
                     b.Navigation("ReviewedBy");
+                });
+
+            modelBuilder.Entity("SynOS.Models.Entities.DownloadLink", b =>
+                {
+                    b.HasOne("SynOS.Models.Entities.User", "CreatedByUser")
+                        .WithMany()
+                        .HasForeignKey("CreatedBy")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SynOS.Models.Entities.Report", "Report")
+                        .WithMany()
+                        .HasForeignKey("ReportId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("CreatedByUser");
+
+                    b.Navigation("Report");
                 });
 
             modelBuilder.Entity("SynOS.Models.Entities.EditLock", b =>
@@ -2026,6 +2255,11 @@ namespace SynOS.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("Patient");
+                });
+
+            modelBuilder.Entity("SynOS.Models.Entities.DeliveryLog", b =>
+                {
+                    b.Navigation("DeliveryAttempts");
                 });
 
             modelBuilder.Entity("SynOS.Models.Entities.Invoice", b =>

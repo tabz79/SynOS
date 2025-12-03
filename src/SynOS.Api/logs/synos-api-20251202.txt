@@ -1,0 +1,30 @@
+2025-12-02 12:28:01.277 +05:30 [INF] Notification Worker Service stopping gracefully.
+2025-12-02 12:28:45.312 +05:30 [INF] Notification Worker Service running.
+2025-12-02 12:28:45.621 +05:30 [INF] ExpiredLockCleanupService is starting.
+2025-12-02 12:31:00.537 +05:30 [WRN] Failed to determine the https port for redirect.
+2025-12-02 12:41:10.449 +05:30 [WRN] No PDF path found for ReportId: "280a0789-9754-421d-9725-b3022dc8e48d"
+2025-12-02 12:51:19.312 +05:30 [INF] Report "280a0789-9754-421d-9725-b3022dc8e48d" WhatsApp delivery queued for 9876543210 by User "887e9d6c-2b32-47f5-bc56-86a27c66e6ea". LogId: "d5dcae24-0450-45c2-6da5-08de3173635b"
+2025-12-02 12:52:45.942 +05:30 [INF] STUB: Sending WhatsApp to 9876543210: Dear Test Patient4, your lab report for CBC is ready. Download your report here: http://127.0.0.1:59999/api/v1/public/reports/download/58eb65b6e37a4e188d3dbde0e98ff961 This link is valid for 03-12-2025 07:21 and can be downloaded 3 times. - SynOS Lab
+2025-12-02 12:52:45.964 +05:30 [INF] Notification "9b51017b-9060-4a23-69a3-08de3173636e" ("WHATSAPP") sent successfully. ProviderMessageId: STUB_WA_MSG_ID_123
+2025-12-02 12:54:28.750 +05:30 [INF] Secure download successful for token 58eb65b6e37a4e188d3dbde0e98ff961 by phone 9876543210. DownloadCount: 1
+2025-12-02 12:54:28.772 +05:30 [ERR] PDF path missing for report "280a0789-9754-421d-9725-b3022dc8e48d" associated with token 58eb65b6e37a4e188d3dbde0e98ff961
+2025-12-02 12:54:28.796 +05:30 [WRN] Secure download failed for token 58eb65b6e37a4e188d3dbde0e98ff961 (bad request/not found): Report PDF not available for download.
+2025-12-02 13:15:17.116 +05:30 [INF] Secure download successful for token 58eb65b6e37a4e188d3dbde0e98ff961 by phone 9876543210. DownloadCount: 2
+2025-12-02 13:15:17.133 +05:30 [ERR] PDF path missing for report "280a0789-9754-421d-9725-b3022dc8e48d" associated with token 58eb65b6e37a4e188d3dbde0e98ff961
+2025-12-02 13:15:17.150 +05:30 [WRN] Secure download failed for token 58eb65b6e37a4e188d3dbde0e98ff961 (bad request/not found): Report PDF not available for download.
+2025-12-02 13:22:51.338 +05:30 [INF] Secure download successful for token 58eb65b6e37a4e188d3dbde0e98ff961 by phone 9876543210. DownloadCount: 3
+2025-12-02 13:22:55.760 +05:30 [WRN] Attempted download with non-existent or inactive token: 58eb65b6e37a4e188d3dbde0e98ff961
+2025-12-02 13:22:55.771 +05:30 [WRN] Secure download failed for token 58eb65b6e37a4e188d3dbde0e98ff961 (phone mismatch/invalid): InvalidPhoneOrLink
+2025-12-02 13:22:55.792 +05:30 [WRN] Attempted download with non-existent or inactive token: 58eb65b6e37a4e188d3dbde0e98ff961
+2025-12-02 13:22:55.806 +05:30 [WRN] Secure download failed for token 58eb65b6e37a4e188d3dbde0e98ff961 (phone mismatch/invalid): InvalidPhoneOrLink
+2025-12-02 13:22:55.826 +05:30 [WRN] Attempted download with non-existent or inactive token: 58eb65b6e37a4e188d3dbde0e98ff961
+2025-12-02 13:22:55.839 +05:30 [WRN] Secure download failed for token 58eb65b6e37a4e188d3dbde0e98ff961 (phone mismatch/invalid): InvalidPhoneOrLink
+2025-12-02 14:53:47.845 +05:30 [INF] Notification Worker Service stopping gracefully.
+2025-12-02 15:06:11.773 +05:30 [INF] Notification Worker Service running.
+2025-12-02 15:06:12.034 +05:30 [INF] ExpiredLockCleanupService is starting.
+2025-12-02 15:09:10.697 +05:30 [WRN] Failed to determine the https port for redirect.
+2025-12-02 19:46:14.652 +05:30 [INF] Notification Worker Service running.
+2025-12-02 19:46:14.966 +05:30 [INF] ExpiredLockCleanupService is starting.
+2025-12-02 19:53:42.375 +05:30 [INF] Notification Worker Service stopping gracefully.
+2025-12-02 19:54:16.232 +05:30 [INF] Notification Worker Service running.
+2025-12-02 19:54:16.535 +05:30 [INF] ExpiredLockCleanupService is starting.

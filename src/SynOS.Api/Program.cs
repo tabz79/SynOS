@@ -17,6 +17,7 @@ using System.Security.Claims;
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.OpenApi.Models; // Added for Swagger JWT configuration
 using SynOS.Services.Storage;
+using SynOS.Services.Stubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -30,7 +31,10 @@ Log.Logger = new LoggerConfiguration()
 builder.Host.UseSerilog();
 
 // Add services to the container.
-builder.Services.AddControllers();
+builder.Services.AddControllers().AddJsonOptions(options =>
+{
+    options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+});
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(option =>
 {
@@ -89,6 +93,27 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
+// Add Authorization Policies
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("AdminPolicy", policy => policy.RequireRole("Admin"));
+    options.AddPolicy("ReceptionPolicy", policy =>
+        policy.RequireAssertion(context =>
+            context.User.IsInRole("Receptionist") || context.User.IsInRole("Admin")));
+    options.AddPolicy("PhlebotomyPolicy", policy =>
+        policy.RequireAssertion(context =>
+            context.User.IsInRole("Phlebotomist") || context.User.IsInRole("Admin")));
+    options.AddPolicy("PathologyPolicy", policy =>
+        policy.RequireAssertion(context =>
+            context.User.IsInRole("Pathologist") || context.User.IsInRole("Admin")));
+    options.AddPolicy("RadiologyPolicy", policy =>
+        policy.RequireAssertion(context =>
+            context.User.IsInRole("Radiologist") || context.User.IsInRole("XRayTech") || context.User.IsInRole("MriTech") || context.User.IsInRole("Admin")));
+    options.AddPolicy("DeliveryPolicy", policy =>
+        policy.RequireAssertion(context =>
+            context.User.IsInRole("DeliveryDesk") || context.User.IsInRole("Admin")));
+});
+
 // Add AutoMapper
 builder.Services.AddAutoMapper(typeof(Program)); // Scans for profiles in the assembly
 
@@ -109,6 +134,15 @@ builder.Services.AddScoped<IReportTemplateService, ReportTemplateService>(); // 
 builder.Services.AddScoped<IReportPdfRenderer, QuestPdfReportRenderer>(); // Register new service
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddSingleton<IFileStorageService, LocalStorageService>();
+
+// Register Delivery Module Services
+builder.Services.AddScoped<IDeliveryService, DeliveryService>();
+builder.Services.AddScoped<IWhatsAppSender, StubWhatsAppSender>();
+builder.Services.AddScoped<ISmsSender, StubSmsSender>();
+builder.Services.AddScoped<IEmailSender, StubEmailSender>();
+builder.Services.AddScoped<IPrintService, StubPrintService>();
+
+builder.Services.AddHostedService<NotificationWorkerService>();
 builder.Services.AddHostedService<ExpiredLockCleanupService>();
 
 // Add SignalR

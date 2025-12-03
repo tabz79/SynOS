@@ -30,14 +30,14 @@ namespace SynOS.Services
                 LastName = patientDto.LastName,
                 DateOfBirth = patientDto.DateOfBirth,
                 Gender = patientDto.Gender,
-                CurrentPhoneNumber = patientDto.PhoneNumber
+                CurrentPhoneNumber = patientDto.CurrentPhoneNumber
             };
 
-            if (!string.IsNullOrEmpty(patientDto.PhoneNumber))
+            if (!string.IsNullOrEmpty(patientDto.CurrentPhoneNumber))
             {
                 patient.PhoneHistory = new List<PatientPhoneHistory>
                 {
-                    new PatientPhoneHistory { PhoneNumber = patientDto.PhoneNumber }
+                    new PatientPhoneHistory { PhoneNumber = patientDto.CurrentPhoneNumber }
                 };
             }
 

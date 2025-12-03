@@ -10,7 +10,7 @@ namespace SynOS.Api.Controllers
 {
     [ApiController]
     [Route("api/v1/critical-alerts")]
-    [Authorize]
+    [Authorize(Policy = "PathologyPolicy")]
     public class CriticalAlertsController : ControllerBase
     {
         private readonly ICriticalValueService _criticalValueService;

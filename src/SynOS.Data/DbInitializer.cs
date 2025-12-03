@@ -16,7 +16,7 @@ namespace SynOS.Data
         {
 // context.Database.EnsureCreated();
 
-            if (!context.Roles.Any()) SeedRolesAndUsers(context);
+            SeedRolesAndUsers(context);
             if (!context.TestDefinitions.Any()) SeedTestDefinitions(context);
             if (!context.CriticalRules.Any()) SeedCriticalRules(context);
             if (!context.Patients.Any()) SeedPatients(context);
@@ -148,40 +148,79 @@ namespace SynOS.Data
 
         private static void SeedRolesAndUsers(SynOSDbContext context)
         {
-            var roles = new Role[]
-            {
-                new Role{RoleId = Guid.NewGuid(), Name="Admin"},
-                new Role{RoleId = Guid.NewGuid(), Name="Reception"},
-                new Role{RoleId = Guid.NewGuid(), Name="PathTech"},
-                new Role{RoleId = Guid.NewGuid(), Name="Pathologist"},
-                new Role{RoleId = Guid.NewGuid(), Name="RadTech"},
-                new Role{RoleId = Guid.NewGuid(), Name="Radiologist"},
-                new Role{RoleId = Guid.NewGuid(), Name="Delivery"},
-                new Role{RoleId = Guid.NewGuid(), Name="Operator"}
+            // --- Roles Seeding ---
+            var requiredRoles = new[] { 
+                "Admin", "Receptionist", "Phlebotomist", "Pathologist", 
+                "XRayTech", "MriTech", "Radiologist", "DeliveryDesk" 
             };
-            context.Roles.AddRange(roles);
+            var existingRoles = context.Roles.ToDictionary(r => r.Name, r => r);
+
+            foreach (var roleName in requiredRoles)
+            {
+                if (!existingRoles.ContainsKey(roleName))
+                {
+                    var newRole = new Role { RoleId = Guid.NewGuid(), Name = roleName };
+                    context.Roles.Add(newRole);
+                    existingRoles.Add(newRole.Name, newRole);
+                }
+            }
             context.SaveChanges();
 
-            var users = new User[]
+            // --- Users Seeding ---
+            var usersToSeed = new[]
             {
-                new User{UserId = Guid.NewGuid(), Name="Admin User", Email="admin@lab.com", PasswordHash=BCrypt.Net.BCrypt.HashPassword("Admin"), IsActive=true},
-                new User{UserId = Guid.NewGuid(), Name="Reception User", Email="reception@lab.com", PasswordHash=BCrypt.Net.BCrypt.HashPassword("Reception"), IsActive=true},
-                new User{UserId = Guid.NewGuid(), Name="PathTech User", Email="pathtech@lab.com", PasswordHash=BCrypt.Net.BCrypt.HashPassword("PathTech"), IsActive=true},
-                new User{UserId = Guid.NewGuid(), Name="Pathologist User", Email="pathologist@lab.com", PasswordHash=BCrypt.Net.BCrypt.HashPassword("Pathologist"), IsActive=true},
-                new User{UserId = Guid.NewGuid(), Name="Radiologist User", Email="radiologist@lab.com", PasswordHash=BCrypt.Net.BCrypt.HashPassword("Radiologist"), IsActive=true}
+                new { Email = "admin@synos.com", Name = "System Admin", Password = "admin123", RoleName = "Admin" },
+                new { Email = "reception@lab.com", Name = "Reception User", Password = "Admin", RoleName = "Receptionist" },
+                new { Email = "phlebo@lab.com", Name = "Phlebotomy User", Password = "Admin", RoleName = "Phlebotomist" },
+                new { Email = "pathologist@lab.com", Name = "Pathologist User", Password = "Admin", RoleName = "Pathologist" },
+                new { Email = "xray@lab.com", Name = "X-Ray Tech User", Password = "Admin", RoleName = "XRayTech" },
+                new { Email = "mri@lab.com", Name = "MRI Tech User", Password = "Admin", RoleName = "MriTech" },
+                new { Email = "radiologist@lab.com", Name = "Radiologist User", Password = "Admin", RoleName = "Radiologist" },
+                new { Email = "delivery@lab.com", Name = "Delivery Desk User", Password = "Admin", RoleName = "DeliveryDesk" }
             };
-            context.Users.AddRange(users);
+
+            var existingUsers = context.Users.ToDictionary(u => u.Email, u => u);
+
+            foreach (var userData in usersToSeed)
+            {
+                if (existingUsers.TryGetValue(userData.Email, out var existingUser))
+                {
+                    // User exists, ensure password is correct for these known test users
+                    existingUser.PasswordHash = BCrypt.Net.BCrypt.HashPassword(userData.Password);
+                }
+                else
+                {
+                    // User doesn't exist, create them
+                    var newUser = new User 
+                    { 
+                        UserId = Guid.NewGuid(), 
+                        Name = userData.Name, 
+                        Email = userData.Email, 
+                        PasswordHash = BCrypt.Net.BCrypt.HashPassword(userData.Password), 
+                        IsActive = true 
+                    };
+                    context.Users.Add(newUser);
+                    existingUsers.Add(newUser.Email, newUser); // Add to dictionary for role assignment
+                }
+            }
             context.SaveChanges();
 
-            var userRoles = new UserRole[]
+            // --- UserRoles Seeding ---
+            var existingUserRoles = context.UserRoles
+                .Select(ur => ur.UserId + "|" + ur.RoleId)
+                .ToHashSet();
+
+            foreach (var userData in usersToSeed)
             {
-                new UserRole{UserId=users.Single(u => u.Email == "admin@lab.com").UserId, RoleId=roles.Single(r => r.Name == "Admin").RoleId},
-                new UserRole{UserId=users.Single(u => u.Email == "reception@lab.com").UserId, RoleId=roles.Single(r => r.Name == "Reception").RoleId},
-                new UserRole{UserId=users.Single(u => u.Email == "pathtech@lab.com").UserId, RoleId=roles.Single(r => r.Name == "PathTech").RoleId},
-                new UserRole{UserId=users.Single(u => u.Email == "pathologist@lab.com").UserId, RoleId=roles.Single(r => r.Name == "Pathologist").RoleId},
-                new UserRole{UserId=users.Single(u => u.Email == "radiologist@lab.com").UserId, RoleId=roles.Single(r => r.Name == "Radiologist").RoleId},
-            };
-            context.UserRoles.AddRange(userRoles);
+                var user = existingUsers[userData.Email];
+                var role = existingRoles[userData.RoleName];
+                var userRoleKey = user.UserId + "|" + role.RoleId;
+
+                if (!existingUserRoles.Contains(userRoleKey))
+                {
+                    context.UserRoles.Add(new UserRole { UserId = user.UserId, RoleId = role.RoleId });
+                }
+            }
             context.SaveChanges();
         }
 

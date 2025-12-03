@@ -5,11 +5,13 @@ using SynOS.Services;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization; // Add this using directive
 
 namespace SynOS.Api.Controllers
 {
     [ApiController]
     [Route("api/v1/reports/templates")]
+    [Authorize(Policy = "AdminPolicy")] // Only Admin can manage report templates
     public class ReportTemplateController : ControllerBase
     {
         private readonly IReportTemplateService _reportTemplateService;

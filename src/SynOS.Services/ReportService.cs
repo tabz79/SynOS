@@ -8,6 +8,7 @@ using Microsoft.Extensions.Logging;
 using SynOS.Data;
 using SynOS.Models.DTOs;
 using SynOS.Models.Entities;
+using SynOS.Services.Storage;
 
 namespace SynOS.Services
 {
@@ -17,13 +18,23 @@ namespace SynOS.Services
         private readonly ILogger<ReportService> _logger;
         private readonly ICriticalValueService _criticalValueService;
         private readonly IHttpClientFactory _httpClientFactory;
+        private readonly IReportPdfRenderer _reportPdfRenderer;
+        private readonly IFileStorageService _fileStorageService;
 
-        public ReportService(SynOSDbContext context, ILogger<ReportService> logger, ICriticalValueService criticalValueService, IHttpClientFactory httpClientFactory)
+        public ReportService(
+            SynOSDbContext context, 
+            ILogger<ReportService> logger, 
+            ICriticalValueService criticalValueService, 
+            IHttpClientFactory httpClientFactory,
+            IReportPdfRenderer reportPdfRenderer,
+            IFileStorageService fileStorageService)
         {
             _context = context;
             _logger = logger;
             _criticalValueService = criticalValueService;
             _httpClientFactory = httpClientFactory;
+            _reportPdfRenderer = reportPdfRenderer;
+            _fileStorageService = fileStorageService;
         }
 
         public async Task<ReportSignatureResponseDto> SignReportAsync(Guid reportId, Guid signedByUserId)
@@ -45,7 +56,7 @@ namespace SynOS.Services
             }
 
             // Assuming a status like 'Validated' or 'ReadyForSigning'
-            if (report.Status != "Validated" && report.Status != "ReadyForSigning")
+            if (report.Status != "Validated" && report.Status != "ReadyForSignature")
             {
                 throw new InvalidOperationException($"Report is not in a state that can be signed. Current state: {report.Status}");
             }
@@ -99,8 +110,55 @@ namespace SynOS.Services
             });
 
             await _context.SaveChangesAsync();
+
+            // 7. Proper Fix: Generate and Save PDF, then create ReportVersion
+            try
+            {
+                var reportData = await GetReportDataForPdfAsync(report.Order.VisitId);
+                if (reportData != null)
+                {
+                    // Fetch default template for the modality
+                    var template = await _context.ReportTemplates
+                        .FirstOrDefaultAsync(t => t.Modality == report.Order.Department && t.IsDefault);
+                    
+                    if (template != null)
+                    {
+                        var templateModel = System.Text.Json.JsonSerializer.Deserialize<SynOS.Models.DTOs.ReportTemplateDsl.TemplateModel>(template.TemplateJson);
+                        var pdfBytes = await _reportPdfRenderer.GeneratePdfAsync(reportData, templateModel);
+                        
+                        var fileName = $"{report.ReportId}_v{newVersion}.pdf";
+                        var relativePath = await _fileStorageService.SaveFileAsync(pdfBytes, fileName, "reports");
+
+                        var reportVersion = new ReportVersion
+                        {
+                            ReportId = report.ReportId,
+                            VersionNumber = newVersion,
+                            PdfPath = relativePath,
+                            SignedByUserId = signedByUserId,
+                            SignedAt = timestamp
+                        };
+                        _context.ReportVersions.Add(reportVersion);
+                        await _context.SaveChangesAsync();
+                        _logger.LogInformation("Successfully generated and saved PDF for Report {ReportId}, Version {Version}. Path: {Path}", report.ReportId, newVersion, relativePath);
+                    }
+                    else
+                    {
+                        _logger.LogWarning("No default report template found for department {Department}. PDF not generated.", report.Order.Department);
+                    }
+                }
+                else
+                {
+                    _logger.LogWarning("Could not retrieve report data for PDF generation for VisitId {VisitId}.", report.Order.VisitId);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to generate and save PDF for Report {ReportId} after signing.", report.ReportId);
+                // The signing itself is already committed, so this is a subsequent failure that needs attention.
+                // Depending on requirements, you might want to enqueue a retry job.
+            }
             
-            // 7. Return response
+            // 8. Return response
             return new ReportSignatureResponseDto
             {
                 ReportId = report.ReportId,

@@ -168,6 +168,19 @@ namespace SynOS.Services
                 }
             }
 
+            // If a report for this order doesn't exist, create one.
+            var reportExists = await _context.Reports.AnyAsync(r => r.OrderId == orderId);
+            if (!reportExists)
+            {
+                var newReport = new Report
+                {
+                    ReportId = Guid.NewGuid(),
+                    OrderId = orderId,
+                    Status = "ReadyForSignature", // Set initial status for the pathologist
+                };
+                await _context.Reports.AddAsync(newReport);
+            }
+
             await _context.SaveChangesAsync();
         }
 
