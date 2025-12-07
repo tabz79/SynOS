@@ -11,6 +11,7 @@ namespace SynOS.Services
 {
     public interface IUserService
     {
+        Task<UserDto?> GetUserByIdAsync(Guid userId);
         Task<UserSignatureDto> UpdateUserSignatureAsync(Guid userId, IFormFile signatureFile);
     }
 }

@@ -43,6 +43,7 @@ namespace SynOS.Data
         public DbSet<EditLock> EditLocks { get; set; } = null!;
         public DbSet<Sample> Samples { get; set; } = null!;
         public DbSet<SampleRejection> SampleRejections { get; set; } = null!;
+        public DbSet<AccessionCounter> AccessionCounters { get; set; } = null!;
 
         // DbSets for Results module
         public DbSet<Result> Results { get; set; } = null!;
@@ -51,6 +52,13 @@ namespace SynOS.Data
         public DbSet<DeltaCheckEvent> DeltaCheckEvents { get; set; } = null!;
         public DbSet<AutosaveBuffer> AutosaveBuffers { get; set; } = null!;
         public DbSet<ResultLink> ResultLinks { get; set; } = null!;
+
+        // DbSets for Radiology module
+        public DbSet<RadiologyStudy> RadiologyStudies { get; set; } = null!;
+        public DbSet<RadiologyImage> RadiologyImages { get; set; } = null!;
+        public DbSet<RadiologyReport> RadiologyReports { get; set; } = null!;
+        public DbSet<PathologyReport> PathologyReports { get; set; } = null!;
+        public DbSet<ReportAttachment> ReportAttachments { get; set; } = null!;
 
         // DbSets for Critical Values module
         public DbSet<CriticalRule> CriticalRules { get; set; } = null!;
@@ -199,6 +207,21 @@ namespace SynOS.Data
             {
                 entity.HasIndex(e => e.Status);
                 entity.HasIndex(e => e.PatientId);
+
+                entity.HasOne(e => e.Patient)
+                    .WithMany()
+                    .HasForeignKey(e => e.PatientId)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne(e => e.Visit)
+                    .WithMany()
+                    .HasForeignKey(e => e.VisitId)
+                    .OnDelete(DeleteBehavior.NoAction);
+                
+                entity.HasOne(e => e.Result)
+                    .WithMany()
+                    .HasForeignKey(e => e.ResultId)
+                    .OnDelete(DeleteBehavior.NoAction);
             });
             
             modelBuilder.Entity<CriticalAudit>(entity =>
@@ -206,11 +229,94 @@ namespace SynOS.Data
                 entity.HasOne(e => e.Alert).WithMany().HasForeignKey(e => e.AlertId).OnDelete(DeleteBehavior.Cascade);
             });
 
+            // Radiology Module
+            modelBuilder.Entity<RadiologyStudy>(entity =>
+            {
+                entity.HasOne(e => e.Visit)
+                      .WithMany()
+                      .HasForeignKey(e => e.VisitId)
+                      .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(e => e.Patient)
+                      .WithMany()
+                      .HasForeignKey(e => e.PatientId)
+                      .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(e => e.Technician)
+                      .WithMany()
+                      .HasForeignKey(e => e.AssignedTo)
+                      .OnDelete(DeleteBehavior.SetNull); // Technician can be null, or unassigned
+
+                entity.HasOne(e => e.Creator)
+                      .WithMany()
+                      .HasForeignKey(e => e.CreatedBy)
+                      .OnDelete(DeleteBehavior.Restrict);
+
+                // Link RadiologyStudy.VisitTestId to Order.OrderId
+                entity.HasOne(e => e.Order)
+                      .WithOne()
+                      .HasForeignKey<RadiologyStudy>(e => e.VisitTestId)
+                      .OnDelete(DeleteBehavior.Restrict); // If order is deleted, radiology study is also deleted
+            });
+
+            modelBuilder.Entity<RadiologyImage>(entity =>
+            {
+                entity.HasOne(e => e.RadiologyStudy)
+                      .WithMany(rs => rs.RadiologyImages)
+                      // Removed .HasForeignKey(e => e.RadiologyStudyId) - EF Core infers by convention
+                      .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(e => e.Uploader)
+                      .WithMany()
+                      .HasForeignKey(e => e.UploadedBy)
+                      .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<RadiologyReport>(entity =>
+            {
+                entity.HasKey(e => e.ReportId); // ReportId is PK
+
+                entity.HasOne(e => e.Report)
+                      .WithOne(r => r.RadiologyReport)
+                      .HasForeignKey<RadiologyReport>(e => e.ReportId)
+                      .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(e => e.RadiologyStudy)
+                      .WithMany()
+                      // Removed .HasForeignKey(e => e.RadiologyStudyId) - EF Core infers by convention
+                      .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<PathologyReport>(entity =>
+            {
+                entity.HasKey(e => e.ReportId); // ReportId is PK
+
+                entity.HasOne(e => e.Report)
+                      .WithOne(r => r.PathologyReport)
+                      .HasForeignKey<PathologyReport>(e => e.ReportId)
+                      .OnDelete(DeleteBehavior.Cascade);
+                      
+                entity.HasOne(e => e.Order)
+                      .WithMany()
+                      .HasForeignKey(e => e.OrderId)
+                      .OnDelete(DeleteBehavior.Restrict); // Keep order if pathology report deleted
+            });
+
+            modelBuilder.Entity<ReportAttachment>(entity =>
+            {
+                entity.HasOne(e => e.Report)
+                      .WithMany(r => r.Attachments)
+                      // Removed .HasForeignKey(e => e.ReportId) - EF Core infers by convention
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
+
             // Report Module
             modelBuilder.Entity<Report>(entity =>
             {
-                entity.HasIndex(e => e.OrderId).IsUnique();
+                entity.HasIndex(e => new { e.SourceType, e.SourceId }).IsUnique(); // New unique index
                 entity.HasOne(e => e.SignedBy).WithMany().HasForeignKey(e => e.SignedByUserId).OnDelete(DeleteBehavior.Restrict);
+                entity.HasOne<Visit>().WithMany().HasForeignKey(e => e.VisitId).OnDelete(DeleteBehavior.Restrict); // FK for VisitId
+                entity.HasOne<Patient>().WithMany().HasForeignKey(e => e.PatientId).OnDelete(DeleteBehavior.Restrict); // FK for PatientId
             });
 
             modelBuilder.Entity<ReportVersion>(entity =>

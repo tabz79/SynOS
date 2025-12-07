@@ -169,14 +169,29 @@ namespace SynOS.Services
             }
 
             // If a report for this order doesn't exist, create one.
-            var reportExists = await _context.Reports.AnyAsync(r => r.OrderId == orderId);
+            var reportExists = await _context.Reports.AnyAsync(r => r.SourceId == orderId && r.SourceType == "Order");
             if (!reportExists)
             {
+                var order = await _context.Orders
+                    .Include(o => o.Visit)
+                        .ThenInclude(v => v.Patient)
+                    .FirstOrDefaultAsync(o => o.OrderId == orderId);
+
+                if (order == null)
+                {
+                    throw new KeyNotFoundException($"Order with ID {orderId} not found when trying to create report.");
+                }
+
                 var newReport = new Report
                 {
                     ReportId = Guid.NewGuid(),
-                    OrderId = orderId,
+                    SourceId = orderId,
+                    SourceType = "Order",
+                    VisitId = order.VisitId,
+                    PatientId = order.Visit.Patient.PatientId,
+                    Department = order.Department,
                     Status = "ReadyForSignature", // Set initial status for the pathologist
+                    CreatedAt = DateTimeOffset.UtcNow
                 };
                 await _context.Reports.AddAsync(newReport);
             }

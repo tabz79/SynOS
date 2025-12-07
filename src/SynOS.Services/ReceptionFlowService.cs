@@ -14,17 +14,20 @@ namespace SynOS.Services
         private readonly SynOSDbContext _context;
         private readonly IVisitService _visitService;
         private readonly IInvoiceService _invoiceService;
+        private readonly IAccessionService _accessionService;
         private readonly ILogger<ReceptionFlowService> _logger;
 
         public ReceptionFlowService(
             SynOSDbContext context,
             IVisitService visitService,
             IInvoiceService invoiceService,
+            IAccessionService accessionService,
             ILogger<ReceptionFlowService> logger)
         {
             _context = context;
             _visitService = visitService;
             _invoiceService = invoiceService;
+            _accessionService = accessionService;
             _logger = logger;
         }
 
@@ -103,10 +106,82 @@ namespace SynOS.Services
             };
 
             var payment = await _invoiceService.RecordPaymentAsync(invoiceId, paymentDto);
-            
+
             var updatedInvoice = await _context.Invoices
                 .Include(i => i.Payments)
                 .FirstAsync(i => i.InvoiceId == invoiceId);
+
+            // If payment is complete, trigger creation of lab work items
+            if (updatedInvoice.Status == "Paid")
+            {
+                var orders = await _context.Orders
+                    .Include(o => o.TestDefinition)
+                    .Where(o => o.VisitId == visit.VisitId)
+                    .ToListAsync();
+
+                foreach (var order in orders)
+                {
+                    if (order.Department == "Radiology")
+                    {
+                        var studyExists = await _context.RadiologyStudies.AnyAsync(rs => rs.VisitTestId == order.OrderId);
+                        if (!studyExists)
+                        {
+                            var newStudy = new RadiologyStudy
+                            {
+                                RadiologyStudyId = Guid.NewGuid(),
+                                VisitId = visit.VisitId,
+                                PatientId = visit.PatientId,
+                                VisitTestId = order.OrderId,
+                                Modality = order.TestDefinition?.Modality ?? "Unknown",
+                                AccessionNumber = await _accessionService.GenerateRadiologyAccessionNumberAsync(),
+                                Status = "PendingImaging",
+                                CreatedBy = userId,
+                                CreatedAt = DateTimeOffset.UtcNow
+                            };
+                            _context.RadiologyStudies.Add(newStudy);
+
+                            var newReport = new Report
+                            {
+                                ReportId = Guid.NewGuid(),
+                                VisitId = visit.VisitId,
+                                PatientId = visit.PatientId,
+                                Department = "Radiology",
+                                SourceType = "RadiologyStudy",
+                                SourceId = newStudy.RadiologyStudyId,
+                                Status = "Draft",
+                                CurrentVersion = 1,
+                                CreatedAt = DateTimeOffset.UtcNow
+                            };
+                            
+                            newReport.RadiologyReport = new RadiologyReport
+                            {
+                                // ReportId is implicitly set by the navigation property
+                                RadiologyStudy = newStudy
+                            };
+
+                            _context.Reports.Add(newReport);
+                        }
+                    }
+                    else if (order.Department == "Pathology")
+                    {
+                        var sampleExists = await _context.Samples.AnyAsync(s => s.OrderId == order.OrderId);
+                        if (!sampleExists)
+                        {
+                            var newSample = new Sample
+                            {
+                                SampleId = Guid.NewGuid(),
+                                OrderId = order.OrderId,
+                                Barcode = $"SAMP-{Guid.NewGuid().ToString().Substring(0, 12)}",
+                                TubeType = order.TestDefinition?.DefaultTubeType ?? TubeType.Other,
+                                Status = SampleStatus.Pending,
+                            };
+                            _context.Samples.Add(newSample);
+                            _logger.LogInformation("Auto-created Sample {SampleId} for Order {OrderId}", newSample.SampleId, order.OrderId);
+                        }
+                    }
+                }
+                await _context.SaveChangesAsync();
+            }
             
             var updatedVisit = await _context.Visits.FindAsync(visit.VisitId);
 

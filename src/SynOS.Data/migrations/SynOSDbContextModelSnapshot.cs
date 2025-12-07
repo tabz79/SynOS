@@ -22,6 +22,29 @@ namespace SynOS.Data.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("SynOS.Models.Entities.AccessionCounter", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("Day")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("LastNumber")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Prefix")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("AccessionCounters");
+                });
+
             modelBuilder.Entity("SynOS.Models.Entities.Appointment", b =>
                 {
                     b.Property<Guid>("AppointmentId")
@@ -771,6 +794,33 @@ namespace SynOS.Data.Migrations
                     b.ToTable("PartialPayments");
                 });
 
+            modelBuilder.Entity("SynOS.Models.Entities.PathologyReport", b =>
+                {
+                    b.Property<Guid>("ReportId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Interpretation")
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
+
+                    b.Property<Guid>("OrderId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("PathologistComments")
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
+
+                    b.Property<string>("Recommendations")
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
+
+                    b.HasKey("ReportId");
+
+                    b.HasIndex("OrderId");
+
+                    b.ToTable("PathologyReports");
+                });
+
             modelBuilder.Entity("SynOS.Models.Entities.Patient", b =>
                 {
                     b.Property<Guid>("PatientId")
@@ -963,6 +1013,146 @@ namespace SynOS.Data.Migrations
                     b.ToTable("Payments");
                 });
 
+            modelBuilder.Entity("SynOS.Models.Entities.RadiologyImage", b =>
+                {
+                    b.Property<Guid>("ImageId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("FileName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("FileUrl")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("RadiologyStudyId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int?>("SequenceNumber")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("SeriesNumber")
+                        .HasColumnType("int");
+
+                    b.Property<DateTimeOffset>("UploadedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("UploadedBy")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ViewLabel")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("ImageId");
+
+                    b.HasIndex("RadiologyStudyId");
+
+                    b.HasIndex("UploadedBy");
+
+                    b.ToTable("RadiologyImages");
+                });
+
+            modelBuilder.Entity("SynOS.Models.Entities.RadiologyReport", b =>
+                {
+                    b.Property<Guid>("ReportId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("AdditionalNotes")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Findings")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Impression")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("RadiologyStudyId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("ReportId");
+
+                    b.HasIndex("RadiologyStudyId");
+
+                    b.ToTable("RadiologyReports");
+                });
+
+            modelBuilder.Entity("SynOS.Models.Entities.RadiologyStudy", b =>
+                {
+                    b.Property<Guid>("RadiologyStudyId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("AccessionNumber")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid?>("AssignedTo")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("CreatedBy")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ExternalAccessionNumber")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("ExternalStudyInstanceUid")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("ExternalSystemName")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("ExternalViewerUrl")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsSoftDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Modality")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<Guid>("PatientId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<Guid>("VisitId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("VisitTestId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("RadiologyStudyId");
+
+                    b.HasIndex("AssignedTo");
+
+                    b.HasIndex("CreatedBy");
+
+                    b.HasIndex("PatientId");
+
+                    b.HasIndex("VisitId");
+
+                    b.HasIndex("VisitTestId")
+                        .IsUnique();
+
+                    b.ToTable("RadiologyStudies");
+                });
+
             modelBuilder.Entity("SynOS.Models.Entities.Referrer", b =>
                 {
                     b.Property<Guid>("ReferrerId")
@@ -1047,6 +1237,9 @@ namespace SynOS.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
                     b.Property<int>("CurrentVersion")
                         .HasColumnType("int");
 
@@ -1056,16 +1249,15 @@ namespace SynOS.Data.Migrations
                     b.Property<DateTimeOffset?>("DeliveredAt")
                         .HasColumnType("datetimeoffset");
 
-                    b.Property<string>("Interpretation")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<string>("Department")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
-                    b.Property<Guid>("OrderId")
+                    b.Property<Guid>("PatientId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("PathologistComments")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Recommendations")
+                    b.Property<string>("PdfUrl")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTimeOffset?>("SignedAt")
@@ -1074,19 +1266,67 @@ namespace SynOS.Data.Migrations
                     b.Property<Guid?>("SignedByUserId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<Guid>("SourceId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("SourceType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
+                    b.Property<Guid>("VisitId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.HasKey("ReportId");
 
-                    b.HasIndex("OrderId")
-                        .IsUnique();
+                    b.HasIndex("PatientId");
 
                     b.HasIndex("SignedByUserId");
 
+                    b.HasIndex("VisitId");
+
+                    b.HasIndex("SourceType", "SourceId")
+                        .IsUnique();
+
                     b.ToTable("Reports");
+                });
+
+            modelBuilder.Entity("SynOS.Models.Entities.ReportAttachment", b =>
+                {
+                    b.Property<Guid>("AttachmentId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("DisplayName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("FileUrl")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("ReportId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("AttachmentId");
+
+                    b.HasIndex("ReportId");
+
+                    b.ToTable("ReportAttachments");
                 });
 
             modelBuilder.Entity("SynOS.Models.Entities.ReportSignature", b =>
@@ -1483,6 +1723,10 @@ namespace SynOS.Data.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
+                    b.Property<string>("Modality")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(200)
@@ -1546,6 +1790,10 @@ namespace SynOS.Data.Migrations
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("Designation")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("Email")
                         .IsRequired()
@@ -1774,7 +2022,7 @@ namespace SynOS.Data.Migrations
                     b.HasOne("SynOS.Models.Entities.Patient", "Patient")
                         .WithMany()
                         .HasForeignKey("PatientId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.HasOne("SynOS.Models.Entities.Referrer", "Referrer")
@@ -1784,13 +2032,13 @@ namespace SynOS.Data.Migrations
                     b.HasOne("SynOS.Models.Entities.Result", "Result")
                         .WithMany()
                         .HasForeignKey("ResultId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.HasOne("SynOS.Models.Entities.Visit", "Visit")
                         .WithMany()
                         .HasForeignKey("VisitId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("AcknowledgedBy");
@@ -1956,6 +2204,25 @@ namespace SynOS.Data.Migrations
                     b.Navigation("Invoice");
                 });
 
+            modelBuilder.Entity("SynOS.Models.Entities.PathologyReport", b =>
+                {
+                    b.HasOne("SynOS.Models.Entities.Order", "Order")
+                        .WithMany()
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SynOS.Models.Entities.Report", "Report")
+                        .WithOne("PathologyReport")
+                        .HasForeignKey("SynOS.Models.Entities.PathologyReport", "ReportId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Order");
+
+                    b.Navigation("Report");
+                });
+
             modelBuilder.Entity("SynOS.Models.Entities.PatientAlias", b =>
                 {
                     b.HasOne("SynOS.Models.Entities.Patient", "Patient")
@@ -2008,6 +2275,86 @@ namespace SynOS.Data.Migrations
                     b.Navigation("ReceivedBy");
                 });
 
+            modelBuilder.Entity("SynOS.Models.Entities.RadiologyImage", b =>
+                {
+                    b.HasOne("SynOS.Models.Entities.RadiologyStudy", "RadiologyStudy")
+                        .WithMany("RadiologyImages")
+                        .HasForeignKey("RadiologyStudyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SynOS.Models.Entities.User", "Uploader")
+                        .WithMany()
+                        .HasForeignKey("UploadedBy")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("RadiologyStudy");
+
+                    b.Navigation("Uploader");
+                });
+
+            modelBuilder.Entity("SynOS.Models.Entities.RadiologyReport", b =>
+                {
+                    b.HasOne("SynOS.Models.Entities.RadiologyStudy", "RadiologyStudy")
+                        .WithMany()
+                        .HasForeignKey("RadiologyStudyId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SynOS.Models.Entities.Report", "Report")
+                        .WithOne("RadiologyReport")
+                        .HasForeignKey("SynOS.Models.Entities.RadiologyReport", "ReportId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("RadiologyStudy");
+
+                    b.Navigation("Report");
+                });
+
+            modelBuilder.Entity("SynOS.Models.Entities.RadiologyStudy", b =>
+                {
+                    b.HasOne("SynOS.Models.Entities.User", "Technician")
+                        .WithMany()
+                        .HasForeignKey("AssignedTo")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("SynOS.Models.Entities.User", "Creator")
+                        .WithMany()
+                        .HasForeignKey("CreatedBy")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SynOS.Models.Entities.Patient", "Patient")
+                        .WithMany()
+                        .HasForeignKey("PatientId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SynOS.Models.Entities.Visit", "Visit")
+                        .WithMany()
+                        .HasForeignKey("VisitId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SynOS.Models.Entities.Order", "Order")
+                        .WithOne()
+                        .HasForeignKey("SynOS.Models.Entities.RadiologyStudy", "VisitTestId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Creator");
+
+                    b.Navigation("Order");
+
+                    b.Navigation("Patient");
+
+                    b.Navigation("Technician");
+
+                    b.Navigation("Visit");
+                });
+
             modelBuilder.Entity("SynOS.Models.Entities.RefreshToken", b =>
                 {
                     b.HasOne("SynOS.Models.Entities.User", "User")
@@ -2021,10 +2368,10 @@ namespace SynOS.Data.Migrations
 
             modelBuilder.Entity("SynOS.Models.Entities.Report", b =>
                 {
-                    b.HasOne("SynOS.Models.Entities.Order", "Order")
+                    b.HasOne("SynOS.Models.Entities.Patient", null)
                         .WithMany()
-                        .HasForeignKey("OrderId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .HasForeignKey("PatientId")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("SynOS.Models.Entities.User", "SignedBy")
@@ -2032,9 +2379,24 @@ namespace SynOS.Data.Migrations
                         .HasForeignKey("SignedByUserId")
                         .OnDelete(DeleteBehavior.Restrict);
 
-                    b.Navigation("Order");
+                    b.HasOne("SynOS.Models.Entities.Visit", null)
+                        .WithMany()
+                        .HasForeignKey("VisitId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.Navigation("SignedBy");
+                });
+
+            modelBuilder.Entity("SynOS.Models.Entities.ReportAttachment", b =>
+                {
+                    b.HasOne("SynOS.Models.Entities.Report", "Report")
+                        .WithMany("Attachments")
+                        .HasForeignKey("ReportId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Report");
                 });
 
             modelBuilder.Entity("SynOS.Models.Entities.ReportSignature", b =>
@@ -2278,8 +2640,19 @@ namespace SynOS.Data.Migrations
                     b.Navigation("ReferrerLinks");
                 });
 
+            modelBuilder.Entity("SynOS.Models.Entities.RadiologyStudy", b =>
+                {
+                    b.Navigation("RadiologyImages");
+                });
+
             modelBuilder.Entity("SynOS.Models.Entities.Report", b =>
                 {
+                    b.Navigation("Attachments");
+
+                    b.Navigation("PathologyReport");
+
+                    b.Navigation("RadiologyReport");
+
                     b.Navigation("ReportVersions");
                 });
 

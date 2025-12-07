@@ -11,6 +11,7 @@ namespace SynOS.Models.DTOs.ReportTemplateDtos
         public string Name { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
         public TemplateModel? TemplateDsl { get; set; }
+        public string? TemplateJson { get; set; }
         public int Version { get; set; }
         public bool IsPublished { get; set; }
         public bool IsDefault { get; set; }

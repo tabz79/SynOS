@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Serilog;
 using SynOS.Data;
 using SynOS.Services;
+using AutoMapper; // Added for IMapper
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
@@ -132,7 +133,17 @@ builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<ISampleNotifier, SampleNotifier>(); // Register notifier
 builder.Services.AddScoped<IReportTemplateService, ReportTemplateService>(); // Register new service
 builder.Services.AddScoped<IReportPdfRenderer, QuestPdfReportRenderer>(); // Register new service
+builder.Services.AddScoped<IRadiologyService, RadiologyService>(provider =>
+    new RadiologyService(
+        provider.GetRequiredService<SynOSDbContext>(),
+        provider.GetRequiredService<IMapper>(),
+        provider.GetRequiredService<IReportPdfRenderer>(),
+        provider.GetRequiredService<IReportTemplateService>(),
+        provider.GetRequiredService<IUserService>(),
+        provider.GetRequiredService<IFileStorageService>()
+    )); // Register new service
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IAccessionService, AccessionService>();
 builder.Services.AddSingleton<IFileStorageService, LocalStorageService>();
 
 // Register Delivery Module Services

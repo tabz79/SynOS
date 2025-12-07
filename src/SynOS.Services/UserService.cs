@@ -27,6 +27,16 @@ namespace SynOS.Services
             _mapper = mapper;
         }
 
+        public async Task<UserDto?> GetUserByIdAsync(Guid userId)
+        {
+            var user = await _context.Users
+                .Include(u => u.UserRoles)
+                    .ThenInclude(ur => ur.Role)
+                .FirstOrDefaultAsync(u => u.UserId == userId);
+
+            return _mapper.Map<UserDto>(user);
+        }
+
         public async Task<UserSignatureDto> UpdateUserSignatureAsync(Guid userId, IFormFile signatureFile)
         {
             var user = await _context.Users.FindAsync(userId);

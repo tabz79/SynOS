@@ -18,6 +18,9 @@ namespace SynOS.Models.Entities
         [StringLength(50)]
         public string Department { get; set; } = string.Empty;
 
+        [StringLength(50)]
+        public string? Modality { get; set; }
+
         [Required]
         [Column(TypeName = "decimal(10, 2)")]
         public decimal Price { get; set; }

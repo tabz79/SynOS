@@ -74,4 +74,37 @@ public class SecureDownloadController : ControllerBase
             return BadRequest(new { error = ex.Message });
         }
     }
+
+    [HttpGet("download-package/{token}")]
+    [ProducesResponseType(typeof(FileStreamResult), 200)]
+    [ProducesResponseType(401)]
+    [ProducesResponseType(404)]
+    public async Task<IActionResult> DownloadReportPackage(string token, [FromQuery] string phone)
+    {
+        if (string.IsNullOrEmpty(phone))
+        {
+            _logger.LogWarning("Download package attempt for token {Token} failed: phone query parameter is missing.", token);
+            return BadRequest(new { error = "Phone number is required." });
+        }
+
+        try
+        {
+            var fileStream = await _deliveryService.DownloadReportPackageAsync(token, phone);
+            var fileName = $"ReportPackage_{token}.zip"; 
+            Response.Headers.Add("X-Content-Type-Options", "nosniff");
+            Response.Headers.Add("X-Frame-Options", "DENY");
+            Response.Headers.Add("Content-Security-Policy", "default-src 'none'");
+            return File(fileStream, "application/zip", fileName);
+        }
+        catch (BadHttpRequestException ex) when (ex.StatusCode == 401)
+        {
+            _logger.LogWarning("Secure download package failed for token {Token} (phone mismatch/invalid): {Message}", token, ex.Message);
+            return Unauthorized(new { error = ex.Message });
+        }
+        catch (BadHttpRequestException ex) when (ex.StatusCode == 400 || ex.StatusCode == 404)
+        {
+            _logger.LogWarning("Secure download package failed for token {Token} (bad request/not found): {Message}", token, ex.Message);
+            return BadRequest(new { error = ex.Message });
+        }
+    }
 }

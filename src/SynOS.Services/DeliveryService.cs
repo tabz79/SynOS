@@ -8,6 +8,7 @@ using SynOS.Services.Storage;
 using SynOS.Services.Utils;
 using System.Security.Cryptography;
 using System.Text;
+using System.IO.Compression; // Added for ZipArchive
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Configuration; // Added for IConfiguration // Added for logging
 using Microsoft.AspNetCore.Http; // Potentially needed for BadHttpRequestException, as observed previously
@@ -57,31 +58,110 @@ public class DeliveryService : IDeliveryService
 
     public async Task<List<DeliveryQueueItemDto>> GetDeliveryQueueAsync(string? department, string? status)
     {
-        // Query Reports where:
-        // Status = 'Signed' (or equivalent signed/completed status)
-        // AND:
-        // Either no DeliveryLogs exist, OR
-        // latest DeliveryLog is not 'Delivered' and not 'HandedOver'.
-        // Filter by department if provided (e.g. pathology, radiology).
-
         var query = _context.Reports
-            .Include(r => r.Order)
-                .ThenInclude(o => o.Visit)
-                    .ThenInclude(v => v.Patient)
-            .Include(r => r.ReportVersions)
             .Where(r => r.Status == "Signed"); // Assuming 'Signed' is the final status before delivery
 
-        if (!string.IsNullOrEmpty(department))
-        {
-            query = query.Where(r => r.Order.Department == department);
-        }
+        // Conditionally include related entities based on SourceType
+        // For 'Order' (pathology) reports
+        var orderReportsQuery = query
+            .Where(r => r.SourceType == "Order")
+            .Include(r => EF.Property<Order>(r, "SourceId")) // Include Order based on SourceId
+                .ThenInclude(o => o.Visit)
+                    .ThenInclude(v => v.Patient)
+            .Include(r => EF.Property<Order>(r, "SourceId")) // Include Order to get TestDefinition
+                .ThenInclude(o => o.TestDefinition);
 
-        var reports = await query.ToListAsync();
+        // For 'RadiologyStudy' reports
+        var radiologyReportsQuery = query
+            .Where(r => r.SourceType == "RadiologyStudy")
+            .Include(r => EF.Property<RadiologyStudy>(r, "SourceId")) // Include RadiologyStudy based on SourceId
+                .ThenInclude(rs => rs.Visit)
+                    .ThenInclude(v => v.Patient)
+            .Include(r => EF.Property<RadiologyStudy>(r, "SourceId")) // Include RadiologyStudy to get Order
+                .ThenInclude(rs => rs.Order)
+                    .ThenInclude(o => o.TestDefinition);
+
+        // Union the results
+        var allReports = await orderReportsQuery
+            .Union(radiologyReportsQuery)
+            .Include(r => r.ReportVersions) // ReportVersions are common
+            .ToListAsync();
 
         var dtos = new List<DeliveryQueueItemDto>();
 
-        foreach (var report in reports)
+        foreach (var report in allReports)
         {
+            string reportDepartment;
+            string testCode;
+            string testName;
+            Guid visitId;
+            Guid patientId;
+            string patientFirstName;
+            string patientLastName;
+            DateTime patientDateOfBirth;
+            string patientGender;
+            string patientCurrentPhoneNumber;
+            string visitToken;
+            DateTimeOffset orderCreatedAt;
+
+            if (report.SourceType == "Order")
+            {
+                var order = await _context.Orders
+                    .Include(o => o.Visit)
+                        .ThenInclude(v => v.Patient)
+                    .Include(o => o.TestDefinition)
+                    .FirstOrDefaultAsync(o => o.OrderId == report.SourceId);
+
+                if (order == null) continue; // Should not happen if data is consistent
+
+                reportDepartment = order.Department;
+                testCode = order.TestCode;
+                testName = order.TestDefinition?.Name ?? order.TestCode;
+                visitId = order.Visit.VisitId;
+                patientId = order.Visit.Patient.PatientId;
+                patientFirstName = order.Visit.Patient.FirstName;
+                patientLastName = order.Visit.Patient.LastName;
+                patientDateOfBirth = order.Visit.Patient.DateOfBirth;
+                patientGender = order.Visit.Patient.Gender;
+                patientCurrentPhoneNumber = order.Visit.Patient.CurrentPhoneNumber;
+                visitToken = order.Visit.Token;
+                orderCreatedAt = order.CreatedAt;
+            }
+            else if (report.SourceType == "RadiologyStudy")
+            {
+                var radiologyStudy = await _context.RadiologyStudies
+                    .Include(rs => rs.Visit)
+                        .ThenInclude(v => v.Patient)
+                    .Include(rs => rs.Order)
+                        .ThenInclude(o => o.TestDefinition)
+                    .FirstOrDefaultAsync(rs => rs.RadiologyStudyId == report.SourceId);
+
+                if (radiologyStudy == null) continue; // Should not happen
+
+                reportDepartment = "Radiology"; // Explicitly set for Radiology Studies
+                testCode = radiologyStudy.Order.TestCode;
+                testName = radiologyStudy.Order.TestDefinition?.Name ?? radiologyStudy.Order.TestCode;
+                visitId = radiologyStudy.Visit.VisitId;
+                patientId = radiologyStudy.Visit.Patient.PatientId;
+                patientFirstName = radiologyStudy.Visit.Patient.FirstName;
+                patientLastName = radiologyStudy.Visit.Patient.LastName;
+                patientDateOfBirth = radiologyStudy.Visit.Patient.DateOfBirth;
+                patientGender = radiologyStudy.Visit.Patient.Gender;
+                patientCurrentPhoneNumber = radiologyStudy.Visit.Patient.CurrentPhoneNumber;
+                visitToken = radiologyStudy.Visit.Token;
+                orderCreatedAt = radiologyStudy.CreatedAt; // Use study's created date as equivalent
+            }
+            else
+            {
+                continue; // Skip unknown source types
+            }
+
+            // Apply department filter
+            if (!string.IsNullOrEmpty(department) && reportDepartment != department)
+            {
+                continue;
+            }
+
             var latestDeliveryLog = await _context.DeliveryLogs
                 .Where(dl => dl.ReportId == report.ReportId)
                 .OrderByDescending(dl => dl.CreatedAt)
@@ -92,24 +172,22 @@ public class DeliveryService : IDeliveryService
                 continue; // Skip if status is Pending but it's already delivered/handed over
             }
 
-            // Fallback for cases where report.SignedAt is null, perhaps for older reports
-            DateTimeOffset signedAt = report.SignedAt ?? report.Order.CreatedAt; 
+            DateTimeOffset signedAt = report.SignedAt ?? orderCreatedAt; 
 
-            // Get Patient Age and Gender (assuming Patient entity has DateOfBirth and Gender)
-            // Simplified age calculation for DTO for now, could be a helper method
-            int age = DateTime.Today.Year - report.Order.Visit.Patient.DateOfBirth.Year;
-            if (report.Order.Visit.Patient.DateOfBirth.Date > DateTime.Today.AddYears(-age)) age--;
+            int age = DateTime.Today.Year - patientDateOfBirth.Year;
+            if (patientDateOfBirth.Date > DateTime.Today.AddYears(-age)) age--;
 
-            // Get Tests (list or comma-separated)
-            var tests = new List<string> { report.Order.TestCode }; // Simplified, could be a list of actual test names
+            var tests = new List<string> { testName }; // Use testName
 
-            // Get CriticalCount (assuming CriticalAlerts exist for results related to this report's order)
-            int criticalCount = await _context.CriticalAlerts
-                .Include(ca => ca.Result)
-                .Where(ca => ca.Result != null && ca.Result.OrderId == report.Order.OrderId && ca.Status == "Open") // Corrected to use OrderId
-                .CountAsync();
+            int criticalCount = 0;
+            if (report.SourceType == "Order") // Critical alerts are tied to results/orders
+            {
+                criticalCount = await _context.CriticalAlerts
+                    .Include(ca => ca.Result)
+                    .Where(ca => ca.Result != null && ca.Result.OrderId == report.SourceId && ca.Status == "Open")
+                    .CountAsync();
+            }
             
-            // Get the PDF URL from the latest ReportVersion
             var latestReportVersion = report.ReportVersions.OrderByDescending(rv => rv.VersionNumber).FirstOrDefault();
             string pdfUrl = "";
             if (latestReportVersion != null && !string.IsNullOrEmpty(latestReportVersion.PdfPath))
@@ -121,14 +199,13 @@ public class DeliveryService : IDeliveryService
                 _logger.LogWarning("No PDF path found for ReportId: {ReportId}", report.ReportId);
             }
 
-
             dtos.Add(new DeliveryQueueItemDto(
                 report.ReportId,
-                report.Order.Visit.Token, // TokenNumber
-                $"{report.Order.Visit.Patient.FirstName} {report.Order.Visit.Patient.LastName}", // PatientName
+                visitToken, // TokenNumber
+                $"{patientFirstName} {patientLastName}", // PatientName
                 age,
-                report.Order.Visit.Patient.Gender,
-                report.Order.Visit.Patient.CurrentPhoneNumber, // PatientPhone
+                patientGender,
+                patientCurrentPhoneNumber, // PatientPhone
                 null, // PatientEmail - Patient entity does not have an email field
                 tests,
                 signedAt,
@@ -197,9 +274,6 @@ public class DeliveryService : IDeliveryService
         var secureLinkDto = await GenerateSecureLinkInternalAsync(reportId, userId);
         
         var report = await _context.Reports
-            .Include(r => r.Order)
-                .ThenInclude(o => o.Visit)
-                    .ThenInclude(v => v.Patient)
             .FirstOrDefaultAsync(r => r.ReportId == reportId);
 
         if (report == null)
@@ -208,11 +282,41 @@ public class DeliveryService : IDeliveryService
             throw new BadHttpRequestException("Report not found.", 404);
         }
 
-        var patientName = $"{report.Order.Visit.Patient.FirstName} {report.Order.Visit.Patient.LastName}";
-        var tests = report.Order.TestCode; // Simplified, get actual test names
+        string patientName;
+        string tests;
+
+        if (report.SourceType == "Order")
+        {
+            var order = await _context.Orders
+                .Include(o => o.Visit)
+                    .ThenInclude(v => v.Patient)
+                .Include(o => o.TestDefinition)
+                .FirstOrDefaultAsync(o => o.OrderId == report.SourceId);
+
+            if (order == null) throw new KeyNotFoundException("Order not found for report.");
+            patientName = $"{order.Visit.Patient.FirstName} {order.Visit.Patient.LastName}";
+            tests = order.TestCode; // Simplified, get actual test names
+        }
+        else if (report.SourceType == "RadiologyStudy")
+        {
+            var radiologyStudy = await _context.RadiologyStudies
+                .Include(rs => rs.Visit)
+                    .ThenInclude(v => v.Patient)
+                .Include(rs => rs.Order)
+                    .ThenInclude(o => o.TestDefinition)
+                .FirstOrDefaultAsync(rs => rs.RadiologyStudyId == report.SourceId);
+
+            if (radiologyStudy == null) throw new KeyNotFoundException("Radiology Study not found for report.");
+            patientName = $"{radiologyStudy.Visit.Patient.FirstName} {radiologyStudy.Visit.Patient.LastName}";
+            tests = radiologyStudy.Order.TestCode; // Simplified
+        }
+        else
+        {
+            throw new InvalidOperationException($"Unsupported Report SourceType: {report.SourceType}");
+        }
 
         // Build message text
-        var message = $"Dear {patientName}, your lab report for {tests} is ready. Download your report here: {secureLinkDto.Link} This link is valid for {secureLinkDto.ExpiresAt:dd-MM-yyyy HH:mm} and can be downloaded {secureLinkDto.MaxDownloads} times. - SynOS Lab";
+        var message = $"Dear {patientName}, your lab report (including images) for {tests} is ready. Download your complete report package here: {secureLinkDto.PackageLink} This link is valid for {secureLinkDto.ExpiresAt:dd-MM-yyyy HH:mm} and can be downloaded {secureLinkDto.MaxDownloads} times. - SynOS Lab";
 
         // Create DeliveryLog
         var deliveryLog = new DeliveryLog
@@ -255,9 +359,6 @@ public class DeliveryService : IDeliveryService
         var secureLinkDto = await GenerateSecureLinkInternalAsync(reportId, userId);
         
         var report = await _context.Reports
-            .Include(r => r.Order)
-                .ThenInclude(o => o.Visit)
-                    .ThenInclude(v => v.Patient)
             .FirstOrDefaultAsync(r => r.ReportId == reportId);
 
         if (report == null)
@@ -266,8 +367,41 @@ public class DeliveryService : IDeliveryService
             throw new BadHttpRequestException("Report not found.", 404);
         }
 
+        string patientName;
+        string tests; // Not used in SMS, but kept for consistency if needed later
+
+        if (report.SourceType == "Order")
+        {
+            var order = await _context.Orders
+                .Include(o => o.Visit)
+                    .ThenInclude(v => v.Patient)
+                .Include(o => o.TestDefinition)
+                .FirstOrDefaultAsync(o => o.OrderId == report.SourceId);
+
+            if (order == null) throw new KeyNotFoundException("Order not found for report.");
+            patientName = $"{order.Visit.Patient.FirstName} {order.Visit.Patient.LastName}";
+            tests = order.TestCode; // Simplified, get actual test names
+        }
+        else if (report.SourceType == "RadiologyStudy")
+        {
+            var radiologyStudy = await _context.RadiologyStudies
+                .Include(rs => rs.Visit)
+                    .ThenInclude(v => v.Patient)
+                .Include(rs => rs.Order)
+                    .ThenInclude(o => o.TestDefinition)
+                .FirstOrDefaultAsync(rs => rs.RadiologyStudyId == report.SourceId);
+
+            if (radiologyStudy == null) throw new KeyNotFoundException("Radiology Study not found for report.");
+            patientName = $"{radiologyStudy.Visit.Patient.FirstName} {radiologyStudy.Visit.Patient.LastName}";
+            tests = radiologyStudy.Order.TestCode; // Simplified
+        }
+        else
+        {
+            throw new InvalidOperationException($"Unsupported Report SourceType: {report.SourceType}");
+        }
+
         // Build short SMS-style text
-        var message = $"Lab report ready. Download: {secureLinkDto.Link} Valid for 24h. - SynOS Lab";
+        var message = $"Lab report (w/ images) ready. Download: {secureLinkDto.PackageLink} - SynOS Lab";
 
         // Create DeliveryLog
         var deliveryLog = new DeliveryLog
@@ -307,9 +441,6 @@ public class DeliveryService : IDeliveryService
         }
 
         var report = await _context.Reports
-            .Include(r => r.Order)
-                .ThenInclude(o => o.Visit)
-                    .ThenInclude(v => v.Patient)
             .Include(r => r.ReportVersions)
             .FirstOrDefaultAsync(r => r.ReportId == reportId);
 
@@ -317,6 +448,39 @@ public class DeliveryService : IDeliveryService
         {
             _logger.LogWarning("Attempted Email delivery for non-existent report: {ReportId}", reportId);
             throw new BadHttpRequestException("Report not found.", 404);
+        }
+
+        string patientName;
+        string tests;
+
+        if (report.SourceType == "Order")
+        {
+            var order = await _context.Orders
+                .Include(o => o.Visit)
+                    .ThenInclude(v => v.Patient)
+                .Include(o => o.TestDefinition)
+                .FirstOrDefaultAsync(o => o.OrderId == report.SourceId);
+
+            if (order == null) throw new KeyNotFoundException("Order not found for report.");
+            patientName = $"{order.Visit.Patient.FirstName} {order.Visit.Patient.LastName}";
+            tests = order.TestCode; // Simplified, get actual test names
+        }
+        else if (report.SourceType == "RadiologyStudy")
+        {
+            var radiologyStudy = await _context.RadiologyStudies
+                .Include(rs => rs.Visit)
+                    .ThenInclude(v => v.Patient)
+                .Include(rs => rs.Order)
+                    .ThenInclude(o => o.TestDefinition)
+                .FirstOrDefaultAsync(rs => rs.RadiologyStudyId == report.SourceId);
+
+            if (radiologyStudy == null) throw new KeyNotFoundException("Radiology Study not found for report.");
+            patientName = $"{radiologyStudy.Visit.Patient.FirstName} {radiologyStudy.Visit.Patient.LastName}";
+            tests = radiologyStudy.Order.TestCode; // Simplified
+        }
+        else
+        {
+            throw new InvalidOperationException($"Unsupported Report SourceType: {report.SourceType}");
         }
 
         var latestReportVersion = report.ReportVersions.OrderByDescending(rv => rv.VersionNumber).FirstOrDefault();
@@ -327,16 +491,16 @@ public class DeliveryService : IDeliveryService
         }
         else
         {
-            _logger.LogWarning("No PDF path found for ReportId: {ReportId} for email attachment.", reportId);
+            _logger.LogWarning("No PDF path found for ReportId: {ReportId} for email attachment.", report.ReportId);
         }
 
-        var patientName = $"{report.Order.Visit.Patient.FirstName} {report.Order.Visit.Patient.LastName}";
-        var tests = report.Order.TestCode; // Simplified
+        // Generate Secure Link
+        var secureLinkDto = await GenerateSecureLinkInternalAsync(reportId, userId);
 
         // Build email payload
         var emailPayload = new EmailPayload(
             Subject: $"Your Lab Report - {patientName}",
-            HtmlBody: $"<p>Dear {patientName},</p><p>Your lab report for {tests} is ready. Please find it attached.</p><p>Thank you,</p><p>SynOS Lab</p>",
+            HtmlBody: $"<p>Dear {patientName},</p><p>Your lab report for {tests} is ready (including images). Please find the main report attached. You can also download the complete report package (including images) here: <a href=\"{secureLinkDto.PackageLink}\">{secureLinkDto.PackageLink}</a></p><p>Thank you,</p><p>SynOS Lab</p>",
             AttachmentPath: attachmentPath
         );
 
@@ -392,8 +556,9 @@ public class DeliveryService : IDeliveryService
         await _context.SaveChangesAsync();
 
         var linkUrl = $"{_secureLinkBaseUrl}/download/{token}";
+        var packageLinkUrl = $"{_secureLinkBaseUrl}/download-package/{token}";
         
-        return new SecureLinkDto(token, linkUrl, expiresAt, maxDownloads, maxDownloads);
+        return new SecureLinkDto(token, linkUrl, packageLinkUrl, expiresAt, maxDownloads, maxDownloads);
     }
 
     public async Task<Stream> VerifyAndDownloadAsync(string token, string phone)
@@ -402,15 +567,12 @@ public class DeliveryService : IDeliveryService
         if (!IsIndianMobileNumber(phone))
         {
             _logger.LogWarning("Invalid phone number format for secure download token {Token}: {Phone}", token, phone);
-            throw new BadHttpRequestException("Invalid 10-digit Indian mobile number.", 401);
+            throw new BadHttpRequestException("InvalidPhoneOrLink", 401);
         }
 
         var downloadLink = await _context.DownloadLinks
             .Include(dl => dl.Report)
-                .ThenInclude(r => r.Order)
-                    .ThenInclude(o => o.Visit)
-                        .ThenInclude(v => v.Patient)
-            .Include(dl => dl.Report.ReportVersions)
+                .ThenInclude(r => r.ReportVersions)
             .FirstOrDefaultAsync(dl => dl.Token == token);
 
         if (downloadLink == null || !downloadLink.IsActive)
@@ -429,7 +591,31 @@ public class DeliveryService : IDeliveryService
         }
 
         // Fetch the patient’s registered phone
-        var patientPhoneNumber = downloadLink.Report.Order.Visit.Patient.CurrentPhoneNumber;
+        string patientPhoneNumber;
+        if (downloadLink.Report.SourceType == "Order")
+        {
+            var order = await _context.Orders
+                .Include(o => o.Visit)
+                    .ThenInclude(v => v.Patient)
+                .FirstOrDefaultAsync(o => o.OrderId == downloadLink.Report.SourceId);
+            
+            if (order == null) throw new KeyNotFoundException("Order not found for report.");
+            patientPhoneNumber = order.Visit.Patient.CurrentPhoneNumber;
+        }
+        else if (downloadLink.Report.SourceType == "RadiologyStudy")
+        {
+            var radiologyStudy = await _context.RadiologyStudies
+                .Include(rs => rs.Visit)
+                    .ThenInclude(v => v.Patient)
+                .FirstOrDefaultAsync(rs => rs.RadiologyStudyId == downloadLink.Report.SourceId);
+
+            if (radiologyStudy == null) throw new KeyNotFoundException("Radiology Study not found for report.");
+            patientPhoneNumber = radiologyStudy.Visit.Patient.CurrentPhoneNumber;
+        }
+        else
+        {
+            throw new InvalidOperationException($"Unsupported Report SourceType: {downloadLink.Report.SourceType}");
+        }
 
         // Compare strings
         if (phone != patientPhoneNumber)
@@ -545,19 +731,46 @@ public class DeliveryService : IDeliveryService
                 break;
             case DeliveryMethod.Email:
                 notificationType = NotificationType.EMAIL;
-                var report = await _context.Reports
+                var emailReport = await _context.Reports
                     .Include(r => r.ReportVersions)
-                    .Include(r => r.Order)
-                        .ThenInclude(o => o.Visit)
-                            .ThenInclude(v => v.Patient)
                     .FirstOrDefaultAsync(r => r.ReportId == reportId);
+
+                string emailPatientName;
+                string emailTests;
+
+                if (emailReport.SourceType == "Order")
+                {
+                    var order = await _context.Orders
+                        .Include(o => o.Visit)
+                            .ThenInclude(v => v.Patient)
+                        .FirstOrDefaultAsync(o => o.OrderId == emailReport.SourceId);
+                    if (order == null) throw new KeyNotFoundException("Order not found for report.");
+                    emailPatientName = $"{order.Visit.Patient.FirstName} {order.Visit.Patient.LastName}";
+                    emailTests = order.TestCode;
+                }
+                else if (emailReport.SourceType == "RadiologyStudy")
+                {
+                    var radiologyStudy = await _context.RadiologyStudies
+                        .Include(rs => rs.Visit)
+                            .ThenInclude(v => v.Patient)
+                        .Include(rs => rs.Order)
+                            .ThenInclude(o => o.TestDefinition)
+                        .FirstOrDefaultAsync(rs => rs.RadiologyStudyId == emailReport.SourceId);
+                    if (radiologyStudy == null) throw new KeyNotFoundException("Radiology Study not found for report.");
+                    emailPatientName = $"{radiologyStudy.Visit.Patient.FirstName} {radiologyStudy.Visit.Patient.LastName}";
+                    emailTests = radiologyStudy.Order.TestCode;
+                }
+                else
+                {
+                    throw new InvalidOperationException($"Unsupported Report SourceType: {emailReport.SourceType}");
+                }
                 
-                var latestReportVersion = report?.ReportVersions.OrderByDescending(rv => rv.VersionNumber).FirstOrDefault();
+                var latestReportVersion = emailReport?.ReportVersions.OrderByDescending(rv => rv.VersionNumber).FirstOrDefault();
                 string? attachmentPath = latestReportVersion?.PdfPath;
                 
                 var emailPayload = new EmailPayload(
-                    Subject: $"Your Lab Report - {report?.Order.Visit.Patient.FirstName} {report?.Order.Visit.Patient.LastName}",
-                    HtmlBody: $"<p>Dear {report?.Order.Visit.Patient.FirstName} {report?.Order.Visit.Patient.LastName},</p><p>Your lab report is ready. Please find it attached.</p><p>Thank you,</p><p>SynOS Lab</p>",
+                    Subject: $"Your Lab Report - {emailPatientName}",
+                    HtmlBody: $"<p>Dear {emailPatientName},</p><p>Your lab report is ready. Please find it attached.</p><p>Thank you,</p><p>SynOS Lab</p>",
                     AttachmentPath: attachmentPath
                 );
                 content = System.Text.Json.JsonSerializer.Serialize(emailPayload);
@@ -616,9 +829,6 @@ public class DeliveryService : IDeliveryService
     {
         var downloadLink = await _context.DownloadLinks
             .Include(dl => dl.Report)
-                .ThenInclude(r => r.Order)
-                    .ThenInclude(o => o.Visit)
-                        .ThenInclude(v => v.Patient)
             .FirstOrDefaultAsync(dl => dl.Token == token);
 
         if (downloadLink == null)
@@ -628,8 +838,37 @@ public class DeliveryService : IDeliveryService
 
         bool isValid = downloadLink.IsActive && downloadLink.ExpiresAt > DateTimeOffset.UtcNow && downloadLink.DownloadCount < downloadLink.MaxDownloads;
 
-        var patientName = $"{downloadLink.Report?.Order?.Visit?.Patient?.FirstName} {downloadLink.Report?.Order?.Visit?.Patient?.LastName}" ?? "N/A";
-        var tests = new List<string> { downloadLink.Report?.Order?.TestCode ?? "N/A" }; // Simplified
+        string patientName;
+        List<string> tests;
+
+        if (downloadLink.Report.SourceType == "Order")
+        {
+            var order = await _context.Orders
+                .Include(o => o.Visit)
+                    .ThenInclude(v => v.Patient)
+                .FirstOrDefaultAsync(o => o.OrderId == downloadLink.Report.SourceId);
+            
+            if (order == null) throw new KeyNotFoundException("Order not found for report.");
+            patientName = $"{order.Visit.Patient.FirstName} {order.Visit.Patient.LastName}";
+            tests = new List<string> { order.TestCode };
+        }
+        else if (downloadLink.Report.SourceType == "RadiologyStudy")
+        {
+            var radiologyStudy = await _context.RadiologyStudies
+                .Include(rs => rs.Visit)
+                    .ThenInclude(v => v.Patient)
+                .Include(rs => rs.Order)
+                    .ThenInclude(o => o.TestDefinition)
+                .FirstOrDefaultAsync(rs => rs.RadiologyStudyId == downloadLink.Report.SourceId);
+
+            if (radiologyStudy == null) throw new KeyNotFoundException("Radiology Study not found for report.");
+            patientName = $"{radiologyStudy.Visit.Patient.FirstName} {radiologyStudy.Visit.Patient.LastName}";
+            tests = new List<string> { radiologyStudy.Order.TestCode };
+        }
+        else
+        {
+            throw new InvalidOperationException($"Unsupported Report SourceType: {downloadLink.Report.SourceType}");
+        }
 
         return new SecureLinkVerificationDto(
             isValid,
@@ -638,5 +877,118 @@ public class DeliveryService : IDeliveryService
             downloadLink.ExpiresAt,
             downloadLink.MaxDownloads - downloadLink.DownloadCount
         );
+    }
+
+    public async Task<Stream> DownloadReportPackageAsync(string token, string phoneNumber)
+    {
+        // Reuse verification logic from VerifyAndDownloadAsync
+        // Validate phone input
+        if (!IsIndianMobileNumber(phoneNumber))
+        {
+            _logger.LogWarning("Invalid phone number format for secure download package token {Token}: {Phone}", token, phoneNumber);
+            throw new BadHttpRequestException("InvalidPhoneOrLink", 401);
+        }
+
+        var downloadLink = await _context.DownloadLinks
+            .Include(dl => dl.Report)
+                .ThenInclude(r => r.Attachments)
+            .FirstOrDefaultAsync(dl => dl.Token == token);
+
+        if (downloadLink == null || !downloadLink.IsActive)
+        {
+            _logger.LogWarning("Attempted download package with non-existent or inactive token: {Token}", token);
+            throw new BadHttpRequestException("InvalidPhoneOrLink", 401);
+        }
+
+        // Validate link expiration and download count
+        if (downloadLink.ExpiresAt <= DateTimeOffset.UtcNow || downloadLink.DownloadCount >= downloadLink.MaxDownloads)
+        {
+            downloadLink.IsActive = false; // Deactivate expired/exhausted links
+            await _context.SaveChangesAsync();
+            _logger.LogWarning("Attempted download package with expired or exhausted token: {Token}", token);
+            throw new BadHttpRequestException("InvalidPhoneOrLink", 401);
+        }
+
+        // Fetch the patient’s registered phone and compare
+        string patientPhoneNumber;
+        if (downloadLink.Report.SourceType == "Order")
+        {
+            var order = await _context.Orders
+                .Include(o => o.Visit)
+                    .ThenInclude(v => v.Patient)
+                .FirstOrDefaultAsync(o => o.OrderId == downloadLink.Report.SourceId);
+
+            if (order == null) throw new KeyNotFoundException("Order not found for report.");
+            patientPhoneNumber = order.Visit.Patient.CurrentPhoneNumber;
+        }
+        else if (downloadLink.Report.SourceType == "RadiologyStudy")
+        {
+            var radiologyStudy = await _context.RadiologyStudies
+                .Include(rs => rs.Visit)
+                    .ThenInclude(v => v.Patient)
+                .FirstOrDefaultAsync(rs => rs.RadiologyStudyId == downloadLink.Report.SourceId);
+            
+            if (radiologyStudy == null) throw new KeyNotFoundException("Radiology Study not found for report.");
+            patientPhoneNumber = radiologyStudy.Visit.Patient.CurrentPhoneNumber;
+        }
+        else
+        {
+            throw new InvalidOperationException($"Unsupported Report SourceType: {downloadLink.Report.SourceType}");
+        }
+
+
+        if (phoneNumber != patientPhoneNumber)
+        {
+            _logger.LogWarning("Phone number mismatch for secure download package token {Token}. Provided: {ProvidedPhone}, Expected: {ExpectedPhone}", token, phoneNumber, patientPhoneNumber);
+            throw new BadHttpRequestException("InvalidPhoneOrLink", 401);
+        }
+
+        // If valid: Increment download count and update link
+        downloadLink.DownloadCount++;
+        if (downloadLink.DownloadedAt == null)
+        {
+            downloadLink.DownloadedAt = DateTimeOffset.UtcNow;
+        }
+        if (downloadLink.DownloadCount >= downloadLink.MaxDownloads)
+        {
+            downloadLink.IsActive = false; // Deactivate if max downloads reached
+        }
+        await _context.SaveChangesAsync();
+        _logger.LogInformation("Secure download package successful for token {Token} by phone {Phone}. DownloadCount: {DownloadCount}", token, phoneNumber, downloadLink.DownloadCount);
+
+        // Retrieve report and attachments
+        var report = downloadLink.Report;
+        if (report == null)
+        {
+            _logger.LogError("Report not found for download link {Token}", token);
+            throw new BadHttpRequestException("Report not found for download.", 404);
+        }
+
+        var memoryStream = new MemoryStream();
+        using (var archive = new ZipArchive(memoryStream, ZipArchiveMode.Create, true))
+        {
+            foreach (var attachment in report.Attachments)
+            {
+                // Ensure FileUrl is not null or empty
+                if (string.IsNullOrEmpty(attachment.FileUrl))
+                {
+                    _logger.LogWarning("Attachment {AttachmentId} has no FileUrl. Skipping.", attachment.AttachmentId);
+                    continue;
+                }
+
+                // Get file stream from storage service
+                using (var fileStream = await _fileStorageService.GetFileStreamAsync(attachment.FileUrl))
+                {
+                    var entry = archive.CreateEntry(attachment.DisplayName);
+                    using (var entryStream = entry.Open())
+                    {
+                        await fileStream.CopyToAsync(entryStream);
+                    }
+                }
+            }
+        }
+
+        memoryStream.Position = 0; // Reset stream position for reading
+        return memoryStream;
     }
 }
