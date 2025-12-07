@@ -25,6 +25,9 @@ namespace SynOS.Models.Entities
         [MaxLength(100)]
         public string Name { get; set; } = string.Empty;
 
+        [MaxLength(100)] // Assuming max length for designation
+        public string? Designation { get; set; }
+
         public bool IsActive { get; set; } = true;
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

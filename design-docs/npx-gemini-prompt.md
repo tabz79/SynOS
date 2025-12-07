@@ -1,860 +1,648 @@
-Immutable Guardrails (must follow)
+Day 14.2 — Radiology Workflow Backend Prompt
 
-- DO NOT run any shell commands, builds, or git operations.
-- If a DB migration or dotnet ef step is needed, only tell the Product Owner to run it; you must not run it.
-- If a new package is needed, just mention the install command in the TLDR; don’t execute it.
-- Preserve existing structure and style in each file.
-After changes, output only a TLDR terminal-style summary:
-- What the issue/goal was (1–2 sentences)
-- What you implemented (1–2 sentences)
-- Which files changed (names only)
-No code diffs, no full file dumps.
-Extra guardrail for this task:
--Do NOT create or modify anything under web/ or any frontend/React/TSX files.
--If you feel UI changes are needed, just mention them in the TLDR as “future UI work”, do not implement.
+You are a .NET 8 BACKEND expert building SynOS — a modern Diagnostic Lab System.
 
-Prompt: 
+This task is to implement the complete Radiology workflow, aligned with the Pathology pipeline introduced in Day 14. All changes must preserve the existing style, architecture, and Day 14 security model.
 
-You are a .NET 8 BACKEND expert building a diagnostic lab system.
+🎯 GOAL
 
-STACK:
-- ASP.NET Core .NET 8 Web API
-- EF Core for data access
-- SQL Server
-- Background worker using IHostedService / BackgroundService
+Enable Radiology results to follow the same lifecycle as Pathology, but with radiology-specific:
 
-TASK (BACKEND ONLY):
+Work queues
 
-Build the backend for the "Delivery Desk" with:
+Technician flow
 
-- Delivery queue API
-- Multi-channel delivery:
-  - Print
-  - WhatsApp
-  - SMS
-  - Email
-  - Secure download link
-- Secure link protected by patient's 10-digit mobile number (NO OTP, NO DOB)
-- Link expiry and download limits
-- Notification queue + retry logic
-- Delivery logs + attempts history
+Radiologist reporting
 
-NO FRONTEND CODE.  
-Everything must be implemented as REST APIs and backend services that a future React frontend can call.
+Image attachment support
+
+Secure delivery bundle (report + images)
+
+No UI integration yet. Backend + database only.
+
+📌 Requirements
+1️⃣ Auto-create Radiology Studies at Billing
+
+When Reception completes billing and creates VisitTests
+
+For each VisitTest where Department = "Radiology":
+
+Auto-create one RadiologyStudy (per test)
+
+Status = Pending
+
+Link Patient + VisitId + VisitTestId
+
+This mirrors Pathology sample creation.
+
+2️⃣ Database Changes (New + Updated Entities)
+A. Update VisitTests (if not already)
+
+Must include Radiology metadata:
+
+Department (varchar) = 'Radiology' for radiology tests
+
+B. RadiologyStudies (NEW)
+RadiologyStudies (
+  RadiologyStudyId UNIQUEIDENTIFIER PK,
+  VisitTestId UNIQUEIDENTIFIER NOT NULL FK,
+  VisitId UNIQUEIDENTIFIER NOT NULL FK,
+  PatientId UNIQUEIDENTIFIER NOT NULL FK,
+  Modality VARCHAR(50) NOT NULL, -- XRay, CT, MRI, USG, etc.
+  Status VARCHAR(50) NOT NULL DEFAULT 'Pending',
+  AssignedTo UNIQUEIDENTIFIER NULL FK, -- Technician
+  ExternalSystemName VARCHAR(100) NULL,
+  ExternalAccessionNumber VARCHAR(100) NULL,
+  ExternalStudyInstanceUid VARCHAR(200) NULL,
+  ExternalViewerUrl NVARCHAR(MAX) NULL,
+  CreatedAt DATETIMEOFFSET DEFAULT SYSUTCDATETIME(),
+  CreatedBy UNIQUEIDENTIFIER NOT NULL FK -- Reception/Billing user
+)
+
+
+Statuses:
+
+Pending → Assigned → ImagingCompleted → ResultDrafted → Signed
+
+C. RadiologyImages (NEW)
+
+Metadata only — NOT DICOM storage.
+
+RadiologyImages (
+  ImageId UNIQUEIDENTIFIER PK,
+  RadiologyStudyId UNIQUEIDENTIFIER NOT NULL FK,
+  FileName NVARCHAR(200) NOT NULL,
+  FileUrl NVARCHAR(MAX) NOT NULL,
+  ViewLabel NVARCHAR(100) NULL,
+  SeriesNumber INT NULL,
+  SequenceNumber INT NULL,
+  UploadedAt DATETIMEOFFSET DEFAULT SYSUTCDATETIME(),
+  UploadedBy UNIQUEIDENTIFIER NOT NULL FK
+)
+
+D. Reports (EXTEND existing generic entity)
+
+Ensure attributes support Radiology:
+
+Department = 'Radiology'
+SourceType = 'RadiologyStudy'
+SourceId = RadiologyStudyId
+
+
+This keeps Delivery API functional without changes.
+
+E. RadiologyReports (NEW 1-1 Report Extension)
+RadiologyReports (
+  ReportId UNIQUEIDENTIFIER PK FK → Reports(ReportId),
+  RadiologyStudyId UNIQUEIDENTIFIER NOT NULL FK,
+  Findings NVARCHAR(MAX) NOT NULL,
+  Impression NVARCHAR(MAX) NOT NULL,
+  AdditionalNotes NVARCHAR(MAX) NULL
+)
+
+F. ReportAttachments (NEW)
+
+Stores deliverable files (PDF or ZIP):
+
+ReportAttachments (
+  AttachmentId UNIQUEIDENTIFIER PK,
+  ReportId UNIQUEIDENTIFIER NOT NULL FK,
+  Type VARCHAR(50) NOT NULL, -- 'ReportPdf','ImagePdf','ImageZip','ViewerLink'
+  FileUrl NVARCHAR(MAX) NULL,
+  DisplayName NVARCHAR(200) NOT NULL,
+  CreatedAt DATETIMEOFFSET DEFAULT SYSUTCDATETIME()
+)
+
+3️⃣ Technician Flow APIs
+
+Base route: /api/v1/radiology/studies
+Authorization: Technician OR Admin
+
+✔ Worklist
+
+GET /queue?status=Pending|Assigned|ImagingCompleted
+
+
+✔ Assign a study to technician
+
+POST /assign
+{ "studyId": "uuid" }
+
+
+→ Status: Assigned
+
+✔ Upload imaging deliverable file (PDF/ZIP export)
+
+POST /upload-attachment (multipart/form-data)
+  studyId
+  file
+
+
+→ Create ReportAttachment with Type ImagePdf or ImageZip
+→ If first media uploaded → Status: ImagingCompleted
+
+✔ Optionally set vendor system mapping
+
+POST /set-external-mapping
+{
+  "studyId": "uuid",
+  "systemName": "GE_XRAY_1",
+  "accessionNumber": "XR-2025-000123",
+  "viewerUrl": "https://pacs/vendor/viewer?acc=XR-2025-000123"
+}
+
+4️⃣ Radiologist Flow APIs
+
+Base route: /api/v1/radiology/reports
+Authorization: Radiologist OR Admin
+
+✔ Worklist (grouped by Visit/Token)
+
+GET /worklist
+
+
+Should return:
+
+Visit info (Token/patient)
+
+All studies under that visit grouped together
+
+For each: StudyId, TestName, Modality, Status, ReportStatus, any attachments
+
+✔ View Study details
+
+GET /{studyId}
+
+
+→ Study + attachments + existing draft fields
+
+✔ Draft report
+
+POST /draft
+{
+  "studyId": "uuid",
+  "findings": "...",
+  "impression": "..."
+}
+
+
+→ Create/Update Reports row
+→ Create/Update RadiologyReports row
+→ Status: ResultDrafted
+
+✔ Sign report
+
+POST /sign
+{ "studyId": "uuid" }
+
+
+Backend action:
+
+Generate PDF
+
+Insert ReportAttachment (Type=ReportPdf)
+
+Update Reports row:
+
+Status='Signed'
+
+PdfUrl set
+
+Update RadiologyStudy.Status='Signed'
+
+Now report is automatically eligible for Delivery via Day 14 APIs.
+
+5️⃣ Delivery Extensibility
+
+No changes to DeliveryController.
+Instead, implement a new public download endpoint:
+
+Base route: /api/v1/public/reports (no auth)
+
+✔ Extra endpoint for package download:
+
+GET /download-package/{token}?phone=10digit
+
+
+Logic:
+
+1️⃣ Verify phone exactly like existing secured download
+2️⃣ Retrieve ReportAttachments for ReportId
+3️⃣ ZIP report + media attachments
+4️⃣ Stream file (Content-Type: application/zip)
+
+Existing download endpoint remains PDF only.
+
+Update WhatsApp/SMS/Email message templates to mention images included in the package.
+
+6️⃣ RBAC Enforcement
+
+Applies policies under Day 14.1 RBAC rules:
+
+Action	Roles Allowed
+Technician queue + upload	Technician, Admin
+Draft + Sign report	Radiologist, Admin
+Delivery Desk access	DeliveryDesk, Admin
+
+Each API must have correct [Authorize(Roles = "...")]
+
+✔ Acceptance Criteria (Batch QA)
+
+Billing radiology tests auto-spawn studies
+
+Technician sees a queue with proper statuses
+
+Images/exports uploadable and linked to study/report
+
+Radiologist sees grouped view by Token
+
+Radiologist draft + sign works same as Pathology
+
+Delivery desk sees Signed radiology reports automatically
+
+Secure download:
+
+/download → PDF
+
+/download-package → ZIP (report + attachments)
+
+All through Day 14 Delivery flow (secure link + phone gate)
+
+No UI code touched
+
+🧪 Output format (mandatory)
+
+When done:
+
+TLDR only:
+
+Issue/Goal (1–2 lines)
+
+What you implemented (1–2 lines)
+
+Changed files (names only)
+
+NO code dumps.
+NO frontend files.
+NO migrations execution — only generate them.
+
+END OF PROMPT
+
+
+TL;DR:
+We’ll tell Gemini to:
+
+* Fix the **ExternalAccessionNumber NULL** error properly (not hack it). 
+* Introduce a clean **internal AccessionNumber** on RadiologyStudy.
+* Auto-create radiology studies when **payment completes**, not via manual hacks.
+* Prepare the model for **SynOS-as-DICOM-node (Option B)** in Day 16, but **don’t implement DICOM** yet.
+
+Here’s a prompt you can copy-paste into Gemini.
 
 ---
 
-## DATABASE DESIGN
-
-Create these tables (or equivalent EF Core entities + migrations).  
-Use proper foreign keys to existing `Reports`, `Users`, and `Patients` tables.
-
-### 1. DeliveryLogs
-
-Tracks each delivery action (print, WhatsApp, SMS, email, secure link, handed over).
-
-```sql
-DeliveryLogs (
-  LogId UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
-  ReportId UNIQUEIDENTIFIER NOT NULL FOREIGN KEY REFERENCES Reports(ReportId),
-  DeliveryMethod VARCHAR(50) NOT NULL,  -- 'Print', 'WhatsApp', 'SMS', 'Email', 'SecureLink', 'HandedOver'
-  RecipientPhone VARCHAR(20) NULL,
-  RecipientEmail VARCHAR(200) NULL,
-  DeliveredBy UNIQUEIDENTIFIER NOT NULL FOREIGN KEY REFERENCES Users(UserId),
-  DeliveredAt DATETIMEOFFSET NOT NULL DEFAULT SYSUTCDATETIME(),
-  Status VARCHAR(50) NOT NULL DEFAULT 'Delivered',  -- 'Delivered', 'Pending', 'Failed', 'HandedOver'
-  TrackingInfo NVARCHAR(MAX) NULL,  -- JSON with delivery details (provider message id, etc.)
-  CreatedAt DATETIMEOFFSET NOT NULL DEFAULT SYSUTCDATETIME()
-);
-
-CREATE INDEX IX_DeliveryLogs_ReportId ON DeliveryLogs(ReportId);
-CREATE INDEX IX_DeliveryLogs_DeliveredAt ON DeliveryLogs(DeliveredAt);
-2. DeliveryAttempts
-Tracks retry attempts for a specific delivery log (e.g., WhatsApp or email retries).
-
-sql
-Copy code
-DeliveryAttempts (
-  AttemptId UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
-  LogId UNIQUEIDENTIFIER NOT NULL FOREIGN KEY REFERENCES DeliveryLogs(LogId),
-  Attempt INT NOT NULL DEFAULT 1,
-  SentAt DATETIMEOFFSET NOT NULL DEFAULT SYSUTCDATETIME(),
-  Status VARCHAR(50) NOT NULL,  -- 'Pending', 'Sent', 'Delivered', 'Failed', 'Bounced'
-  ErrorMessage NVARCHAR(MAX) NULL,
-  ResponseData NVARCHAR(MAX) NULL  -- JSON with provider response
-);
-3. DownloadLinks
-Secure download tokens, with expiry and max downloads.
-NOTE: NO OTP, NO DOB.
-
-sql
-Copy code
-DownloadLinks (
-  LinkId UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
-  ReportId UNIQUEIDENTIFIER NOT NULL FOREIGN KEY REFERENCES Reports(ReportId),
-  Token VARCHAR(100) NOT NULL UNIQUE,  -- GUID-based token string
-  CreatedBy UNIQUEIDENTIFIER NOT NULL FOREIGN KEY REFERENCES Users(UserId),
-  CreatedAt DATETIMEOFFSET NOT NULL DEFAULT SYSUTCDATETIME(),
-  ExpiresAt DATETIMEOFFSET NOT NULL,  -- 24 hours from creation
-  DownloadedAt DATETIMEOFFSET NULL,
-  DownloadCount INT NOT NULL DEFAULT 0,
-  MaxDownloads INT NOT NULL DEFAULT 3,
-  IsActive BIT NOT NULL DEFAULT 1
-);
-
-CREATE INDEX IX_DownloadLinks_Token ON DownloadLinks(Token);
-CREATE INDEX IX_DownloadLinks_ReportId ON DownloadLinks(ReportId);
-4. NotificationQueue
-Generic queue for SMS/Email/WhatsApp notifications.
-
-sql
-Copy code
-NotificationQueue (
-  QueueId UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
-  Type VARCHAR(50) NOT NULL,  -- 'SMS', 'EMAIL', 'WHATSAPP'
-  TargetId UNIQUEIDENTIFIER NOT NULL,  -- usually DeliveryLogs.LogId or ReportId
-  Recipient VARCHAR(200) NOT NULL,  -- phone or email
-  Content NVARCHAR(MAX) NOT NULL,  -- message body or JSON payload
-  Status VARCHAR(50) NOT NULL DEFAULT 'Pending',  -- 'Pending', 'Sent', 'Failed'
-  RetryCount INT NOT NULL DEFAULT 0,
-  MaxRetries INT NOT NULL DEFAULT 3,
-  NextRetryAt DATETIMEOFFSET NULL,
-  SentAt DATETIMEOFFSET NULL,
-  ErrorMessage NVARCHAR(MAX) NULL,
-  CreatedAt DATETIMEOFFSET NOT NULL DEFAULT SYSUTCDATETIME()
-);
+### 🔧 PROMPT FOR GEMINI – Day 14.2 Radiology Workflow (updated, Accession-Ready, No DICOM Yet)
 
-CREATE INDEX IX_NotificationQueue_Status ON NotificationQueue(Status);
-CREATE INDEX IX_NotificationQueue_NextRetryAt ON NotificationQueue(NextRetryAt);
-In code, use enums for methods/statuses, but store as strings in the DB for readability.
+You are working on **SynOS**, a Diagnostic Lab Management System.
+Tech stack: **.NET + EF Core + SQL Server**.
+You are continuing the backend implementation for **Day 14.2 – Radiology Workflow**, mirroring the already working **Pathology + Phlebotomy flow**, but adapted for imaging.
 
-PHONE NUMBER RULE
-All authentication for secure download uses patient's registered 10-digit mobile number.
+The goal of this task is to:
 
-Rules:
+1. Fix a current **RadiologyStudies insert error** related to `ExternalAccessionNumber` (see below).
+2. Make the **Radiology backend workflow stable and testable end-to-end** (reception → billing/payment → radiology tech → radiologist → report + delivery).
+3. Prepare the data model for a future **DICOM integration (Day 16) where SynOS will act as a DICOM node**, but **do NOT implement DICOM networking or Cornerstone viewer yet**.
 
-Phone numbers are stored and validated as exact 10-digit Indian mobile numbers without country code:
+---
 
-Example valid: "9876543210"
+## 1. Current error to fix (DO NOT IGNORE)
 
-No +91, no spaces, no leading 0, no dashes.
+When we call:
 
-When accepting phone from public API:
+* `POST /api/v1/radiology/studies/create-for-visit`
+  with a valid `visitId` for a paid Radiology visit
 
-Reject anything that is not exactly 10 digits.
+we get a **500 error**. Logs show:
 
-Compare exact string with the phone in patient record.
+> Cannot insert the value NULL into column 'ExternalAccessionNumber', table 'SynOSDb.dbo.RadiologyStudies'; column does not allow nulls. INSERT fails. 
 
-No DOB checks.
-No OTP checks.
+So right now, when creating `RadiologyStudy` rows, **`ExternalAccessionNumber` is required in the DB**, but we **don’t have PACS data yet**, and we are not ready to wire external systems.
 
-BACKEND SERVICES
-Create an IDeliveryService that implements all core delivery logic.
-Controllers must be thin and call this service.
+This is wrong for Day 14.2. The system must be able to create Radiology studies **without any external PACS mapping**.
 
-csharp
-Copy code
-public interface IDeliveryService
-{
-    Task<List<DeliveryQueueItemDto>> GetDeliveryQueueAsync(string? department, string? status);
-    Task<DeliveryResultDto> DeliverViaPrintAsync(Guid reportId, Guid userId);
-    Task<DeliveryResultWithLinkDto> DeliverViaWhatsAppAsync(Guid reportId, string phone, Guid userId);
-    Task<DeliveryResultWithLinkDto> DeliverViaSmsAsync(Guid reportId, string phone, Guid userId);
-    Task<DeliveryResultDto> DeliverViaEmailAsync(Guid reportId, string email, Guid userId);
-    Task<SecureLinkDto> GenerateSecureLinkAsync(Guid reportId, Guid userId);
-    Task<Stream> VerifyAndDownloadAsync(string token, string phone);
-    Task<DeliveryResultDto> MarkHandedOverAsync(Guid reportId, Guid userId);
-    Task<List<DeliveryAttemptDto>> GetAttemptsAsync(Guid reportId);
-    Task<DeliveryResultDto> ResendAsync(Guid reportId, string method, Guid userId);
-}
-Define DTOs such as:
+You must fix this at the **model + migration + code level**, not by stuffing fake values.
 
-DeliveryQueueItemDto
+---
 
-DeliveryResultDto
+## 2. Target radiology workflow (business side)
 
-DeliveryResultWithLinkDto
+Mirror the successful Pathology flow, but for imaging:
 
-SecureLinkDto
+1. **Reception**
 
-DeliveryAttemptDto
+   * `POST /api/v1/reception/start-visit` with `dept = "Radiology"` and `testCodes` like `"XRAY_CHEST"`.
+   * Creates Visit, Orders, Invoice in **PendingPayment**.
 
-GetDeliveryQueue(department, status)
-Query Reports where:
+2. **Payment**
 
-Status = 'Signed' (or equivalent signed/completed status)
+   * `POST /api/v1/reception/complete-payment` marks the invoice as **Paid** and visit as **Paid**.
+   * At this moment, for each Radiology order (X-ray, CT, MRI, etc.) we want the system to **ensure a RadiologyStudy exists**.
 
-AND:
+3. **Radiology technician (X-Ray Tech user)**
 
-Either no DeliveryLogs exist, OR
+   * They should see a **Radiology studies queue** filtered by status.
+   * For now, we assume they will eventually use a separate DICOM console to send images.
+   * SynOS only needs to manage:
 
-latest DeliveryLog is not 'Delivered' and not 'HandedOver'.
+     * Worklist / statuses (`PendingImaging`, `ImagingInProgress`, `ImagingCompleted`, `ReadyForReporting`)
+     * Optional manual attachments (e.g. PDFs/images) as a fallback.
 
-Filter by department if provided (e.g. pathology, radiology).
-Use existing department fields from your domain model.
+4. **Radiologist**
 
-Return, for each report:
+   * Sees a **Radiologist worklist** based on RadiologyStudy status (`ReadyForReporting` etc.).
+   * Opens study details, writes report, signs.
+   * Delivery logic should behave similar to Pathology: we can reuse existing `Report` + report signing + delivery mechanism.
 
-ReportId
+Day 14.2: backend is radiology-aware and fully testable via Swagger/Postman.
+Day 16: we will plug in Cornerstone 3D + DICOM receiver.
 
-TokenNumber (or visit number / accession number)
+---
 
-PatientName
+## 3. Data model – what must exist and how
 
-Age, Gender
+### 3.1 RadiologyStudy – internal accession and external mapping
 
-PatientPhone, PatientEmail
+Update the **RadiologyStudy** entity and database schema with the following rules:
 
-Tests (list or comma-separated)
+* **Mandatory fields:**
 
-SignedAt
+  * `RadiologyStudyId` (GUID, PK)
+  * `VisitId` (FK)
+  * `VisitTestId` (FK to the specific ordered test)
+  * `PatientId` (FK)
+  * `Modality` (e.g. `"XRAY"`, `"CT"`, `"MRI"` – can come from TestDefinition.Modality)
+  * `Status` (string/enum: `PendingImaging`, `ImagingInProgress`, `ImagingCompleted`, `ReadyForReporting`, `Reported`, `Cancelled`)
+  * `AccessionNumber` (**new, internal accession**, non-nullable, length ~50–100)
+  * `CreatedAt` (DateTimeOffset)
+  * `CreatedBy` (UserId)
 
-CriticalCount
+* **External / PACS-related fields (MUST ALL BE NULLABLE for now):**
 
-PdfUrl (from existing reports system)
+  * `ExternalSystemName` (string, nullable)
+  * `ExternalAccessionNumber` (string, nullable)
+  * `ExternalStudyInstanceUid` (string, nullable)
+  * `ExternalViewerUrl` (string, nullable)
 
-Sort:
+**Important design rule for Day 14.2:**
 
-Critical reports first
+* `AccessionNumber` = **SynOS’s internal accession**, always populated and unique per RadiologyStudy.
+* The `External*` fields are **optional** and will be used later when we map to PACS/DICOM (Day 16).
+* You must adjust the EF Core entity + configuration + migration so that **the database allows NULL for all `External*` columns** and **requires `AccessionNumber`** instead.
 
-Then by signed date (oldest first).
+Do **not** add fake default values to `ExternalAccessionNumber`. This must be structurally nullable.
 
-DeliverViaPrint(reportId, userId)
-Load report + patient details.
+### 3.2 RadiologyImage (preparing for DICOM, minimal for now)
 
-Get PDF URL for this report (already generated by your report system).
+Create/ensure a **RadiologyImage** entity/table to hold references to image assets.
+For Day 14.2 we are only preparing the schema; we’re **not** implementing DICOM or real upload logic yet.
 
-Call IPrintService.QueuePrintAsync(reportId, pdfUrl) (interface; implementation can be a stub that just logs).
+Suggested fields:
 
-Create DeliveryLog:
+* `RadiologyImageId` (GUID, PK)
+* `RadiologyStudyId` (FK)
+* `FilePath` (string, nullable for now if you want)
+* `ContentType` (string, e.g. `application/dicom`, `image/png`)
+* `StudyInstanceUid` (string, nullable)
+* `SeriesInstanceUid` (string, nullable)
+* `SopInstanceUid` (string, nullable)
+* `CreatedAt`
+* `UploadedByUserId` (nullable for now)
 
-Method = 'Print'
+For Day 14.2, this table just needs to exist and be wired via EF.
+Later (Day 16) we’ll let the DICOM receiver populate it.
 
-Status = 'Delivered' (or 'Pending' if you want to model printer ack; for now treat queued as delivered).
+---
 
-DeliveredBy = userId
+## 4. Accession number generation rules
 
-DeliveredAt = now (UTC).
+You must implement **internal accession numbers** on RadiologyStudy.
 
-Optionally update report's delivery status to 'Delivered'.
+Requirements:
 
-Write an audit log entry using your existing audit pattern.
+1. Generated when the RadiologyStudy is created (see next section).
+2. Must be unique per RadiologyStudy.
+3. Stable, human-readable pattern (example, you can pick a reasonable format):
 
-Return DeliveryResultDto { LogId, Status }.
+   * `RAD-{yyyyMMdd}-{runningNumber}`
+   * or `XR-{tokenNumber}-{sequence}`
 
-DeliverViaWhatsApp(reportId, phone, userId)
-Validate phone is exactly 10 digits; otherwise return validation error.
+Keep it **server-side only**; we’ll expose it via DTOs later so that:
 
-Call GenerateSecureLink(reportId, userId) → { token, link, expiresAt, maxDownloads }.
+* It can be printed on the radiology request slip.
+* In the future, it can be typed/scanned into the X-ray / MRI console as the DICOM `AccessionNumber`.
 
-Load report + patient:
+For now, it’s enough that we **store it** and **return it** on API DTOs.
 
-Use PatientName, list of Tests.
+---
 
-Build message text, for example:
+## 5. When/how RadiologyStudy should be created
 
-pgsql
-Copy code
-Dear {PatientName}, your lab report for {Tests} is ready.
-Download your report here: {Link}
-This link is valid for 24 hours.
-- {LabName}
-Create DeliveryLog:
+We want radiology to behave like pathology: **once payment is done**, the work moves to the imaging department.
 
-Method = 'WhatsApp'
+### 5.1 Automatic creation on payment
 
-RecipientPhone = phone
+Update **ReceptionFlowService** (or the relevant payment completion service) so that:
 
-Status = 'Pending'
+* When `POST /api/v1/reception/complete-payment` is called and succeeds, and the visit’s `dept = "Radiology"` or it has Radiology tests:
 
-DeliveredBy = userId
+  * For each Radiology `VisitTest` (based on TestDefinition.Dept/Modality):
 
-Create NotificationQueue entry:
+    * If there is no existing `RadiologyStudy` for that VisitTest:
 
-Type = 'WHATSAPP'
+      * Create a new `RadiologyStudy`:
 
-TargetId = DeliveryLog.LogId
+        * Set `VisitId`, `VisitTestId`, `PatientId`, `OrderId` (if present),
+        * Set `Modality` from the test definition,
+        * Generate an `AccessionNumber`,
+        * Set `Status = "PendingImaging"`,
+        * Leave **all `External*` fields null**.
+      * Save it.
 
-Recipient = phone (10-digit number)
+So after a visit is paid, radiology tech should have a study waiting in their queue (status `PendingImaging`).
 
-Content = message text
+### 5.2 Manual `create-for-visit` endpoint
 
-Status = 'Pending'
+You already have:
 
-Do NOT call Twilio directly here. Actual sending will be handled by the background worker via IWhatsAppSender.
+* `POST /api/v1/radiology/studies/create-for-visit`
 
-Return DeliveryResultWithLinkDto:
+Keep this endpoint but make it:
 
-LogId
+* Idempotent and safe:
 
-Link
+  * For each radiology VisitTest in that visit, if a RadiologyStudy exists, don’t duplicate.
+  * If not, create new ones (same rules as above).
+* It must **also generate `AccessionNumber` and leave `External*` nullable**.
+* It’s primarily a **repair utility** now (e.g., if auto creation fails), not the main path.
 
-Status = "Queued"
+Fix the current failure by obeying the `AccessionNumber`/`External*` rules above.
 
-DeliverViaSms(reportId, phone, userId)
-Same pattern as WhatsApp:
+---
 
-Validate phone = 10 digits.
+## 6. Radiology technician flow (backend only)
 
-Call GenerateSecureLink for link.
+Update/ensure **RadiologyService** and **RadiologyController** support the following:
 
-Build short SMS-style text (NO OTP):
+### 6.1 Tech worklist
 
-arduino
-Copy code
-Lab report ready. Download: {Link}
-Valid for 24h. - {LabName}
-Create DeliveryLog with Method 'SMS'.
+Endpoint:
 
-Create NotificationQueue entry with Type 'SMS'.
+* `GET /api/v1/radiology/studies/queue?status=PendingImaging&status=ImagingInProgress...`
 
-Return { logId, link, status: 'Queued' }.
+Behavior:
 
-DeliverViaEmail(reportId, email, userId)
-Load report, patient, PDF URL.
+* Filter by status array.
+* Only return **RadiologyStudy** rows where:
 
-Build email payload (subject + HTML body):
+  * Status is in the requested set,
+  * Belong to active visits,
+  * Include patient summary, visit token, order info, modality, accession number.
+* **Authorization:** XRayTech and Admin (do not require Receptionist/Admin only).
 
-Subject: "Your Lab Report - {PatientName}"
+### 6.2 Update study status
 
-Body: simple HTML message.
+For now, we just need simple status updates:
 
-Attachment: PDF file or link in the body.
+* e.g. `POST /api/v1/radiology/studies/{id}/set-status`
 
-Create DeliveryLog:
+  * Body: `{ "status": "ImagingCompleted" }`
+  * Valid transitions:
 
-Method = 'Email'
+    * PendingImaging → ImagingInProgress
+    * ImagingInProgress → ImagingCompleted
+    * ImagingCompleted → ReadyForReporting
 
-RecipientEmail = email
+We don’t need ultra-strict state machine logic now, just don’t allow nonsense transitions (like Reported → PendingImaging).
 
-Status = 'Pending'
+### 6.3 Optional: manual attachments (non-DICOM)
 
-Create NotificationQueue entry:
+We already have `ReportAttachment` etc.
+If any upload endpoints exist for radiology attachments, keep them working but **do not treat them as DICOM**. They are just PDFs/images.
 
-Type = 'EMAIL'
+---
 
-TargetId = DeliveryLog.LogId
+## 7. Radiologist flow (backend)
 
-Recipient = email
+You already have **RadiologyReportsController** and related DTOs.
 
-Content = JSON serialization of email payload (subject, body, attachment path/url).
+Ensure:
 
-Status = 'Pending'
+* `GET /api/v1/radiology/reports/worklist`:
 
-Return { logId, status: 'Queued' }.
+  * Returns studies with Status `ReadyForReporting` or similar.
+  * Includes:
 
-GenerateSecureLink(reportId, userId)
-Create a DownloadLinks record:
+    * `RadiologyStudyId`
+    * AccessionNumber
+    * Patient summary
+    * Visit token
+    * Test name / modality
+    * Current report status.
 
-Token = GUID string
+* `GET /api/v1/radiology/studies/{id}`:
 
-ReportId = reportId
+  * Full detail: study info, patient, visit, orders, current report (if any), attachments.
 
-CreatedBy = userId
+* `POST /api/v1/radiology/reports/draft`:
 
-CreatedAt = now (UTC)
+  * Allows radiologist to create/update a draft report (impression, findings, recommendations).
 
-ExpiresAt = now + 24 hours
+* `POST /api/v1/radiology/reports/sign`:
 
-MaxDownloads = 3
+  * Marks report as signed.
+  * Updates RadiologyStudy status to `Reported`.
+  * Triggers the same **DeliveryService** mechanisms as pathology:
 
-DownloadCount = 0
+    * Generate PDF,
+    * Store report record,
+    * Optionally create a secure download token and notification.
 
-IsActive = 1
+**Important:** Do **not** depend on any DICOM fields being present yet. All external PACS fields must be allowed to be null.
 
-Construct URL:
+---
 
-https://lab.com/reports/download/{token}
+## 8. Auth / roles
 
-(Use a configuration setting for base URL.)
+Make sure:
 
-Return DTO:
+* **XRayTech** can:
 
-csharp
-Copy code
-public sealed record SecureLinkDto(
-    string Token,
-    string Link,
-    DateTimeOffset ExpiresAt,
-    int MaxDownloads
-);
-VerifyAndDownload(token, phone)
-This is the core authentication logic for secure download.
+  * View radiology queue,
+  * View specific study details (for their department),
+  * Update study status (PendingImaging → ImagingCompleted, etc.),
+  * Upload manual attachments (if present).
 
-Steps:
+* **Radiologist** can:
 
-Validate phone input:
+  * View radiology worklist,
+  * Open study detail,
+  * Draft + sign reports.
 
-Must be exactly 10 digits (0–9).
+* **Receptionist** should **not** be allowed to call radiology queue or status endpoints.
 
-If not, throw a validation error → 400 Bad Request.
+Fix any `[Authorize(Roles = "...")]` mismatches so that:
 
-Look up DownloadLinks by Token.
+* No more 403s for legitimate XRayTech/Radiologist usage.
 
-Validate link:
+---
 
-Record exists.
+## 9. Non-goals for Day 14.2
 
-IsActive = 1.
+Do **NOT** implement these now:
 
-ExpiresAt > now.
+* No DICOM C-STORE listener.
+* No Cornerstone viewer or DICOMweb integration.
+* No calls into external PACS (SciencePACS etc.).
+* No real filesystem/DICOM parsing logic (beyond what already exists).
 
-DownloadCount < MaxDownloads.
+Just:
 
-Load the associated Report and its Patient.
+* Correct schema,
+* Correct RadiologyStudy creation,
+* Clean status transitions,
+* Fully testable API flow via Swagger.
 
-Fetch the patient’s registered phone from your patient table:
+---
 
-Assume it is stored as a 10-digit number with no country code.
+## 10. What to output
 
-Compare strings:
+1. **List of files changed** with a one-line summary each.
+2. Updated **entities and DbContext** snippets that show:
 
-If phone != patient.Phone → authentication fails:
+   * RadiologyStudy with `AccessionNumber` (non-nullable) and `External*` as nullable.
+   * RadiologyImage entity.
+3. Any **new migrations** required to:
 
-Throw a domain exception that maps to HTTP 401 Unauthorized with error "InvalidPhoneOrLink".
+   * Add `AccessionNumber` column (non-nullable, with sensible default for existing rows if needed).
+   * Alter `ExternalSystemName`, `ExternalAccessionNumber`, `ExternalStudyInstanceUid`, `ExternalViewerUrl` to allow NULL.
+4. Updated **service methods** in:
 
-If valid:
+   * `ReceptionFlowService` (or equivalent) to auto-create studies on payment.
+   * `RadiologyService` for:
 
-Increment DownloadCount.
+     * create-for-visit
+     * queue
+     * set-status
+5. Updated **controller actions**:
 
-Set DownloadedAt if null.
+   * `RadiologyController`
+   * `RadiologyReportsController`
+6. A short **test script** (Swagger/Postman sequence) that I can follow, step-by-step, to verify:
 
-Fetch the report’s PDF as a Stream.
+   * Reception → start visit (Radiology),
+   * Reception → complete payment,
+   * Radiology queue shows the new study with AccessionNumber,
+   * Status transitions work,
+   * Radiologist sees it and can draft/sign report without any DICOM data.
 
-Return the Stream to the controller.
-
-No OTP, no DOB, only phone match.
-
-MarkHandedOver(reportId, userId)
-Used when the patient physically collects the printed report.
-
-Create a DeliveryLog:
-
-Method = 'HandedOver'
-
-Status = 'HandedOver'
-
-DeliveredBy = userId
-
-DeliveredAt = now
-
-Optionally update report delivery status to 'Delivered'.
-
-Audit log the event.
-
-Return { logId, status: 'HandedOver' }.
-
-Delivery Attempts & Resend
-GetAttempts(reportId)
-Join DeliveryLogs and DeliveryAttempts for this reportId.
-
-Include:
-
-Method
-
-RecipientPhone / RecipientEmail
-
-Attempt number
-
-SentAt
-
-Status
-
-ErrorMessage
-
-RetryCount (from queue).
-
-Return as DeliveryAttemptDto list.
-
-Resend(reportId, method)
-Find the latest DeliveryLog for given reportId and method.
-
-Create a new NotificationQueue entry for re-sending:
-
-Copy Recipient.
-
-Rebuild the message content from domain state (or reuse Content).
-
-Set Status = 'Pending'.
-
-Optionally create a new DeliveryAttempt row.
-
-Return { logId, status: 'Queued' }.
-
-BACKGROUND WORKER – NotificationWorkerService
-Implement a background worker that periodically processes NotificationQueue.
-
-Use BackgroundService or IHostedService.
-
-Runs approximately every 2 minutes.
-
-ProcessNotificationQueue():
-
-Query NotificationQueue where:
-
-Status = 'Pending'
-
-AND (NextRetryAt IS NULL OR NextRetryAt <= now)
-
-For each item:
-
-Switch on Type:
-
-'SMS' → send via ISmsSender
-
-'EMAIL' → send via IEmailSender
-
-'WHATSAPP' → send via IWhatsAppSender
-
-Call the respective interface, passing Recipient and Content.
-
-On success:
-
-Status = 'Sent'
-
-SentAt = now
-
-Create or update related DeliveryAttempts for this attempt → mark 'Sent'.
-
-On failure:
-
-RetryCount++
-
-If RetryCount > MaxRetries:
-
-Status = 'Failed'
-
-Set ErrorMessage
-
-Update DeliveryAttempts to 'Failed'.
-
-Else:
-
-Keep Status = 'Pending'
-
-Set NextRetryAt using exponential backoff:
-
-Retry 1 → now + 1 minute
-
-Retry 2 → now + 5 minutes
-
-Retry 3 → now + 15 minutes
-
-EXTERNAL INTEGRATIONS (ABSTRACTIONS ONLY)
-Define interfaces for external providers.
-Concrete implementations can be simple stubs that just log to console for now.
-
-csharp
-Copy code
-public interface IWhatsAppSender
-{
-    Task<NotificationSendResult> SendAsync(string toPhone10Digits, string message);
-}
-
-public interface ISmsSender
-{
-    Task<NotificationSendResult> SendAsync(string toPhone10Digits, string message);
-}
-
-public interface IEmailSender
-{
-    Task<NotificationSendResult> SendAsync(string toEmail, EmailPayload payload);
-}
-
-public interface IPrintService
-{
-    Task QueuePrintAsync(Guid reportId, string pdfUrl);
-}
-
-public sealed record NotificationSendResult(
-    bool Success,
-    string? ProviderMessageId,
-    string? ErrorMessage,
-    string? RawResponseJson
-);
-
-public sealed record EmailPayload(
-    string Subject,
-    string HtmlBody,
-    string? AttachmentPath
-);
-No hardcoded Twilio/MailKit in controllers.
-Controllers talk to IDeliveryService; service talks to these interfaces.
-
-CONTROLLERS (API SURFACE)
-DeliveryController (Authenticated)
-Base route: /api/v1/delivery
-
-GET /api/v1/delivery/queue?dept={dept}&status={status}
-
-Calls GetDeliveryQueueAsync(dept, status).
-
-Response:
-
-json
-Copy code
-{
-  "reports": [
-    {
-      "reportId": "uuid",
-      "tokenNumber": "MBF-2025-0001",
-      "patientName": "Ramesh Sharma",
-      "age": 45,
-      "gender": "Male",
-      "patientPhone": "9876543210",
-      "patientEmail": "ramesh@example.com",
-      "tests": ["CBC", "FBS"],
-      "signedAt": "2025-01-01T10:00:00Z",
-      "criticalCount": 1,
-      "pdfUrl": "https://lab.com/reports/pdf/xyz"
-    }
-  ]
-}
-POST /api/v1/delivery/print
-
-Request body:
-
-json
-Copy code
-{ "reportId": "uuid" }
-Uses authenticated userId from token.
-
-Response 200:
-
-json
-Copy code
-{ "logId": "uuid", "status": "Delivered" }
-POST /api/v1/delivery/whatsapp
-
-Request:
-
-json
-Copy code
-{ "reportId": "uuid", "phone": "9876543210" }
-phone must be a 10-digit string.
-
-Response:
-
-json
-Copy code
-{
-  "logId": "uuid",
-  "link": "https://lab.com/reports/download/{token}",
-  "status": "Queued"
-}
-POST /api/v1/delivery/sms
-
-Request:
-
-json
-Copy code
-{ "reportId": "uuid", "phone": "9876543210" }
-Response:
-
-json
-Copy code
-{
-  "logId": "uuid",
-  "link": "https://lab.com/reports/download/{token}",
-  "status": "Queued"
-}
-POST /api/v1/delivery/email
-
-Request:
-
-json
-Copy code
-{ "reportId": "uuid", "email": "user@example.com" }
-Response:
-
-json
-Copy code
-{ "logId": "uuid", "status": "Queued" }
-POST /api/v1/delivery/handed-over
-
-Request:
-
-json
-Copy code
-{ "reportId": "uuid" }
-Response:
-
-json
-Copy code
-{ "logId": "uuid", "status": "HandedOver" }
-GET /api/v1/delivery/reports/{reportId}/attempts
-
-Response:
-
-json
-Copy code
-{
-  "attempts": [
-    {
-      "method": "WhatsApp",
-      "recipient": "9876543210",
-      "attempt": 1,
-      "sentAt": "2025-01-01T10:05:00Z",
-      "status": "Sent",
-      "errorMessage": null,
-      "retryCount": 0
-    }
-  ]
-}
-POST /api/v1/delivery/reports/{reportId}/resend?method={method}
-
-Response:
-
-json
-Copy code
-{ "logId": "uuid", "status": "Queued" }
-SecureDownloadController (Public – No Auth)
-Base route: /api/v1/public/reports
-
-GET /api/v1/public/reports/verify/{token}
-
-Checks only:
-
-Token exists
-
-Link not expired
-
-Downloads remaining
-
-Does NOT require phone.
-
-Returns patient name in full (no masking).
-
-Response:
-
-json
-Copy code
-{
-  "valid": true,
-  "patientName": "Ramesh Sharma",
-  "tests": ["CBC", "FBS"],
-  "expiresAt": "2025-01-02T10:00:00Z",
-  "downloadsRemaining": 2
-}
-GET /api/v1/public/reports/download/{token}?phone={phone}
-
-phone is required and must be a 10-digit string.
-
-Calls VerifyAndDownloadAsync(token, phone).
-
-On success:
-
-Returns PDF stream:
-
-Content-Type: application/pdf
-
-Content-Disposition: attachment; filename="Report-{PatientName}.pdf"
-
-On failure (invalid token, expired, exceeded downloads, phone mismatch):
-
-HTTP 401:
-
-json
-Copy code
-{ "error": "InvalidPhoneOrLink" }
-TEST DATA (SEEDING)
-Seed at least:
-
-5 reports with Status = 'Signed', mix of:
-
-Departments (Pathology, Radiology, etc.)
-
-Critical and non-critical
-
-Each report linked to a patient:
-
-With valid 10-digit mobile number
-
-With email
-
-1 report already delivered with:
-
-DeliveryLogs
-
-DeliveryAttempts (some successful, some failed)
-
-ACCEPTANCE CRITERIA
-Backend is considered DONE for Day 14 when:
-
-✅ Database tables exist:
-
-DeliveryLogs
-
-DeliveryAttempts
-
-DownloadLinks (NO OTP column)
-
-NotificationQueue
-
-✅ GET /api/v1/delivery/queue returns signed reports correctly, filtered and sorted.
-
-✅ POST /api/v1/delivery/print:
-
-Creates DeliveryLog
-
-Queues print
-
-Updates report delivery status.
-
-✅ POST /api/v1/delivery/whatsapp / /sms / /email:
-
-Create DeliveryLogs with status 'Pending'
-
-Create NotificationQueue entries
-
-Do NOT talk directly to Twilio/MailKit.
-
-✅ GenerateSecureLink:
-
-Creates DownloadLinks row with:
-
-Token
-
-ExpiresAt = now + 24h
-
-MaxDownloads = 3
-
-Returns link URL.
-
-✅ GET /api/v1/public/reports/verify/{token}:
-
-Shows if link is valid
-
-Returns full patientName, tests, expiry, downloadsRemaining.
-
-✅ GET /api/v1/public/reports/download/{token}?phone=9876543210:
-
-With correct 10-digit phone:
-
-Returns PDF stream.
-
-With wrong phone / expired / exhausted:
-
-Returns HTTP 401 with InvalidPhoneOrLink.
-
-✅ Download limit enforced:
-
-After 3 downloads → further attempts return 401.
-
-✅ Expiry enforced:
-
-After ExpiresAt → 401 for any download attempts.
-
-✅ Notification worker:
-
-Picks up Pending queue items
-
-Sends via ISmsSender / IEmailSender / IWhatsAppSender
-
-Retries with exponential backoff (1m, 5m, 15m)
-
-Marks Failed after MaxRetries.
-
-✅ GET /api/v1/delivery/reports/{reportId}/attempts returns correct history.
-
-✅ POST /api/v1/delivery/reports/{reportId}/resend re-queues notifications.
+Make sure the code compiles and the database migrations run cleanly with `dotnet ef database update`, and that `POST /api/v1/radiology/studies/create-for-visit` no longer throws the `ExternalAccessionNumber` null insert error.

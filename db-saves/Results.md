@@ -1,12 +1,13 @@
-|PatientId|MRN|FirstName|LastName|CurrentPhoneNumber|CreatedAt|
-|---|---|---|---|---|---|
-|305e0550-9282-462a-b313-492256e5bad5|A00014|Phone|Check|9999999998|2025-12-03 11:42:05.7576007|
-|3d45242d-a6bc-4b0a-9a86-201c11985661|A00013|Phone|Check||2025-12-03 10:50:36.2404211|
-|634c7d29-d4a1-49ee-8cea-274200d65a18|A00012|E2E|Test|9876543210|2025-12-03 06:14:04.9147232|
-|fc708840-f056-42d9-be00-183e1d2a5367|A00011|Walkin|Bloodtest||2025-12-02 11:02:56.4569729|
-|292cb490-4ee9-4a43-8a80-fc08dfcfa833|A00010|Test|Patient10|555-0109|2025-11-28 06:01:38.0562792|
-|806a62dd-fcde-4183-acb5-36179ecdaac7|A00009|Test|Patient9|555-0108|2025-11-28 06:01:38.0562786|
-|774ad46a-ad29-424f-ba1b-969be958857f|A00008|Test|Patient8|555-0107|2025-11-28 06:01:38.0562779|
-|b712e70c-8fba-4ea3-a8db-c6df1b0259d9|A00007|Test|Patient7|555-0106|2025-11-28 06:01:38.0562763|
-|15fa8190-e36d-40fe-98a4-b905bf1905f9|A00006|Test|Patient6|555-0105|2025-11-28 06:01:38.0562757|
-|67d7e269-b857-41dd-8e8c-677a27895d22|A00005|Test|Patient5|555-0104|2025-11-28 06:01:38.0562743|
+|Column_name|Type|Computed|Length|Prec|Scale|Nullable|TrimTrailingBlanks|FixedLenNullInSource|Collation|
+|---|---|---|---|---|---|---|---|---|---|
+|ReportId|uniqueidentifier|no|16|     |     |no|(n/a)|(n/a)|NULL|
+|OrderId|uniqueidentifier|no|16|     |     |no|(n/a)|(n/a)|NULL|
+|Status|nvarchar|no|100|     |     |no|(n/a)|(n/a)|SQL_Latin1_General_CP1_CI_AS|
+|SignedByUserId|uniqueidentifier|no|16|     |     |yes|(n/a)|(n/a)|NULL|
+|SignedAt|datetimeoffset|no|10|34   |7    |yes|(n/a)|(n/a)|NULL|
+|PathologistComments|nvarchar|no|-1|     |     |yes|(n/a)|(n/a)|SQL_Latin1_General_CP1_CI_AS|
+|Interpretation|nvarchar|no|-1|     |     |yes|(n/a)|(n/a)|SQL_Latin1_General_CP1_CI_AS|
+|Recommendations|nvarchar|no|-1|     |     |yes|(n/a)|(n/a)|SQL_Latin1_General_CP1_CI_AS|
+|CurrentVersion|int|no|4|10   |0    |no|(n/a)|(n/a)|NULL|
+|Delivered|bit|no|1|     |     |no|(n/a)|(n/a)|NULL|
+|DeliveredAt|datetimeoffset|no|10|34   |7    |yes|(n/a)|(n/a)|NULL|

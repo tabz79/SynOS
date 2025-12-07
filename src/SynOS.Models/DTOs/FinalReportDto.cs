@@ -13,6 +13,9 @@ namespace SynOS.Models.DTOs
         public DateTimeOffset? SignedAt { get; set; }
         public bool Delivered { get; set; }
         public DateTimeOffset? DeliveredAt { get; set; }
+        public string? PathologistComments { get; set; }
+        public string? Interpretation { get; set; }
+        public string? Recommendations { get; set; }
         public List<TestResultDto> TestResults { get; set; }
     }
 

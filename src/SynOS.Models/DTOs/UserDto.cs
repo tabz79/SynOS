@@ -12,6 +12,7 @@ namespace SynOS.Models.DTOs
         public string Email { get; set; } = string.Empty;
         public string Name { get; set; } = string.Empty;
         public string Role { get; set; } = string.Empty;
+        public string? Designation { get; set; }
         public string? Department { get; set; }
         public bool IsActive { get; set; }
     }

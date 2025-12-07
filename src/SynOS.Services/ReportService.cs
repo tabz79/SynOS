@@ -47,12 +47,27 @@ namespace SynOS.Services
             }
 
             var report = await _context.Reports
-                .Include(r => r.Order)
                 .FirstOrDefaultAsync(r => r.ReportId == reportId);
 
             if (report == null)
             {
                 throw new KeyNotFoundException("Report not found.");
+            }
+
+            if (report.SourceType != "Order")
+            {
+                throw new InvalidOperationException($"Report ID {reportId} is not a Pathology report (SourceType: {report.SourceType}). This service only handles Pathology reports.");
+            }
+
+            var order = await _context.Orders
+                .Include(o => o.Visit)
+                    .ThenInclude(v => v.Patient)
+                .Include(o => o.TestDefinition)
+                .FirstOrDefaultAsync(o => o.OrderId == report.SourceId);
+
+            if (order == null)
+            {
+                throw new KeyNotFoundException($"Order with ID {report.SourceId} not found for report {reportId}.");
             }
 
             // Assuming a status like 'Validated' or 'ReadyForSigning'
@@ -61,7 +76,7 @@ namespace SynOS.Services
                 throw new InvalidOperationException($"Report is not in a state that can be signed. Current state: {report.Status}");
             }
 
-            var hasPendingCriticals = await _criticalValueService.HasPendingCriticalAlerts(report.OrderId);
+            var hasPendingCriticals = await _criticalValueService.HasPendingCriticalAlerts(report.SourceId);
             if (hasPendingCriticals)
             {
                 throw new InvalidOperationException("Report has pending critical alerts that must be acknowledged before signing.");
@@ -114,12 +129,12 @@ namespace SynOS.Services
             // 7. Proper Fix: Generate and Save PDF, then create ReportVersion
             try
             {
-                var reportData = await GetReportDataForPdfAsync(report.Order.VisitId);
+                var reportData = await GetReportDataForPdfAsync(order.Visit.VisitId);
                 if (reportData != null)
                 {
                     // Fetch default template for the modality
                     var template = await _context.ReportTemplates
-                        .FirstOrDefaultAsync(t => t.Modality == report.Order.Department && t.IsDefault);
+                        .FirstOrDefaultAsync(t => t.Modality == order.Department && t.IsDefault);
                     
                     if (template != null)
                     {
@@ -143,12 +158,12 @@ namespace SynOS.Services
                     }
                     else
                     {
-                        _logger.LogWarning("No default report template found for department {Department}. PDF not generated.", report.Order.Department);
+                        _logger.LogWarning("No default report template found for department {Department}. PDF not generated.", order.Department);
                     }
                 }
                 else
                 {
-                    _logger.LogWarning("Could not retrieve report data for PDF generation for VisitId {VisitId}.", report.Order.VisitId);
+                    _logger.LogWarning("Could not retrieve report data for PDF generation for VisitId {VisitId}.", order.Visit.VisitId);
                 }
             }
             catch (Exception ex)
@@ -169,9 +184,14 @@ namespace SynOS.Services
             };
         }
 
-
         public async Task SaveFinalResultsAsync(Guid orderId, SaveFinalResultsRequestDto request)
         {
+            var report = await _context.Reports.FirstOrDefaultAsync(r => r.SourceId == orderId && r.SourceType == "Order");
+            if (report == null)
+            {
+                throw new KeyNotFoundException($"Pathology report for order ID {orderId} not found.");
+            }
+
             var order = await _context.Orders
                 .Include(o => o.Visit)
                     .ThenInclude(v => v.Invoices)
@@ -221,23 +241,27 @@ namespace SynOS.Services
         public async Task<FinalReportDto> GetFinalReportAsync(Guid orderId)
         {
             var report = await _context.Reports
-                .Include(r => r.Order)
-                    .ThenInclude(o => o.TestDefinition)
-                .Include(r => r.Order)
-                    .ThenInclude(o => o.Visit)
-                        .ThenInclude(v => v.Patient)
-                .Include(r => r.Order)
-                    .ThenInclude(o => o.Visit)
-                        .ThenInclude(v => v.Referrer)
-                .FirstOrDefaultAsync(r => r.OrderId == orderId);
+                .Include(r => r.PathologyReport) // Include PathologyReport for specific fields
+                .FirstOrDefaultAsync(r => r.SourceId == orderId && r.SourceType == "Order");
 
             if (report == null)
             {
-                throw new InvalidOperationException($"Report for Order ID {orderId} not found.");
+                throw new InvalidOperationException($"Pathology report for Order ID {orderId} not found.");
+            }
+            
+            var order = await _context.Orders
+                .Include(o => o.TestDefinition)
+                .Include(o => o.Visit).ThenInclude(v => v.Patient)
+                .Include(o => o.Visit).ThenInclude(v => v.Referrer)
+                .FirstOrDefaultAsync(o => o.OrderId == orderId);
+
+            if (order == null)
+            {
+                throw new InvalidOperationException($"Order with ID {orderId} not found for report.");
             }
 
+
             var results = await _context.Results
-                .Include(r => r.Order)
                 .Where(r => r.OrderId == orderId)
                 .ToListAsync();
 
@@ -264,33 +288,36 @@ namespace SynOS.Services
             return new FinalReportDto
             {
                 ReportId = report.ReportId,
-                OrderId = report.OrderId,
+                OrderId = order.OrderId,
                 Patient = new PatientSummaryDto
                 {
-                    PatientId = report.Order.Visit.Patient.PatientId,
-                    Name = $"{report.Order.Visit.Patient.FirstName} {report.Order.Visit.Patient.LastName}",
-                    Mrn = report.Order.Visit.Patient.MRN
+                    PatientId = order.Visit.Patient.PatientId,
+                    Name = $"{order.Visit.Patient.FirstName} {order.Visit.Patient.LastName}",
+                    Mrn = order.Visit.Patient.MRN
                 },
                 Visit = new VisitSummaryDto
                 {
-                    Id = report.Order.Visit.VisitId,
-                    Token = report.Order.Visit.Token
+                    Id = order.Visit.VisitId,
+                    Token = order.Visit.Token
                 },
                 Status = report.Status,
                 SignedAt = report.SignedAt,
                 Delivered = report.Delivered,
                 DeliveredAt = report.DeliveredAt,
+                PathologistComments = report.PathologyReport?.PathologistComments, // Access through PathologyReport
+                Interpretation = report.PathologyReport?.Interpretation, // Access through PathologyReport
+                Recommendations = report.PathologyReport?.Recommendations, // Access through PathologyReport
                 TestResults = testResults
             };
         }
 
         public async Task MarkReportAsDeliveredAsync(Guid orderId)
         {
-            var report = await _context.Reports.FirstOrDefaultAsync(r => r.OrderId == orderId);
+            var report = await _context.Reports.FirstOrDefaultAsync(r => r.SourceId == orderId && r.SourceType == "Order");
 
             if (report == null)
             {
-                throw new InvalidOperationException($"Report for Order ID {orderId} not found.");
+                throw new InvalidOperationException($"Pathology report for Order ID {orderId} not found.");
             }
 
             if (report.Status != "Signed")
@@ -323,22 +350,29 @@ namespace SynOS.Services
         public async Task<ReportDataModel?> GetReportDataForPdfAsync(Guid visitId)
         {
             var report = await _context.Reports
-                .Include(r => r.Order)
-                    .ThenInclude(o => o.TestDefinition)
-                .Include(r => r.Order)
-                    .ThenInclude(o => o.Visit)
-                        .ThenInclude(v => v.Patient)
-                .FirstOrDefaultAsync(r => r.Order.VisitId == visitId); // Filter by VisitId
+                .Include(r => r.PathologyReport) // Include PathologyReport for specific fields
+                .FirstOrDefaultAsync(r => r.VisitId == visitId && r.SourceType == "Order"); // Filter by VisitId and SourceType
 
-            if (report == null || report.Order == null || report.Order.Visit == null || report.Order.Visit.Patient == null)
+            if (report == null)
             {
                 return null;
             }
 
-            var patient = report.Order.Visit.Patient;
-            var visit = report.Order.Visit;
-            var order = report.Order;
+            var order = await _context.Orders
+                .Include(o => o.TestDefinition)
+                .Include(o => o.Visit)
+                    .ThenInclude(v => v.Patient)
+                .FirstOrDefaultAsync(o => o.OrderId == report.SourceId);
 
+            if (order == null)
+            {
+                _logger.LogWarning("Order not found for report {ReportId} with SourceId {SourceId}", report.ReportId, report.SourceId);
+                return null;
+            }
+
+            var patient = order.Visit.Patient;
+            var visit = order.Visit;
+            
             var results = await _context.Results
                 .Where(r => r.OrderId == order.OrderId)
                 .Select(r => new ParameterResult
@@ -406,9 +440,9 @@ namespace SynOS.Services
                     ContactInfo = patient.CurrentPhoneNumber ?? "N/A"
                 },
                 Parameters = results,
-                Comments = report.PathologistComments ?? "",
-                Interpretation = report.Interpretation ?? "",
-                Recommendations = report.Recommendations ?? "",
+                Comments = report.PathologyReport?.PathologistComments ?? "",
+                Interpretation = report.PathologyReport?.Interpretation ?? "",
+                Recommendations = report.PathologyReport?.Recommendations ?? "",
                 Signature = signatureDetails,
                 SignedAt = signature?.SignedAt,
                 ReportVersion = signature?.ReportVersion ?? report.CurrentVersion,
