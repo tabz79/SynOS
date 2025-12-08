@@ -323,6 +323,10 @@
             "QuestPDF": {
               "target": "Package",
               "version": "[2025.7.4, )"
+            },
+            "fo-dicom": {
+              "target": "Package",
+              "version": "[5.2.5, )"
             }
           },
           "imports": [
