@@ -46,5 +46,10 @@ namespace SynOS.Models.Entities.PACS
         public virtual User Creator { get; set; }
         
         public virtual ICollection<PacsInstance> PacsInstances { get; set; } = new List<PacsInstance>();
+
+        // Soft delete properties
+        public bool IsDeleted { get; set; } = false;
+        public DateTimeOffset? DeletedAt { get; set; }
+        public Guid? DeletedBy { get; set; }
     }
 }

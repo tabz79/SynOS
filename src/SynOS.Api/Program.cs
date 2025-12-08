@@ -20,6 +20,7 @@ using Microsoft.OpenApi.Models; // Added for Swagger JWT configuration
 using SynOS.Services.Storage;
 using SynOS.Services.Stubs;
 using SynOS.Models.Configuration;
+using SynOS.Services.Security;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -144,6 +145,7 @@ builder.Services.AddScoped<IRadiologyService, RadiologyService>(provider =>
         provider.GetRequiredService<IFileStorageService>()
     )); // Register new service
 builder.Services.AddScoped<IPacsService, PacsService>();
+builder.Services.AddScoped<IRadiologyAccessGuard, RadiologyAccessGuard>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IAccessionService, AccessionService>();
 builder.Services.AddSingleton<IFileStorageService, LocalStorageService>();

@@ -1,16 +1,22 @@
-## Day 14.5 — Series Tree + WADO-style API (Backend Only)
+14.6 is where we **tighten screws**: multi-branch security, limits, and cleanup tools.
+
+Here’s your ready-to-paste **Day 14.6 backend prompt**.
+
+---
+
+## Day 14.6 — PACS Multi-Branch Security & Maintenance (Backend Only)
 
 Use this as your Gemini backend prompt.
 
 ---
 
 **Title:**
-Day 14.5 — PACS Series Tree + WADO-style API for RadiologyStudy (Backend Only)
+Day 14.6 — Mini PACS Cross-Branch Security, Limits & Maintenance (Backend Only)
 
 **Context:**
 You are a .NET 8 BACKEND expert working on **SynOS**, a Diagnostic Lab Management System.
 
-Existing backend stack:
+Stack:
 
 * ASP.NET Core .NET 8 Web API
 * EF Core + SQL Server
@@ -19,335 +25,409 @@ Existing backend stack:
   * Data / Entities / EF Config / Migrations
   * Services / Domain logic
   * DTOs/Models
-  * Api / Controllers / DI / Middleware
+  * Api / Controllers / DI
 
-Radiology module is already implemented up to **Day 14.4**:
+Radiology & Mini PACS status so far:
 
-* RadiologyStudy, RadiologyReports, workflow, RBAC, etc.
+* Radiology module complete up to **Day 14.2**:
+
+  * RadiologyStudy, RadiologyReports, assignments, signing, RBAC, etc.
 * Mini PACS backend:
 
-  From **Day 14.3**:
+From **Day 14.3**:
 
-  * `PacsSeries` + `PacsInstances` tables exist.
-  * PACS file storage layout implemented:
+* Tables `PacsSeries` & `PacsInstances` exist with:
 
-    * `Pacs:RootPath` → `{RootPath}/{OrgId}/{BranchId}/{RadiologyStudyId}/{SeriesId}/{InstanceId}.dcm`
-  * Upload endpoint:
+  * `RadiologyStudyId`, `OrgId`, `BranchId`, UIDs, etc.
+* PACS storage:
 
-    * `POST /api/v1/radiology/pacs/{radiologyStudyId}/upload`
-    * Saves files to disk + creates PacsSeries & PacsInstances rows.
+  * `Pacs:RootPath` config
+  * Files stored under:
 
-  From **Day 14.4**:
+    * `{RootPath}/{OrgId}/{BranchId}/{RadiologyStudyId}/{SeriesId}/{InstanceId}.dcm`
+* Upload endpoint:
 
-  * DICOM parser (e.g. FellowOakDicom) integrated.
-  * `UploadDicomAsync` now extracts real tags:
+  * `POST /api/v1/radiology/pacs/{radiologyStudyId}/upload`
 
-    * StudyInstanceUid, SeriesInstanceUid, SopInstanceUid, Modality, SeriesDescription, SeriesNumber, InstanceNumber, FrameCount, etc.
-  * Reindex endpoint:
+From **Day 14.4**:
 
-    * `POST /api/v1/radiology/pacs/{radiologyStudyId}/reindex`
-    * Rebuilds PACS metadata from DICOM files.
-  * Download endpoint:
+* DICOM parsing library integrated (e.g. FellowOakDicom).
+* `UploadDicomAsync` reads real DICOM tags and fills PACS metadata:
 
-    * `GET /api/v1/radiology/pacs/instances/{instanceId}/file`
-    * Streams raw `.dcm`.
+  * StudyInstanceUid, SeriesInstanceUid, SopInstanceUid, Modality, SeriesDescription, SeriesNumber, InstanceNumber, FrameCount, etc.
+* Reindex endpoint:
 
-**Goal of Day 14.5:**
+  * `POST /api/v1/radiology/pacs/{radiologyStudyId}/reindex`
+* Download endpoint:
 
-* Build a **single read-only API** that returns the **full PACS “series tree”** for a given RadiologyStudy.
-* This tree is tailored for future **Cornerstone3D** use:
+  * `GET /api/v1/radiology/pacs/instances/{instanceId}/file`
 
-  * Sorted instance list per series.
-  * Prebuilt `wadouri:` URLs for each instance.
-* Backend-only. No frontend or Cornerstone code today.
+From **Day 14.5**:
+
+* `GET /api/v1/radiology/pacs/studies/{radiologyStudyId}/series-tree`:
+
+  * Returns `PacsSeriesTreeDto` with:
+
+    * StudyInstanceUid
+    * Series list
+    * Instances sorted by InstanceNumber
+    * Prebuilt `wadouri:` URLs for each instance.
+
+**Goal of Day 14.6:**
+
+* Make Mini PACS **safe for multi-branch, production-like use**:
+
+  * Enforce Org/Branch scoping for every PACS operation.
+  * Respect existing RBAC (who can see cross-branch vs branch-only).
+* Introduce **limits & guardrails** (max series/instances returned).
+* Add **maintenance/admin endpoints**:
+
+  * Detect orphans (DB record but missing file, or file with missing study/series).
+  * Mark or clean these safely (no wild data loss).
+  * Give basic storage statistics per Org/Branch.
+
+Backend-only. No frontend.
 
 ---
 
 ### 🔒 Guardrails / Constraints
 
 * **Backend only.**
-
-  * No React, no JS, no UI changes.
-* Do NOT run shell or git commands.
-
-  * You can *suggest* `dotnet ef` or `dotnet add package` in TLDR, but do not execute them.
+  No React, no JS, no UI.
+* Do NOT run shell, EF CLI, or git commands (you can suggest them in TLDR).
 * Only touch:
 
-  * Data layer (queries, if needed)
-  * Services (`IPacsService`, implementation)
-  * DTOs/Models
-  * Api controllers + DI
-* Do NOT refactor other modules or radiology workflows.
-  Keep changes scoped to **PACS reading** and minimal support code.
+  * PACS-related entities/configs/migrations (if needed)
+  * PACS services (IPacsService + implementation)
+  * Radiology security helpers if absolutely needed
+  * DTOs/Models for PACS admin views
+  * PACS controllers & DI registration
+* Do NOT redesign PACS schema.
+  Only small additions (like IsDeleted flags, indexes) if required.
 
 ---
 
-## 1) Series Tree API – Contract
+## 1) Centralize Org/Branch & RBAC Enforcement for PACS
 
-Create an API that returns a **Cornerstone-ready** structure for a given RadiologyStudy.
+We want **zero chance** of someone seeing another org’s images just because they know a GUID.
 
-### Endpoint
+### 1.1 Add / Reuse a Security Helper
 
-`GET api/v1/radiology/pacs/studies/{radiologyStudyId:guid}/series-tree`
+If there is already a central security helper for Radiology (e.g. something that checks a `RadiologyStudy` vs current user roles + Org/Branch), reuse or extend it.
 
-### Auth / Permissions
-
-* `[Authorize(Roles = "Radiologist,XRayTech,Admin")]`
-* User must:
-
-  * Belong to the same `OrgId` (and optionally branch) as the RadiologyStudy,
-  * Or have cross-branch privileges according to existing RBAC rules.
-
-Use the same style of org/branch + role enforcement already used in radiology APIs.
-
-### Response DTO
-
-Create a DTO model similar to:
+If not, create a small helper/service, e.g.:
 
 ```csharp
-public sealed class PacsSeriesTreeDto
+public interface IRadiologyAccessGuard
 {
-    public Guid RadiologyStudyId { get; set; }
-    public string StudyInstanceUid { get; set; } = default!;
-    public IReadOnlyList<PacsSeriesNodeDto> Series { get; set; } = Array.Empty<PacsSeriesNodeDto>();
-}
-
-public sealed class PacsSeriesNodeDto
-{
-    public Guid SeriesId { get; set; }
-    public string SeriesInstanceUid { get; set; } = default!;
-    public string? Modality { get; set; }
-    public string? Description { get; set; }
-    public int? SeriesNumber { get; set; }
-    public int InstanceCount { get; set; }
-    public IReadOnlyList<PacsInstanceNodeDto> Instances { get; set; } = Array.Empty<PacsInstanceNodeDto>();
-}
-
-public sealed class PacsInstanceNodeDto
-{
-    public Guid InstanceId { get; set; }
-    public string SopInstanceUid { get; set; } = default!;
-    public int? InstanceNumber { get; set; }
-    public int? FrameCount { get; set; }
-
-    // This is what Cornerstone will later use as imageId directly:
-    public string Wadouri { get; set; } = default!;
+    Task EnsureCanAccessStudyAsync(Guid radiologyStudyId, Guid currentUserId);
+    Task EnsureCanAccessPacsInstanceAsync(Guid instanceId, Guid currentUserId);
 }
 ```
 
-Notes:
+**Behavior:**
 
-* `StudyInstanceUid` should be taken from PACS data (from any series/instance under this study – they should all match).
-* `InstanceCount` is just `Instances.Count` for that series.
-* `Wadouri` string must be the **full `wadouri:` prefixed URL** to the instance file.
+* Load entities (RadiologyStudy, PacsInstance → RadiologyStudy) with OrgId/BranchId.
+
+* Use existing RBAC + org/branch restrictions to decide:
+
+  Examples (adapt to what you already have):
+
+  * Radiologist/XRayTech:
+
+    * Can access studies & PACS within their assigned Org and Branches.
+  * Admin / OrgAdmin:
+
+    * Can access all branches within their Org.
+  * SuperAdmin (if exists):
+
+    * Can access anything.
+
+* If user is not allowed:
+
+  * Throw domain-level `ForbiddenAccessException` (or equivalent) mapped to 403.
+
+### 1.2 Use the Guard in All PACS Operations
+
+Update PACS service methods to always call the guard, instead of hand-rolling checks:
+
+* `UploadDicomAsync(radiologyStudyId, …)`:
+
+  * Must call `EnsureCanAccessStudyAsync` before doing anything.
+* `GetDicomStreamAsync(instanceId, …)`:
+
+  * Must call `EnsureCanAccessPacsInstanceAsync`.
+* `ReindexStudyAsync(radiologyStudyId, …)`:
+
+  * Must call `EnsureCanAccessStudyAsync`.
+* `GetSeriesTreeAsync(radiologyStudyId, …)`:
+
+  * Must call `EnsureCanAccessStudyAsync`.
+
+Ensure that:
+
+* No PACS query is ever executed without verifying Org/Branch + role.
+* There is no other code path that leaks PACS data by raw ID.
 
 ---
 
-## 2) Service Method – Building the Series Tree
+## 2) Add PACS Limits & Guardrails
 
-Extend `IPacsService` with a read-only method:
+We don’t want API to explode if a study/series has a crazy number of images.
 
-```csharp
-public interface IPacsService
-{
-    // Existing methods...
-    Task<PacsSeriesTreeDto> GetSeriesTreeAsync(
-        Guid radiologyStudyId,
-        Guid currentUserId,
-        string apiBaseUrl // or some way to build absolute URLs
-    );
+### 2.1 Configuration
+
+In `appsettings` (and strongly-typed options), add a PACS settings section like:
+
+```json
+"Pacs": {
+  "RootPath": "/data/pacs",
+  "MaxInstancesPerSeriesInSeriesTree": 5000,
+  "MaxTotalInstancesPerStudyInSeriesTree": 20000
 }
 ```
 
-You can choose how to get `apiBaseUrl`:
+(Values are examples; choose reasonable defaults.)
 
-* Option A (simpler):
+Bind to a strongly-typed class, e.g. `PacsOptions`.
 
-  * Controller obtains it from `HttpContext.Request` (scheme + host) and passes into service.
-* Option B:
+### 2.2 Enforce Limits in Series Tree
 
-  * Service gets `IHttpContextAccessor` injected and builds URLs internally.
-* Either is fine; pick whatever matches your existing pattern.
+In `GetSeriesTreeAsync` (Day 14.5 implementation):
 
-### Implementation details:
+* Before returning DTO:
 
-**Step 1 – Validate Study + Permissions**
+  * Compute `totalInstances` across all series.
+  * If `totalInstances` > `MaxTotalInstancesPerStudyInSeriesTree`:
 
-* Load `RadiologyStudy` by `radiologyStudyId`.
-* Make sure study exists and `currentUserId` has permission:
+    * Either:
 
-  * Org/branch check
-  * Role (Radiologist/XRayTech/Admin)
+      * Throw a domain exception that gets mapped to 400/422 with message like:
 
-Reuse existing radiology security logic where possible.
+        * “Too many images in this study to return in a single call.”
+      * Or, if you prefer, truncate the list and indicate truncation in response (simpler is to fail with an error).
 
-**Step 2 – Fetch PACS Data**
+* For each series:
 
-* Query `PacsSeries` where `RadiologyStudyId == radiologyStudyId`.
+  * If its instance count > `MaxInstancesPerSeriesInSeriesTree`:
 
-* If no series found:
+    * Same approach: fail or truncate.
+    * For now, simplest is fail with error.
 
-  * Return an empty `PacsSeriesTreeDto` with:
+Document behavior in comments.
 
-    * `RadiologyStudyId` = input id
-    * `StudyInstanceUid` = maybe empty string or null-equivalent but keep property non-nullable in DTO (e.g. empty string)
-    * `Series` = empty list.
+**Key point:**
+Don’t silently hide data in V1; explicit error is better.
 
-* Query `PacsInstances` where `RadiologyStudyId == radiologyStudyId`.
+### 2.3 Safe Querying
 
-* Optionally do this with a single query and project into DTO directly (to avoid N+1), but clarity is more important than over-optimization for now.
+Make sure `GetSeriesTreeAsync`:
 
-**Step 3 – Determine StudyInstanceUid**
-
-* If there is at least one series or instance, pick `StudyInstanceUid` from:
-
-  * e.g. the first series’ `StudyInstanceUid`, or
-  * the first instance’s `StudyInstanceUid`.
-* Assuming Day 14.4 has ensured consistent UIDs per study.
-
-**Step 4 – Build Series → Instances structure**
-
-* For each `PacsSeries` row:
-
-  * Filter its instances from `PacsInstances` based on `SeriesId`.
-  * Sort instances by:
-
-    * `InstanceNumber` ascending, with nulls pushed to end,
-    * then `InstanceId` as tie-breaker.
-
-* For each instance build `PacsInstanceNodeDto`:
-
-  * `InstanceId` = DB value
-  * `SopInstanceUid` = DB value
-  * `InstanceNumber` = DB value
-  * `FrameCount` = DB value
-  * `Wadouri` = build like:
-
-    ```csharp
-    var wadouri = $"wadouri:{apiBaseUrl.TrimEnd('/')}/api/v1/radiology/pacs/instances/{instance.InstanceId}/file";
-    ```
-
-* For each series build `PacsSeriesNodeDto`:
-
-  * `SeriesId`, `SeriesInstanceUid`, `Modality`, `Description`, `SeriesNumber` from DB.
-  * `InstanceCount` = number of instances attached.
-  * `Instances` = sorted list above.
-
-**Step 5 – Return**
-
-Create and return `PacsSeriesTreeDto`:
-
-* `RadiologyStudyId` = input
-* `StudyInstanceUid` = selected UID
-* `Series` = list of `PacsSeriesNodeDto` sorted by:
-
-  * `SeriesNumber` ascending (if available), otherwise by `SeriesInstanceUid` or `SeriesId`.
+* Uses at most 1–2 DB queries, not a query per instance.
+* Leverages `Where` and `OrderBy` in LINQ/EF, not in-memory for huge sets.
 
 ---
 
-## 3) API Controller – Series Tree Endpoint
+## 3) Maintenance & Admin Endpoints
 
-In `PacsController` (or another radiology PACS controller), add:
+We want tools for admins to keep PACS clean.
+
+### 3.1 Soft-delete flags (optional but recommended)
+
+If not already present, add to `PacsSeries` and `PacsInstances`:
+
+* `IsDeleted` (bool, default false)
+* `DeletedAt` (DateTimeOffset?, nullable)
+* `DeletedBy` (Guid?, nullable)
+
+This is for **logical deletion**, not physical file removal (except obvious broken orphans) in 14.6.
+
+Add via EF migration only if not existing.
+
+### 3.2 Orphan Detection Service Method
+
+Extend PACS service with admin-oriented methods, e.g.:
 
 ```csharp
-[HttpGet("studies/{radiologyStudyId:guid}/series-tree")]
-[Authorize(Roles = "Radiologist,XRayTech,Admin")]
-public async Task<IActionResult> GetSeriesTree(Guid radiologyStudyId)
+public sealed class PacsOrphanSummaryDto
 {
-    var currentUserId = _currentUserService.GetUserId(); // or your existing pattern
+    public int InstancesMissingFiles { get; set; }
+    public int InstancesWithMissingStudy { get; set; }
+    public int SeriesWithNoInstances { get; set; }
+}
 
-    // build base URL: scheme + host + optional base path
-    var request = HttpContext.Request;
-    var apiBaseUrl = $"{request.Scheme}://{request.Host.ToUriComponent()}"; 
-    // if you have API behind a reverse proxy with path base, include that too.
+public sealed class PacsStorageStatsDto
+{
+    public long TotalBytes { get; set; }
+    public int TotalStudies { get; set; }
+    public int TotalSeries { get; set; }
+    public int TotalInstances { get; set; }
 
-    var result = await _pacsService.GetSeriesTreeAsync(
-        radiologyStudyId,
-        currentUserId,
-        apiBaseUrl);
+    public IReadOnlyList<PacsOrgBranchStatsDto> ByOrgBranch { get; set; } = Array.Empty<PacsOrgBranchStatsDto>();
+}
 
-    return Ok(result);
+public sealed class PacsOrgBranchStatsDto
+{
+    public Guid OrgId { get; set; }
+    public Guid BranchId { get; set; }
+    public long TotalBytes { get; set; }
+    public int Studies { get; set; }
+    public int Series { get; set; }
+    public int Instances { get; set; }
 }
 ```
 
-Notes:
+Add service methods:
 
-* Do NOT expose extra internal info.
-* All RBAC & org/branch checks must be done inside the service (or via any shared helper you already use).
+```csharp
+Task<PacsOrphanSummaryDto> GetOrphanSummaryAsync(Guid currentUserId);
+Task<PacsStorageStatsDto> GetStorageStatsAsync(Guid currentUserId);
+Task<PacsOrphanSummaryDto> CleanupOrphansAsync(Guid currentUserId);
+```
+
+**Permissions:**
+
+* Only `Admin`/`SuperAdmin`-level roles can use these.
+* Enforce in service or via separate Admin guard.
+
+#### Orphan types:
+
+* **InstancesMissingFiles**:
+
+  * `PacsInstance` row exists, but `FilePath` is missing on disk.
+* **InstancesWithMissingStudy**:
+
+  * `PacsInstance.RadiologyStudyId` points to a non-existing study.
+* **SeriesWithNoInstances**:
+
+  * `PacsSeries` has no non-deleted instances.
+
+### 3.3 Implementation Rules
+
+* **GetOrphanSummaryAsync**:
+
+  * Scan `PacsInstances` and `PacsSeries`:
+
+    * Check file existence using `File.Exists(instance.FilePath)`.
+    * Check study existence via a join or follow-up query.
+  * Count each orphan type and return summary.
+  * Do not modify any data.
+
+* **CleanupOrphansAsync**:
+
+  * For safety, do **not** hard-delete real clinical data.
+  * But for clearly broken entries, you may:
+
+    * Mark `PacsInstance` as `IsDeleted = true`, set `DeletedAt`, `DeletedBy`.
+    * Optionally remove DB rows where the file is missing and study is missing (pure garbage).
+  * Do NOT delete any existing `.dcm` files from disk in this step, unless:
+
+    * You are 100% sure they are unreferenced by any DB row (you can skip this in 14.6).
+  * Return updated orphan summary after action.
+
+* **GetStorageStatsAsync**:
+
+  * Aggregate PACS usage:
+
+    * Sum `FileSizeBytes` across non-deleted instances.
+    * Count unique RadiologyStudyId, Series, Instances.
+    * Group by OrgId + BranchId for per-branch stats.
+
+### 3.4 Admin Controller
+
+Create a PACS admin controller, e.g.:
+
+`api/v1/radiology/pacs/admin/...`
+
+Endpoints:
+
+1. `GET api/v1/radiology/pacs/admin/orphans`
+
+   * `[Authorize(Roles = "Admin,SuperAdmin")]`
+   * Returns `PacsOrphanSummaryDto`.
+
+2. `POST api/v1/radiology/pacs/admin/orphans/cleanup`
+
+   * `[Authorize(Roles = "Admin,SuperAdmin")]`
+   * Calls `CleanupOrphansAsync`.
+   * Returns updated `PacsOrphanSummaryDto`.
+
+3. `GET api/v1/radiology/pacs/admin/storage-stats`
+
+   * `[Authorize(Roles = "Admin,SuperAdmin")]`
+   * Returns `PacsStorageStatsDto`.
+
+Use your existing pattern to get `currentUserId` from claims.
 
 ---
 
-## 4) Performance & Safeguards (Basic)
+## 4) Logging & Safety
 
-Even though this is V1, add some basic guardrails:
+* Log all admin operations:
 
-* If a study somehow has **extremely many** instances (thousands+), you should:
+  * Cleanup orphans
+  * Any soft-deletions
 
-  * at least code with efficiency in mind: one or two queries, not per-instance DB trips.
-  * Optionally consider a **hard cap** (e.g. 10k instances) and return an error if broken – but this is optional for 14.5.
+Include:
 
-Use projections and grouping in EF where it still keeps the code readable. Don’t prematurely micro-optimize; just avoid obvious N+1 loops backed by separate DB calls per row.
+* UserId, timestamp, counts of affected rows.
 
----
-
-## 5) No Frontend, But Future Contract is Clear
-
-This endpoint is **designed for the later Cornerstone3D frontend** but we do NOT touch React now.
-
-Later, the viewer will do something like:
-
-* Call `GET /api/v1/radiology/pacs/studies/{id}/series-tree`
-* Pick a series:
-
-  * `const imageIds = series.instances.map(x => x.wadouri);`
-* Pass `imageIds` into Cornerstone3D stack/volume loader.
-
-So keep property names clean and stable:
-
-* `seriesTree.series[x].instances[y].wadouri` is the key thing.
+Make sure exceptions in admin endpoints yield safe HTTP codes (400/403/500) with non-sensitive messages.
 
 ---
 
-## 6) Acceptance Criteria for Day 14.5
+## 5) Acceptance Criteria for Day 14.6
 
-Day 14.5 is DONE when:
+Day 14.6 is DONE when:
 
-1. A new DTO set exists:
+1. **Access Guard**:
 
-   * `PacsSeriesTreeDto`, `PacsSeriesNodeDto`, `PacsInstanceNodeDto` (or similarly named), in the DTO/model project.
-2. `IPacsService` has a new method:
+   * There is a reusable access guard or equivalent logic that:
 
-   * `GetSeriesTreeAsync(Guid radiologyStudyId, Guid currentUserId, string apiBaseUrl)`
-   * Implementation:
+     * Validates Org/Branch + RBAC for:
 
-     * Validates study & user permissions.
-     * Loads PACS data for the study.
-     * Builds a fully populated `PacsSeriesTreeDto` with:
+       * `UploadDicomAsync`
+       * `GetDicomStreamAsync`
+       * `ReindexStudyAsync`
+       * `GetSeriesTreeAsync`
+   * All these methods now go through the guard, not ad-hoc checks.
 
-       * Correct UIDs and counts.
-       * Instances sorted by `InstanceNumber`.
-       * `Wadouri` strings pointing to the existing instance file endpoint.
-3. New API endpoint:
+2. **Limits**:
 
-   * `GET /api/v1/radiology/pacs/studies/{radiologyStudyId}/series-tree`
-   * Uses current user + request to build `apiBaseUrl`.
-   * Returns `200 OK` with `PacsSeriesTreeDto`.
-   * Returns reasonable error codes for:
+   * `PacsOptions` (or similar) holds:
 
-     * Study not found.
-     * No permission.
-4. RBAC enforced:
+     * `MaxInstancesPerSeriesInSeriesTree`
+     * `MaxTotalInstancesPerStudyInSeriesTree`
+   * `GetSeriesTreeAsync` enforces these limits and fails with a clear error if exceeded.
 
-   * Radiologist/XRayTech/Admin can call this endpoint.
-   * Reception/Delivery/other roles cannot.
-5. No frontend or Cornerstone code added or modified.
+3. **Maintenance**:
+
+   * Service methods exist:
+
+     * `GetOrphanSummaryAsync`, `CleanupOrphansAsync`, `GetStorageStatsAsync`.
+   * They correctly categorize:
+
+     * Instances with missing files.
+     * Instances with missing studies.
+     * Series with no instances.
+   * Cleanup uses **soft-delete** (IsDeleted + DeletedAt + DeletedBy) or safe DB removal only for obviously broken orphans.
+
+4. **Admin APIs**:
+
+   * `GET /api/v1/radiology/pacs/admin/orphans`
+   * `POST /api/v1/radiology/pacs/admin/orphans/cleanup`
+   * `GET /api/v1/radiology/pacs/admin/storage-stats`
+   * All restricted to Admin/SuperAdmin roles.
+
+5. No frontend code has been added or changed.
 
 ---
 
 **At the end of your answer**, give a short TLDR:
 
-* What Day 14.5 implemented (1–2 lines)
-* List of main files added/changed
-* Any manual steps (e.g., none / just rebuild API)
+* What Day 14.6 implemented (1–2 lines).
+* Main files added/changed.
+* Any manual steps (e.g., `dotnet ef migrations add`, update appsettings etc.).
 
 ---
+
