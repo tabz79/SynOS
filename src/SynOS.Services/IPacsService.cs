@@ -24,5 +24,11 @@ namespace SynOS.Services
             Guid radiologyStudyId,
             Guid currentUserId
         );
+
+        Task<PacsSeriesTreeDto> GetSeriesTreeAsync(
+            Guid radiologyStudyId,
+            Guid currentUserId,
+            string apiBaseUrl
+        );
     }
 }

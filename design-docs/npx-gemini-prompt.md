@@ -1,362 +1,353 @@
-## Day 14.4 — DICOM Metadata & PACS Index (Backend Only)
+## Day 14.5 — Series Tree + WADO-style API (Backend Only)
 
 Use this as your Gemini backend prompt.
 
 ---
 
 **Title:**
-Day 14.4 — DICOM Metadata & PACS Index (Real DICOM Parsing, Backend Only)
+Day 14.5 — PACS Series Tree + WADO-style API for RadiologyStudy (Backend Only)
 
 **Context:**
 You are a .NET 8 BACKEND expert working on **SynOS**, a Diagnostic Lab Management System.
 
-Existing stack:
+Existing backend stack:
 
 * ASP.NET Core .NET 8 Web API
 * EF Core + SQL Server
-* Clean-ish architecture (Data/Entities/Configs/Migrations, Services, Models/DTOs, Api)
+* Layered/clean-ish architecture:
 
-Radiology module is implemented up to **Day 14.3**:
+  * Data / Entities / EF Config / Migrations
+  * Services / Domain logic
+  * DTOs/Models
+  * Api / Controllers / DI / Middleware
+
+Radiology module is already implemented up to **Day 14.4**:
 
 * RadiologyStudy, RadiologyReports, workflow, RBAC, etc.
-* Mini PACS core from Day 14.3:
+* Mini PACS backend:
 
-  * `PacsSeries` and `PacsInstances` tables already exist.
-  * PACS file storage layout exists, e.g.:
-    `Pacs:RootPath` → `{RootPath}/{OrgId}/{BranchId}/{RadiologyStudyId}/{SeriesId}/{InstanceId}.dcm`
+  From **Day 14.3**:
+
+  * `PacsSeries` + `PacsInstances` tables exist.
+  * PACS file storage layout implemented:
+
+    * `Pacs:RootPath` → `{RootPath}/{OrgId}/{BranchId}/{RadiologyStudyId}/{SeriesId}/{InstanceId}.dcm`
   * Upload endpoint:
-    `POST /api/v1/radiology/pacs/{radiologyStudyId}/upload`
-    currently:
 
-    * saves files to disk
-    * creates PacsSeries/PacsInstances with **placeholder UIDs/metadata**
+    * `POST /api/v1/radiology/pacs/{radiologyStudyId}/upload`
+    * Saves files to disk + creates PacsSeries & PacsInstances rows.
+
+  From **Day 14.4**:
+
+  * DICOM parser (e.g. FellowOakDicom) integrated.
+  * `UploadDicomAsync` now extracts real tags:
+
+    * StudyInstanceUid, SeriesInstanceUid, SopInstanceUid, Modality, SeriesDescription, SeriesNumber, InstanceNumber, FrameCount, etc.
+  * Reindex endpoint:
+
+    * `POST /api/v1/radiology/pacs/{radiologyStudyId}/reindex`
+    * Rebuilds PACS metadata from DICOM files.
   * Download endpoint:
-    `GET /api/v1/radiology/pacs/instances/{instanceId}/file`
-    streams raw `.dcm`.
 
-**Goal of Day 14.4:**
+    * `GET /api/v1/radiology/pacs/instances/{instanceId}/file`
+    * Streams raw `.dcm`.
 
-* Plug in a real **DICOM parser**.
-* Fill proper `StudyInstanceUid`, `SeriesInstanceUid`, `SopInstanceUid`, `InstanceNumber`, etc.
-* Create/update `PacsSeries` and `PacsInstances` using actual tags.
-* Add a “reindex” endpoint to rebuild metadata for an existing study.
-* Keep everything **backend-only**. No frontend/Cornerstone yet.
+**Goal of Day 14.5:**
+
+* Build a **single read-only API** that returns the **full PACS “series tree”** for a given RadiologyStudy.
+* This tree is tailored for future **Cornerstone3D** use:
+
+  * Sorted instance list per series.
+  * Prebuilt `wadouri:` URLs for each instance.
+* Backend-only. No frontend or Cornerstone code today.
 
 ---
 
 ### 🔒 Guardrails / Constraints
 
 * **Backend only.**
-  Do NOT write any React/JS/front-end code.
-* Do NOT run shell, build, or git commands.
-  You may *suggest* commands in TLDR but not execute anything.
-* Only modify:
 
-  * Data / Entities / EF Config / Migrations
-  * Services (PACS service, helpers)
-  * Models/DTOs
+  * No React, no JS, no UI changes.
+* Do NOT run shell or git commands.
+
+  * You can *suggest* `dotnet ef` or `dotnet add package` in TLDR, but do not execute them.
+* Only touch:
+
+  * Data layer (queries, if needed)
+  * Services (`IPacsService`, implementation)
+  * DTOs/Models
   * Api controllers + DI
-* Do NOT refactor unrelated modules.
-  Keep changes scoped to **PACS + small radiology wiring**.
+* Do NOT refactor other modules or radiology workflows.
+  Keep changes scoped to **PACS reading** and minimal support code.
 
 ---
 
-## 1) Add DICOM Parsing Library
+## 1) Series Tree API – Contract
 
-Use a mature .NET DICOM library (for example **fo-dicom** / `FellowOakDicom`):
+Create an API that returns a **Cornerstone-ready** structure for a given RadiologyStudy.
 
-* Add a NuGet reference in the appropriate project(s) (most likely the Services or a dedicated PACS/DICOM project).
-* Do **not** actually run the package command; just update the `.csproj` and mention the command in TLDR, e.g.:
+### Endpoint
 
-```bash
-dotnet add <YourServicesProject>.csproj package FellowOakDicom
-```
+`GET api/v1/radiology/pacs/studies/{radiologyStudyId:guid}/series-tree`
 
----
+### Auth / Permissions
 
-## 2) Create DICOM Metadata Helper
+* `[Authorize(Roles = "Radiologist,XRayTech,Admin")]`
+* User must:
 
-Create a helper class (e.g. under a `Pacs` or `Dicom` folder):
+  * Belong to the same `OrgId` (and optionally branch) as the RadiologyStudy,
+  * Or have cross-branch privileges according to existing RBAC rules.
 
-```csharp
-public sealed class DicomMetadata
-{
-    public string StudyInstanceUid { get; set; } = default!;
-    public string SeriesInstanceUid { get; set; } = default!;
-    public string SopInstanceUid { get; set; } = default!;
-    public string? Modality { get; set; }
-    public string? SeriesDescription { get; set; }
-    public int? SeriesNumber { get; set; }
-    public int? InstanceNumber { get; set; }
-    public int? FrameCount { get; set; }
-    // optional extra fields for future 3D work:
-    public string? ImagePositionPatient { get; set; }   // e.g., "x\y\z"
-    public string? ImageOrientationPatient { get; set; } // 6 values
-    public string? PixelSpacing { get; set; }           // e.g., "dx\dy"
-}
-```
+Use the same style of org/branch + role enforcement already used in radiology APIs.
 
-Create a static helper, e.g. `DicomMetadataExtractor`:
+### Response DTO
+
+Create a DTO model similar to:
 
 ```csharp
-public static class DicomMetadataExtractor
-{
-    public static async Task<DicomMetadata> ParseAsync(Stream fileStream)
-    {
-        // Use FellowOakDicom to read the dataset
-        // Example pattern (adjust for sync/async as needed):
-
-        // using var dicomFile = await DicomFile.OpenAsync(fileStream);
-        // var dataset = dicomFile.Dataset;
-
-        // Read tags safely with defaults:
-        // var studyUid = dataset.GetSingleValueOrDefault(DicomTag.StudyInstanceUID, string.Empty);
-        // var seriesUid = dataset.GetSingleValueOrDefault(DicomTag.SeriesInstanceUID, string.Empty);
-        // var sopUid = dataset.GetSingleValueOrDefault(DicomTag.SOPInstanceUID, string.Empty);
-
-        // Same for modality, description, numbers, etc.
-
-        // If any of the core UIDs are missing, throw a domain-level "InvalidDicomFile" exception.
-
-        // Return DicomMetadata populated with real values.
-    }
-}
-```
-
-**Requirements:**
-
-* At minimum, you must correctly extract:
-
-  * `StudyInstanceUid` (0020,000D) – required
-  * `SeriesInstanceUid` (0020,000E) – required
-  * `SopInstanceUid` (0008,0018) – required
-  * `Modality` (0008,0060) – optional
-  * `SeriesDescription` (0008,103E) – optional
-  * `SeriesNumber` (0020,0011) – optional
-  * `InstanceNumber` (0020,0013) – optional
-  * `FrameCount` (0028,0008) – optional
-* If any required UID is missing or empty, treat the file as invalid and surface a clean 400/422-style error from the API.
-
----
-
-## 3) Update IPacsService.UploadDicomAsync to Use Real Metadata
-
-You already have:
-
-```csharp
-Task<PacsUploadResultDto> UploadDicomAsync(
-    Guid radiologyStudyId,
-    IReadOnlyList<IFormFile> files,
-    Guid currentUserId);
-```
-
-Update its implementation as follows:
-
-### 3.1 Load RadiologyStudy + Security
-
-* Load `RadiologyStudy` by `radiologyStudyId`.
-* Validate:
-
-  * Study exists.
-  * User has permission (Radiologist/XRayTech/Admin).
-  * `OrgId` and `BranchId` match user’s allowed scope.
-
-Re-use your existing patterns for security and multi-branch checks.
-
-### 3.2 Group by Study/Series UIDs
-
-For each uploaded file:
-
-1. Read the file into a stream (you can either:
-
-   * copy to a temp stream first (for parsing) then save to final path, or
-   * read once from `IFormFile.OpenReadStream()` for parsing, then reposition if needed).
-
-2. Call `DicomMetadataExtractor.ParseAsync` to get `DicomMetadata`.
-
-3. Use the **real** UIDs:
-
-   * `StudyInstanceUid`
-   * `SeriesInstanceUid`
-   * `SopInstanceUid`
-
-4. **Series handling:**
-
-   * Check if a `PacsSeries` already exists for:
-
-     * `RadiologyStudyId`
-     * `StudyInstanceUid`
-     * `SeriesInstanceUid`
-   * If exists, reuse it.
-   * If not, create a new `PacsSeries` with:
-
-     * `RadiologyStudyId`, `OrgId`, `BranchId` from the study
-     * `StudyInstanceUid` from metadata
-     * `SeriesInstanceUid` from metadata
-     * `Modality`, `Description`, `SeriesNumber` from metadata
-     * `CreatedBy = currentUserId`
-
-5. **Instance handling:**
-
-   * Always create a `PacsInstance` row:
-
-     * `SeriesId` = selected/created PacsSeries
-     * `RadiologyStudyId` = study
-     * `OrgId`, `BranchId` from study
-     * `StudyInstanceUid`, `SeriesInstanceUid`, `SopInstanceUid` from metadata
-     * `InstanceNumber`, `FrameCount` from metadata
-     * `FilePath` = computed using `{RootPath}/{OrgId}/{BranchId}/{RadiologyStudyId}/{SeriesId}/{InstanceId}.dcm`
-     * `FileSizeBytes` from actual saved file
-     * `ContentType = "application/dicom"`
-     * `CreatedBy = currentUserId`
-
-6. Save the physical file to disk **after** metadata is parsed, using the same path scheme as Day 14.3 (or adjust slightly but consistently).
-
-7. Return `PacsUploadResultDto` summarising:
-
-   * `RadiologyStudyId`
-   * `SeriesCreated` (count of new series)
-   * `InstancesCreated` (number of instances saved)
-
-Make sure old 14.3 “dummy UID” logic is removed/replaced. Everything from Day 14.4 onwards must rely on **real DICOM metadata**.
-
----
-
-## 4) Add Reindex Endpoint for Existing Studies
-
-Some studies may already have DICOM files stored with placeholder UIDs from Day 14.3.
-We need a way to “fix” them by re-reading files from disk.
-
-### 4.1 Service Method
-
-Extend `IPacsService`:
-
-```csharp
-Task<PacsReindexResultDto> ReindexStudyAsync(
-    Guid radiologyStudyId,
-    Guid currentUserId);
-```
-
-`PacsReindexResultDto` can contain:
-
-```csharp
-public sealed class PacsReindexResultDto
+public sealed class PacsSeriesTreeDto
 {
     public Guid RadiologyStudyId { get; set; }
-    public int SeriesUpdated { get; set; }
-    public int InstancesUpdated { get; set; }
-    public int InstancesFailed { get; set; }
+    public string StudyInstanceUid { get; set; } = default!;
+    public IReadOnlyList<PacsSeriesNodeDto> Series { get; set; } = Array.Empty<PacsSeriesNodeDto>();
+}
+
+public sealed class PacsSeriesNodeDto
+{
+    public Guid SeriesId { get; set; }
+    public string SeriesInstanceUid { get; set; } = default!;
+    public string? Modality { get; set; }
+    public string? Description { get; set; }
+    public int? SeriesNumber { get; set; }
+    public int InstanceCount { get; set; }
+    public IReadOnlyList<PacsInstanceNodeDto> Instances { get; set; } = Array.Empty<PacsInstanceNodeDto>();
+}
+
+public sealed class PacsInstanceNodeDto
+{
+    public Guid InstanceId { get; set; }
+    public string SopInstanceUid { get; set; } = default!;
+    public int? InstanceNumber { get; set; }
+    public int? FrameCount { get; set; }
+
+    // This is what Cornerstone will later use as imageId directly:
+    public string Wadouri { get; set; } = default!;
 }
 ```
 
-**Implementation logic:**
+Notes:
 
-1. Load `RadiologyStudy` + permission checks (same as upload).
-2. Load all `PacsInstances` for that `RadiologyStudyId`.
-3. For each instance:
-
-   * If `FilePath` missing or file not found → increment `InstancesFailed` and continue.
-   * Open the file and call `DicomMetadataExtractor.ParseAsync`.
-   * Recompute or reuse corresponding `PacsSeries`:
-
-     * Find or create series by `RadiologyStudyId + StudyInstanceUid + SeriesInstanceUid`.
-   * Update `PacsInstance` fields:
-
-     * `SeriesId`, `StudyInstanceUid`, `SeriesInstanceUid`, `SopInstanceUid`, `InstanceNumber`, `FrameCount`, etc.
-4. Optionally keep track of how many distinct `PacsSeries` were created/updated.
-5. Save changes and return `PacsReindexResultDto`.
-
-Do **not** delete any files in Day 14.4. Only update DB metadata.
-
-### 4.2 Controller Endpoint
-
-In `PacsController` (or equivalent):
-
-`POST api/v1/radiology/pacs/{radiologyStudyId:guid}/reindex`
-
-* Auth:
-
-  * `[Authorize(Roles = "Radiologist,Admin")]`
-    (XRayTech can upload but reindex can be restricted to Radiologist/Admin if you want.)
-* Action:
-
-  * Get `currentUserId` from claims.
-  * Call `ReindexStudyAsync(radiologyStudyId, currentUserId)`.
-  * Return `200 OK` with `PacsReindexResultDto`.
+* `StudyInstanceUid` should be taken from PACS data (from any series/instance under this study – they should all match).
+* `InstanceCount` is just `Instances.Count` for that series.
+* `Wadouri` string must be the **full `wadouri:` prefixed URL** to the instance file.
 
 ---
 
-## 5) Optional DB Tightening (If Safe)
+## 2) Service Method – Building the Series Tree
 
-If Day 14.3 initially allowed null or dummy values for UIDs, you may now:
+Extend `IPacsService` with a read-only method:
 
-* Update EF configurations so:
+```csharp
+public interface IPacsService
+{
+    // Existing methods...
+    Task<PacsSeriesTreeDto> GetSeriesTreeAsync(
+        Guid radiologyStudyId,
+        Guid currentUserId,
+        string apiBaseUrl // or some way to build absolute URLs
+    );
+}
+```
 
-  * `StudyInstanceUid`, `SeriesInstanceUid`, `SopInstanceUid` are required (non-null).
-* Add or refine indexes where helpful:
+You can choose how to get `apiBaseUrl`:
 
-  * `(RadiologyStudyId, StudyInstanceUid, SeriesInstanceUid)` on `PacsSeries`.
-  * `(SeriesId, SopInstanceUid)` or `(StudyInstanceUid, SeriesInstanceUid, SopInstanceUid)` on `PacsInstances`.
+* Option A (simpler):
 
-**Important:**
-Keep migrations backward-compatible and non-destructive. If there is a risk that existing rows have nulls, handle that in migration (e.g., set temporary values or require reindex before enforcing non-null).
+  * Controller obtains it from `HttpContext.Request` (scheme + host) and passes into service.
+* Option B:
+
+  * Service gets `IHttpContextAccessor` injected and builds URLs internally.
+* Either is fine; pick whatever matches your existing pattern.
+
+### Implementation details:
+
+**Step 1 – Validate Study + Permissions**
+
+* Load `RadiologyStudy` by `radiologyStudyId`.
+* Make sure study exists and `currentUserId` has permission:
+
+  * Org/branch check
+  * Role (Radiologist/XRayTech/Admin)
+
+Reuse existing radiology security logic where possible.
+
+**Step 2 – Fetch PACS Data**
+
+* Query `PacsSeries` where `RadiologyStudyId == radiologyStudyId`.
+
+* If no series found:
+
+  * Return an empty `PacsSeriesTreeDto` with:
+
+    * `RadiologyStudyId` = input id
+    * `StudyInstanceUid` = maybe empty string or null-equivalent but keep property non-nullable in DTO (e.g. empty string)
+    * `Series` = empty list.
+
+* Query `PacsInstances` where `RadiologyStudyId == radiologyStudyId`.
+
+* Optionally do this with a single query and project into DTO directly (to avoid N+1), but clarity is more important than over-optimization for now.
+
+**Step 3 – Determine StudyInstanceUid**
+
+* If there is at least one series or instance, pick `StudyInstanceUid` from:
+
+  * e.g. the first series’ `StudyInstanceUid`, or
+  * the first instance’s `StudyInstanceUid`.
+* Assuming Day 14.4 has ensured consistent UIDs per study.
+
+**Step 4 – Build Series → Instances structure**
+
+* For each `PacsSeries` row:
+
+  * Filter its instances from `PacsInstances` based on `SeriesId`.
+  * Sort instances by:
+
+    * `InstanceNumber` ascending, with nulls pushed to end,
+    * then `InstanceId` as tie-breaker.
+
+* For each instance build `PacsInstanceNodeDto`:
+
+  * `InstanceId` = DB value
+  * `SopInstanceUid` = DB value
+  * `InstanceNumber` = DB value
+  * `FrameCount` = DB value
+  * `Wadouri` = build like:
+
+    ```csharp
+    var wadouri = $"wadouri:{apiBaseUrl.TrimEnd('/')}/api/v1/radiology/pacs/instances/{instance.InstanceId}/file";
+    ```
+
+* For each series build `PacsSeriesNodeDto`:
+
+  * `SeriesId`, `SeriesInstanceUid`, `Modality`, `Description`, `SeriesNumber` from DB.
+  * `InstanceCount` = number of instances attached.
+  * `Instances` = sorted list above.
+
+**Step 5 – Return**
+
+Create and return `PacsSeriesTreeDto`:
+
+* `RadiologyStudyId` = input
+* `StudyInstanceUid` = selected UID
+* `Series` = list of `PacsSeriesNodeDto` sorted by:
+
+  * `SeriesNumber` ascending (if available), otherwise by `SeriesInstanceUid` or `SeriesId`.
 
 ---
 
-## 6) Logging & Error Handling
+## 3) API Controller – Series Tree Endpoint
 
-* If parsing fails (invalid DICOM file):
+In `PacsController` (or another radiology PACS controller), add:
 
-  * Log a warning with StudyId + file name.
-  * For upload:
+```csharp
+[HttpGet("studies/{radiologyStudyId:guid}/series-tree")]
+[Authorize(Roles = "Radiologist,XRayTech,Admin")]
+public async Task<IActionResult> GetSeriesTree(Guid radiologyStudyId)
+{
+    var currentUserId = _currentUserService.GetUserId(); // or your existing pattern
 
-    * Either reject that single file and continue with others, or fail the entire batch with a clear message. Choose and document the behavior.
-  * For reindex:
+    // build base URL: scheme + host + optional base path
+    var request = HttpContext.Request;
+    var apiBaseUrl = $"{request.Scheme}://{request.Host.ToUriComponent()}"; 
+    // if you have API behind a reverse proxy with path base, include that too.
 
-    * Increment `InstancesFailed` and continue with others.
+    var result = await _pacsService.GetSeriesTreeAsync(
+        radiologyStudyId,
+        currentUserId,
+        apiBaseUrl);
 
-* Map domain exceptions to clean HTTP responses:
+    return Ok(result);
+}
+```
 
-  * Missing Study or no permission → 404/403.
-  * Invalid DICOM → 400/422 with a short explanation.
+Notes:
 
-Use whatever exception → response pattern you already use.
-
----
-
-## 7) Acceptance Criteria for Day 14.4
-
-Day 14.4 is DONE when:
-
-1. A DICOM parsing library is referenced and a `DicomMetadataExtractor` (or equivalent) reads real DICOM tags:
-
-   * StudyInstanceUid, SeriesInstanceUid, SopInstanceUid (required)
-   * Modality, SeriesDescription, SeriesNumber, InstanceNumber, FrameCount (optional)
-2. `UploadDicomAsync`:
-
-   * Uses real DICOM metadata to:
-
-     * Reuse or create `PacsSeries` by Study/Series UIDs.
-     * Create `PacsInstance` with correct UIDs and instance numbers.
-   * Still saves files using the configured PACS root path.
-3. Existing upload endpoint:
-
-   * `POST /api/v1/radiology/pacs/{radiologyStudyId}/upload`
-   * Now produces **real** metadata in DB for new uploads.
-4. New reindex endpoint:
-
-   * `POST /api/v1/radiology/pacs/{radiologyStudyId}/reindex`
-   * Re-reads existing instance files and corrects metadata in DB.
-   * Returns a summary DTO with counts.
-5. RBAC is enforced for both upload and reindex.
-6. No frontend/Cornerstone code has been added or changed.
+* Do NOT expose extra internal info.
+* All RBAC & org/branch checks must be done inside the service (or via any shared helper you already use).
 
 ---
 
-**At the end of your answer**, give a short TLDR for me:
+## 4) Performance & Safeguards (Basic)
 
-* What you implemented in Day 14.4 (1–2 lines).
-* List of main files added/modified.
-* Any manual steps (e.g., run migration, install NuGet).
+Even though this is V1, add some basic guardrails:
+
+* If a study somehow has **extremely many** instances (thousands+), you should:
+
+  * at least code with efficiency in mind: one or two queries, not per-instance DB trips.
+  * Optionally consider a **hard cap** (e.g. 10k instances) and return an error if broken – but this is optional for 14.5.
+
+Use projections and grouping in EF where it still keeps the code readable. Don’t prematurely micro-optimize; just avoid obvious N+1 loops backed by separate DB calls per row.
+
+---
+
+## 5) No Frontend, But Future Contract is Clear
+
+This endpoint is **designed for the later Cornerstone3D frontend** but we do NOT touch React now.
+
+Later, the viewer will do something like:
+
+* Call `GET /api/v1/radiology/pacs/studies/{id}/series-tree`
+* Pick a series:
+
+  * `const imageIds = series.instances.map(x => x.wadouri);`
+* Pass `imageIds` into Cornerstone3D stack/volume loader.
+
+So keep property names clean and stable:
+
+* `seriesTree.series[x].instances[y].wadouri` is the key thing.
+
+---
+
+## 6) Acceptance Criteria for Day 14.5
+
+Day 14.5 is DONE when:
+
+1. A new DTO set exists:
+
+   * `PacsSeriesTreeDto`, `PacsSeriesNodeDto`, `PacsInstanceNodeDto` (or similarly named), in the DTO/model project.
+2. `IPacsService` has a new method:
+
+   * `GetSeriesTreeAsync(Guid radiologyStudyId, Guid currentUserId, string apiBaseUrl)`
+   * Implementation:
+
+     * Validates study & user permissions.
+     * Loads PACS data for the study.
+     * Builds a fully populated `PacsSeriesTreeDto` with:
+
+       * Correct UIDs and counts.
+       * Instances sorted by `InstanceNumber`.
+       * `Wadouri` strings pointing to the existing instance file endpoint.
+3. New API endpoint:
+
+   * `GET /api/v1/radiology/pacs/studies/{radiologyStudyId}/series-tree`
+   * Uses current user + request to build `apiBaseUrl`.
+   * Returns `200 OK` with `PacsSeriesTreeDto`.
+   * Returns reasonable error codes for:
+
+     * Study not found.
+     * No permission.
+4. RBAC enforced:
+
+   * Radiologist/XRayTech/Admin can call this endpoint.
+   * Reception/Delivery/other roles cannot.
+5. No frontend or Cornerstone code added or modified.
+
+---
+
+**At the end of your answer**, give a short TLDR:
+
+* What Day 14.5 implemented (1–2 lines)
+* List of main files added/changed
+* Any manual steps (e.g., none / just rebuild API)
 
 ---
