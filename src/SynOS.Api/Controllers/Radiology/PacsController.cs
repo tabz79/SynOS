@@ -60,5 +60,19 @@ namespace SynOS.Api.Controllers.Radiology
             var result = await _pacsService.ReindexStudyAsync(radiologyStudyId, userId);
             return Ok(result);
         }
+
+        [HttpGet("studies/{radiologyStudyId:guid}/series-tree")]
+        [Authorize(Roles = "Admin,Radiologist,XRayTech")]
+        public async Task<IActionResult> GetSeriesTree(Guid radiologyStudyId)
+        {
+            var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            
+            var request = HttpContext.Request;
+            var apiBaseUrl = $"{request.Scheme}://{request.Host.ToUriComponent()}";
+
+            var result = await _pacsService.GetSeriesTreeAsync(radiologyStudyId, userId, apiBaseUrl);
+            
+            return Ok(result);
+        }
     }
 }

@@ -237,5 +237,65 @@ namespace SynOS.Services
 
             return result;
         }
+
+        public async Task<PacsSeriesTreeDto> GetSeriesTreeAsync(Guid radiologyStudyId, Guid currentUserId, string apiBaseUrl)
+        {
+            var study = await _context.RadiologyStudies.FindAsync(radiologyStudyId);
+            if (study == null)
+            {
+                throw new KeyNotFoundException($"Radiology study with ID '{radiologyStudyId}' not found.");
+            }
+            
+            // TODO: Add proper permission validation (e.g., check if user is in the same Org)
+
+            var allInstances = await _context.PacsInstances
+                .Where(i => i.RadiologyStudyId == radiologyStudyId)
+                .OrderBy(i => i.InstanceNumber)
+                .ThenBy(i => i.InstanceId)
+                .ToListAsync();
+
+            var allSeries = await _context.PacsSeries
+                .Where(s => s.RadiologyStudyId == radiologyStudyId)
+                .OrderBy(s => s.SeriesNumber)
+                .ThenBy(s => s.SeriesId)
+                .ToListAsync();
+
+            if (!allSeries.Any())
+            {
+                return new PacsSeriesTreeDto { RadiologyStudyId = radiologyStudyId, StudyInstanceUid = string.Empty };
+            }
+
+            var seriesNodes = allSeries.Select(series =>
+            {
+                var instancesForSeries = allInstances
+                    .Where(inst => inst.SeriesId == series.SeriesId)
+                    .Select(inst => new PacsInstanceNodeDto
+                    {
+                        InstanceId = inst.InstanceId,
+                        SopInstanceUid = inst.SopInstanceUid,
+                        InstanceNumber = inst.InstanceNumber,
+                        FrameCount = inst.FrameCount,
+                        Wadouri = $"wadouri:{apiBaseUrl.TrimEnd('/')}/api/v1/radiology/pacs/instances/{inst.InstanceId}/file"
+                    }).ToList();
+
+                return new PacsSeriesNodeDto
+                {
+                    SeriesId = series.SeriesId,
+                    SeriesInstanceUid = series.SeriesInstanceUid,
+                    Modality = series.Modality,
+                    Description = series.Description,
+                    SeriesNumber = series.SeriesNumber,
+                    InstanceCount = instancesForSeries.Count,
+                    Instances = instancesForSeries
+                };
+            }).ToList();
+
+            return new PacsSeriesTreeDto
+            {
+                RadiologyStudyId = radiologyStudyId,
+                StudyInstanceUid = allSeries.First().StudyInstanceUid,
+                Series = seriesNodes
+            };
+        }
     }
 }
