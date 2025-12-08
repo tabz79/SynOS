@@ -1,355 +1,362 @@
-e’ll bolt Mini PACS onto your existing **Radiology (14.x)** like this:
+## Day 14.4 — DICOM Metadata & PACS Index (Backend Only)
 
-* **Day 14.3** – Mini PACS Core Storage
-  DB tables + disk layout + upload + stream file API. No DICOM parsing yet.
-* **Day 14.4** – DICOM Metadata & Index
-  Parse UIDs, modality, instance numbers, etc. Fill real values into PACS tables.
-* **Day 14.5** – Series Tree + WADO-style API
-  One JSON endpoint that returns Cornerstone-ready `wadouri:` URLs per study.
-* **Day 14.6** – Cross-Branch & Hardening
-  Enforce org/branch, RBAC, cleanup tools, basic retention rules.
-
-You can stop after **14.5** and you’ll already have a proper mini PACS backend.
-
-Now I’ll give you a **ready-to-paste prompt for Day 14.3** in the same style as your earlier backend days.
-
----
-
-## 📜 Day 14.3 – Mini PACS Core Storage (Backend Only)
-
-Use this as your Gemini backend prompt:
+Use this as your Gemini backend prompt.
 
 ---
 
 **Title:**
-Day 14.3 — Mini PACS Core Storage (Backend Only, No DICOM Parsing)
+Day 14.4 — DICOM Metadata & PACS Index (Real DICOM Parsing, Backend Only)
 
 **Context:**
 You are a .NET 8 BACKEND expert working on **SynOS**, a Diagnostic Lab Management System.
 
-Existing backend stack (same as earlier radiology days):
+Existing stack:
 
 * ASP.NET Core .NET 8 Web API
 * EF Core + SQL Server
-* Clean-ish architecture with layers like:
+* Clean-ish architecture (Data/Entities/Configs/Migrations, Services, Models/DTOs, Api)
 
-  * Data / Entities / Configs / Migrations
-  * Services (Domain/Business)
-  * Models/DTOs
-  * Api (Controllers, DI, Middleware)
+Radiology module is implemented up to **Day 14.3**:
 
-Radiology module is already implemented up to **Day 14.2**:
+* RadiologyStudy, RadiologyReports, workflow, RBAC, etc.
+* Mini PACS core from Day 14.3:
 
-* RadiologyStudy (linked to Patient/Visit/Org/Branch)
-* RadiologyReports, status transitions, assigning to radiologists, signing etc.
-* Roles: Radiologist, XRayTech, Admin, Reception, etc.
+  * `PacsSeries` and `PacsInstances` tables already exist.
+  * PACS file storage layout exists, e.g.:
+    `Pacs:RootPath` → `{RootPath}/{OrgId}/{BranchId}/{RadiologyStudyId}/{SeriesId}/{InstanceId}.dcm`
+  * Upload endpoint:
+    `POST /api/v1/radiology/pacs/{radiologyStudyId}/upload`
+    currently:
 
-Now we want to extend Radiology with a **Mini PACS** backend.
+    * saves files to disk
+    * creates PacsSeries/PacsInstances with **placeholder UIDs/metadata**
+  * Download endpoint:
+    `GET /api/v1/radiology/pacs/instances/{instanceId}/file`
+    streams raw `.dcm`.
 
-**Goal of Day 14.3:**
+**Goal of Day 14.4:**
 
-* Add core PACS tables (Series + Instances) linked to RadiologyStudy.
-* Define server-side file storage for DICOM files (local disk on central SynOS server).
-* Implement upload + download endpoints (no real DICOM parsing yet).
-* Make sure everything is **Org + Branch aware** from day one.
-* NO frontend code, NO Cornerstone integration yet.
+* Plug in a real **DICOM parser**.
+* Fill proper `StudyInstanceUid`, `SeriesInstanceUid`, `SopInstanceUid`, `InstanceNumber`, etc.
+* Create/update `PacsSeries` and `PacsInstances` using actual tags.
+* Add a “reindex” endpoint to rebuild metadata for an existing study.
+* Keep everything **backend-only**. No frontend/Cornerstone yet.
 
 ---
 
-### 🔒 Guardrails / Constraints (follow exactly)
+### 🔒 Guardrails / Constraints
 
 * **Backend only.**
-  Do NOT write any React/JS/frontend code. Only Web API / EF / services.
-* Do NOT run shell commands or touch git.
-  Just generate code + mention migrations/commands in a TLDR summary.
-* Only modify backend projects:
+  Do NOT write any React/JS/front-end code.
+* Do NOT run shell, build, or git commands.
+  You may *suggest* commands in TLDR but not execute anything.
+* Only modify:
 
-  * Data / Entities / Configurations / Migrations
-  * Services (IPacsService + implementation)
-  * Models/DTOs (PACS DTOs)
-  * Api controllers + DI registration
-* Do NOT refactor unrelated code.
-  Keep changes scoped to **PACS** and minimal wiring into Radiology.
-
----
-
-## 1) Database: PACS Tables
-
-We are adding a minimal **Mini PACS** model that plugs into existing RadiologyStudy.
-
-Create two new tables via EF Core:
-
-### PacsSeries
-
-* `SeriesId` (GUID, PK)
-* `RadiologyStudyId` (GUID, not null, FK → RadiologyStudies)
-* `OrgId` (GUID, not null)
-* `BranchId` (GUID, not null)
-* `StudyInstanceUid` (string, max 200, not null)  // DICOM tag 0020,000D (for later)
-* `SeriesInstanceUid` (string, max 200, not null) // DICOM tag 0020,000E
-* `Modality` (string, max 50, nullable)           // “CT”, “MR”, etc.
-* `Description` (string, nvarchar 200, nullable)  // SeriesDescription
-* `SeriesNumber` (int?, nullable)                 // DICOM 0020,0011
-* `CreatedAt` (DateTimeOffset, default UTC now)
-* `CreatedBy` (GUID, not null, FK to Users or similar)
-
-Add indexes:
-
-* By `RadiologyStudyId`
-* By `StudyInstanceUid`
-* By `SeriesInstanceUid`
-
-For Day 14.3, `StudyInstanceUid` and `SeriesInstanceUid` can be dummy placeholders, but columns must exist now. In Day 14.4 we’ll fill them from real DICOM tags.
-
-### PacsInstance
-
-* `InstanceId` (GUID, PK)
-* `SeriesId` (GUID, not null, FK → PacsSeries)
-* `RadiologyStudyId` (GUID, not null, FK → RadiologyStudies)
-* `OrgId` (GUID, not null)
-* `BranchId` (GUID, not null)
-* `StudyInstanceUid` (string, max 200, not null)
-* `SeriesInstanceUid` (string, max 200, not null)
-* `SopInstanceUid` (string, max 200, not null)   // DICOM 0008,0018
-* `InstanceNumber` (int?, nullable)               // DICOM 0020,0013
-* `FrameCount` (int?, nullable)                   // for multi-frame images
-* `FilePath` (nvarchar 500, not null)             // absolute path on server
-* `FileSizeBytes` (bigint?, nullable)
-* `ContentType` (string, max 100, not null, default “application/dicom”)
-* `CreatedAt` (DateTimeOffset, default UTC now)
-* `CreatedBy` (GUID, not null)
-
-Indexes:
-
-* By `SeriesId`
-* By `RadiologyStudyId`
-* By `SopInstanceUid`
-
-**Important:**
-
-* Get `OrgId` and `BranchId` from the linked `RadiologyStudy` (or whatever entity currently has them) when creating PACS rows.
-* For Day 14.3, you are allowed to use **dummy UIDs** (`Guid.NewGuid().ToString()` or similar) and null instance numbers, because we will do real DICOM parsing on Day 14.4.
+  * Data / Entities / EF Config / Migrations
+  * Services (PACS service, helpers)
+  * Models/DTOs
+  * Api controllers + DI
+* Do NOT refactor unrelated modules.
+  Keep changes scoped to **PACS + small radiology wiring**.
 
 ---
 
-## 2) Storage Layout on Disk
+## 1) Add DICOM Parsing Library
 
-We are using **local disk** on the central SynOS server (no S3 yet).
+Use a mature .NET DICOM library (for example **fo-dicom** / `FellowOakDicom`):
 
-Add a config section to `appsettings`:
+* Add a NuGet reference in the appropriate project(s) (most likely the Services or a dedicated PACS/DICOM project).
+* Do **not** actually run the package command; just update the `.csproj` and mention the command in TLDR, e.g.:
 
-```json
-"Pacs": {
-  "RootPath": "/data/pacs" // example for Linux; on Windows this can be "D:\\SynOS\\Pacs"
-}
+```bash
+dotnet add <YourServicesProject>.csproj package FellowOakDicom
 ```
 
-Define the folder structure for DICOM files:
-
-```text
-{RootPath}/{OrgId}/{BranchId}/{RadiologyStudyId}/{SeriesId}/{InstanceId}.dcm
-```
-
-Rules:
-
-* When saving a file:
-
-  * Create directories if they don’t exist.
-  * Use `InstanceId` as the filename (with `.dcm`).
-  * Save **absolute full path** into `PacsInstance.FilePath`.
-* Do NOT store anything on client PCs. This is all **server-side**.
-
 ---
 
-## 3) Service Layer – IPacsService
+## 2) Create DICOM Metadata Helper
 
-Create a dedicated service interface and implementation:
+Create a helper class (e.g. under a `Pacs` or `Dicom` folder):
 
 ```csharp
-public interface IPacsService
+public sealed class DicomMetadata
 {
-    Task<PacsUploadResultDto> UploadDicomAsync(
-        Guid radiologyStudyId,
-        IReadOnlyList<IFormFile> files,
-        Guid currentUserId
-    );
-
-    Task<(Stream Stream, string ContentType)> GetDicomStreamAsync(
-        Guid instanceId,
-        Guid currentUserId
-    );
+    public string StudyInstanceUid { get; set; } = default!;
+    public string SeriesInstanceUid { get; set; } = default!;
+    public string SopInstanceUid { get; set; } = default!;
+    public string? Modality { get; set; }
+    public string? SeriesDescription { get; set; }
+    public int? SeriesNumber { get; set; }
+    public int? InstanceNumber { get; set; }
+    public int? FrameCount { get; set; }
+    // optional extra fields for future 3D work:
+    public string? ImagePositionPatient { get; set; }   // e.g., "x\y\z"
+    public string? ImageOrientationPatient { get; set; } // 6 values
+    public string? PixelSpacing { get; set; }           // e.g., "dx\dy"
 }
 ```
 
-### UploadDicomAsync behavior:
-
-1. Load `RadiologyStudy` by `radiologyStudyId`:
-
-   * If not found → throw domain exception → mapped to 404.
-   * Validate `OrgId` + `BranchId` and that `currentUserId` has permission (Radiologist/XRayTech/Admin) to upload for this study.
-
-2. For now, keep series grouping simple (we’ll refine later when proper tags arrive):
-
-   * Option A (acceptable for 14.3):
-
-     * Create **one PacsSeries** per upload call:
-
-       * `StudyInstanceUid` and `SeriesInstanceUid` = new GUID strings for now.
-       * `Modality` / `Description` / `SeriesNumber` = null or simple defaults.
-   * Option B (if you want a bit more structure):
-
-     * One PacsSeries per **upload batch** or per modality type – but keep the logic simple and easy to replace in Day 14.4.
-
-3. For each `IFormFile`:
-
-   * Generate new `InstanceId`.
-   * Build full `FilePath` using the folder structure.
-   * Save file stream to disk.
-   * Insert `PacsInstance` row:
-
-     * `RadiologyStudyId`, `OrgId`, `BranchId` from RadiologyStudy.
-     * `SeriesId` pointing to the PacsSeries just created.
-     * `StudyInstanceUid`, `SeriesInstanceUid`: same as series row.
-     * `SopInstanceUid`: new GUID string (placeholder for now).
-     * `InstanceNumber`, `FrameCount`: null for now.
-     * `FilePath` + `FileSizeBytes` from saved file.
-     * `CreatedBy = currentUserId`.
-
-4. Optionally (but nice for flow):
-
-   * If RadiologyStudy is in a “PendingImaging” status, you can move it to a more appropriate status like “ImagingCompleted” or “ImagesAttached”. Keep this small and consistent with existing status enums.
-
-5. Return a `PacsUploadResultDto`:
+Create a static helper, e.g. `DicomMetadataExtractor`:
 
 ```csharp
-public sealed class PacsUploadResultDto
+public static class DicomMetadataExtractor
+{
+    public static async Task<DicomMetadata> ParseAsync(Stream fileStream)
+    {
+        // Use FellowOakDicom to read the dataset
+        // Example pattern (adjust for sync/async as needed):
+
+        // using var dicomFile = await DicomFile.OpenAsync(fileStream);
+        // var dataset = dicomFile.Dataset;
+
+        // Read tags safely with defaults:
+        // var studyUid = dataset.GetSingleValueOrDefault(DicomTag.StudyInstanceUID, string.Empty);
+        // var seriesUid = dataset.GetSingleValueOrDefault(DicomTag.SeriesInstanceUID, string.Empty);
+        // var sopUid = dataset.GetSingleValueOrDefault(DicomTag.SOPInstanceUID, string.Empty);
+
+        // Same for modality, description, numbers, etc.
+
+        // If any of the core UIDs are missing, throw a domain-level "InvalidDicomFile" exception.
+
+        // Return DicomMetadata populated with real values.
+    }
+}
+```
+
+**Requirements:**
+
+* At minimum, you must correctly extract:
+
+  * `StudyInstanceUid` (0020,000D) – required
+  * `SeriesInstanceUid` (0020,000E) – required
+  * `SopInstanceUid` (0008,0018) – required
+  * `Modality` (0008,0060) – optional
+  * `SeriesDescription` (0008,103E) – optional
+  * `SeriesNumber` (0020,0011) – optional
+  * `InstanceNumber` (0020,0013) – optional
+  * `FrameCount` (0028,0008) – optional
+* If any required UID is missing or empty, treat the file as invalid and surface a clean 400/422-style error from the API.
+
+---
+
+## 3) Update IPacsService.UploadDicomAsync to Use Real Metadata
+
+You already have:
+
+```csharp
+Task<PacsUploadResultDto> UploadDicomAsync(
+    Guid radiologyStudyId,
+    IReadOnlyList<IFormFile> files,
+    Guid currentUserId);
+```
+
+Update its implementation as follows:
+
+### 3.1 Load RadiologyStudy + Security
+
+* Load `RadiologyStudy` by `radiologyStudyId`.
+* Validate:
+
+  * Study exists.
+  * User has permission (Radiologist/XRayTech/Admin).
+  * `OrgId` and `BranchId` match user’s allowed scope.
+
+Re-use your existing patterns for security and multi-branch checks.
+
+### 3.2 Group by Study/Series UIDs
+
+For each uploaded file:
+
+1. Read the file into a stream (you can either:
+
+   * copy to a temp stream first (for parsing) then save to final path, or
+   * read once from `IFormFile.OpenReadStream()` for parsing, then reposition if needed).
+
+2. Call `DicomMetadataExtractor.ParseAsync` to get `DicomMetadata`.
+
+3. Use the **real** UIDs:
+
+   * `StudyInstanceUid`
+   * `SeriesInstanceUid`
+   * `SopInstanceUid`
+
+4. **Series handling:**
+
+   * Check if a `PacsSeries` already exists for:
+
+     * `RadiologyStudyId`
+     * `StudyInstanceUid`
+     * `SeriesInstanceUid`
+   * If exists, reuse it.
+   * If not, create a new `PacsSeries` with:
+
+     * `RadiologyStudyId`, `OrgId`, `BranchId` from the study
+     * `StudyInstanceUid` from metadata
+     * `SeriesInstanceUid` from metadata
+     * `Modality`, `Description`, `SeriesNumber` from metadata
+     * `CreatedBy = currentUserId`
+
+5. **Instance handling:**
+
+   * Always create a `PacsInstance` row:
+
+     * `SeriesId` = selected/created PacsSeries
+     * `RadiologyStudyId` = study
+     * `OrgId`, `BranchId` from study
+     * `StudyInstanceUid`, `SeriesInstanceUid`, `SopInstanceUid` from metadata
+     * `InstanceNumber`, `FrameCount` from metadata
+     * `FilePath` = computed using `{RootPath}/{OrgId}/{BranchId}/{RadiologyStudyId}/{SeriesId}/{InstanceId}.dcm`
+     * `FileSizeBytes` from actual saved file
+     * `ContentType = "application/dicom"`
+     * `CreatedBy = currentUserId`
+
+6. Save the physical file to disk **after** metadata is parsed, using the same path scheme as Day 14.3 (or adjust slightly but consistently).
+
+7. Return `PacsUploadResultDto` summarising:
+
+   * `RadiologyStudyId`
+   * `SeriesCreated` (count of new series)
+   * `InstancesCreated` (number of instances saved)
+
+Make sure old 14.3 “dummy UID” logic is removed/replaced. Everything from Day 14.4 onwards must rely on **real DICOM metadata**.
+
+---
+
+## 4) Add Reindex Endpoint for Existing Studies
+
+Some studies may already have DICOM files stored with placeholder UIDs from Day 14.3.
+We need a way to “fix” them by re-reading files from disk.
+
+### 4.1 Service Method
+
+Extend `IPacsService`:
+
+```csharp
+Task<PacsReindexResultDto> ReindexStudyAsync(
+    Guid radiologyStudyId,
+    Guid currentUserId);
+```
+
+`PacsReindexResultDto` can contain:
+
+```csharp
+public sealed class PacsReindexResultDto
 {
     public Guid RadiologyStudyId { get; set; }
-    public Guid SeriesId { get; set; }
-    public int InstancesCreated { get; set; }
+    public int SeriesUpdated { get; set; }
+    public int InstancesUpdated { get; set; }
+    public int InstancesFailed { get; set; }
 }
 ```
 
-### GetDicomStreamAsync behavior:
+**Implementation logic:**
 
-1. Load `PacsInstance` by `InstanceId`.
-2. Validate permissions:
+1. Load `RadiologyStudy` + permission checks (same as upload).
+2. Load all `PacsInstances` for that `RadiologyStudyId`.
+3. For each instance:
 
-   * `currentUserId` must belong to same Org, and role must be Radiologist, XRayTech, or Admin.
-3. Check if `FilePath` exists on disk:
+   * If `FilePath` missing or file not found → increment `InstancesFailed` and continue.
+   * Open the file and call `DicomMetadataExtractor.ParseAsync`.
+   * Recompute or reuse corresponding `PacsSeries`:
 
-   * If missing → throw domain exception → mapped to 404 “Instance file not found”.
-4. Open file as read-only `FileStream`.
-5. Return `(Stream, ContentType)` where ContentType is `instance.ContentType` (default `application/dicom`).
+     * Find or create series by `RadiologyStudyId + StudyInstanceUid + SeriesInstanceUid`.
+   * Update `PacsInstance` fields:
 
----
+     * `SeriesId`, `StudyInstanceUid`, `SeriesInstanceUid`, `SopInstanceUid`, `InstanceNumber`, `FrameCount`, etc.
+4. Optionally keep track of how many distinct `PacsSeries` were created/updated.
+5. Save changes and return `PacsReindexResultDto`.
 
-## 4) API Layer – PacsController
+Do **not** delete any files in Day 14.4. Only update DB metadata.
 
-Create a new controller under something like `Controllers/Radiology/PacsController.cs`.
+### 4.2 Controller Endpoint
 
-Base route: `api/v1/radiology/pacs`
+In `PacsController` (or equivalent):
 
-### Endpoint 1 – Upload DICOM for a study
-
-`POST api/v1/radiology/pacs/{radiologyStudyId:guid}/upload`
-
-* Auth:
-
-  * `[Authorize(Roles = "Radiologist,XRayTech,Admin")]` (use your existing naming convention).
-* Request:
-
-  * `multipart/form-data` with `files` as one or more `.dcm` files.
-* Controller action:
-
-  * Get `currentUserId` from claims (same style as other APIs).
-  * Validate `files` not empty.
-  * Call `IPacsService.UploadDicomAsync(radiologyStudyId, files, currentUserId)`.
-  * Return `201 Created` with `PacsUploadResultDto`.
-
-### Endpoint 2 – Download/stream DICOM instance
-
-`GET api/v1/radiology/pacs/instances/{instanceId:guid}/file`
+`POST api/v1/radiology/pacs/{radiologyStudyId:guid}/reindex`
 
 * Auth:
 
-  * `[Authorize(Roles = "Radiologist,XRayTech,Admin")]`
-* Controller action:
+  * `[Authorize(Roles = "Radiologist,Admin")]`
+    (XRayTech can upload but reindex can be restricted to Radiologist/Admin if you want.)
+* Action:
 
   * Get `currentUserId` from claims.
-  * Call `IPacsService.GetDicomStreamAsync(instanceId, currentUserId)`.
-  * Return `File(stream, contentType)`.
-
-This URL will later be wrapped on the frontend as:
-
-```text
-wadouri:https://<api-base>/api/v1/radiology/pacs/instances/{instanceId}/file
-```
-
-but we do NOT implement any frontend in Day 14.3.
+  * Call `ReindexStudyAsync(radiologyStudyId, currentUserId)`.
+  * Return `200 OK` with `PacsReindexResultDto`.
 
 ---
 
-## 5) DTOs / Models
+## 5) Optional DB Tightening (If Safe)
 
-Under whatever project/namespacing you use for DTOs (e.g., `SynOS.Models.Pacs`):
+If Day 14.3 initially allowed null or dummy values for UIDs, you may now:
 
-* `PacsUploadResultDto` (as defined above).
-* If you need, add simple request/response models for the upload route, but you can also just rely on `IFormFile` and route parameters.
+* Update EF configurations so:
 
-Keep DTOs small and clean. No nested multi-level graphs yet.
+  * `StudyInstanceUid`, `SeriesInstanceUid`, `SopInstanceUid` are required (non-null).
+* Add or refine indexes where helpful:
 
----
+  * `(RadiologyStudyId, StudyInstanceUid, SeriesInstanceUid)` on `PacsSeries`.
+  * `(SeriesId, SopInstanceUid)` or `(StudyInstanceUid, SeriesInstanceUid, SopInstanceUid)` on `PacsInstances`.
 
-## 6) Wiring & DI
-
-* Register `IPacsService` + implementation in your DI container (Program/Startup or separate extension, following your existing style).
-* Ensure `IOptions<PacsSettings>` or similar is bound to `Pacs:RootPath` from config.
-
-At the end, Gemini should also:
-
-* Generate EF entity classes for `PacsSeries` and `PacsInstance`.
-* Add EF configurations (if you use Fluent API config classes).
-* Add a migration for the new tables.
-* Show sample migration name and CLI command in TLDR (but not execute it).
+**Important:**
+Keep migrations backward-compatible and non-destructive. If there is a risk that existing rows have nulls, handle that in migration (e.g., set temporary values or require reindex before enforcing non-null).
 
 ---
 
-## 7) Acceptance Criteria for Day 14.3
+## 6) Logging & Error Handling
 
-Day 14.3 is **DONE** when:
+* If parsing fails (invalid DICOM file):
 
-1. New tables `PacsSeries` and `PacsInstances` exist in the DbContext and migrations.
-2. `Pacs:RootPath` config exists and is used for file storage.
-3. `POST /api/v1/radiology/pacs/{radiologyStudyId}/upload`:
+  * Log a warning with StudyId + file name.
+  * For upload:
 
-   * Saves uploaded `.dcm` files to the correct folder structure.
-   * Creates a PacsSeries + PacsInstances rows.
-   * Returns a summary (seriesId + count of instances).
-4. `GET /api/v1/radiology/pacs/instances/{instanceId}/file`:
+    * Either reject that single file and continue with others, or fail the entire batch with a clear message. Choose and document the behavior.
+  * For reindex:
 
-   * Streams the file for valid users and returns 404 for missing/invalid ones.
-5. RBAC is enforced:
+    * Increment `InstancesFailed` and continue with others.
 
-   * Radiologist/XRayTech/Admin can access.
-   * Reception and other non-imaging roles are blocked.
-6. No frontend code has been touched or added.
+* Map domain exceptions to clean HTTP responses:
 
-At the **end** of Gemini’s answer, ask it to give a **short TLDR** like:
+  * Missing Study or no permission → 404/403.
+  * Invalid DICOM → 400/422 with a short explanation.
 
-* What was implemented (1–2 lines)
-* Which files were added/changed (list only)
-* Any manual steps (run migration, update appsettings)
+Use whatever exception → response pattern you already use.
 
 ---
 
-If you’re okay with this, your next move is simple:
+## 7) Acceptance Criteria for Day 14.4
 
-1. Copy-paste the **Day 14.3 prompt** into Gemini (backend).
-2. Let it generate changes.
-3. Come back to me with:
+Day 14.4 is DONE when:
 
-   * Any compiler errors
-   * Or the generated code if something feels off.
+1. A DICOM parsing library is referenced and a `DicomMetadataExtractor` (or equivalent) reads real DICOM tags:
 
-After 14.3 is stable, I’ll give you the **Day 14.4 (DICOM metadata + index)** prompt in the same format.
+   * StudyInstanceUid, SeriesInstanceUid, SopInstanceUid (required)
+   * Modality, SeriesDescription, SeriesNumber, InstanceNumber, FrameCount (optional)
+2. `UploadDicomAsync`:
+
+   * Uses real DICOM metadata to:
+
+     * Reuse or create `PacsSeries` by Study/Series UIDs.
+     * Create `PacsInstance` with correct UIDs and instance numbers.
+   * Still saves files using the configured PACS root path.
+3. Existing upload endpoint:
+
+   * `POST /api/v1/radiology/pacs/{radiologyStudyId}/upload`
+   * Now produces **real** metadata in DB for new uploads.
+4. New reindex endpoint:
+
+   * `POST /api/v1/radiology/pacs/{radiologyStudyId}/reindex`
+   * Re-reads existing instance files and corrects metadata in DB.
+   * Returns a summary DTO with counts.
+5. RBAC is enforced for both upload and reindex.
+6. No frontend/Cornerstone code has been added or changed.
+
+---
+
+**At the end of your answer**, give a short TLDR for me:
+
+* What you implemented in Day 14.4 (1–2 lines).
+* List of main files added/modified.
+* Any manual steps (e.g., run migration, install NuGet).
+
+---

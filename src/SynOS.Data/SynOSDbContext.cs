@@ -279,9 +279,7 @@ namespace SynOS.Data
             // PACS Module
             modelBuilder.Entity<Models.Entities.PACS.PacsSeries>(entity =>
             {
-                entity.HasIndex(e => e.RadiologyStudyId);
-                entity.HasIndex(e => e.StudyInstanceUid);
-                entity.HasIndex(e => e.SeriesInstanceUid);
+                entity.HasIndex(e => new { e.RadiologyStudyId, e.StudyInstanceUid, e.SeriesInstanceUid });
 
                 entity.HasOne(e => e.RadiologyStudy)
                     .WithMany()
@@ -296,9 +294,8 @@ namespace SynOS.Data
 
             modelBuilder.Entity<Models.Entities.PACS.PacsInstance>(entity =>
             {
-                entity.HasIndex(e => e.SeriesId);
+                entity.HasIndex(e => new { e.SeriesId, e.SopInstanceUid });
                 entity.HasIndex(e => e.RadiologyStudyId);
-                entity.HasIndex(e => e.SopInstanceUid);
 
                 entity.HasOne(e => e.PacsSeries)
                     .WithMany(s => s.PacsInstances)

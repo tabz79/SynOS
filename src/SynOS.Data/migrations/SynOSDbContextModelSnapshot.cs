@@ -831,9 +831,7 @@ namespace SynOS.Data.Migrations
 
                     b.HasIndex("RadiologyStudyId");
 
-                    b.HasIndex("SeriesId");
-
-                    b.HasIndex("SopInstanceUid");
+                    b.HasIndex("SeriesId", "SopInstanceUid");
 
                     b.ToTable("PacsInstances");
                 });
@@ -884,11 +882,7 @@ namespace SynOS.Data.Migrations
 
                     b.HasIndex("CreatedBy");
 
-                    b.HasIndex("RadiologyStudyId");
-
-                    b.HasIndex("SeriesInstanceUid");
-
-                    b.HasIndex("StudyInstanceUid");
+                    b.HasIndex("RadiologyStudyId", "StudyInstanceUid", "SeriesInstanceUid");
 
                     b.ToTable("PacsSeries");
                 });

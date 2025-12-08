@@ -51,5 +51,14 @@ namespace SynOS.Api.Controllers.Radiology
 
             return File(stream, contentType, fileDownloadName);
         }
+
+        [HttpPost("{radiologyStudyId:guid}/reindex")]
+        [Authorize(Roles = "Admin,Radiologist")]
+        public async Task<IActionResult> ReindexStudy(Guid radiologyStudyId)
+        {
+            var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var result = await _pacsService.ReindexStudyAsync(radiologyStudyId, userId);
+            return Ok(result);
+        }
     }
 }

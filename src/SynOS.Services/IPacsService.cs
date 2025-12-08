@@ -19,5 +19,10 @@ namespace SynOS.Services
             Guid instanceId,
             Guid currentUserId
         );
+
+        Task<PacsReindexResultDto> ReindexStudyAsync(
+            Guid radiologyStudyId,
+            Guid currentUserId
+        );
     }
 }

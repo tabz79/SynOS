@@ -202,3 +202,11 @@ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\obj\Debug\net8.0\re
 D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\obj\Debug\net8.0\SynOS.Api.pdb
 D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\obj\Debug\net8.0\SynOS.Api.genruntimeconfig.cache
 D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\obj\Debug\net8.0\ref\SynOS.Api.dll
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\bin\Debug\net8.0\CommunityToolkit.HighPerformance.dll
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\bin\Debug\net8.0\fo-dicom.core.dll
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\bin\Debug\net8.0\Microsoft.Bcl.HashCode.dll
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\bin\Debug\net8.0\Microsoft.Extensions.DependencyInjection.dll
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\bin\Debug\net8.0\Microsoft.Extensions.DependencyInjection.Abstractions.dll
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\bin\Debug\net8.0\Microsoft.Extensions.Logging.dll
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\bin\Debug\net8.0\Microsoft.Extensions.Logging.Abstractions.dll
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\bin\Debug\net8.0\Microsoft.Extensions.Options.dll
