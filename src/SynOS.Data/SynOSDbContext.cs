@@ -60,6 +60,10 @@ namespace SynOS.Data
         public DbSet<PathologyReport> PathologyReports { get; set; } = null!;
         public DbSet<ReportAttachment> ReportAttachments { get; set; } = null!;
 
+        // DbSets for PACS module
+        public DbSet<Models.Entities.PACS.PacsSeries> PacsSeries { get; set; } = null!;
+        public DbSet<Models.Entities.PACS.PacsInstance> PacsInstances { get; set; } = null!;
+
         // DbSets for Critical Values module
         public DbSet<CriticalRule> CriticalRules { get; set; } = null!;
         public DbSet<CriticalAlert> CriticalAlerts { get; set; } = null!;
@@ -270,6 +274,46 @@ namespace SynOS.Data
                       .WithMany()
                       .HasForeignKey(e => e.UploadedBy)
                       .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            // PACS Module
+            modelBuilder.Entity<Models.Entities.PACS.PacsSeries>(entity =>
+            {
+                entity.HasIndex(e => e.RadiologyStudyId);
+                entity.HasIndex(e => e.StudyInstanceUid);
+                entity.HasIndex(e => e.SeriesInstanceUid);
+
+                entity.HasOne(e => e.RadiologyStudy)
+                    .WithMany()
+                    .HasForeignKey(e => e.RadiologyStudyId)
+                    .OnDelete(DeleteBehavior.Cascade);
+                
+                entity.HasOne(e => e.Creator)
+                    .WithMany()
+                    .HasForeignKey(e => e.CreatedBy)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<Models.Entities.PACS.PacsInstance>(entity =>
+            {
+                entity.HasIndex(e => e.SeriesId);
+                entity.HasIndex(e => e.RadiologyStudyId);
+                entity.HasIndex(e => e.SopInstanceUid);
+
+                entity.HasOne(e => e.PacsSeries)
+                    .WithMany(s => s.PacsInstances)
+                    .HasForeignKey(e => e.SeriesId)
+                    .OnDelete(DeleteBehavior.Cascade);
+                
+                entity.HasOne(e => e.RadiologyStudy)
+                    .WithMany()
+                    .HasForeignKey(e => e.RadiologyStudyId)
+                    .OnDelete(DeleteBehavior.NoAction);
+                
+                entity.HasOne(e => e.Creator)
+                    .WithMany()
+                    .HasForeignKey(e => e.CreatedBy)
+                    .OnDelete(DeleteBehavior.Restrict);
             });
 
             modelBuilder.Entity<RadiologyReport>(entity =>

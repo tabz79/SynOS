@@ -1,648 +1,355 @@
-Day 14.2 — Radiology Workflow Backend Prompt
+e’ll bolt Mini PACS onto your existing **Radiology (14.x)** like this:
 
-You are a .NET 8 BACKEND expert building SynOS — a modern Diagnostic Lab System.
+* **Day 14.3** – Mini PACS Core Storage
+  DB tables + disk layout + upload + stream file API. No DICOM parsing yet.
+* **Day 14.4** – DICOM Metadata & Index
+  Parse UIDs, modality, instance numbers, etc. Fill real values into PACS tables.
+* **Day 14.5** – Series Tree + WADO-style API
+  One JSON endpoint that returns Cornerstone-ready `wadouri:` URLs per study.
+* **Day 14.6** – Cross-Branch & Hardening
+  Enforce org/branch, RBAC, cleanup tools, basic retention rules.
 
-This task is to implement the complete Radiology workflow, aligned with the Pathology pipeline introduced in Day 14. All changes must preserve the existing style, architecture, and Day 14 security model.
+You can stop after **14.5** and you’ll already have a proper mini PACS backend.
 
-🎯 GOAL
+Now I’ll give you a **ready-to-paste prompt for Day 14.3** in the same style as your earlier backend days.
 
-Enable Radiology results to follow the same lifecycle as Pathology, but with radiology-specific:
+---
 
-Work queues
+## 📜 Day 14.3 – Mini PACS Core Storage (Backend Only)
 
-Technician flow
+Use this as your Gemini backend prompt:
 
-Radiologist reporting
+---
 
-Image attachment support
+**Title:**
+Day 14.3 — Mini PACS Core Storage (Backend Only, No DICOM Parsing)
 
-Secure delivery bundle (report + images)
+**Context:**
+You are a .NET 8 BACKEND expert working on **SynOS**, a Diagnostic Lab Management System.
 
-No UI integration yet. Backend + database only.
+Existing backend stack (same as earlier radiology days):
 
-📌 Requirements
-1️⃣ Auto-create Radiology Studies at Billing
+* ASP.NET Core .NET 8 Web API
+* EF Core + SQL Server
+* Clean-ish architecture with layers like:
 
-When Reception completes billing and creates VisitTests
+  * Data / Entities / Configs / Migrations
+  * Services (Domain/Business)
+  * Models/DTOs
+  * Api (Controllers, DI, Middleware)
 
-For each VisitTest where Department = "Radiology":
+Radiology module is already implemented up to **Day 14.2**:
 
-Auto-create one RadiologyStudy (per test)
+* RadiologyStudy (linked to Patient/Visit/Org/Branch)
+* RadiologyReports, status transitions, assigning to radiologists, signing etc.
+* Roles: Radiologist, XRayTech, Admin, Reception, etc.
 
-Status = Pending
+Now we want to extend Radiology with a **Mini PACS** backend.
 
-Link Patient + VisitId + VisitTestId
+**Goal of Day 14.3:**
 
-This mirrors Pathology sample creation.
+* Add core PACS tables (Series + Instances) linked to RadiologyStudy.
+* Define server-side file storage for DICOM files (local disk on central SynOS server).
+* Implement upload + download endpoints (no real DICOM parsing yet).
+* Make sure everything is **Org + Branch aware** from day one.
+* NO frontend code, NO Cornerstone integration yet.
 
-2️⃣ Database Changes (New + Updated Entities)
-A. Update VisitTests (if not already)
+---
 
-Must include Radiology metadata:
+### 🔒 Guardrails / Constraints (follow exactly)
 
-Department (varchar) = 'Radiology' for radiology tests
+* **Backend only.**
+  Do NOT write any React/JS/frontend code. Only Web API / EF / services.
+* Do NOT run shell commands or touch git.
+  Just generate code + mention migrations/commands in a TLDR summary.
+* Only modify backend projects:
 
-B. RadiologyStudies (NEW)
-RadiologyStudies (
-  RadiologyStudyId UNIQUEIDENTIFIER PK,
-  VisitTestId UNIQUEIDENTIFIER NOT NULL FK,
-  VisitId UNIQUEIDENTIFIER NOT NULL FK,
-  PatientId UNIQUEIDENTIFIER NOT NULL FK,
-  Modality VARCHAR(50) NOT NULL, -- XRay, CT, MRI, USG, etc.
-  Status VARCHAR(50) NOT NULL DEFAULT 'Pending',
-  AssignedTo UNIQUEIDENTIFIER NULL FK, -- Technician
-  ExternalSystemName VARCHAR(100) NULL,
-  ExternalAccessionNumber VARCHAR(100) NULL,
-  ExternalStudyInstanceUid VARCHAR(200) NULL,
-  ExternalViewerUrl NVARCHAR(MAX) NULL,
-  CreatedAt DATETIMEOFFSET DEFAULT SYSUTCDATETIME(),
-  CreatedBy UNIQUEIDENTIFIER NOT NULL FK -- Reception/Billing user
-)
+  * Data / Entities / Configurations / Migrations
+  * Services (IPacsService + implementation)
+  * Models/DTOs (PACS DTOs)
+  * Api controllers + DI registration
+* Do NOT refactor unrelated code.
+  Keep changes scoped to **PACS** and minimal wiring into Radiology.
 
+---
 
-Statuses:
+## 1) Database: PACS Tables
 
-Pending → Assigned → ImagingCompleted → ResultDrafted → Signed
+We are adding a minimal **Mini PACS** model that plugs into existing RadiologyStudy.
 
-C. RadiologyImages (NEW)
+Create two new tables via EF Core:
 
-Metadata only — NOT DICOM storage.
+### PacsSeries
 
-RadiologyImages (
-  ImageId UNIQUEIDENTIFIER PK,
-  RadiologyStudyId UNIQUEIDENTIFIER NOT NULL FK,
-  FileName NVARCHAR(200) NOT NULL,
-  FileUrl NVARCHAR(MAX) NOT NULL,
-  ViewLabel NVARCHAR(100) NULL,
-  SeriesNumber INT NULL,
-  SequenceNumber INT NULL,
-  UploadedAt DATETIMEOFFSET DEFAULT SYSUTCDATETIME(),
-  UploadedBy UNIQUEIDENTIFIER NOT NULL FK
-)
+* `SeriesId` (GUID, PK)
+* `RadiologyStudyId` (GUID, not null, FK → RadiologyStudies)
+* `OrgId` (GUID, not null)
+* `BranchId` (GUID, not null)
+* `StudyInstanceUid` (string, max 200, not null)  // DICOM tag 0020,000D (for later)
+* `SeriesInstanceUid` (string, max 200, not null) // DICOM tag 0020,000E
+* `Modality` (string, max 50, nullable)           // “CT”, “MR”, etc.
+* `Description` (string, nvarchar 200, nullable)  // SeriesDescription
+* `SeriesNumber` (int?, nullable)                 // DICOM 0020,0011
+* `CreatedAt` (DateTimeOffset, default UTC now)
+* `CreatedBy` (GUID, not null, FK to Users or similar)
 
-D. Reports (EXTEND existing generic entity)
+Add indexes:
 
-Ensure attributes support Radiology:
+* By `RadiologyStudyId`
+* By `StudyInstanceUid`
+* By `SeriesInstanceUid`
 
-Department = 'Radiology'
-SourceType = 'RadiologyStudy'
-SourceId = RadiologyStudyId
+For Day 14.3, `StudyInstanceUid` and `SeriesInstanceUid` can be dummy placeholders, but columns must exist now. In Day 14.4 we’ll fill them from real DICOM tags.
 
+### PacsInstance
 
-This keeps Delivery API functional without changes.
+* `InstanceId` (GUID, PK)
+* `SeriesId` (GUID, not null, FK → PacsSeries)
+* `RadiologyStudyId` (GUID, not null, FK → RadiologyStudies)
+* `OrgId` (GUID, not null)
+* `BranchId` (GUID, not null)
+* `StudyInstanceUid` (string, max 200, not null)
+* `SeriesInstanceUid` (string, max 200, not null)
+* `SopInstanceUid` (string, max 200, not null)   // DICOM 0008,0018
+* `InstanceNumber` (int?, nullable)               // DICOM 0020,0013
+* `FrameCount` (int?, nullable)                   // for multi-frame images
+* `FilePath` (nvarchar 500, not null)             // absolute path on server
+* `FileSizeBytes` (bigint?, nullable)
+* `ContentType` (string, max 100, not null, default “application/dicom”)
+* `CreatedAt` (DateTimeOffset, default UTC now)
+* `CreatedBy` (GUID, not null)
 
-E. RadiologyReports (NEW 1-1 Report Extension)
-RadiologyReports (
-  ReportId UNIQUEIDENTIFIER PK FK → Reports(ReportId),
-  RadiologyStudyId UNIQUEIDENTIFIER NOT NULL FK,
-  Findings NVARCHAR(MAX) NOT NULL,
-  Impression NVARCHAR(MAX) NOT NULL,
-  AdditionalNotes NVARCHAR(MAX) NULL
-)
+Indexes:
 
-F. ReportAttachments (NEW)
+* By `SeriesId`
+* By `RadiologyStudyId`
+* By `SopInstanceUid`
 
-Stores deliverable files (PDF or ZIP):
+**Important:**
 
-ReportAttachments (
-  AttachmentId UNIQUEIDENTIFIER PK,
-  ReportId UNIQUEIDENTIFIER NOT NULL FK,
-  Type VARCHAR(50) NOT NULL, -- 'ReportPdf','ImagePdf','ImageZip','ViewerLink'
-  FileUrl NVARCHAR(MAX) NULL,
-  DisplayName NVARCHAR(200) NOT NULL,
-  CreatedAt DATETIMEOFFSET DEFAULT SYSUTCDATETIME()
-)
+* Get `OrgId` and `BranchId` from the linked `RadiologyStudy` (or whatever entity currently has them) when creating PACS rows.
+* For Day 14.3, you are allowed to use **dummy UIDs** (`Guid.NewGuid().ToString()` or similar) and null instance numbers, because we will do real DICOM parsing on Day 14.4.
 
-3️⃣ Technician Flow APIs
+---
 
-Base route: /api/v1/radiology/studies
-Authorization: Technician OR Admin
+## 2) Storage Layout on Disk
 
-✔ Worklist
+We are using **local disk** on the central SynOS server (no S3 yet).
 
-GET /queue?status=Pending|Assigned|ImagingCompleted
+Add a config section to `appsettings`:
 
-
-✔ Assign a study to technician
-
-POST /assign
-{ "studyId": "uuid" }
-
-
-→ Status: Assigned
-
-✔ Upload imaging deliverable file (PDF/ZIP export)
-
-POST /upload-attachment (multipart/form-data)
-  studyId
-  file
-
-
-→ Create ReportAttachment with Type ImagePdf or ImageZip
-→ If first media uploaded → Status: ImagingCompleted
-
-✔ Optionally set vendor system mapping
-
-POST /set-external-mapping
-{
-  "studyId": "uuid",
-  "systemName": "GE_XRAY_1",
-  "accessionNumber": "XR-2025-000123",
-  "viewerUrl": "https://pacs/vendor/viewer?acc=XR-2025-000123"
+```json
+"Pacs": {
+  "RootPath": "/data/pacs" // example for Linux; on Windows this can be "D:\\SynOS\\Pacs"
 }
+```
 
-4️⃣ Radiologist Flow APIs
+Define the folder structure for DICOM files:
 
-Base route: /api/v1/radiology/reports
-Authorization: Radiologist OR Admin
+```text
+{RootPath}/{OrgId}/{BranchId}/{RadiologyStudyId}/{SeriesId}/{InstanceId}.dcm
+```
 
-✔ Worklist (grouped by Visit/Token)
+Rules:
 
-GET /worklist
+* When saving a file:
 
+  * Create directories if they don’t exist.
+  * Use `InstanceId` as the filename (with `.dcm`).
+  * Save **absolute full path** into `PacsInstance.FilePath`.
+* Do NOT store anything on client PCs. This is all **server-side**.
 
-Should return:
+---
 
-Visit info (Token/patient)
+## 3) Service Layer – IPacsService
 
-All studies under that visit grouped together
+Create a dedicated service interface and implementation:
 
-For each: StudyId, TestName, Modality, Status, ReportStatus, any attachments
-
-✔ View Study details
-
-GET /{studyId}
-
-
-→ Study + attachments + existing draft fields
-
-✔ Draft report
-
-POST /draft
+```csharp
+public interface IPacsService
 {
-  "studyId": "uuid",
-  "findings": "...",
-  "impression": "..."
+    Task<PacsUploadResultDto> UploadDicomAsync(
+        Guid radiologyStudyId,
+        IReadOnlyList<IFormFile> files,
+        Guid currentUserId
+    );
+
+    Task<(Stream Stream, string ContentType)> GetDicomStreamAsync(
+        Guid instanceId,
+        Guid currentUserId
+    );
 }
+```
 
+### UploadDicomAsync behavior:
 
-→ Create/Update Reports row
-→ Create/Update RadiologyReports row
-→ Status: ResultDrafted
+1. Load `RadiologyStudy` by `radiologyStudyId`:
 
-✔ Sign report
+   * If not found → throw domain exception → mapped to 404.
+   * Validate `OrgId` + `BranchId` and that `currentUserId` has permission (Radiologist/XRayTech/Admin) to upload for this study.
 
-POST /sign
-{ "studyId": "uuid" }
+2. For now, keep series grouping simple (we’ll refine later when proper tags arrive):
 
+   * Option A (acceptable for 14.3):
 
-Backend action:
+     * Create **one PacsSeries** per upload call:
 
-Generate PDF
+       * `StudyInstanceUid` and `SeriesInstanceUid` = new GUID strings for now.
+       * `Modality` / `Description` / `SeriesNumber` = null or simple defaults.
+   * Option B (if you want a bit more structure):
 
-Insert ReportAttachment (Type=ReportPdf)
+     * One PacsSeries per **upload batch** or per modality type – but keep the logic simple and easy to replace in Day 14.4.
 
-Update Reports row:
+3. For each `IFormFile`:
 
-Status='Signed'
+   * Generate new `InstanceId`.
+   * Build full `FilePath` using the folder structure.
+   * Save file stream to disk.
+   * Insert `PacsInstance` row:
 
-PdfUrl set
+     * `RadiologyStudyId`, `OrgId`, `BranchId` from RadiologyStudy.
+     * `SeriesId` pointing to the PacsSeries just created.
+     * `StudyInstanceUid`, `SeriesInstanceUid`: same as series row.
+     * `SopInstanceUid`: new GUID string (placeholder for now).
+     * `InstanceNumber`, `FrameCount`: null for now.
+     * `FilePath` + `FileSizeBytes` from saved file.
+     * `CreatedBy = currentUserId`.
 
-Update RadiologyStudy.Status='Signed'
+4. Optionally (but nice for flow):
 
-Now report is automatically eligible for Delivery via Day 14 APIs.
+   * If RadiologyStudy is in a “PendingImaging” status, you can move it to a more appropriate status like “ImagingCompleted” or “ImagesAttached”. Keep this small and consistent with existing status enums.
 
-5️⃣ Delivery Extensibility
+5. Return a `PacsUploadResultDto`:
 
-No changes to DeliveryController.
-Instead, implement a new public download endpoint:
+```csharp
+public sealed class PacsUploadResultDto
+{
+    public Guid RadiologyStudyId { get; set; }
+    public Guid SeriesId { get; set; }
+    public int InstancesCreated { get; set; }
+}
+```
 
-Base route: /api/v1/public/reports (no auth)
+### GetDicomStreamAsync behavior:
 
-✔ Extra endpoint for package download:
+1. Load `PacsInstance` by `InstanceId`.
+2. Validate permissions:
 
-GET /download-package/{token}?phone=10digit
+   * `currentUserId` must belong to same Org, and role must be Radiologist, XRayTech, or Admin.
+3. Check if `FilePath` exists on disk:
 
-
-Logic:
-
-1️⃣ Verify phone exactly like existing secured download
-2️⃣ Retrieve ReportAttachments for ReportId
-3️⃣ ZIP report + media attachments
-4️⃣ Stream file (Content-Type: application/zip)
-
-Existing download endpoint remains PDF only.
-
-Update WhatsApp/SMS/Email message templates to mention images included in the package.
-
-6️⃣ RBAC Enforcement
-
-Applies policies under Day 14.1 RBAC rules:
-
-Action	Roles Allowed
-Technician queue + upload	Technician, Admin
-Draft + Sign report	Radiologist, Admin
-Delivery Desk access	DeliveryDesk, Admin
-
-Each API must have correct [Authorize(Roles = "...")]
-
-✔ Acceptance Criteria (Batch QA)
-
-Billing radiology tests auto-spawn studies
-
-Technician sees a queue with proper statuses
-
-Images/exports uploadable and linked to study/report
-
-Radiologist sees grouped view by Token
-
-Radiologist draft + sign works same as Pathology
-
-Delivery desk sees Signed radiology reports automatically
-
-Secure download:
-
-/download → PDF
-
-/download-package → ZIP (report + attachments)
-
-All through Day 14 Delivery flow (secure link + phone gate)
-
-No UI code touched
-
-🧪 Output format (mandatory)
-
-When done:
-
-TLDR only:
-
-Issue/Goal (1–2 lines)
-
-What you implemented (1–2 lines)
-
-Changed files (names only)
-
-NO code dumps.
-NO frontend files.
-NO migrations execution — only generate them.
-
-END OF PROMPT
-
-
-TL;DR:
-We’ll tell Gemini to:
-
-* Fix the **ExternalAccessionNumber NULL** error properly (not hack it). 
-* Introduce a clean **internal AccessionNumber** on RadiologyStudy.
-* Auto-create radiology studies when **payment completes**, not via manual hacks.
-* Prepare the model for **SynOS-as-DICOM-node (Option B)** in Day 16, but **don’t implement DICOM** yet.
-
-Here’s a prompt you can copy-paste into Gemini.
+   * If missing → throw domain exception → mapped to 404 “Instance file not found”.
+4. Open file as read-only `FileStream`.
+5. Return `(Stream, ContentType)` where ContentType is `instance.ContentType` (default `application/dicom`).
 
 ---
 
-### 🔧 PROMPT FOR GEMINI – Day 14.2 Radiology Workflow (updated, Accession-Ready, No DICOM Yet)
+## 4) API Layer – PacsController
 
-You are working on **SynOS**, a Diagnostic Lab Management System.
-Tech stack: **.NET + EF Core + SQL Server**.
-You are continuing the backend implementation for **Day 14.2 – Radiology Workflow**, mirroring the already working **Pathology + Phlebotomy flow**, but adapted for imaging.
+Create a new controller under something like `Controllers/Radiology/PacsController.cs`.
 
-The goal of this task is to:
+Base route: `api/v1/radiology/pacs`
 
-1. Fix a current **RadiologyStudies insert error** related to `ExternalAccessionNumber` (see below).
-2. Make the **Radiology backend workflow stable and testable end-to-end** (reception → billing/payment → radiology tech → radiologist → report + delivery).
-3. Prepare the data model for a future **DICOM integration (Day 16) where SynOS will act as a DICOM node**, but **do NOT implement DICOM networking or Cornerstone viewer yet**.
+### Endpoint 1 – Upload DICOM for a study
 
----
+`POST api/v1/radiology/pacs/{radiologyStudyId:guid}/upload`
 
-## 1. Current error to fix (DO NOT IGNORE)
+* Auth:
 
-When we call:
+  * `[Authorize(Roles = "Radiologist,XRayTech,Admin")]` (use your existing naming convention).
+* Request:
 
-* `POST /api/v1/radiology/studies/create-for-visit`
-  with a valid `visitId` for a paid Radiology visit
+  * `multipart/form-data` with `files` as one or more `.dcm` files.
+* Controller action:
 
-we get a **500 error**. Logs show:
+  * Get `currentUserId` from claims (same style as other APIs).
+  * Validate `files` not empty.
+  * Call `IPacsService.UploadDicomAsync(radiologyStudyId, files, currentUserId)`.
+  * Return `201 Created` with `PacsUploadResultDto`.
 
-> Cannot insert the value NULL into column 'ExternalAccessionNumber', table 'SynOSDb.dbo.RadiologyStudies'; column does not allow nulls. INSERT fails. 
+### Endpoint 2 – Download/stream DICOM instance
 
-So right now, when creating `RadiologyStudy` rows, **`ExternalAccessionNumber` is required in the DB**, but we **don’t have PACS data yet**, and we are not ready to wire external systems.
+`GET api/v1/radiology/pacs/instances/{instanceId:guid}/file`
 
-This is wrong for Day 14.2. The system must be able to create Radiology studies **without any external PACS mapping**.
+* Auth:
 
-You must fix this at the **model + migration + code level**, not by stuffing fake values.
+  * `[Authorize(Roles = "Radiologist,XRayTech,Admin")]`
+* Controller action:
 
----
+  * Get `currentUserId` from claims.
+  * Call `IPacsService.GetDicomStreamAsync(instanceId, currentUserId)`.
+  * Return `File(stream, contentType)`.
 
-## 2. Target radiology workflow (business side)
+This URL will later be wrapped on the frontend as:
 
-Mirror the successful Pathology flow, but for imaging:
+```text
+wadouri:https://<api-base>/api/v1/radiology/pacs/instances/{instanceId}/file
+```
 
-1. **Reception**
-
-   * `POST /api/v1/reception/start-visit` with `dept = "Radiology"` and `testCodes` like `"XRAY_CHEST"`.
-   * Creates Visit, Orders, Invoice in **PendingPayment**.
-
-2. **Payment**
-
-   * `POST /api/v1/reception/complete-payment` marks the invoice as **Paid** and visit as **Paid**.
-   * At this moment, for each Radiology order (X-ray, CT, MRI, etc.) we want the system to **ensure a RadiologyStudy exists**.
-
-3. **Radiology technician (X-Ray Tech user)**
-
-   * They should see a **Radiology studies queue** filtered by status.
-   * For now, we assume they will eventually use a separate DICOM console to send images.
-   * SynOS only needs to manage:
-
-     * Worklist / statuses (`PendingImaging`, `ImagingInProgress`, `ImagingCompleted`, `ReadyForReporting`)
-     * Optional manual attachments (e.g. PDFs/images) as a fallback.
-
-4. **Radiologist**
-
-   * Sees a **Radiologist worklist** based on RadiologyStudy status (`ReadyForReporting` etc.).
-   * Opens study details, writes report, signs.
-   * Delivery logic should behave similar to Pathology: we can reuse existing `Report` + report signing + delivery mechanism.
-
-Day 14.2: backend is radiology-aware and fully testable via Swagger/Postman.
-Day 16: we will plug in Cornerstone 3D + DICOM receiver.
+but we do NOT implement any frontend in Day 14.3.
 
 ---
 
-## 3. Data model – what must exist and how
+## 5) DTOs / Models
 
-### 3.1 RadiologyStudy – internal accession and external mapping
+Under whatever project/namespacing you use for DTOs (e.g., `SynOS.Models.Pacs`):
 
-Update the **RadiologyStudy** entity and database schema with the following rules:
+* `PacsUploadResultDto` (as defined above).
+* If you need, add simple request/response models for the upload route, but you can also just rely on `IFormFile` and route parameters.
 
-* **Mandatory fields:**
-
-  * `RadiologyStudyId` (GUID, PK)
-  * `VisitId` (FK)
-  * `VisitTestId` (FK to the specific ordered test)
-  * `PatientId` (FK)
-  * `Modality` (e.g. `"XRAY"`, `"CT"`, `"MRI"` – can come from TestDefinition.Modality)
-  * `Status` (string/enum: `PendingImaging`, `ImagingInProgress`, `ImagingCompleted`, `ReadyForReporting`, `Reported`, `Cancelled`)
-  * `AccessionNumber` (**new, internal accession**, non-nullable, length ~50–100)
-  * `CreatedAt` (DateTimeOffset)
-  * `CreatedBy` (UserId)
-
-* **External / PACS-related fields (MUST ALL BE NULLABLE for now):**
-
-  * `ExternalSystemName` (string, nullable)
-  * `ExternalAccessionNumber` (string, nullable)
-  * `ExternalStudyInstanceUid` (string, nullable)
-  * `ExternalViewerUrl` (string, nullable)
-
-**Important design rule for Day 14.2:**
-
-* `AccessionNumber` = **SynOS’s internal accession**, always populated and unique per RadiologyStudy.
-* The `External*` fields are **optional** and will be used later when we map to PACS/DICOM (Day 16).
-* You must adjust the EF Core entity + configuration + migration so that **the database allows NULL for all `External*` columns** and **requires `AccessionNumber`** instead.
-
-Do **not** add fake default values to `ExternalAccessionNumber`. This must be structurally nullable.
-
-### 3.2 RadiologyImage (preparing for DICOM, minimal for now)
-
-Create/ensure a **RadiologyImage** entity/table to hold references to image assets.
-For Day 14.2 we are only preparing the schema; we’re **not** implementing DICOM or real upload logic yet.
-
-Suggested fields:
-
-* `RadiologyImageId` (GUID, PK)
-* `RadiologyStudyId` (FK)
-* `FilePath` (string, nullable for now if you want)
-* `ContentType` (string, e.g. `application/dicom`, `image/png`)
-* `StudyInstanceUid` (string, nullable)
-* `SeriesInstanceUid` (string, nullable)
-* `SopInstanceUid` (string, nullable)
-* `CreatedAt`
-* `UploadedByUserId` (nullable for now)
-
-For Day 14.2, this table just needs to exist and be wired via EF.
-Later (Day 16) we’ll let the DICOM receiver populate it.
+Keep DTOs small and clean. No nested multi-level graphs yet.
 
 ---
 
-## 4. Accession number generation rules
+## 6) Wiring & DI
 
-You must implement **internal accession numbers** on RadiologyStudy.
+* Register `IPacsService` + implementation in your DI container (Program/Startup or separate extension, following your existing style).
+* Ensure `IOptions<PacsSettings>` or similar is bound to `Pacs:RootPath` from config.
 
-Requirements:
+At the end, Gemini should also:
 
-1. Generated when the RadiologyStudy is created (see next section).
-2. Must be unique per RadiologyStudy.
-3. Stable, human-readable pattern (example, you can pick a reasonable format):
-
-   * `RAD-{yyyyMMdd}-{runningNumber}`
-   * or `XR-{tokenNumber}-{sequence}`
-
-Keep it **server-side only**; we’ll expose it via DTOs later so that:
-
-* It can be printed on the radiology request slip.
-* In the future, it can be typed/scanned into the X-ray / MRI console as the DICOM `AccessionNumber`.
-
-For now, it’s enough that we **store it** and **return it** on API DTOs.
+* Generate EF entity classes for `PacsSeries` and `PacsInstance`.
+* Add EF configurations (if you use Fluent API config classes).
+* Add a migration for the new tables.
+* Show sample migration name and CLI command in TLDR (but not execute it).
 
 ---
 
-## 5. When/how RadiologyStudy should be created
+## 7) Acceptance Criteria for Day 14.3
 
-We want radiology to behave like pathology: **once payment is done**, the work moves to the imaging department.
+Day 14.3 is **DONE** when:
 
-### 5.1 Automatic creation on payment
+1. New tables `PacsSeries` and `PacsInstances` exist in the DbContext and migrations.
+2. `Pacs:RootPath` config exists and is used for file storage.
+3. `POST /api/v1/radiology/pacs/{radiologyStudyId}/upload`:
 
-Update **ReceptionFlowService** (or the relevant payment completion service) so that:
+   * Saves uploaded `.dcm` files to the correct folder structure.
+   * Creates a PacsSeries + PacsInstances rows.
+   * Returns a summary (seriesId + count of instances).
+4. `GET /api/v1/radiology/pacs/instances/{instanceId}/file`:
 
-* When `POST /api/v1/reception/complete-payment` is called and succeeds, and the visit’s `dept = "Radiology"` or it has Radiology tests:
+   * Streams the file for valid users and returns 404 for missing/invalid ones.
+5. RBAC is enforced:
 
-  * For each Radiology `VisitTest` (based on TestDefinition.Dept/Modality):
+   * Radiologist/XRayTech/Admin can access.
+   * Reception and other non-imaging roles are blocked.
+6. No frontend code has been touched or added.
 
-    * If there is no existing `RadiologyStudy` for that VisitTest:
+At the **end** of Gemini’s answer, ask it to give a **short TLDR** like:
 
-      * Create a new `RadiologyStudy`:
-
-        * Set `VisitId`, `VisitTestId`, `PatientId`, `OrderId` (if present),
-        * Set `Modality` from the test definition,
-        * Generate an `AccessionNumber`,
-        * Set `Status = "PendingImaging"`,
-        * Leave **all `External*` fields null**.
-      * Save it.
-
-So after a visit is paid, radiology tech should have a study waiting in their queue (status `PendingImaging`).
-
-### 5.2 Manual `create-for-visit` endpoint
-
-You already have:
-
-* `POST /api/v1/radiology/studies/create-for-visit`
-
-Keep this endpoint but make it:
-
-* Idempotent and safe:
-
-  * For each radiology VisitTest in that visit, if a RadiologyStudy exists, don’t duplicate.
-  * If not, create new ones (same rules as above).
-* It must **also generate `AccessionNumber` and leave `External*` nullable**.
-* It’s primarily a **repair utility** now (e.g., if auto creation fails), not the main path.
-
-Fix the current failure by obeying the `AccessionNumber`/`External*` rules above.
+* What was implemented (1–2 lines)
+* Which files were added/changed (list only)
+* Any manual steps (run migration, update appsettings)
 
 ---
 
-## 6. Radiology technician flow (backend only)
+If you’re okay with this, your next move is simple:
 
-Update/ensure **RadiologyService** and **RadiologyController** support the following:
+1. Copy-paste the **Day 14.3 prompt** into Gemini (backend).
+2. Let it generate changes.
+3. Come back to me with:
 
-### 6.1 Tech worklist
+   * Any compiler errors
+   * Or the generated code if something feels off.
 
-Endpoint:
-
-* `GET /api/v1/radiology/studies/queue?status=PendingImaging&status=ImagingInProgress...`
-
-Behavior:
-
-* Filter by status array.
-* Only return **RadiologyStudy** rows where:
-
-  * Status is in the requested set,
-  * Belong to active visits,
-  * Include patient summary, visit token, order info, modality, accession number.
-* **Authorization:** XRayTech and Admin (do not require Receptionist/Admin only).
-
-### 6.2 Update study status
-
-For now, we just need simple status updates:
-
-* e.g. `POST /api/v1/radiology/studies/{id}/set-status`
-
-  * Body: `{ "status": "ImagingCompleted" }`
-  * Valid transitions:
-
-    * PendingImaging → ImagingInProgress
-    * ImagingInProgress → ImagingCompleted
-    * ImagingCompleted → ReadyForReporting
-
-We don’t need ultra-strict state machine logic now, just don’t allow nonsense transitions (like Reported → PendingImaging).
-
-### 6.3 Optional: manual attachments (non-DICOM)
-
-We already have `ReportAttachment` etc.
-If any upload endpoints exist for radiology attachments, keep them working but **do not treat them as DICOM**. They are just PDFs/images.
-
----
-
-## 7. Radiologist flow (backend)
-
-You already have **RadiologyReportsController** and related DTOs.
-
-Ensure:
-
-* `GET /api/v1/radiology/reports/worklist`:
-
-  * Returns studies with Status `ReadyForReporting` or similar.
-  * Includes:
-
-    * `RadiologyStudyId`
-    * AccessionNumber
-    * Patient summary
-    * Visit token
-    * Test name / modality
-    * Current report status.
-
-* `GET /api/v1/radiology/studies/{id}`:
-
-  * Full detail: study info, patient, visit, orders, current report (if any), attachments.
-
-* `POST /api/v1/radiology/reports/draft`:
-
-  * Allows radiologist to create/update a draft report (impression, findings, recommendations).
-
-* `POST /api/v1/radiology/reports/sign`:
-
-  * Marks report as signed.
-  * Updates RadiologyStudy status to `Reported`.
-  * Triggers the same **DeliveryService** mechanisms as pathology:
-
-    * Generate PDF,
-    * Store report record,
-    * Optionally create a secure download token and notification.
-
-**Important:** Do **not** depend on any DICOM fields being present yet. All external PACS fields must be allowed to be null.
-
----
-
-## 8. Auth / roles
-
-Make sure:
-
-* **XRayTech** can:
-
-  * View radiology queue,
-  * View specific study details (for their department),
-  * Update study status (PendingImaging → ImagingCompleted, etc.),
-  * Upload manual attachments (if present).
-
-* **Radiologist** can:
-
-  * View radiology worklist,
-  * Open study detail,
-  * Draft + sign reports.
-
-* **Receptionist** should **not** be allowed to call radiology queue or status endpoints.
-
-Fix any `[Authorize(Roles = "...")]` mismatches so that:
-
-* No more 403s for legitimate XRayTech/Radiologist usage.
-
----
-
-## 9. Non-goals for Day 14.2
-
-Do **NOT** implement these now:
-
-* No DICOM C-STORE listener.
-* No Cornerstone viewer or DICOMweb integration.
-* No calls into external PACS (SciencePACS etc.).
-* No real filesystem/DICOM parsing logic (beyond what already exists).
-
-Just:
-
-* Correct schema,
-* Correct RadiologyStudy creation,
-* Clean status transitions,
-* Fully testable API flow via Swagger.
-
----
-
-## 10. What to output
-
-1. **List of files changed** with a one-line summary each.
-2. Updated **entities and DbContext** snippets that show:
-
-   * RadiologyStudy with `AccessionNumber` (non-nullable) and `External*` as nullable.
-   * RadiologyImage entity.
-3. Any **new migrations** required to:
-
-   * Add `AccessionNumber` column (non-nullable, with sensible default for existing rows if needed).
-   * Alter `ExternalSystemName`, `ExternalAccessionNumber`, `ExternalStudyInstanceUid`, `ExternalViewerUrl` to allow NULL.
-4. Updated **service methods** in:
-
-   * `ReceptionFlowService` (or equivalent) to auto-create studies on payment.
-   * `RadiologyService` for:
-
-     * create-for-visit
-     * queue
-     * set-status
-5. Updated **controller actions**:
-
-   * `RadiologyController`
-   * `RadiologyReportsController`
-6. A short **test script** (Swagger/Postman sequence) that I can follow, step-by-step, to verify:
-
-   * Reception → start visit (Radiology),
-   * Reception → complete payment,
-   * Radiology queue shows the new study with AccessionNumber,
-   * Status transitions work,
-   * Radiologist sees it and can draft/sign report without any DICOM data.
-
-Make sure the code compiles and the database migrations run cleanly with `dotnet ef database update`, and that `POST /api/v1/radiology/studies/create-for-visit` no longer throws the `ExternalAccessionNumber` null insert error.
+After 14.3 is stable, I’ll give you the **Day 14.4 (DICOM metadata + index)** prompt in the same format.

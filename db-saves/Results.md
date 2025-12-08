@@ -1,13 +1,3 @@
-|Column_name|Type|Computed|Length|Prec|Scale|Nullable|TrimTrailingBlanks|FixedLenNullInSource|Collation|
-|---|---|---|---|---|---|---|---|---|---|
-|ReportId|uniqueidentifier|no|16|     |     |no|(n/a)|(n/a)|NULL|
-|OrderId|uniqueidentifier|no|16|     |     |no|(n/a)|(n/a)|NULL|
-|Status|nvarchar|no|100|     |     |no|(n/a)|(n/a)|SQL_Latin1_General_CP1_CI_AS|
-|SignedByUserId|uniqueidentifier|no|16|     |     |yes|(n/a)|(n/a)|NULL|
-|SignedAt|datetimeoffset|no|10|34   |7    |yes|(n/a)|(n/a)|NULL|
-|PathologistComments|nvarchar|no|-1|     |     |yes|(n/a)|(n/a)|SQL_Latin1_General_CP1_CI_AS|
-|Interpretation|nvarchar|no|-1|     |     |yes|(n/a)|(n/a)|SQL_Latin1_General_CP1_CI_AS|
-|Recommendations|nvarchar|no|-1|     |     |yes|(n/a)|(n/a)|SQL_Latin1_General_CP1_CI_AS|
-|CurrentVersion|int|no|4|10   |0    |no|(n/a)|(n/a)|NULL|
-|Delivered|bit|no|1|     |     |no|(n/a)|(n/a)|NULL|
-|DeliveredAt|datetimeoffset|no|10|34   |7    |yes|(n/a)|(n/a)|NULL|
+|InstanceId|SeriesId|RadiologyStudyId|OrgId|BranchId|StudyInstanceUid|SeriesInstanceUid|SopInstanceUid|InstanceNumber|FrameCount|FilePath|FileSizeBytes|ContentType|CreatedAt|CreatedBy|
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+|59427909-3f79-4a99-9de3-70aeef3ad0cd|2866a6db-ec84-4a18-b8b5-1350528da877|088ffb47-031a-4f0d-8851-1cf4991dba71|NULL|NULL|348a5580-ada8-4d3d-b7c2-8e3434e5a546|e0a1ad91-cbc4-4ffb-b66f-0cb39935d4d3|62d2bda5-b58f-4b1d-8584-def40eaf5ff0|NULL|NULL|D:\SynOS\Pacs\088ffb47-031a-4f0d-8851-1cf4991dba71\2866a6db-ec84-4a18-b8b5-1350528da877\59427909-3f79-4a99-9de3-70aeef3ad0cd.dcm|0|application/octet-stream|2025-12-08 10:11:48.2474403 +00:00|721985c7-bbae-4368-a958-8b724082f532|
