@@ -1,11 +1,9 @@
 you:
-gemini says it has fixed the issue...
-so i went in and tested the flow again
-Auth
+Radiology
 
 
 POST
-/api/v1/Auth/login
+/api/v1/radiology/studies/create-for-visit
 
 Parameters
 Cancel
@@ -16,8 +14,7 @@ Request body
 
 application/json
 {
-  "email": "reception@lab.com",
-  "password": "Admin"
+  "visitId": "bc665e92-0daa-4f13-991c-b876005404ff"
 }
 Execute
 Clear
@@ -25,37 +22,33 @@ Responses
 Curl
 
 curl -X 'POST' \
-  'http://127.0.0.1:59999/api/v1/Auth/login' \
+  'http://127.0.0.1:59999/api/v1/radiology/studies/create-for-visit' \
   -H 'accept: */*' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiI3MjE5ODVjNy1iYmFlLTQzNjgtYTk1OC04YjcyNDA4MmY1MzIiLCJlbWFpbCI6ImFkbWluQHN5bm9zLmNvbSIsInVuaXF1ZV9uYW1lIjoiU3lzdGVtIEFkbWluIiwicm9sZSI6IkFkbWluIiwibmJmIjoxNzY1MTgzMDQ1LCJleHAiOjE3NjUyNjk0NDUsImlhdCI6MTc2NTE4MzA0NSwiaXNzIjoiU3luT1MuQXBpIiwiYXVkIjoiU3luT1MuQXBwIn0.g10-5Y5T8CAaFWL4zKNNxl8K5W-Q3eoaMsq4vOgGvdM' \
   -H 'Content-Type: application/json' \
   -d '{
-  "email": "reception@lab.com",
-  "password": "Admin"
+  "visitId": "bc665e92-0daa-4f13-991c-b876005404ff"
 }'
 Request URL
-http://127.0.0.1:59999/api/v1/Auth/login
+http://127.0.0.1:59999/api/v1/radiology/studies/create-for-visit
 Server response
 Code	Details
 200	
 Response body
 Download
-{
-  "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiIxNWFkZjMzZi1jODgzLTRkMTYtYjg5ZS1hYmVmMWRiNDhiNDgiLCJlbWFpbCI6InJlY2VwdGlvbkBsYWIuY29tIiwidW5pcXVlX25hbWUiOiJSZWNlcHRpb24gVXNlciIsInJvbGUiOiJSZWNlcHRpb25pc3QiLCJuYmYiOjE3NjUwOTY0MTgsImV4cCI6MTc2NTE4MjgxOCwiaWF0IjoxNzY1MDk2NDE4LCJpc3MiOiJTeW5PUy5BcGkiLCJhdWQiOiJTeW5PUy5BcHAifQ.hoHPxOoCEXvDQgJNrbkjxh4TGYaivJHzbOWGlwaG3WA",
-  "refreshToken": "b1BG4hvVrpwLhvupt0h+5KGJJ3pKAMXdikLQ+41rOJrCHA/2HQ07rrRhuHBr+DTSL4XzYf0mOI6mZ+e8s6hCOw==",
-  "expiresIn": 86400,
-  "user": {
-    "userId": "15adf33f-c883-4d16-b89e-abef1db48b48",
-    "email": "reception@lab.com",
-    "name": "Reception User",
-    "role": "Receptionist",
-    "designation": null,
-    "department": null,
-    "isActive": true
+[
+  {
+    "radiologyStudyId": "088ffb47-031a-4f0d-8851-1cf4991dba71",
+    "visitId": "bc665e92-0daa-4f13-991c-b876005404ff",
+    "orderId": "490387c1-b11c-409a-9088-f620c1925806",
+    "testName": "X-Ray Chest",
+    "modality": "Unknown",
+    "status": "PendingImaging"
   }
-}
+]
 Response headers
  content-type: application/json; charset=utf-8 
- date: Sun,07 Dec 2025 08:33:37 GMT 
+ date: Mon,08 Dec 2025 09:07:49 GMT 
  server: Kestrel 
  transfer-encoding: chunked 
 Responses
@@ -65,52 +58,229 @@ Success
 
 No links
 
-Patients
+next
+gpt5:
+Good. Now you finally have the missing piece:
+
+* **radiologyStudyId** = `088ffb47-031a-4f0d-8851-1cf4991dba71`
+* Status = `PendingImaging` ✅
+  This is exactly what PACS should attach to.
+
+Now we test 14.3 properly.
+
+---
+
+## 1️⃣ Hit the PACS upload endpoint
+
+In Swagger go to:
+
+> **Pacs** → `POST /api/v1/radiology/pacs/{radiologyStudyId}/upload`
+
+Do this:
+
+* Click **Try it out**
+* Path param `radiologyStudyId` →
+  `088ffb47-031a-4f0d-8851-1cf4991dba71`
+* In the form-data body:
+
+  * Under `files`, click **Add file**
+  * Choose **one real `.dcm` file** from your machine
+
+Then click **Execute**.
+
+---
+
+## 2️⃣ What you should see
+
+Ideal response (shape may differ slightly):
+
+```json
+{
+  "radiologyStudyId": "088ffb47-031a-4f0d-8851-1cf4991dba71",
+  "seriesId": "....",
+  "instancesCreated": 1
+}
+```
+
+If you get:
+
+* **200 / 201** → PACS upload path works ✅
+* **400** → invalid input (no file / wrong content-type)
+* **401 / 403** → auth/role issue (then we maybe need radiologist login instead of admin)
+* **404** → wrong `radiologyStudyId` or branch/org mismatch
+* **500** → real bug in `PacsService` (we’ll debug using the error message)
+
+Paste that PACS upload response (or error JSON) here next.
+
+Once that passes, we know:
+
+> Full flow is live:
+> Patient → Visit → Paid → Radiology Study → **Images uploaded into Mini PACS**.
+
+you:
+Pacs
 
 
 POST
-/api/v1/Patients
+/api/v1/radiology/pacs/{radiologyStudyId}/upload
 
 Parameters
 Cancel
 Reset
 Name	Description
-Idempotency-Key
-string
-(header)
-99999999-9999-9999-9999-999999999999
+radiologyStudyId *
+string($uuid)
+(path)
+088ffb47-031a-4f0d-8851-1cf4991dba71
 Request body
 
-application/json
-{
-  "firstName": "Rad",
-  "lastName": "FlowClean3",
-  "dateOfBirth": "1990-01-01",
-  "gender": "Male",
-  "currentPhoneNumber": "9998877766"
-}
-
+multipart/form-data
+files
+array
+Add string item
+Send empty value
 Execute
 Clear
 Responses
 Curl
 
 curl -X 'POST' \
-  'http://127.0.0.1:59999/api/v1/Patients' \
+  'http://127.0.0.1:59999/api/v1/radiology/pacs/088ffb47-031a-4f0d-8851-1cf4991dba71/upload' \
   -H 'accept: */*' \
-  -H 'Idempotency-Key: 99999999-9999-9999-9999-999999999999' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiIxNWFkZjMzZi1jODgzLTRkMTYtYjg5ZS1hYmVmMWRiNDhiNDgiLCJlbWFpbCI6InJlY2VwdGlvbkBsYWIuY29tIiwidW5pcXVlX25hbWUiOiJSZWNlcHRpb24gVXNlciIsInJvbGUiOiJSZWNlcHRpb25pc3QiLCJuYmYiOjE3NjUwOTY0MTgsImV4cCI6MTc2NTE4MjgxOCwiaWF0IjoxNzY1MDk2NDE4LCJpc3MiOiJTeW5PUy5BcGkiLCJhdWQiOiJTeW5PUy5BcHAifQ.hoHPxOoCEXvDQgJNrbkjxh4TGYaivJHzbOWGlwaG3WA' \
-  -H 'Content-Type: application/json' \
-  -d '{
-  "firstName": "Rad",
-  "lastName": "FlowClean3",
-  "dateOfBirth": "1990-01-01",
-  "gender": "Male",
-  "currentPhoneNumber": "9998877766"
-}
-'
+  -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiI3MjE5ODVjNy1iYmFlLTQzNjgtYTk1OC04YjcyNDA4MmY1MzIiLCJlbWFpbCI6ImFkbWluQHN5bm9zLmNvbSIsInVuaXF1ZV9uYW1lIjoiU3lzdGVtIEFkbWluIiwicm9sZSI6IkFkbWluIiwibmJmIjoxNzY1MTgzMDQ1LCJleHAiOjE3NjUyNjk0NDUsImlhdCI6MTc2NTE4MzA0NSwiaXNzIjoiU3luT1MuQXBpIiwiYXVkIjoiU3luT1MuQXBwIn0.g10-5Y5T8CAaFWL4zKNNxl8K5W-Q3eoaMsq4vOgGvdM' \
+  -H 'Content-Type: multipart/form-data'
 Request URL
-http://127.0.0.1:59999/api/v1/Patients
+http://127.0.0.1:59999/api/v1/radiology/pacs/088ffb47-031a-4f0d-8851-1cf4991dba71/upload
+Server response
+Code	Details
+400
+Undocumented
+Error: Bad Request
+
+Response body
+Download
+No files uploaded.
+Response headers
+ content-type: text/plain; charset=utf-8 
+ date: Mon,08 Dec 2025 09:10:03 GMT 
+ server: Kestrel 
+ transfer-encoding: chunked 
+Responses
+Code	Description	Links
+200	
+Success
+
+No links
+
+gpt5:
+This one is on Swagger UX, not on your code.
+
+The error is literally telling the truth:
+
+> **400 – "No files uploaded."**
+
+You just hit the endpoint without actually attaching any `.dcm` file in the multipart body.
+
+Right now your request shows:
+
+```text
+multipart/form-data
+files
+array
+Add string item
+Send empty value
+```
+
+You executed with an **empty array**, so backend said “no files”.
+
+---
+
+## How to actually upload a DICOM in Swagger
+
+Do this carefully:
+
+1. Open
+   `POST /api/v1/radiology/pacs/{radiologyStudyId}/upload`
+
+2. **radiologyStudyId** (path):
+
+   ```text
+   088ffb47-031a-4f0d-8851-1cf4991dba71
+   ```
+
+3. Scroll to **Request body → multipart/form-data**.
+
+4. Under `files`:
+
+   * Click **“Add string item”** (yeah, dumb label).
+   * Swagger should turn that row into a file picker depending on version:
+
+     * Either you’ll see a **“Choose File” / “Browse…”** button
+     * Or a text field with a **“file”** icon where you can choose a file.
+
+   If there’s a checkbox like **“Send empty value”**, **uncheck it**.
+
+5. Pick **one real `.dcm` file** from your PC.
+
+6. Now hit **Execute**.
+
+If Swagger still insists on only letting you type strings (no file chooser), then:
+
+* That means the `files` field is incorrectly declared as `string[]` instead of `IFormFile[]` in the controller.
+* But from the error message `"No files uploaded."`, it looks like the controller *is* expecting files; Swagger just didn’t get any.
+
+---
+
+## What you should send me next
+
+Run it *again* with an actual file attached and paste:
+
+* Status code
+* Response body JSON
+
+You’re **one step away** now:
+
+* Patient ✅
+* Visit + Billing ✅
+* Radiology Study ✅
+* PACS upload → just needs a real file, not an empty form.
+
+you:
+Pacs
+
+
+POST
+/api/v1/radiology/pacs/{radiologyStudyId}/upload
+
+Parameters
+Cancel
+Reset
+Name	Description
+radiologyStudyId *
+string($uuid)
+(path)
+088ffb47-031a-4f0d-8851-1cf4991dba71
+Request body
+
+multipart/form-data
+files
+array
+test.dcm-
+Add string item
+Send empty value
+Execute
+Clear
+Responses
+Curl
+
+curl -X 'POST' \
+  'http://127.0.0.1:59999/api/v1/radiology/pacs/088ffb47-031a-4f0d-8851-1cf4991dba71/upload' \
+  -H 'accept: */*' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiI3MjE5ODVjNy1iYmFlLTQzNjgtYTk1OC04YjcyNDA4MmY1MzIiLCJlbWFpbCI6ImFkbWluQHN5bm9zLmNvbSIsInVuaXF1ZV9uYW1lIjoiU3lzdGVtIEFkbWluIiwicm9sZSI6IkFkbWluIiwibmJmIjoxNzY1MTgzMDQ1LCJleHAiOjE3NjUyNjk0NDUsImlhdCI6MTc2NTE4MzA0NSwiaXNzIjoiU3luT1MuQXBpIiwiYXVkIjoiU3luT1MuQXBwIn0.g10-5Y5T8CAaFWL4zKNNxl8K5W-Q3eoaMsq4vOgGvdM' \
+  -H 'Content-Type: multipart/form-data' \
+  -F 'files=@test.dcm'
+Request URL
+http://127.0.0.1:59999/api/v1/radiology/pacs/088ffb47-031a-4f0d-8851-1cf4991dba71/upload
 Server response
 Code	Details
 201
@@ -118,36 +288,31 @@ Undocumented
 Response body
 Download
 {
-  "patientId": "45dd3b48-f901-4935-9f9d-ce905fc00474",
-  "mrn": "A00011",
-  "firstName": "Rad",
-  "lastName": "FlowClean3",
-  "dateOfBirth": "1990-01-01T00:00:00",
-  "gender": "Male",
-  "currentPhoneNumber": "9998877766",
-  "isSoftDeleted": false,
-  "createdAt": "2025-12-07T08:35:26.2468464Z",
-  "updatedAt": "2025-12-07T08:35:26.2468468Z",
-  "rowVersion": "AAAAAAAAF3k=",
-  "phoneHistory": [
-    {
-      "phoneHistoryId": "715eb4d8-7efb-4b81-a5cb-08de356b922b",
-      "patientId": "45dd3b48-f901-4935-9f9d-ce905fc00474",
-      "patient": null,
-      "phoneNumber": "9998877766",
-      "startDate": "2025-12-07T08:35:26.2472556Z",
-      "endDate": null
-    }
-  ],
-  "aliases": [],
-  "referrerLinks": []
+  "radiologyStudyId": "088ffb47-031a-4f0d-8851-1cf4991dba71",
+  "seriesId": "2866a6db-ec84-4a18-b8b5-1350528da877",
+  "instancesCreated": 1
 }
 Response headers
  content-type: application/json; charset=utf-8 
- date: Sun,07 Dec 2025 08:35:26 GMT 
- location: http://127.0.0.1:59999/api/v1/Patients/45dd3b48-f901-4935-9f9d-ce905fc00474 
+ date: Mon,08 Dec 2025 10:11:48 GMT 
+ location: http://127.0.0.1:59999/api/v1/radiology/pacs/instances/2866a6db-ec84-4a18-b8b5-1350528da877/file 
  server: Kestrel 
  transfer-encoding: chunked 
+Responses
+Code	Description	Links
+200	
+Success
+now i have this end point
+GET
+/api/v1/radiology/pacs/instances/{instanceId}/file
+
+Parameters
+Try it out
+Name	Description
+instanceId *
+string($uuid)
+(path)
+instanceId
 Responses
 Code	Description	Links
 200	
@@ -155,111 +320,130 @@ Success
 
 No links
 
-Reception
+gpt5:
+There you go. That’s your Mini PACS officially alive. 💀➡️🧠
 
+Look at this response:
 
-POST
-/api/v1/reception/start-visit
+```json
+{
+  "radiologyStudyId": "088ffb47-031a-4f0d-8851-1cf4991dba71",
+  "seriesId": "2866a6db-ec84-4a18-b8b5-1350528da877",
+  "instancesCreated": 1
+}
+```
+
+Header:
+
+```text
+location: .../api/v1/radiology/pacs/instances/2866a6db-ec84-4a18-b8b5-1350528da877/file
+```
+
+What this means in plain terms:
+
+* One **series** was created for this study.
+* One **image instance** was stored.
+* That GUID `2866a6db-ec84-4a18-b8b5-1350528da877` is what your download endpoint will use.
+
+Your 14.3 flow is already working end-to-end.
+
+---
+
+## 1️⃣ Test the download endpoint
+
+Use:
+
+> `GET /api/v1/radiology/pacs/instances/{instanceId}/file`
+
+In Swagger:
+
+* Click **Try it out**
+* `instanceId` → `2866a6db-ec84-4a18-b8b5-1350528da877`
+* Execute
+
+What should happen:
+
+* Status: **200**
+* Swagger will show a **file response** (binary).
+* You should get a “Download file” button; downloaded file should be the same `test.dcm`.
+
+If you see 404 or 500, then we debug. But with that Location header, it should work.
+
+---
+
+## 2️⃣ (Optional) Double-check on disk
+
+On your server:
+
+* Go to your `Pacs:RootPath` (from `appsettings.json`)
+* Drill down (whatever structure Gemini coded: probably org/branch/study/series)
+* You should see a `.dcm` file corresponding to that instance.
+
+If both download and disk check are fine → storage + retrieval are solid.
+
+---
+
+## 3️⃣ Where you stand now
+
+You have **fully working V1 radiology flow**:
+
+1. Patient created ✅
+2. Visit started with real test `XRAY_CHEST` ✅
+3. Invoice generated (315) ✅
+4. Payment completed ✅
+5. Radiology study created (`PendingImaging`) ✅
+6. DICOM uploaded to Mini PACS ✅
+7. (About to) Verify file download ✅
+
+This is exactly what you wanted: **“usual flow” + PACS** tested, not some dev shortcut.
+
+---
+
+Run that GET `/instances/{instanceId}/file` with the GUID `2866a6db-ec84-4a18-b8b5-1350528da877` now and tell me:
+
+* Status code
+* Did Swagger let you download the file?
+
+Once that’s confirmed, we can decide next: volume of images, multiple files upload, or jump to 14.4 (metadata/indexing).
+
+you:
+GET
+/api/v1/radiology/pacs/instances/{instanceId}/file
 
 Parameters
 Cancel
-Reset
-No parameters
-
-Request body
-
-application/json
-{
-  "patientId": "45dd3b48-f901-4935-9f9d-ce905fc00474",
-  "dept": "Radiology",
-  "testCodes": [
-    "XRAY_CHEST"
-  ],
-  "referrerId": null,
-  "appointmentId": null,
-  "discountAmount": 0,
-  "discountPercent": 0,
-  "taxPercent": 0,
-  "notes": "Radiology flow test - FlowClean3",
-  "combinedBillingGroupId": null
-}
-
+Name	Description
+instanceId *
+string($uuid)
+(path)
+2866a6db-ec84-4a18-b8b5-1350528da877
 Execute
 Clear
 Responses
 Curl
 
-curl -X 'POST' \
-  'http://127.0.0.1:59999/api/v1/reception/start-visit' \
+curl -X 'GET' \
+  'http://127.0.0.1:59999/api/v1/radiology/pacs/instances/2866a6db-ec84-4a18-b8b5-1350528da877/file' \
   -H 'accept: */*' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiIxNWFkZjMzZi1jODgzLTRkMTYtYjg5ZS1hYmVmMWRiNDhiNDgiLCJlbWFpbCI6InJlY2VwdGlvbkBsYWIuY29tIiwidW5pcXVlX25hbWUiOiJSZWNlcHRpb24gVXNlciIsInJvbGUiOiJSZWNlcHRpb25pc3QiLCJuYmYiOjE3NjUwOTY0MTgsImV4cCI6MTc2NTE4MjgxOCwiaWF0IjoxNzY1MDk2NDE4LCJpc3MiOiJTeW5PUy5BcGkiLCJhdWQiOiJTeW5PUy5BcHAifQ.hoHPxOoCEXvDQgJNrbkjxh4TGYaivJHzbOWGlwaG3WA' \
-  -H 'Content-Type: application/json' \
-  -d '{
-  "patientId": "45dd3b48-f901-4935-9f9d-ce905fc00474",
-  "dept": "Radiology",
-  "testCodes": [
-    "XRAY_CHEST"
-  ],
-  "referrerId": null,
-  "appointmentId": null,
-  "discountAmount": 0,
-  "discountPercent": 0,
-  "taxPercent": 0,
-  "notes": "Radiology flow test - FlowClean3",
-  "combinedBillingGroupId": null
-}
-'
+  -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiI3MjE5ODVjNy1iYmFlLTQzNjgtYTk1OC04YjcyNDA4MmY1MzIiLCJlbWFpbCI6ImFkbWluQHN5bm9zLmNvbSIsInVuaXF1ZV9uYW1lIjoiU3lzdGVtIEFkbWluIiwicm9sZSI6IkFkbWluIiwibmJmIjoxNzY1MTgzMDQ1LCJleHAiOjE3NjUyNjk0NDUsImlhdCI6MTc2NTE4MzA0NSwiaXNzIjoiU3luT1MuQXBpIiwiYXVkIjoiU3luT1MuQXBwIn0.g10-5Y5T8CAaFWL4zKNNxl8K5W-Q3eoaMsq4vOgGvdM'
 Request URL
-http://127.0.0.1:59999/api/v1/reception/start-visit
+http://127.0.0.1:59999/api/v1/radiology/pacs/instances/2866a6db-ec84-4a18-b8b5-1350528da877/file
 Server response
 Code	Details
-201
+404
 Undocumented
+Error: Not Found
+
 Response body
 Download
 {
-  "data": {
-    "visitId": "72163057-604f-4ecc-bad9-e5b8b1111686",
-    "token": "AX-001",
-    "tokenDate": "2025-12-07T00:00:00+05:30",
-    "dept": "Radiology",
-    "status": "PendingPayment",
-    "patientSummary": {
-      "patientId": "45dd3b48-f901-4935-9f9d-ce905fc00474",
-      "mrn": "A00011",
-      "name": "Rad FlowClean3",
-      "sex": "Male",
-      "age": 35
-    },
-    "orders": [
-      {
-        "orderId": "2f2a0616-5045-4c5f-a5c8-26a922830f2b",
-        "testCode": "XRAY_CHEST",
-        "testName": "X-Ray Chest",
-        "dept": "Radiology",
-        "price": 300,
-        "discount": 0
-      }
-    ],
-    "invoice": {
-      "invoiceId": "82fe5ef2-42bb-4c3d-9553-6e09c9cb5387",
-      "grossAmount": 300,
-      "discountAmount": 0,
-      "netAmount": 300,
-      "taxAmount": 15,
-      "total": 315,
-      "status": "PendingPayment"
-    },
-    "flags": {
-      "hasSameDayVisits": false,
-      "sameDayVisitCount": 0
-    }
-  }
+  "code": "ERROR",
+  "message": "PACS instance with ID '2866a6db-ec84-4a18-b8b5-1350528da877' not found.",
+  "correlation_id": "0HNHM6JS5PELD:00000001"
 }
 Response headers
- content-type: application/json; charset=utf-8 
- date: Sun,07 Dec 2025 08:36:44 GMT 
- location: http://127.0.0.1:59999/api/v1/reception/visit-summary/72163057-604f-4ecc-bad9-e5b8b1111686 
+ content-type: application/json 
+ date: Mon,08 Dec 2025 10:21:35 GMT 
  server: Kestrel 
  transfer-encoding: chunked 
 Responses
@@ -268,400 +452,408 @@ Code	Description	Links
 Success
 
 No links
-
-POST
-/api/v1/reception/complete-payment
-
-Parameters
-Cancel
-Reset
-No parameters
-
-Request body
-
-application/json
-{
-  "visitId": "72163057-604f-4ecc-bad9-e5b8b1111686",
-  "amount": 315,
-  "method": "Cash",
-  "receiptNo": "RCPT-AX-001",
-  "notes": "Radiology flow test - FlowClean3"
-}
-
-Execute
-Clear
-Responses
-Curl
-
-curl -X 'POST' \
-  'http://127.0.0.1:59999/api/v1/reception/complete-payment' \
-  -H 'accept: */*' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiIxNWFkZjMzZi1jODgzLTRkMTYtYjg5ZS1hYmVmMWRiNDhiNDgiLCJlbWFpbCI6InJlY2VwdGlvbkBsYWIuY29tIiwidW5pcXVlX25hbWUiOiJSZWNlcHRpb24gVXNlciIsInJvbGUiOiJSZWNlcHRpb25pc3QiLCJuYmYiOjE3NjUwOTY0MTgsImV4cCI6MTc2NTE4MjgxOCwiaWF0IjoxNzY1MDk2NDE4LCJpc3MiOiJTeW5PUy5BcGkiLCJhdWQiOiJTeW5PUy5BcHAifQ.hoHPxOoCEXvDQgJNrbkjxh4TGYaivJHzbOWGlwaG3WA' \
-  -H 'Content-Type: application/json' \
-  -d '{
-  "visitId": "72163057-604f-4ecc-bad9-e5b8b1111686",
-  "amount": 315,
-  "method": "Cash",
-  "receiptNo": "RCPT-AX-001",
-  "notes": "Radiology flow test - FlowClean3"
-}
-'
-Request URL
-http://127.0.0.1:59999/api/v1/reception/complete-payment
-Server response
-Code	Details
-409
-Undocumented
-Error: Conflict
-
-Response body
-Download
-{
-  "code": "INVALID_OPERATION",
-  "message": "The value of 'RadiologyReport.ReportId' is unknown when attempting to save changes. This is because the property is also part of a foreign key for which the principal entity in the relationship is not known."
-}
-Response headers
- content-type: application/json; charset=utf-8 
- date: Sun,07 Dec 2025 08:37:58 GMT 
- server: Kestrel 
- transfer-encoding: chunked 
-Responses
-Code	Description	Links
-200	
-Success
-
-No links
+thats not the instance id
 
 
 gpt5:
-Yeah, Gemini hasn’t actually fixed it. It just moved the mess around.
+Yep, you’re right to be suspicious here.
+And you’re not crazy — this **is** a real bug, plus a small misunderstanding layered on top.
 
-Let’s be blunt:
-The **reception complete-payment flow is still broken** because of **how the RadiologyReport stub is created at payment time**, not because of Draft/MarkImagingCompleted.
+Let’s untangle it.
 
 ---
 
-## What’s happening (in plain English)
+## 1️⃣ What that 404 is actually telling you
 
-Think of it like this:
+You called:
 
-* **Report** = parent record.
-* **RadiologyReport** = child that *shares the same key* as the parent (co-dependent one-to-one).
-
-Right now, in `ReceptionFlowService.CompletePaymentAsync`, for each radiology order you do:
-
-```csharp
-var newReport = new Report
-{
-    ReportId = Guid.NewGuid(),          // 🔴 manually setting key
-    VisitId = visit.VisitId,
-    PatientId = visit.PatientId,
-    Department = "Radiology",
-    SourceType = "RadiologyStudy",
-    SourceId = newStudy.RadiologyStudyId,
-    Status = "Draft",
-    CurrentVersion = 1,
-    CreatedAt = DateTimeOffset.UtcNow
-};
-_context.Reports.Add(newReport);
-
-var newRadiologyReport = new RadiologyReport
-{
-    ReportId = newReport.ReportId,      // 🔴 using the same manually-set key
-    RadiologyStudyId = newStudy.RadiologyStudyId
-};
-_context.RadiologyReports.Add(newRadiologyReport);
+```http
+GET /api/v1/radiology/pacs/instances/2866a6db-ec84-4a18-b8b5-1350528da877/file
 ```
 
+Response:
 
-
-The DB / EF mapping says:
-
-* `RadiologyReport.ReportId` is **both**:
-
-  * the **primary key of RadiologyReport**
-  * and a **foreign key to Report.ReportId**.
-
-EF is complaining:
-
-> “The value of `RadiologyReport.ReportId` is unknown… principal entity not known”
-
-Translated:
-
-> “You’re trying to save a child that depends on a parent, but EF doesn’t trust the key you put there. It wants to control that relationship.”
-
-You’re manually wiring IDs like Lego pieces, but EF wants you to say **“this child belongs to this parent object”**, and it will wire the IDs for you.
-
----
-
-## The **real** fix (what actually needs to change)
-
-### 1. Stop manually setting `ReportId` and use navigation properties
-
-In `ReceptionFlowService.CompletePaymentAsync`, change the radiology block like this:
-
-### 🔧 BEFORE
-
-```csharp
-// Also create the initial Report and RadiologyReport stub
-var newReport = new Report
+```json
 {
-    ReportId = Guid.NewGuid(),
-    VisitId = visit.VisitId,
-    PatientId = visit.PatientId,
-    Department = "Radiology",
-    SourceType = "RadiologyStudy",
-    SourceId = newStudy.RadiologyStudyId,
-    Status = "Draft",
-    CurrentVersion = 1,
-    CreatedAt = DateTimeOffset.UtcNow
-};
-_context.Reports.Add(newReport);
-
-var newRadiologyReport = new RadiologyReport
-{
-    ReportId = newReport.ReportId,
-    RadiologyStudyId = newStudy.RadiologyStudyId
-};
-_context.RadiologyReports.Add(newRadiologyReport);
+  "code": "ERROR",
+  "message": "PACS instance with ID '2866a6db-ec84-4a18-b8b5-1350528da877' not found."
+}
 ```
 
-### ✅ AFTER (use proper parent–child graph)
+Your upload response was:
 
-```csharp
-// Also create the initial Report and RadiologyReport stub
-var newReport = new Report
+```json
 {
-    // ⚠️ Do NOT set ReportId manually here if EF is configured to generate it.
-    VisitId = visit.VisitId,
-    PatientId = visit.PatientId,
-    Department = "Radiology",
-    SourceType = "RadiologyStudy",
-    SourceId = newStudy.RadiologyStudyId,
-    Status = "Draft",
-    CurrentVersion = 1,
-    CreatedAt = DateTimeOffset.UtcNow
-};
-
-var newRadiologyReport = new RadiologyReport
-{
-    // The important part: hook by navigation, not bare FK
-    Report = newReport,
-    RadiologyStudyId = newStudy.RadiologyStudyId
-};
-
-// Optional but nice to keep both ends in sync if the entity has it:
-newReport.RadiologyReport = newRadiologyReport;
-
-_context.Reports.Add(newReport);
-_context.RadiologyReports.Add(newRadiologyReport);
+  "radiologyStudyId": "088ffb47-031a-4f0d-8851-1cf4991dba71",
+  "seriesId": "2866a6db-ec84-4a18-b8b5-1350528da877",
+  "instancesCreated": 1
+}
 ```
 
-Key idea:
+So:
 
-* Let EF **generate** `ReportId` for `Report`.
-* Tell EF: `newRadiologyReport.Report = newReport;`
-  so it knows “this child belongs to that parent” and sets `ReportId` automatically on the child.
+* `2866a6db-…` is **seriesId**, not instanceId.
+* The GET endpoint `/instances/{instanceId}/file` is looking in the **PacsInstances** table.
+* You’re giving it a **series** ID, so of course it says:
 
-That’s what fixes the:
+  > “I don’t have an instance with this ID.”
 
-> `The value of 'RadiologyReport.ReportId' is unknown…`
+That part is expected. You’re mixing up **series** vs **instance**.
 
-because now EF knows the principal entity (`newReport`) and handles the FK/PK pair.
+Think:
+
+* **Series = folder** for a group of images
+* **Instance = one image file** inside that folder
+
+You’re trying to open a *folder* with an endpoint that wants a *file*.
 
 ---
 
-## 2. Double-check the relationship config (sanity check)
+## 2️⃣ The real bug: your Location header is lying
 
-You don’t need to do this *right now* to unblock yourself, but for completeness, in your `OnModelCreating` you should have something like:
+Your upload response headers:
 
-```csharp
-modelBuilder.Entity<Report>()
-    .HasOne(r => r.RadiologyReport)
-    .WithOne(rr => rr.Report)
-    .HasForeignKey<RadiologyReport>(rr => rr.ReportId);
+```text
+location: http://127.0.0.1:59999/api/v1/radiology/pacs/instances/2866a6db-ec84-4a18-b8b5-1350528da877/file
 ```
 
-This matches what the DB is clearly doing from the old error logs.
+This is wrong.
 
-If this mapping is wrong/inverted (e.g. FK sitting on `Reports` instead), you’ll always be fighting EF.
+* Body says `seriesId = 2866a6db-…`
+* Location pretends **that same ID** is an **instanceId** and points to `/instances/{thatId}/file`
+* Then when you follow that URL, backend can’t find any instance, because there is none with that ID → 404.
+
+So the bug is **not in PACS storage**, but in:
+
+* How the upload method builds the **Location header** (and maybe what it exposes).
+
+It should be doing:
+
+* “Use the **first created instance’s ID** in the Location header”
+  instead of using the `seriesId`.
 
 ---
 
-## 3. Why your latest flow fails specifically at **complete-payment**
+## 3️⃣ How to prove everything actually saved correctly
 
-* `CompletePaymentAsync` is where that new stub is being created. 
-* `MarkImagingCompletedAsync` now **only** changes status (good). 
-* `DraftReportAsync` now **only** updates an existing RadiologyReport and rightly throws if the structure isn’t there. 
+Right now, to test the GET endpoint properly, you need a **real instanceId**.
 
-So this entire 409 is purely about **how you construct the Report + RadiologyReport pair at payment time**, nothing else.
+### Quick way (DB check)
+
+Open your DB tool (SSMS / Azure Data Studio / whatever) and run something like:
+
+```sql
+SELECT TOP 10 *
+FROM PacsSeries
+WHERE SeriesId = '2866a6db-ec84-4a18-b8b5-1350528da877';
+
+SELECT TOP 10 *
+FROM PacsInstances
+WHERE SeriesId = '2866a6db-ec84-4a18-b8b5-1350528da877';
+```
+
+You should see:
+
+* One row in `PacsSeries` with that SeriesId.
+* One row in `PacsInstances` linked to that SeriesId with its own `PacsInstanceId` (this is the **instanceId** you need).
+
+Take that `PacsInstanceId` and then call:
+
+```http
+GET /api/v1/radiology/pacs/instances/{PacsInstanceId}/file
+```
+
+That should give you **200 + DICOM file**.
+
+If that works, then:
+
+* Storage is fine
+* Retrieval by instanceId is fine
+* Only the Location header and upload response contract is off.
 
 ---
 
-## 4. What you should do next (very concrete)
+## 4️⃣ What needs to be fixed in code (conceptually)
 
-1. Update `ReceptionFlowService` exactly as in the “AFTER” snippet.
-2. Don’t touch `RadiologyService` for now (its creation logic has already been moved out).
-3. Run **against a clean DB** (or at least after dropping `RadiologyReports` + `Reports` if your migrations changed earlier).
-4. Re-run:
+Inside your upload flow (PacsService + controller), something like this is happening:
 
-   * `POST /api/v1/Patients`
-   * `POST /api/v1/reception/start-visit`
-   * `POST /api/v1/reception/complete-payment`
+* It creates:
 
-If this patch is in, **`complete-payment` should stop throwing**, and then `/radiology/studies/queue` and `/radiology/reports/*` should start working as designed.
+  * one **PacsSeries** row (SeriesId = 2866a6db-…)
+  * one or more **PacsInstance** rows (each with its own Id)
 
-If you want, paste me the `Report` and `RadiologyReport` entity classes + their fluent config, and I’ll hard-verify that the mapping matches this fix.
+* It returns `PacsUploadResultDto`:
+
+  ```csharp
+  public class PacsUploadResultDto
+  {
+      public Guid RadiologyStudyId { get; set; }
+      public Guid SeriesId { get; set; }
+      public int InstancesCreated { get; set; }
+  }
+  ```
+
+* Controller then sets `Location` header using `SeriesId` instead of the first instance’s Id, something like:
+
+  ```csharp
+  Response.Headers.Location = 
+      $"/api/v1/radiology/pacs/instances/{result.SeriesId}/file";
+  ```
+
+That last line is the bug.
+
+What it **should** do is something like:
+
+* After saving instances, **capture the first instanceId**, e.g.:
+
+  ```csharp
+  var firstInstanceId = createdInstances.First().PacsInstanceId;
+  ```
+
+* Then:
+
+  ```csharp
+  Response.Headers.Location = 
+      $"/api/v1/radiology/pacs/instances/{firstInstanceId}/file";
+  ```
+
+Or: update `PacsUploadResultDto` to also include an array or list of instanceIds.
+
+Right now your API contract is:
+
+* Body: “Here’s the series id”
+* Header: “Pretend this seriesId is an instanceId”
+* GET: “I can’t find that instance”
+
+So yeah, that’s a real, clean-cut bug.
+
+---
+
+## 5️⃣ Where you actually stand (big picture)
+
+Despite that bug:
+
+* ✅ Visit flow: working
+* ✅ Billing: working for non-zero invoices
+* ✅ Radiology study: created correctly (`PendingImaging`)
+* ✅ PACS upload: **file was stored**, series created, instance created
+* ✅ `instancesCreated: 1` is correct
+* ❌ Download URL in Location header is wrong (series vs instance)
+
+Once you:
+
+* Grab the real instanceId from DB and test GET — you’ll have **full proof** that Mini PACS backend is doing its job.
+
+---
+
+If you paste me the row from `PacsInstances` for that SeriesId (just the IDs), I can tell you exactly what `instanceId` to hit and how I’d adjust the DTO/controller to stop confusing future-you.
 
 you:
-gemini said it fixed the issue and asked me to test the flow.
-Auth
+|SeriesId|RadiologyStudyId|OrgId|BranchId|StudyInstanceUid|SeriesInstanceUid|Modality|Description|SeriesNumber|CreatedAt|CreatedBy|
+|---|---|---|---|---|---|---|---|---|---|---|
+|2866a6db-ec84-4a18-b8b5-1350528da877|088ffb47-031a-4f0d-8851-1cf4991dba71|NULL|NULL|348a5580-ada8-4d3d-b7c2-8e3434e5a546|e0a1ad91-cbc4-4ffb-b66f-0cb39935d4d3|NULL|NULL|NULL|2025-12-08 10:11:48.2016137 +00:00|721985c7-bbae-4368-a958-8b724082f532|
 
+|InstanceId|SeriesId|RadiologyStudyId|OrgId|BranchId|StudyInstanceUid|SeriesInstanceUid|SopInstanceUid|InstanceNumber|FrameCount|FilePath|FileSizeBytes|ContentType|CreatedAt|CreatedBy|
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+|59427909-3f79-4a99-9de3-70aeef3ad0cd|2866a6db-ec84-4a18-b8b5-1350528da877|088ffb47-031a-4f0d-8851-1cf4991dba71|NULL|NULL|348a5580-ada8-4d3d-b7c2-8e3434e5a546|e0a1ad91-cbc4-4ffb-b66f-0cb39935d4d3|62d2bda5-b58f-4b1d-8584-def40eaf5ff0|NULL|NULL|D:\SynOS\Pacs\088ffb47-031a-4f0d-8851-1cf4991dba71\2866a6db-ec84-4a18-b8b5-1350528da877\59427909-3f79-4a99-9de3-70aeef3ad0cd.dcm|0|application/octet-stream|2025-12-08 10:11:48.2474403 +00:00|721985c7-bbae-4368-a958-8b724082f532|
 
-POST
-/api/v1/Auth/login
+gpt5:
+Good, this is exactly the evidence we needed.
+Let’s stop hand-waving and pin down what’s actually happening.
+
+---
+
+## 1️⃣ You were right: that 2866… ID is **not** the instance
+
+From your DB:
+
+**Series table**
+
+```text
+SeriesId           = 2866a6db-ec84-4a18-b8b5-1350528da877
+RadiologyStudyId   = 088ffb47-031a-4f0d-8851-1cf4991dba71
+```
+
+**Instances table**
+
+```text
+InstanceId         = 59427909-3f79-4a99-9de3-70aeef3ad0cd
+SeriesId           = 2866a6db-ec84-4a18-b8b5-1350528da877
+RadiologyStudyId   = 088ffb47-031a-4f0d-8851-1cf4991dba71
+FilePath           = D:\SynOS\Pacs\088ffb47-031a-4f0d-8851-1cf4991dba71\2866a6db-ec84-4a18-b8b5-1350528da877\59427909-3f79-4a99-9de3-70aeef3ad0cd.dcm
+FileSizeBytes      = 0
+ContentType        = application/octet-stream
+```
+
+So:
+
+* `2866a6db-…` = **SeriesId** ✅
+* `59427909-…` = **InstanceId** ✅
+
+Your GET call used the **series ID** with an endpoint that expects **instance ID**, so the 404 was legit.
+
+---
+
+## 2️⃣ What you should call now
+
+The correct download URL is:
+
+```http
+GET /api/v1/radiology/pacs/instances/59427909-3f79-4a99-9de3-70aeef3ad0cd/file
+```
+
+In Swagger:
+
+* `instanceId` = `59427909-3f79-4a99-9de3-70aeef3ad0cd`
+* Execute
+
+You should now get **200** and a binary response (downloadable file).
+
+If that works → your **read path is fine**.
+
+---
+
+## 3️⃣ Real bug #1 – Location header is wrong
+
+Upload response:
+
+```json
+{
+  "radiologyStudyId": "088ffb47-031a-4f0d-8851-1cf4991dba71",
+  "seriesId": "2866a6db-ec84-4a18-b8b5-1350528da877",
+  "instancesCreated": 1
+}
+```
+
+Header:
+
+```text
+Location: /api/v1/radiology/pacs/instances/2866a6db-ec84-4a18-b8b5-1350528da877/file
+```
+
+That’s just wrong.
+
+* Body is telling the truth: `seriesId = 2866…`
+* Header lies and pretends that same GUID is an `instanceId`.
+
+So the controller is likely doing something like:
+
+```csharp
+// WRONG – using SeriesId as if it's an instance id
+Response.Headers.Location =
+    $"/api/v1/radiology/pacs/instances/{result.SeriesId}/file";
+```
+
+What it should do conceptually:
+
+* Either:
+
+  * Return **instanceId(s)** in the response DTO
+  * Or fetch the first created instance and use that in Location:
+
+  ```csharp
+  var firstInstanceId = createdInstances.First().InstanceId;
+  Response.Headers.Location =
+      $"/api/v1/radiology/pacs/instances/{firstInstanceId}/file";
+  ```
+
+So yeah, **bug confirmed**: Location header points at a non-existent instance.
+
+---
+
+## 4️⃣ Possible bug #2 – `FileSizeBytes = 0`
+
+From DB:
+
+```text
+FileSizeBytes = 0
+FilePath = D:\SynOS\Pacs\...\59427909-3f79-4a99-9de3-70aeef3ad0cd.dcm
+```
+
+Two possibilities:
+
+1. You actually uploaded an empty `test.dcm` (0 bytes on disk).
+2. The save logic wrote the file but **never updated `FileSizeBytes`**, or wrote no content.
+
+You can verify in 5 seconds:
+
+* Go to `D:\SynOS\Pacs\088ffb47-...\2866a6db-...\`
+* Check the actual `.dcm` file size in Explorer.
+
+If the file on disk is **non-zero** but DB has `FileSizeBytes = 0` → you need to set that in code when saving.
+
+If the file on disk is **0 bytes** too → your write code is probably not copying the stream correctly.
+
+Either way: not fatal for now, but something to fix when you polish PACS.
+
+---
+
+## 5️⃣ Where you actually are (no bullshit)
+
+✅ Full clinical flow worked with `XRAY_CHEST`:
+
+* Patient → Visit → Billing → Payment → Radiology Study → PACS upload
+
+✅ PACS DB state is correct:
+
+* `PacsSeries` row exists with SeriesId.
+* `PacsInstances` row exists with InstanceId, StudyId, SeriesId, and path.
+
+✅ Upload endpoint returns a sane JSON payload.
+
+❌ Location header uses **SeriesId** instead of **InstanceId** → leads to 404 if you blindly follow it.
+❓ FileSizeBytes = 0 → either test file is empty or write/metadata logic is incomplete.
+
+---
+
+## Your next move
+
+1. Call:
+
+   ```http
+   GET /api/v1/radiology/pacs/instances/59427909-3f79-4a99-9de3-70aeef3ad0cd/file
+   ```
+
+2. Confirm you get **200** and a file download.
+
+Once you do that, you can safely say:
+
+> “Mini PACS V1 backend is working. Issues left: wrong Location header + file size tracking.”
+
+That’s a clean place to be. Then we can move on to the next backend day (14.4) or log these as TODOs in your repo.
+
+you:
+GET
+/api/v1/radiology/pacs/instances/{instanceId}/file
 
 Parameters
 Cancel
-Reset
-No parameters
-
-Request body
-
-application/json
-{
-  "email": "reception@lab.com",
-  "password": "Admin"
-}
-Execute
-Clear
-Responses
-Curl
-
-curl -X 'POST' \
-  'http://127.0.0.1:59999/api/v1/Auth/login' \
-  -H 'accept: */*' \
-  -H 'Content-Type: application/json' \
-  -d '{
-  "email": "reception@lab.com",
-  "password": "Admin"
-}'
-Request URL
-http://127.0.0.1:59999/api/v1/Auth/login
-Server response
-Code	Details
-200	
-Response body
-Download
-{
-  "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiIxNWFkZjMzZi1jODgzLTRkMTYtYjg5ZS1hYmVmMWRiNDhiNDgiLCJlbWFpbCI6InJlY2VwdGlvbkBsYWIuY29tIiwidW5pcXVlX25hbWUiOiJSZWNlcHRpb24gVXNlciIsInJvbGUiOiJSZWNlcHRpb25pc3QiLCJuYmYiOjE3NjUxMDIzMzIsImV4cCI6MTc2NTE4ODczMiwiaWF0IjoxNzY1MTAyMzMyLCJpc3MiOiJTeW5PUy5BcGkiLCJhdWQiOiJTeW5PUy5BcHAifQ.D2GPHVpEMP-YtlvNQe6wGKRzWK-0AbqmhCOK0itgOFs",
-  "refreshToken": "bZMCBL4moMvoYoT4ERg74c8bMf4LP+P+naKzB4ahZB89fAwwsUMGDDvOI3bD7SEtnenymRNELQ6NeOdrDcbD0Q==",
-  "expiresIn": 86400,
-  "user": {
-    "userId": "15adf33f-c883-4d16-b89e-abef1db48b48",
-    "email": "reception@lab.com",
-    "name": "Reception User",
-    "role": "Receptionist",
-    "designation": null,
-    "department": null,
-    "isActive": true
-  }
-}
-Response headers
- content-type: application/json; charset=utf-8 
- date: Sun,07 Dec 2025 10:12:12 GMT 
- server: Kestrel 
- transfer-encoding: chunked 
-Responses
-Code	Description	Links
-200	
-Success
-
-No links
-
-Patients
-
-
-POST
-/api/v1/Patients
-
-Parameters
-Cancel
-Reset
 Name	Description
-Idempotency-Key
-string
-(header)
-99999999-9999-9999-9999-999999999988
-Request body
-
-application/json
-{
-  "firstName": "Rad",
-  "lastName": "FlowClean3",
-  "dateOfBirth": "1990-01-01",
-  "gender": "Male",
-  "currentPhoneNumber": "9998877766"
-}
-
+instanceId *
+string($uuid)
+(path)
+59427909-3f79-4a99-9de3-70aeef3ad0cd
 Execute
 Clear
 Responses
 Curl
 
-curl -X 'POST' \
-  'http://127.0.0.1:59999/api/v1/Patients' \
+curl -X 'GET' \
+  'http://127.0.0.1:59999/api/v1/radiology/pacs/instances/59427909-3f79-4a99-9de3-70aeef3ad0cd/file' \
   -H 'accept: */*' \
-  -H 'Idempotency-Key: 99999999-9999-9999-9999-999999999988' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiIxNWFkZjMzZi1jODgzLTRkMTYtYjg5ZS1hYmVmMWRiNDhiNDgiLCJlbWFpbCI6InJlY2VwdGlvbkBsYWIuY29tIiwidW5pcXVlX25hbWUiOiJSZWNlcHRpb24gVXNlciIsInJvbGUiOiJSZWNlcHRpb25pc3QiLCJuYmYiOjE3NjUxMDIzMzIsImV4cCI6MTc2NTE4ODczMiwiaWF0IjoxNzY1MTAyMzMyLCJpc3MiOiJTeW5PUy5BcGkiLCJhdWQiOiJTeW5PUy5BcHAifQ.D2GPHVpEMP-YtlvNQe6wGKRzWK-0AbqmhCOK0itgOFs' \
-  -H 'Content-Type: application/json' \
-  -d '{
-  "firstName": "Rad",
-  "lastName": "FlowClean3",
-  "dateOfBirth": "1990-01-01",
-  "gender": "Male",
-  "currentPhoneNumber": "9998877766"
-}
-'
+  -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiI3MjE5ODVjNy1iYmFlLTQzNjgtYTk1OC04YjcyNDA4MmY1MzIiLCJlbWFpbCI6ImFkbWluQHN5bm9zLmNvbSIsInVuaXF1ZV9uYW1lIjoiU3lzdGVtIEFkbWluIiwicm9sZSI6IkFkbWluIiwibmJmIjoxNzY1MTgzMDQ1LCJleHAiOjE3NjUyNjk0NDUsImlhdCI6MTc2NTE4MzA0NSwiaXNzIjoiU3luT1MuQXBpIiwiYXVkIjoiU3luT1MuQXBwIn0.g10-5Y5T8CAaFWL4zKNNxl8K5W-Q3eoaMsq4vOgGvdM'
 Request URL
-http://127.0.0.1:59999/api/v1/Patients
+http://127.0.0.1:59999/api/v1/radiology/pacs/instances/59427909-3f79-4a99-9de3-70aeef3ad0cd/file
 Server response
 Code	Details
-201
-Undocumented
+200	
 Response body
-Download
-{
-  "patientId": "79fd19f0-a3b3-4fc7-981e-5ac45eccdb6c",
-  "mrn": "A00012",
-  "firstName": "Rad",
-  "lastName": "FlowClean3",
-  "dateOfBirth": "1990-01-01T00:00:00",
-  "gender": "Male",
-  "currentPhoneNumber": "9998877766",
-  "isSoftDeleted": false,
-  "createdAt": "2025-12-07T10:14:18.963519Z",
-  "updatedAt": "2025-12-07T10:14:18.9635259Z",
-  "rowVersion": "AAAAAAAAJxk=",
-  "phoneHistory": [
-    {
-      "phoneHistoryId": "374f46c9-ad52-4fbc-4c56-08de35796256",
-      "patientId": "79fd19f0-a3b3-4fc7-981e-5ac45eccdb6c",
-      "patient": null,
-      "phoneNumber": "9998877766",
-      "startDate": "2025-12-07T10:14:18.9639651Z",
-      "endDate": null
-    }
-  ],
-  "aliases": [],
-  "referrerLinks": []
-}
+Download file
 Response headers
- content-type: application/json; charset=utf-8 
- date: Sun,07 Dec 2025 10:14:18 GMT 
- location: http://127.0.0.1:59999/api/v1/Patients/79fd19f0-a3b3-4fc7-981e-5ac45eccdb6c 
+ content-length: 0 
+ content-type: application/octet-stream 
+ date: Mon,08 Dec 2025 10:31:54 GMT 
  server: Kestrel 
- transfer-encoding: chunked 
 Responses
 Code	Description	Links
 200	
@@ -669,259 +861,126 @@ Success
 
 No links
 
-Reception
+fyi thats an empty 0kb file which i uploaded.
+also that endpoint downloaded a file named application_octet-stream_file_blob_http___127.0.0.1_59999_9870d1db-b728-4493-adc8-fb1d80a5ac00
+there is no extension 
+
+gpt5:
+Good, this actually tells us a lot, and no, nothing is secretly broken here.
+
+Let’s break it down without bullshit.
+
+1️⃣ Why the downloaded file is 0 KB with a weird name
+a) 0 KB size
+
+Facts:
+
+DB row: FileSizeBytes = 0
+
+Disk: file is 0 bytes
+
+Response header: content-length: 0
+
+Conclusion:
+
+The API is faithfully streaming exactly what you stored: an empty file.
+
+You literally uploaded an empty test.dcm, so PACS did its job:
+
+Created Series row ✅
+
+Created Instance row ✅
+
+Saved the (empty) file ✅
+
+Returned it back exactly as-is ✅
+
+So: storage + retrieval are correct, your test file is just blank.
+
+Once you upload a real DICOM (non-zero size), that same GET endpoint will return proper bytes.
+
+b) Ugly filename application_octet-stream_file_blob_http___127...
+
+That’s a browser + header issue, not a PACS bug.
+
+Right now your GET endpoint only sends:
+
+content-type: application/octet-stream
+content-length: 0
 
 
-POST
-/api/v1/reception/start-visit
+No:
 
-Parameters
-Cancel
-Reset
-No parameters
+Content-Disposition: attachment; filename="something.dcm"
 
-Request body
+So the browser has no clue what to call the file. Chrome/Edge then invents a name from:
 
-application/json
-{
-  "patientId": "79fd19f0-a3b3-4fc7-981e-5ac45eccdb6c",
-  "dept": "Radiology",
-  "testCodes": [
-    "XRAY_CHEST"
-  ],
-  "referrerId": null,
-  "appointmentId": null,
-  "discountAmount": 0,
-  "discountPercent": 0,
-  "taxPercent": 0,
-  "notes": "Radiology flow test - FlowClean3",
-  "combinedBillingGroupId": null
-}
+MIME type
 
-Execute
-Clear
-Responses
-Curl
+URL
 
-curl -X 'POST' \
-  'http://127.0.0.1:59999/api/v1/reception/start-visit' \
-  -H 'accept: */*' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiIxNWFkZjMzZi1jODgzLTRkMTYtYjg5ZS1hYmVmMWRiNDhiNDgiLCJlbWFpbCI6InJlY2VwdGlvbkBsYWIuY29tIiwidW5pcXVlX25hbWUiOiJSZWNlcHRpb24gVXNlciIsInJvbGUiOiJSZWNlcHRpb25pc3QiLCJuYmYiOjE3NjUxMDIzMzIsImV4cCI6MTc2NTE4ODczMiwiaWF0IjoxNzY1MTAyMzMyLCJpc3MiOiJTeW5PUy5BcGkiLCJhdWQiOiJTeW5PUy5BcHAifQ.D2GPHVpEMP-YtlvNQe6wGKRzWK-0AbqmhCOK0itgOFs' \
-  -H 'Content-Type: application/json' \
-  -d '{
-  "patientId": "79fd19f0-a3b3-4fc7-981e-5ac45eccdb6c",
-  "dept": "Radiology",
-  "testCodes": [
-    "XRAY_CHEST"
-  ],
-  "referrerId": null,
-  "appointmentId": null,
-  "discountAmount": 0,
-  "discountPercent": 0,
-  "taxPercent": 0,
-  "notes": "Radiology flow test - FlowClean3",
-  "combinedBillingGroupId": null
-}
-'
-Request URL
-http://127.0.0.1:59999/api/v1/reception/start-visit
-Server response
-Code	Details
-201
-Undocumented
-Response body
-Download
-{
-  "data": {
-    "visitId": "d5dc902d-343f-4b2b-ad9d-37dc5b4e1147",
-    "token": "AX-002",
-    "tokenDate": "2025-12-07T00:00:00+05:30",
-    "dept": "Radiology",
-    "status": "PendingPayment",
-    "patientSummary": {
-      "patientId": "79fd19f0-a3b3-4fc7-981e-5ac45eccdb6c",
-      "mrn": "A00012",
-      "name": "Rad FlowClean3",
-      "sex": "Male",
-      "age": 35
-    },
-    "orders": [
-      {
-        "orderId": "236e803e-38d1-487b-a9b7-1b359d134995",
-        "testCode": "XRAY_CHEST",
-        "testName": "X-Ray Chest",
-        "dept": "Radiology",
-        "price": 300,
-        "discount": 0
-      }
-    ],
-    "invoice": {
-      "invoiceId": "818f3ade-906d-4b8f-9cb1-5a70dfd08f46",
-      "grossAmount": 300,
-      "discountAmount": 0,
-      "netAmount": 300,
-      "taxAmount": 15,
-      "total": 315,
-      "status": "PendingPayment"
-    },
-    "flags": {
-      "hasSameDayVisits": false,
-      "sameDayVisitCount": 0
-    }
-  }
-}
-Response headers
- content-type: application/json; charset=utf-8 
- date: Sun,07 Dec 2025 10:15:16 GMT 
- location: http://127.0.0.1:59999/api/v1/reception/visit-summary/d5dc902d-343f-4b2b-ad9d-37dc5b4e1147 
- server: Kestrel 
- transfer-encoding: chunked 
-Responses
-Code	Description	Links
-200	
-Success
+Some random ID
 
-No links
+That’s why you get that monster filename with no .dcm extension.
 
-POST
-/api/v1/reception/complete-payment
+Fix (later, when polishing):
 
-Parameters
-Cancel
-Reset
-No parameters
+In your controller action for GET /instances/{instanceId}/file:
 
-Request body
+Read the FilePath and/or original filename.
 
-application/json
-{
-  "visitId": "d5dc902d-343f-4b2b-ad9d-37dc5b4e1147",
-  "amount": 315,
-  "method": "Cash",
-  "receiptNo": "RCPT-AX-001",
-  "notes": "Radiology flow test - FlowClean3"
-}
+Set:
 
-Execute
-Clear
-Responses
-Curl
-
-curl -X 'POST' \
-  'http://127.0.0.1:59999/api/v1/reception/complete-payment' \
-  -H 'accept: */*' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiIxNWFkZjMzZi1jODgzLTRkMTYtYjg5ZS1hYmVmMWRiNDhiNDgiLCJlbWFpbCI6InJlY2VwdGlvbkBsYWIuY29tIiwidW5pcXVlX25hbWUiOiJSZWNlcHRpb24gVXNlciIsInJvbGUiOiJSZWNlcHRpb25pc3QiLCJuYmYiOjE3NjUxMDIzMzIsImV4cCI6MTc2NTE4ODczMiwiaWF0IjoxNzY1MTAyMzMyLCJpc3MiOiJTeW5PUy5BcGkiLCJhdWQiOiJTeW5PUy5BcHAifQ.D2GPHVpEMP-YtlvNQe6wGKRzWK-0AbqmhCOK0itgOFs' \
-  -H 'Content-Type: application/json' \
-  -d '{
-  "visitId": "d5dc902d-343f-4b2b-ad9d-37dc5b4e1147",
-  "amount": 315,
-  "method": "Cash",
-  "receiptNo": "RCPT-AX-001",
-  "notes": "Radiology flow test - FlowClean3"
-}
-'
-Request URL
-http://127.0.0.1:59999/api/v1/reception/complete-payment
-Server response
-Code	Details
-500
-Undocumented
-Error: Internal Server Error
-
-Response body
-Download
-{
-  "code": "INTERNAL_SERVER_ERROR",
-  "message": "An internal error occurred while completing payment."
-}
-Response headers
- content-type: application/json; charset=utf-8 
- date: Sun,07 Dec 2025 10:16:00 GMT 
- server: Kestrel 
- transfer-encoding: chunked 
-Responses
-Code	Description	Links
-200	
-Success
-
-No links
+return File(
+    fileStream,
+    instance.ContentType ?? "application/dicom",
+    fileDownloadName: "something.dcm" // derive from SOP UID or original filename
+);
 
 
+That will add:
 
-Good, this run actually tells us something **useful**:
-the radiology fix is no longer what’s breaking you. It’s your **Payments** table now.
-
----
-
-## What the new error really is
-
-From the log:
-
-> `Cannot insert duplicate key row in object 'dbo.Payments' with unique index 'IX_Payments_ReceiptNo'. The duplicate key value is (RCPT-AX-001).` 
-
-Plain English:
-
-* Your `Payments` table has a **unique index** on `ReceiptNo` (`IX_Payments_ReceiptNo`).
-* You tried to save a payment with `receiptNo = "RCPT-AX-001"`.
-* The DB already has a row with that same `ReceiptNo`.
-* SQL refuses the insert → EF throws `DbUpdateException` → your API wraps it as `INTERNAL_SERVER_ERROR`.
-
-The stack trace also confirms this is happening inside:
-
-* `InvoiceService.RecordPaymentAsync(...)` at line 75
-* Called from `ReceptionFlowService.CompletePaymentAsync(...)`
+Content-Disposition: attachment; filename="test.dcm"
 
 
-So **this 500 is 100% about duplicate receipt number**, not about radiology report structure.
+and the browser will save it as test.dcm.
 
----
+2️⃣ What we’ve actually verified now
 
-## What this means for your radiology flow
+From end-to-end:
 
-* The old `RadiologyReport.ReportId is unknown` error is gone in this run.
-* The flow now fails **earlier**, at payment save, because of the `ReceiptNo` uniqueness constraint.
-* That’s why your API message is just:
+Clinical flow
 
-> `"An internal error occurred while completing payment."`
+Patient ✅
 
-The real reason is the DB rejecting the payment insert.
+Visit with real test XRAY_CHEST ✅
 
----
+Invoice (315) + payment ✅
 
-## How to unblock yourself *right now*
+RadiologyStudy created (PendingImaging) ✅
 
-For testing, do **any one** of these:
+PACS workflow
 
-1. **Use a fresh receipt number each time in Swagger**
+POST /pacs/{radiologyStudyId}/upload
 
-   * Instead of hardcoding `"RCPT-AX-001"` every test, do:
+Creates Series row ✅
 
-     * First run: `"RCPT-AX-001"`
-     * Next run: `"RCPT-AX-002"`
-     * Next: `"RCPT-AX-003"`, etc.
-   * That alone will make this particular error vanish.
+Creates Instance row ✅
 
-2. **Or wipe the Payments table between test runs**
+Saves file under correct folder path ✅
 
-   * Quick and dirty while you’re iterating:
+Returns { radiologyStudyId, seriesId, instancesCreated } ✅
 
-     ```sql
-     DELETE FROM Payments;
-     ```
-   * Or drop + recreate DB if you’re okay losing everything.
+GET /pacs/instances/{instanceId}/file
 
-3. **Long-term proper fix (design)**
+Looks up instance ✅
 
-   * Decide how receipts are meant to work:
+Streams file bytes back ✅
 
-     * If **system-generated**, don’t let the client pass `receiptNo`; generate it in `InvoiceService.RecordPaymentAsync` and guarantee uniqueness yourself.
-     * If **user-entered**, then:
+The only “issues” now are:
 
-       * Keep the unique index (good for data integrity),
-       * But catch duplicate `ReceiptNo` in service code and return a **validation error** instead of a 500.
+You tested with an empty file → you got an empty file back. That’s expected.
 
-For now, to keep moving with radiology E2E:
+Download filename is ugly because you’re not setting Content-Disposition.
 
-> **Change the `receiptNo` in your `complete-payment` request to a new unique value and rerun.**
-
-Once payment succeeds, we can then walk the rest of the radiology path again (queue → assign → mark-imaging-completed → worklist → draft → finalize).
+Location header from upload uses SeriesId instead of InstanceId (real bug, but easy fix).

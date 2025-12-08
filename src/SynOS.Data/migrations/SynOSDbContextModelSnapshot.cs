@@ -767,6 +767,132 @@ namespace SynOS.Data.Migrations
                     b.ToTable("Orders");
                 });
 
+            modelBuilder.Entity("SynOS.Models.Entities.PACS.PacsInstance", b =>
+                {
+                    b.Property<Guid>("InstanceId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("BranchId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ContentType")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("CreatedBy")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("FilePath")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<long?>("FileSizeBytes")
+                        .HasColumnType("bigint");
+
+                    b.Property<int?>("FrameCount")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("InstanceNumber")
+                        .HasColumnType("int");
+
+                    b.Property<Guid?>("OrgId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("RadiologyStudyId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("SeriesId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("SeriesInstanceUid")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("SopInstanceUid")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("StudyInstanceUid")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.HasKey("InstanceId");
+
+                    b.HasIndex("CreatedBy");
+
+                    b.HasIndex("RadiologyStudyId");
+
+                    b.HasIndex("SeriesId");
+
+                    b.HasIndex("SopInstanceUid");
+
+                    b.ToTable("PacsInstances");
+                });
+
+            modelBuilder.Entity("SynOS.Models.Entities.PACS.PacsSeries", b =>
+                {
+                    b.Property<Guid>("SeriesId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("BranchId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("CreatedBy")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Modality")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<Guid?>("OrgId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("RadiologyStudyId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("SeriesInstanceUid")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int?>("SeriesNumber")
+                        .HasColumnType("int");
+
+                    b.Property<string>("StudyInstanceUid")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.HasKey("SeriesId");
+
+                    b.HasIndex("CreatedBy");
+
+                    b.HasIndex("RadiologyStudyId");
+
+                    b.HasIndex("SeriesInstanceUid");
+
+                    b.HasIndex("StudyInstanceUid");
+
+                    b.ToTable("PacsSeries");
+                });
+
             modelBuilder.Entity("SynOS.Models.Entities.PartialPayment", b =>
                 {
                     b.Property<Guid>("PartialId")
@@ -2193,6 +2319,52 @@ namespace SynOS.Data.Migrations
                     b.Navigation("Visit");
                 });
 
+            modelBuilder.Entity("SynOS.Models.Entities.PACS.PacsInstance", b =>
+                {
+                    b.HasOne("SynOS.Models.Entities.User", "Creator")
+                        .WithMany()
+                        .HasForeignKey("CreatedBy")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SynOS.Models.Entities.RadiologyStudy", "RadiologyStudy")
+                        .WithMany()
+                        .HasForeignKey("RadiologyStudyId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("SynOS.Models.Entities.PACS.PacsSeries", "PacsSeries")
+                        .WithMany("PacsInstances")
+                        .HasForeignKey("SeriesId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Creator");
+
+                    b.Navigation("PacsSeries");
+
+                    b.Navigation("RadiologyStudy");
+                });
+
+            modelBuilder.Entity("SynOS.Models.Entities.PACS.PacsSeries", b =>
+                {
+                    b.HasOne("SynOS.Models.Entities.User", "Creator")
+                        .WithMany()
+                        .HasForeignKey("CreatedBy")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SynOS.Models.Entities.RadiologyStudy", "RadiologyStudy")
+                        .WithMany()
+                        .HasForeignKey("RadiologyStudyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Creator");
+
+                    b.Navigation("RadiologyStudy");
+                });
+
             modelBuilder.Entity("SynOS.Models.Entities.PartialPayment", b =>
                 {
                     b.HasOne("SynOS.Models.Entities.Invoice", "Invoice")
@@ -2629,6 +2801,11 @@ namespace SynOS.Data.Migrations
                     b.Navigation("PartialPayments");
 
                     b.Navigation("Payments");
+                });
+
+            modelBuilder.Entity("SynOS.Models.Entities.PACS.PacsSeries", b =>
+                {
+                    b.Navigation("PacsInstances");
                 });
 
             modelBuilder.Entity("SynOS.Models.Entities.Patient", b =>
