@@ -6,5 +6,6 @@ namespace SynOS.Models.Enums
         public const string Matched = "Matched";
         public const string Rejected = "Rejected"; // For future use
         public const string Imported = "Imported"; // For future use
+        public const string ParseError = "ParseError";
     }
 }

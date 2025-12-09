@@ -84,7 +84,7 @@ namespace SynOS.Services
             }
             
             // 4. Update inbox item
-            inboxItem.SynosTestCode = mapping.SynosTestCode;
+            inboxItem.ParameterCode = mapping.SynosTestCode; // Renamed to ParameterCode
             inboxItem.VisitId = visit.VisitId;
             inboxItem.OrderId = order.OrderId;
             inboxItem.Status = LabAnalyzerResultStatus.Matched;

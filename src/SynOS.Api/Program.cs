@@ -21,6 +21,7 @@ using SynOS.Services.Storage;
 using SynOS.Services.Stubs;
 using SynOS.Models.Configuration;
 using SynOS.Services.Security;
+using SynOS.Services.AnalyzerIntegration; // New
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -150,10 +151,17 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IAccessionService, AccessionService>();
 builder.Services.AddScoped<ILabAnalyzerService, LabAnalyzerService>(); // New Lab Analyzer Service
 builder.Services.AddScoped<IAnalyzerResultMatcherService, AnalyzerResultMatcherService>(); // New Analyzer Result Matcher Service
+builder.Services.AddScoped<IAnalyzerResultImportService, AnalyzerResultImportService>(); // New Analyzer Result Import Service
 builder.Services.AddSingleton<IFileStorageService, LocalStorageService>();
+
+// Register AnalyzerIntegration services
+builder.Services.AddTransient<AstmProtocolParser>();
+builder.Services.AddTransient<Hl7ProtocolParser>();
+builder.Services.AddScoped<IAnalyzerProtocolParserFactory, AnalyzerProtocolParserFactory>();
 
 // Configure settings
 builder.Services.Configure<PacsSettings>(builder.Configuration.GetSection("Pacs"));
+builder.Services.Configure<AnalyzerIntegrationSettings>(builder.Configuration.GetSection("AnalyzerIntegration")); // New
 
 // Register Delivery Module Services
 builder.Services.AddScoped<IDeliveryService, DeliveryService>();
@@ -164,6 +172,7 @@ builder.Services.AddScoped<IPrintService, StubPrintService>();
 
 builder.Services.AddHostedService<NotificationWorkerService>();
 builder.Services.AddHostedService<ExpiredLockCleanupService>();
+builder.Services.AddHostedService<AnalyzerTcpListenerService>(); // New TCP Listener Hosted Service
 
 // Add SignalR
 builder.Services.AddSignalR();
