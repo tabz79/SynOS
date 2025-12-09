@@ -59,5 +59,10 @@ namespace SynOS.Models.Entities.PACS
 
         [ForeignKey("CreatedBy")]
         public virtual User Creator { get; set; }
+
+        // Soft delete properties
+        public bool IsDeleted { get; set; } = false;
+        public DateTimeOffset? DeletedAt { get; set; }
+        public Guid? DeletedBy { get; set; }
     }
 }

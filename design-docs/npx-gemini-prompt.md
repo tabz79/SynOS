@@ -1,353 +1,454 @@
-## Day 14.5 — Series Tree + WADO-style API (Backend Only)
+## Day 14.7 — Lab Analyzer Integration Foundation (Backend Only)
 
 Use this as your Gemini backend prompt.
 
 ---
 
 **Title:**
-Day 14.5 — PACS Series Tree + WADO-style API for RadiologyStudy (Backend Only)
+Day 14.7 — Lab Analyzer Integration Foundation (Backend Only)
 
 **Context:**
 You are a .NET 8 BACKEND expert working on **SynOS**, a Diagnostic Lab Management System.
 
-Existing backend stack:
+**Stack:**
 
 * ASP.NET Core .NET 8 Web API
 * EF Core + SQL Server
-* Layered/clean-ish architecture:
+* Layered / clean-ish architecture:
 
   * Data / Entities / EF Config / Migrations
   * Services / Domain logic
-  * DTOs/Models
-  * Api / Controllers / DI / Middleware
+  * DTOs / Models
+  * Api / Controllers / DI
 
-Radiology module is already implemented up to **Day 14.4**:
+**Current SynOS status (relevant parts):**
 
-* RadiologyStudy, RadiologyReports, workflow, RBAC, etc.
-* Mini PACS backend:
+* Core entities & flows exist:
 
-  From **Day 14.3**:
+  * Patients, Visits, Orders, Invoices
+  * Test Master with `testCode` (e.g. `CBC`, `HGB`, `FBS`, etc.)
+  * Reception module (`start-visit`, `complete-payment`)
+* Radiology:
 
-  * `PacsSeries` + `PacsInstances` tables exist.
-  * PACS file storage layout implemented:
+  * RadiologyStudy, RadiologyReports, Mini PACS, DICOM backend are all implemented and stable.
+* Pathology / Lab:
 
-    * `Pacs:RootPath` → `{RootPath}/{OrgId}/{BranchId}/{RadiologyStudyId}/{SeriesId}/{InstanceId}.dcm`
-  * Upload endpoint:
+  * SynOS can **create lab orders** (e.g. Biochemistry, Hematology, etc.) as part of a visit.
+  * Results are currently assumed to be **typed manually** into result entry screens (no machine integration yet).
+* Multi-branch / Org:
 
-    * `POST /api/v1/radiology/pacs/{radiologyStudyId}/upload`
-    * Saves files to disk + creates PacsSeries & PacsInstances rows.
-
-  From **Day 14.4**:
-
-  * DICOM parser (e.g. FellowOakDicom) integrated.
-  * `UploadDicomAsync` now extracts real tags:
-
-    * StudyInstanceUid, SeriesInstanceUid, SopInstanceUid, Modality, SeriesDescription, SeriesNumber, InstanceNumber, FrameCount, etc.
-  * Reindex endpoint:
-
-    * `POST /api/v1/radiology/pacs/{radiologyStudyId}/reindex`
-    * Rebuilds PACS metadata from DICOM files.
-  * Download endpoint:
-
-    * `GET /api/v1/radiology/pacs/instances/{instanceId}/file`
-    * Streams raw `.dcm`.
-
-**Goal of Day 14.5:**
-
-* Build a **single read-only API** that returns the **full PACS “series tree”** for a given RadiologyStudy.
-* This tree is tailored for future **Cornerstone3D** use:
-
-  * Sorted instance list per series.
-  * Prebuilt `wadouri:` URLs for each instance.
-* Backend-only. No frontend or Cornerstone code today.
+  * Org/Branch concepts exist at least at Visit / Radiology level.
+  * RBAC/roles exist: `Admin`, `Pathologist`, `LabTech`, etc. (adjust names to what’s actually there).
 
 ---
 
-### 🔒 Guardrails / Constraints
+## Goal of Day 14.7
+
+Lay the **foundation** for Analyzer / Lab Machine integration:
+
+* Introduce **backend models + tables** to represent analyzers and incoming results.
+* Provide basic **Analyzer Registration** APIs (Admin-only).
+* Provide a **manual result ingestion endpoint** that mimics what a machine will send.
+* Store incoming results in a **Lab Result Inbox / Queue** for later matching & review (future days).
+
+No real serial/TCP/ASTM/HL7 integration yet — this day is about **data structures, services, and HTTP-based ingestion** that future days will build on.
+
+Backend-only. No frontend.
+
+---
+
+## 🔒 Guardrails / Constraints
 
 * **Backend only.**
-
-  * No React, no JS, no UI changes.
-* Do NOT run shell or git commands.
-
-  * You can *suggest* `dotnet ef` or `dotnet add package` in TLDR, but do not execute them.
+  No React, no JS, no UI.
+* Do NOT run shell, EF CLI, or git commands (you can mention them in a TLDR for the human to run).
 * Only touch:
 
-  * Data layer (queries, if needed)
-  * Services (`IPacsService`, implementation)
-  * DTOs/Models
-  * Api controllers + DI
-* Do NOT refactor other modules or radiology workflows.
-  Keep changes scoped to **PACS reading** and minimal support code.
+  * Lab / Pathology / Analyzer-related entities, configs, migrations
+  * Lab/Analyzer services (new interfaces and implementations)
+  * DTOs/Models for Analyzer + Result Inbox
+  * Lab/Analyzer controllers & DI registration
+* Do NOT change PACS / Radiology code in this day.
+* Do NOT design full HL7/ASTM protocol parsing yet. Only prepare **internal models** where parsed data will land.
 
 ---
 
-## 1) Series Tree API – Contract
+## 1) Data Model & EF Entities — Analyzer + Result Inbox
 
-Create an API that returns a **Cornerstone-ready** structure for a given RadiologyStudy.
+We need a small set of core entities:
 
-### Endpoint
+### 1.1 `LabAnalyzer` entity
 
-`GET api/v1/radiology/pacs/studies/{radiologyStudyId:guid}/series-tree`
+Add a new entity (e.g. `LabAnalyzer`) under your Models/Entities project.
 
-### Auth / Permissions
-
-* `[Authorize(Roles = "Radiologist,XRayTech,Admin")]`
-* User must:
-
-  * Belong to the same `OrgId` (and optionally branch) as the RadiologyStudy,
-  * Or have cross-branch privileges according to existing RBAC rules.
-
-Use the same style of org/branch + role enforcement already used in radiology APIs.
-
-### Response DTO
-
-Create a DTO model similar to:
+Suggested fields (adapt naming to your conventions):
 
 ```csharp
-public sealed class PacsSeriesTreeDto
+public class LabAnalyzer
 {
-    public Guid RadiologyStudyId { get; set; }
-    public string StudyInstanceUid { get; set; } = default!;
-    public IReadOnlyList<PacsSeriesNodeDto> Series { get; set; } = Array.Empty<PacsSeriesNodeDto>();
-}
+    public Guid AnalyzerId { get; set; }
 
-public sealed class PacsSeriesNodeDto
-{
-    public Guid SeriesId { get; set; }
-    public string SeriesInstanceUid { get; set; } = default!;
-    public string? Modality { get; set; }
-    public string? Description { get; set; }
-    public int? SeriesNumber { get; set; }
-    public int InstanceCount { get; set; }
-    public IReadOnlyList<PacsInstanceNodeDto> Instances { get; set; } = Array.Empty<PacsInstanceNodeDto>();
-}
+    public Guid OrgId { get; set; }           // For future multi-branch scoping
+    public Guid BranchId { get; set; }        // Can be Guid.Empty for now if not fully wired
 
-public sealed class PacsInstanceNodeDto
-{
-    public Guid InstanceId { get; set; }
-    public string SopInstanceUid { get; set; } = default!;
-    public int? InstanceNumber { get; set; }
-    public int? FrameCount { get; set; }
+    public string Name { get; set; }          // e.g. "Sysmex XN-1000"
+    public string Model { get; set; }         // e.g. "XN-1000"
+    public string Manufacturer { get; set; }  // e.g. "Sysmex"
 
-    // This is what Cornerstone will later use as imageId directly:
-    public string Wadouri { get; set; } = default!;
+    // ConnectionType describes how this analyzer will integrate in the future
+    public string ConnectionType { get; set; } // e.g. "Manual", "ASTM", "HL7", "FileDrop"
+
+    public bool IsEnabled { get; set; }
+
+    public string? Notes { get; set; }
+
+    public DateTimeOffset CreatedAt { get; set; }
+    public Guid CreatedBy { get; set; }
+    public DateTimeOffset? UpdatedAt { get; set; }
+    public Guid? UpdatedBy { get; set; }
 }
 ```
 
-Notes:
+You may introduce an enum (or string constants) for `ConnectionType` if that matches your style better.
 
-* `StudyInstanceUid` should be taken from PACS data (from any series/instance under this study – they should all match).
-* `InstanceCount` is just `Instances.Count` for that series.
-* `Wadouri` string must be the **full `wadouri:` prefixed URL** to the instance file.
+### 1.2 `LabAnalyzerResultInbox` entity
 
----
-
-## 2) Service Method – Building the Series Tree
-
-Extend `IPacsService` with a read-only method:
+This is the **Result Queue**: every incoming reading (manual or machine) lands here first.
 
 ```csharp
-public interface IPacsService
+public class LabAnalyzerResultInbox
 {
-    // Existing methods...
-    Task<PacsSeriesTreeDto> GetSeriesTreeAsync(
-        Guid radiologyStudyId,
-        Guid currentUserId,
-        string apiBaseUrl // or some way to build absolute URLs
-    );
+    public Guid InboxId { get; set; }
+
+    public Guid AnalyzerId { get; set; }
+    public LabAnalyzer Analyzer { get; set; }
+
+    // raw line / payload from the machine (or from the manual API)
+    public string RawMessage { get; set; }
+
+    // Parsed basic fields (can be null when first ingested)
+    public string? PatientIdentifier { get; set; }   // MRN, SampleId, or Barcode value as received
+    public string? AnalyzerTestCode { get; set; }    // test code as reported by machine, e.g. "HGB"
+    public string? ResultValue { get; set; }         // keep as string for flexibility (numeric or qualitative)
+    public string? Units { get; set; }               // e.g. "g/dL"
+    public string? Flags { get; set; }               // e.g. "H", "L", "Critical", or machine-specific flags
+
+    public DateTimeOffset? MeasuredAt { get; set; }  // When machine measured
+
+    // Matching to SynOS structures (future days will fill these)
+    public Guid? VisitId { get; set; }               // Matched visit
+    public Guid? OrderId { get; set; }               // Matched lab order
+    public string? SynosTestCode { get; set; }       // Mapped to SynOS testCode
+
+    // Status and review
+    public string Status { get; set; }               // e.g. "Pending", "Matched", "Rejected", "Imported"
+
+    public DateTimeOffset ReceivedAt { get; set; }
+    public Guid? ReceivedBy { get; set; }            // null if from real machine; userId if manual
+
+    public DateTimeOffset? ReviewedAt { get; set; }
+    public Guid? ReviewedBy { get; set; }
+    public string? ReviewNote { get; set; }
 }
 ```
 
-You can choose how to get `apiBaseUrl`:
+**Important for Day 14.7:**
+You **do not** need to implement matching logic yet — just the fields to support it in later days.
 
-* Option A (simpler):
+### 1.3 EF Config & Migration
 
-  * Controller obtains it from `HttpContext.Request` (scheme + host) and passes into service.
-* Option B:
+* Add DbSet properties to your `SynOSDbContext`:
 
-  * Service gets `IHttpContextAccessor` injected and builds URLs internally.
-* Either is fine; pick whatever matches your existing pattern.
+```csharp
+public DbSet<LabAnalyzer> LabAnalyzers { get; set; }
+public DbSet<LabAnalyzerResultInbox> LabAnalyzerResultInbox { get; set; }
+```
 
-### Implementation details:
+* Configure relationships and indexes via EF configuration classes or `OnModelCreating`:
 
-**Step 1 – Validate Study + Permissions**
+  * `LabAnalyzerResultInbox.AnalyzerId` → `LabAnalyzer`
+  * Suggested indexes:
 
-* Load `RadiologyStudy` by `radiologyStudyId`.
-* Make sure study exists and `currentUserId` has permission:
+    * `AnalyzerId`
+    * `Status`
+    * `PatientIdentifier`
+    * `VisitId`
+    * `OrderId`
 
-  * Org/branch check
-  * Role (Radiologist/XRayTech/Admin)
-
-Reuse existing radiology security logic where possible.
-
-**Step 2 – Fetch PACS Data**
-
-* Query `PacsSeries` where `RadiologyStudyId == radiologyStudyId`.
-
-* If no series found:
-
-  * Return an empty `PacsSeriesTreeDto` with:
-
-    * `RadiologyStudyId` = input id
-    * `StudyInstanceUid` = maybe empty string or null-equivalent but keep property non-nullable in DTO (e.g. empty string)
-    * `Series` = empty list.
-
-* Query `PacsInstances` where `RadiologyStudyId == radiologyStudyId`.
-
-* Optionally do this with a single query and project into DTO directly (to avoid N+1), but clarity is more important than over-optimization for now.
-
-**Step 3 – Determine StudyInstanceUid**
-
-* If there is at least one series or instance, pick `StudyInstanceUid` from:
-
-  * e.g. the first series’ `StudyInstanceUid`, or
-  * the first instance’s `StudyInstanceUid`.
-* Assuming Day 14.4 has ensured consistent UIDs per study.
-
-**Step 4 – Build Series → Instances structure**
-
-* For each `PacsSeries` row:
-
-  * Filter its instances from `PacsInstances` based on `SeriesId`.
-  * Sort instances by:
-
-    * `InstanceNumber` ascending, with nulls pushed to end,
-    * then `InstanceId` as tie-breaker.
-
-* For each instance build `PacsInstanceNodeDto`:
-
-  * `InstanceId` = DB value
-  * `SopInstanceUid` = DB value
-  * `InstanceNumber` = DB value
-  * `FrameCount` = DB value
-  * `Wadouri` = build like:
-
-    ```csharp
-    var wadouri = $"wadouri:{apiBaseUrl.TrimEnd('/')}/api/v1/radiology/pacs/instances/{instance.InstanceId}/file";
-    ```
-
-* For each series build `PacsSeriesNodeDto`:
-
-  * `SeriesId`, `SeriesInstanceUid`, `Modality`, `Description`, `SeriesNumber` from DB.
-  * `InstanceCount` = number of instances attached.
-  * `Instances` = sorted list above.
-
-**Step 5 – Return**
-
-Create and return `PacsSeriesTreeDto`:
-
-* `RadiologyStudyId` = input
-* `StudyInstanceUid` = selected UID
-* `Series` = list of `PacsSeriesNodeDto` sorted by:
-
-  * `SeriesNumber` ascending (if available), otherwise by `SeriesInstanceUid` or `SeriesId`.
+* Create and apply an EF migration (to be run by the human dev).
 
 ---
 
-## 3) API Controller – Series Tree Endpoint
+## 2) Configuration & Supporting Types
 
-In `PacsController` (or another radiology PACS controller), add:
+### 2.1 Connection Type Enum / Constants
+
+Add something like:
 
 ```csharp
-[HttpGet("studies/{radiologyStudyId:guid}/series-tree")]
-[Authorize(Roles = "Radiologist,XRayTech,Admin")]
-public async Task<IActionResult> GetSeriesTree(Guid radiologyStudyId)
+public static class LabAnalyzerConnectionTypes
 {
-    var currentUserId = _currentUserService.GetUserId(); // or your existing pattern
-
-    // build base URL: scheme + host + optional base path
-    var request = HttpContext.Request;
-    var apiBaseUrl = $"{request.Scheme}://{request.Host.ToUriComponent()}"; 
-    // if you have API behind a reverse proxy with path base, include that too.
-
-    var result = await _pacsService.GetSeriesTreeAsync(
-        radiologyStudyId,
-        currentUserId,
-        apiBaseUrl);
-
-    return Ok(result);
+    public const string Manual = "Manual";
+    public const string Astm = "ASTM";
+    public const string Hl7 = "HL7";
+    public const string FileDrop = "FileDrop";
 }
 ```
 
-Notes:
+or use an enum if that’s standard in this codebase.
 
-* Do NOT expose extra internal info.
-* All RBAC & org/branch checks must be done inside the service (or via any shared helper you already use).
+### 2.2 Optional: `LabAnalyzerSettings`
 
----
+If appropriate, add a simple config class for global analyzer settings, e.g.:
 
-## 4) Performance & Safeguards (Basic)
+```csharp
+public class LabAnalyzerSettings
+{
+    public int MaxInboxItemsPerQuery { get; set; } = 500;
+}
+```
 
-Even though this is V1, add some basic guardrails:
-
-* If a study somehow has **extremely many** instances (thousands+), you should:
-
-  * at least code with efficiency in mind: one or two queries, not per-instance DB trips.
-  * Optionally consider a **hard cap** (e.g. 10k instances) and return an error if broken – but this is optional for 14.5.
-
-Use projections and grouping in EF where it still keeps the code readable. Don’t prematurely micro-optimize; just avoid obvious N+1 loops backed by separate DB calls per row.
+Bind it from `appsettings.json` (e.g. `"LabAnalyzer": { "MaxInboxItemsPerQuery": 500 }`) and register with `IOptions<LabAnalyzerSettings>`.
 
 ---
 
-## 5) No Frontend, But Future Contract is Clear
+## 3) Service Layer — Analyzer & Inbox Services
 
-This endpoint is **designed for the later Cornerstone3D frontend** but we do NOT touch React now.
+Create a dedicated service interface and implementation for analyzers.
 
-Later, the viewer will do something like:
+### 3.1 `ILabAnalyzerService`
 
-* Call `GET /api/v1/radiology/pacs/studies/{id}/series-tree`
-* Pick a series:
+In `SynOS.Services` (or equivalent):
 
-  * `const imageIds = series.instances.map(x => x.wadouri);`
-* Pass `imageIds` into Cornerstone3D stack/volume loader.
+```csharp
+public interface ILabAnalyzerService
+{
+    Task<LabAnalyzer> CreateAnalyzerAsync(CreateLabAnalyzerDto dto, Guid currentUserId);
+    Task<LabAnalyzer> UpdateAnalyzerAsync(Guid analyzerId, UpdateLabAnalyzerDto dto, Guid currentUserId);
+    Task<LabAnalyzer?> GetAnalyzerAsync(Guid analyzerId, Guid currentUserId);
+    Task<IReadOnlyList<LabAnalyzer>> GetAnalyzersAsync(Guid currentUserId);
 
-So keep property names clean and stable:
+    Task<LabAnalyzerResultInbox> EnqueueManualResultAsync(Guid analyzerId, ManualAnalyzerResultDto dto, Guid currentUserId);
+}
+```
 
-* `seriesTree.series[x].instances[y].wadouri` is the key thing.
+### 3.2 DTOs
+
+Create DTOs in `SynOS.Models/DTOs/LabAnalyzers` (adjust path to your conventions):
+
+```csharp
+public class CreateLabAnalyzerDto
+{
+    public string Name { get; set; }
+    public string Model { get; set; }
+    public string Manufacturer { get; set; }
+    public string ConnectionType { get; set; } // Manual / ASTM / HL7 / FileDrop
+    public string? Notes { get; set; }
+
+    public Guid OrgId { get; set; }    // For now can be Guid.Empty if needed
+    public Guid BranchId { get; set; } // same
+}
+
+public class UpdateLabAnalyzerDto
+{
+    public string Name { get; set; }
+    public string Model { get; set; }
+    public string Manufacturer { get; set; }
+    public string ConnectionType { get; set; }
+    public string? Notes { get; set; }
+    public bool IsEnabled { get; set; }
+}
+
+public class LabAnalyzerSummaryDto
+{
+    public Guid AnalyzerId { get; set; }
+    public string Name { get; set; }
+    public string Model { get; set; }
+    public string Manufacturer { get; set; }
+    public string ConnectionType { get; set; }
+    public bool IsEnabled { get; set; }
+}
+
+public class ManualAnalyzerResultDto
+{
+    public string RawMessage { get; set; }              // Entire "line" as if from device
+
+    public string? PatientIdentifier { get; set; }      // MRN / Sample ID / Barcode string
+    public string? AnalyzerTestCode { get; set; }       // Machine test code
+    public string? ResultValue { get; set; }            // "12.3" or "Positive"
+    public string? Units { get; set; }                  // e.g. "g/dL"
+    public string? Flags { get; set; }                  // e.g. "H", "L", "Critical"
+    public DateTimeOffset? MeasuredAt { get; set; }     // Time of measurement (optional)
+}
+```
+
+### 3.3 Service Implementation
+
+Implement `LabAnalyzerService`:
+
+* `CreateAnalyzerAsync`:
+
+  * Validate `Name`, `ConnectionType`.
+  * Set OrgId/BranchId (for now may accept from DTO or derive from current user).
+  * Set `IsEnabled = true`, `CreatedAt`, `CreatedBy`.
+* `UpdateAnalyzerAsync`:
+
+  * Allow renaming and toggling `IsEnabled`.
+* `GetAnalyzer*` / `GetAnalyzers*`:
+
+  * Filter by Org if necessary, or leave simple for now.
+* `EnqueueManualResultAsync`:
+
+  * Validate the analyzer exists and `IsEnabled`.
+  * Populate a new `LabAnalyzerResultInbox` item:
+
+    * `AnalyzerId = analyzerId`.
+    * `RawMessage = dto.RawMessage ?? construct a simple JSON or joined string from dto fields`.
+    * Copy `PatientIdentifier`, `AnalyzerTestCode`, `ResultValue`, `Units`, `Flags`, `MeasuredAt`.
+    * Set `Status = "Pending"` (or `"PendingMatch"`).
+    * Set `ReceivedAt = DateTimeOffset.UtcNow`, `ReceivedBy = currentUserId`.
+  * Save to DB and return the created entity.
+
+No matching logic to Visit/Order/Test yet — that will be in **Day 14.8+**.
 
 ---
 
-## 6) Acceptance Criteria for Day 14.5
+## 4) API Controllers — Analyzer Admin + Manual Result Ingestion
 
-Day 14.5 is DONE when:
+Create new controllers under `SynOS.Api/Controllers/Lab` (or equivalent):
 
-1. A new DTO set exists:
+### 4.1 `LabAnalyzersController`
 
-   * `PacsSeriesTreeDto`, `PacsSeriesNodeDto`, `PacsInstanceNodeDto` (or similarly named), in the DTO/model project.
-2. `IPacsService` has a new method:
+Route base:
+`/api/v1/lab/analyzers`
 
-   * `GetSeriesTreeAsync(Guid radiologyStudyId, Guid currentUserId, string apiBaseUrl)`
-   * Implementation:
+Endpoints (all `[Authorize(Roles = "Admin")]` or similar):
 
-     * Validates study & user permissions.
-     * Loads PACS data for the study.
-     * Builds a fully populated `PacsSeriesTreeDto` with:
+1. `POST /api/v1/lab/analyzers`
 
-       * Correct UIDs and counts.
-       * Instances sorted by `InstanceNumber`.
-       * `Wadouri` strings pointing to the existing instance file endpoint.
-3. New API endpoint:
+   * Input: `CreateLabAnalyzerDto`
+   * Output: `LabAnalyzerSummaryDto`
+   * Behavior: calls `CreateAnalyzerAsync`.
 
-   * `GET /api/v1/radiology/pacs/studies/{radiologyStudyId}/series-tree`
-   * Uses current user + request to build `apiBaseUrl`.
-   * Returns `200 OK` with `PacsSeriesTreeDto`.
-   * Returns reasonable error codes for:
+2. `PUT /api/v1/lab/analyzers/{analyzerId}`
 
-     * Study not found.
-     * No permission.
-4. RBAC enforced:
+   * Input: `UpdateLabAnalyzerDto`
+   * Output: `LabAnalyzerSummaryDto`
+   * Behavior: calls `UpdateAnalyzerAsync`.
 
-   * Radiologist/XRayTech/Admin can call this endpoint.
-   * Reception/Delivery/other roles cannot.
-5. No frontend or Cornerstone code added or modified.
+3. `GET /api/v1/lab/analyzers`
+
+   * Output: `List<LabAnalyzerSummaryDto>`
+   * Behavior: calls `GetAnalyzersAsync`.
+
+4. `GET /api/v1/lab/analyzers/{analyzerId}`
+
+   * Output: `LabAnalyzerSummaryDto` (or 404 if missing).
+
+You can follow your existing API response wrapper pattern (`{ data: ... }`) if that’s standard in SynOS.
+
+### 4.2 `LabAnalyzerResultsController` (Manual Ingestion)
+
+Route base:
+`/api/v1/lab/analyzers/{analyzerId}/results`
+
+Endpoints:
+
+1. `POST /api/v1/lab/analyzers/{analyzerId}/results/manual`
+
+   * Authorization: `[Authorize(Roles = "Admin,LabTech,Pathologist")]` (adjust to your RBAC)
+   * Input: `ManualAnalyzerResultDto`
+   * Behavior:
+
+     * Get `currentUserId` from claims.
+     * Calls `EnqueueManualResultAsync(analyzerId, dto, currentUserId)`.
+   * Output:
+
+     * A simple DTO summarizing what was stored, e.g.:
+
+```json
+{
+  "inboxId": "guid",
+  "analyzerId": "guid",
+  "status": "Pending",
+  "patientIdentifier": "A00015",
+  "analyzerTestCode": "HGB",
+  "resultValue": "12.3",
+  "units": "g/dL"
+}
+```
+
+No listing / review endpoints are required for Day 14.7 (that’s for 14.10), but if you want a minimal debug endpoint:
+
+2. `GET /api/v1/lab/analyzers/{analyzerId}/results/inbox`
+
+   * Optional, but useful for testing.
+   * Returns last N inbox items for that analyzer (`TOP 50` or configurable).
+   * If you add this, make it Admin/Pathologist-only.
 
 ---
 
-**At the end of your answer**, give a short TLDR:
+## 5) Logging & Safety
 
-* What Day 14.5 implemented (1–2 lines)
-* List of main files added/changed
-* Any manual steps (e.g., none / just rebuild API)
+* Log at INFO level:
+
+  * Analyzer created / updated
+  * Manual result enqueued (`AnalyzerId`, `PatientIdentifier`, `AnalyzerTestCode`, `ResultValue`)
+* Handle common errors gracefully:
+
+  * `404` if analyzer does not exist.
+  * `400` for invalid payload (missing required fields).
+* Ensure **Org/Branch** will be easy to enforce later:
+
+  * At minimum, store `OrgId`/`BranchId` on `LabAnalyzer`.
+  * You don’t need to write a full guard like PACS’ `IRadiologyAccessGuard` yet, but don’t block future extension.
 
 ---
+
+## 6) Acceptance Criteria for Day 14.7
+
+Day 14.7 is DONE when:
+
+1. **Entities & DB:**
+
+   * `LabAnalyzer` and `LabAnalyzerResultInbox` entities exist.
+   * DbContext is updated with DbSets.
+   * Migration created and (manually) applied.
+
+2. **Services:**
+
+   * `ILabAnalyzerService` (or equivalent) is created and registered in DI.
+   * `CreateAnalyzerAsync`, `UpdateAnalyzerAsync`, `GetAnalyzer(s)Async`, `EnqueueManualResultAsync` are implemented.
+
+3. **APIs:**
+
+   * `POST /api/v1/lab/analyzers` creates an analyzer.
+   * `GET /api/v1/lab/analyzers` lists analyzers.
+   * `POST /api/v1/lab/analyzers/{analyzerId}/results/manual`:
+
+     * Accepts a payload with `PatientIdentifier`, `AnalyzerTestCode`, `ResultValue`, etc.
+     * Persists a row in `LabAnalyzerResultInbox` with `Status = "Pending"` and correct `ReceivedAt`, `ReceivedBy`.
+
+4. **Manual Test via Swagger:**
+
+   * Create a dummy analyzer (e.g. “Demo CBC Analyzer”).
+   * Use its `analyzerId` to call the manual results endpoint with:
+
+     * `PatientIdentifier = "A00015"`
+     * `AnalyzerTestCode = "HGB"`
+     * `ResultValue = "12.3"`
+     * `Units = "g/dL"`
+   * Verify in DB that:
+
+     * A `LabAnalyzerResultInbox` row was created.
+     * Fields are correctly populated.
+
+5. No analyzer matching/mapping, no HL7/ASTM parsing, no result review UI is implemented in this day. That’s for Day 14.8+.
+
+---
+
+## At the end of your answer, provide a short TLDR:
+
+* 1–2 lines: what Day 14.7 implemented.
+* Main files added/changed.
+* Any manual steps (e.g. `dotnet ef migrations add AddLabAnalyzerTables` + `dotnet ef database update`, `appsettings` updates, DI registration, etc.).

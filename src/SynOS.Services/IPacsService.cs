@@ -30,5 +30,9 @@ namespace SynOS.Services
             Guid currentUserId,
             string apiBaseUrl
         );
+
+        Task<PacsOrphanSummaryDto> GetOrphanSummaryAsync(Guid currentUserId);
+        Task<PacsStorageStatsDto> GetStorageStatsAsync(Guid currentUserId);
+        Task<PacsOrphanSummaryDto> CleanupOrphansAsync(Guid currentUserId);
     }
 }

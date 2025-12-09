@@ -13,6 +13,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using SynOS.Services.DICOM;
 using FellowOakDicom;
+using SynOS.Services.Security;
 
 namespace SynOS.Services
 {
@@ -20,15 +21,19 @@ namespace SynOS.Services
     {
         private readonly SynOSDbContext _context;
         private readonly PacsSettings _pacsSettings;
+        private readonly IRadiologyAccessGuard _accessGuard;
 
-        public PacsService(SynOSDbContext context, IOptions<PacsSettings> pacsSettings)
+        public PacsService(SynOSDbContext context, IOptions<PacsSettings> pacsSettings, IRadiologyAccessGuard accessGuard)
         {
             _context = context;
             _pacsSettings = pacsSettings.Value;
+            _accessGuard = accessGuard;
         }
 
         public async Task<(Stream Stream, string ContentType)> GetDicomStreamAsync(Guid instanceId, Guid currentUserId)
         {
+            await _accessGuard.EnsureCanAccessPacsInstanceAsync(instanceId, currentUserId);
+
             var instance = await _context.PacsInstances.FindAsync(instanceId);
 
             if (instance == null)
@@ -50,25 +55,15 @@ namespace SynOS.Services
 
         public async Task<PacsUploadResultDto> UploadDicomAsync(Guid radiologyStudyId, IReadOnlyList<IFormFile> files, Guid currentUserId)
         {
+            await _accessGuard.EnsureCanAccessStudyAsync(radiologyStudyId, currentUserId);
+
             var study = await _context.RadiologyStudies.FindAsync(radiologyStudyId);
             if (study == null)
             {
+                // This check is technically redundant if the guard is working, but it's good practice for non-nullable references.
                 throw new KeyNotFoundException($"Radiology study with ID '{radiologyStudyId}' not found.");
             }
-
-            var user = await _context.Users.FindAsync(currentUserId);
-            if (user == null)
-            {
-                throw new KeyNotFoundException("Current user not found.");
-            }
             
-            var userRole = await _context.UserRoles.Include(ur => ur.Role).FirstOrDefaultAsync(ur => ur.UserId == currentUserId);
-            var allowedRoles = new[] { "Radiologist", "XRayTech", "Admin" };
-            if (userRole == null || !allowedRoles.Contains(userRole.Role.Name))
-            {
-                throw new UnauthorizedAccessException("User is not authorized to upload DICOM files.");
-            }
-
             var createdSeriesIds = new HashSet<Guid>();
             var createdInstanceIds = new List<Guid>();
 
@@ -158,18 +153,13 @@ namespace SynOS.Services
 
         public async Task<PacsReindexResultDto> ReindexStudyAsync(Guid radiologyStudyId, Guid currentUserId)
         {
+            await _accessGuard.EnsureCanAccessStudyAsync(radiologyStudyId, currentUserId);
+
             var study = await _context.RadiologyStudies.FindAsync(radiologyStudyId);
             if (study == null)
             {
+                // Redundant check, but good practice.
                 throw new KeyNotFoundException($"Radiology study with ID '{radiologyStudyId}' not found.");
-            }
-
-            // Simple permission check for now
-            var user = await _context.Users.FindAsync(currentUserId);
-            var userRole = await _context.UserRoles.Include(ur => ur.Role).FirstOrDefaultAsync(ur => ur.UserId == currentUserId);
-            if (user == null || (userRole?.Role.Name != "Admin" && userRole?.Role.Name != "Radiologist"))
-            {
-                throw new UnauthorizedAccessException("User is not authorized to re-index this study.");
             }
 
             var instances = await _context.PacsInstances
@@ -240,19 +230,25 @@ namespace SynOS.Services
 
         public async Task<PacsSeriesTreeDto> GetSeriesTreeAsync(Guid radiologyStudyId, Guid currentUserId, string apiBaseUrl)
         {
+            await _accessGuard.EnsureCanAccessStudyAsync(radiologyStudyId, currentUserId);
+
             var study = await _context.RadiologyStudies.FindAsync(radiologyStudyId);
             if (study == null)
             {
+                // Redundant check.
                 throw new KeyNotFoundException($"Radiology study with ID '{radiologyStudyId}' not found.");
             }
             
-            // TODO: Add proper permission validation (e.g., check if user is in the same Org)
-
             var allInstances = await _context.PacsInstances
                 .Where(i => i.RadiologyStudyId == radiologyStudyId)
                 .OrderBy(i => i.InstanceNumber)
                 .ThenBy(i => i.InstanceId)
                 .ToListAsync();
+
+            if (allInstances.Count > _pacsSettings.MaxTotalInstancesPerStudyInSeriesTree)
+            {
+                throw new InvalidOperationException($"The study contains {allInstances.Count} instances, which exceeds the limit of {_pacsSettings.MaxTotalInstancesPerStudyInSeriesTree} for the series tree view.");
+            }
 
             var allSeries = await _context.PacsSeries
                 .Where(s => s.RadiologyStudyId == radiologyStudyId)
@@ -269,7 +265,14 @@ namespace SynOS.Services
             {
                 var instancesForSeries = allInstances
                     .Where(inst => inst.SeriesId == series.SeriesId)
-                    .Select(inst => new PacsInstanceNodeDto
+                    .ToList();
+                
+                if (instancesForSeries.Count > _pacsSettings.MaxInstancesPerSeriesInSeriesTree)
+                {
+                    throw new InvalidOperationException($"Series {series.SeriesInstanceUid} contains {instancesForSeries.Count} instances, which exceeds the per-series limit of {_pacsSettings.MaxInstancesPerSeriesInSeriesTree}.");
+                }
+
+                var instanceNodes = instancesForSeries.Select(inst => new PacsInstanceNodeDto
                     {
                         InstanceId = inst.InstanceId,
                         SopInstanceUid = inst.SopInstanceUid,
@@ -285,8 +288,8 @@ namespace SynOS.Services
                     Modality = series.Modality,
                     Description = series.Description,
                     SeriesNumber = series.SeriesNumber,
-                    InstanceCount = instancesForSeries.Count,
-                    Instances = instancesForSeries
+                    InstanceCount = instanceNodes.Count,
+                    Instances = instanceNodes
                 };
             }).ToList();
 
@@ -296,6 +299,124 @@ namespace SynOS.Services
                 StudyInstanceUid = allSeries.First().StudyInstanceUid,
                 Series = seriesNodes
             };
+        }
+
+        public async Task<PacsOrphanSummaryDto> GetOrphanSummaryAsync(Guid currentUserId)
+        {
+            await EnsureAdminUser(currentUserId);
+
+            // Fetch file paths into memory before checking existence
+            var allInstancePaths = await _context.PacsInstances
+                .Where(i => !i.IsDeleted)
+                .Select(i => i.FilePath)
+                .ToListAsync();
+
+            var instancesMissingFiles = allInstancePaths.Count(filePath => !File.Exists(filePath));
+
+            var instancesWithMissingStudy = await _context.PacsInstances
+                .Where(i => !i.IsDeleted && !_context.RadiologyStudies.Any(s => s.RadiologyStudyId == i.RadiologyStudyId))
+                .CountAsync();
+                
+            var seriesWithNoInstances = await _context.PacsSeries
+                .Where(s => !s.IsDeleted && !s.PacsInstances.Any(i => !i.IsDeleted))
+                .CountAsync();
+
+            return new PacsOrphanSummaryDto
+            {
+                InstancesMissingFiles = instancesMissingFiles,
+                InstancesWithMissingStudy = instancesWithMissingStudy,
+                SeriesWithNoInstances = seriesWithNoInstances
+            };
+        }
+
+        public async Task<PacsStorageStatsDto> GetStorageStatsAsync(Guid currentUserId)
+        {
+            await EnsureAdminUser(currentUserId);
+
+            var instances = await _context.PacsInstances
+                .Where(i => !i.IsDeleted)
+                .Select(i => new { i.FileSizeBytes, i.RadiologyStudyId, i.OrgId, i.BranchId })
+                .ToListAsync();
+
+            var totalStudies = instances.Select(i => i.RadiologyStudyId).Distinct().Count();
+            var totalSeries = await _context.PacsSeries.CountAsync(s => !s.IsDeleted);
+
+            // Grouping for by-org/branch stats
+            var byOrgBranch = instances
+                .GroupBy(i => new { i.OrgId, i.BranchId })
+                .Select(g => new PacsOrgBranchStatsDto
+                {
+                    OrgId = g.Key.OrgId ?? Guid.Empty,
+                    BranchId = g.Key.BranchId ?? Guid.Empty,
+                    TotalBytes = g.Sum(i => i.FileSizeBytes ?? 0),
+                    Studies = g.Select(i => i.RadiologyStudyId).Distinct().Count(),
+                    Instances = g.Count()
+                    // Series count per group is more complex and might require another query.
+                    // For now, we omit it for simplicity.
+                }).ToList();
+
+
+            return new PacsStorageStatsDto
+            {
+                TotalBytes = instances.Sum(i => i.FileSizeBytes ?? 0),
+                TotalStudies = totalStudies,
+                TotalSeries = totalSeries,
+                TotalInstances = instances.Count,
+                ByOrgBranch = byOrgBranch
+            };
+        }
+
+        public async Task<PacsOrphanSummaryDto> CleanupOrphansAsync(Guid currentUserId)
+        {
+            await EnsureAdminUser(currentUserId);
+
+            // Rule: soft-delete DB records where the file is physically missing.
+            // First fetch all candidates, then check for file existence on the client side.
+            var allInstances = await _context.PacsInstances
+                .Where(i => !i.IsDeleted)
+                .ToListAsync();
+
+            var instancesMissingFiles = allInstances
+                .Where(i => !File.Exists(i.FilePath))
+                .ToList();
+
+            foreach (var instance in instancesMissingFiles)
+            {
+                instance.IsDeleted = true;
+                instance.DeletedAt = DateTimeOffset.UtcNow;
+                instance.DeletedBy = currentUserId;
+            }
+
+            // Rule: soft-delete series that have no instances left.
+            var seriesWithNoInstances = await _context.PacsSeries
+                .Where(s => !s.IsDeleted && !s.PacsInstances.Any(i => !i.IsDeleted))
+                .ToListAsync();
+            
+            foreach (var series in seriesWithNoInstances)
+            {
+                series.IsDeleted = true;
+                series.DeletedAt = DateTimeOffset.UtcNow;
+                series.DeletedBy = currentUserId;
+            }
+            
+            await _context.SaveChangesAsync();
+
+            // Return the summary of what's left.
+            return await GetOrphanSummaryAsync(currentUserId);
+        }
+
+        private async Task EnsureAdminUser(Guid currentUserId)
+        {
+            var user = await _context.Users
+                .AsNoTracking()
+                .Include(u => u.UserRoles)
+                .ThenInclude(ur => ur.Role)
+                .FirstOrDefaultAsync(u => u.UserId == currentUserId);
+
+            if (user == null || !user.UserRoles.Any(ur => ur.Role.Name == "Admin"))
+            {
+                throw new UnauthorizedAccessException("User does not have Admin privileges.");
+            }
         }
     }
 }

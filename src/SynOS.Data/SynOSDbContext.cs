@@ -81,6 +81,9 @@ namespace SynOS.Data
         public DbSet<DownloadLink> DownloadLinks { get; set; } = null!;
         public DbSet<NotificationQueue> NotificationQueues { get; set; } = null!;
 
+        // DbSets for Lab Analyzer Integration
+        public DbSet<LabAnalyzer> LabAnalyzers { get; set; } = null!;
+        public DbSet<LabAnalyzerResultInbox> LabAnalyzerResultInbox { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -447,6 +450,29 @@ namespace SynOS.Data
                 entity.HasIndex(e => e.NextRetryAt);
             });
 
+            // Lab Analyzer Integration
+            modelBuilder.Entity<LabAnalyzer>(entity =>
+            {
+                entity.HasIndex(e => e.OrgId);
+                entity.HasIndex(e => e.BranchId);
+                entity.Property(e => e.ConnectionType).HasConversion<string>().HasMaxLength(20);
+            });
+
+            modelBuilder.Entity<LabAnalyzerResultInbox>(entity =>
+            {
+                entity.HasOne(e => e.Analyzer)
+                      .WithMany()
+                      .HasForeignKey(e => e.AnalyzerId)
+                      .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasIndex(e => e.AnalyzerId);
+                entity.HasIndex(e => e.Status);
+                entity.HasIndex(e => e.PatientIdentifier);
+                entity.HasIndex(e => e.VisitId);
+                entity.HasIndex(e => e.OrderId);
+                entity.HasIndex(e => e.ReceivedAt); // Useful for querying the inbox
+                entity.Property(e => e.Status).HasConversion<string>().HasMaxLength(20);
+            });
         }
     }
 }

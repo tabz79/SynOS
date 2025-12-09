@@ -26,3 +26,15 @@ System.ArgumentException: Payment amount must be greater than zero.
 2025-12-08 17:46:48.216 +05:30 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
 2025-12-08 17:46:48.327 +05:30 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
 2025-12-08 18:41:23.909 +05:30 [INF] Notification Worker Service stopping gracefully.
+2025-12-08 18:46:45.113 +05:30 [INF] Notification Worker Service running.
+2025-12-08 18:46:45.362 +05:30 [INF] ExpiredLockCleanupService is starting.
+2025-12-08 18:51:55.884 +05:30 [WRN] Failed to determine the https port for redirect.
+2025-12-08 19:54:11.738 +05:30 [INF] Notification Worker Service stopping gracefully.
+2025-12-08 20:31:23.096 +05:30 [INF] Notification Worker Service running.
+2025-12-08 20:31:23.280 +05:30 [INF] ExpiredLockCleanupService is starting.
+2025-12-08 20:31:57.603 +05:30 [WRN] Failed to determine the https port for redirect.
+2025-12-08 20:41:09.321 +05:30 [INF] Notification Worker Service stopping gracefully.
+2025-12-08 20:53:00.627 +05:30 [INF] Notification Worker Service running.
+2025-12-08 20:53:00.823 +05:30 [INF] ExpiredLockCleanupService is starting.
+2025-12-08 20:53:19.705 +05:30 [WRN] Failed to determine the https port for redirect.
+2025-12-08 21:32:10.261 +05:30 [INF] Notification Worker Service stopping gracefully.
