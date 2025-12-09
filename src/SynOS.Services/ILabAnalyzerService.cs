@@ -12,7 +12,7 @@ namespace SynOS.Services
         Task<LabAnalyzer> UpdateAnalyzerAsync(Guid analyzerId, UpdateLabAnalyzerDto dto, Guid currentUserId);
         Task<LabAnalyzer?> GetAnalyzerAsync(Guid analyzerId);
         Task<IReadOnlyList<LabAnalyzer>> GetAnalyzersAsync();
-        Task<LabAnalyzerResultInbox> EnqueueManualResultAsync(Guid analyzerId, ManualAnalyzerResultDto dto, Guid currentUserId);
+        Task<LabAnalyzerResultInbox> EnqueueManualResultAsync(Guid analyzerId, ManualAnalyzerResultDto dto, Guid currentUserId, string? statusOverride = null, string? errorMessage = null);
         
         // Optional: Get inbox items (for debugging/testing as per prompt)
         Task<IReadOnlyList<LabAnalyzerResultInbox>> GetInboxItemsAsync(Guid analyzerId, int limit = 50);

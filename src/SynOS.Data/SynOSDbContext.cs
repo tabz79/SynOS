@@ -487,6 +487,10 @@ namespace SynOS.Data
                 entity.HasIndex(e => e.SynosTestCode);
                 entity.HasIndex(e => e.IsEnabled);
                 entity.HasIndex(e => new { e.AnalyzerId, e.AnalyzerTestCode }).IsUnique(); // Ensure unique mapping per analyzer
+                
+                // Configure precision for decimal properties
+                entity.Property(e => e.RefLowOverride).HasPrecision(18, 4);
+                entity.Property(e => e.RefHighOverride).HasPrecision(18, 4);
             });
         }
     }

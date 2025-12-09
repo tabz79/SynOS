@@ -35,7 +35,9 @@ namespace SynOS.Models.Entities
         public Guid? OrderId { get; set; }
 
         [MaxLength(50)]
-        public string? SynosTestCode { get; set; }
+        public string? ParameterCode { get; set; } // Renamed from SynosTestCode
+
+        public Guid? ResultId { get; set; } // New field
 
         [Required]
         [MaxLength(20)]
@@ -49,5 +51,8 @@ namespace SynOS.Models.Entities
 
         [MaxLength(500)]
         public string? ReviewNote { get; set; }
+
+        [MaxLength(1000)] // Store detailed error message
+        public string? ErrorMessage { get; set; }
     }
 }

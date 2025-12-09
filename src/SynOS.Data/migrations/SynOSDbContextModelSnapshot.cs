@@ -751,6 +751,10 @@ namespace SynOS.Data.Migrations
                     b.Property<Guid>("CreatedBy")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("ErrorMessage")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
                     b.Property<string>("Flags")
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
@@ -760,6 +764,10 @@ namespace SynOS.Data.Migrations
 
                     b.Property<Guid?>("OrderId")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ParameterCode")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("PatientIdentifier")
                         .HasMaxLength(100)
@@ -773,6 +781,9 @@ namespace SynOS.Data.Migrations
                         .HasColumnType("datetimeoffset");
 
                     b.Property<Guid?>("ReceivedBy")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("ResultId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("ResultValue")
@@ -793,10 +804,6 @@ namespace SynOS.Data.Migrations
                         .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
-
-                    b.Property<string>("SynosTestCode")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("Units")
                         .HasMaxLength(20)
@@ -852,10 +859,12 @@ namespace SynOS.Data.Migrations
                         .HasColumnType("bit");
 
                     b.Property<decimal?>("RefHighOverride")
-                        .HasColumnType("decimal(18,2)");
+                        .HasPrecision(18, 4)
+                        .HasColumnType("decimal(18,4)");
 
                     b.Property<decimal?>("RefLowOverride")
-                        .HasColumnType("decimal(18,2)");
+                        .HasPrecision(18, 4)
+                        .HasColumnType("decimal(18,4)");
 
                     b.Property<string>("SynosTestCode")
                         .IsRequired()

@@ -78,7 +78,7 @@ namespace SynOS.Services
             return await _context.LabAnalyzers.AsNoTracking().ToListAsync();
         }
 
-        public async Task<LabAnalyzerResultInbox> EnqueueManualResultAsync(Guid analyzerId, ManualAnalyzerResultDto dto, Guid currentUserId)
+        public async Task<LabAnalyzerResultInbox> EnqueueManualResultAsync(Guid analyzerId, ManualAnalyzerResultDto dto, Guid currentUserId, string? statusOverride = null, string? errorMessage = null)
         {
             var analyzer = await _context.LabAnalyzers.FindAsync(analyzerId);
             if (analyzer == null)
@@ -102,7 +102,8 @@ namespace SynOS.Services
                 Units = dto.Units,
                 Flags = dto.Flags,
                 MeasuredAt = dto.MeasuredAt,
-                Status = "Pending", // As per prompt
+                Status = statusOverride ?? LabAnalyzerResultStatus.Pending, // Use override or default to Pending
+                ErrorMessage = errorMessage, // Set error message if provided
                 ReceivedAt = DateTimeOffset.UtcNow,
                 ReceivedBy = currentUserId,
                 CreatedAt = DateTimeOffset.UtcNow,
@@ -112,8 +113,8 @@ namespace SynOS.Services
             _context.LabAnalyzerResultInbox.Add(inboxItem);
             await _context.SaveChangesAsync();
 
-            _logger.LogInformation("Manual result enqueued for Analyzer {AnalyzerId}: Patient {PatientIdentifier}, Test {TestCode}",
-                                   analyzerId, dto.PatientIdentifier, dto.AnalyzerTestCode);
+            _logger.LogInformation("Manual result enqueued for Analyzer {AnalyzerId} with status {Status}. Patient: {PatientIdentifier}, Test: {TestCode}",
+                                   analyzerId, inboxItem.Status, dto.PatientIdentifier, dto.AnalyzerTestCode);
             return inboxItem;
         }
 
