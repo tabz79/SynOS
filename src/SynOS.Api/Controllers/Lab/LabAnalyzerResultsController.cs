@@ -15,11 +15,13 @@ namespace SynOS.Api.Controllers.Lab
     public class LabAnalyzerResultsController : ControllerBase
     {
         private readonly ILabAnalyzerService _labAnalyzerService;
+        private readonly IAnalyzerResultMatcherService _analyzerResultMatcherService; // New
         private readonly IMapper _mapper;
 
-        public LabAnalyzerResultsController(ILabAnalyzerService labAnalyzerService, IMapper mapper)
+        public LabAnalyzerResultsController(ILabAnalyzerService labAnalyzerService, IAnalyzerResultMatcherService analyzerResultMatcherService, IMapper mapper)
         {
             _labAnalyzerService = labAnalyzerService;
+            _analyzerResultMatcherService = analyzerResultMatcherService;
             _mapper = mapper;
         }
 
@@ -28,7 +30,7 @@ namespace SynOS.Api.Controllers.Lab
             Guid analyzerId,
             [FromBody] ManualAnalyzerResultDto dto)
         {
-            var currentUserId = GetCurrentUserId(); // Implement this method to get user ID from claims
+            var currentUserId = GetCurrentUserId();
             var inboxItem = await _labAnalyzerService.EnqueueManualResultAsync(analyzerId, dto, currentUserId);
             return Ok(_mapper.Map<ManualResultEnqueueResponseDto>(inboxItem));
         }
@@ -39,6 +41,26 @@ namespace SynOS.Api.Controllers.Lab
         {
             var inboxItems = await _labAnalyzerService.GetInboxItemsAsync(analyzerId, limit);
             return Ok(_mapper.Map<IReadOnlyList<ManualResultEnqueueResponseDto>>(inboxItems));
+        }
+
+        [HttpPost("{inboxId}/auto-match")]
+        public async Task<ActionResult<ManualResultEnqueueResponseDto>> AutoMatchSpecificInboxItem(Guid analyzerId, Guid inboxId)
+        {
+            var currentUserId = GetCurrentUserId();
+            var matchedItem = await _analyzerResultMatcherService.AutoMatchAsync(inboxId, currentUserId);
+            if (matchedItem == null)
+            {
+                return NotFound($"Inbox item {inboxId} not found or could not be matched.");
+            }
+            return Ok(_mapper.Map<ManualResultEnqueueResponseDto>(matchedItem));
+        }
+
+        [HttpPost("auto-match-all")]
+        public async Task<ActionResult<int>> AutoMatchAllPendingItems(Guid analyzerId)
+        {
+            var currentUserId = GetCurrentUserId();
+            var matchedCount = await _analyzerResultMatcherService.AutoMatchAllPendingAsync(analyzerId, currentUserId);
+            return Ok(matchedCount);
         }
 
         // Helper to get current user ID (assuming JWT setup)

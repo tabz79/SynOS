@@ -84,6 +84,7 @@ namespace SynOS.Data
         // DbSets for Lab Analyzer Integration
         public DbSet<LabAnalyzer> LabAnalyzers { get; set; } = null!;
         public DbSet<LabAnalyzerResultInbox> LabAnalyzerResultInbox { get; set; } = null!;
+        public DbSet<LabAnalyzerTestMapping> LabAnalyzerTestMappings { get; set; } = null!; // New
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -472,6 +473,20 @@ namespace SynOS.Data
                 entity.HasIndex(e => e.OrderId);
                 entity.HasIndex(e => e.ReceivedAt); // Useful for querying the inbox
                 entity.Property(e => e.Status).HasConversion<string>().HasMaxLength(20);
+            });
+            
+            modelBuilder.Entity<LabAnalyzerTestMapping>(entity =>
+            {
+                entity.HasOne(e => e.Analyzer)
+                      .WithMany()
+                      .HasForeignKey(e => e.AnalyzerId)
+                      .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasIndex(e => e.AnalyzerId);
+                entity.HasIndex(e => e.AnalyzerTestCode);
+                entity.HasIndex(e => e.SynosTestCode);
+                entity.HasIndex(e => e.IsEnabled);
+                entity.HasIndex(e => new { e.AnalyzerId, e.AnalyzerTestCode }).IsUnique(); // Ensure unique mapping per analyzer
             });
         }
     }

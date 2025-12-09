@@ -1,5 +1,7 @@
-|InstanceId|SeriesId|RadiologyStudyId|OrgId|BranchId|StudyInstanceUid|SeriesInstanceUid|SopInstanceUid|InstanceNumber|FrameCount|FilePath|FileSizeBytes|ContentType|CreatedAt|CreatedBy|
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-|65c6fb64-2bcf-4aaf-a2ec-64a2f94ccaa2|8ca5294c-4cc5-4bca-81ca-74c2f52f8dc5|6a89ccf8-eb0b-46ac-a092-b379254abbd6|NULL|NULL|1.3.6.1.4.1.5962.99.1.1761388472.1291962045.1616669124536.2592.0|1.3.6.1.4.1.5962.99.1.1761388472.1291962045.1616669124536.2593.0|1.3.6.1.4.1.5962.99.1.1761388472.1291962045.1616669124536.2595.0|2|NULL|D:\SynOS\Pacs\6a89ccf8-eb0b-46ac-a092-b379254abbd6\8ca5294c-4cc5-4bca-81ca-74c2f52f8dc5\65c6fb64-2bcf-4aaf-a2ec-64a2f94ccaa2.dcm|191958|application/octet-stream|2025-12-08 12:37:36.4391263 +00:00|721985c7-bbae-4368-a958-8b724082f532|
-|257c5d6d-4e57-4007-b11b-4136a00aff2c|ab30c938-2e2f-4764-bf20-83c727bd0bad|088ffb47-031a-4f0d-8851-1cf4991dba71|NULL|NULL|82413ba4-b9c5-4b90-90ef-bca856305065|0e86ca63-5ca1-490f-8b86-9846f4bbd436|cd62d190-6716-4527-ab74-1dc232279e39|NULL|NULL|D:\SynOS\Pacs\088ffb47-031a-4f0d-8851-1cf4991dba71\ab30c938-2e2f-4764-bf20-83c727bd0bad\257c5d6d-4e57-4007-b11b-4136a00aff2c.dcm|569|application/octet-stream|2025-12-08 11:07:54.5965330 +00:00|721985c7-bbae-4368-a958-8b724082f532|
-|59427909-3f79-4a99-9de3-70aeef3ad0cd|2866a6db-ec84-4a18-b8b5-1350528da877|088ffb47-031a-4f0d-8851-1cf4991dba71|NULL|NULL|348a5580-ada8-4d3d-b7c2-8e3434e5a546|e0a1ad91-cbc4-4ffb-b66f-0cb39935d4d3|62d2bda5-b58f-4b1d-8584-def40eaf5ff0|NULL|NULL|D:\SynOS\Pacs\088ffb47-031a-4f0d-8851-1cf4991dba71\2866a6db-ec84-4a18-b8b5-1350528da877\59427909-3f79-4a99-9de3-70aeef3ad0cd.dcm|0|application/octet-stream|2025-12-08 10:11:48.2474403 +00:00|721985c7-bbae-4368-a958-8b724082f532|
+|TestCode|Name|Department|Modality|Price|DefaultTubeType|IsActive|CreatedAt|UpdatedAt|
+|---|---|---|---|---|---|---|---|---|
+|CBC|Complete Blood Count|Pathology|NULL|150.00|5|1|2025-12-07 12:00:19.1217372|2025-12-07 12:00:19.1217379|
+|CT_HEAD|CT Scan Head|Radiology|NULL|1000.00|5|1|2025-12-07 12:00:19.1222920|2025-12-07 12:00:19.1222920|
+|FBS|Fasting Blood Sugar|Pathology|NULL|100.00|5|1|2025-12-07 12:00:19.1222901|2025-12-07 12:00:19.1222909|
+|USG|Ultrasound Scan|Radiology|NULL|500.00|5|1|2025-12-07 12:00:19.1222915|2025-12-07 12:00:19.1222915|
+|XRAY_CHEST|X-Ray Chest|Radiology|NULL|300.00|5|1|2025-12-07 12:00:19.1222917|2025-12-07 12:00:19.1222918|

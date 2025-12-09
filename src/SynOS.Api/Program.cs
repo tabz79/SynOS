@@ -149,6 +149,7 @@ builder.Services.AddScoped<IRadiologyAccessGuard, RadiologyAccessGuard>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IAccessionService, AccessionService>();
 builder.Services.AddScoped<ILabAnalyzerService, LabAnalyzerService>(); // New Lab Analyzer Service
+builder.Services.AddScoped<IAnalyzerResultMatcherService, AnalyzerResultMatcherService>(); // New Analyzer Result Matcher Service
 builder.Services.AddSingleton<IFileStorageService, LocalStorageService>();
 
 // Configure settings
