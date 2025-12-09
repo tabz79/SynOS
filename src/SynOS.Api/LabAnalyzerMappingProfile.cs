@@ -12,6 +12,11 @@ namespace SynOS.Api
             CreateMap<UpdateLabAnalyzerDto, LabAnalyzer>();
             CreateMap<LabAnalyzer, LabAnalyzerSummaryDto>();
             CreateMap<LabAnalyzerResultInbox, ManualResultEnqueueResponseDto>();
+
+            CreateMap<CreateAnalyzerTestMappingDto, LabAnalyzerTestMapping>();
+            CreateMap<UpdateAnalyzerTestMappingDto, LabAnalyzerTestMapping>();
+            CreateMap<LabAnalyzerTestMapping, AnalyzerTestMappingSummaryDto>()
+                .ForMember(dest => dest.AnalyzerName, opt => opt.MapFrom(src => src.Analyzer.Name));
         }
     }
 }
