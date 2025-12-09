@@ -1,433 +1,454 @@
-14.6 is where we **tighten screws**: multi-branch security, limits, and cleanup tools.
-
-Here’s your ready-to-paste **Day 14.6 backend prompt**.
-
----
-
-## Day 14.6 — PACS Multi-Branch Security & Maintenance (Backend Only)
+## Day 14.7 — Lab Analyzer Integration Foundation (Backend Only)
 
 Use this as your Gemini backend prompt.
 
 ---
 
 **Title:**
-Day 14.6 — Mini PACS Cross-Branch Security, Limits & Maintenance (Backend Only)
+Day 14.7 — Lab Analyzer Integration Foundation (Backend Only)
 
 **Context:**
 You are a .NET 8 BACKEND expert working on **SynOS**, a Diagnostic Lab Management System.
 
-Stack:
+**Stack:**
 
 * ASP.NET Core .NET 8 Web API
 * EF Core + SQL Server
-* Layered/clean-ish architecture:
+* Layered / clean-ish architecture:
 
   * Data / Entities / EF Config / Migrations
   * Services / Domain logic
-  * DTOs/Models
+  * DTOs / Models
   * Api / Controllers / DI
 
-Radiology & Mini PACS status so far:
+**Current SynOS status (relevant parts):**
 
-* Radiology module complete up to **Day 14.2**:
+* Core entities & flows exist:
 
-  * RadiologyStudy, RadiologyReports, assignments, signing, RBAC, etc.
-* Mini PACS backend:
+  * Patients, Visits, Orders, Invoices
+  * Test Master with `testCode` (e.g. `CBC`, `HGB`, `FBS`, etc.)
+  * Reception module (`start-visit`, `complete-payment`)
+* Radiology:
 
-From **Day 14.3**:
+  * RadiologyStudy, RadiologyReports, Mini PACS, DICOM backend are all implemented and stable.
+* Pathology / Lab:
 
-* Tables `PacsSeries` & `PacsInstances` exist with:
+  * SynOS can **create lab orders** (e.g. Biochemistry, Hematology, etc.) as part of a visit.
+  * Results are currently assumed to be **typed manually** into result entry screens (no machine integration yet).
+* Multi-branch / Org:
 
-  * `RadiologyStudyId`, `OrgId`, `BranchId`, UIDs, etc.
-* PACS storage:
+  * Org/Branch concepts exist at least at Visit / Radiology level.
+  * RBAC/roles exist: `Admin`, `Pathologist`, `LabTech`, etc. (adjust names to what’s actually there).
 
-  * `Pacs:RootPath` config
-  * Files stored under:
+---
 
-    * `{RootPath}/{OrgId}/{BranchId}/{RadiologyStudyId}/{SeriesId}/{InstanceId}.dcm`
-* Upload endpoint:
+## Goal of Day 14.7
 
-  * `POST /api/v1/radiology/pacs/{radiologyStudyId}/upload`
+Lay the **foundation** for Analyzer / Lab Machine integration:
 
-From **Day 14.4**:
+* Introduce **backend models + tables** to represent analyzers and incoming results.
+* Provide basic **Analyzer Registration** APIs (Admin-only).
+* Provide a **manual result ingestion endpoint** that mimics what a machine will send.
+* Store incoming results in a **Lab Result Inbox / Queue** for later matching & review (future days).
 
-* DICOM parsing library integrated (e.g. FellowOakDicom).
-* `UploadDicomAsync` reads real DICOM tags and fills PACS metadata:
-
-  * StudyInstanceUid, SeriesInstanceUid, SopInstanceUid, Modality, SeriesDescription, SeriesNumber, InstanceNumber, FrameCount, etc.
-* Reindex endpoint:
-
-  * `POST /api/v1/radiology/pacs/{radiologyStudyId}/reindex`
-* Download endpoint:
-
-  * `GET /api/v1/radiology/pacs/instances/{instanceId}/file`
-
-From **Day 14.5**:
-
-* `GET /api/v1/radiology/pacs/studies/{radiologyStudyId}/series-tree`:
-
-  * Returns `PacsSeriesTreeDto` with:
-
-    * StudyInstanceUid
-    * Series list
-    * Instances sorted by InstanceNumber
-    * Prebuilt `wadouri:` URLs for each instance.
-
-**Goal of Day 14.6:**
-
-* Make Mini PACS **safe for multi-branch, production-like use**:
-
-  * Enforce Org/Branch scoping for every PACS operation.
-  * Respect existing RBAC (who can see cross-branch vs branch-only).
-* Introduce **limits & guardrails** (max series/instances returned).
-* Add **maintenance/admin endpoints**:
-
-  * Detect orphans (DB record but missing file, or file with missing study/series).
-  * Mark or clean these safely (no wild data loss).
-  * Give basic storage statistics per Org/Branch.
+No real serial/TCP/ASTM/HL7 integration yet — this day is about **data structures, services, and HTTP-based ingestion** that future days will build on.
 
 Backend-only. No frontend.
 
 ---
 
-### 🔒 Guardrails / Constraints
+## 🔒 Guardrails / Constraints
 
 * **Backend only.**
   No React, no JS, no UI.
-* Do NOT run shell, EF CLI, or git commands (you can suggest them in TLDR).
+* Do NOT run shell, EF CLI, or git commands (you can mention them in a TLDR for the human to run).
 * Only touch:
 
-  * PACS-related entities/configs/migrations (if needed)
-  * PACS services (IPacsService + implementation)
-  * Radiology security helpers if absolutely needed
-  * DTOs/Models for PACS admin views
-  * PACS controllers & DI registration
-* Do NOT redesign PACS schema.
-  Only small additions (like IsDeleted flags, indexes) if required.
+  * Lab / Pathology / Analyzer-related entities, configs, migrations
+  * Lab/Analyzer services (new interfaces and implementations)
+  * DTOs/Models for Analyzer + Result Inbox
+  * Lab/Analyzer controllers & DI registration
+* Do NOT change PACS / Radiology code in this day.
+* Do NOT design full HL7/ASTM protocol parsing yet. Only prepare **internal models** where parsed data will land.
 
 ---
 
-## 1) Centralize Org/Branch & RBAC Enforcement for PACS
+## 1) Data Model & EF Entities — Analyzer + Result Inbox
 
-We want **zero chance** of someone seeing another org’s images just because they know a GUID.
+We need a small set of core entities:
 
-### 1.1 Add / Reuse a Security Helper
+### 1.1 `LabAnalyzer` entity
 
-If there is already a central security helper for Radiology (e.g. something that checks a `RadiologyStudy` vs current user roles + Org/Branch), reuse or extend it.
+Add a new entity (e.g. `LabAnalyzer`) under your Models/Entities project.
 
-If not, create a small helper/service, e.g.:
+Suggested fields (adapt naming to your conventions):
 
 ```csharp
-public interface IRadiologyAccessGuard
+public class LabAnalyzer
 {
-    Task EnsureCanAccessStudyAsync(Guid radiologyStudyId, Guid currentUserId);
-    Task EnsureCanAccessPacsInstanceAsync(Guid instanceId, Guid currentUserId);
+    public Guid AnalyzerId { get; set; }
+
+    public Guid OrgId { get; set; }           // For future multi-branch scoping
+    public Guid BranchId { get; set; }        // Can be Guid.Empty for now if not fully wired
+
+    public string Name { get; set; }          // e.g. "Sysmex XN-1000"
+    public string Model { get; set; }         // e.g. "XN-1000"
+    public string Manufacturer { get; set; }  // e.g. "Sysmex"
+
+    // ConnectionType describes how this analyzer will integrate in the future
+    public string ConnectionType { get; set; } // e.g. "Manual", "ASTM", "HL7", "FileDrop"
+
+    public bool IsEnabled { get; set; }
+
+    public string? Notes { get; set; }
+
+    public DateTimeOffset CreatedAt { get; set; }
+    public Guid CreatedBy { get; set; }
+    public DateTimeOffset? UpdatedAt { get; set; }
+    public Guid? UpdatedBy { get; set; }
 }
 ```
 
-**Behavior:**
+You may introduce an enum (or string constants) for `ConnectionType` if that matches your style better.
 
-* Load entities (RadiologyStudy, PacsInstance → RadiologyStudy) with OrgId/BranchId.
+### 1.2 `LabAnalyzerResultInbox` entity
 
-* Use existing RBAC + org/branch restrictions to decide:
+This is the **Result Queue**: every incoming reading (manual or machine) lands here first.
 
-  Examples (adapt to what you already have):
+```csharp
+public class LabAnalyzerResultInbox
+{
+    public Guid InboxId { get; set; }
 
-  * Radiologist/XRayTech:
+    public Guid AnalyzerId { get; set; }
+    public LabAnalyzer Analyzer { get; set; }
 
-    * Can access studies & PACS within their assigned Org and Branches.
-  * Admin / OrgAdmin:
+    // raw line / payload from the machine (or from the manual API)
+    public string RawMessage { get; set; }
 
-    * Can access all branches within their Org.
-  * SuperAdmin (if exists):
+    // Parsed basic fields (can be null when first ingested)
+    public string? PatientIdentifier { get; set; }   // MRN, SampleId, or Barcode value as received
+    public string? AnalyzerTestCode { get; set; }    // test code as reported by machine, e.g. "HGB"
+    public string? ResultValue { get; set; }         // keep as string for flexibility (numeric or qualitative)
+    public string? Units { get; set; }               // e.g. "g/dL"
+    public string? Flags { get; set; }               // e.g. "H", "L", "Critical", or machine-specific flags
 
-    * Can access anything.
+    public DateTimeOffset? MeasuredAt { get; set; }  // When machine measured
 
-* If user is not allowed:
+    // Matching to SynOS structures (future days will fill these)
+    public Guid? VisitId { get; set; }               // Matched visit
+    public Guid? OrderId { get; set; }               // Matched lab order
+    public string? SynosTestCode { get; set; }       // Mapped to SynOS testCode
 
-  * Throw domain-level `ForbiddenAccessException` (or equivalent) mapped to 403.
+    // Status and review
+    public string Status { get; set; }               // e.g. "Pending", "Matched", "Rejected", "Imported"
 
-### 1.2 Use the Guard in All PACS Operations
+    public DateTimeOffset ReceivedAt { get; set; }
+    public Guid? ReceivedBy { get; set; }            // null if from real machine; userId if manual
 
-Update PACS service methods to always call the guard, instead of hand-rolling checks:
+    public DateTimeOffset? ReviewedAt { get; set; }
+    public Guid? ReviewedBy { get; set; }
+    public string? ReviewNote { get; set; }
+}
+```
 
-* `UploadDicomAsync(radiologyStudyId, …)`:
+**Important for Day 14.7:**
+You **do not** need to implement matching logic yet — just the fields to support it in later days.
 
-  * Must call `EnsureCanAccessStudyAsync` before doing anything.
-* `GetDicomStreamAsync(instanceId, …)`:
+### 1.3 EF Config & Migration
 
-  * Must call `EnsureCanAccessPacsInstanceAsync`.
-* `ReindexStudyAsync(radiologyStudyId, …)`:
+* Add DbSet properties to your `SynOSDbContext`:
 
-  * Must call `EnsureCanAccessStudyAsync`.
-* `GetSeriesTreeAsync(radiologyStudyId, …)`:
+```csharp
+public DbSet<LabAnalyzer> LabAnalyzers { get; set; }
+public DbSet<LabAnalyzerResultInbox> LabAnalyzerResultInbox { get; set; }
+```
 
-  * Must call `EnsureCanAccessStudyAsync`.
+* Configure relationships and indexes via EF configuration classes or `OnModelCreating`:
 
-Ensure that:
+  * `LabAnalyzerResultInbox.AnalyzerId` → `LabAnalyzer`
+  * Suggested indexes:
 
-* No PACS query is ever executed without verifying Org/Branch + role.
-* There is no other code path that leaks PACS data by raw ID.
+    * `AnalyzerId`
+    * `Status`
+    * `PatientIdentifier`
+    * `VisitId`
+    * `OrderId`
+
+* Create and apply an EF migration (to be run by the human dev).
 
 ---
 
-## 2) Add PACS Limits & Guardrails
+## 2) Configuration & Supporting Types
 
-We don’t want API to explode if a study/series has a crazy number of images.
+### 2.1 Connection Type Enum / Constants
 
-### 2.1 Configuration
+Add something like:
 
-In `appsettings` (and strongly-typed options), add a PACS settings section like:
-
-```json
-"Pacs": {
-  "RootPath": "/data/pacs",
-  "MaxInstancesPerSeriesInSeriesTree": 5000,
-  "MaxTotalInstancesPerStudyInSeriesTree": 20000
+```csharp
+public static class LabAnalyzerConnectionTypes
+{
+    public const string Manual = "Manual";
+    public const string Astm = "ASTM";
+    public const string Hl7 = "HL7";
+    public const string FileDrop = "FileDrop";
 }
 ```
 
-(Values are examples; choose reasonable defaults.)
+or use an enum if that’s standard in this codebase.
 
-Bind to a strongly-typed class, e.g. `PacsOptions`.
+### 2.2 Optional: `LabAnalyzerSettings`
 
-### 2.2 Enforce Limits in Series Tree
+If appropriate, add a simple config class for global analyzer settings, e.g.:
 
-In `GetSeriesTreeAsync` (Day 14.5 implementation):
+```csharp
+public class LabAnalyzerSettings
+{
+    public int MaxInboxItemsPerQuery { get; set; } = 500;
+}
+```
 
-* Before returning DTO:
-
-  * Compute `totalInstances` across all series.
-  * If `totalInstances` > `MaxTotalInstancesPerStudyInSeriesTree`:
-
-    * Either:
-
-      * Throw a domain exception that gets mapped to 400/422 with message like:
-
-        * “Too many images in this study to return in a single call.”
-      * Or, if you prefer, truncate the list and indicate truncation in response (simpler is to fail with an error).
-
-* For each series:
-
-  * If its instance count > `MaxInstancesPerSeriesInSeriesTree`:
-
-    * Same approach: fail or truncate.
-    * For now, simplest is fail with error.
-
-Document behavior in comments.
-
-**Key point:**
-Don’t silently hide data in V1; explicit error is better.
-
-### 2.3 Safe Querying
-
-Make sure `GetSeriesTreeAsync`:
-
-* Uses at most 1–2 DB queries, not a query per instance.
-* Leverages `Where` and `OrderBy` in LINQ/EF, not in-memory for huge sets.
+Bind it from `appsettings.json` (e.g. `"LabAnalyzer": { "MaxInboxItemsPerQuery": 500 }`) and register with `IOptions<LabAnalyzerSettings>`.
 
 ---
 
-## 3) Maintenance & Admin Endpoints
+## 3) Service Layer — Analyzer & Inbox Services
 
-We want tools for admins to keep PACS clean.
+Create a dedicated service interface and implementation for analyzers.
 
-### 3.1 Soft-delete flags (optional but recommended)
+### 3.1 `ILabAnalyzerService`
 
-If not already present, add to `PacsSeries` and `PacsInstances`:
-
-* `IsDeleted` (bool, default false)
-* `DeletedAt` (DateTimeOffset?, nullable)
-* `DeletedBy` (Guid?, nullable)
-
-This is for **logical deletion**, not physical file removal (except obvious broken orphans) in 14.6.
-
-Add via EF migration only if not existing.
-
-### 3.2 Orphan Detection Service Method
-
-Extend PACS service with admin-oriented methods, e.g.:
+In `SynOS.Services` (or equivalent):
 
 ```csharp
-public sealed class PacsOrphanSummaryDto
+public interface ILabAnalyzerService
 {
-    public int InstancesMissingFiles { get; set; }
-    public int InstancesWithMissingStudy { get; set; }
-    public int SeriesWithNoInstances { get; set; }
-}
+    Task<LabAnalyzer> CreateAnalyzerAsync(CreateLabAnalyzerDto dto, Guid currentUserId);
+    Task<LabAnalyzer> UpdateAnalyzerAsync(Guid analyzerId, UpdateLabAnalyzerDto dto, Guid currentUserId);
+    Task<LabAnalyzer?> GetAnalyzerAsync(Guid analyzerId, Guid currentUserId);
+    Task<IReadOnlyList<LabAnalyzer>> GetAnalyzersAsync(Guid currentUserId);
 
-public sealed class PacsStorageStatsDto
-{
-    public long TotalBytes { get; set; }
-    public int TotalStudies { get; set; }
-    public int TotalSeries { get; set; }
-    public int TotalInstances { get; set; }
-
-    public IReadOnlyList<PacsOrgBranchStatsDto> ByOrgBranch { get; set; } = Array.Empty<PacsOrgBranchStatsDto>();
-}
-
-public sealed class PacsOrgBranchStatsDto
-{
-    public Guid OrgId { get; set; }
-    public Guid BranchId { get; set; }
-    public long TotalBytes { get; set; }
-    public int Studies { get; set; }
-    public int Series { get; set; }
-    public int Instances { get; set; }
+    Task<LabAnalyzerResultInbox> EnqueueManualResultAsync(Guid analyzerId, ManualAnalyzerResultDto dto, Guid currentUserId);
 }
 ```
 
-Add service methods:
+### 3.2 DTOs
+
+Create DTOs in `SynOS.Models/DTOs/LabAnalyzers` (adjust path to your conventions):
 
 ```csharp
-Task<PacsOrphanSummaryDto> GetOrphanSummaryAsync(Guid currentUserId);
-Task<PacsStorageStatsDto> GetStorageStatsAsync(Guid currentUserId);
-Task<PacsOrphanSummaryDto> CleanupOrphansAsync(Guid currentUserId);
+public class CreateLabAnalyzerDto
+{
+    public string Name { get; set; }
+    public string Model { get; set; }
+    public string Manufacturer { get; set; }
+    public string ConnectionType { get; set; } // Manual / ASTM / HL7 / FileDrop
+    public string? Notes { get; set; }
+
+    public Guid OrgId { get; set; }    // For now can be Guid.Empty if needed
+    public Guid BranchId { get; set; } // same
+}
+
+public class UpdateLabAnalyzerDto
+{
+    public string Name { get; set; }
+    public string Model { get; set; }
+    public string Manufacturer { get; set; }
+    public string ConnectionType { get; set; }
+    public string? Notes { get; set; }
+    public bool IsEnabled { get; set; }
+}
+
+public class LabAnalyzerSummaryDto
+{
+    public Guid AnalyzerId { get; set; }
+    public string Name { get; set; }
+    public string Model { get; set; }
+    public string Manufacturer { get; set; }
+    public string ConnectionType { get; set; }
+    public bool IsEnabled { get; set; }
+}
+
+public class ManualAnalyzerResultDto
+{
+    public string RawMessage { get; set; }              // Entire "line" as if from device
+
+    public string? PatientIdentifier { get; set; }      // MRN / Sample ID / Barcode string
+    public string? AnalyzerTestCode { get; set; }       // Machine test code
+    public string? ResultValue { get; set; }            // "12.3" or "Positive"
+    public string? Units { get; set; }                  // e.g. "g/dL"
+    public string? Flags { get; set; }                  // e.g. "H", "L", "Critical"
+    public DateTimeOffset? MeasuredAt { get; set; }     // Time of measurement (optional)
+}
 ```
 
-**Permissions:**
+### 3.3 Service Implementation
 
-* Only `Admin`/`SuperAdmin`-level roles can use these.
-* Enforce in service or via separate Admin guard.
+Implement `LabAnalyzerService`:
 
-#### Orphan types:
+* `CreateAnalyzerAsync`:
 
-* **InstancesMissingFiles**:
+  * Validate `Name`, `ConnectionType`.
+  * Set OrgId/BranchId (for now may accept from DTO or derive from current user).
+  * Set `IsEnabled = true`, `CreatedAt`, `CreatedBy`.
+* `UpdateAnalyzerAsync`:
 
-  * `PacsInstance` row exists, but `FilePath` is missing on disk.
-* **InstancesWithMissingStudy**:
+  * Allow renaming and toggling `IsEnabled`.
+* `GetAnalyzer*` / `GetAnalyzers*`:
 
-  * `PacsInstance.RadiologyStudyId` points to a non-existing study.
-* **SeriesWithNoInstances**:
+  * Filter by Org if necessary, or leave simple for now.
+* `EnqueueManualResultAsync`:
 
-  * `PacsSeries` has no non-deleted instances.
+  * Validate the analyzer exists and `IsEnabled`.
+  * Populate a new `LabAnalyzerResultInbox` item:
 
-### 3.3 Implementation Rules
+    * `AnalyzerId = analyzerId`.
+    * `RawMessage = dto.RawMessage ?? construct a simple JSON or joined string from dto fields`.
+    * Copy `PatientIdentifier`, `AnalyzerTestCode`, `ResultValue`, `Units`, `Flags`, `MeasuredAt`.
+    * Set `Status = "Pending"` (or `"PendingMatch"`).
+    * Set `ReceivedAt = DateTimeOffset.UtcNow`, `ReceivedBy = currentUserId`.
+  * Save to DB and return the created entity.
 
-* **GetOrphanSummaryAsync**:
+No matching logic to Visit/Order/Test yet — that will be in **Day 14.8+**.
 
-  * Scan `PacsInstances` and `PacsSeries`:
+---
 
-    * Check file existence using `File.Exists(instance.FilePath)`.
-    * Check study existence via a join or follow-up query.
-  * Count each orphan type and return summary.
-  * Do not modify any data.
+## 4) API Controllers — Analyzer Admin + Manual Result Ingestion
 
-* **CleanupOrphansAsync**:
+Create new controllers under `SynOS.Api/Controllers/Lab` (or equivalent):
 
-  * For safety, do **not** hard-delete real clinical data.
-  * But for clearly broken entries, you may:
+### 4.1 `LabAnalyzersController`
 
-    * Mark `PacsInstance` as `IsDeleted = true`, set `DeletedAt`, `DeletedBy`.
-    * Optionally remove DB rows where the file is missing and study is missing (pure garbage).
-  * Do NOT delete any existing `.dcm` files from disk in this step, unless:
+Route base:
+`/api/v1/lab/analyzers`
 
-    * You are 100% sure they are unreferenced by any DB row (you can skip this in 14.6).
-  * Return updated orphan summary after action.
+Endpoints (all `[Authorize(Roles = "Admin")]` or similar):
 
-* **GetStorageStatsAsync**:
+1. `POST /api/v1/lab/analyzers`
 
-  * Aggregate PACS usage:
+   * Input: `CreateLabAnalyzerDto`
+   * Output: `LabAnalyzerSummaryDto`
+   * Behavior: calls `CreateAnalyzerAsync`.
 
-    * Sum `FileSizeBytes` across non-deleted instances.
-    * Count unique RadiologyStudyId, Series, Instances.
-    * Group by OrgId + BranchId for per-branch stats.
+2. `PUT /api/v1/lab/analyzers/{analyzerId}`
 
-### 3.4 Admin Controller
+   * Input: `UpdateLabAnalyzerDto`
+   * Output: `LabAnalyzerSummaryDto`
+   * Behavior: calls `UpdateAnalyzerAsync`.
 
-Create a PACS admin controller, e.g.:
+3. `GET /api/v1/lab/analyzers`
 
-`api/v1/radiology/pacs/admin/...`
+   * Output: `List<LabAnalyzerSummaryDto>`
+   * Behavior: calls `GetAnalyzersAsync`.
+
+4. `GET /api/v1/lab/analyzers/{analyzerId}`
+
+   * Output: `LabAnalyzerSummaryDto` (or 404 if missing).
+
+You can follow your existing API response wrapper pattern (`{ data: ... }`) if that’s standard in SynOS.
+
+### 4.2 `LabAnalyzerResultsController` (Manual Ingestion)
+
+Route base:
+`/api/v1/lab/analyzers/{analyzerId}/results`
 
 Endpoints:
 
-1. `GET api/v1/radiology/pacs/admin/orphans`
+1. `POST /api/v1/lab/analyzers/{analyzerId}/results/manual`
 
-   * `[Authorize(Roles = "Admin,SuperAdmin")]`
-   * Returns `PacsOrphanSummaryDto`.
+   * Authorization: `[Authorize(Roles = "Admin,LabTech,Pathologist")]` (adjust to your RBAC)
+   * Input: `ManualAnalyzerResultDto`
+   * Behavior:
 
-2. `POST api/v1/radiology/pacs/admin/orphans/cleanup`
+     * Get `currentUserId` from claims.
+     * Calls `EnqueueManualResultAsync(analyzerId, dto, currentUserId)`.
+   * Output:
 
-   * `[Authorize(Roles = "Admin,SuperAdmin")]`
-   * Calls `CleanupOrphansAsync`.
-   * Returns updated `PacsOrphanSummaryDto`.
+     * A simple DTO summarizing what was stored, e.g.:
 
-3. `GET api/v1/radiology/pacs/admin/storage-stats`
+```json
+{
+  "inboxId": "guid",
+  "analyzerId": "guid",
+  "status": "Pending",
+  "patientIdentifier": "A00015",
+  "analyzerTestCode": "HGB",
+  "resultValue": "12.3",
+  "units": "g/dL"
+}
+```
 
-   * `[Authorize(Roles = "Admin,SuperAdmin")]`
-   * Returns `PacsStorageStatsDto`.
+No listing / review endpoints are required for Day 14.7 (that’s for 14.10), but if you want a minimal debug endpoint:
 
-Use your existing pattern to get `currentUserId` from claims.
+2. `GET /api/v1/lab/analyzers/{analyzerId}/results/inbox`
 
----
-
-## 4) Logging & Safety
-
-* Log all admin operations:
-
-  * Cleanup orphans
-  * Any soft-deletions
-
-Include:
-
-* UserId, timestamp, counts of affected rows.
-
-Make sure exceptions in admin endpoints yield safe HTTP codes (400/403/500) with non-sensitive messages.
-
----
-
-## 5) Acceptance Criteria for Day 14.6
-
-Day 14.6 is DONE when:
-
-1. **Access Guard**:
-
-   * There is a reusable access guard or equivalent logic that:
-
-     * Validates Org/Branch + RBAC for:
-
-       * `UploadDicomAsync`
-       * `GetDicomStreamAsync`
-       * `ReindexStudyAsync`
-       * `GetSeriesTreeAsync`
-   * All these methods now go through the guard, not ad-hoc checks.
-
-2. **Limits**:
-
-   * `PacsOptions` (or similar) holds:
-
-     * `MaxInstancesPerSeriesInSeriesTree`
-     * `MaxTotalInstancesPerStudyInSeriesTree`
-   * `GetSeriesTreeAsync` enforces these limits and fails with a clear error if exceeded.
-
-3. **Maintenance**:
-
-   * Service methods exist:
-
-     * `GetOrphanSummaryAsync`, `CleanupOrphansAsync`, `GetStorageStatsAsync`.
-   * They correctly categorize:
-
-     * Instances with missing files.
-     * Instances with missing studies.
-     * Series with no instances.
-   * Cleanup uses **soft-delete** (IsDeleted + DeletedAt + DeletedBy) or safe DB removal only for obviously broken orphans.
-
-4. **Admin APIs**:
-
-   * `GET /api/v1/radiology/pacs/admin/orphans`
-   * `POST /api/v1/radiology/pacs/admin/orphans/cleanup`
-   * `GET /api/v1/radiology/pacs/admin/storage-stats`
-   * All restricted to Admin/SuperAdmin roles.
-
-5. No frontend code has been added or changed.
+   * Optional, but useful for testing.
+   * Returns last N inbox items for that analyzer (`TOP 50` or configurable).
+   * If you add this, make it Admin/Pathologist-only.
 
 ---
 
-**At the end of your answer**, give a short TLDR:
+## 5) Logging & Safety
 
-* What Day 14.6 implemented (1–2 lines).
+* Log at INFO level:
+
+  * Analyzer created / updated
+  * Manual result enqueued (`AnalyzerId`, `PatientIdentifier`, `AnalyzerTestCode`, `ResultValue`)
+* Handle common errors gracefully:
+
+  * `404` if analyzer does not exist.
+  * `400` for invalid payload (missing required fields).
+* Ensure **Org/Branch** will be easy to enforce later:
+
+  * At minimum, store `OrgId`/`BranchId` on `LabAnalyzer`.
+  * You don’t need to write a full guard like PACS’ `IRadiologyAccessGuard` yet, but don’t block future extension.
+
+---
+
+## 6) Acceptance Criteria for Day 14.7
+
+Day 14.7 is DONE when:
+
+1. **Entities & DB:**
+
+   * `LabAnalyzer` and `LabAnalyzerResultInbox` entities exist.
+   * DbContext is updated with DbSets.
+   * Migration created and (manually) applied.
+
+2. **Services:**
+
+   * `ILabAnalyzerService` (or equivalent) is created and registered in DI.
+   * `CreateAnalyzerAsync`, `UpdateAnalyzerAsync`, `GetAnalyzer(s)Async`, `EnqueueManualResultAsync` are implemented.
+
+3. **APIs:**
+
+   * `POST /api/v1/lab/analyzers` creates an analyzer.
+   * `GET /api/v1/lab/analyzers` lists analyzers.
+   * `POST /api/v1/lab/analyzers/{analyzerId}/results/manual`:
+
+     * Accepts a payload with `PatientIdentifier`, `AnalyzerTestCode`, `ResultValue`, etc.
+     * Persists a row in `LabAnalyzerResultInbox` with `Status = "Pending"` and correct `ReceivedAt`, `ReceivedBy`.
+
+4. **Manual Test via Swagger:**
+
+   * Create a dummy analyzer (e.g. “Demo CBC Analyzer”).
+   * Use its `analyzerId` to call the manual results endpoint with:
+
+     * `PatientIdentifier = "A00015"`
+     * `AnalyzerTestCode = "HGB"`
+     * `ResultValue = "12.3"`
+     * `Units = "g/dL"`
+   * Verify in DB that:
+
+     * A `LabAnalyzerResultInbox` row was created.
+     * Fields are correctly populated.
+
+5. No analyzer matching/mapping, no HL7/ASTM parsing, no result review UI is implemented in this day. That’s for Day 14.8+.
+
+---
+
+## At the end of your answer, provide a short TLDR:
+
+* 1–2 lines: what Day 14.7 implemented.
 * Main files added/changed.
-* Any manual steps (e.g., `dotnet ef migrations add`, update appsettings etc.).
-
----
-
+* Any manual steps (e.g. `dotnet ef migrations add AddLabAnalyzerTables` + `dotnet ef database update`, `appsettings` updates, DI registration, etc.).
