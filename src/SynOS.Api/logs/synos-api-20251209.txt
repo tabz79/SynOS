@@ -44,3 +44,13 @@
 2025-12-09 18:17:50.187 +05:30 [INF] Analyzer TCP Listener Service stopping...
 2025-12-09 18:17:50.192 +05:30 [INF] Analyzer TCP Listener Service stopped.
 2025-12-09 18:17:50.200 +05:30 [INF] Notification Worker Service stopping gracefully.
+2025-12-09 18:18:42.049 +05:30 [INF] Notification Worker Service running.
+2025-12-09 18:18:42.262 +05:30 [INF] ExpiredLockCleanupService is starting.
+2025-12-09 18:18:42.385 +05:30 [INF] Analyzer TCP Listener Service starting...
+2025-12-09 18:18:42.391 +05:30 [WRN] No analyzer TCP listeners configured in appsettings.json.
+2025-12-09 18:22:24.083 +05:30 [WRN] Failed to determine the https port for redirect.
+2025-12-09 18:23:25.313 +05:30 [INF] Inbox item "8c0f01bc-b52f-455e-9fbb-6ca238ce4e62" successfully imported to Result "bbe76a2b-4825-4141-aa20-83bd0bf389f9" for Order "5b6a7804-a686-4ffd-8e15-6afcffde2803". Status: Imported
+2025-12-09 18:23:25.492 +05:30 [INF] Order "5b6a7804-a686-4ffd-8e15-6afcffde2803" submitted for verification after import of Inbox "8c0f01bc-b52f-455e-9fbb-6ca238ce4e62".
+2025-12-09 19:18:19.803 +05:30 [INF] Analyzer TCP Listener Service stopping...
+2025-12-09 19:18:19.810 +05:30 [INF] Analyzer TCP Listener Service stopped.
+2025-12-09 19:18:19.821 +05:30 [INF] Notification Worker Service stopping gracefully.

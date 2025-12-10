@@ -52,6 +52,7 @@ namespace SynOS.Data
         public DbSet<DeltaCheckEvent> DeltaCheckEvents { get; set; } = null!;
         public DbSet<AutosaveBuffer> AutosaveBuffers { get; set; } = null!;
         public DbSet<ResultLink> ResultLinks { get; set; } = null!;
+        public DbSet<ResultChangeAudit> ResultChangeAudits { get; set; } = null!; // New
 
         // DbSets for Radiology module
         public DbSet<RadiologyStudy> RadiologyStudies { get; set; } = null!;
@@ -203,6 +204,23 @@ namespace SynOS.Data
             {
                 entity.HasOne(e => e.FromResult).WithMany().HasForeignKey(e => e.FromResultId).OnDelete(DeleteBehavior.Restrict);
                 entity.HasOne(e => e.ToResult).WithMany().HasForeignKey(e => e.ToResultId).OnDelete(DeleteBehavior.NoAction);
+            });
+
+            // ResultChangeAudit
+            modelBuilder.Entity<ResultChangeAudit>(entity =>
+            {
+                entity.HasOne(e => e.Result)
+                      .WithMany()
+                      .HasForeignKey(e => e.ResultId)
+                      .OnDelete(DeleteBehavior.Restrict); // No cascade delete
+
+                entity.HasOne(e => e.ChangedByUser)
+                      .WithMany()
+                      .HasForeignKey(e => e.ChangedByUserId)
+                      .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasIndex(e => e.ResultId);
+                entity.HasIndex(e => new { e.ResultId, e.ChangedAt }).IsDescending();
             });
 
             // Critical Values Module
