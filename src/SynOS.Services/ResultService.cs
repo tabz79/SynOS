@@ -223,9 +223,15 @@ namespace SynOS.Services
             return await query.Take(limit).ToListAsync();
         }
 
-        public async Task<ResultDto> SupersedeResultAsync(Guid oldResultId, Guid userId, string newValue)
+        public async Task<ResultDto> ReplaceResultAsync(Guid oldResultId, Guid userId, string newValue, string reason)
         {
+            if (string.IsNullOrWhiteSpace(reason))
+            {
+                throw new ArgumentException("Reason for replacing result is required.", nameof(reason));
+            }
+
             var oldResult = await _context.Results
+                .Include(r => r.Order) // To potentially access order details for audit
                 .FirstOrDefaultAsync(r => r.ResultId == oldResultId);
 
             if (oldResult == null)
@@ -241,15 +247,30 @@ namespace SynOS.Services
                 Value = newValue,
                 TechComments = oldResult.TechComments,
                 EnteredByUserId = userId,
-                EnteredAt = DateTime.UtcNow,
-                Status = "Draft"
+                EnteredAt = DateTime.UtcNow, // Use DateTime.UtcNow for consistency with Result.EnteredAt
+                Status = "Draft" // New results start as Draft
+            };
+
+            // Create audit entry
+            var audit = new ResultChangeAudit
+            {
+                AuditId = Guid.NewGuid(),
+                ResultId = oldResult.ResultId,
+                OldValue = oldResult.Value ?? string.Empty,
+                NewValue = newValue,
+                ChangedByUserId = userId,
+                ChangedAt = DateTimeOffset.UtcNow,
+                Reason = reason,
+                Source = "Replace"
             };
 
             oldResult.Status = "Superseded";
             oldResult.SupersededByResultId = newResult.ResultId;
 
             _context.Results.Add(newResult);
-            await _context.SaveChangesAsync();
+            _context.ResultChangeAudits.Add(audit); // Add audit entry
+
+            await _context.SaveChangesAsync(); // Save changes in a single transaction
 
             // Re-run critical alert on the new value
             try
@@ -274,6 +295,77 @@ namespace SynOS.Services
             };
         }
 
+        public async Task<ResultDto> ModifyResultAsync(Guid resultId, Guid userId, string newValue, string reason)
+        {
+            if (string.IsNullOrWhiteSpace(reason))
+            {
+                throw new ArgumentException("Reason for modifying result is required.", nameof(reason));
+            }
+
+            var result = await _context.Results.FirstOrDefaultAsync(r => r.ResultId == resultId);
+
+            if (result == null)
+            {
+                throw new InvalidOperationException($"Result {resultId} not found.");
+            }
+
+            var oldValue = result.Value;
+
+            // Create audit entry before change
+            var audit = new ResultChangeAudit
+            {
+                AuditId = Guid.NewGuid(),
+                ResultId = result.ResultId,
+                OldValue = oldValue ?? string.Empty,
+                NewValue = newValue,
+                ChangedByUserId = userId,
+                ChangedAt = DateTimeOffset.UtcNow,
+                Reason = reason,
+                Source = "Modify"
+            };
+
+            _context.ResultChangeAudits.Add(audit);
+
+            // Update existing result
+            result.Value = newValue;
+            result.EnteredByUserId = userId; // Keep track of who last touched it
+            result.EnteredAt = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+
+            // Re-run critical alert on the modified value
+            try
+            {
+                await _criticalValueService.CheckAndCreateCriticalAlertAsync(result.ResultId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "Error while checking critical value for modified ResultId {ResultId}",
+                    result.ResultId);
+            }
+
+            return new ResultDto
+            {
+                ResultId = result.ResultId,
+                ParameterCode = result.ParameterCode,
+                Value = result.Value,
+                Status = result.Status,
+                Flag = result.Flag
+            };
+        }
+
+        public async Task<IReadOnlyList<ResultChangeAudit>> GetResultAuditHistoryAsync(Guid resultId)
+        {
+            return await _context.ResultChangeAudits
+                .Include(a => a.ChangedByUser)
+                .Where(a => a.ResultId == resultId)
+                .OrderByDescending(a => a.ChangedAt)
+                .AsNoTracking()
+                .ToListAsync();
+        }
+
         public async Task DeliverReportAsync(Guid orderId)
         {
             // Before delivering a report (e.g., printing, sending via email),
@@ -296,7 +388,6 @@ namespace SynOS.Services
             
             // 3. Proceed with report delivery logic...
             _logger.LogInformation("Report for order {OrderId} is cleared for delivery.", orderId);
-
         }
     }
 }

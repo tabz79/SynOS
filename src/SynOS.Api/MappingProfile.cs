@@ -52,6 +52,9 @@ namespace SynOS.Api
                 .ForMember(dest => dest.ReportStatus, opt => opt.MapFrom(src => src.Status))
                 .ForMember(dest => dest.SignedByUserName, opt => opt.MapFrom(src => src.SignedBy != null ? src.SignedBy.Name : null))
                 .ForMember(dest => dest.Attachments, opt => opt.MapFrom(src => src.Attachments));
+
+            CreateMap<ResultChangeAudit, ResultChangeAuditDto>()
+                .ForMember(dest => dest.ChangedByName, opt => opt.MapFrom(src => src.ChangedByUser.Name));
         }
     }
 }

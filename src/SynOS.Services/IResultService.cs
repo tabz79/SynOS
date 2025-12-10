@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using SynOS.Models.DTOs;
+using SynOS.Models.Entities; // Added
 
 namespace SynOS.Services
 {
@@ -13,6 +14,9 @@ namespace SynOS.Services
         Task<string?> RecoverAutosaveAsync(Guid userId, Guid orderId);
         Task SubmitForVerificationAsync(Guid orderId);
         Task<IEnumerable<ResultDto>> GetPatientHistoryForParameterAsync(Guid patientId, string parameterCode, int limit = 3);
-        Task<ResultDto> SupersedeResultAsync(Guid oldResultId, Guid userId, string newValue);
+        Task<ResultDto> ReplaceResultAsync(Guid oldResultId, Guid userId, string newValue, string reason);
+        Task<ResultDto> ModifyResultAsync(Guid resultId, Guid userId, string newValue, string reason);
+        Task<IReadOnlyList<ResultChangeAudit>> GetResultAuditHistoryAsync(Guid resultId);
+        Task DeliverReportAsync(Guid orderId);
     }
 }

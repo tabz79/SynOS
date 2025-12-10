@@ -36,4 +36,22 @@ namespace SynOS.Models.DTOs
         public string? Flag { get; set; }
         public string Status { get; set; } = string.Empty;
     }
+
+    public class ModifyResultRequestDto
+    {
+        public string NewValue { get; set; } = null!;
+        public string Reason { get; set; } = null!;
+    }
+
+    public class ResultChangeAuditDto
+    {
+        public Guid AuditId { get; set; }
+        public string OldValue { get; set; } = null!;
+        public string NewValue { get; set; } = null!;
+        public string Reason { get; set; } = null!;
+        public Guid ChangedByUserId { get; set; }
+        public string? ChangedByName { get; set; }
+        public DateTimeOffset ChangedAt { get; set; }
+        public string? Source { get; set; }
+    }
 }

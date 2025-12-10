@@ -1,24 +1,28 @@
 using System;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using AutoMapper; // Added for IMapper
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SynOS.Api.Authorization;
 using SynOS.Models.DTOs;
 using SynOS.Services;
+using System.Collections.Generic; // Added for IReadOnlyList
 
 namespace SynOS.Api.Controllers
 {
     [ApiController]
     [Route("api/v1/results")]
-    [Authorize(Policy = "PhlebotomyPolicy")]
+    [Authorize(Roles = "Pathologist,LabTech,Admin")] // Updated roles as per prompt
     public class ResultController : ControllerBase
     {
         private readonly IResultService _resultService;
+        private readonly IMapper _mapper; // Injected IMapper
 
-        public ResultController(IResultService resultService)
+        public ResultController(IResultService resultService, IMapper mapper) // Updated constructor
         {
             _resultService = resultService;
+            _mapper = mapper; // Assigned IMapper
         }
 
         [HttpGet("orders/{orderId}")]
@@ -74,6 +78,39 @@ namespace SynOS.Api.Controllers
         {
             var history = await _resultService.GetPatientHistoryForParameterAsync(patientId, parameterCode);
             return Ok(history);
+        }
+
+        // New Endpoints for Day 14.11
+        [HttpPost("{resultId}/modify")]
+        [Authorize(Roles = "Pathologist,Admin")] // Specific authorization for modification
+        public async Task<IActionResult> ModifyResult(Guid resultId, [FromBody] ModifyResultRequestDto request)
+        {
+            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userIdClaim)) return Unauthorized("User ID not found in token.");
+            
+            var userId = Guid.Parse(userIdClaim);
+
+            try
+            {
+                var updatedResult = await _resultService.ModifyResultAsync(resultId, userId, request.NewValue, request.Reason);
+                return Ok(updatedResult);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return NotFound(ex.Message);
+            }
+        }
+
+        [HttpGet("{resultId}/audit")]
+        [Authorize(Roles = "Pathologist,LabTech,Admin")] // Roles that can view audit history
+        public async Task<ActionResult<IReadOnlyList<ResultChangeAuditDto>>> GetResultAuditHistory(Guid resultId)
+        {
+            var auditHistory = await _resultService.GetResultAuditHistoryAsync(resultId); // Assuming this method exists
+            return Ok(_mapper.Map<IReadOnlyList<ResultChangeAuditDto>>(auditHistory));
         }
     }
 }
