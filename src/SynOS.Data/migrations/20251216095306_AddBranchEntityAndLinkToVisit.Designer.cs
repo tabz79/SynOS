@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SynOS.Data;
 
@@ -11,9 +12,11 @@ using SynOS.Data;
 namespace SynOS.Data.Migrations
 {
     [DbContext(typeof(SynOSDbContext))]
-    partial class SynOSDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251216095306_AddBranchEntityAndLinkToVisit")]
+    partial class AddBranchEntityAndLinkToVisit
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -682,50 +685,6 @@ namespace SynOS.Data.Migrations
                     b.ToTable("EditLocks");
                 });
 
-            modelBuilder.Entity("SynOS.Models.Entities.IMS.ImsStockMovement", b =>
-                {
-                    b.Property<Guid>("MovementId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("LotId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTimeOffset>("MovedAt")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<Guid>("MovedByUserId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("MovementType")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.Property<int>("Quantity")
-                        .HasColumnType("int");
-
-                    b.Property<string>("ReferenceId")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<Guid>("TubeId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("MovementId");
-
-                    b.HasIndex("LotId");
-
-                    b.HasIndex("MovedByUserId");
-
-                    b.HasIndex("ReferenceId");
-
-                    b.HasIndex("TubeId");
-
-                    b.ToTable("IMS_StockMovements", (string)null);
-                });
-
             modelBuilder.Entity("SynOS.Models.Entities.IMS.ImsTestTubeMap", b =>
                 {
                     b.Property<Guid>("MapId")
@@ -751,40 +710,37 @@ namespace SynOS.Data.Migrations
                     b.ToTable("IMS_TestTubeMaps", (string)null);
                 });
 
-            modelBuilder.Entity("SynOS.Models.Entities.IMS.ImsTubeLot", b =>
+            modelBuilder.Entity("SynOS.Models.Entities.IMS.ImsTubeConsumption", b =>
                 {
-                    b.Property<Guid>("LotId")
+                    b.Property<Guid>("ConsumptionId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("BranchId")
+                    b.Property<DateTimeOffset>("ConsumedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("ConsumedByUserId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<int>("CurrentQuantity")
+                    b.Property<int>("Quantity")
                         .HasColumnType("int");
 
-                    b.Property<DateTimeOffset>("ExpiryDate")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<string>("LotNumber")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<DateTimeOffset>("ReceivedAt")
-                        .HasColumnType("datetimeoffset");
+                    b.Property<Guid>("SampleId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("TubeId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.HasKey("LotId");
+                    b.HasKey("ConsumptionId");
 
-                    b.HasIndex("BranchId");
+                    b.HasIndex("ConsumedByUserId");
 
-                    b.HasIndex("TubeId", "BranchId", "LotNumber")
+                    b.HasIndex("TubeId");
+
+                    b.HasIndex("SampleId", "TubeId")
                         .IsUnique();
 
-                    b.ToTable("IMS_TubeLots", (string)null);
+                    b.ToTable("IMS_TubeConsumptions", (string)null);
                 });
 
             modelBuilder.Entity("SynOS.Models.Entities.IMS.ImsTubeMaster", b =>
@@ -817,6 +773,29 @@ namespace SynOS.Data.Migrations
                         .IsUnique();
 
                     b.ToTable("IMS_TubeMasters", (string)null);
+                });
+
+            modelBuilder.Entity("SynOS.Models.Entities.IMS.ImsTubeStock", b =>
+                {
+                    b.Property<Guid>("StockId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("AlertQuantity")
+                        .HasColumnType("int");
+
+                    b.Property<int>("CurrentQuantity")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("TubeId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("StockId");
+
+                    b.HasIndex("TubeId")
+                        .IsUnique();
+
+                    b.ToTable("IMS_TubeStocks", (string)null);
                 });
 
             modelBuilder.Entity("SynOS.Models.Entities.Invoice", b =>
@@ -2981,33 +2960,6 @@ namespace SynOS.Data.Migrations
                     b.Navigation("LockedBy");
                 });
 
-            modelBuilder.Entity("SynOS.Models.Entities.IMS.ImsStockMovement", b =>
-                {
-                    b.HasOne("SynOS.Models.Entities.IMS.ImsTubeLot", "TubeLot")
-                        .WithMany()
-                        .HasForeignKey("LotId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("SynOS.Models.Entities.User", "MovedByUser")
-                        .WithMany()
-                        .HasForeignKey("MovedByUserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("SynOS.Models.Entities.IMS.ImsTubeMaster", "Tube")
-                        .WithMany()
-                        .HasForeignKey("TubeId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("MovedByUser");
-
-                    b.Navigation("Tube");
-
-                    b.Navigation("TubeLot");
-                });
-
             modelBuilder.Entity("SynOS.Models.Entities.IMS.ImsTestTubeMap", b =>
                 {
                     b.HasOne("SynOS.Models.Entities.Test", "Test")
@@ -3027,21 +2979,40 @@ namespace SynOS.Data.Migrations
                     b.Navigation("Tube");
                 });
 
-            modelBuilder.Entity("SynOS.Models.Entities.IMS.ImsTubeLot", b =>
+            modelBuilder.Entity("SynOS.Models.Entities.IMS.ImsTubeConsumption", b =>
                 {
-                    b.HasOne("SynOS.Models.Entities.Branch", "Branch")
+                    b.HasOne("SynOS.Models.Entities.User", "ConsumedByUser")
                         .WithMany()
-                        .HasForeignKey("BranchId")
+                        .HasForeignKey("ConsumedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SynOS.Models.Entities.Sample", "Sample")
+                        .WithMany()
+                        .HasForeignKey("SampleId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("SynOS.Models.Entities.IMS.ImsTubeMaster", "Tube")
                         .WithMany()
                         .HasForeignKey("TubeId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Branch");
+                    b.Navigation("ConsumedByUser");
+
+                    b.Navigation("Sample");
+
+                    b.Navigation("Tube");
+                });
+
+            modelBuilder.Entity("SynOS.Models.Entities.IMS.ImsTubeStock", b =>
+                {
+                    b.HasOne("SynOS.Models.Entities.IMS.ImsTubeMaster", "Tube")
+                        .WithMany()
+                        .HasForeignKey("TubeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Tube");
                 });

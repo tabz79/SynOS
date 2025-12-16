@@ -105,40 +105,5 @@ namespace SynOS.Api.Controllers
             return Ok(newMap);
         }
 
-        [HttpPost("stock/seed")]
-        public async Task<IActionResult> SeedStock([FromBody] StockSeedDto stockDto)
-        {
-            if (!await _context.ImsTubeMasters.AnyAsync(t => t.TubeId == stockDto.TubeId))
-            {
-                return NotFound(new { message = $"Tube with ID '{stockDto.TubeId}' not found." });
-            }
-
-            var stockItem = await _context.ImsTubeStocks
-                .FirstOrDefaultAsync(s => s.TubeId == stockDto.TubeId);
-
-            if (stockItem != null)
-            {
-                // Update existing stock
-                stockItem.CurrentQuantity = stockDto.Quantity;
-                stockItem.AlertQuantity = stockDto.AlertQuantity;
-            }
-            else
-            {
-                // Create new stock record
-                stockItem = new ImsTubeStock
-                {
-                    StockId = Guid.NewGuid(),
-                    TubeId = stockDto.TubeId,
-                    CurrentQuantity = stockDto.Quantity,
-                    AlertQuantity = stockDto.AlertQuantity
-                };
-                await _context.ImsTubeStocks.AddAsync(stockItem);
-            }
-
-            await _context.SaveChangesAsync();
-            _logger.LogInformation("Stock for TubeId {TubeId} has been seeded/updated to Quantity {Quantity}.", stockDto.TubeId, stockDto.Quantity);
-            
-            return Ok(stockItem);
-        }
     }
 }

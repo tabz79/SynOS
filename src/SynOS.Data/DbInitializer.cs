@@ -10,13 +10,16 @@ namespace SynOS.Data
         // TODO: Configure lab timezone in appsettings or a dedicated config service
         private static TimeZoneInfo _labTimeZone = TimeZoneInfo.Local; // Default to server local timezone
 
-
+        // Define a static DefaultBranchId for seeding purposes
+        public static readonly Guid DefaultBranchId = Guid.Parse("A0000000-0000-0000-0000-000000000001"); // Example GUID
 
         public static void Initialize(SynOSDbContext context)
         {
             // context.Database.EnsureCreated();
-
+            
+            SeedBranches(context); // Seed branches first
             SeedRolesAndUsers(context);
+            
             // The following seeding methods for TestDefinitions, etc. are now obsolete
             // and should be removed or updated to use the new Test entity structure.
             // For now, we will leave them as is to avoid further breaking changes.
@@ -26,6 +29,24 @@ namespace SynOS.Data
             if (!context.Appointments.Any()) SeedAppointments(context);
 
             if (!context.ReportTemplates.Any()) SeedReportTemplates(context);
+        }
+
+        private static void SeedBranches(SynOSDbContext context)
+        {
+            if (context.Branches.Any())
+            {
+                return; // DB has been seeded with branches
+            }
+
+            var defaultBranch = new Branch
+            {
+                BranchId = DefaultBranchId,
+                Name = "Main Laboratory",
+                IsActive = true
+            };
+            
+            context.Branches.Add(defaultBranch);
+            context.SaveChanges();
         }
 
         private static void SeedReportTemplates(SynOSDbContext context)

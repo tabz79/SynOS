@@ -1,9 +1,13 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SynOS.Data;
+using SynOS.Models.DTOs.IMS;
+using SynOS.Models.Entities.IMS;
+using SynOS.Models.Enums.IMS;
 
 namespace SynOS.Services
 {
@@ -20,7 +24,6 @@ namespace SynOS.Services
 
         public async Task ConsumeStockOnSampleCollectedAsync(Guid sampleId, Guid consumedByUserId)
         {
-            // Use an execution strategy to handle transactions and potential retries.
             var strategy = _context.Database.CreateExecutionStrategy();
             await strategy.ExecuteAsync(async () =>
             {
@@ -28,96 +31,205 @@ namespace SynOS.Services
                 {
                     try
                     {
-                        // 1. Idempotency Check: See if consumption already happened for this sample.
-                        var existingConsumption = await _context.ImsTubeConsumptions
-                            .FirstOrDefaultAsync(c => c.SampleId == sampleId);
-
-                        if (existingConsumption != null)
+                        // 1. Idempotency Check
+                        var referenceId = sampleId.ToString();
+                        if (await _context.ImsStockMovements.AnyAsync(m => m.ReferenceId == referenceId && m.MovementType == StockMovementType.Consumption))
                         {
                             _logger.LogInformation("Stock consumption for SampleId {SampleId} has already been processed.", sampleId);
-                            return; // Already processed, exit safely.
+                            return;
                         }
 
-                        // 2. Load the sample and its required test information.
+                        // 2. Load Sample, Test, and Visit to get BranchId
                         var sample = await _context.Samples
-                            .Include(s => s.Order)
-                                .ThenInclude(o => o.Test)
-                            .Include(s => s.Order)
-                                .ThenInclude(o => o.Visit) // Need visit to find the branch
+                            .Include(s => s.Order).ThenInclude(o => o.Test)
+                            .Include(s => s.Order).ThenInclude(o => o.Visit)
                             .FirstOrDefaultAsync(s => s.SampleId == sampleId);
 
-                        if (sample == null || sample.Order == null || sample.Order.Test == null || sample.Order.Visit == null)
+                        if (sample?.Order?.Test == null || sample.Order.Visit == null)
                         {
                             _logger.LogError("Could not process tube consumption for SampleId {SampleId}: Sample, Order, Test, or Visit not found.", sampleId);
                             return;
                         }
 
-                        // This is a placeholder as BranchId is not explicitly used by IMS for consumption at this stage.
-                        // All stock operations are implicitly for a single branch.
-                        // TODO: If multi-branch support is added, this will need to derive BranchId from the Visit or user context.
-                        // Guid branchId = Guid.Parse("A0000000-0000-0000-0000-000000000001"); // Implicit single branch
-                        
-                        // 3. Resolve the required tube from the TestTubeMap
+                        Guid branchId;
+                        // Use the Visit's BranchId if available.
+                        // If Visit.BranchId is null or Guid.Empty (unassigned), fallback to the system's DefaultBranchId.
+                        // This addresses the "BranchId mismatch" by ensuring a valid BranchId is always used for consumption.
+                        if (sample.Order.Visit.BranchId == null || sample.Order.Visit.BranchId == Guid.Empty)
+                        {
+                            branchId = DbInitializer.DefaultBranchId;
+                            _logger.LogWarning("Visit BranchId for SampleId {SampleId} is null or empty. Falling back to system's DefaultBranchId {DefaultBranchId} for consumption.", sampleId, branchId);
+                        }
+                        else
+                        {
+                            branchId = sample.Order.Visit.BranchId.Value;
+                        }
+
+
+                        // 3. Resolve required tube
                         var tubeMap = await _context.ImsTestTubeMaps
                             .FirstOrDefaultAsync(m => m.TestId == sample.Order.Test.TestId);
 
                         if (tubeMap == null)
                         {
-                            _logger.LogWarning("No tube mapping found for TestId {TestId} ({TestCode}). Skipping stock consumption.", sample.Order.Test.TestId, sample.Order.Test.TestCode);
+                            _logger.LogWarning("No tube mapping for TestId {TestId}. Skipping stock consumption.", sample.Order.Test.TestId);
+                            return;
+                        }
+                        
+                        var quantityToConsume = tubeMap.QuantityPerSample;
+                        
+                        // 4. Get active lots for that tube and branch (FEFO)
+                        var activeLots = await _context.ImsTubeLots
+                            .Where(lot => lot.TubeId == tubeMap.TubeId &&
+                                          lot.BranchId == branchId &&
+                                          lot.CurrentQuantity > 0 &&
+                                          lot.ExpiryDate >= DateTimeOffset.UtcNow)
+                            .OrderBy(lot => lot.ExpiryDate)
+                            .ThenBy(lot => lot.ReceivedAt)
+                            .ToListAsync();
+
+                        if (!activeLots.Any() || activeLots.Sum(l => l.CurrentQuantity) < quantityToConsume)
+                        {
+                            _logger.LogError("Insufficient stock for TubeId {TubeId} at BranchId {BranchId}. Required: {Required}, Available: {Available}. Consumption skipped.",
+                                tubeMap.TubeId, branchId, quantityToConsume, activeLots.Sum(l => l.CurrentQuantity));
+                            // DO NOT throw, DO NOT roll back the overall sample collection transaction.
+                            // Simply return, effectively not committing the consumption part of the transaction.
                             return;
                         }
 
-                        // 4. Find the stock record for the tube (implicitly single branch for now).
-                        var tubeStock = await _context.ImsTubeStocks
-                            .FirstOrDefaultAsync(s => s.TubeId == tubeMap.TubeId /* && s.BranchId == branchId */); // BranchId removed for implicit single branch
-
-                        if (tubeStock == null)
+                        // 5. FEFO Deduction Logic
+                        var remainingToConsume = quantityToConsume;
+                        foreach (var lot in activeLots)
                         {
-                            _logger.LogError("No stock record found for TubeId {TubeId}. Cannot consume stock.", tubeMap.TubeId /* , branchId */);
-                            // In a real system, you might auto-create a stock record here, but for now we fail.
-                            return;
+                            if (remainingToConsume <= 0) break;
+
+                            var quantityFromThisLot = Math.Min(lot.CurrentQuantity, remainingToConsume);
+                            
+                            lot.CurrentQuantity -= quantityFromThisLot;
+                            remainingToConsume -= quantityFromThisLot;
+
+                            var movement = new ImsStockMovement
+                            {
+                                MovementId = Guid.NewGuid(),
+                                TubeId = tubeMap.TubeId,
+                                LotId = lot.LotId,
+                                Quantity = quantityFromThisLot,
+                                MovementType = StockMovementType.Consumption,
+                                ReferenceId = referenceId,
+                                MovedByUserId = consumedByUserId,
+                                MovedAt = DateTimeOffset.UtcNow
+                            };
+                            await _context.ImsStockMovements.AddAsync(movement);
+
+                            _logger.LogInformation("Consumed {Quantity} from Lot {LotNumber} for TubeId {TubeId}. New lot quantity: {NewQuantity}",
+                                quantityFromThisLot, lot.LotNumber, lot.TubeId, lot.CurrentQuantity);
                         }
 
-                        // 5. Reduce stock quantity
-                        int quantityToConsume = tubeMap.QuantityPerSample;
-                        
-                        if (tubeStock.CurrentQuantity < quantityToConsume)
-                        {
-                            _logger.LogWarning("Stock for TubeId {TubeId} is insufficient. Current: {CurrentQuantity}, Required: {RequiredQuantity}. Proceeding with consumption, stock will be negative.",
-                                tubeStock.TubeId /* , branchId */, tubeStock.CurrentQuantity, quantityToConsume);
-                        }
-
-                        tubeStock.CurrentQuantity -= quantityToConsume;
-
-                        // 6. Create the consumption record (the truth log)
-                        var consumptionRecord = new Models.Entities.IMS.ImsTubeConsumption
-                        {
-                            ConsumptionId = Guid.NewGuid(),
-                            SampleId = sampleId,
-                            TubeId = tubeMap.TubeId,
-                            Quantity = quantityToConsume,
-                            ConsumedAt = DateTimeOffset.UtcNow,
-                            ConsumedByUserId = consumedByUserId
-                        };
-                        
-                        await _context.ImsTubeConsumptions.AddAsync(consumptionRecord);
-
-                        // 7. Save all changes
                         await _context.SaveChangesAsync();
                         await transaction.CommitAsync();
 
-                        _logger.LogInformation("Successfully consumed {Quantity} of TubeId {TubeId} for SampleId {SampleId}. New stock count: {NewStockCount}",
-                            quantityToConsume, tubeMap.TubeId, sampleId /* , branchId */, tubeStock.CurrentQuantity);
-
+                        _logger.LogInformation("Successfully processed stock consumption for SampleId {SampleId}.", sampleId);
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError(ex, "An error occurred during tube stock consumption for SampleId {SampleId}. Rolling back transaction.", sampleId);
-                        await transaction.RollbackAsync();
-                        throw; // Re-throw to indicate that the operation failed.
+                        _logger.LogError(ex, "An error occurred during tube stock consumption for SampleId {SampleId}. Stock consumption skipped.", sampleId);
+                        // Do NOT re-throw, do NOT block the overall sample collection flow.
+                        // The transaction for consumption will implicitly not be committed.
                     }
                 }
             });
+        }
+
+        public async Task<IEnumerable<NearExpiryLotDto>> GetNearExpiryAlertsAsync(Guid? branchId, int days)
+        {
+            var expiryThreshold = DateTimeOffset.UtcNow.AddDays(days);
+            
+            var query = _context.ImsTubeLots
+                .Where(lot => lot.ExpiryDate <= expiryThreshold && lot.CurrentQuantity > 0);
+
+            if (branchId.HasValue)
+            {
+                query = query.Where(lot => lot.BranchId == branchId.Value);
+            }
+
+            return await query
+                .Include(lot => lot.Tube)
+                .Select(lot => new NearExpiryLotDto
+                {
+                    LotId = lot.LotId,
+                    TubeName = lot.Tube.Name,
+                    LotNumber = lot.LotNumber,
+                    ExpiryDate = lot.ExpiryDate,
+                    CurrentQuantity = lot.CurrentQuantity
+                })
+                .ToListAsync();
+        }
+
+        public async Task RecordWastageAsync(Guid lotId, int quantity, string reason, Guid userId)
+        {
+            var lot = await _context.ImsTubeLots.FindAsync(lotId);
+
+            if (lot == null)
+            {
+                throw new KeyNotFoundException($"Lot with ID '{lotId}' not found.");
+            }
+
+            if (lot.CurrentQuantity < quantity)
+            {
+                throw new InvalidOperationException($"Cannot record wastage of {quantity} units. Only {lot.CurrentQuantity} available in lot {lot.LotNumber}.");
+            }
+
+            lot.CurrentQuantity -= quantity;
+
+            var movement = new ImsStockMovement
+            {
+                MovementId = Guid.NewGuid(),
+                TubeId = lot.TubeId,
+                LotId = lot.LotId,
+                Quantity = quantity,
+                MovementType = StockMovementType.Wastage,
+                ReferenceId = reason,
+                MovedByUserId = userId,
+                MovedAt = DateTimeOffset.UtcNow
+            };
+
+            await _context.ImsStockMovements.AddAsync(movement);
+            await _context.SaveChangesAsync();
+
+            _logger.LogInformation("Recorded wastage of {Quantity} from Lot {LotNumber}. Reason: {Reason}", quantity, lot.LotNumber, reason);
+        }
+
+        public async Task AddStockManualAsync(LotCreateDto lotDto, Guid userId)
+        {
+            var newLot = new ImsTubeLot
+            {
+                LotId = Guid.NewGuid(),
+                TubeId = lotDto.TubeId,
+                BranchId = lotDto.BranchId,
+                LotNumber = lotDto.LotNumber,
+                ExpiryDate = lotDto.ExpiryDate,
+                CurrentQuantity = lotDto.Quantity,
+                ReceivedAt = DateTimeOffset.UtcNow
+            };
+
+            var movement = new ImsStockMovement
+            {
+                MovementId = Guid.NewGuid(),
+                TubeId = newLot.TubeId,
+                LotId = newLot.LotId,
+                Quantity = newLot.CurrentQuantity,
+                MovementType = StockMovementType.ManualAddition,
+                ReferenceId = "Manual Stock Addition",
+                MovedByUserId = userId,
+                MovedAt = DateTimeOffset.UtcNow
+            };
+
+            await _context.ImsTubeLots.AddAsync(newLot);
+            await _context.ImsStockMovements.AddAsync(movement);
+            await _context.SaveChangesAsync();
+            
+            _logger.LogInformation("Manually added Lot {LotNumber} with {Quantity} units of TubeId {TubeId} for BranchId {BranchId}", 
+                newLot.LotNumber, newLot.CurrentQuantity, newLot.TubeId, newLot.BranchId);
         }
     }
 }

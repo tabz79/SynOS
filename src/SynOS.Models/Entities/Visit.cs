@@ -20,6 +20,10 @@ namespace SynOS.Models.Entities
         [ForeignKey("ReferrerId")]
         public virtual Referrer? Referrer { get; set; }
 
+        public Guid? BranchId { get; set; } // Nullable FK
+        [ForeignKey("BranchId")]
+        public virtual Branch? Branch { get; set; } // Nullable navigation property
+
         [Required]
         [StringLength(12)] // Increased length for new token format
         public string Token { get; set; } = string.Empty;

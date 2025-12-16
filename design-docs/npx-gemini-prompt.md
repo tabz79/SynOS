@@ -1,150 +1,251 @@
-# 🔹 GEMINI PROMPT — DAY 16.1 (PHASE 1)
+# 🔹 GEMINI PROMPT — DAY 16.2 (PHASE 2)
 
-## Tube-First Consumption Truth (Backend Only)
-
-### CONTEXT
-
-You are extending an existing production-grade DLMS backend called **SynOS**.
-Core lab workflow is already stable up to **Sample = Collected**.
-
-Existing confirmed flows:
-
-* Visit → Payment → Sample auto-created
-* `/samples/{id}/collect` endpoint works and updates sample status
-* JWT identity, Branch, Test Master, Sample models already exist
-* No schema drift, no FK issues
-
-### 🎯 GOAL
-
-Implement **tube-first automatic inventory consumption** so that:
-
-* SynOS knows which tubes are required per test
-* Stock is automatically reduced **exactly once** when a sample is collected
-* Only low-stock alerts are exposed (no purchasing, no finance)
-
-This phase must guarantee **consumption truth**.
+## Lot + Expiry Physical Reality (Backend Only)
 
 ---
 
-### 🔒 STRICT GUARDRAILS (NON-NEGOTIABLE)
+## CONTEXT
 
-* Backend only (no UI, no frontend code)
-* Do NOT add vendors, purchase orders, payments, GST, expiry, batch/lot, audits, analytics
-* Consumption must trigger **only** when sample status changes to `Collected`
-* Consumption must be **idempotent** (same sample must not deduct twice)
-* Keep schema minimal and migration-safe
+Day 16.1 is **completed, tested, and stable**.
+
+* Tube-first consumption works
+* Stock is deducted **only** when a sample is collected
+* Consumption is derived from **Test → Tube mapping**
+* Payment and visit flows are untouched
+
+Now we introduce **physical truth**:
+
+* Batch / Lot
+* Expiry
+* FEFO consumption
+
+This phase adds **physical correctness**, not financial logic.
 
 ---
 
-## 1️⃣ DATABASE SCHEMA (NEW TABLES ONLY)
+## 🎯 GOAL
 
-### `IMS_TubeMaster`
+Track **which physical tubes** are consumed and **when they expire**, while preserving all guarantees from Day 16.1.
 
-Defines what the consumable is.
+---
+
+## 🔒 GUARDRAILS (STRICT)
+
+* Backend only (no UI, no React, no CSS)
+* Do NOT add:
+
+  * Vendors
+  * Purchase Orders
+  * Payments
+  * GST
+  * Valuation
+  * Analytics dashboards
+* Consumption MUST prioritize **FEFO** (earliest expiry first)
+* Wastage is allowed **only** for expiry or damage
+* Phase-1 behavior MUST remain unchanged
+
+---
+
+## 1️⃣ SCHEMA CHANGES
+
+### ❌ DELETE
+
+* `IMS_TubeStock`
+
+(No aggregated stock table is allowed in this phase.)
+
+---
+
+### ➕ ADD — `IMS_TubeLot`
+
+Tracks **actual physical stock**.
 
 Fields:
 
-* TubeId (PK)
-* Code (unique, e.g., EDTA, SERUM)
-* Name
-* UnitOfMeasure (e.g., count)
-* IsActive
+* `LotId` (PK)
+* `TubeId` (FK → IMS_TubeMaster)
+* `BranchId` (FK → existing Branch resolution)
+* `LotNumber`
+* `ExpiryDate`
+* `CurrentQuantity`
+* `ReceivedAt`
+* `IsActive`
+
+⚠️ Notes:
+
+* `IsActive` is **derived**, not manually controlled.
+* A lot is **inactive** if:
+
+  * `CurrentQuantity == 0`, OR
+  * `ExpiryDate < Now`
 
 ---
 
-### `IMS_TubeStock`
+### ➕ ADD — `IMS_StockMovement`
 
-Tracks current stock **per branch**.
+Immutable stock ledger.
 
 Fields:
 
-* StockId (PK)
-* TubeId (FK → IMS_TubeMaster)
-* BranchId (FK → existing Branch)
-* CurrentQuantity
-* AlertQuantity   ← branch-specific threshold
+* `MovementId` (PK)
+* `TubeId` (FK)  ← denormalized for reporting
+* `LotId` (FK)
+* `Quantity` (ALWAYS positive)
+* `MovementType` (Consumption / Wastage)
+* `ReferenceId` (SampleId or ManualRef)
+* `MovedAt`
+
+⚠️ Rules:
+
+* Quantity is **never negative**
+* Direction is inferred only from `MovementType`
+* Rows are **append-only** (never updated or deleted)
 
 ---
 
-### `IMS_TestTubeMap`
+## 2️⃣ SERVICE UPDATES
 
-Defines which tube is required per test.
+### `ConsumeStockOnSampleCollectedAsync(sampleId)`
 
-Fields:
+This method replaces Phase-1 stock deduction logic.
 
-* MapId (PK)
-* SynOSTestCode (FK → existing TestDefinitions)
-* TubeId (FK → IMS_TubeMaster)
-* QuantityPerSample (usually 1)
+#### REQUIRED LOGIC (NO DEVIATION):
 
----
+1. Resolve `BranchId` strictly via:
 
-### `IMS_TubeConsumption`
+   ```
+   Sample → Visit → BranchId
+   ```
 
-Tracks **actual consumption events** (truth record).
+   ❌ No defaults
+   ❌ No inference from user
+   ❌ No global fallback
 
-Fields:
+2. Resolve required `TubeId(s)` via:
 
-* ConsumptionId (PK)
-* SampleId (FK → existing Sample)
-* TubeId (FK)
-* Quantity
-* ConsumedAt
-* ConsumedByUserId
+   ```
+   Test → Tube mapping
+   ```
 
-👉 Use this table to enforce idempotency:
+   ⚠️ MUST NOT use `Sample.TubeType`
 
-* One sample → one consumption record
+3. Query **active lots** for that tube & branch:
 
----
+   ```
+   ORDER BY ExpiryDate ASC, ReceivedAt ASC
+   ```
 
-## 2️⃣ BUSINESS LOGIC (SERVICES)
+4. Deduct required quantity across lots (FEFO):
 
-### `ITubeConsumptionService`
+   * Consume from earliest expiring lot first
+   * Spill into next lot only if needed
 
-#### `ConsumeStockOnSampleCollectedAsync(sampleId)`
+5. For each deduction:
 
-Triggered from existing `/samples/{id}/collect` flow.
+   * Reduce `IMS_TubeLot.CurrentQuantity`
+   * Insert one `IMS_StockMovement` row (Consumption)
+   * ReferenceId = SampleId
 
-Logic:
+6. Operation must be **idempotent**
 
-1. Load Sample → Test(s) → Branch
-2. Check if a consumption record already exists for this SampleId
-
-   * If yes → return safely (do nothing)
-3. Resolve required tubes via `IMS_TestTubeMap`
-4. Reduce `IMS_TubeStock.CurrentQuantity`
-5. Insert rows into `IMS_TubeConsumption`
+   * Same sample must NEVER deduct twice
 
 ---
 
-#### `CheckLowStockAsync(branchId)`
+### `GetNearExpiryAlertsAsync(branchId, days)`
 
-* Returns tubes where `CurrentQuantity < AlertQuantity`
+Returns lots where:
+
+```
+ExpiryDate <= Today + days
+AND CurrentQuantity > 0
+```
+
+---
+
+### `RecordWastageAsync(lotId, quantity, reason)`
+
+* Deduct quantity from the specified lot
+* Create `IMS_StockMovement` with:
+
+  * MovementType = Wastage
+  * ReferenceId = reason
+* Must NOT allow quantity to go negative
+
+---
+
+### `AddStockManualAsync(...)`
+
+Temporary bypass for testing and early ops.
+
+Rules:
+
+* Admin-only
+* Creates a new `IMS_TubeLot`
+* MUST create a corresponding `IMS_StockMovement`
+* Explicitly marked as **temporary**
+* No cost, no PO, no valuation
 
 ---
 
 ## 3️⃣ API CONTROLLERS
 
-### `IMSTubeAdminController` (Authorize: Admin, LabTech)
+### `IMSStockOperationController`
 
-* `POST /api/v1/ims/tubes`
-* `PUT /api/v1/ims/tubes/{tubeId}`
-* `POST /api/v1/ims/tubes/test-map`
-* `POST /api/v1/ims/stock/seed`
-  ⚠️ Temporary manual stock seeding (setup/testing only)
+* `POST /api/v1/ims/stock/lot`
 
----
+  * Manual lot creation (Admin only)
+* `POST /api/v1/ims/stock/lot/{lotId}/wastage`
 
-### `IMSStockReadController` (Authorize: StoreManager, LabTech)
-
-* `GET /api/v1/ims/stock/summary`
-* `GET /api/v1/ims/stock/low-alerts`
+  * Record wastage
 
 ---
 
-### ✅ EXIT CRITERIA
+### `IMSStockReadController`
 
-* Sample collected → stock reduces once and only once
-* No negative stock unless manually seeded wrong
-* Low-stock alerts accurate per branch
+* `GET /api/v1/ims/stock/lots`
+
+  * Returns active & inactive lots
+* `GET /api/v1/ims/stock/expiry-alerts?days=7|14|21`
+
+---
+
+## 4️⃣ CLARIFICATIONS & INVARIANTS (DO NOT IGNORE)
+
+* BranchId MUST come from Sample → Visit → Branch
+* FEFO ordering = ExpiryDate ASC, then ReceivedAt ASC
+* Sample.TubeType MUST NOT be used
+* StockMovement.Quantity is always positive
+* IsActive is derived, not manually toggled
+* Manual stock add MUST be auditable via StockMovement
+* Phase-1 behavior MUST remain unchanged
+
+---
+
+## ✅ EXIT CRITERIA
+
+* FEFO is strictly enforced
+* Consumption is traceable to **lot level**
+* Expired stock is visible
+* No regression in Day 16.1 behavior
+
+---
+
+### 🚫 EXPLICITLY OUT OF SCOPE
+
+* Reagents
+* Cost per test
+* Supplier management
+* Purchasing
+* Capital allocation
+* AI / analytics
+
+---
+
+### FINAL INSTRUCTION TO GEMINI
+
+Implement **only** what is defined above.
+Do not introduce additional abstractions, shortcuts, or assumptions.
+
+---
+

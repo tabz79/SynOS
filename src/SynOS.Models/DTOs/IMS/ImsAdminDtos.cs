@@ -41,17 +41,4 @@ namespace SynOS.Models.DTOs.IMS
         public int QuantityPerSample { get; set; } = 1;
     }
 
-    public class StockSeedDto
-    {
-        [Required]
-        public Guid TubeId { get; set; }
-
-
-
-        [Range(0, int.MaxValue)]
-        public int Quantity { get; set; }
-
-        [Range(0, int.MaxValue)]
-        public int AlertQuantity { get; set; }
-    }
 }
