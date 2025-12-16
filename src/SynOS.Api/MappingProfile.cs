@@ -6,6 +6,7 @@ using SynOS.Models.DTOs.ReportTemplateDsl;
 using System.Text.Json;
 using System;
 using System.Linq; // Add this using directive
+using SynOS.Models.DTOs.Admin;
 
 namespace SynOS.Api
 {
@@ -30,14 +31,14 @@ namespace SynOS.Api
             
             CreateMap<RadiologyStudy, RadiologyStudyDto>()
                 .ForMember(dest => dest.OrderId, opt => opt.MapFrom(src => src.VisitTestId))
-                .ForMember(dest => dest.TestName, opt => opt.MapFrom(src => src.Order.TestDefinition.Name));
+                                .ForMember(dest => dest.TestName, opt => opt.MapFrom(src => src.Order.Test.TestName));
 
             CreateMap<RadiologyStudy, RadiologyStudyQueueDto>()
                 .ForMember(dest => dest.TokenNumber, opt => opt.MapFrom(src => src.Visit.Token))
                 .ForMember(dest => dest.PatientName, opt => opt.MapFrom(src => $"{src.Patient.FirstName} {src.Patient.LastName}"))
                 .ForMember(dest => dest.PatientAge, opt => opt.MapFrom(src => (int)((DateTime.Today - src.Patient.DateOfBirth).TotalDays / 365.25)))
                 .ForMember(dest => dest.PatientGender, opt => opt.MapFrom(src => src.Patient.Gender))
-                .ForMember(dest => dest.TestName, opt => opt.MapFrom(src => src.Order.TestDefinition.Name))
+                                .ForMember(dest => dest.TestName, opt => opt.MapFrom(src => src.Order.Test.TestName))
                 .ForMember(dest => dest.AssignedToTechnicianName, opt => opt.MapFrom(src => src.Technician != null ? src.Technician.Name : null));
 
             CreateMap<ReportAttachment, ReportAttachmentDto>();
@@ -55,6 +56,31 @@ namespace SynOS.Api
 
             CreateMap<ResultChangeAudit, ResultChangeAuditDto>()
                 .ForMember(dest => dest.ChangedByName, opt => opt.MapFrom(src => src.ChangedByUser.Name));
+            
+            // Test Master Mappings
+            CreateMap<CreateTestDto, Test>();
+            CreateMap<UpdateTestDto, Test>();
+            CreateMap<Test, TestDto>();
+
+            CreateMap<CreateParameterDto, Parameter>();
+            CreateMap<UpdateParameterDto, Parameter>();
+            CreateMap<Parameter, ParameterDto>();
+
+            CreateMap<CreateReferenceRangeDto, ReferenceRange>();
+            CreateMap<UpdateReferenceRangeDto, ReferenceRange>();
+            CreateMap<ReferenceRange, ReferenceRangeDto>();
+
+            CreateMap<CreatePriceConfigDto, PriceConfig>();
+            CreateMap<UpdatePriceConfigDto, PriceConfig>();
+            CreateMap<PriceConfig, PriceConfigDto>();
+
+            // User Management Mappings
+            CreateMap<CreateUserDto, User>();
+            CreateMap<UpdateUserDto, User>();
+            CreateMap<User, UserManagementDto>()
+                .ForMember(dest => dest.Role, opt => opt.MapFrom(src => src.UserRoles.FirstOrDefault().Role.Name));
+
+            CreateMap<Patient, PatientDto>();
         }
     }
 }

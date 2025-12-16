@@ -96,7 +96,7 @@ namespace SynOS.Data.Migrations
 
             modelBuilder.Entity("SynOS.Models.Entities.AuditLog", b =>
                 {
-                    b.Property<Guid>("AuditLogId")
+                    b.Property<Guid>("AuditId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
@@ -105,25 +105,29 @@ namespace SynOS.Data.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<string>("Details")
-                        .IsRequired()
+                    b.Property<Guid?>("ActorUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("Payload")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<Guid?>("EntityId")
+                    b.Property<Guid?>("ResourceId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("EntityType")
+                    b.Property<string>("ResourceType")
                         .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
-                    b.Property<DateTime>("Timestamp")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid>("UserId")
+                    b.Property<Guid?>("UserId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.HasKey("AuditLogId");
+                    b.HasKey("AuditId");
+
+                    b.HasIndex("ActorUserId");
 
                     b.HasIndex("UserId");
 
@@ -538,6 +542,34 @@ namespace SynOS.Data.Migrations
                     b.HasIndex("ReviewedByUserId");
 
                     b.ToTable("DeltaCheckEvents");
+                });
+
+            modelBuilder.Entity("SynOS.Models.Entities.DeptScopePolicy", b =>
+                {
+                    b.Property<Guid>("PolicyId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("CanSearchAll")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("Dept")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<int>("RoleId")
+                        .HasColumnType("int");
+
+                    b.HasKey("PolicyId");
+
+                    b.HasIndex("RoleId", "Dept")
+                        .IsUnique();
+
+                    b.ToTable("DeptScopePolicies");
                 });
 
             modelBuilder.Entity("SynOS.Models.Entities.DownloadLink", b =>
@@ -980,12 +1012,17 @@ namespace SynOS.Data.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
+                    b.Property<Guid>("TestId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<Guid>("VisitId")
                         .HasColumnType("uniqueidentifier");
 
                     b.HasKey("OrderId");
 
                     b.HasIndex("TestCode");
+
+                    b.HasIndex("TestId");
 
                     b.HasIndex("VisitId");
 
@@ -1128,6 +1165,54 @@ namespace SynOS.Data.Migrations
                     b.HasIndex("RadiologyStudyId", "StudyInstanceUid", "SeriesInstanceUid");
 
                     b.ToTable("PacsSeries");
+                });
+
+            modelBuilder.Entity("SynOS.Models.Entities.Parameter", b =>
+                {
+                    b.Property<Guid>("ParameterId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("DataType")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("ParameterCode")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("ParameterName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("TestId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Unit")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("ParameterId");
+
+                    b.HasIndex("TestId", "ParameterCode")
+                        .IsUnique();
+
+                    b.ToTable("Parameters");
                 });
 
             modelBuilder.Entity("SynOS.Models.Entities.PartialPayment", b =>
@@ -1376,6 +1461,43 @@ namespace SynOS.Data.Migrations
                     b.ToTable("Payments");
                 });
 
+            modelBuilder.Entity("SynOS.Models.Entities.PriceConfig", b =>
+                {
+                    b.Property<Guid>("PriceId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<decimal?>("DiscountPercent")
+                        .HasColumnType("decimal(5, 2)");
+
+                    b.Property<DateTime>("EffectiveFrom")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("EffectiveTo")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<decimal?>("ReferrerRatePercent")
+                        .HasColumnType("decimal(5, 2)");
+
+                    b.Property<Guid>("TestId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("PriceId");
+
+                    b.HasIndex("TestId");
+
+                    b.ToTable("PriceConfigs");
+                });
+
             modelBuilder.Entity("SynOS.Models.Entities.RadiologyImage", b =>
                 {
                     b.Property<Guid>("ImageId")
@@ -1514,6 +1636,69 @@ namespace SynOS.Data.Migrations
                         .IsUnique();
 
                     b.ToTable("RadiologyStudies");
+                });
+
+            modelBuilder.Entity("SynOS.Models.Entities.ReferenceRange", b =>
+                {
+                    b.Property<Guid>("ReferenceRangeId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("AgeGroup")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<int?>("AgeMax")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("AgeMin")
+                        .HasColumnType("int");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<decimal?>("CriticalHigh")
+                        .HasColumnType("decimal(18, 4)");
+
+                    b.Property<decimal?>("CriticalLow")
+                        .HasColumnType("decimal(18, 4)");
+
+                    b.Property<DateTime>("EffectiveFrom")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("EffectiveTo")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<Guid>("ParameterId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal?>("RefHigh")
+                        .HasColumnType("decimal(18, 4)");
+
+                    b.Property<decimal?>("RefLow")
+                        .HasColumnType("decimal(18, 4)");
+
+                    b.Property<string>("Sex")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<string>("TextRange")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("ReferenceRangeId");
+
+                    b.HasIndex("ParameterId", "AgeGroup", "Sex");
+
+                    b.ToTable("ReferenceRanges");
                 });
 
             modelBuilder.Entity("SynOS.Models.Entities.Referrer", b =>
@@ -2046,6 +2231,9 @@ namespace SynOS.Data.Migrations
                     b.Property<Guid?>("CollectedByUserId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
                     b.Property<bool>("IsRejected")
                         .HasColumnType("bit");
 
@@ -2109,6 +2297,57 @@ namespace SynOS.Data.Migrations
                     b.HasIndex("SampleId");
 
                     b.ToTable("SampleRejections");
+                });
+
+            modelBuilder.Entity("SynOS.Models.Entities.Test", b =>
+                {
+                    b.Property<Guid>("TestId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("BasePrice")
+                        .HasColumnType("decimal(10, 2)");
+
+                    b.Property<string>("Category")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<int?>("DefaultTubeType")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Department")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("TAT_Hours")
+                        .HasColumnType("int");
+
+                    b.Property<string>("TestCode")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("TestName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("TestId");
+
+                    b.HasIndex("TestCode")
+                        .IsUnique();
+
+                    b.ToTable("Tests");
                 });
 
             modelBuilder.Entity("SynOS.Models.Entities.TestDefinition", b =>
@@ -2238,6 +2477,9 @@ namespace SynOS.Data.Migrations
 
                     b.Property<DateTimeOffset?>("SignatureUpdatedAt")
                         .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
 
                     b.HasKey("UserId");
 
@@ -2391,13 +2633,16 @@ namespace SynOS.Data.Migrations
 
             modelBuilder.Entity("SynOS.Models.Entities.AuditLog", b =>
                 {
-                    b.HasOne("SynOS.Models.Entities.User", "User")
-                        .WithMany("AuditLogs")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.HasOne("SynOS.Models.Entities.User", "ActorUser")
+                        .WithMany()
+                        .HasForeignKey("ActorUserId")
+                        .OnDelete(DeleteBehavior.Restrict);
 
-                    b.Navigation("User");
+                    b.HasOne("SynOS.Models.Entities.User", null)
+                        .WithMany("AuditLogs")
+                        .HasForeignKey("UserId");
+
+                    b.Navigation("ActorUser");
                 });
 
             modelBuilder.Entity("SynOS.Models.Entities.AutosaveBuffer", b =>
@@ -2607,9 +2852,9 @@ namespace SynOS.Data.Migrations
 
             modelBuilder.Entity("SynOS.Models.Entities.Order", b =>
                 {
-                    b.HasOne("SynOS.Models.Entities.TestDefinition", "TestDefinition")
+                    b.HasOne("SynOS.Models.Entities.Test", "Test")
                         .WithMany()
-                        .HasForeignKey("TestCode")
+                        .HasForeignKey("TestId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -2619,7 +2864,7 @@ namespace SynOS.Data.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("TestDefinition");
+                    b.Navigation("Test");
 
                     b.Navigation("Visit");
                 });
@@ -2668,6 +2913,17 @@ namespace SynOS.Data.Migrations
                     b.Navigation("Creator");
 
                     b.Navigation("RadiologyStudy");
+                });
+
+            modelBuilder.Entity("SynOS.Models.Entities.Parameter", b =>
+                {
+                    b.HasOne("SynOS.Models.Entities.Test", "Test")
+                        .WithMany("Parameters")
+                        .HasForeignKey("TestId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Test");
                 });
 
             modelBuilder.Entity("SynOS.Models.Entities.PartialPayment", b =>
@@ -2752,6 +3008,17 @@ namespace SynOS.Data.Migrations
                     b.Navigation("ReceivedBy");
                 });
 
+            modelBuilder.Entity("SynOS.Models.Entities.PriceConfig", b =>
+                {
+                    b.HasOne("SynOS.Models.Entities.Test", "Test")
+                        .WithMany("PriceConfigs")
+                        .HasForeignKey("TestId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Test");
+                });
+
             modelBuilder.Entity("SynOS.Models.Entities.RadiologyImage", b =>
                 {
                     b.HasOne("SynOS.Models.Entities.RadiologyStudy", "RadiologyStudy")
@@ -2830,6 +3097,17 @@ namespace SynOS.Data.Migrations
                     b.Navigation("Technician");
 
                     b.Navigation("Visit");
+                });
+
+            modelBuilder.Entity("SynOS.Models.Entities.ReferenceRange", b =>
+                {
+                    b.HasOne("SynOS.Models.Entities.Parameter", "Parameter")
+                        .WithMany("ReferenceRanges")
+                        .HasForeignKey("ParameterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Parameter");
                 });
 
             modelBuilder.Entity("SynOS.Models.Entities.RefreshToken", b =>
@@ -3132,6 +3410,11 @@ namespace SynOS.Data.Migrations
                     b.Navigation("PacsInstances");
                 });
 
+            modelBuilder.Entity("SynOS.Models.Entities.Parameter", b =>
+                {
+                    b.Navigation("ReferenceRanges");
+                });
+
             modelBuilder.Entity("SynOS.Models.Entities.Patient", b =>
                 {
                     b.Navigation("Aliases");
@@ -3165,6 +3448,13 @@ namespace SynOS.Data.Migrations
             modelBuilder.Entity("SynOS.Models.Entities.Sample", b =>
                 {
                     b.Navigation("Rejections");
+                });
+
+            modelBuilder.Entity("SynOS.Models.Entities.Test", b =>
+                {
+                    b.Navigation("Parameters");
+
+                    b.Navigation("PriceConfigs");
                 });
 
             modelBuilder.Entity("SynOS.Models.Entities.User", b =>

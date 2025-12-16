@@ -29,7 +29,12 @@ namespace SynOS.Api.Controllers
         {
             try
             {
-                var responseDto = await _receptionFlowService.StartVisitAsync(request);
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (userIdClaim == null || !Guid.TryParse(userIdClaim, out var actorUserId))
+                {
+                    return Unauthorized(new { message = "User ID not found in token or invalid." });
+                }
+                var responseDto = await _receptionFlowService.StartVisitAsync(request, actorUserId);
                 return CreatedAtAction(nameof(GetVisitSummary), new { visitId = responseDto.VisitId }, new ApiResponse<ReceptionStartVisitResponse>(responseDto));
             }
             catch (KeyNotFoundException ex)

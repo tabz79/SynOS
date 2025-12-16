@@ -20,6 +20,7 @@ namespace SynOS.Services
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly IReportPdfRenderer _reportPdfRenderer;
         private readonly IFileStorageService _fileStorageService;
+        private readonly IAuditService _auditService; // Injected
 
         public ReportService(
             SynOSDbContext context, 
@@ -27,7 +28,8 @@ namespace SynOS.Services
             ICriticalValueService criticalValueService, 
             IHttpClientFactory httpClientFactory,
             IReportPdfRenderer reportPdfRenderer,
-            IFileStorageService fileStorageService)
+            IFileStorageService fileStorageService,
+            IAuditService auditService) // Injected
         {
             _context = context;
             _logger = logger;
@@ -35,6 +37,7 @@ namespace SynOS.Services
             _httpClientFactory = httpClientFactory;
             _reportPdfRenderer = reportPdfRenderer;
             _fileStorageService = fileStorageService;
+            _auditService = auditService; // Assigned
         }
 
         public async Task<ReportSignatureResponseDto> SignReportAsync(Guid reportId, Guid signedByUserId)
@@ -62,7 +65,7 @@ namespace SynOS.Services
             var order = await _context.Orders
                 .Include(o => o.Visit)
                     .ThenInclude(v => v.Patient)
-                .Include(o => o.TestDefinition)
+                .Include(o => o.Test) // Corrected to o.Test
                 .FirstOrDefaultAsync(o => o.OrderId == report.SourceId);
 
             if (order == null)
@@ -116,13 +119,7 @@ namespace SynOS.Services
             report.SignedAt = timestamp;
 
             // 6. Audit log
-            await _context.AuditLogs.AddAsync(new AuditLog
-            {
-                UserId = signedByUserId,
-                Action = "ReportSigned",
-                Timestamp = DateTime.UtcNow,
-                Details = $"Report {reportId} signed, version {newVersion}"
-            });
+            await _auditService.LogAsync(signedByUserId, "ReportSigned", "Report", reportId, new { NewVersion = newVersion });
 
             await _context.SaveChangesAsync();
 
@@ -250,7 +247,7 @@ namespace SynOS.Services
             }
             
             var order = await _context.Orders
-                .Include(o => o.TestDefinition)
+                .Include(o => o.Test) // Corrected to o.Test
                 .Include(o => o.Visit).ThenInclude(v => v.Patient)
                 .Include(o => o.Visit).ThenInclude(v => v.Referrer)
                 .FirstOrDefaultAsync(o => o.OrderId == orderId);
@@ -271,7 +268,7 @@ namespace SynOS.Services
                 .Select(g => new TestResultDto
                 {
                     TestCode = g.Key,
-                    TestName = g.First().Order.TestDefinition?.Name ?? g.Key,
+                    TestName = g.First().Order.Test.TestName ?? g.Key, // Corrected to o.Test.TestName
                     Parameters = g.Select(r => new ReportParameterResultDto
                     {
                         ParameterCode = r.ParameterCode,
@@ -359,7 +356,7 @@ namespace SynOS.Services
             }
 
             var order = await _context.Orders
-                .Include(o => o.TestDefinition)
+                .Include(o => o.Test) // Corrected to o.Test
                 .Include(o => o.Visit)
                     .ThenInclude(v => v.Patient)
                 .FirstOrDefaultAsync(o => o.OrderId == report.SourceId);

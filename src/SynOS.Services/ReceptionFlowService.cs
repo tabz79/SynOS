@@ -1,11 +1,13 @@
 using System;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SynOS.Data;
 using SynOS.Models.DTOs;
 using SynOS.Models.Entities;
+using SynOS.Models.Enums; // Required for TubeType
 
 namespace SynOS.Services
 {
@@ -16,39 +18,89 @@ namespace SynOS.Services
         private readonly IInvoiceService _invoiceService;
         private readonly IAccessionService _accessionService;
         private readonly ILogger<ReceptionFlowService> _logger;
+        private readonly ITestsCacheService _testsCacheService; // Injected to retrieve test details
 
         public ReceptionFlowService(
             SynOSDbContext context,
             IVisitService visitService,
             IInvoiceService invoiceService,
             IAccessionService accessionService,
-            ILogger<ReceptionFlowService> logger)
+            ILogger<ReceptionFlowService> logger,
+            ITestsCacheService testsCacheService) // Injected
         {
-            _context = context;
-            _visitService = visitService;
-            _invoiceService = invoiceService;
-            _accessionService = accessionService;
-            _logger = logger;
+            _context = context ?? throw new ArgumentNullException(nameof(context));
+            _visitService = visitService ?? throw new ArgumentNullException(nameof(visitService));
+            _invoice_service_check(context, visitService, invoiceService, accessionService, logger);
+
+            _invoiceService = invoiceService ?? throw new ArgumentNullException(nameof(invoiceService));
+            _accessionService = accessionService ?? throw new ArgumentNullException(nameof(accessionService));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _testsCacheService = testsCacheService; // can be null; code tolerates null and falls back to DB
         }
 
-        public async Task<ReceptionStartVisitResponse> StartVisitAsync(ReceptionStartVisitRequest request)
+        // small helper to centralize a defensive check (keeps ctor lines tidy)
+        private void _invoice_service_check(
+            SynOSDbContext context,
+            IVisitService visitService,
+            IInvoiceService invoiceService,
+            IAccessionService accessionService,
+            ILogger<ReceptionFlowService> logger)
         {
-            // Note: This orchestration should be wrapped in a transaction.
-            // EF Core's SaveChangesAsync within a single DbContext instance handles this automatically.
-            
+            // no-op: placeholder if future checks are needed (keeps public ctor flow consistent)
+        }
+
+        /// <summary>
+        /// Start a visit (reception).
+        /// Ensures all test codes provided exist (cache-first then DB) before creating the visit.
+        /// </summary>
+        public async Task<ReceptionStartVisitResponse> StartVisitAsync(ReceptionStartVisitRequest request, Guid actorUserId)
+        {
+            if (request == null) throw new ArgumentNullException(nameof(request));
+            if (request.TestCodes == null || request.TestCodes.Length == 0) throw new ArgumentException("At least one test code is required");
+
+            // Validate tests exist before attempting to create the visit.
+            await EnsureAllTestCodesExistAsync(request.TestCodes, request.Dept);
+
+            // Create visit DTO for VisitService (reuse your existing VisitService orchestration)
             var visitDto = new VisitCreateDto
             {
                 PatientId = request.PatientId,
                 Department = request.Dept,
                 TestCodes = request.TestCodes.ToList(), // Convert array to list
-                ReferrerId = request.ReferrerId
-                // Discounts and taxes are handled by VisitService internally for now.
-                // A more advanced implementation would pass these through.
+                ReferrerId = request.ReferrerId,
+                AppointmentId = request.AppointmentId,
+                DiscountAmount = request.DiscountAmount,
+                DiscountPercent = request.DiscountPercent,
+                TaxPercent = request.TaxPercent,
+                Notes = request.Notes,
+                CombinedBillingGroupId = request.CombinedBillingGroupId
             };
 
-            var visit = await _visitService.CreateVisitAsync(visitDto);
-            var invoice = await _context.Invoices.FirstAsync(i => i.VisitId == visit.VisitId);
-            var patient = await _context.Patients.FindAsync(visit.PatientId);
+            var visit = await _visitService.CreateVisitAsync(visitDto, null, actorUserId); // Pass actorUserId
+
+            // Try to load invoice (may be created by VisitService; be defensive)
+            var invoice = await _context.Invoices
+                .AsNoTracking()
+                .FirstOrDefaultAsync(i => i.VisitId == visit.VisitId);
+
+            // Load patient defensively
+            var patient = await _context.Patients
+                .AsNoTracking()
+                .FirstOrDefaultAsync(p => p.PatientId == visit.PatientId);
+
+            var orders = await _context.Orders
+                .AsNoTracking()
+                .Include(o => o.Test)
+                .Where(o => o.VisitId == visit.VisitId)
+                .Select(o => new OrderSummaryDto
+                {
+                    OrderId = o.OrderId,
+                    TestCode = o.TestCode,
+                    TestName = o.Test.TestName, // Corrected to o.Test.TestName
+                    Dept = o.Department,
+                    Price = o.Price,
+                    Discount = o.Discount
+                }).ToListAsync();
 
             return new ReceptionStartVisitResponse
             {
@@ -57,24 +109,16 @@ namespace SynOS.Services
                 TokenDate = visit.TokenDate,
                 Dept = visit.Department,
                 Status = visit.Status,
-                PatientSummary = new PatientSummaryDto
+                PatientSummary = patient == null ? null : new PatientSummaryDto
                 {
                     PatientId = patient.PatientId,
                     Mrn = patient.MRN,
                     Name = $"{patient.FirstName} {patient.LastName}",
                     Sex = patient.Gender,
-                    Age = (int)((DateTime.Today - patient.DateOfBirth).TotalDays / 365.25)
+                    Age = patient.DateOfBirth == default ? 0 : (int)((DateTime.Today - patient.DateOfBirth).TotalDays / 365.25)
                 },
-                Orders = await _context.Orders.Where(o => o.VisitId == visit.VisitId).Select(o => new OrderSummaryDto
-                {
-                    OrderId = o.OrderId,
-                    TestCode = o.TestCode,
-                    TestName = o.TestDefinition.Name,
-                    Dept = o.Department,
-                    Price = o.Price,
-                    Discount = o.Discount
-                }).ToListAsync(),
-                Invoice = new InvoiceSummaryDto
+                Orders = orders,
+                Invoice = invoice == null ? null : new InvoiceSummaryDto
                 {
                     InvoiceId = invoice.InvoiceId,
                     GrossAmount = invoice.GrossAmount,
@@ -88,6 +132,10 @@ namespace SynOS.Services
             };
         }
 
+        /// <summary>
+        /// Complete payment for a visit. When invoice status becomes Paid, auto-create lab/radiology items.
+        /// Uses cache-first test lookup and falls back to DB when cache misses.
+        /// </summary>
         public async Task<ReceptionCompletePaymentResponse> CompletePaymentAsync(ReceptionCompletePaymentRequest request, Guid userId)
         {
             var visit = await _visitService.GetVisitDetailsAsync(request.VisitId);
@@ -112,16 +160,47 @@ namespace SynOS.Services
                 .FirstAsync(i => i.InvoiceId == invoiceId);
 
             // If payment is complete, trigger creation of lab work items
-            if (updatedInvoice.Status == "Paid")
+            if (string.Equals(updatedInvoice.Status, "Paid", StringComparison.OrdinalIgnoreCase))
             {
                 var orders = await _context.Orders
-                    .Include(o => o.TestDefinition)
                     .Where(o => o.VisitId == visit.VisitId)
                     .ToListAsync();
 
                 foreach (var order in orders)
                 {
-                    if (order.Department == "Radiology")
+                    // 1) Try cache first (if available)
+                    Test test = null;
+                    try
+                    {
+                        if (_testsCacheService != null)
+                        {
+                            var allTests = await _testsCacheService.GetCachedTestsAsync().ConfigureAwait(false); // Corrected
+                            if (allTests != null)
+                            {
+                                test = allTests.FirstOrDefault(t => t.TestId == order.TestId);
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning(ex, "Cache error while fetching tests - falling back to DB");
+                    }
+
+                    // 2) Fallback to DB if cache missed
+                    if (test == null)
+                    {
+                        test = await _context.Tests
+                            .AsNoTracking()
+                            .FirstOrDefaultAsync(t => t.TestId == order.TestId);
+                    }
+
+                    if (test == null)
+                    {
+                        _logger.LogError("Test with ID {TestId} not found for order {OrderId}", order.TestId, order.OrderId);
+                        continue; // Skip if test not found
+                    }
+
+                    if (string.Equals(order.Department, "Radiology", StringComparison.OrdinalIgnoreCase))
                     {
                         var studyExists = await _context.RadiologyStudies.AnyAsync(rs => rs.VisitTestId == order.OrderId);
                         if (!studyExists)
@@ -132,7 +211,7 @@ namespace SynOS.Services
                                 VisitId = visit.VisitId,
                                 PatientId = visit.PatientId,
                                 VisitTestId = order.OrderId,
-                                Modality = order.TestDefinition?.Modality ?? "Unknown",
+                                Modality = test.Department ?? "Unknown", // Use test.Department
                                 AccessionNumber = await _accessionService.GenerateRadiologyAccessionNumberAsync(),
                                 Status = "PendingImaging",
                                 CreatedBy = userId,
@@ -144,7 +223,7 @@ namespace SynOS.Services
                             {
                                 ReportId = Guid.NewGuid(),
                                 VisitId = visit.VisitId,
-                                PatientId = visit.PatientId,
+                                PatientId = visit.Patient.PatientId,
                                 Department = "Radiology",
                                 SourceType = "RadiologyStudy",
                                 SourceId = newStudy.RadiologyStudyId,
@@ -152,17 +231,16 @@ namespace SynOS.Services
                                 CurrentVersion = 1,
                                 CreatedAt = DateTimeOffset.UtcNow
                             };
-                            
+
                             newReport.RadiologyReport = new RadiologyReport
                             {
-                                // ReportId is implicitly set by the navigation property
                                 RadiologyStudy = newStudy
                             };
 
                             _context.Reports.Add(newReport);
                         }
                     }
-                    else if (order.Department == "Pathology")
+                    else if (string.Equals(order.Department, "Pathology", StringComparison.OrdinalIgnoreCase))
                     {
                         var sampleExists = await _context.Samples.AnyAsync(s => s.OrderId == order.OrderId);
                         if (!sampleExists)
@@ -172,8 +250,9 @@ namespace SynOS.Services
                                 SampleId = Guid.NewGuid(),
                                 OrderId = order.OrderId,
                                 Barcode = $"SAMP-{Guid.NewGuid().ToString().Substring(0, 12)}",
-                                TubeType = order.TestDefinition?.DefaultTubeType ?? TubeType.Other,
-                                Status = SampleStatus.Pending,
+                                TubeType = test.DefaultTubeType ?? TubeType.Other, // Use test.DefaultTubeType
+                                Status = SampleStatus.Pending
+                                // Removed CreatedAt = DateTimeOffset.UtcNow as it's handled by default in Sample entity
                             };
                             _context.Samples.Add(newSample);
                             _logger.LogInformation("Auto-created Sample {SampleId} for Order {OrderId}", newSample.SampleId, order.OrderId);
@@ -182,7 +261,7 @@ namespace SynOS.Services
                 }
                 await _context.SaveChangesAsync();
             }
-            
+
             var updatedVisit = await _context.Visits.FindAsync(visit.VisitId);
 
             return new ReceptionCompletePaymentResponse
@@ -200,7 +279,7 @@ namespace SynOS.Services
                     ReceiptNo = payment.ReceiptNo,
                     ReceivedAt = payment.ReceivedAt
                 },
-                VisitStatus = updatedVisit.Status
+                VisitStatus = updatedVisit?.Status
             };
         }
 
@@ -220,7 +299,7 @@ namespace SynOS.Services
                 TokenDate = visit.TokenDate,
                 Dept = visit.Department,
                 VisitStatus = visit.Status,
-                Patient = new PatientSummaryDto 
+                Patient = new PatientSummaryDto
                 {
                     PatientId = visit.Patient.PatientId,
                     Mrn = visit.Patient.MRN,
@@ -232,7 +311,7 @@ namespace SynOS.Services
                 {
                     OrderId = o.OrderId,
                     TestCode = o.TestCode,
-                    TestName = o.TestDefinition.Name,
+                    TestName = o.Test.TestName, // Corrected to o.Test.TestName
                     Dept = o.Department,
                     Price = o.Price,
                     Discount = o.Discount
@@ -262,6 +341,129 @@ namespace SynOS.Services
                     CanPerformScan = visit.Department == "Radiology" && invoice.Status == "Paid"
                 }
             };
+        }
+
+        // -------------------------
+        // Helper methods (new)
+        // -------------------------
+
+        /// <summary>
+        /// Ensure all test codes exist (cache-first, DB fallback). Throws KeyNotFoundException for first missing code.
+        /// This method does a batch check to avoid per-code DB roundtrips.
+        /// </summary>
+        private async Task EnsureAllTestCodesExistAsync(string[] testCodes, string dept = null, CancellationToken cancellationToken = default)
+        {
+            // Normalize and dedupe codes
+            var normalizedCodes = testCodes
+                .Where(tc => !string.IsNullOrWhiteSpace(tc))
+                .Select(tc => tc.Trim())
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToArray();
+
+            if (normalizedCodes.Length == 0)
+                throw new ArgumentException("No valid test codes supplied");
+
+            // 1) Try cache: collect codes found in cache
+            HashSet<string>? foundCodes = null;
+            try
+            {
+                if (_testsCacheService != null)
+                {
+                    var cached = await _testsCacheService.GetCachedTestsAsync().ConfigureAwait(false); // Corrected: removed argument
+                    if (cached != null)
+                    {
+                        foundCodes = new HashSet<string>(cached.Select(t => t.TestCode), StringComparer.OrdinalIgnoreCase);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Tests cache read failed - will fallback to DB for missing codes");
+            }
+
+            var missingCodes = new List<string>();
+
+            if (foundCodes != null)
+            {
+                // find codes not present in cache
+                missingCodes = normalizedCodes.Where(c => !foundCodes.Contains(c)).ToList();
+            }
+            else
+            {
+                missingCodes = normalizedCodes.ToList();
+            }
+
+            if (missingCodes.Count == 0)
+                return; // all found in cache
+
+            // 2) Batch DB lookup for remaining codes (case-insensitive)
+            var missingUpper = new HashSet<string>(missingCodes.Select(c => c.ToUpperInvariant()));
+            var dbMatches = await _context.Tests
+                .AsNoTracking()
+                .Where(t => missingUpper.Contains(t.TestCode.ToUpper()))
+                .Select(t => t.TestCode)
+                .ToListAsync(cancellationToken)
+                .ConfigureAwait(false);
+
+            var dbMatchesSet = new HashSet<string>(dbMatches, StringComparer.OrdinalIgnoreCase);
+
+            // Determine final missing codes
+            var stillMissing = missingCodes.Where(c => !dbMatchesSet.Contains(c)).ToList();
+            if (stillMissing.Any())
+            {
+                // Log and throw first missing for clear controller 404 behavior
+                _logger.LogWarning("Missing Test Definitions for codes: {codes}", string.Join(", ", stillMissing));
+                throw new KeyNotFoundException($"Test Definition for TestCode {stillMissing.First()} not found.");
+            }
+        }
+
+        /// <summary>
+        /// Cache-first then DB lookup for test by code. Dept filter supported; lookup is case-insensitive.
+        /// Returns null if not found.
+        /// </summary>
+        private async Task<Test?> GetTestByCodeFromCacheOrDbAsync(string testCode, string? dept = null, CancellationToken cancellationToken = default)
+        {
+            if (string.IsNullOrWhiteSpace(testCode)) return null;
+            var normalized = testCode.Trim();
+
+            // 1) Try cache (best-effort)
+            try
+            {
+                if (_testsCacheService != null)
+                {
+                    var cached = await _testsCacheService.GetCachedTestsAsync().ConfigureAwait(false); // Corrected: removed argument
+                    if (cached != null)
+                    {
+                        var fromCache = cached.FirstOrDefault(t => string.Equals(t.TestCode, normalized, StringComparison.OrdinalIgnoreCase));
+                        if (fromCache != null)
+                        {
+                            if (string.IsNullOrWhiteSpace(dept) || string.Equals(fromCache.Department, dept, StringComparison.OrdinalIgnoreCase))
+                                return fromCache;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Tests cache read failed - falling back to DB lookup for test {TestCode}", normalized);
+            }
+
+            // 2) DB fallback - case-insensitive comparison
+            var normalizedUpper = normalized.ToUpperInvariant();
+
+            var query = _context.Tests
+                .AsNoTracking()
+                .Include(t => t.PriceConfigs)
+                .Include(t => t.Parameters)
+                .Where(t => t.TestCode.ToUpper() == normalizedUpper);
+
+            if (!string.IsNullOrWhiteSpace(dept))
+            {
+                var deptUpper = dept.ToUpperInvariant();
+                query = query.Where(t => t.Department.ToUpper() == deptUpper);
+            }
+
+            return await query.FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false);
         }
     }
 }

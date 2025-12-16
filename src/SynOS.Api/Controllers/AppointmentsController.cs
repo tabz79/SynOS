@@ -25,6 +25,12 @@ namespace SynOS.Api.Controllers
         [Authorize(Policy = "ReceptionPolicy")]
         public async Task<IActionResult> CreateAppointment([FromBody] AppointmentCreateDto appointmentDto, [FromHeader(Name = "Idempotency-Key")] string idempotencyKey)
         {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var actorUserId))
+            {
+                return Unauthorized(new { message = "User ID not found or invalid." });
+            }
+
             if (string.IsNullOrEmpty(idempotencyKey))
             {
                 return BadRequest(new { code = "MISSING_IDEMPOTENCY_KEY", message = "Idempotency-Key header is required." });
@@ -32,7 +38,7 @@ namespace SynOS.Api.Controllers
 
             try
             {
-                var appointment = await _appointmentService.CreateAppointmentAsync(appointmentDto, idempotencyKey);
+                var appointment = await _appointmentService.CreateAppointmentAsync(appointmentDto, idempotencyKey, actorUserId);
                 return CreatedAtAction(nameof(GetAppointmentById), new { id = appointment.AppointmentId }, appointment);
             }
             catch (InvalidOperationException ex) when (ex.Message == "SLOT_FULL")
@@ -83,7 +89,7 @@ namespace SynOS.Api.Controllers
 
         [HttpPost("{id}/cancel")]
         [Authorize(Policy = "ReceptionPolicy")]
-        public async Task<IActionResult> CancelAppointment(Guid id, [FromBody] CancelRequestDto request)
+        public async Task<IActionResult> CancelAppointment(Guid id, [FromBody] CancelAppointmentRequestDto request)
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (userIdClaim == null || !Guid.TryParse(userIdClaim, out var userId))

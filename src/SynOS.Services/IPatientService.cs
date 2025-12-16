@@ -8,9 +8,9 @@ namespace SynOS.Services
 {
     public interface IPatientService
     {
-        Task<Patient> CreatePatientAsync(PatientCreateDto patientDto);
+        Task<PatientDto> CreatePatientAsync(PatientCreateDto patientDto);
         Task<IEnumerable<Patient>> SearchPatientsAsync(string query, int limit, int offset);
-        Task<Patient?> GetPatientByIdAsync(Guid id);
+        Task<PatientDto?> GetPatientByIdAsync(Guid id);
         Task<IEnumerable<PatientPhoneHistory>> GetPatientPhoneHistoryAsync(Guid id);
         Task<Patient?> UpdatePhoneAsync(Guid patientId, string newPhone);
         Task<IEnumerable<DuplicatePatientDto>?> FindPossibleDuplicatesAsync(Guid patientId);

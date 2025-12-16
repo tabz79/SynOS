@@ -38,7 +38,7 @@ namespace SynOS.Services
             // Load the result with all the navigation properties we actually use
             var result = await _context.Results
                 .Include(r => r.Order)
-                    .ThenInclude(o => o.TestDefinition)
+                    .ThenInclude(o => o.Test) // Corrected to o.Test
                 .Include(r => r.Order)
                     .ThenInclude(o => o.Visit)
                         .ThenInclude(v => v.Patient)
@@ -120,11 +120,11 @@ namespace SynOS.Services
                 {
                     ResultId = result.ResultId,
                     ParameterCode = result.ParameterCode,
-                    ParameterName = result.Order?.TestDefinition?.Name ?? result.ParameterCode,
+                    ParameterName = result.Order?.Test?.TestName ?? result.ParameterCode, // Corrected to Test.TestName
                     Value = numericValue,
                     CriticalThreshold = criticalThreshold,
                     PatientId = result.Order!.Visit.PatientId,
-                    VisitId = result.Order.VisitId,
+                    VisitId = result.Order.Visit.VisitId,
                     ReferrerId = result.Order.Visit.ReferrerId,
                     Status = "Pending"
                 };
@@ -207,7 +207,7 @@ namespace SynOS.Services
 
             var auditTrail = await _context.CriticalAudits
                 .Where(au => au.AlertId == alertId)
-                .OrderBy(au => au.ActedAt)
+                .OrderBy(au => au.ActedAt) // Corrected to method call
                 .Select(au => new AuditDto
                 {
                     ActedAt = au.ActedAt,

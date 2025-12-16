@@ -1503,7 +1503,10 @@
         },
         "runtime": {
           "bin/placeholder/SynOS.Models.dll": {}
-        }
+        },
+        "frameworkReferences": [
+          "Microsoft.AspNetCore.App"
+        ]
       }
     }
   },

@@ -134,7 +134,7 @@ namespace SynOS.Services
             var visit = await _context.Visits
                 .Include(v => v.Patient)
                 .Include(v => v.Orders)
-                    .ThenInclude(o => o.TestDefinition)
+                    .ThenInclude(o => o.Test) // Corrected to o.Test
                 .FirstOrDefaultAsync(v => v.VisitId == visitId);
 
             if (visit == null)
@@ -143,7 +143,7 @@ namespace SynOS.Services
             }
 
             var radiologyOrders = visit.Orders
-                .Where(o => o.TestDefinition != null && o.Department == "Radiology")
+                .Where(o => o.Test != null && o.Department == "Radiology") // Corrected to o.Test
                 .ToList();
 
             if (!radiologyOrders.Any())
@@ -172,7 +172,7 @@ namespace SynOS.Services
                     VisitId = visit.VisitId,
                     PatientId = visit.PatientId,
                     VisitTestId = order.OrderId,
-                    Modality = order.TestDefinition.Modality ?? "Unknown",
+                    Modality = order.Test?.Department ?? "Unknown", // Corrected to order.Test?.Department
                     Status = "PendingImaging",
                     CreatedBy = userId,
                     CreatedAt = DateTimeOffset.UtcNow
@@ -191,7 +191,7 @@ namespace SynOS.Services
                 .ToListAsync();
 
             var ordersForStudies = await _context.Orders
-                .Include(o => o.TestDefinition)
+                .Include(o => o.Test) // Corrected to o.Test
                 .Where(o => radiologyOrderIds.Contains(o.OrderId))
                 .ToListAsync();
 
@@ -245,7 +245,7 @@ namespace SynOS.Services
                 join visit in _context.Visits on study.VisitId equals visit.VisitId
                 join patient in _context.Patients on study.PatientId equals patient.PatientId
                 join order in _context.Orders on study.VisitTestId equals order.OrderId
-                join testDef in _context.TestDefinitions on order.TestCode equals testDef.TestCode
+                join test in _context.Tests on order.TestId equals test.TestId // Corrected to join on Test entity
                 join report in _context.Reports on new { SourceId = study.RadiologyStudyId, SourceType = "RadiologyStudy" } equals new { report.SourceId, report.SourceType }
                 where report.Status == "Draft" || report.Status == "Pending"
                 let radiologyReport = _context.RadiologyReports.FirstOrDefault(rr => rr.ReportId == report.ReportId)
@@ -254,7 +254,7 @@ namespace SynOS.Services
                     Visit = visit,
                     Patient = patient,
                     Order = order,
-                    TestDefinition = testDef,
+                    Test = test, // Corrected to Test
                     Report = report,
                     RadiologyReportExists = (radiologyReport != null)
                 };
@@ -283,7 +283,7 @@ namespace SynOS.Services
                     Studies = visitGroup.Select(x => new RadiologyStudyWorklistItemDto
                     {
                         StudyId = x.Study.RadiologyStudyId,
-                        TestName = x.TestDefinition.Name,
+                        TestName = x.Test.TestName, // Correctly accessing from x.Test
                         Modality = x.Study.Modality,
                         StudyStatus = x.Study.Status,
                         HasReport = x.RadiologyReportExists,
@@ -308,10 +308,10 @@ namespace SynOS.Services
                 join visit in _context.Visits on study.VisitId equals visit.VisitId
                 join patient in _context.Patients on study.PatientId equals patient.PatientId
                 join order in _context.Orders on study.VisitTestId equals order.OrderId
-                join testDef in _context.TestDefinitions on order.TestCode equals testDef.TestCode
+                join test in _context.Tests on order.TestId equals test.TestId // Corrected to join on Test entity
                 join tech in _context.Users on study.AssignedTo equals tech.UserId into techGroup
                 from tech in techGroup.DefaultIfEmpty()
-                select new { study, visit, patient, order, testDef, tech };
+                select new { study, visit, patient, order, test, tech }; // Corrected to test
 
             var result = await query.FirstOrDefaultAsync();
 
@@ -334,7 +334,7 @@ namespace SynOS.Services
             {
                 StudyId = result.study.RadiologyStudyId,
                 VisitId = result.study.VisitId,
-                TestName = result.testDef.Name,
+                TestName = result.test.TestName, // Corrected to result.test.TestName
                 Modality = result.study.Modality,
                 StudyStatus = result.study.Status,
                 CreatedAt = result.study.CreatedAt,
@@ -378,7 +378,7 @@ namespace SynOS.Services
                 join v in _context.Visits on rs.VisitId equals v.VisitId
                 join p in _context.Patients on rs.PatientId equals p.PatientId
                 join o in _context.Orders on rs.VisitTestId equals o.OrderId
-                join td in _context.TestDefinitions on o.TestCode equals td.TestCode
+                join t in _context.Tests on o.TestId equals t.TestId // Corrected to join on Test entity
                 join tech in _context.Users on rs.AssignedTo equals tech.UserId into techGroup
                 from tech in techGroup.DefaultIfEmpty()
                 orderby rs.CreatedAt
@@ -390,7 +390,7 @@ namespace SynOS.Services
                     PatientName = $"{p.FirstName} {p.LastName}",
                     PatientAge = (int)((DateTime.Today - p.DateOfBirth).TotalDays / 365.25),
                     PatientGender = p.Gender,
-                    TestName = td.Name,
+                    TestName = t.TestName, // Corrected to t.TestName
                     Modality = rs.Modality,
                     Status = rs.Status,
                     AssignedToTechnicianName = tech != null ? tech.Name : null
@@ -440,8 +440,8 @@ namespace SynOS.Services
                 join visit in _context.Visits on study.VisitId equals visit.VisitId
                 join patient in _context.Patients on study.PatientId equals patient.PatientId
                 join order in _context.Orders on study.VisitTestId equals order.OrderId
-                join testDef in _context.TestDefinitions on order.TestCode equals testDef.TestCode
-                select new { study, visit, patient, order, testDef };
+                join test in _context.Tests on order.TestId equals test.TestId // Corrected to join on Test entity
+                select new { study, visit, patient, order, test }; // Corrected to test
 
             var result = await query.FirstOrDefaultAsync();
 
@@ -453,7 +453,7 @@ namespace SynOS.Services
             studyEntity.Visit = result.visit;
             studyEntity.Patient = result.patient;
             studyEntity.Order = result.order;
-            studyEntity.Order.TestDefinition = result.testDef;
+            studyEntity.Order.Test = result.test; // Corrected to Test
 
 
             var report = await _context.Reports
@@ -483,7 +483,7 @@ namespace SynOS.Services
 
             var reportData = new ReportDataModel
             {
-                ReportTitle = $"Radiology Report - {studyEntity.Order.TestDefinition.Name}",
+                ReportTitle = $"Radiology Report - {studyEntity.Order.Test.TestName}", // Corrected to Test.TestName
                 Modality = studyEntity.Modality,
                 Patient = new PatientInfo
                 {
@@ -524,7 +524,7 @@ namespace SynOS.Services
             byte[] pdfBytes = await _pdfRenderer.GeneratePdfAsync(reportData, templateModel);
 
             string fileName =
-                $"RadiologyReport_{studyEntity.Visit.Token}_{studyEntity.Order.TestDefinition.TestCode}_{DateTime.UtcNow:yyyyMMddHHmmss}.pdf";
+                $"RadiologyReport_{studyEntity.Visit.Token}_{studyEntity.Order.Test.TestCode}_{DateTime.UtcNow:yyyyMMddHHmmss}.pdf"; // Corrected to Test.TestCode
             string fileUrl = await _fileStorageService.SaveFileAsync(
                 pdfBytes,
                 fileName,
@@ -542,7 +542,7 @@ namespace SynOS.Services
                 ReportId = report.ReportId,
                 Type = "ReportPdf",
                 FileUrl = fileUrl,
-                DisplayName = $"Radiology Report - {studyEntity.Order.TestDefinition.Name}.pdf",
+                DisplayName = $"Radiology Report - {studyEntity.Order.Test.TestName}.pdf", // Corrected to Test.TestName
                 CreatedAt = DateTimeOffset.UtcNow
             };
             _context.ReportAttachments.Add(pdfAttachment);

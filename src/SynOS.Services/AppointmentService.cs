@@ -14,14 +14,16 @@ namespace SynOS.Services
     {
         private readonly SynOSDbContext _context;
         private readonly IConfiguration _configuration;
+        private readonly IAuditService _auditService; // Injected
 
-        public AppointmentService(SynOSDbContext context, IConfiguration configuration)
+        public AppointmentService(SynOSDbContext context, IConfiguration configuration, IAuditService auditService)
         {
             _context = context;
             _configuration = configuration;
+            _auditService = auditService; // Assigned
         }
 
-        public async Task<Appointment> CreateAppointmentAsync(AppointmentCreateDto appointmentDto, string idempotencyKey)
+        public async Task<Appointment> CreateAppointmentAsync(AppointmentCreateDto appointmentDto, string idempotencyKey, Guid actorUserId)
         {
             // In a real implementation, you would check a cache or database table for the idempotencyKey
             // to prevent duplicate processing. For this exercise, we'll assume it's handled.
@@ -80,13 +82,10 @@ namespace SynOS.Services
 
             _context.Appointments.Add(appointment);
             await _context.SaveChangesAsync();
+            
+            await _auditService.LogAsync(actorUserId, "CreateAppointment", "Appointment", appointment.AppointmentId, appointment);
 
             return appointment;
-        }
-
-        public async Task<Appointment?> GetAppointmentByIdAsync(Guid id)
-        {
-            return await _context.Appointments.FindAsync(id);
         }
 
         public async Task<Appointment?> RescheduleAppointmentAsync(Guid appointmentId, DateTime newScheduledForUtc, Guid changedById)
@@ -98,14 +97,7 @@ namespace SynOS.Services
             appointment.ScheduledFor = newScheduledForUtc;
             appointment.UpdatedAt = DateTime.UtcNow;
 
-            var auditLog = new AuditLog
-            {
-                UserId = changedById,
-                Action = "RescheduleAppointment",
-                Timestamp = DateTime.UtcNow,
-                Details = $"Rescheduled appointment {appointmentId} from {oldScheduledFor} to {newScheduledForUtc}."
-            };
-            _context.AuditLogs.Add(auditLog);
+            await _auditService.LogAsync(changedById, "RescheduleAppointment", "Appointment", appointmentId, new { OldScheduledFor = oldScheduledFor, NewScheduledFor = newScheduledForUtc });
 
             await _context.SaveChangesAsync();
             return appointment;
@@ -119,17 +111,15 @@ namespace SynOS.Services
             appointment.Status = AppointmentStatus.Cancelled;
             appointment.UpdatedAt = DateTime.UtcNow;
 
-            var auditLog = new AuditLog
-            {
-                UserId = cancelledById,
-                Action = "CancelAppointment",
-                Timestamp = DateTime.UtcNow,
-                Details = $"Cancelled appointment {appointmentId}. Reason: {reason}"
-            };
-            _context.AuditLogs.Add(auditLog);
+            await _auditService.LogAsync(cancelledById, "CancelAppointment", "Appointment", appointmentId, new { Reason = reason, OldStatus = AppointmentStatus.Booked, NewStatus = AppointmentStatus.Cancelled });
 
             await _context.SaveChangesAsync();
             return appointment;
+        }
+
+        public async Task<Appointment?> GetAppointmentByIdAsync(Guid id)
+        {
+            return await _context.Appointments.FindAsync(id);
         }
 
         public async Task<IEnumerable<Appointment>> GetUpcomingAppointmentsAsync(string department, DateTime dateLocal)

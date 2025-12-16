@@ -8,7 +8,7 @@ namespace SynOS.Services
 {
     public interface IAppointmentService
     {
-        Task<Appointment> CreateAppointmentAsync(AppointmentCreateDto appointmentDto, string idempotencyKey);
+        Task<Appointment> CreateAppointmentAsync(AppointmentCreateDto appointmentDto, string idempotencyKey, Guid actorUserId);
         Task<Appointment?> GetAppointmentByIdAsync(Guid id);
         Task<Appointment?> RescheduleAppointmentAsync(Guid appointmentId, DateTime newScheduledForUtc, Guid changedById);
         Task<Appointment?> CancelAppointmentAsync(Guid appointmentId, string reason, Guid cancelledById);

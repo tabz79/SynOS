@@ -35,6 +35,8 @@ namespace SynOS.Models.Entities
 
         public bool IsRejected { get; set; } = false;
 
+        public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow; // Added
+
         public ICollection<SampleRejection> Rejections { get; set; } = new List<SampleRejection>();
     }
 }

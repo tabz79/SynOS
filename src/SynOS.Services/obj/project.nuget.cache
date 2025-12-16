@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "hZMvxmN8azI=",
+  "dgSpecHash": "ImDC9gGC28I=",
   "success": true,
   "projectFilePath": "D:\\Projects\\SynOS-Synthesized-Lab-Intelligence\\src\\SynOS.Services\\SynOS.Services.csproj",
   "expectedPackageFiles": [
@@ -10,6 +10,7 @@
     "C:\\Users\\Asus\\.nuget\\packages\\azure.identity\\1.7.0\\azure.identity.1.7.0.nupkg.sha512",
     "C:\\Users\\Asus\\.nuget\\packages\\bcrypt.net-next\\4.0.3\\bcrypt.net-next.4.0.3.nupkg.sha512",
     "C:\\Users\\Asus\\.nuget\\packages\\communitytoolkit.highperformance\\8.4.0\\communitytoolkit.highperformance.8.4.0.nupkg.sha512",
+    "C:\\Users\\Asus\\.nuget\\packages\\csvhelper\\33.1.0\\csvhelper.33.1.0.nupkg.sha512",
     "C:\\Users\\Asus\\.nuget\\packages\\fo-dicom\\5.2.5\\fo-dicom.5.2.5.nupkg.sha512",
     "C:\\Users\\Asus\\.nuget\\packages\\fuzzysharp\\2.0.2\\fuzzysharp.2.0.2.nupkg.sha512",
     "C:\\Users\\Asus\\.nuget\\packages\\microsoft.bcl.asyncinterfaces\\8.0.0\\microsoft.bcl.asyncinterfaces.8.0.0.nupkg.sha512",
