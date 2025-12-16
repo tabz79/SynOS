@@ -1,0 +1,11 @@
+2025-12-16 10:34:55.154 +05:30 [INF] Analyzer TCP Listener Service stopping...
+2025-12-16 10:34:55.166 +05:30 [INF] Analyzer TCP Listener Service stopped.
+2025-12-16 10:34:55.184 +05:30 [INF] Notification Worker Service stopping gracefully.
+2025-12-16 11:11:00.360 +05:30 [INF] Notification Worker Service running.
+2025-12-16 11:11:00.529 +05:30 [INF] ExpiredLockCleanupService is starting.
+2025-12-16 11:11:00.653 +05:30 [INF] Analyzer TCP Listener Service starting...
+2025-12-16 11:11:00.658 +05:30 [WRN] No analyzer TCP listeners configured in appsettings.json.
+2025-12-16 11:11:37.369 +05:30 [WRN] Failed to determine the https port for redirect.
+2025-12-16 11:29:19.984 +05:30 [INF] Analyzer TCP Listener Service stopping...
+2025-12-16 11:29:19.991 +05:30 [INF] Analyzer TCP Listener Service stopped.
+2025-12-16 11:29:19.995 +05:30 [INF] Notification Worker Service stopping gracefully.

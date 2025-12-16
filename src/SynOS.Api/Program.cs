@@ -129,7 +129,14 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IPatientService, PatientService>();
 builder.Services.AddScoped<IVisitService, VisitService>();
 builder.Services.AddScoped<IEditLockService, EditLockService>();
-builder.Services.AddScoped<ISampleService, SampleService>();
+builder.Services.AddScoped<ISampleService, SampleService>(provider =>
+    new SampleService(
+        provider.GetRequiredService<SynOSDbContext>(),
+        provider.GetRequiredService<ISampleNotifier>(),
+        provider.GetRequiredService<ITubeConsumptionService>(),
+        provider.GetRequiredService<ILogger<SampleService>>()
+    ));
+builder.Services.AddScoped<ITubeConsumptionService, TubeConsumptionService>();
 builder.Services.AddScoped<IInvoiceService, InvoiceService>();
 builder.Services.AddScoped<IReceptionFlowService, ReceptionFlowService>(provider =>
     new ReceptionFlowService(

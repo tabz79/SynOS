@@ -76,7 +76,7 @@ namespace SynOS.Services
                 CombinedBillingGroupId = request.CombinedBillingGroupId
             };
 
-            var visit = await _visitService.CreateVisitAsync(visitDto, null, actorUserId); // Pass actorUserId
+            var visit = await _visitService.CreateVisitAsync(visitDto, null, actorUserId); // Pass actorUserId and branchId
 
             // Try to load invoice (may be created by VisitService; be defensive)
             var invoice = await _context.Invoices

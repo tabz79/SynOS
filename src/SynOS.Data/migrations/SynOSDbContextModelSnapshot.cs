@@ -660,6 +660,119 @@ namespace SynOS.Data.Migrations
                     b.ToTable("EditLocks");
                 });
 
+            modelBuilder.Entity("SynOS.Models.Entities.IMS.ImsTestTubeMap", b =>
+                {
+                    b.Property<Guid>("MapId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("QuantityPerSample")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("TestId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("TubeId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("MapId");
+
+                    b.HasIndex("TubeId");
+
+                    b.HasIndex("TestId", "TubeId")
+                        .IsUnique();
+
+                    b.ToTable("IMS_TestTubeMaps", (string)null);
+                });
+
+            modelBuilder.Entity("SynOS.Models.Entities.IMS.ImsTubeConsumption", b =>
+                {
+                    b.Property<Guid>("ConsumptionId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("ConsumedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("ConsumedByUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("SampleId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("TubeId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("ConsumptionId");
+
+                    b.HasIndex("ConsumedByUserId");
+
+                    b.HasIndex("TubeId");
+
+                    b.HasIndex("SampleId", "TubeId")
+                        .IsUnique();
+
+                    b.ToTable("IMS_TubeConsumptions", (string)null);
+                });
+
+            modelBuilder.Entity("SynOS.Models.Entities.IMS.ImsTubeMaster", b =>
+                {
+                    b.Property<Guid>("TubeId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("UnitOfMeasure")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("TubeId");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
+
+                    b.ToTable("IMS_TubeMasters", (string)null);
+                });
+
+            modelBuilder.Entity("SynOS.Models.Entities.IMS.ImsTubeStock", b =>
+                {
+                    b.Property<Guid>("StockId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("AlertQuantity")
+                        .HasColumnType("int");
+
+                    b.Property<int>("CurrentQuantity")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("TubeId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("StockId");
+
+                    b.HasIndex("TubeId")
+                        .IsUnique();
+
+                    b.ToTable("IMS_TubeStocks", (string)null);
+                });
+
             modelBuilder.Entity("SynOS.Models.Entities.Invoice", b =>
                 {
                     b.Property<Guid>("InvoiceId")
@@ -2815,6 +2928,63 @@ namespace SynOS.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("LockedBy");
+                });
+
+            modelBuilder.Entity("SynOS.Models.Entities.IMS.ImsTestTubeMap", b =>
+                {
+                    b.HasOne("SynOS.Models.Entities.Test", "Test")
+                        .WithMany()
+                        .HasForeignKey("TestId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SynOS.Models.Entities.IMS.ImsTubeMaster", "Tube")
+                        .WithMany()
+                        .HasForeignKey("TubeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Test");
+
+                    b.Navigation("Tube");
+                });
+
+            modelBuilder.Entity("SynOS.Models.Entities.IMS.ImsTubeConsumption", b =>
+                {
+                    b.HasOne("SynOS.Models.Entities.User", "ConsumedByUser")
+                        .WithMany()
+                        .HasForeignKey("ConsumedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SynOS.Models.Entities.Sample", "Sample")
+                        .WithMany()
+                        .HasForeignKey("SampleId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SynOS.Models.Entities.IMS.ImsTubeMaster", "Tube")
+                        .WithMany()
+                        .HasForeignKey("TubeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ConsumedByUser");
+
+                    b.Navigation("Sample");
+
+                    b.Navigation("Tube");
+                });
+
+            modelBuilder.Entity("SynOS.Models.Entities.IMS.ImsTubeStock", b =>
+                {
+                    b.HasOne("SynOS.Models.Entities.IMS.ImsTubeMaster", "Tube")
+                        .WithMany()
+                        .HasForeignKey("TubeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Tube");
                 });
 
             modelBuilder.Entity("SynOS.Models.Entities.Invoice", b =>
