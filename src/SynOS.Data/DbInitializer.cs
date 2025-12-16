@@ -10,6 +10,8 @@ namespace SynOS.Data
         // TODO: Configure lab timezone in appsettings or a dedicated config service
         private static TimeZoneInfo _labTimeZone = TimeZoneInfo.Local; // Default to server local timezone
 
+
+
         public static void Initialize(SynOSDbContext context)
         {
             // context.Database.EnsureCreated();

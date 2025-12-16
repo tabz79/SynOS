@@ -4,6 +4,7 @@
 
 using Microsoft.EntityFrameworkCore;
 using SynOS.Models.Entities;
+using SynOS.Models.Entities.IMS;
 
 namespace SynOS.Data
 {
@@ -93,6 +94,13 @@ namespace SynOS.Data
         public DbSet<LabAnalyzer> LabAnalyzers { get; set; } = null!;
         public DbSet<LabAnalyzerResultInbox> LabAnalyzerResultInbox { get; set; } = null!;
         public DbSet<LabAnalyzerTestMapping> LabAnalyzerTestMappings { get; set; } = null!; // New
+
+        #region IMS DbSets
+        public DbSet<ImsTubeMaster> ImsTubeMasters { get; set; } = null!;
+        public DbSet<ImsTubeStock> ImsTubeStocks { get; set; } = null!;
+        public DbSet<ImsTestTubeMap> ImsTestTubeMaps { get; set; } = null!;
+        public DbSet<ImsTubeConsumption> ImsTubeConsumptions { get; set; } = null!;
+        #endregion
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -559,6 +567,35 @@ namespace SynOS.Data
                 entity.Property(e => e.RefLowOverride).HasPrecision(18, 4);
                 entity.Property(e => e.RefHighOverride).HasPrecision(18, 4);
             });
+
+            #region IMS Configuration
+            modelBuilder.Entity<ImsTubeMaster>(entity =>
+            {
+                entity.ToTable("IMS_TubeMasters");
+                entity.HasIndex(e => e.Code).IsUnique();
+            });
+
+            modelBuilder.Entity<ImsTubeStock>(entity =>
+            {
+                entity.ToTable("IMS_TubeStocks");
+                entity.HasIndex(e => e.TubeId).IsUnique(); // Index on TubeId only, as BranchId is removed
+            });
+
+            modelBuilder.Entity<ImsTestTubeMap>(entity =>
+            {
+                entity.ToTable("IMS_TestTubeMaps");
+                entity.HasIndex(e => new { e.TestId, e.TubeId }).IsUnique();
+                entity.HasOne(e => e.Test).WithMany().HasForeignKey(e => e.TestId).OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<ImsTubeConsumption>(entity =>
+            {
+                entity.ToTable("IMS_TubeConsumptions");
+                entity.HasIndex(e => new { e.SampleId, e.TubeId }).IsUnique();
+                entity.HasOne(e => e.Sample).WithMany().HasForeignKey(e => e.SampleId).OnDelete(DeleteBehavior.Restrict);
+                entity.HasOne(e => e.ConsumedByUser).WithMany().HasForeignKey(e => e.ConsumedByUserId).OnDelete(DeleteBehavior.Restrict);
+            });
+            #endregion
         }
     }
 }

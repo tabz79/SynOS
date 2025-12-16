@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using SynOS.Data;
 using SynOS.Models.DTOs;
 using SynOS.Models.Entities;
-using SynOS.Models.Enums; // Required for TubeType
+using SynOS.Models.Enums;
 using SynOS.Services.Utils;
 
 namespace SynOS.Services
@@ -15,18 +16,26 @@ namespace SynOS.Services
     {
         private readonly SynOSDbContext _context;
         private readonly ISampleNotifier _sampleNotifier;
+        private readonly ITubeConsumptionService _tubeConsumptionService;
+        private readonly ILogger<SampleService> _logger;
 
-        public SampleService(SynOSDbContext context, ISampleNotifier sampleNotifier)
+        public SampleService(
+            SynOSDbContext context, 
+            ISampleNotifier sampleNotifier,
+            ITubeConsumptionService tubeConsumptionService,
+            ILogger<SampleService> logger)
         {
             _context = context;
             _sampleNotifier = sampleNotifier;
+            _tubeConsumptionService = tubeConsumptionService;
+            _logger = logger;
         }
 
         public async Task<IEnumerable<SampleDto>> CreateSamplesForVisitAsync(Guid visitId)
         {
             var visit = await _context.Visits
                 .Include(v => v.Orders)
-                .ThenInclude(o => o.Test) // Corrected to o.Test
+                .ThenInclude(o => o.Test)
                 .FirstOrDefaultAsync(v => v.VisitId == visitId);
 
             if (visit == null)
@@ -36,9 +45,9 @@ namespace SynOS.Services
 
             var createdSamples = new List<Sample>();
 
-            foreach (var order in visit.Orders.Where(o => o.Test != null)) // Corrected to o.Test
+            foreach (var order in visit.Orders.Where(o => o.Test != null))
             {
-                var tubeType = order.Test?.DefaultTubeType ?? TubeType.Other; // Corrected to order.Test?.DefaultTubeType
+                var tubeType = order.Test?.DefaultTubeType ?? TubeType.Other;
 
                 var sample = new Sample
                 {
@@ -74,12 +83,27 @@ namespace SynOS.Services
             var sample = await _context.Samples.FindAsync(sampleId);
             if (sample == null) throw new KeyNotFoundException("Sample not found.");
 
+            if (sample.Status == SampleStatus.Collected)
+            {
+                _logger.LogWarning("Sample {SampleId} has already been collected. Skipping collection and consumption logic.", sampleId);
+                return await GetSampleByIdAsync(sampleId);
+            }
+
             sample.Status = SampleStatus.Collected;
             sample.CollectedAt = DateTime.UtcNow;
             sample.CollectedByUserId = userId;
 
             await _context.SaveChangesAsync();
             
+            try
+            {
+                await _tubeConsumptionService.ConsumeStockOnSampleCollectedAsync(sampleId, userId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred during tube consumption for SampleId {SampleId}. The sample collection status was updated, but stock was not deducted.", sampleId);
+            }
+
             var updatedDto = await GetSampleByIdAsync(sampleId);
             await _sampleNotifier.NotifySampleUpdateAsync(updatedDto);
 
@@ -150,9 +174,17 @@ namespace SynOS.Services
 
         public async Task<IEnumerable<SampleDto>> GetSampleWorklistAsync(SampleStatus status)
         {
+            // The `s` in the .Select(s => new SampleDto { ... }) context refers to the Sample entity itself.
+            // The previous code had `s.Order.Visit.Patient.FirstName` which was correct,
+            // but the error message suggested `s` was not in context.
+            // This re-writes the projection to correctly access properties.
+
             return await _context.Samples
-                .Include(s => s.Order.Visit.Patient)
-                .Include(s => s.Order.Test) // Corrected to s.Order.Test
+                .Include(s => s.Order)
+                    .ThenInclude(o => o.Visit)
+                        .ThenInclude(v => v.Patient)
+                .Include(s => s.Order)
+                    .ThenInclude(o => o.Test)
                 .Include(s => s.CollectedBy)
                 .Where(s => s.Status == status)
                 .Select(s => new SampleDto
@@ -161,7 +193,7 @@ namespace SynOS.Services
                     OrderId = s.OrderId,
                     VisitId = s.Order.VisitId,
                     PatientName = $"{s.Order.Visit.Patient.FirstName} {s.Order.Visit.Patient.LastName}",
-                    TestName = s.Order.Test.TestName, // Corrected to s.Order.Test.TestName
+                    TestName = s.Order.Test.TestName,
                     TokenNumber = s.Order.Visit.Token,
                     TubeType = s.TubeType.ToString(),
                     Barcode = s.Barcode,
@@ -176,8 +208,11 @@ namespace SynOS.Services
         public async Task<SampleDto> GetSampleByIdAsync(Guid sampleId)
         {
             var sample = await _context.Samples
-                .Include(s => s.Order.Visit.Patient)
-                .Include(s => s.Order.Test) // Corrected to s.Order.Test
+                .Include(s => s.Order)
+                    .ThenInclude(o => o.Visit)
+                        .ThenInclude(v => v.Patient)
+                .Include(s => s.Order)
+                    .ThenInclude(o => o.Test)
                 .Include(s => s.CollectedBy)
                 .FirstOrDefaultAsync(s => s.SampleId == sampleId);
 
@@ -189,7 +224,7 @@ namespace SynOS.Services
                 OrderId = sample.OrderId,
                 VisitId = sample.Order.VisitId,
                 PatientName = $"{sample.Order.Visit.Patient.FirstName} {sample.Order.Visit.Patient.LastName}",
-                TestName = sample.Order.Test.TestName, // Corrected to sample.Order.Test.TestName
+                TestName = sample.Order.Test.TestName,
                 TokenNumber = sample.Order.Visit.Token,
                 TubeType = sample.TubeType.ToString(),
                 Barcode = sample.Barcode,
@@ -208,7 +243,7 @@ namespace SynOS.Services
                 {
                     BarcodePayload = s.Barcode,
                     PatientName = $"{s.Order.Visit.Patient.FirstName} {s.Order.Visit.Patient.LastName}",
-                    TestName = s.Order.Test.TestName, // Corrected to s.Order.Test.TestName
+                    TestName = s.Order.Test.TestName,
                     TokenNumber = s.Order.Visit.Token,
                     TubeType = s.TubeType.ToString()
                 })
