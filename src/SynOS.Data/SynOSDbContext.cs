@@ -20,6 +20,8 @@ namespace SynOS.Data
         public DbSet<UserRole> UserRoles { get; set; } = null!;
         public DbSet<RefreshToken> RefreshTokens { get; set; } = null!;
         public DbSet<AuditLog> AuditLogs { get; set; } = null!;
+        public DbSet<Branch> Branches { get; set; } = null!; // New Branch entity
+
 
         // DbSets for Patient entities
         public DbSet<Patient> Patients { get; set; } = null!;
@@ -34,13 +36,13 @@ namespace SynOS.Data
         // DbSets for Visit and Payment entities
         public DbSet<Visit> Visits { get; set; } = null!;
         public DbSet<TokenCounter> TokenCounters { get; set; } = null!;
-        public DbSet<TestDefinition> TestDefinitions { get; set; } = null!; // New
+        public DbSet<TestDefinition> TestDefinitions { get; set; } = null!; // Obsolete, but kept for now
         public DbSet<Order> Orders { get; set; } = null!;
         public DbSet<Invoice> Invoices { get; set; } = null!;
         public DbSet<Payment> Payments { get; set; } = null!;
         public DbSet<PartialPayment> PartialPayments { get; set; } = null!;
         public DbSet<VisitCancellation> VisitCancellations { get; set; } = null!;
-        public DbSet<CreditNote> CreditNotes { get; set; } = null!; // New
+        public DbSet<CreditNote> CreditNotes { get; set; } = null!;
         public DbSet<EditLock> EditLocks { get; set; } = null!;
         public DbSet<Sample> Samples { get; set; } = null!;
         public DbSet<SampleRejection> SampleRejections { get; set; } = null!;
@@ -53,7 +55,7 @@ namespace SynOS.Data
         public DbSet<DeltaCheckEvent> DeltaCheckEvents { get; set; } = null!;
         public DbSet<AutosaveBuffer> AutosaveBuffers { get; set; } = null!;
         public DbSet<ResultLink> ResultLinks { get; set; } = null!;
-        public DbSet<ResultChangeAudit> ResultChangeAudits { get; set; } = null!; // New
+        public DbSet<ResultChangeAudit> ResultChangeAudits { get; set; } = null!;
 
         // DbSets for Test Master
         public DbSet<Test> Tests { get; set; } = null!;
@@ -93,13 +95,14 @@ namespace SynOS.Data
         // DbSets for Lab Analyzer Integration
         public DbSet<LabAnalyzer> LabAnalyzers { get; set; } = null!;
         public DbSet<LabAnalyzerResultInbox> LabAnalyzerResultInbox { get; set; } = null!;
-        public DbSet<LabAnalyzerTestMapping> LabAnalyzerTestMappings { get; set; } = null!; // New
+        public DbSet<LabAnalyzerTestMapping> LabAnalyzerTestMappings { get; set; } = null!;
 
         #region IMS DbSets
         public DbSet<ImsTubeMaster> ImsTubeMasters { get; set; } = null!;
-        public DbSet<ImsTubeStock> ImsTubeStocks { get; set; } = null!;
+        public DbSet<ImsTubeLot> ImsTubeLots { get; set; } = null!;
+        public DbSet<ImsStockMovement> ImsStockMovements { get; set; } = null!;
         public DbSet<ImsTestTubeMap> ImsTestTubeMaps { get; set; } = null!;
-        public DbSet<ImsTubeConsumption> ImsTubeConsumptions { get; set; } = null!;
+
         #endregion
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -173,6 +176,13 @@ namespace SynOS.Data
             modelBuilder.Entity<Visit>(entity => {
                 entity.HasIndex(e => new { e.TokenDate, e.Department });
                 entity.Property(e => e.RowVersion).IsRowVersion();
+                entity.HasOne(v => v.Branch).WithMany().HasForeignKey(v => v.BranchId).OnDelete(DeleteBehavior.Restrict).IsRequired(false);
+            });
+
+            modelBuilder.Entity<Branch>(entity =>
+            {
+                entity.ToTable("Branches");
+                entity.HasIndex(e => e.Name).IsUnique();
             });
 
             modelBuilder.Entity<TokenCounter>(entity => entity.HasIndex(e => new { e.Day, e.Department }).IsUnique());
@@ -575,10 +585,22 @@ namespace SynOS.Data
                 entity.HasIndex(e => e.Code).IsUnique();
             });
 
-            modelBuilder.Entity<ImsTubeStock>(entity =>
+            modelBuilder.Entity<ImsTubeLot>(entity =>
             {
-                entity.ToTable("IMS_TubeStocks");
-                entity.HasIndex(e => e.TubeId).IsUnique(); // Index on TubeId only, as BranchId is removed
+                entity.ToTable("IMS_TubeLots");
+                entity.HasIndex(e => new { e.TubeId, e.BranchId, e.LotNumber }).IsUnique();
+                entity.HasOne(e => e.Tube).WithMany().HasForeignKey(e => e.TubeId).OnDelete(DeleteBehavior.Restrict);
+                entity.HasOne(e => e.Branch).WithMany().HasForeignKey(e => e.BranchId).OnDelete(DeleteBehavior.Restrict);
+            });
+            
+            modelBuilder.Entity<ImsStockMovement>(entity =>
+            {
+                entity.ToTable("IMS_StockMovements");
+                entity.Property(e => e.MovementType).HasConversion<string>().HasMaxLength(20);
+                entity.HasIndex(e => e.ReferenceId);
+                entity.HasOne(e => e.Tube).WithMany().HasForeignKey(e => e.TubeId).OnDelete(DeleteBehavior.Restrict);
+                entity.HasOne(e => e.TubeLot).WithMany().HasForeignKey(e => e.LotId).OnDelete(DeleteBehavior.Restrict);
+                entity.HasOne(e => e.MovedByUser).WithMany().HasForeignKey(e => e.MovedByUserId).OnDelete(DeleteBehavior.Restrict);
             });
 
             modelBuilder.Entity<ImsTestTubeMap>(entity =>
@@ -588,13 +610,7 @@ namespace SynOS.Data
                 entity.HasOne(e => e.Test).WithMany().HasForeignKey(e => e.TestId).OnDelete(DeleteBehavior.Restrict);
             });
 
-            modelBuilder.Entity<ImsTubeConsumption>(entity =>
-            {
-                entity.ToTable("IMS_TubeConsumptions");
-                entity.HasIndex(e => new { e.SampleId, e.TubeId }).IsUnique();
-                entity.HasOne(e => e.Sample).WithMany().HasForeignKey(e => e.SampleId).OnDelete(DeleteBehavior.Restrict);
-                entity.HasOne(e => e.ConsumedByUser).WithMany().HasForeignKey(e => e.ConsumedByUserId).OnDelete(DeleteBehavior.Restrict);
-            });
+
             #endregion
         }
     }

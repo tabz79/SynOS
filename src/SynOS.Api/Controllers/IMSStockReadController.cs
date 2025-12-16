@@ -6,65 +6,60 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SynOS.Data;
 using SynOS.Models.DTOs.IMS;
+using SynOS.Services;
 
 namespace SynOS.Api.Controllers
 {
     [ApiController]
     [Route("api/v1/ims/stock")]
-    [Authorize(Roles = "Admin,LabTech,StoreManager")] // As per prompt
+    [Authorize(Roles = "Admin,LabTech,StoreManager")]
     public class IMSStockReadController : ControllerBase
     {
         private readonly SynOSDbContext _context;
+        private readonly ITubeConsumptionService _tubeConsumptionService;
 
-        public IMSStockReadController(SynOSDbContext context)
+        public IMSStockReadController(SynOSDbContext context, ITubeConsumptionService tubeConsumptionService)
         {
             _context = context;
+            _tubeConsumptionService = tubeConsumptionService;
         }
 
-        [HttpGet("summary")]
-        public async Task<IActionResult> GetStockSummary()
+        [HttpGet("lots")]
+        public async Task<IActionResult> GetStockLots([FromQuery] Guid? branchId)
         {
-            var stockItems = await _context.ImsTubeStocks
-                .Include(s => s.Tube)
-                .Select(s => new StockItemDto
-                {
-                    TubeId = s.TubeId,
-                    TubeCode = s.Tube.Code,
-                    TubeName = s.Tube.Name,
-                    CurrentQuantity = s.CurrentQuantity,
-                    AlertQuantity = s.AlertQuantity,
-                    IsBelowAlertThreshold = s.CurrentQuantity < s.AlertQuantity
-                })
-                .ToListAsync();
+            var query = _context.ImsTubeLots.AsQueryable();
 
-            var summary = new StockSummaryDto
+            if (branchId.HasValue)
             {
-                // BranchId is implicitly single branch
-                StockItems = stockItems
-            };
+                query = query.Where(lot => lot.BranchId == branchId.Value);
+            }
 
-            return Ok(summary);
+            var lots = await query
+                .Include(lot => lot.Tube)
+                .Include(lot => lot.Branch)
+                .Select(lot => new LotSummaryDto
+                {
+                    LotId = lot.LotId,
+                    TubeId = lot.TubeId,
+                    TubeName = lot.Tube.Name,
+                    BranchId = lot.BranchId,
+                    BranchName = lot.Branch.Name,
+                    LotNumber = lot.LotNumber,
+                    ExpiryDate = lot.ExpiryDate,
+                    CurrentQuantity = lot.CurrentQuantity,
+                    ReceivedAt = lot.ReceivedAt,
+                    IsActive = lot.IsActive
+                })
+                .OrderBy(dto => dto.ExpiryDate)
+                .ToListAsync();
+                
+            return Ok(lots);
         }
 
-        [HttpGet("low-alerts")]
-        public async Task<IActionResult> GetLowStockAlerts()
+        [HttpGet("expiry-alerts")]
+        public async Task<IActionResult> GetNearExpiryAlerts([FromQuery] Guid? branchId, [FromQuery] int days = 14)
         {
-            var query = _context.ImsTubeStocks
-                .Where(s => s.CurrentQuantity < s.AlertQuantity);
-
-            var alerts = await query
-                .Include(s => s.Tube)
-                .Select(s => new LowStockAlertDto
-                {
-                    TubeId = s.TubeId,
-                    TubeCode = s.Tube.Code,
-                    TubeName = s.Tube.Name,
-                    // BranchId is implicitly single branch
-                    CurrentQuantity = s.CurrentQuantity,
-                    AlertQuantity = s.AlertQuantity
-                })
-                .ToListAsync();
-
+            var alerts = await _tubeConsumptionService.GetNearExpiryAlertsAsync(branchId, days);
             return Ok(alerts);
         }
     }
