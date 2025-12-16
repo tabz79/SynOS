@@ -22,6 +22,7 @@ using SynOS.Services.Stubs;
 using SynOS.Models.Configuration;
 using SynOS.Services.Security;
 using SynOS.Services.AnalyzerIntegration; // New
+using System.Text.Json.Serialization; // Added
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -35,10 +36,12 @@ Log.Logger = new LoggerConfiguration()
 builder.Host.UseSerilog();
 
 // Add services to the container.
-builder.Services.AddControllers().AddJsonOptions(options =>
-{
-    options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
-});
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+        options.JsonSerializerOptions.MaxDepth = 256; // Increased max depth
+    });
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(option =>
 {
@@ -128,7 +131,15 @@ builder.Services.AddScoped<IVisitService, VisitService>();
 builder.Services.AddScoped<IEditLockService, EditLockService>();
 builder.Services.AddScoped<ISampleService, SampleService>();
 builder.Services.AddScoped<IInvoiceService, InvoiceService>();
-builder.Services.AddScoped<IReceptionFlowService, ReceptionFlowService>();
+builder.Services.AddScoped<IReceptionFlowService, ReceptionFlowService>(provider =>
+    new ReceptionFlowService(
+        provider.GetRequiredService<SynOSDbContext>(),
+        provider.GetRequiredService<IVisitService>(),
+        provider.GetRequiredService<IInvoiceService>(),
+        provider.GetRequiredService<IAccessionService>(),
+        provider.GetRequiredService<ILogger<ReceptionFlowService>>(),
+        provider.GetRequiredService<ITestsCacheService>() // Injected
+    ));
 builder.Services.AddScoped<IResultService, ResultService>();
 builder.Services.AddScoped<IReportService, ReportService>();
 builder.Services.AddScoped<ICriticalValueService, CriticalValueService>();
@@ -152,7 +163,16 @@ builder.Services.AddScoped<IAccessionService, AccessionService>();
 builder.Services.AddScoped<ILabAnalyzerService, LabAnalyzerService>(); // New Lab Analyzer Service
 builder.Services.AddScoped<IAnalyzerResultMatcherService, AnalyzerResultMatcherService>(); // New Analyzer Result Matcher Service
 builder.Services.AddScoped<IAnalyzerResultImportService, AnalyzerResultImportService>(); // New Analyzer Result Import Service
+builder.Services.AddScoped<ITestMasterService, TestMasterService>(); // New Test Master Service
+builder.Services.AddScoped<IAuditService, AuditService>(provider =>
+    new AuditService(
+        provider.GetRequiredService<SynOSDbContext>(),
+        provider.GetRequiredService<ILogger<AuditService>>()
+    )); // New Audit Service
+builder.Services.AddScoped<ICsvService, CsvService>(); // New CSV Service
+builder.Services.AddScoped<ITestsCacheService, TestsCacheService>(); // New Tests Cache Service
 builder.Services.AddSingleton<IFileStorageService, LocalStorageService>();
+builder.Services.AddMemoryCache(); // Added
 
 // Register AnalyzerIntegration services
 builder.Services.AddTransient<AstmProtocolParser>();

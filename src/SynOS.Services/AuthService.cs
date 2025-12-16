@@ -21,12 +21,14 @@ namespace SynOS.Services
         private readonly IConfiguration _configuration;
         private readonly IMapper _mapper;
         private readonly SynOSDbContext _context;
+        private readonly IAuditService _auditService; // Injected
 
-        public AuthService(IConfiguration configuration, IMapper mapper, SynOSDbContext context)
+        public AuthService(IConfiguration configuration, IMapper mapper, SynOSDbContext context, IAuditService auditService)
         {
             _configuration = configuration;
             _mapper = mapper;
             _context = context;
+            _auditService = auditService; // Assigned
         }
 
         public async Task<LoginResponse> Authenticate(LoginRequest request, string? ipAddress)
@@ -62,7 +64,7 @@ namespace SynOS.Services
             var refreshToken = GenerateRefreshToken(ipAddress);
             user.RefreshTokens.Add(refreshToken);
 
-            await _context.AuditLogs.AddAsync(new AuditLog { UserId = user.UserId, Action = "Login", Timestamp = DateTime.UtcNow, Details = $"User logged in from IP: {ipAddress}" });
+            await _auditService.LogAsync(user.UserId, "Login", "User", user.UserId, new { IpAddress = ipAddress });
 
             await _context.SaveChangesAsync();
 
@@ -101,7 +103,7 @@ namespace SynOS.Services
 
             var jwtToken = GenerateJwtToken(user);
             
-            await _context.AuditLogs.AddAsync(new AuditLog { UserId = user.UserId, Action = "RefreshToken", Timestamp = DateTime.UtcNow, Details = $"Token refreshed from IP: {ipAddress}" });
+            await _auditService.LogAsync(user.UserId, "RefreshToken", "User", user.UserId, new { IpAddress = ipAddress });
             await _context.SaveChangesAsync();
 
 
@@ -126,7 +128,7 @@ namespace SynOS.Services
             refreshToken.RevokedByIp = ipAddress ?? string.Empty; // Handle null ipAddress
             _context.Update(user);
             
-            await _context.AuditLogs.AddAsync(new AuditLog { UserId = user.UserId, Action = "Logout", Timestamp = DateTime.UtcNow, Details = $"User logged out from IP: {ipAddress}" });
+            await _auditService.LogAsync(user.UserId, "Logout", "User", user.UserId, new { IpAddress = ipAddress });
             await _context.SaveChangesAsync();
 
             return true;

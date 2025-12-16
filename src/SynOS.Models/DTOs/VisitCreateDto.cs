@@ -9,6 +9,8 @@ namespace SynOS.Models.DTOs
         [Required]
         public Guid PatientId { get; set; }
 
+        public Guid? AppointmentId { get; set; } // Added
+
         [Required]
         public string Department { get; set; } = string.Empty;
 
@@ -16,5 +18,14 @@ namespace SynOS.Models.DTOs
 
         [Required]
         public List<string> TestCodes { get; set; } = new List<string>();
+
+        public decimal? DiscountAmount { get; set; } // Added
+        public decimal? DiscountPercent { get; set; } // Added
+        public decimal? TaxPercent { get; set; } // Added
+
+        [StringLength(500)]
+        public string? Notes { get; set; } // Added
+
+        public Guid? CombinedBillingGroupId { get; set; } // Added
     }
 }

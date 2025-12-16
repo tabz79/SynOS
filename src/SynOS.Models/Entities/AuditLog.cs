@@ -7,26 +7,25 @@ namespace SynOS.Models.Entities
     public class AuditLog
     {
         [Key]
-        public Guid AuditLogId { get; set; }
+        public Guid AuditId { get; set; }
 
-        [Required]
-        public Guid UserId { get; set; }
-        [ForeignKey("UserId")]
-        public User? User { get; set; }
+        public Guid? ActorUserId { get; set; } // Nullable for system actions
+        [ForeignKey("ActorUserId")]
+        public virtual User? ActorUser { get; set; }
 
         [Required]
         [StringLength(100)]
         public string Action { get; set; } = string.Empty;
 
         [Required]
-        public DateTime Timestamp { get; set; } = DateTime.UtcNow;
+        [StringLength(50)]
+        public string ResourceType { get; set; } = string.Empty;
 
-        [StringLength(500)]
-        public string EntityType { get; set; } = string.Empty;
-
-        public Guid? EntityId { get; set; }
+        public Guid? ResourceId { get; set; }
 
         [Column(TypeName = "nvarchar(max)")]
-        public string Details { get; set; } = string.Empty;
+        public string? Payload { get; set; }
+
+        public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
     }
 }

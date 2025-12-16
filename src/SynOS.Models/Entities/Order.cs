@@ -16,11 +16,13 @@ namespace SynOS.Models.Entities
         public Visit? Visit { get; set; }
 
         [Required]
+        public Guid TestId { get; set; } // Foreign key to the new Test entity
+        [ForeignKey("TestId")]
+        public Test Test { get; set; } = null!; // Navigation property to the new Test entity
+
+        [Required]
         [StringLength(50)]
         public string TestCode { get; set; } = string.Empty;
-
-        [ForeignKey("TestCode")]
-        public TestDefinition? TestDefinition { get; set; }
 
         [Required]
         [StringLength(50)]

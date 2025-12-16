@@ -10,20 +10,23 @@ namespace SynOS.Models.DTOs
         public string PatientName { get; set; }
         public int PatientAge { get; set; }
         public string PatientGender { get; set; }
+        // Properties moved/added from RadiologyStudyWorklistItemDto are removed from here
+        // as the nested DTO is the correct structure.
+
         public List<RadiologyStudyWorklistItemDto> Studies { get; set; } = new List<RadiologyStudyWorklistItemDto>();
     }
 
     public class RadiologyStudyWorklistItemDto
     {
         public Guid StudyId { get; set; }
-        public string TestName { get; set; }
-        public string Modality { get; set; }
-        public string StudyStatus { get; set; }
-        public bool HasReport { get; set; }
-        public string ReportStatus { get; set; }
-        public bool HasAttachments { get; set; }
-        public string? ExternalSystemName { get; set; }
-        public string? ExternalAccessionNumber { get; set; }
-        public string? ExternalViewerUrl { get; set; }
+        public string TestName { get; set; } // Uncommented
+        public string Modality { get; set; } // Uncommented
+        public string StudyStatus { get; set; } // Uncommented
+        public bool HasReport { get; set; } // Uncommented
+        public string ReportStatus { get; set; } // Uncommented
+        public bool HasAttachments { get; set; } // Uncommented
+        public string? ExternalSystemName { get; set; } // Uncommented
+        public string? ExternalAccessionNumber { get; set; } // Uncommented
+        public string? ExternalViewerUrl { get; set; } // Uncommented
     }
 }

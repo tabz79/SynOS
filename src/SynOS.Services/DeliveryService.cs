@@ -68,8 +68,8 @@ public class DeliveryService : IDeliveryService
             .Include(r => EF.Property<Order>(r, "SourceId")) // Include Order based on SourceId
                 .ThenInclude(o => o.Visit)
                     .ThenInclude(v => v.Patient)
-            .Include(r => EF.Property<Order>(r, "SourceId")) // Include Order to get TestDefinition
-                .ThenInclude(o => o.TestDefinition);
+            .Include(r => EF.Property<Order>(r, "SourceId")) // Include Order based on SourceId
+                .ThenInclude(o => o.Test); // Corrected to o.Test
 
         // For 'RadiologyStudy' reports
         var radiologyReportsQuery = query
@@ -79,7 +79,7 @@ public class DeliveryService : IDeliveryService
                     .ThenInclude(v => v.Patient)
             .Include(r => EF.Property<RadiologyStudy>(r, "SourceId")) // Include RadiologyStudy to get Order
                 .ThenInclude(rs => rs.Order)
-                    .ThenInclude(o => o.TestDefinition);
+                    .ThenInclude(o => o.Test); // Corrected to o.Test
 
         // Union the results
         var allReports = await orderReportsQuery
@@ -109,14 +109,14 @@ public class DeliveryService : IDeliveryService
                 var order = await _context.Orders
                     .Include(o => o.Visit)
                         .ThenInclude(v => v.Patient)
-                    .Include(o => o.TestDefinition)
+                    .Include(o => o.Test) // Corrected to o.Test
                     .FirstOrDefaultAsync(o => o.OrderId == report.SourceId);
 
                 if (order == null) continue; // Should not happen if data is consistent
 
                 reportDepartment = order.Department;
                 testCode = order.TestCode;
-                testName = order.TestDefinition?.Name ?? order.TestCode;
+                testName = order.Test.TestName ?? order.TestCode; // Corrected to order.Test.TestName
                 visitId = order.Visit.VisitId;
                 patientId = order.Visit.Patient.PatientId;
                 patientFirstName = order.Visit.Patient.FirstName;
@@ -133,14 +133,14 @@ public class DeliveryService : IDeliveryService
                     .Include(rs => rs.Visit)
                         .ThenInclude(v => v.Patient)
                     .Include(rs => rs.Order)
-                        .ThenInclude(o => o.TestDefinition)
+                        .ThenInclude(o => o.Test) // Corrected to o.Test
                     .FirstOrDefaultAsync(rs => rs.RadiologyStudyId == report.SourceId);
 
                 if (radiologyStudy == null) continue; // Should not happen
 
                 reportDepartment = "Radiology"; // Explicitly set for Radiology Studies
                 testCode = radiologyStudy.Order.TestCode;
-                testName = radiologyStudy.Order.TestDefinition?.Name ?? radiologyStudy.Order.TestCode;
+                testName = radiologyStudy.Order.Test.TestName ?? radiologyStudy.Order.TestCode; // Corrected to radiologyStudy.Order.Test.TestName
                 visitId = radiologyStudy.Visit.VisitId;
                 patientId = radiologyStudy.Visit.Patient.PatientId;
                 patientFirstName = radiologyStudy.Visit.Patient.FirstName;
@@ -290,7 +290,7 @@ public class DeliveryService : IDeliveryService
             var order = await _context.Orders
                 .Include(o => o.Visit)
                     .ThenInclude(v => v.Patient)
-                .Include(o => o.TestDefinition)
+                .Include(o => o.Test) // Corrected to o.Test
                 .FirstOrDefaultAsync(o => o.OrderId == report.SourceId);
 
             if (order == null) throw new KeyNotFoundException("Order not found for report.");
@@ -303,7 +303,7 @@ public class DeliveryService : IDeliveryService
                 .Include(rs => rs.Visit)
                     .ThenInclude(v => v.Patient)
                 .Include(rs => rs.Order)
-                    .ThenInclude(o => o.TestDefinition)
+                    .ThenInclude(o => o.Test) // Corrected to o.Test
                 .FirstOrDefaultAsync(rs => rs.RadiologyStudyId == report.SourceId);
 
             if (radiologyStudy == null) throw new KeyNotFoundException("Radiology Study not found for report.");
@@ -375,7 +375,7 @@ public class DeliveryService : IDeliveryService
             var order = await _context.Orders
                 .Include(o => o.Visit)
                     .ThenInclude(v => v.Patient)
-                .Include(o => o.TestDefinition)
+                .Include(o => o.Test) // Corrected to o.Test
                 .FirstOrDefaultAsync(o => o.OrderId == report.SourceId);
 
             if (order == null) throw new KeyNotFoundException("Order not found for report.");
@@ -388,7 +388,7 @@ public class DeliveryService : IDeliveryService
                 .Include(rs => rs.Visit)
                     .ThenInclude(v => v.Patient)
                 .Include(rs => rs.Order)
-                    .ThenInclude(o => o.TestDefinition)
+                    .ThenInclude(o => o.Test) // Corrected to o.Test
                 .FirstOrDefaultAsync(rs => rs.RadiologyStudyId == report.SourceId);
 
             if (radiologyStudy == null) throw new KeyNotFoundException("Radiology Study not found for report.");
@@ -458,7 +458,7 @@ public class DeliveryService : IDeliveryService
             var order = await _context.Orders
                 .Include(o => o.Visit)
                     .ThenInclude(v => v.Patient)
-                .Include(o => o.TestDefinition)
+                .Include(o => o.Test) // Corrected to o.Test
                 .FirstOrDefaultAsync(o => o.OrderId == report.SourceId);
 
             if (order == null) throw new KeyNotFoundException("Order not found for report.");
@@ -471,7 +471,7 @@ public class DeliveryService : IDeliveryService
                 .Include(rs => rs.Visit)
                     .ThenInclude(v => v.Patient)
                 .Include(rs => rs.Order)
-                    .ThenInclude(o => o.TestDefinition)
+                    .ThenInclude(o => o.Test) // Corrected to o.Test
                 .FirstOrDefaultAsync(rs => rs.RadiologyStudyId == report.SourceId);
 
             if (radiologyStudy == null) throw new KeyNotFoundException("Radiology Study not found for report.");
@@ -590,7 +590,7 @@ public class DeliveryService : IDeliveryService
             throw new BadHttpRequestException("InvalidPhoneOrLink", 401);
         }
 
-        // Fetch the patient’s registered phone
+        // Fetch the patient’s registered phone and compare
         string patientPhoneNumber;
         if (downloadLink.Report.SourceType == "Order")
         {
@@ -743,6 +743,7 @@ public class DeliveryService : IDeliveryService
                     var order = await _context.Orders
                         .Include(o => o.Visit)
                             .ThenInclude(v => v.Patient)
+                        .Include(o => o.Test) // Corrected to o.Test
                         .FirstOrDefaultAsync(o => o.OrderId == emailReport.SourceId);
                     if (order == null) throw new KeyNotFoundException("Order not found for report.");
                     emailPatientName = $"{order.Visit.Patient.FirstName} {order.Visit.Patient.LastName}";
@@ -754,7 +755,7 @@ public class DeliveryService : IDeliveryService
                         .Include(rs => rs.Visit)
                             .ThenInclude(v => v.Patient)
                         .Include(rs => rs.Order)
-                            .ThenInclude(o => o.TestDefinition)
+                            .ThenInclude(o => o.Test) // Corrected to o.Test
                         .FirstOrDefaultAsync(rs => rs.RadiologyStudyId == emailReport.SourceId);
                     if (radiologyStudy == null) throw new KeyNotFoundException("Radiology Study not found for report.");
                     emailPatientName = $"{radiologyStudy.Visit.Patient.FirstName} {radiologyStudy.Visit.Patient.LastName}";
@@ -858,7 +859,7 @@ public class DeliveryService : IDeliveryService
                 .Include(rs => rs.Visit)
                     .ThenInclude(v => v.Patient)
                 .Include(rs => rs.Order)
-                    .ThenInclude(o => o.TestDefinition)
+                    .ThenInclude(o => o.Test) // Corrected to o.Test
                 .FirstOrDefaultAsync(rs => rs.RadiologyStudyId == downloadLink.Report.SourceId);
 
             if (radiologyStudy == null) throw new KeyNotFoundException("Radiology Study not found for report.");

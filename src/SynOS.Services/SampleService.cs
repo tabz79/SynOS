@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using SynOS.Data;
 using SynOS.Models.DTOs;
 using SynOS.Models.Entities;
+using SynOS.Models.Enums; // Required for TubeType
 using SynOS.Services.Utils;
 
 namespace SynOS.Services
@@ -25,7 +26,7 @@ namespace SynOS.Services
         {
             var visit = await _context.Visits
                 .Include(v => v.Orders)
-                .ThenInclude(o => o.TestDefinition)
+                .ThenInclude(o => o.Test) // Corrected to o.Test
                 .FirstOrDefaultAsync(v => v.VisitId == visitId);
 
             if (visit == null)
@@ -35,9 +36,9 @@ namespace SynOS.Services
 
             var createdSamples = new List<Sample>();
 
-            foreach (var order in visit.Orders.Where(o => o.TestDefinition != null)) // Filter for orders with tests
+            foreach (var order in visit.Orders.Where(o => o.Test != null)) // Corrected to o.Test
             {
-                var tubeType = order.TestDefinition?.DefaultTubeType ?? TubeType.Other;
+                var tubeType = order.Test?.DefaultTubeType ?? TubeType.Other; // Corrected to order.Test?.DefaultTubeType
 
                 var sample = new Sample
                 {
@@ -151,7 +152,7 @@ namespace SynOS.Services
         {
             return await _context.Samples
                 .Include(s => s.Order.Visit.Patient)
-                .Include(s => s.Order.TestDefinition)
+                .Include(s => s.Order.Test) // Corrected to s.Order.Test
                 .Include(s => s.CollectedBy)
                 .Where(s => s.Status == status)
                 .Select(s => new SampleDto
@@ -160,7 +161,7 @@ namespace SynOS.Services
                     OrderId = s.OrderId,
                     VisitId = s.Order.VisitId,
                     PatientName = $"{s.Order.Visit.Patient.FirstName} {s.Order.Visit.Patient.LastName}",
-                    TestName = s.Order.TestDefinition.Name,
+                    TestName = s.Order.Test.TestName, // Corrected to s.Order.Test.TestName
                     TokenNumber = s.Order.Visit.Token,
                     TubeType = s.TubeType.ToString(),
                     Barcode = s.Barcode,
@@ -176,7 +177,7 @@ namespace SynOS.Services
         {
             var sample = await _context.Samples
                 .Include(s => s.Order.Visit.Patient)
-                .Include(s => s.Order.TestDefinition)
+                .Include(s => s.Order.Test) // Corrected to s.Order.Test
                 .Include(s => s.CollectedBy)
                 .FirstOrDefaultAsync(s => s.SampleId == sampleId);
 
@@ -188,7 +189,7 @@ namespace SynOS.Services
                 OrderId = sample.OrderId,
                 VisitId = sample.Order.VisitId,
                 PatientName = $"{sample.Order.Visit.Patient.FirstName} {sample.Order.Visit.Patient.LastName}",
-                TestName = sample.Order.TestDefinition.Name,
+                TestName = sample.Order.Test.TestName, // Corrected to sample.Order.Test.TestName
                 TokenNumber = sample.Order.Visit.Token,
                 TubeType = sample.TubeType.ToString(),
                 Barcode = sample.Barcode,
@@ -207,7 +208,7 @@ namespace SynOS.Services
                 {
                     BarcodePayload = s.Barcode,
                     PatientName = $"{s.Order.Visit.Patient.FirstName} {s.Order.Visit.Patient.LastName}",
-                    TestName = s.Order.TestDefinition.Name,
+                    TestName = s.Order.Test.TestName, // Corrected to s.Order.Test.TestName
                     TokenNumber = s.Order.Visit.Token,
                     TubeType = s.TubeType.ToString()
                 })

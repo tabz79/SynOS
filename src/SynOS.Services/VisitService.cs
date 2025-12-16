@@ -6,23 +6,32 @@ using Microsoft.EntityFrameworkCore;
 using SynOS.Data;
 using SynOS.Models.DTOs;
 using SynOS.Models.Entities;
-using Microsoft.Extensions.Logging; // Added for logging
+using Microsoft.Extensions.Logging;
 using SynOS.Services.Utils;
+using SynOS.Models.Enums; // Required for TubeType
 
 namespace SynOS.Services
 {
     public class VisitService : IVisitService
     {
         private readonly SynOSDbContext _context;
-        private readonly ILogger<VisitService> _logger; // Added for logging
+        private readonly ILogger<VisitService> _logger;
+        private readonly ITestsCacheService _testsCacheService; // Injected
+        private readonly IAuditService _auditService; // Injected
 
         // TODO: Configure lab timezone in appsettings or a dedicated config service
         private static TimeZoneInfo _labTimeZone = TimeZoneInfo.Local; // Default to server local timezone
 
-        public VisitService(SynOSDbContext context, ILogger<VisitService> logger)
+        public VisitService(
+            SynOSDbContext context, 
+            ILogger<VisitService> logger, 
+            ITestsCacheService testsCacheService, 
+            IAuditService auditService)
         {
             _context = context;
             _logger = logger;
+            _testsCacheService = testsCacheService;
+            _auditService = auditService;
         }
 
         public async Task<VisitTokenPrintDto> GetVisitTokenForPrintingAsync(Guid visitId)
@@ -30,7 +39,7 @@ namespace SynOS.Services
             var visit = await _context.Visits
                 .Include(v => v.Patient)
                 .Include(v => v.Orders)
-                .ThenInclude(o => o.TestDefinition)
+                    .ThenInclude(o => o.Test)
                 .FirstOrDefaultAsync(v => v.VisitId == visitId);
 
             if (visit == null)
@@ -54,7 +63,7 @@ namespace SynOS.Services
             };
         }
 
-        public async Task<Visit> CreateVisitAsync(VisitCreateDto visitDto, string? idempotencyKey = null)
+        public async Task<Visit> CreateVisitAsync(VisitCreateDto visitDto, string? idempotencyKey = null, Guid actorUserId = default)
         {
             // TODO: Implement full idempotency record table and check here
             if (!string.IsNullOrEmpty(idempotencyKey))
@@ -70,14 +79,14 @@ namespace SynOS.Services
             }
 
             var labLocalToday = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, _labTimeZone).Date;
-            var token = await GenerateDailyTokenAsync(visitDto.Department, labLocalToday);
+            var token = await GenerateDailyTokenAsync(visitDto.Department, labLocalToday, actorUserId);
 
             var visit = new Visit
             {
                 VisitId = Guid.NewGuid(),
                 PatientId = visitDto.PatientId,
                 Token = token,
-                TokenDate = labLocalToday, // Use lab local date
+                TokenDate = labLocalToday,
                 Department = visitDto.Department,
                 Status = "PendingPayment",
                 CreatedAt = DateTime.UtcNow
@@ -87,27 +96,31 @@ namespace SynOS.Services
 
             decimal grossAmount = 0;
             var orders = new List<Order>();
+
             foreach (var testCode in visitDto.TestCodes)
             {
-                var testDefinition = await _context.TestDefinitions.FirstOrDefaultAsync(td => td.TestCode == testCode);
-                if (testDefinition == null)
-                {
-                    throw new KeyNotFoundException($"Test Definition for TestCode {testCode} not found.");
-                }
+                // Robust lookup for Test and active PriceConfig
+                var resolvedTest = await ResolveTestForReceptionAsync(testCode, visitDto.Department);
 
+                if (resolvedTest == null)
+                {
+                    throw new KeyNotFoundException($"Test '{testCode}' not found or no active price config for department '{visitDto.Department}'.");
+                }
+                
                 var order = new Order
                 {
                     OrderId = Guid.NewGuid(),
                     VisitId = visit.VisitId,
-                    TestCode = testCode,
-                    Department = visitDto.Department, // Use department from TestDefinition or visitDto? Assuming visitDto for now.
+                    TestId = resolvedTest.TestId,
+                    TestCode = resolvedTest.TestCode,
+                    Department = resolvedTest.Department,
                     Status = "Pending",
-                    Price = testDefinition.Price,
+                    Price = resolvedTest.BasePrice, // Use resolved BasePrice
                     Discount = 0, // TODO: Implement discount logic
                     CreatedAt = DateTime.UtcNow
                 };
                 orders.Add(order);
-                grossAmount += testDefinition.Price;
+                grossAmount += resolvedTest.BasePrice;
             }
             _context.Orders.AddRange(orders);
 
@@ -133,6 +146,8 @@ namespace SynOS.Services
             _context.Invoices.Add(invoice);
 
             await _context.SaveChangesAsync();
+            await _auditService.LogAsync(actorUserId, "CreateVisit", "Visit", visit.VisitId, visitDto); // Audit visit creation
+
             return visit;
         }
 
@@ -141,7 +156,7 @@ namespace SynOS.Services
             return await _context.Visits
                 .Include(v => v.Patient)
                 .Include(v => v.Orders)
-                    .ThenInclude(o => o.TestDefinition) // Include TestDefinition for order details
+                    .ThenInclude(o => o.Test)
                 .Include(v => v.Invoices)
                     .ThenInclude(i => i.Payments)
                 .Include(v => v.Invoices)
@@ -153,6 +168,8 @@ namespace SynOS.Services
         {
             return await _context.Visits
                 .Include(v => v.Patient) // Include patient details for list display
+                .Include(v => v.Orders)
+                    .ThenInclude(o => o.Test)
                 .Include(v => v.Invoices) // Include invoices for status/amount
                 .Where(v => v.Department == department && v.Status == status)
                 .OrderByDescending(v => v.CreatedAt)
@@ -207,19 +224,18 @@ namespace SynOS.Services
                         CreatedAt = DateTime.UtcNow
                     };
                     _context.CreditNotes.Add(creditNote);
-                    // TODO: Add logic to flag for actual refund process if needed
                     _logger.LogInformation("Credit note created for cancelled visit {VisitId} with total paid amount {TotalPaid}", visitId, totalPaid);
                 }
             }
 
             await _context.SaveChangesAsync();
+            await _auditService.LogAsync(cancelDto.CancelledByUserId, "CancelVisit", "Visit", visitId, cancellation); // Audit visit cancellation
             return cancellation;
         }
 
-        private async Task<string> GenerateDailyTokenAsync(string department, DateTime labLocalDay)
+        private async Task<string> GenerateDailyTokenAsync(string department, DateTime labLocalDay, Guid actorUserId)
         {
             // Map department name to a single letter code
-            // TODO: Configure this mapping in appsettings or a dedicated service
             string deptLetter = department switch
             {
                 "Pathology" => "P",
@@ -246,7 +262,6 @@ namespace SynOS.Services
             }
             else
             {
-                // Ensure we are working with the latest data for concurrency
                 _context.Entry(tokenCounter).Reload();
             }
 
@@ -262,21 +277,66 @@ namespace SynOS.Services
                 }
                 else
                 {
-                    // Token space exhausted for the day (A..Z x 999)
-                    _logger.LogError("Token space exhausted for department {Department} on {Day}. Series A-Z, numbers 001-999.", department, labLocalDay.ToShortDateString());
+                    _logger.LogError("Token space exhausted for department {Department} on {Day}.", department, labLocalDay.ToShortDateString());
                     throw new InvalidOperationException($"Token space exhausted for {department} today. Please contact admin.");
                 }
             }
 
-            // Log token generation event
-            // TODO: Pass actual UserId from context
-            // _logger.LogInformation("Token generated: {Token} for Department: {Department} on {Day}", token, department, labLocalDay.ToShortDateString());
-            // await _context.AuditLogs.AddAsync(new AuditLog { UserId = Guid.Empty, Action = "TokenGenerated", EntityType = "Token", EntityId = Guid.Empty, Details = $"Token {token} generated for {department}", Timestamp = DateTime.UtcNow });
-
-
-            await _context.SaveChangesAsync(); // Save changes to tokenCounter immediately
+            await _context.SaveChangesAsync();
+            await _auditService.LogAsync(actorUserId, "TokenGenerated", "TokenCounter", tokenCounter.CounterId, tokenCounter);
 
             return $"{tokenCounter.SeriesLetter}{deptLetter}-{tokenCounter.LastNumber:D3}";
+        }
+        
+        // Helper DTO for resolving tests
+        private class ResolvedTestDto
+        {
+            public Guid TestId { get; set; }
+            public string TestCode { get; set; }
+            public string TestName { get; set; }
+            public string Department { get; set; }
+            public decimal BasePrice { get; set; }
+            public Guid? PriceConfigId { get; set; } // Nullable, as PriceConfig is optional
+        }
+
+        private async Task<ResolvedTestDto?> ResolveTestForReceptionAsync(string testCode, string dept)
+        {
+            var normalized = testCode?.Trim().ToUpperInvariant();
+            if (string.IsNullOrEmpty(normalized)) return null;
+
+            // Get tests from cache (which includes PriceConfigs)
+            var allTests = await _testsCacheService.GetCachedTestsAsync();
+
+            // Look up test by code (case-insensitive) and department from cache
+            var test = allTests
+                .FirstOrDefault(t => t.TestCode.ToUpper() == normalized
+                            && t.IsActive
+                            && (string.IsNullOrEmpty(dept) || t.Department == dept));
+
+            if (test == null) return null;
+
+            // A test is valid if it has a BasePrice > 0. PriceConfig is optional.
+            if (test.BasePrice <= 0) return null;
+
+            var now = DateTime.UtcNow;
+            
+            // Optionally find an active price config
+            var priceConfig = test.PriceConfigs?
+                .Where(p => p.IsActive
+                            && p.EffectiveFrom <= now
+                            && (p.EffectiveTo == null || p.EffectiveTo >= now))
+                .OrderByDescending(p => p.EffectiveFrom)
+                .FirstOrDefault();
+
+            return new ResolvedTestDto
+            {
+                TestId = test.TestId,
+                TestCode = test.TestCode,
+                TestName = test.TestName,
+                Department = test.Department,
+                BasePrice = test.BasePrice,
+                PriceConfigId = priceConfig?.PriceId // Can be null
+            };
         }
     }
 }

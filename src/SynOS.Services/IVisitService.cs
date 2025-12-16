@@ -8,7 +8,7 @@ namespace SynOS.Services
 {
     public interface IVisitService
     {
-        Task<Visit> CreateVisitAsync(VisitCreateDto visitDto, string? idempotencyKey = null);
+        Task<Visit> CreateVisitAsync(VisitCreateDto visitDto, string? idempotencyKey = null, Guid actorUserId = default);
         Task<Visit?> GetVisitDetailsAsync(Guid visitId);
         Task<IEnumerable<Visit>> GetVisitsAsync(string department, string status, int limit);
         Task<VisitCancellation> CancelVisitAsync(Guid visitId, CancelRequestDto cancelDto);

@@ -1,6 +1,7 @@
 using System;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -15,10 +16,12 @@ namespace SynOS.Api.Controllers
     public class PatientsController : ControllerBase
     {
         private readonly IPatientService _patientService;
+        private readonly IMapper _mapper;
 
-        public PatientsController(IPatientService patientService)
+        public PatientsController(IPatientService patientService, IMapper mapper)
         {
             _patientService = patientService;
+            _mapper = mapper;
         }
 
         [HttpPost]
@@ -27,18 +30,18 @@ namespace SynOS.Api.Controllers
             // In a real implementation, the idempotencyKey would be used to prevent duplicate requests.
             // For now, we'll just accept it.
             var patient = await _patientService.CreatePatientAsync(patientDto);
-            return CreatedAtAction(nameof(GetPatientById), new { id = patient.PatientId }, patient);
+            return CreatedAtAction(nameof(GetPatientById), new { id = patient.PatientId }, new { patient.PatientId });
         }
 
         [HttpGet]
-        public async Task<IActionResult> SearchPatients([FromQuery] string q, [FromQuery] int limit = 20, [FromQuery] int offset = 0)
+        public async Task<ActionResult<IEnumerable<PatientDto>>> SearchPatients([FromQuery] string q, [FromQuery] int limit = 20, [FromQuery] int offset = 0)
         {
             var patients = await _patientService.SearchPatientsAsync(q, limit, offset);
-            return Ok(patients);
+            return Ok(_mapper.Map<IEnumerable<PatientDto>>(patients));
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetPatientById(Guid id)
+        public async Task<ActionResult<PatientDto>> GetPatientById(Guid id)
         {
             var patient = await _patientService.GetPatientByIdAsync(id);
             if (patient == null) return NotFound();

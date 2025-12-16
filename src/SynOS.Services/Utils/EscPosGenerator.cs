@@ -36,7 +36,7 @@ namespace SynOS.Services.Utils
             sb.Append(LF);
 
             // Tests
-            var testNames = visit.Orders.Select(o => o.TestDefinition?.Name ?? o.TestCode).ToList();
+            var testNames = visit.Orders.Select(o => o.Test?.TestName ?? o.TestCode).ToList(); // Corrected
             sb.Append("Tests: " + FormatTests(string.Join(", ", testNames)));
             sb.Append(LF);
 
@@ -73,7 +73,7 @@ namespace SynOS.Services.Utils
             // Line Items
             foreach (var order in invoice.Visit.Orders)
             {
-                var name = (order.TestDefinition?.Name ?? order.TestCode).PadRight(22);
+                var name = (order.Test?.TestName ?? order.TestCode).PadRight(22); // Corrected
                 var price = order.Price.ToString("F2").PadLeft(8);
                 sb.Append($"{name}{price}").Append(LF);
             }

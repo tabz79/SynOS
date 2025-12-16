@@ -81,7 +81,7 @@ namespace SynOS.Services
             var invoice = await _context.Invoices
                 .Include(i => i.Visit.Patient)
                 .Include(i => i.Visit.Orders)
-                .ThenInclude(o => o.TestDefinition)
+                .ThenInclude(o => o.Test) // Corrected to o.Test
                 .Include(i => i.Payments)
                 .FirstOrDefaultAsync(i => i.InvoiceId == invoiceId);
 
@@ -99,7 +99,7 @@ namespace SynOS.Services
                 Patient = new PatientPrintDto { Name = $"{invoice.Visit.Patient.FirstName} {invoice.Visit.Patient.LastName}", Mrn = invoice.Visit.Patient.MRN },
                 Items = invoice.Visit.Orders.Select(o => new OrderItemPrintDto
                 {
-                    TestName = o.TestDefinition?.Name ?? o.TestCode,
+                    TestName = o.Test?.TestName ?? o.TestCode, // Corrected to o.Test?.TestName
                     Price = o.Price
                 }).ToList(),
                 GrossAmount = invoice.GrossAmount,

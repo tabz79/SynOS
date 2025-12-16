@@ -54,6 +54,13 @@ namespace SynOS.Data
         public DbSet<ResultLink> ResultLinks { get; set; } = null!;
         public DbSet<ResultChangeAudit> ResultChangeAudits { get; set; } = null!; // New
 
+        // DbSets for Test Master
+        public DbSet<Test> Tests { get; set; } = null!;
+        public DbSet<Parameter> Parameters { get; set; } = null!;
+        public DbSet<ReferenceRange> ReferenceRanges { get; set; } = null!;
+        public DbSet<PriceConfig> PriceConfigs { get; set; } = null!;
+        public DbSet<DeptScopePolicy> DeptScopePolicies { get; set; } = null!;
+        
         // DbSets for Radiology module
         public DbSet<RadiologyStudy> RadiologyStudies { get; set; } = null!;
         public DbSet<RadiologyImage> RadiologyImages { get; set; } = null!;
@@ -94,6 +101,48 @@ namespace SynOS.Data
             // User entities
             modelBuilder.Entity<User>(entity => entity.HasIndex(e => e.Email).IsUnique());
             modelBuilder.Entity<UserRole>(entity => entity.HasKey(ur => new { ur.UserId, ur.RoleId }));
+            
+            // AuditLog
+            modelBuilder.Entity<AuditLog>(entity =>
+            {
+                entity.HasOne(e => e.ActorUser)
+                    .WithMany()
+                    .HasForeignKey(e => e.ActorUserId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            // Test Master
+            modelBuilder.Entity<Test>(entity =>
+            {
+                entity.HasIndex(e => e.TestCode).IsUnique();
+                entity.Property(e => e.BasePrice).HasColumnType("decimal(10, 2)");
+            });
+
+            modelBuilder.Entity<Parameter>(entity =>
+            {
+                entity.HasIndex(e => new { e.TestId, e.ParameterCode }).IsUnique();
+            });
+
+            modelBuilder.Entity<ReferenceRange>(entity =>
+            {
+                entity.HasIndex(e => new { e.ParameterId, e.AgeGroup, e.Sex });
+                entity.Property(e => e.RefLow).HasColumnType("decimal(18, 4)");
+                entity.Property(e => e.RefHigh).HasColumnType("decimal(18, 4)");
+                entity.Property(e => e.CriticalLow).HasColumnType("decimal(18, 4)");
+                entity.Property(e => e.CriticalHigh).HasColumnType("decimal(18, 4)");
+            });
+
+            modelBuilder.Entity<PriceConfig>(entity =>
+            {
+                entity.HasIndex(e => e.TestId);
+                entity.Property(e => e.DiscountPercent).HasColumnType("decimal(5, 2)");
+                entity.Property(e => e.ReferrerRatePercent).HasColumnType("decimal(5, 2)");
+            });
+
+            modelBuilder.Entity<DeptScopePolicy>(entity =>
+            {
+                entity.HasIndex(e => new { e.RoleId, e.Dept }).IsUnique();
+            });
 
             // Patient entities
             modelBuilder.Entity<Patient>(entity => {
