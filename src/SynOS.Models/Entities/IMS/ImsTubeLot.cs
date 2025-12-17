@@ -29,6 +29,13 @@ namespace SynOS.Models.Entities.IMS
 
         public DateTimeOffset ReceivedAt { get; set; } = DateTimeOffset.UtcNow;
 
+        public Guid? POItemId { get; set; } // Nullable FK to ImsPOItem
+        [ForeignKey("POItemId")]
+        public virtual ImsPOItem? POItem { get; set; } // Nullable navigation property
+
+        [Column(TypeName = "decimal(10, 2)")] // Store cost with 2 decimal places
+        public decimal? CostPerUnit { get; set; } // Nullable, copied from POItem at receive time
+
         [NotMapped]
         public bool IsActive => CurrentQuantity > 0 && ExpiryDate >= DateTimeOffset.UtcNow;
     }

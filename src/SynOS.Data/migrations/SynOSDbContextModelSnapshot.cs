@@ -682,6 +682,63 @@ namespace SynOS.Data.Migrations
                     b.ToTable("EditLocks");
                 });
 
+            modelBuilder.Entity("SynOS.Models.Entities.IMS.ImsPOItem", b =>
+                {
+                    b.Property<Guid>("POItemId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("OrderedQuantity")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("POId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("ReceivedQuantity")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("TaxRate")
+                        .HasColumnType("decimal(5, 2)");
+
+                    b.Property<Guid>("TubeId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("UnitPrice")
+                        .HasColumnType("decimal(10, 2)");
+
+                    b.HasKey("POItemId");
+
+                    b.HasIndex("POId");
+
+                    b.HasIndex("TubeId");
+
+                    b.ToTable("IMS_POItems", (string)null);
+                });
+
+            modelBuilder.Entity("SynOS.Models.Entities.IMS.ImsPurchaseOrder", b =>
+                {
+                    b.Property<Guid>("POId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<Guid>("SupplierId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("POId");
+
+                    b.HasIndex("SupplierId");
+
+                    b.ToTable("IMS_PurchaseOrders", (string)null);
+                });
+
             modelBuilder.Entity("SynOS.Models.Entities.IMS.ImsStockMovement", b =>
                 {
                     b.Property<Guid>("MovementId")
@@ -726,6 +783,32 @@ namespace SynOS.Data.Migrations
                     b.ToTable("IMS_StockMovements", (string)null);
                 });
 
+            modelBuilder.Entity("SynOS.Models.Entities.IMS.ImsSupplier", b =>
+                {
+                    b.Property<Guid>("SupplierId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ContactInfo")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.HasKey("SupplierId");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.ToTable("IMS_Suppliers", (string)null);
+                });
+
             modelBuilder.Entity("SynOS.Models.Entities.IMS.ImsTestTubeMap", b =>
                 {
                     b.Property<Guid>("MapId")
@@ -760,6 +843,9 @@ namespace SynOS.Data.Migrations
                     b.Property<Guid>("BranchId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<decimal?>("CostPerUnit")
+                        .HasColumnType("decimal(10, 2)");
+
                     b.Property<int>("CurrentQuantity")
                         .HasColumnType("int");
 
@@ -771,6 +857,9 @@ namespace SynOS.Data.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
+                    b.Property<Guid?>("POItemId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<DateTimeOffset>("ReceivedAt")
                         .HasColumnType("datetimeoffset");
 
@@ -780,6 +869,8 @@ namespace SynOS.Data.Migrations
                     b.HasKey("LotId");
 
                     b.HasIndex("BranchId");
+
+                    b.HasIndex("POItemId");
 
                     b.HasIndex("TubeId", "BranchId", "LotNumber")
                         .IsUnique();
@@ -2981,6 +3072,36 @@ namespace SynOS.Data.Migrations
                     b.Navigation("LockedBy");
                 });
 
+            modelBuilder.Entity("SynOS.Models.Entities.IMS.ImsPOItem", b =>
+                {
+                    b.HasOne("SynOS.Models.Entities.IMS.ImsPurchaseOrder", "PurchaseOrder")
+                        .WithMany("POItems")
+                        .HasForeignKey("POId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SynOS.Models.Entities.IMS.ImsTubeMaster", "Tube")
+                        .WithMany()
+                        .HasForeignKey("TubeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("PurchaseOrder");
+
+                    b.Navigation("Tube");
+                });
+
+            modelBuilder.Entity("SynOS.Models.Entities.IMS.ImsPurchaseOrder", b =>
+                {
+                    b.HasOne("SynOS.Models.Entities.IMS.ImsSupplier", "Supplier")
+                        .WithMany()
+                        .HasForeignKey("SupplierId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Supplier");
+                });
+
             modelBuilder.Entity("SynOS.Models.Entities.IMS.ImsStockMovement", b =>
                 {
                     b.HasOne("SynOS.Models.Entities.IMS.ImsTubeLot", "TubeLot")
@@ -3035,6 +3156,11 @@ namespace SynOS.Data.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("SynOS.Models.Entities.IMS.ImsPOItem", "POItem")
+                        .WithMany()
+                        .HasForeignKey("POItemId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("SynOS.Models.Entities.IMS.ImsTubeMaster", "Tube")
                         .WithMany()
                         .HasForeignKey("TubeId")
@@ -3042,6 +3168,8 @@ namespace SynOS.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("Branch");
+
+                    b.Navigation("POItem");
 
                     b.Navigation("Tube");
                 });
@@ -3632,6 +3760,11 @@ namespace SynOS.Data.Migrations
             modelBuilder.Entity("SynOS.Models.Entities.DeliveryLog", b =>
                 {
                     b.Navigation("DeliveryAttempts");
+                });
+
+            modelBuilder.Entity("SynOS.Models.Entities.IMS.ImsPurchaseOrder", b =>
+                {
+                    b.Navigation("POItems");
                 });
 
             modelBuilder.Entity("SynOS.Models.Entities.Invoice", b =>

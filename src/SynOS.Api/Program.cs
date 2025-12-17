@@ -137,6 +137,7 @@ builder.Services.AddScoped<ISampleService, SampleService>(provider =>
         provider.GetRequiredService<ILogger<SampleService>>()
     ));
 builder.Services.AddScoped<ITubeConsumptionService, TubeConsumptionService>();
+builder.Services.AddScoped<IPurchasingService, PurchasingService>();
 builder.Services.AddScoped<IInvoiceService, InvoiceService>();
 builder.Services.AddScoped<IReceptionFlowService, ReceptionFlowService>(provider =>
     new ReceptionFlowService(
