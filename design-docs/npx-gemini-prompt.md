@@ -1,251 +1,157 @@
-# 🔹 GEMINI PROMPT — DAY 16.2 (PHASE 2)
+# 🔹 GEMINI PROMPT — DAY 16.3
 
-## Lot + Expiry Physical Reality (Backend Only)
+## Procurement & Cost Attribution (Backend Only)
 
----
+### CONTEXT
 
-## CONTEXT
+Physical inventory is correct and FEFO-driven.
 
-Day 16.1 is **completed, tested, and stable**.
-
-* Tube-first consumption works
-* Stock is deducted **only** when a sample is collected
-* Consumption is derived from **Test → Tube mapping**
-* Payment and visit flows are untouched
-
-Now we introduce **physical truth**:
-
-* Batch / Lot
-* Expiry
-* FEFO consumption
-
-This phase adds **physical correctness**, not financial logic.
+Lots exist.
+Consumption works.
+Now we **attach money to stock**, nothing more.
 
 ---
 
 ## 🎯 GOAL
 
-Track **which physical tubes** are consumed and **when they expire**, while preserving all guarantees from Day 16.1.
+Introduce procurement records so **every IMS_TubeLot has a real, auditable cost origin**.
+
+This enables future cost-per-test calculations —
+**without doing any financial analysis yet.**
 
 ---
 
-## 🔒 GUARDRAILS (STRICT)
+## 🔒 HARD GUARDRAILS (NON-NEGOTIABLE)
 
-* Backend only (no UI, no React, no CSS)
-* Do NOT add:
+* Backend only
+* **NO analytics**
+* **NO dashboards**
+* **NO profit / loss / margin**
+* **NO valuation math**
+* **NO aggregation queries**
+* **NO payment logic**
+* Cost is **recorded**, never interpreted
+* Each TubeLot must trace back to **exactly one PO item**
 
-  * Vendors
-  * Purchase Orders
-  * Payments
-  * GST
-  * Valuation
-  * Analytics dashboards
-* Consumption MUST prioritize **FEFO** (earliest expiry first)
-* Wastage is allowed **only** for expiry or damage
-* Phase-1 behavior MUST remain unchanged
-
----
-
-## 1️⃣ SCHEMA CHANGES
-
-### ❌ DELETE
-
-* `IMS_TubeStock`
-
-(No aggregated stock table is allowed in this phase.)
+If you step outside this scope, STOP.
 
 ---
 
-### ➕ ADD — `IMS_TubeLot`
+## 1️⃣ NEW SCHEMA (STRICT)
 
-Tracks **actual physical stock**.
+### `IMS_Supplier`
 
-Fields:
+* SupplierId (PK)
+* Name
+* ContactInfo
+* IsActive
 
-* `LotId` (PK)
-* `TubeId` (FK → IMS_TubeMaster)
-* `BranchId` (FK → existing Branch resolution)
-* `LotNumber`
-* `ExpiryDate`
-* `CurrentQuantity`
-* `ReceivedAt`
-* `IsActive`
-
-⚠️ Notes:
-
-* `IsActive` is **derived**, not manually controlled.
-* A lot is **inactive** if:
-
-  * `CurrentQuantity == 0`, OR
-  * `ExpiryDate < Now`
+❗ No calculated fields
+❗ No totals
+❗ No rollups
 
 ---
 
-### ➕ ADD — `IMS_StockMovement`
+### `IMS_PurchaseOrder`
 
-Immutable stock ledger.
+* POId (PK)
+* SupplierId (FK)
+* Status (Draft / Sent / Received)
+* CreatedAt
 
-Fields:
-
-* `MovementId` (PK)
-* `TubeId` (FK)  ← denormalized for reporting
-* `LotId` (FK)
-* `Quantity` (ALWAYS positive)
-* `MovementType` (Consumption / Wastage)
-* `ReferenceId` (SampleId or ManualRef)
-* `MovedAt`
-
-⚠️ Rules:
-
-* Quantity is **never negative**
-* Direction is inferred only from `MovementType`
-* Rows are **append-only** (never updated or deleted)
+❗ No invoice logic
+❗ No payments
+❗ No totals yet
 
 ---
 
-## 2️⃣ SERVICE UPDATES
+### `IMS_POItem`
 
-### `ConsumeStockOnSampleCollectedAsync(sampleId)`
+* POItemId (PK)
+* POId (FK)
+* TubeId (FK)
+* OrderedQuantity
+* ReceivedQuantity
+* UnitPrice
+* TaxRate
 
-This method replaces Phase-1 stock deduction logic.
-
-#### REQUIRED LOGIC (NO DEVIATION):
-
-1. Resolve `BranchId` strictly via:
-
-   ```
-   Sample → Visit → BranchId
-   ```
-
-   ❌ No defaults
-   ❌ No inference from user
-   ❌ No global fallback
-
-2. Resolve required `TubeId(s)` via:
-
-   ```
-   Test → Tube mapping
-   ```
-
-   ⚠️ MUST NOT use `Sample.TubeType`
-
-3. Query **active lots** for that tube & branch:
-
-   ```
-   ORDER BY ExpiryDate ASC, ReceivedAt ASC
-   ```
-
-4. Deduct required quantity across lots (FEFO):
-
-   * Consume from earliest expiring lot first
-   * Spill into next lot only if needed
-
-5. For each deduction:
-
-   * Reduce `IMS_TubeLot.CurrentQuantity`
-   * Insert one `IMS_StockMovement` row (Consumption)
-   * ReferenceId = SampleId
-
-6. Operation must be **idempotent**
-
-   * Same sample must NEVER deduct twice
+This is the **source of truth for cost**.
 
 ---
 
-### `GetNearExpiryAlertsAsync(branchId, days)`
+### UPDATE — `IMS_TubeLot`
 
-Returns lots where:
+Add:
 
-```
-ExpiryDate <= Today + days
-AND CurrentQuantity > 0
-```
+* POItemId (FK, required)
+* CostPerUnit (copied at receive time)
 
----
+🔐 Rules:
 
-### `RecordWastageAsync(lotId, quantity, reason)`
-
-* Deduct quantity from the specified lot
-* Create `IMS_StockMovement` with:
-
-  * MovementType = Wastage
-  * ReferenceId = reason
-* Must NOT allow quantity to go negative
+* CostPerUnit is copied **once**
+* Never recalculated
+* Never inferred
+* Never updated later
 
 ---
 
-### `AddStockManualAsync(...)`
+## 2️⃣ SERVICES
 
-Temporary bypass for testing and early ops.
+### `IPurchasingService`
 
-Rules:
+Implement **only**:
 
-* Admin-only
-* Creates a new `IMS_TubeLot`
-* MUST create a corresponding `IMS_StockMovement`
-* Explicitly marked as **temporary**
-* No cost, no PO, no valuation
+* CreateSupplierAsync
+* CreatePurchaseOrderAsync
+* AddPOItemAsync
+* ReceiveStockAsync
 
----
+#### ReceiveStockAsync rules:
 
-## 3️⃣ API CONTROLLERS
+* Requires:
 
-### `IMSStockOperationController`
+  * POItemId
+  * LotNumber
+  * ExpiryDate
+  * ReceivedQuantity
+* Must:
 
-* `POST /api/v1/ims/stock/lot`
+  * Create IMS_TubeLot
+  * Copy UnitPrice → CostPerUnit
+  * Update ReceivedQuantity on POItem
+* Must NOT:
 
-  * Manual lot creation (Admin only)
-* `POST /api/v1/ims/stock/lot/{lotId}/wastage`
-
-  * Record wastage
-
----
-
-### `IMSStockReadController`
-
-* `GET /api/v1/ims/stock/lots`
-
-  * Returns active & inactive lots
-* `GET /api/v1/ims/stock/expiry-alerts?days=7|14|21`
+  * Do analytics
+  * Do valuation
+  * Do accounting logic
 
 ---
 
-## 4️⃣ CLARIFICATIONS & INVARIANTS (DO NOT IGNORE)
+## 3️⃣ API CONTROLLER
 
-* BranchId MUST come from Sample → Visit → Branch
-* FEFO ordering = ExpiryDate ASC, then ReceivedAt ASC
-* Sample.TubeType MUST NOT be used
-* StockMovement.Quantity is always positive
-* IsActive is derived, not manually toggled
-* Manual stock add MUST be auditable via StockMovement
-* Phase-1 behavior MUST remain unchanged
+### `IMSPurchasingController`
 
----
+Only these endpoints:
 
-## ✅ EXIT CRITERIA
-
-* FEFO is strictly enforced
-* Consumption is traceable to **lot level**
-* Expired stock is visible
-* No regression in Day 16.1 behavior
+* `POST /api/v1/ims/suppliers`
+* `POST /api/v1/ims/purchase/order`
+* `POST /api/v1/ims/purchase/order/{poId}/items`
+* `POST /api/v1/ims/purchase/receive/{poItemId}`
 
 ---
 
-### 🚫 EXPLICITLY OUT OF SCOPE
+## 🧠 FINAL RULE
 
-* Reagents
-* Cost per test
-* Supplier management
-* Purchasing
-* Capital allocation
-* AI / analytics
+This phase **records financial facts**.
+It does **not interpret them**.
 
 ---
 
-### FINAL INSTRUCTION TO GEMINI
+## COMPLETION CRITERIA
 
-Implement **only** what is defined above.
-Do not introduce additional abstractions, shortcuts, or assumptions.
+* Every TubeLot has:
 
----
-
+  * POItemId
+  * CostPerUnit
+* Stock still consumes FEFO
+* No analytics exist

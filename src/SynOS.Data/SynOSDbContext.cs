@@ -102,6 +102,9 @@ namespace SynOS.Data
         public DbSet<ImsTubeLot> ImsTubeLots { get; set; } = null!;
         public DbSet<ImsStockMovement> ImsStockMovements { get; set; } = null!;
         public DbSet<ImsTestTubeMap> ImsTestTubeMaps { get; set; } = null!;
+        public DbSet<ImsSupplier> ImsSuppliers { get; set; } = null!;
+        public DbSet<ImsPurchaseOrder> ImsPurchaseOrders { get; set; } = null!;
+        public DbSet<ImsPOItem> ImsPOItems { get; set; } = null!;
 
         #endregion
 
@@ -591,6 +594,27 @@ namespace SynOS.Data
                 entity.HasIndex(e => new { e.TubeId, e.BranchId, e.LotNumber }).IsUnique();
                 entity.HasOne(e => e.Tube).WithMany().HasForeignKey(e => e.TubeId).OnDelete(DeleteBehavior.Restrict);
                 entity.HasOne(e => e.Branch).WithMany().HasForeignKey(e => e.BranchId).OnDelete(DeleteBehavior.Restrict);
+                entity.HasOne(e => e.POItem).WithMany().HasForeignKey(e => e.POItemId).OnDelete(DeleteBehavior.Restrict).IsRequired(false);
+            });
+
+            modelBuilder.Entity<ImsSupplier>(entity =>
+            {
+                entity.ToTable("IMS_Suppliers");
+                entity.HasIndex(e => e.Name).IsUnique();
+            });
+
+            modelBuilder.Entity<ImsPurchaseOrder>(entity =>
+            {
+                entity.ToTable("IMS_PurchaseOrders");
+                entity.Property(e => e.Status).HasConversion<string>().HasMaxLength(20);
+                entity.HasOne(e => e.Supplier).WithMany().HasForeignKey(e => e.SupplierId).OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<ImsPOItem>(entity =>
+            {
+                entity.ToTable("IMS_POItems");
+                entity.HasOne(e => e.PurchaseOrder).WithMany(po => po.POItems).HasForeignKey(e => e.POId).OnDelete(DeleteBehavior.Cascade);
+                entity.HasOne(e => e.Tube).WithMany().HasForeignKey(e => e.TubeId).OnDelete(DeleteBehavior.Restrict);
             });
             
             modelBuilder.Entity<ImsStockMovement>(entity =>
