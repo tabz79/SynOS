@@ -29,14 +29,14 @@ namespace SynOS.Api.Controllers
             return Ok(new { message = "Stock lot added successfully." });
         }
 
-        [HttpPost("lot/{lotId}/wastage")]
+        [HttpPost("wastage")]
         [Authorize(Roles = "Admin,LabTech")]
-        public async Task<IActionResult> RecordWastage(Guid lotId, [FromBody] WastageRecordDto wastageDto)
+        public async Task<IActionResult> RecordWastage([FromBody] WastageRequestDto dto)
         {
             var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
             try
             {
-                await _tubeConsumptionService.RecordWastageAsync(lotId, wastageDto.Quantity, wastageDto.Reason, userId);
+                await _tubeConsumptionService.RecordWastageAsync(dto, userId);
                 return Ok(new { message = "Wastage recorded successfully." });
             }
             catch (KeyNotFoundException ex)

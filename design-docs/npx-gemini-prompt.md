@@ -1,157 +1,120 @@
-# 🔹 GEMINI PROMPT — DAY 16.3
+# 🔹 GEMINI PROMPT — DAY 16.4C-BRIDGE PATCH
 
-## Procurement & Cost Attribution (Backend Only)
+## Legacy TubeLot ↔ ConsumableLot Wastage Bridge (Minimal Fix)
 
 ### CONTEXT
 
-Physical inventory is correct and FEFO-driven.
+Manual wastage endpoint (`POST /api/v1/ims/stock/wastage`) currently fails for **legacy TubeLots**.
 
-Lots exist.
-Consumption works.
-Now we **attach money to stock**, nothing more.
+Observed behavior:
+
+* `GET /api/v1/ims/stock/lots` returns TubeLots correctly
+* `POST /api/v1/ims/stock/wastage` returns **404 Lot not found** for those same lotIds
+
+Root cause:
+
+* Wastage logic only queries **IMS_ConsumableLot**
+* Legacy stock exists in **IMS_TubeLot**
+
+This patch is to **bridge wastage support** for legacy TubeLots.
 
 ---
 
 ## 🎯 GOAL
 
-Introduce procurement records so **every IMS_TubeLot has a real, auditable cost origin**.
+Allow **manual wastage** to work for:
 
-This enables future cost-per-test calculations —
-**without doing any financial analysis yet.**
+* Existing **IMS_TubeLot** (legacy)
+* New **IMS_ConsumableLot** (future)
 
----
+WITHOUT:
 
-## 🔒 HARD GUARDRAILS (NON-NEGOTIABLE)
-
-* Backend only
-* **NO analytics**
-* **NO dashboards**
-* **NO profit / loss / margin**
-* **NO valuation math**
-* **NO aggregation queries**
-* **NO payment logic**
-* Cost is **recorded**, never interpreted
-* Each TubeLot must trace back to **exactly one PO item**
-
-If you step outside this scope, STOP.
+* Schema changes
+* Migrations
+* Refactors
+* Breaking legacy flows
 
 ---
 
-## 1️⃣ NEW SCHEMA (STRICT)
+## 🔒 HARD GUARDRAILS
 
-### `IMS_Supplier`
-
-* SupplierId (PK)
-* Name
-* ContactInfo
-* IsActive
-
-❗ No calculated fields
-❗ No totals
-❗ No rollups
+* ❌ No database schema changes
+* ❌ No migrations
+* ❌ No service signature changes
+* ❌ No analytics
+* ❌ No refactors outside wastage path
+* ✅ Additive logic only
+* ✅ Legacy behavior preserved
 
 ---
 
-### `IMS_PurchaseOrder`
+## ✅ REQUIRED BEHAVIOR
 
-* POId (PK)
-* SupplierId (FK)
-* Status (Draft / Sent / Received)
-* CreatedAt
+When handling `POST /api/v1/ims/stock/wastage`:
 
-❗ No invoice logic
-❗ No payments
-❗ No totals yet
+### Resolution logic (mandatory order)
 
----
-
-### `IMS_POItem`
-
-* POItemId (PK)
-* POId (FK)
-* TubeId (FK)
-* OrderedQuantity
-* ReceivedQuantity
-* UnitPrice
-* TaxRate
-
-This is the **source of truth for cost**.
+1. Attempt to resolve `lotId` as **IMS_ConsumableLot**
+2. If not found, attempt to resolve as **IMS_TubeLot**
+3. If neither exists → return 404
 
 ---
 
-### UPDATE — `IMS_TubeLot`
+## ✅ WASTAGE APPLICATION RULES
 
-Add:
+### If lot is `IMS_ConsumableLot`:
 
-* POItemId (FK, required)
-* CostPerUnit (copied at receive time)
+* Decrement `CurrentQuantity`
+* Create `IMS_StockMovement`:
 
-🔐 Rules:
+  * MovementType = WASTAGE
+  * ConsumableId populated
+  * ConsumableLotId populated
+  * TubeId / TubeLotId = null
 
-* CostPerUnit is copied **once**
-* Never recalculated
-* Never inferred
-* Never updated later
+### If lot is `IMS_TubeLot`:
 
----
+* Decrement `CurrentQuantity`
+* Create `IMS_StockMovement`:
 
-## 2️⃣ SERVICES
+  * MovementType = WASTAGE
+  * TubeId populated
+  * TubeLotId populated
+  * ConsumableId / ConsumableLotId = null
 
-### `IPurchasingService`
-
-Implement **only**:
-
-* CreateSupplierAsync
-* CreatePurchaseOrderAsync
-* AddPOItemAsync
-* ReceiveStockAsync
-
-#### ReceiveStockAsync rules:
-
-* Requires:
-
-  * POItemId
-  * LotNumber
-  * ExpiryDate
-  * ReceivedQuantity
-* Must:
-
-  * Create IMS_TubeLot
-  * Copy UnitPrice → CostPerUnit
-  * Update ReceivedQuantity on POItem
-* Must NOT:
-
-  * Do analytics
-  * Do valuation
-  * Do accounting logic
+ReasonCode and Quantity must be recorded in both cases.
 
 ---
 
-## 3️⃣ API CONTROLLER
+## 🧠 IMPORTANT SEMANTICS
 
-### `IMSPurchasingController`
-
-Only these endpoints:
-
-* `POST /api/v1/ims/suppliers`
-* `POST /api/v1/ims/purchase/order`
-* `POST /api/v1/ims/purchase/order/{poId}/items`
-* `POST /api/v1/ims/purchase/receive/{poItemId}`
+* No assumption that TubeLot == ConsumableLot
+* No cross-population of IDs
+* No inference or conversion
+* Just record **facts**
 
 ---
 
-## 🧠 FINAL RULE
+## 🛑 STOP CONDITION
 
-This phase **records financial facts**.
-It does **not interpret them**.
+Stop immediately after:
+
+* Legacy TubeLot wastage succeeds
+* Existing stock listing remains unchanged
+* Sample collection still consumes stock correctly
+* Build passes
+
+Do not continue with enhancements or cleanups.
 
 ---
 
-## COMPLETION CRITERIA
+## 📌 FINAL NOTE
 
-* Every TubeLot has:
+This is a **bridge**, not a migration.
 
-  * POItemId
-  * CostPerUnit
-* Stock still consumes FEFO
-* No analytics exist
+The consumable abstraction will fully absorb legacy paths later.
+Today’s goal is operational continuity.
+
+Proceed with this patch now.
+
+---

@@ -11,7 +11,7 @@ namespace SynOS.Services
         Task<ImsSupplier> CreateSupplierAsync(SupplierCreateDto dto);
         Task<ImsPurchaseOrder> CreatePurchaseOrderAsync(PurchaseOrderCreateDto dto);
         Task<ImsPOItem> AddPOItemAsync(Guid poId, POItemCreateDto dto);
-        Task<ImsTubeLot> ReceiveStockAsync(Guid poItemId, ReceiveStockDto dto, Guid userId);
+        Task<ImsConsumableLot> ReceiveStockAsync(Guid poItemId, ReceiveStockDto dto, Guid userId);
 
         // GET methods for retrieval
         Task<ImsSupplier> GetSupplierByIdAsync(Guid supplierId);

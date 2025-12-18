@@ -4,6 +4,10 @@ namespace SynOS.Models.Enums.IMS
     {
         ManualAddition,
         Consumption,
-        Wastage
+        Wastage,
+        Receive,
+        Calibration,
+        Expiry,
+        Adjustment
     }
 }

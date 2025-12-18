@@ -105,6 +105,9 @@ namespace SynOS.Data
         public DbSet<ImsSupplier> ImsSuppliers { get; set; } = null!;
         public DbSet<ImsPurchaseOrder> ImsPurchaseOrders { get; set; } = null!;
         public DbSet<ImsPOItem> ImsPOItems { get; set; } = null!;
+        public DbSet<ImsConsumable> ImsConsumables { get; set; } = null!;
+        public DbSet<ImsConsumableLot> ImsConsumableLots { get; set; } = null!;
+        public DbSet<ImsTestConsumableMap> ImsTestConsumableMaps { get; set; } = null!;
 
         #endregion
 
@@ -621,10 +624,16 @@ namespace SynOS.Data
             {
                 entity.ToTable("IMS_StockMovements");
                 entity.Property(e => e.MovementType).HasConversion<string>().HasMaxLength(20);
+                entity.Property(e => e.ReferenceType).HasConversion<string>().HasMaxLength(50);
+                entity.Property(e => e.ReasonCode).HasConversion<string>().HasMaxLength(50);
                 entity.HasIndex(e => e.ReferenceId);
-                entity.HasOne(e => e.Tube).WithMany().HasForeignKey(e => e.TubeId).OnDelete(DeleteBehavior.Restrict);
-                entity.HasOne(e => e.TubeLot).WithMany().HasForeignKey(e => e.LotId).OnDelete(DeleteBehavior.Restrict);
-                entity.HasOne(e => e.MovedByUser).WithMany().HasForeignKey(e => e.MovedByUserId).OnDelete(DeleteBehavior.Restrict);
+                
+                // Additive relationships for the dual-support model
+                entity.HasOne(e => e.Tube).WithMany().HasForeignKey(e => e.TubeId).OnDelete(DeleteBehavior.Restrict).IsRequired(false);
+                entity.HasOne(e => e.TubeLot).WithMany().HasForeignKey(e => e.TubeLotId).OnDelete(DeleteBehavior.Restrict).IsRequired(false);
+                entity.HasOne(e => e.Consumable).WithMany().HasForeignKey(e => e.ConsumableId).OnDelete(DeleteBehavior.Restrict).IsRequired(false);
+                entity.HasOne(e => e.ConsumableLot).WithMany().HasForeignKey(e => e.ConsumableLotId).OnDelete(DeleteBehavior.Restrict).IsRequired(false);
+                entity.HasOne(e => e.RecordedByUser).WithMany().HasForeignKey(e => e.RecordedByUserId).OnDelete(DeleteBehavior.Restrict);
             });
 
             modelBuilder.Entity<ImsTestTubeMap>(entity =>
@@ -634,6 +643,30 @@ namespace SynOS.Data
                 entity.HasOne(e => e.Test).WithMany().HasForeignKey(e => e.TestId).OnDelete(DeleteBehavior.Restrict);
             });
 
+            modelBuilder.Entity<ImsConsumable>(entity =>
+            {
+                entity.ToTable("IMS_Consumables");
+                entity.HasIndex(e => e.Code).IsUnique();
+                entity.HasIndex(e => e.LegacyTubeId);
+                entity.Property(e => e.Category).HasConversion<string>().HasMaxLength(50);
+            });
+
+            modelBuilder.Entity<ImsConsumableLot>(entity =>
+            {
+                entity.ToTable("IMS_ConsumableLots");
+                entity.HasIndex(e => e.LegacyTubeLotId);
+                entity.HasOne(e => e.Consumable).WithMany().HasForeignKey(e => e.ConsumableId).OnDelete(DeleteBehavior.Restrict);
+                entity.HasOne(e => e.Branch).WithMany().HasForeignKey(e => e.BranchId).OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<ImsTestConsumableMap>(entity =>
+            {
+                entity.ToTable("IMS_TestConsumableMaps");
+                entity.HasIndex(e => new { e.TestId, e.ConsumableId, e.UsageType }).IsUnique();
+                entity.Property(e => e.UsageType).HasConversion<string>().HasMaxLength(50);
+                entity.HasOne(e => e.Test).WithMany().HasForeignKey(e => e.TestId).OnDelete(DeleteBehavior.Restrict);
+                entity.HasOne(e => e.Consumable).WithMany().HasForeignKey(e => e.ConsumableId).OnDelete(DeleteBehavior.Restrict);
+            });
 
             #endregion
         }

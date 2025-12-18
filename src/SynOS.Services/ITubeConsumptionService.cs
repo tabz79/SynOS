@@ -12,7 +12,7 @@ namespace SynOS.Services
         Task<IEnumerable<NearExpiryLotDto>> GetNearExpiryAlertsAsync(Guid? branchId, int days);
         
         
-        Task RecordWastageAsync(Guid lotId, int quantity, string reason, Guid userId);
+        Task RecordWastageAsync(WastageRequestDto dto, Guid userId);
         
         Task AddStockManualAsync(LotCreateDto lotDto, Guid userId); // DTO to be created
     }
