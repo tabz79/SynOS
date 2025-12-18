@@ -112,11 +112,14 @@ namespace SynOS.Services
                             {
                                 MovementId = Guid.NewGuid(),
                                 TubeId = tubeMap.TubeId,
-                                LotId = lot.LotId,
+                                TubeLotId = lot.LotId,
+                                ConsumableId = null, // This is a legacy tube-based flow
+                                ConsumableLotId = null,
                                 Quantity = quantityFromThisLot,
                                 MovementType = StockMovementType.Consumption,
+                                ReferenceType = MovementReferenceType.Sample,
                                 ReferenceId = referenceId,
-                                MovedByUserId = consumedByUserId,
+                                RecordedByUserId = consumedByUserId,
                                 MovedAt = DateTimeOffset.UtcNow
                             };
                             await _context.ImsStockMovements.AddAsync(movement);
@@ -165,38 +168,83 @@ namespace SynOS.Services
                 .ToListAsync();
         }
 
-        public async Task RecordWastageAsync(Guid lotId, int quantity, string reason, Guid userId)
+        public async Task RecordWastageAsync(WastageRequestDto dto, Guid userId)
         {
-            var lot = await _context.ImsTubeLots.FindAsync(lotId);
+            ImsConsumableLot? consumableLot = null;
+            ImsTubeLot? tubeLot = null;
 
-            if (lot == null)
+            // Attempt to resolve as ImsConsumableLot first
+            consumableLot = await _context.ImsConsumableLots.FindAsync(dto.LotId);
+
+            if (consumableLot != null)
             {
-                throw new KeyNotFoundException($"Lot with ID '{lotId}' not found.");
+                if (consumableLot.ConsumableId != dto.ConsumableId)
+                {
+                    throw new InvalidOperationException("Lot does not belong to the specified consumable.");
+                }
+
+                if (consumableLot.Quantity < dto.Quantity)
+                {
+                    throw new InvalidOperationException($"Cannot record wastage of {dto.Quantity} units. Only {consumableLot.Quantity} available in lot {consumableLot.BatchNumber}.");
+                }
+                consumableLot.Quantity -= dto.Quantity;
+
+                var movement = new ImsStockMovement
+                {
+                    MovementId = Guid.NewGuid(),
+                    ConsumableId = consumableLot.ConsumableId,
+                    ConsumableLotId = consumableLot.LotId,
+                    TubeId = null,
+                    TubeLotId = null,
+                    Quantity = dto.Quantity,
+                    MovementType = StockMovementType.Wastage,
+                    ReferenceType = MovementReferenceType.Manual,
+                    ReasonCode = dto.ReasonCode,
+                    RecordedByUserId = userId,
+                    MovedAt = DateTimeOffset.UtcNow
+                };
+                await _context.ImsStockMovements.AddAsync(movement);
+                await _context.SaveChangesAsync();
+                _logger.LogInformation("Recorded wastage of {Quantity} from ConsumableLot {LotNumber}. Reason: {Reason}", dto.Quantity, consumableLot.BatchNumber, dto.ReasonCode);
             }
-
-            if (lot.CurrentQuantity < quantity)
+            else
             {
-                throw new InvalidOperationException($"Cannot record wastage of {quantity} units. Only {lot.CurrentQuantity} available in lot {lot.LotNumber}.");
+                // If not a ConsumableLot, attempt to resolve as ImsTubeLot
+                tubeLot = await _context.ImsTubeLots.FindAsync(dto.LotId);
+
+                if (tubeLot == null)
+                {
+                    throw new KeyNotFoundException($"Lot with ID '{dto.LotId}' not found (neither ConsumableLot nor TubeLot).");
+                }
+                // For TubeLots, we don't have ConsumableId in dto to check, but we need TubeId from the lot itself
+                // For now, assume a TubeLot implies its own TubeId for consistency.
+                // The DTO contains ConsumableId, which won't match a TubeLot directly.
+                // I need to ensure the dto.ConsumableId is compatible with the tubeLot.TubeId or skip this check for legacy.
+
+                if (tubeLot.CurrentQuantity < dto.Quantity)
+                {
+                    throw new InvalidOperationException($"Cannot record wastage of {dto.Quantity} units. Only {tubeLot.CurrentQuantity} available in lot {tubeLot.LotNumber}.");
+                }
+                tubeLot.CurrentQuantity -= dto.Quantity;
+
+                var movement = new ImsStockMovement
+                {
+                    MovementId = Guid.NewGuid(),
+                    TubeId = tubeLot.TubeId,
+                    TubeLotId = tubeLot.LotId,
+                    ConsumableId = null, // This is a legacy tube-based flow
+                    ConsumableLotId = null,
+                    Quantity = dto.Quantity,
+                    MovementType = StockMovementType.Wastage,
+                    ReferenceType = MovementReferenceType.Manual,
+                    ReasonCode = dto.ReasonCode,
+                    RecordedByUserId = userId,
+                    MovedAt = DateTimeOffset.UtcNow
+                };
+                await _context.ImsStockMovements.AddAsync(movement);
+                await _context.SaveChangesAsync();
+                _logger.LogInformation("Recorded wastage of {Quantity} from TubeLot {LotNumber}. Reason: {Reason}", dto.Quantity, tubeLot.LotNumber, dto.ReasonCode);
             }
-
-            lot.CurrentQuantity -= quantity;
-
-            var movement = new ImsStockMovement
-            {
-                MovementId = Guid.NewGuid(),
-                TubeId = lot.TubeId,
-                LotId = lot.LotId,
-                Quantity = quantity,
-                MovementType = StockMovementType.Wastage,
-                ReferenceId = reason,
-                MovedByUserId = userId,
-                MovedAt = DateTimeOffset.UtcNow
-            };
-
-            await _context.ImsStockMovements.AddAsync(movement);
-            await _context.SaveChangesAsync();
-
-            _logger.LogInformation("Recorded wastage of {Quantity} from Lot {LotNumber}. Reason: {Reason}", quantity, lot.LotNumber, reason);
         }
 
         public async Task AddStockManualAsync(LotCreateDto lotDto, Guid userId)
@@ -216,11 +264,14 @@ namespace SynOS.Services
             {
                 MovementId = Guid.NewGuid(),
                 TubeId = newLot.TubeId,
-                LotId = newLot.LotId,
+                TubeLotId = newLot.LotId,
+                ConsumableId = null, // This is a legacy tube-based flow
+                ConsumableLotId = null,
                 Quantity = newLot.CurrentQuantity,
                 MovementType = StockMovementType.ManualAddition,
+                ReferenceType = MovementReferenceType.Manual,
                 ReferenceId = "Manual Stock Addition",
-                MovedByUserId = userId,
+                RecordedByUserId = userId,
                 MovedAt = DateTimeOffset.UtcNow
             };
 

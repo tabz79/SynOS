@@ -70,16 +70,18 @@ namespace SynOS.Services
                 throw new InvalidOperationException("Items can only be added to a Purchase Order in 'Draft' status.");
             }
 
-            if (!await _context.ImsTubeMasters.AnyAsync(t => t.TubeId == dto.TubeId && t.IsActive))
+            // This now needs to check against Consumables
+            var consumable = await _context.ImsConsumables.FirstOrDefaultAsync(c => c.LegacyTubeId == dto.TubeId && c.IsActive);
+            if (consumable == null)
             {
-                throw new KeyNotFoundException($"Active tube with ID '{dto.TubeId}' not found.");
+                throw new KeyNotFoundException($"Active consumable for legacy tube ID '{dto.TubeId}' not found.");
             }
 
             var poItem = new ImsPOItem
             {
                 POItemId = Guid.NewGuid(),
                 POId = poId,
-                TubeId = dto.TubeId,
+                TubeId = dto.TubeId, // Keep legacy TubeId for now
                 OrderedQuantity = dto.OrderedQuantity,
                 UnitPrice = dto.UnitPrice,
                 TaxRate = dto.TaxRate
@@ -90,12 +92,20 @@ namespace SynOS.Services
             return poItem;
         }
 
-        public async Task<ImsTubeLot> ReceiveStockAsync(Guid poItemId, ReceiveStockDto dto, Guid userId)
+        public async Task<ImsConsumableLot> ReceiveStockAsync(Guid poItemId, ReceiveStockDto dto, Guid userId)
         {
+            using var transaction = await _context.Database.BeginTransactionAsync();
+
             var poItem = await _context.ImsPOItems.FindAsync(poItemId);
             if (poItem == null)
             {
                 throw new KeyNotFoundException($"Purchase Order Item with ID '{poItemId}' not found.");
+            }
+            
+            var consumable = await _context.ImsConsumables.FirstOrDefaultAsync(c => c.LegacyTubeId == poItem.TubeId);
+            if (consumable == null)
+            {
+                throw new InvalidOperationException($"Could not find a matching Consumable for the legacy TubeId '{poItem.TubeId}' on POItem '{poItemId}'.");
             }
 
             if ((poItem.ReceivedQuantity + dto.Quantity) > poItem.OrderedQuantity)
@@ -103,36 +113,38 @@ namespace SynOS.Services
                 throw new InvalidOperationException($"Receiving {dto.Quantity} units would exceed the ordered quantity of {poItem.OrderedQuantity}. {poItem.ReceivedQuantity} units have already been received.");
             }
 
-            var newLot = new ImsTubeLot
+            var newLot = new ImsConsumableLot
             {
                 LotId = Guid.NewGuid(),
-                TubeId = poItem.TubeId,
+                ConsumableId = consumable.ConsumableId,
                 BranchId = dto.BranchId,
-                LotNumber = dto.LotNumber,
+                BatchNumber = dto.LotNumber,
                 ExpiryDate = dto.ExpiryDate,
-                CurrentQuantity = dto.Quantity,
+                Quantity = dto.Quantity,
                 ReceivedAt = DateTimeOffset.UtcNow,
-                POItemId = poItemId,
+                IsActive = true,
                 CostPerUnit = poItem.UnitPrice
             };
 
             var movement = new ImsStockMovement
             {
                 MovementId = Guid.NewGuid(),
-                TubeId = newLot.TubeId,
-                LotId = newLot.LotId,
-                Quantity = newLot.CurrentQuantity,
-                MovementType = StockMovementType.ManualAddition, // This should be 'Receiving' or similar, but using ManualAddition for now
-                ReferenceId = $"PO-{poItem.POId}",
-                MovedByUserId = userId,
+                ConsumableId = consumable.ConsumableId,
+                ConsumableLotId = newLot.LotId,
+                Quantity = newLot.Quantity,
+                MovementType = StockMovementType.Receive,
+                ReferenceType = MovementReferenceType.Manual,
+                ReferenceId = poItem.POId.ToString(),
+                RecordedByUserId = userId,
                 MovedAt = DateTimeOffset.UtcNow
             };
 
             poItem.ReceivedQuantity += dto.Quantity;
             
-            await _context.ImsTubeLots.AddAsync(newLot);
+            await _context.ImsConsumableLots.AddAsync(newLot);
             await _context.ImsStockMovements.AddAsync(movement);
             await _context.SaveChangesAsync();
+            await transaction.CommitAsync();
             
             return newLot;
         }

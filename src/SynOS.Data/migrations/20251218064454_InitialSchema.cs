@@ -6,11 +6,39 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace SynOS.Data.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class InitialSchema : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.CreateTable(
+                name: "AccessionCounters",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Day = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Prefix = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    LastNumber = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AccessionCounters", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Branches",
+                columns: table => new
+                {
+                    BranchId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Branches", x => x.BranchId);
+                });
+
             migrationBuilder.CreateTable(
                 name: "CriticalRules",
                 columns: table => new
@@ -42,6 +70,92 @@ namespace SynOS.Data.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_DeltaCheckConfigs", x => x.ConfigId);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "DeptScopePolicies",
+                columns: table => new
+                {
+                    PolicyId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    RoleId = table.Column<int>(type: "int", nullable: false),
+                    Dept = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    CanSearchAll = table.Column<bool>(type: "bit", nullable: false),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_DeptScopePolicies", x => x.PolicyId);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "IMS_Consumables",
+                columns: table => new
+                {
+                    ConsumableId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Code = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
+                    Category = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    UnitOfMeasure = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    IsCritical = table.Column<bool>(type: "bit", nullable: false),
+                    IsReusable = table.Column<bool>(type: "bit", nullable: false),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false),
+                    LegacyTubeId = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_IMS_Consumables", x => x.ConsumableId);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "IMS_Suppliers",
+                columns: table => new
+                {
+                    SupplierId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
+                    ContactInfo = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_IMS_Suppliers", x => x.SupplierId);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "IMS_TubeMasters",
+                columns: table => new
+                {
+                    TubeId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Code = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
+                    UnitOfMeasure = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_IMS_TubeMasters", x => x.TubeId);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "LabAnalyzers",
+                columns: table => new
+                {
+                    AnalyzerId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    OrgId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    BranchId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    Model = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    Manufacturer = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    ConnectionType = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
+                    IsEnabled = table.Column<bool>(type: "bit", nullable: false),
+                    Notes = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
+                    CreatedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    UpdatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
+                    UpdatedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_LabAnalyzers", x => x.AnalyzerId);
                 });
 
             migrationBuilder.CreateTable(
@@ -136,6 +250,27 @@ namespace SynOS.Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Tests",
+                columns: table => new
+                {
+                    TestId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    TestCode = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    TestName = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
+                    Department = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    Category = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
+                    DefaultTubeType = table.Column<int>(type: "int", nullable: true),
+                    BasePrice = table.Column<decimal>(type: "decimal(10,2)", nullable: false),
+                    TAT_Hours = table.Column<int>(type: "int", nullable: false),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
+                    UpdatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Tests", x => x.TestId);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "TokenCounters",
                 columns: table => new
                 {
@@ -163,6 +298,7 @@ namespace SynOS.Data.Migrations
                     Designation = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
                     IsActive = table.Column<bool>(type: "bit", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     FailedLoginAttempts = table.Column<int>(type: "int", nullable: false),
                     LockoutEnd = table.Column<DateTime>(type: "datetime2", nullable: true),
                     SignatureImageUrl = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
@@ -172,6 +308,126 @@ namespace SynOS.Data.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Users", x => x.UserId);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "IMS_ConsumableLots",
+                columns: table => new
+                {
+                    LotId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ConsumableId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    BatchNumber = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    ExpiryDate = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
+                    Quantity = table.Column<int>(type: "int", nullable: false),
+                    CostPerUnit = table.Column<decimal>(type: "decimal(10,2)", nullable: true),
+                    BranchId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ReceivedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false),
+                    LegacyTubeLotId = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_IMS_ConsumableLots", x => x.LotId);
+                    table.ForeignKey(
+                        name: "FK_IMS_ConsumableLots_Branches_BranchId",
+                        column: x => x.BranchId,
+                        principalTable: "Branches",
+                        principalColumn: "BranchId",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_IMS_ConsumableLots_IMS_Consumables_ConsumableId",
+                        column: x => x.ConsumableId,
+                        principalTable: "IMS_Consumables",
+                        principalColumn: "ConsumableId",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "IMS_PurchaseOrders",
+                columns: table => new
+                {
+                    POId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    SupplierId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Status = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_IMS_PurchaseOrders", x => x.POId);
+                    table.ForeignKey(
+                        name: "FK_IMS_PurchaseOrders_IMS_Suppliers_SupplierId",
+                        column: x => x.SupplierId,
+                        principalTable: "IMS_Suppliers",
+                        principalColumn: "SupplierId",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "LabAnalyzerResultInbox",
+                columns: table => new
+                {
+                    InboxId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    AnalyzerId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    RawMessage = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    PatientIdentifier = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
+                    AnalyzerTestCode = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
+                    ResultValue = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
+                    Units = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: true),
+                    Flags = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
+                    MeasuredAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
+                    VisitId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    OrderId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    ParameterCode = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
+                    ResultId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    Status = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
+                    ReceivedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
+                    ReceivedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    ReviewedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
+                    ReviewedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    ReviewNote = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    ErrorMessage = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: true),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
+                    CreatedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    UpdatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
+                    UpdatedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_LabAnalyzerResultInbox", x => x.InboxId);
+                    table.ForeignKey(
+                        name: "FK_LabAnalyzerResultInbox_LabAnalyzers_AnalyzerId",
+                        column: x => x.AnalyzerId,
+                        principalTable: "LabAnalyzers",
+                        principalColumn: "AnalyzerId",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "LabAnalyzerTestMappings",
+                columns: table => new
+                {
+                    MappingId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    AnalyzerId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    AnalyzerTestCode = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    SynosTestCode = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    UnitsOverride = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: true),
+                    RefLowOverride = table.Column<decimal>(type: "decimal(18,4)", precision: 18, scale: 4, nullable: true),
+                    RefHighOverride = table.Column<decimal>(type: "decimal(18,4)", precision: 18, scale: 4, nullable: true),
+                    IsEnabled = table.Column<bool>(type: "bit", nullable: false),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
+                    CreatedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    UpdatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
+                    UpdatedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_LabAnalyzerTestMappings", x => x.MappingId);
+                    table.ForeignKey(
+                        name: "FK_LabAnalyzerTestMappings_LabAnalyzers_AnalyzerId",
+                        column: x => x.AnalyzerId,
+                        principalTable: "LabAnalyzers",
+                        principalColumn: "AnalyzerId",
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -316,6 +572,7 @@ namespace SynOS.Data.Migrations
                     VisitId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     PatientId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     ReferrerId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    BranchId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     Token = table.Column<string>(type: "nvarchar(12)", maxLength: 12, nullable: false),
                     TokenDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Department = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
@@ -326,6 +583,12 @@ namespace SynOS.Data.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Visits", x => x.VisitId);
+                    table.ForeignKey(
+                        name: "FK_Visits_Branches_BranchId",
+                        column: x => x.BranchId,
+                        principalTable: "Branches",
+                        principalColumn: "BranchId",
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_Visits_Patients_PatientId",
                         column: x => x.PatientId,
@@ -340,26 +603,136 @@ namespace SynOS.Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "AuditLogs",
+                name: "IMS_TestConsumableMaps",
                 columns: table => new
                 {
-                    AuditLogId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Action = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    Timestamp = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    EntityType = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
-                    EntityId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    Details = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    MapId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    TestId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ConsumableId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    QuantityPerTest = table.Column<int>(type: "int", nullable: false),
+                    UsageType = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_AuditLogs", x => x.AuditLogId);
+                    table.PrimaryKey("PK_IMS_TestConsumableMaps", x => x.MapId);
+                    table.ForeignKey(
+                        name: "FK_IMS_TestConsumableMaps_IMS_Consumables_ConsumableId",
+                        column: x => x.ConsumableId,
+                        principalTable: "IMS_Consumables",
+                        principalColumn: "ConsumableId",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_IMS_TestConsumableMaps_Tests_TestId",
+                        column: x => x.TestId,
+                        principalTable: "Tests",
+                        principalColumn: "TestId",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "IMS_TestTubeMaps",
+                columns: table => new
+                {
+                    MapId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    TestId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    TubeId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    QuantityPerSample = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_IMS_TestTubeMaps", x => x.MapId);
+                    table.ForeignKey(
+                        name: "FK_IMS_TestTubeMaps_IMS_TubeMasters_TubeId",
+                        column: x => x.TubeId,
+                        principalTable: "IMS_TubeMasters",
+                        principalColumn: "TubeId",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_IMS_TestTubeMaps_Tests_TestId",
+                        column: x => x.TestId,
+                        principalTable: "Tests",
+                        principalColumn: "TestId",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Parameters",
+                columns: table => new
+                {
+                    ParameterId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    TestId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ParameterCode = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    ParameterName = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
+                    Unit = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
+                    DataType = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
+                    SortOrder = table.Column<int>(type: "int", nullable: false),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
+                    UpdatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Parameters", x => x.ParameterId);
+                    table.ForeignKey(
+                        name: "FK_Parameters_Tests_TestId",
+                        column: x => x.TestId,
+                        principalTable: "Tests",
+                        principalColumn: "TestId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "PriceConfigs",
+                columns: table => new
+                {
+                    PriceId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    TestId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    DiscountPercent = table.Column<decimal>(type: "decimal(5,2)", nullable: true),
+                    ReferrerRatePercent = table.Column<decimal>(type: "decimal(5,2)", nullable: true),
+                    EffectiveFrom = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    EffectiveTo = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
+                    UpdatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_PriceConfigs", x => x.PriceId);
+                    table.ForeignKey(
+                        name: "FK_PriceConfigs_Tests_TestId",
+                        column: x => x.TestId,
+                        principalTable: "Tests",
+                        principalColumn: "TestId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "AuditLogs",
+                columns: table => new
+                {
+                    AuditId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ActorUserId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    Action = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    ResourceType = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    ResourceId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    Payload = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
+                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AuditLogs", x => x.AuditId);
+                    table.ForeignKey(
+                        name: "FK_AuditLogs_Users_ActorUserId",
+                        column: x => x.ActorUserId,
+                        principalTable: "Users",
+                        principalColumn: "UserId",
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_AuditLogs_Users_UserId",
                         column: x => x.UserId,
                         principalTable: "Users",
-                        principalColumn: "UserId",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "UserId");
                 });
 
             migrationBuilder.CreateTable(
@@ -486,6 +859,35 @@ namespace SynOS.Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "IMS_POItems",
+                columns: table => new
+                {
+                    POItemId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    POId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    TubeId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    OrderedQuantity = table.Column<int>(type: "int", nullable: false),
+                    ReceivedQuantity = table.Column<int>(type: "int", nullable: false),
+                    UnitPrice = table.Column<decimal>(type: "decimal(10,2)", nullable: false),
+                    TaxRate = table.Column<decimal>(type: "decimal(5,2)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_IMS_POItems", x => x.POItemId);
+                    table.ForeignKey(
+                        name: "FK_IMS_POItems_IMS_PurchaseOrders_POId",
+                        column: x => x.POId,
+                        principalTable: "IMS_PurchaseOrders",
+                        principalColumn: "POId",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_IMS_POItems_IMS_TubeMasters_TubeId",
+                        column: x => x.TubeId,
+                        principalTable: "IMS_TubeMasters",
+                        principalColumn: "TubeId",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Invoices",
                 columns: table => new
                 {
@@ -517,6 +919,7 @@ namespace SynOS.Data.Migrations
                 {
                     OrderId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     VisitId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    TestId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     TestCode = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     Department = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     Status = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
@@ -528,10 +931,10 @@ namespace SynOS.Data.Migrations
                 {
                     table.PrimaryKey("PK_Orders", x => x.OrderId);
                     table.ForeignKey(
-                        name: "FK_Orders_TestDefinitions_TestCode",
-                        column: x => x.TestCode,
-                        principalTable: "TestDefinitions",
-                        principalColumn: "TestCode",
+                        name: "FK_Orders_Tests_TestId",
+                        column: x => x.TestId,
+                        principalTable: "Tests",
+                        principalColumn: "TestId",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_Orders_Visits_VisitId",
@@ -539,6 +942,48 @@ namespace SynOS.Data.Migrations
                         principalTable: "Visits",
                         principalColumn: "VisitId",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Reports",
+                columns: table => new
+                {
+                    ReportId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    VisitId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    PatientId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Department = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    SourceType = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    SourceId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Status = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    PdfUrl = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    SignedByUserId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    SignedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
+                    CurrentVersion = table.Column<int>(type: "int", nullable: false),
+                    Delivered = table.Column<bool>(type: "bit", nullable: false),
+                    DeliveredAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Reports", x => x.ReportId);
+                    table.ForeignKey(
+                        name: "FK_Reports_Patients_PatientId",
+                        column: x => x.PatientId,
+                        principalTable: "Patients",
+                        principalColumn: "PatientId",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Reports_Users_SignedByUserId",
+                        column: x => x.SignedByUserId,
+                        principalTable: "Users",
+                        principalColumn: "UserId",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Reports_Visits_VisitId",
+                        column: x => x.VisitId,
+                        principalTable: "Visits",
+                        principalColumn: "VisitId",
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -567,6 +1012,75 @@ namespace SynOS.Data.Migrations
                         principalTable: "Visits",
                         principalColumn: "VisitId",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ReferenceRanges",
+                columns: table => new
+                {
+                    ReferenceRangeId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ParameterId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    AgeGroup = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    AgeMin = table.Column<int>(type: "int", nullable: true),
+                    AgeMax = table.Column<int>(type: "int", nullable: true),
+                    Sex = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: false),
+                    RefLow = table.Column<decimal>(type: "decimal(18,4)", nullable: true),
+                    RefHigh = table.Column<decimal>(type: "decimal(18,4)", nullable: true),
+                    CriticalLow = table.Column<decimal>(type: "decimal(18,4)", nullable: true),
+                    CriticalHigh = table.Column<decimal>(type: "decimal(18,4)", nullable: true),
+                    TextRange = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
+                    EffectiveFrom = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    EffectiveTo = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
+                    UpdatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ReferenceRanges", x => x.ReferenceRangeId);
+                    table.ForeignKey(
+                        name: "FK_ReferenceRanges_Parameters_ParameterId",
+                        column: x => x.ParameterId,
+                        principalTable: "Parameters",
+                        principalColumn: "ParameterId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "IMS_TubeLots",
+                columns: table => new
+                {
+                    LotId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    TubeId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    BranchId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    LotNumber = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    ExpiryDate = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
+                    CurrentQuantity = table.Column<int>(type: "int", nullable: false),
+                    ReceivedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
+                    POItemId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    CostPerUnit = table.Column<decimal>(type: "decimal(10,2)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_IMS_TubeLots", x => x.LotId);
+                    table.ForeignKey(
+                        name: "FK_IMS_TubeLots_Branches_BranchId",
+                        column: x => x.BranchId,
+                        principalTable: "Branches",
+                        principalColumn: "BranchId",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_IMS_TubeLots_IMS_POItems_POItemId",
+                        column: x => x.POItemId,
+                        principalTable: "IMS_POItems",
+                        principalColumn: "POItemId",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_IMS_TubeLots_IMS_TubeMasters_TubeId",
+                        column: x => x.TubeId,
+                        principalTable: "IMS_TubeMasters",
+                        principalColumn: "TubeId",
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -649,8 +1163,9 @@ namespace SynOS.Data.Migrations
                     VisitId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     PatientId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Modality = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    AccessionNumber = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    AccessionNumber = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Status = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    IsSoftDeleted = table.Column<bool>(type: "bit", nullable: false),
                     AssignedTo = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     ExternalSystemName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
                     ExternalAccessionNumber = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
@@ -756,7 +1271,8 @@ namespace SynOS.Data.Migrations
                     CollectedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
                     CollectedByUserId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     Status = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
-                    IsRejected = table.Column<bool>(type: "bit", nullable: false)
+                    IsRejected = table.Column<bool>(type: "bit", nullable: false),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -772,6 +1288,266 @@ namespace SynOS.Data.Migrations
                         column: x => x.CollectedByUserId,
                         principalTable: "Users",
                         principalColumn: "UserId");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "DeliveryLogs",
+                columns: table => new
+                {
+                    LogId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ReportId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    DeliveryMethod = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    RecipientPhone = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: true),
+                    RecipientEmail = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
+                    DeliveredBy = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    DeliveredAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
+                    Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    TrackingInfo = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_DeliveryLogs", x => x.LogId);
+                    table.ForeignKey(
+                        name: "FK_DeliveryLogs_Reports_ReportId",
+                        column: x => x.ReportId,
+                        principalTable: "Reports",
+                        principalColumn: "ReportId",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_DeliveryLogs_Users_DeliveredBy",
+                        column: x => x.DeliveredBy,
+                        principalTable: "Users",
+                        principalColumn: "UserId",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "DownloadLinks",
+                columns: table => new
+                {
+                    LinkId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ReportId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Token = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    CreatedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
+                    ExpiresAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
+                    DownloadedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
+                    DownloadCount = table.Column<int>(type: "int", nullable: false),
+                    MaxDownloads = table.Column<int>(type: "int", nullable: false),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_DownloadLinks", x => x.LinkId);
+                    table.ForeignKey(
+                        name: "FK_DownloadLinks_Reports_ReportId",
+                        column: x => x.ReportId,
+                        principalTable: "Reports",
+                        principalColumn: "ReportId",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_DownloadLinks_Users_CreatedBy",
+                        column: x => x.CreatedBy,
+                        principalTable: "Users",
+                        principalColumn: "UserId",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "PathologyReports",
+                columns: table => new
+                {
+                    ReportId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    OrderId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    PathologistComments = table.Column<string>(type: "nvarchar(4000)", maxLength: 4000, nullable: true),
+                    Interpretation = table.Column<string>(type: "nvarchar(4000)", maxLength: 4000, nullable: true),
+                    Recommendations = table.Column<string>(type: "nvarchar(4000)", maxLength: 4000, nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_PathologyReports", x => x.ReportId);
+                    table.ForeignKey(
+                        name: "FK_PathologyReports_Orders_OrderId",
+                        column: x => x.OrderId,
+                        principalTable: "Orders",
+                        principalColumn: "OrderId",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_PathologyReports_Reports_ReportId",
+                        column: x => x.ReportId,
+                        principalTable: "Reports",
+                        principalColumn: "ReportId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ReportAttachments",
+                columns: table => new
+                {
+                    AttachmentId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ReportId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Type = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    FileUrl = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    DisplayName = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ReportAttachments", x => x.AttachmentId);
+                    table.ForeignKey(
+                        name: "FK_ReportAttachments_Reports_ReportId",
+                        column: x => x.ReportId,
+                        principalTable: "Reports",
+                        principalColumn: "ReportId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ReportSignatures",
+                columns: table => new
+                {
+                    ReportSignatureId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ReportId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    SignedByUserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    SignedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
+                    SignatureImageUrl = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    SignatureHash = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
+                    ReportVersion = table.Column<int>(type: "int", nullable: false),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ReportSignatures", x => x.ReportSignatureId);
+                    table.ForeignKey(
+                        name: "FK_ReportSignatures_Reports_ReportId",
+                        column: x => x.ReportId,
+                        principalTable: "Reports",
+                        principalColumn: "ReportId",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_ReportSignatures_Users_SignedByUserId",
+                        column: x => x.SignedByUserId,
+                        principalTable: "Users",
+                        principalColumn: "UserId",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ReportVersions",
+                columns: table => new
+                {
+                    ReportVersionId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ReportId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    VersionNumber = table.Column<int>(type: "int", nullable: false),
+                    PdfPath = table.Column<string>(type: "nvarchar(1024)", maxLength: 1024, nullable: true),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
+                    SignedByUserId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    SignedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ReportVersions", x => x.ReportVersionId);
+                    table.ForeignKey(
+                        name: "FK_ReportVersions_Reports_ReportId",
+                        column: x => x.ReportId,
+                        principalTable: "Reports",
+                        principalColumn: "ReportId",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_ReportVersions_Users_SignedByUserId",
+                        column: x => x.SignedByUserId,
+                        principalTable: "Users",
+                        principalColumn: "UserId",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "IMS_StockMovements",
+                columns: table => new
+                {
+                    MovementId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    TubeId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    TubeLotId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    ConsumableId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    ConsumableLotId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    Quantity = table.Column<int>(type: "int", nullable: false),
+                    MovementType = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
+                    ReferenceType = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
+                    ReferenceId = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
+                    ReasonCode = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
+                    RecordedByUserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    MovedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_IMS_StockMovements", x => x.MovementId);
+                    table.ForeignKey(
+                        name: "FK_IMS_StockMovements_IMS_ConsumableLots_ConsumableLotId",
+                        column: x => x.ConsumableLotId,
+                        principalTable: "IMS_ConsumableLots",
+                        principalColumn: "LotId",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_IMS_StockMovements_IMS_Consumables_ConsumableId",
+                        column: x => x.ConsumableId,
+                        principalTable: "IMS_Consumables",
+                        principalColumn: "ConsumableId",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_IMS_StockMovements_IMS_TubeLots_TubeLotId",
+                        column: x => x.TubeLotId,
+                        principalTable: "IMS_TubeLots",
+                        principalColumn: "LotId",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_IMS_StockMovements_IMS_TubeMasters_TubeId",
+                        column: x => x.TubeId,
+                        principalTable: "IMS_TubeMasters",
+                        principalColumn: "TubeId",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_IMS_StockMovements_Users_RecordedByUserId",
+                        column: x => x.RecordedByUserId,
+                        principalTable: "Users",
+                        principalColumn: "UserId",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "PacsSeries",
+                columns: table => new
+                {
+                    SeriesId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    RadiologyStudyId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    OrgId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    BranchId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    StudyInstanceUid = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
+                    SeriesInstanceUid = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
+                    Modality = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
+                    Description = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
+                    SeriesNumber = table.Column<int>(type: "int", nullable: true),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
+                    CreatedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    DeletedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
+                    DeletedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_PacsSeries", x => x.SeriesId);
+                    table.ForeignKey(
+                        name: "FK_PacsSeries_RadiologyStudies_RadiologyStudyId",
+                        column: x => x.RadiologyStudyId,
+                        principalTable: "RadiologyStudies",
+                        principalColumn: "RadiologyStudyId",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_PacsSeries_Users_CreatedBy",
+                        column: x => x.CreatedBy,
+                        principalTable: "Users",
+                        principalColumn: "UserId",
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -803,6 +1579,33 @@ namespace SynOS.Data.Migrations
                         principalTable: "Users",
                         principalColumn: "UserId",
                         onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "RadiologyReports",
+                columns: table => new
+                {
+                    ReportId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    RadiologyStudyId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Findings = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Impression = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    AdditionalNotes = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_RadiologyReports", x => x.ReportId);
+                    table.ForeignKey(
+                        name: "FK_RadiologyReports_RadiologyStudies_RadiologyStudyId",
+                        column: x => x.RadiologyStudyId,
+                        principalTable: "RadiologyStudies",
+                        principalColumn: "RadiologyStudyId",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_RadiologyReports_Reports_ReportId",
+                        column: x => x.ReportId,
+                        principalTable: "Reports",
+                        principalColumn: "ReportId",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -895,6 +1698,36 @@ namespace SynOS.Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "ResultChangeAudits",
+                columns: table => new
+                {
+                    AuditId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ResultId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    OldValue = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    NewValue = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    ChangedByUserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ChangedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
+                    Reason = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
+                    Source = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ResultChangeAudits", x => x.AuditId);
+                    table.ForeignKey(
+                        name: "FK_ResultChangeAudits_Results_ResultId",
+                        column: x => x.ResultId,
+                        principalTable: "Results",
+                        principalColumn: "ResultId",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_ResultChangeAudits_Users_ChangedByUserId",
+                        column: x => x.ChangedByUserId,
+                        principalTable: "Users",
+                        principalColumn: "UserId",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "ResultFlags",
                 columns: table => new
                 {
@@ -976,6 +1809,74 @@ namespace SynOS.Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "DeliveryAttempts",
+                columns: table => new
+                {
+                    AttemptId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    LogId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Attempt = table.Column<int>(type: "int", nullable: false),
+                    SentAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
+                    Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ErrorMessage = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ResponseData = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_DeliveryAttempts", x => x.AttemptId);
+                    table.ForeignKey(
+                        name: "FK_DeliveryAttempts_DeliveryLogs_LogId",
+                        column: x => x.LogId,
+                        principalTable: "DeliveryLogs",
+                        principalColumn: "LogId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "PacsInstances",
+                columns: table => new
+                {
+                    InstanceId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    SeriesId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    RadiologyStudyId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    OrgId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    BranchId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    StudyInstanceUid = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
+                    SeriesInstanceUid = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
+                    SopInstanceUid = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
+                    InstanceNumber = table.Column<int>(type: "int", nullable: true),
+                    FrameCount = table.Column<int>(type: "int", nullable: true),
+                    FilePath = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
+                    FileSizeBytes = table.Column<long>(type: "bigint", nullable: true),
+                    ContentType = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
+                    CreatedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    DeletedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
+                    DeletedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_PacsInstances", x => x.InstanceId);
+                    table.ForeignKey(
+                        name: "FK_PacsInstances_PacsSeries_SeriesId",
+                        column: x => x.SeriesId,
+                        principalTable: "PacsSeries",
+                        principalColumn: "SeriesId",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_PacsInstances_RadiologyStudies_RadiologyStudyId",
+                        column: x => x.RadiologyStudyId,
+                        principalTable: "RadiologyStudies",
+                        principalColumn: "RadiologyStudyId");
+                    table.ForeignKey(
+                        name: "FK_PacsInstances_Users_CreatedBy",
+                        column: x => x.CreatedBy,
+                        principalTable: "Users",
+                        principalColumn: "UserId",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "CriticalAudits",
                 columns: table => new
                 {
@@ -1002,246 +1903,6 @@ namespace SynOS.Data.Migrations
                         principalColumn: "UserId");
                 });
 
-            migrationBuilder.CreateTable(
-                name: "DeliveryAttempts",
-                columns: table => new
-                {
-                    AttemptId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    LogId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Attempt = table.Column<int>(type: "int", nullable: false),
-                    SentAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
-                    Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    ErrorMessage = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    ResponseData = table.Column<string>(type: "nvarchar(max)", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_DeliveryAttempts", x => x.AttemptId);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "DeliveryLogs",
-                columns: table => new
-                {
-                    LogId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    ReportId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    DeliveryMethod = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    RecipientPhone = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: true),
-                    RecipientEmail = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
-                    DeliveredBy = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    DeliveredAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
-                    Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    TrackingInfo = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    CreatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_DeliveryLogs", x => x.LogId);
-                    table.ForeignKey(
-                        name: "FK_DeliveryLogs_Users_DeliveredBy",
-                        column: x => x.DeliveredBy,
-                        principalTable: "Users",
-                        principalColumn: "UserId",
-                        onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "DownloadLinks",
-                columns: table => new
-                {
-                    LinkId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    ReportId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Token = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    CreatedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    CreatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
-                    ExpiresAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
-                    DownloadedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
-                    DownloadCount = table.Column<int>(type: "int", nullable: false),
-                    MaxDownloads = table.Column<int>(type: "int", nullable: false),
-                    IsActive = table.Column<bool>(type: "bit", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_DownloadLinks", x => x.LinkId);
-                    table.ForeignKey(
-                        name: "FK_DownloadLinks_Users_CreatedBy",
-                        column: x => x.CreatedBy,
-                        principalTable: "Users",
-                        principalColumn: "UserId",
-                        onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "PathologyReports",
-                columns: table => new
-                {
-                    ReportId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    OrderId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    PathologistComments = table.Column<string>(type: "nvarchar(4000)", maxLength: 4000, nullable: true),
-                    Interpretation = table.Column<string>(type: "nvarchar(4000)", maxLength: 4000, nullable: true),
-                    Recommendations = table.Column<string>(type: "nvarchar(4000)", maxLength: 4000, nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_PathologyReports", x => x.ReportId);
-                    table.ForeignKey(
-                        name: "FK_PathologyReports_Orders_OrderId",
-                        column: x => x.OrderId,
-                        principalTable: "Orders",
-                        principalColumn: "OrderId",
-                        onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "RadiologyReports",
-                columns: table => new
-                {
-                    ReportId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    RadiologyStudyId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Findings = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Impression = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    AdditionalNotes = table.Column<string>(type: "nvarchar(max)", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_RadiologyReports", x => x.ReportId);
-                    table.ForeignKey(
-                        name: "FK_RadiologyReports_RadiologyStudies_RadiologyStudyId",
-                        column: x => x.RadiologyStudyId,
-                        principalTable: "RadiologyStudies",
-                        principalColumn: "RadiologyStudyId",
-                        onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Reports",
-                columns: table => new
-                {
-                    ReportId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    VisitId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    PatientId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Department = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    SourceType = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    SourceId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Status = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    PdfUrl = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    SignedByUserId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    SignedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
-                    CurrentVersion = table.Column<int>(type: "int", nullable: false),
-                    Delivered = table.Column<bool>(type: "bit", nullable: false),
-                    DeliveredAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
-                    CreatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
-                    RadiologyReportReportId = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Reports", x => x.ReportId);
-                    table.ForeignKey(
-                        name: "FK_Reports_Patients_PatientId",
-                        column: x => x.PatientId,
-                        principalTable: "Patients",
-                        principalColumn: "PatientId",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_Reports_RadiologyReports_RadiologyReportReportId",
-                        column: x => x.RadiologyReportReportId,
-                        principalTable: "RadiologyReports",
-                        principalColumn: "ReportId");
-                    table.ForeignKey(
-                        name: "FK_Reports_Users_SignedByUserId",
-                        column: x => x.SignedByUserId,
-                        principalTable: "Users",
-                        principalColumn: "UserId",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_Reports_Visits_VisitId",
-                        column: x => x.VisitId,
-                        principalTable: "Visits",
-                        principalColumn: "VisitId",
-                        onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "ReportAttachments",
-                columns: table => new
-                {
-                    AttachmentId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    ReportId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Type = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    FileUrl = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    DisplayName = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
-                    CreatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_ReportAttachments", x => x.AttachmentId);
-                    table.ForeignKey(
-                        name: "FK_ReportAttachments_Reports_ReportId",
-                        column: x => x.ReportId,
-                        principalTable: "Reports",
-                        principalColumn: "ReportId",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "ReportSignatures",
-                columns: table => new
-                {
-                    ReportSignatureId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    ReportId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    SignedByUserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    SignedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
-                    SignatureImageUrl = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
-                    SignatureHash = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
-                    ReportVersion = table.Column<int>(type: "int", nullable: false),
-                    CreatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_ReportSignatures", x => x.ReportSignatureId);
-                    table.ForeignKey(
-                        name: "FK_ReportSignatures_Reports_ReportId",
-                        column: x => x.ReportId,
-                        principalTable: "Reports",
-                        principalColumn: "ReportId",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_ReportSignatures_Users_SignedByUserId",
-                        column: x => x.SignedByUserId,
-                        principalTable: "Users",
-                        principalColumn: "UserId",
-                        onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "ReportVersions",
-                columns: table => new
-                {
-                    ReportVersionId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    ReportId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    VersionNumber = table.Column<int>(type: "int", nullable: false),
-                    PdfPath = table.Column<string>(type: "nvarchar(1024)", maxLength: 1024, nullable: true),
-                    CreatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
-                    SignedByUserId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    SignedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_ReportVersions", x => x.ReportVersionId);
-                    table.ForeignKey(
-                        name: "FK_ReportVersions_Reports_ReportId",
-                        column: x => x.ReportId,
-                        principalTable: "Reports",
-                        principalColumn: "ReportId",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_ReportVersions_Users_SignedByUserId",
-                        column: x => x.SignedByUserId,
-                        principalTable: "Users",
-                        principalColumn: "UserId",
-                        onDelete: ReferentialAction.Restrict);
-                });
-
             migrationBuilder.CreateIndex(
                 name: "IX_Appointments_PatientId",
                 table: "Appointments",
@@ -1253,6 +1914,11 @@ namespace SynOS.Data.Migrations
                 columns: new[] { "ScheduledFor", "Department" });
 
             migrationBuilder.CreateIndex(
+                name: "IX_AuditLogs_ActorUserId",
+                table: "AuditLogs",
+                column: "ActorUserId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_AuditLogs_UserId",
                 table: "AuditLogs",
                 column: "UserId");
@@ -1261,6 +1927,12 @@ namespace SynOS.Data.Migrations
                 name: "IX_AutosaveBuffers_UserId_EntityType_EntityId",
                 table: "AutosaveBuffers",
                 columns: new[] { "UserId", "EntityType", "EntityId" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Branches_Name",
+                table: "Branches",
+                column: "Name",
                 unique: true);
 
             migrationBuilder.CreateIndex(
@@ -1361,6 +2033,12 @@ namespace SynOS.Data.Migrations
                 column: "ReviewedByUserId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_DeptScopePolicies_RoleId_Dept",
+                table: "DeptScopePolicies",
+                columns: new[] { "RoleId", "Dept" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_DownloadLinks_CreatedBy",
                 table: "DownloadLinks",
                 column: "CreatedBy");
@@ -1394,6 +2072,127 @@ namespace SynOS.Data.Migrations
                 column: "LockedByUserId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_IMS_ConsumableLots_BranchId",
+                table: "IMS_ConsumableLots",
+                column: "BranchId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_IMS_ConsumableLots_ConsumableId",
+                table: "IMS_ConsumableLots",
+                column: "ConsumableId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_IMS_ConsumableLots_LegacyTubeLotId",
+                table: "IMS_ConsumableLots",
+                column: "LegacyTubeLotId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_IMS_Consumables_Code",
+                table: "IMS_Consumables",
+                column: "Code",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_IMS_Consumables_LegacyTubeId",
+                table: "IMS_Consumables",
+                column: "LegacyTubeId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_IMS_POItems_POId",
+                table: "IMS_POItems",
+                column: "POId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_IMS_POItems_TubeId",
+                table: "IMS_POItems",
+                column: "TubeId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_IMS_PurchaseOrders_SupplierId",
+                table: "IMS_PurchaseOrders",
+                column: "SupplierId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_IMS_StockMovements_ConsumableId",
+                table: "IMS_StockMovements",
+                column: "ConsumableId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_IMS_StockMovements_ConsumableLotId",
+                table: "IMS_StockMovements",
+                column: "ConsumableLotId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_IMS_StockMovements_RecordedByUserId",
+                table: "IMS_StockMovements",
+                column: "RecordedByUserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_IMS_StockMovements_ReferenceId",
+                table: "IMS_StockMovements",
+                column: "ReferenceId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_IMS_StockMovements_TubeId",
+                table: "IMS_StockMovements",
+                column: "TubeId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_IMS_StockMovements_TubeLotId",
+                table: "IMS_StockMovements",
+                column: "TubeLotId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_IMS_Suppliers_Name",
+                table: "IMS_Suppliers",
+                column: "Name",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_IMS_TestConsumableMaps_ConsumableId",
+                table: "IMS_TestConsumableMaps",
+                column: "ConsumableId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_IMS_TestConsumableMaps_TestId_ConsumableId_UsageType",
+                table: "IMS_TestConsumableMaps",
+                columns: new[] { "TestId", "ConsumableId", "UsageType" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_IMS_TestTubeMaps_TestId_TubeId",
+                table: "IMS_TestTubeMaps",
+                columns: new[] { "TestId", "TubeId" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_IMS_TestTubeMaps_TubeId",
+                table: "IMS_TestTubeMaps",
+                column: "TubeId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_IMS_TubeLots_BranchId",
+                table: "IMS_TubeLots",
+                column: "BranchId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_IMS_TubeLots_POItemId",
+                table: "IMS_TubeLots",
+                column: "POItemId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_IMS_TubeLots_TubeId_BranchId_LotNumber",
+                table: "IMS_TubeLots",
+                columns: new[] { "TubeId", "BranchId", "LotNumber" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_IMS_TubeMasters_Code",
+                table: "IMS_TubeMasters",
+                column: "Code",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Invoices_Status",
                 table: "Invoices",
                 column: "Status");
@@ -1402,6 +2201,72 @@ namespace SynOS.Data.Migrations
                 name: "IX_Invoices_VisitId",
                 table: "Invoices",
                 column: "VisitId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_LabAnalyzerResultInbox_AnalyzerId",
+                table: "LabAnalyzerResultInbox",
+                column: "AnalyzerId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_LabAnalyzerResultInbox_OrderId",
+                table: "LabAnalyzerResultInbox",
+                column: "OrderId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_LabAnalyzerResultInbox_PatientIdentifier",
+                table: "LabAnalyzerResultInbox",
+                column: "PatientIdentifier");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_LabAnalyzerResultInbox_ReceivedAt",
+                table: "LabAnalyzerResultInbox",
+                column: "ReceivedAt");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_LabAnalyzerResultInbox_Status",
+                table: "LabAnalyzerResultInbox",
+                column: "Status");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_LabAnalyzerResultInbox_VisitId",
+                table: "LabAnalyzerResultInbox",
+                column: "VisitId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_LabAnalyzers_BranchId",
+                table: "LabAnalyzers",
+                column: "BranchId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_LabAnalyzers_OrgId",
+                table: "LabAnalyzers",
+                column: "OrgId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_LabAnalyzerTestMappings_AnalyzerId",
+                table: "LabAnalyzerTestMappings",
+                column: "AnalyzerId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_LabAnalyzerTestMappings_AnalyzerId_AnalyzerTestCode",
+                table: "LabAnalyzerTestMappings",
+                columns: new[] { "AnalyzerId", "AnalyzerTestCode" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_LabAnalyzerTestMappings_AnalyzerTestCode",
+                table: "LabAnalyzerTestMappings",
+                column: "AnalyzerTestCode");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_LabAnalyzerTestMappings_IsEnabled",
+                table: "LabAnalyzerTestMappings",
+                column: "IsEnabled");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_LabAnalyzerTestMappings_SynosTestCode",
+                table: "LabAnalyzerTestMappings",
+                column: "SynosTestCode");
 
             migrationBuilder.CreateIndex(
                 name: "IX_NotificationQueues_NextRetryAt",
@@ -1419,9 +2284,45 @@ namespace SynOS.Data.Migrations
                 column: "TestCode");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Orders_TestId",
+                table: "Orders",
+                column: "TestId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Orders_VisitId",
                 table: "Orders",
                 column: "VisitId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PacsInstances_CreatedBy",
+                table: "PacsInstances",
+                column: "CreatedBy");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PacsInstances_RadiologyStudyId",
+                table: "PacsInstances",
+                column: "RadiologyStudyId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PacsInstances_SeriesId_SopInstanceUid",
+                table: "PacsInstances",
+                columns: new[] { "SeriesId", "SopInstanceUid" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PacsSeries_CreatedBy",
+                table: "PacsSeries",
+                column: "CreatedBy");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PacsSeries_RadiologyStudyId_StudyInstanceUid_SeriesInstanceUid",
+                table: "PacsSeries",
+                columns: new[] { "RadiologyStudyId", "StudyInstanceUid", "SeriesInstanceUid" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Parameters_TestId_ParameterCode",
+                table: "Parameters",
+                columns: new[] { "TestId", "ParameterCode" },
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_PartialPayments_InvoiceId",
@@ -1487,6 +2388,11 @@ namespace SynOS.Data.Migrations
                 column: "ReceivedByUserId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_PriceConfigs_TestId",
+                table: "PriceConfigs",
+                column: "TestId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_RadiologyImages_RadiologyStudyId",
                 table: "RadiologyImages",
                 column: "RadiologyStudyId");
@@ -1528,6 +2434,11 @@ namespace SynOS.Data.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_ReferenceRanges_ParameterId_AgeGroup_Sex",
+                table: "ReferenceRanges",
+                columns: new[] { "ParameterId", "AgeGroup", "Sex" });
+
+            migrationBuilder.CreateIndex(
                 name: "IX_RefreshTokens_UserId",
                 table: "RefreshTokens",
                 column: "UserId");
@@ -1541,11 +2452,6 @@ namespace SynOS.Data.Migrations
                 name: "IX_Reports_PatientId",
                 table: "Reports",
                 column: "PatientId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Reports_RadiologyReportReportId",
-                table: "Reports",
-                column: "RadiologyReportReportId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Reports_SignedByUserId",
@@ -1616,6 +2522,22 @@ namespace SynOS.Data.Migrations
                 name: "IX_ReportVersions_SignedByUserId",
                 table: "ReportVersions",
                 column: "SignedByUserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ResultChangeAudits_ChangedByUserId",
+                table: "ResultChangeAudits",
+                column: "ChangedByUserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ResultChangeAudits_ResultId",
+                table: "ResultChangeAudits",
+                column: "ResultId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ResultChangeAudits_ResultId_ChangedAt",
+                table: "ResultChangeAudits",
+                columns: new[] { "ResultId", "ChangedAt" },
+                descending: new bool[0]);
 
             migrationBuilder.CreateIndex(
                 name: "IX_ResultFlags_ResultId",
@@ -1691,6 +2613,12 @@ namespace SynOS.Data.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_Tests_TestCode",
+                table: "Tests",
+                column: "TestCode",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_TokenCounters_Day_Department",
                 table: "TokenCounters",
                 columns: new[] { "Day", "Department" },
@@ -1724,6 +2652,11 @@ namespace SynOS.Data.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_Visits_BranchId",
+                table: "Visits",
+                column: "BranchId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Visits_PatientId",
                 table: "Visits",
                 column: "PatientId");
@@ -1737,94 +2670,13 @@ namespace SynOS.Data.Migrations
                 name: "IX_Visits_TokenDate_Department",
                 table: "Visits",
                 columns: new[] { "TokenDate", "Department" });
-
-            migrationBuilder.AddForeignKey(
-                name: "FK_DeliveryAttempts_DeliveryLogs_LogId",
-                table: "DeliveryAttempts",
-                column: "LogId",
-                principalTable: "DeliveryLogs",
-                principalColumn: "LogId",
-                onDelete: ReferentialAction.Cascade);
-
-            migrationBuilder.AddForeignKey(
-                name: "FK_DeliveryLogs_Reports_ReportId",
-                table: "DeliveryLogs",
-                column: "ReportId",
-                principalTable: "Reports",
-                principalColumn: "ReportId",
-                onDelete: ReferentialAction.Cascade);
-
-            migrationBuilder.AddForeignKey(
-                name: "FK_DownloadLinks_Reports_ReportId",
-                table: "DownloadLinks",
-                column: "ReportId",
-                principalTable: "Reports",
-                principalColumn: "ReportId",
-                onDelete: ReferentialAction.Cascade);
-
-            migrationBuilder.AddForeignKey(
-                name: "FK_PathologyReports_Reports_ReportId",
-                table: "PathologyReports",
-                column: "ReportId",
-                principalTable: "Reports",
-                principalColumn: "ReportId",
-                onDelete: ReferentialAction.Cascade);
-
-            migrationBuilder.AddForeignKey(
-                name: "FK_RadiologyReports_Reports_ReportId",
-                table: "RadiologyReports",
-                column: "ReportId",
-                principalTable: "Reports",
-                principalColumn: "ReportId",
-                onDelete: ReferentialAction.Cascade);
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropForeignKey(
-                name: "FK_RadiologyStudies_Patients_PatientId",
-                table: "RadiologyStudies");
-
-            migrationBuilder.DropForeignKey(
-                name: "FK_Reports_Patients_PatientId",
-                table: "Reports");
-
-            migrationBuilder.DropForeignKey(
-                name: "FK_Visits_Patients_PatientId",
-                table: "Visits");
-
-            migrationBuilder.DropForeignKey(
-                name: "FK_RadiologyStudies_Users_AssignedTo",
-                table: "RadiologyStudies");
-
-            migrationBuilder.DropForeignKey(
-                name: "FK_RadiologyStudies_Users_CreatedBy",
-                table: "RadiologyStudies");
-
-            migrationBuilder.DropForeignKey(
-                name: "FK_Reports_Users_SignedByUserId",
-                table: "Reports");
-
-            migrationBuilder.DropForeignKey(
-                name: "FK_Visits_Referrers_ReferrerId",
-                table: "Visits");
-
-            migrationBuilder.DropForeignKey(
-                name: "FK_Orders_Visits_VisitId",
-                table: "Orders");
-
-            migrationBuilder.DropForeignKey(
-                name: "FK_RadiologyStudies_Visits_VisitId",
-                table: "RadiologyStudies");
-
-            migrationBuilder.DropForeignKey(
-                name: "FK_Reports_Visits_VisitId",
-                table: "Reports");
-
-            migrationBuilder.DropForeignKey(
-                name: "FK_RadiologyReports_Reports_ReportId",
-                table: "RadiologyReports");
+            migrationBuilder.DropTable(
+                name: "AccessionCounters");
 
             migrationBuilder.DropTable(
                 name: "Appointments");
@@ -1857,13 +2709,34 @@ namespace SynOS.Data.Migrations
                 name: "DeltaCheckEvents");
 
             migrationBuilder.DropTable(
+                name: "DeptScopePolicies");
+
+            migrationBuilder.DropTable(
                 name: "DownloadLinks");
 
             migrationBuilder.DropTable(
                 name: "EditLocks");
 
             migrationBuilder.DropTable(
+                name: "IMS_StockMovements");
+
+            migrationBuilder.DropTable(
+                name: "IMS_TestConsumableMaps");
+
+            migrationBuilder.DropTable(
+                name: "IMS_TestTubeMaps");
+
+            migrationBuilder.DropTable(
+                name: "LabAnalyzerResultInbox");
+
+            migrationBuilder.DropTable(
+                name: "LabAnalyzerTestMappings");
+
+            migrationBuilder.DropTable(
                 name: "NotificationQueues");
+
+            migrationBuilder.DropTable(
+                name: "PacsInstances");
 
             migrationBuilder.DropTable(
                 name: "PartialPayments");
@@ -1884,7 +2757,16 @@ namespace SynOS.Data.Migrations
                 name: "Payments");
 
             migrationBuilder.DropTable(
+                name: "PriceConfigs");
+
+            migrationBuilder.DropTable(
                 name: "RadiologyImages");
+
+            migrationBuilder.DropTable(
+                name: "RadiologyReports");
+
+            migrationBuilder.DropTable(
+                name: "ReferenceRanges");
 
             migrationBuilder.DropTable(
                 name: "RefreshTokens");
@@ -1902,6 +2784,9 @@ namespace SynOS.Data.Migrations
                 name: "ReportVersions");
 
             migrationBuilder.DropTable(
+                name: "ResultChangeAudits");
+
+            migrationBuilder.DropTable(
                 name: "ResultFlags");
 
             migrationBuilder.DropTable(
@@ -1909,6 +2794,9 @@ namespace SynOS.Data.Migrations
 
             migrationBuilder.DropTable(
                 name: "SampleRejections");
+
+            migrationBuilder.DropTable(
+                name: "TestDefinitions");
 
             migrationBuilder.DropTable(
                 name: "TokenCounters");
@@ -1929,7 +2817,22 @@ namespace SynOS.Data.Migrations
                 name: "DeliveryLogs");
 
             migrationBuilder.DropTable(
+                name: "IMS_ConsumableLots");
+
+            migrationBuilder.DropTable(
+                name: "IMS_TubeLots");
+
+            migrationBuilder.DropTable(
+                name: "LabAnalyzers");
+
+            migrationBuilder.DropTable(
+                name: "PacsSeries");
+
+            migrationBuilder.DropTable(
                 name: "Invoices");
+
+            migrationBuilder.DropTable(
+                name: "Parameters");
 
             migrationBuilder.DropTable(
                 name: "Samples");
@@ -1941,31 +2844,46 @@ namespace SynOS.Data.Migrations
                 name: "Results");
 
             migrationBuilder.DropTable(
-                name: "Patients");
-
-            migrationBuilder.DropTable(
-                name: "Users");
-
-            migrationBuilder.DropTable(
-                name: "Referrers");
-
-            migrationBuilder.DropTable(
-                name: "Visits");
-
-            migrationBuilder.DropTable(
                 name: "Reports");
 
             migrationBuilder.DropTable(
-                name: "RadiologyReports");
+                name: "IMS_Consumables");
+
+            migrationBuilder.DropTable(
+                name: "IMS_POItems");
 
             migrationBuilder.DropTable(
                 name: "RadiologyStudies");
 
             migrationBuilder.DropTable(
+                name: "IMS_PurchaseOrders");
+
+            migrationBuilder.DropTable(
+                name: "IMS_TubeMasters");
+
+            migrationBuilder.DropTable(
                 name: "Orders");
 
             migrationBuilder.DropTable(
-                name: "TestDefinitions");
+                name: "Users");
+
+            migrationBuilder.DropTable(
+                name: "IMS_Suppliers");
+
+            migrationBuilder.DropTable(
+                name: "Tests");
+
+            migrationBuilder.DropTable(
+                name: "Visits");
+
+            migrationBuilder.DropTable(
+                name: "Branches");
+
+            migrationBuilder.DropTable(
+                name: "Patients");
+
+            migrationBuilder.DropTable(
+                name: "Referrers");
         }
     }
 }
