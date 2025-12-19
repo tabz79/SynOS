@@ -19,18 +19,27 @@ namespace SynOS.Services
             _context = context;
         }
 
+        private IQueryable<ImsStockMovement> GetBaseQuery()
+        {
+            return _context.ImsStockMovements
+                .Include(m => m.Consumable) // Needed for ConsumableName, ConsumableCategory
+                .Include(m => m.Tube)       // Needed for legacy TubeName
+                .Include(m => m.ConsumableLot) // Needed for ConsumableLot.CostPerUnit
+                .Include(m => m.TubeLot);      // Needed for TubeLot.CostPerUnit
+        }
+
         public async Task<IEnumerable<WastageMovementDto>> GetExpiryLossAsync()
         {
-            return await _context.ImsStockMovements
+            return await GetBaseQuery()
                 .Where(m => m.MovementType == StockMovementType.Expiry)
                 .Select(m => new WastageMovementDto
                 {
                     MovementId = m.MovementId,
                     ConsumableId = m.ConsumableId,
-                    ConsumableName = m.Consumable != null ? m.Consumable.Name : (m.Tube != null ? m.Tube.Name : "N/A"),
-                    ConsumableCategory = m.Consumable != null ? m.Consumable.Category : ConsumableCategory.Pathology, // Default for legacy tubes
+                    ConsumableName = m.Consumable != null ? m.Consumable.Name : (m.Tube != null ? m.Tube.Name : null),
+                    ConsumableCategory = m.Consumable != null ? (ConsumableCategory?)m.Consumable.Category : null,
                     Quantity = m.Quantity,
-                    CostPerUnit = m.ConsumableLot != null ? m.ConsumableLot.CostPerUnit : (m.TubeLot != null ? m.TubeLot.CostPerUnit : 0),
+                    CostPerUnit = m.ConsumableLot != null ? m.ConsumableLot.CostPerUnit : (m.TubeLot != null ? m.TubeLot.CostPerUnit : null),
                     MovementType = m.MovementType,
                     ReasonCode = m.ReasonCode,
                     MovedAt = m.MovedAt
@@ -40,16 +49,16 @@ namespace SynOS.Services
 
         public async Task<IEnumerable<WastageMovementDto>> GetOperationalWastageAsync()
         {
-            return await _context.ImsStockMovements
+            return await GetBaseQuery()
                 .Where(m => m.MovementType == StockMovementType.Wastage)
                 .Select(m => new WastageMovementDto
                 {
                     MovementId = m.MovementId,
                     ConsumableId = m.ConsumableId,
-                    ConsumableName = m.Consumable != null ? m.Consumable.Name : (m.Tube != null ? m.Tube.Name : "N/A"),
-                    ConsumableCategory = m.Consumable != null ? m.Consumable.Category : ConsumableCategory.Pathology,
+                    ConsumableName = m.Consumable != null ? m.Consumable.Name : (m.Tube != null ? m.Tube.Name : null),
+                    ConsumableCategory = m.Consumable != null ? (ConsumableCategory?)m.Consumable.Category : null,
                     Quantity = m.Quantity,
-                    CostPerUnit = m.ConsumableLot != null ? m.ConsumableLot.CostPerUnit : (m.TubeLot != null ? m.TubeLot.CostPerUnit : 0),
+                    CostPerUnit = m.ConsumableLot != null ? m.ConsumableLot.CostPerUnit : (m.TubeLot != null ? m.TubeLot.CostPerUnit : null),
                     MovementType = m.MovementType,
                     ReasonCode = m.ReasonCode,
                     MovedAt = m.MovedAt
@@ -59,16 +68,16 @@ namespace SynOS.Services
         
         public async Task<IEnumerable<WastageMovementDto>> GetCalibrationCostAsync()
         {
-            return await _context.ImsStockMovements
+            return await GetBaseQuery()
                 .Where(m => m.MovementType == StockMovementType.Calibration)
                 .Select(m => new WastageMovementDto
                 {
                     MovementId = m.MovementId,
                     ConsumableId = m.ConsumableId,
-                    ConsumableName = m.Consumable != null ? m.Consumable.Name : (m.Tube != null ? m.Tube.Name : "N/A"),
-                    ConsumableCategory = m.Consumable != null ? m.Consumable.Category : ConsumableCategory.Pathology,
+                    ConsumableName = m.Consumable != null ? m.Consumable.Name : (m.Tube != null ? m.Tube.Name : null),
+                    ConsumableCategory = m.Consumable != null ? (ConsumableCategory?)m.Consumable.Category : null,
                     Quantity = m.Quantity,
-                    CostPerUnit = m.ConsumableLot != null ? m.ConsumableLot.CostPerUnit : (m.TubeLot != null ? m.TubeLot.CostPerUnit : 0),
+                    CostPerUnit = m.ConsumableLot != null ? m.ConsumableLot.CostPerUnit : (m.TubeLot != null ? m.TubeLot.CostPerUnit : null),
                     MovementType = m.MovementType,
                     ReasonCode = m.ReasonCode,
                     MovedAt = m.MovedAt
@@ -78,16 +87,16 @@ namespace SynOS.Services
 
         public async Task<IEnumerable<WastageMovementDto>> GetUnexplainedLossAsync()
         {
-            return await _context.ImsStockMovements
+            return await GetBaseQuery()
                 .Where(m => m.MovementType == StockMovementType.Adjustment || m.ReasonCode == WastageReasonCode.Other || m.ReferenceId == null)
                 .Select(m => new WastageMovementDto
                 {
                     MovementId = m.MovementId,
                     ConsumableId = m.ConsumableId,
-                    ConsumableName = m.Consumable != null ? m.Consumable.Name : (m.Tube != null ? m.Tube.Name : "N/A"),
-                    ConsumableCategory = m.Consumable != null ? m.Consumable.Category : ConsumableCategory.Pathology,
+                    ConsumableName = m.Consumable != null ? m.Consumable.Name : (m.Tube != null ? m.Tube.Name : null),
+                    ConsumableCategory = m.Consumable != null ? (ConsumableCategory?)m.Consumable.Category : null,
                     Quantity = m.Quantity,
-                    CostPerUnit = m.ConsumableLot != null ? m.ConsumableLot.CostPerUnit : (m.TubeLot != null ? m.TubeLot.CostPerUnit : 0),
+                    CostPerUnit = m.ConsumableLot != null ? m.ConsumableLot.CostPerUnit : (m.TubeLot != null ? m.TubeLot.CostPerUnit : null),
                     MovementType = m.MovementType,
                     ReasonCode = m.ReasonCode,
                     MovedAt = m.MovedAt

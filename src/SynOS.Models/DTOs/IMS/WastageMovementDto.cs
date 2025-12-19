@@ -8,7 +8,7 @@ namespace SynOS.Models.DTOs.IMS
         public Guid MovementId { get; set; }
         public Guid? ConsumableId { get; set; }
         public string ConsumableName { get; set; }
-        public ConsumableCategory ConsumableCategory { get; set; }
+        public ConsumableCategory? ConsumableCategory { get; set; }
         public int Quantity { get; set; }
         public decimal? CostPerUnit { get; set; }
         public StockMovementType MovementType { get; set; }

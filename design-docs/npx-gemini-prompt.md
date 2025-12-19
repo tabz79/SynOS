@@ -1,3 +1,8 @@
+
+## 1️⃣ GEMINI PATCH PROMPT — DAY 16.4D-PATCH (SAFE & SURGICAL)
+
+You can paste this **as-is** into Gemini.
+
 ---
 
 ### 🔹 GEMINI PROMPT — DAY 16.4D-PATCH
@@ -117,9 +122,5 @@ Do NOT:
 This is a **semantic correction only**.
 
 Stop after patch and confirm build success.
-
----
-
-That’s the patch. It’s intentionally boring — that’s good.
 
 ---
