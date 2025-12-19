@@ -50,3 +50,20 @@
 2025-12-18 14:04:40.153 +05:30 [INF] Analyzer TCP Listener Service stopping...
 2025-12-18 14:04:40.158 +05:30 [INF] Analyzer TCP Listener Service stopped.
 2025-12-18 14:04:40.169 +05:30 [INF] Notification Worker Service stopping gracefully.
+2025-12-18 14:06:35.199 +05:30 [INF] Notification Worker Service running.
+2025-12-18 14:06:35.466 +05:30 [INF] ExpiredLockCleanupService is starting.
+2025-12-18 14:06:35.610 +05:30 [INF] Analyzer TCP Listener Service starting...
+2025-12-18 14:06:35.616 +05:30 [WRN] No analyzer TCP listeners configured in appsettings.json.
+2025-12-18 15:02:29.775 +05:30 [WRN] Failed to determine the https port for redirect.
+2025-12-18 15:06:39.180 +05:30 [INF] Recorded wastage of 2 from TubeLot LOT-EDTA-001. Reason: "Contaminated"
+2025-12-18 15:26:00.580 +05:30 [INF] Analyzer TCP Listener Service stopping...
+2025-12-18 15:26:00.864 +05:30 [INF] Analyzer TCP Listener Service stopped.
+2025-12-18 15:26:01.077 +05:30 [INF] Notification Worker Service stopping gracefully.
+2025-12-18 16:43:28.253 +05:30 [INF] Notification Worker Service running.
+2025-12-18 16:43:28.448 +05:30 [INF] ExpiredLockCleanupService is starting.
+2025-12-18 16:43:28.561 +05:30 [INF] Analyzer TCP Listener Service starting...
+2025-12-18 16:43:28.566 +05:30 [WRN] No analyzer TCP listeners configured in appsettings.json.
+2025-12-18 16:43:48.450 +05:30 [WRN] Failed to determine the https port for redirect.
+2025-12-18 17:17:20.856 +05:30 [INF] Analyzer TCP Listener Service stopping...
+2025-12-18 17:17:20.862 +05:30 [INF] Analyzer TCP Listener Service stopped.
+2025-12-18 17:17:20.870 +05:30 [INF] Notification Worker Service stopping gracefully.

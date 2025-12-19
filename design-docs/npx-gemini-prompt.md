@@ -1,120 +1,126 @@
-# 🔹 GEMINI PROMPT — DAY 16.4C-BRIDGE PATCH
 
-## Legacy TubeLot ↔ ConsumableLot Wastage Bridge (Minimal Fix)
+## 1️⃣ GEMINI PATCH PROMPT — DAY 16.4D-PATCH (SAFE & SURGICAL)
+
+You can paste this **as-is** into Gemini.
+
+---
+
+### 🔹 GEMINI PROMPT — DAY 16.4D-PATCH
+
+## Fix Semantic Violations in Wastage Summary (READ-ONLY PATCH)
 
 ### CONTEXT
 
-Manual wastage endpoint (`POST /api/v1/ims/stock/wastage`) currently fails for **legacy TubeLots**.
+Day 16.4D wastage summary endpoint is **functionally correct**, but has **semantic violations** that must be fixed **without refactor**.
 
-Observed behavior:
+Current behavior issues:
 
-* `GET /api/v1/ims/stock/lots` returns TubeLots correctly
-* `POST /api/v1/ims/stock/wastage` returns **404 Lot not found** for those same lotIds
+* `totalCost = 0` is returned even when cost is unknown
+* `ConsumableCategory` is inferred for legacy `ImsTubeLot`
+* Legacy TubeLots are implicitly treated as Consumables
 
-Root cause:
-
-* Wastage logic only queries **IMS_ConsumableLot**
-* Legacy stock exists in **IMS_TubeLot**
-
-This patch is to **bridge wastage support** for legacy TubeLots.
+These violate **no-inference / no-assumption** rules.
 
 ---
 
-## 🎯 GOAL
+### 🎯 GOAL
 
-Allow **manual wastage** to work for:
-
-* Existing **IMS_TubeLot** (legacy)
-* New **IMS_ConsumableLot** (future)
-
-WITHOUT:
-
-* Schema changes
-* Migrations
-* Refactors
-* Breaking legacy flows
+Correct **semantic meaning** of the wastage summary output
+**without changing behavior, schema, or analytics scope**.
 
 ---
 
-## 🔒 HARD GUARDRAILS
+### 🔒 HARD GUARDRAILS
 
-* ❌ No database schema changes
-* ❌ No migrations
-* ❌ No service signature changes
-* ❌ No analytics
-* ❌ No refactors outside wastage path
-* ✅ Additive logic only
-* ✅ Legacy behavior preserved
+* READ-ONLY
+* NO new migrations
+* NO new tables
+* NO business logic
+* NO analytics expansion
+* Do NOT touch:
 
----
-
-## ✅ REQUIRED BEHAVIOR
-
-When handling `POST /api/v1/ims/stock/wastage`:
-
-### Resolution logic (mandatory order)
-
-1. Attempt to resolve `lotId` as **IMS_ConsumableLot**
-2. If not found, attempt to resolve as **IMS_TubeLot**
-3. If neither exists → return 404
+  * Stock movement recording
+  * Quantity math
+  * Existing controllers outside wastage summary
 
 ---
 
-## ✅ WASTAGE APPLICATION RULES
+### 1️⃣ COST HANDLING FIX
 
-### If lot is `IMS_ConsumableLot`:
+**Rule:**
 
-* Decrement `CurrentQuantity`
-* Create `IMS_StockMovement`:
+If cost **cannot be derived from the lot**, then:
 
-  * MovementType = WASTAGE
-  * ConsumableId populated
-  * ConsumableLotId populated
-  * TubeId / TubeLotId = null
+* `totalCost` MUST be:
 
-### If lot is `IMS_TubeLot`:
+  * `null`
+    **NOT** `0`
 
-* Decrement `CurrentQuantity`
-* Create `IMS_StockMovement`:
+`0` implies “known zero”, which is false.
 
-  * MovementType = WASTAGE
-  * TubeId populated
-  * TubeLotId populated
-  * ConsumableId / ConsumableLotId = null
+Apply this rule for:
 
-ReasonCode and Quantity must be recorded in both cases.
+* Legacy `ImsTubeLot`
+* Any movement without `CostPerUnit`
 
 ---
 
-## 🧠 IMPORTANT SEMANTICS
+### 2️⃣ CATEGORY & ID INFERENCE FIX
 
-* No assumption that TubeLot == ConsumableLot
-* No cross-population of IDs
-* No inference or conversion
-* Just record **facts**
+**Rule:**
+
+For **legacy TubeLots**:
+
+* Do NOT infer:
+
+  * `ConsumableCategory`
+  * `ConsumableId`
+
+Instead:
+
+* `ConsumableId = null`
+* `ConsumableCategory = null`
+* `ConsumableName` may be populated from TubeMaster **explicitly**
+
+For **true ConsumableLots**:
+
+* Populate fields normally
 
 ---
 
-## 🛑 STOP CONDITION
+### 3️⃣ RESPONSE CONTRACT (IMPORTANT)
 
-Stop immediately after:
+The API response must represent **truth, not convenience**:
 
-* Legacy TubeLot wastage succeeds
-* Existing stock listing remains unchanged
-* Sample collection still consumes stock correctly
-* Build passes
-
-Do not continue with enhancements or cleanups.
+* `null` means unknown
+* Absence means not applicable
+* Never guess or map implicitly
 
 ---
 
-## 📌 FINAL NOTE
+### ✅ STOP CONDITION
 
-This is a **bridge**, not a migration.
+After patch:
 
-The consumable abstraction will fully absorb legacy paths later.
-Today’s goal is operational continuity.
+* Endpoint still returns 200
+* Quantities unchanged
+* No new data written
+* No assumptions encoded
+* Semantics match real-world facts
 
-Proceed with this patch now.
+---
+
+### ❗ FINAL WARNING
+
+Do NOT:
+
+* Merge TubeLots into Consumables
+* Add analytics logic
+* Add cost math
+* Add dashboards
+
+This is a **semantic correction only**.
+
+Stop after patch and confirm build success.
 
 ---

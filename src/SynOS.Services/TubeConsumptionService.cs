@@ -168,84 +168,133 @@ namespace SynOS.Services
                 .ToListAsync();
         }
 
-        public async Task RecordWastageAsync(WastageRequestDto dto, Guid userId)
-        {
-            ImsConsumableLot? consumableLot = null;
-            ImsTubeLot? tubeLot = null;
+                public async Task RecordWastageAsync(WastageRequestDto dto, Guid userId)
 
-            // Attempt to resolve as ImsConsumableLot first
-            consumableLot = await _context.ImsConsumableLots.FindAsync(dto.LotId);
-
-            if (consumableLot != null)
-            {
-                if (consumableLot.ConsumableId != dto.ConsumableId)
                 {
-                    throw new InvalidOperationException("Lot does not belong to the specified consumable.");
+
+                    // Attempt to resolve as ImsConsumableLot first
+
+                    var consumableLot = await _context.ImsConsumableLots.FindAsync(dto.LotId);
+
+                    if (consumableLot != null)
+
+                    {
+
+                        if (consumableLot.ConsumableId != dto.ConsumableId)
+
+                        {
+
+                            throw new InvalidOperationException("Lot does not belong to the specified consumable.");
+
+                        }
+
+                        if (consumableLot.Quantity < dto.Quantity)
+
+                        {
+
+                            throw new InvalidOperationException($"Cannot record wastage of {dto.Quantity} units. Only {consumableLot.Quantity} available in lot {consumableLot.BatchNumber}.");
+
+                        }
+
+                        consumableLot.Quantity -= dto.Quantity;
+
+        
+
+                        var movement = new ImsStockMovement
+
+                        {
+
+                            MovementId = Guid.NewGuid(),
+
+                            ConsumableId = consumableLot.ConsumableId,
+
+                            ConsumableLotId = consumableLot.LotId,
+
+                            Quantity = dto.Quantity,
+
+                            MovementType = StockMovementType.Wastage,
+
+                            ReferenceType = MovementReferenceType.Manual,
+
+                            ReasonCode = dto.ReasonCode,
+
+                            RecordedByUserId = userId,
+
+                            MovedAt = DateTimeOffset.UtcNow
+
+                        };
+
+                        await _context.ImsStockMovements.AddAsync(movement);
+
+                        _logger.LogInformation("Recorded wastage of {Quantity} from ConsumableLot {LotNumber}. Reason: {Reason}", dto.Quantity, consumableLot.BatchNumber, dto.ReasonCode);
+
+                    }
+
+                    else
+
+                    {
+
+                        // If not a ConsumableLot, attempt to resolve as a legacy ImsTubeLot
+
+                        var tubeLot = await _context.ImsTubeLots.FindAsync(dto.LotId);
+
+                        if (tubeLot == null)
+
+                        {
+
+                            throw new KeyNotFoundException($"Lot with ID '{dto.LotId}' not found in either ConsumableLots or legacy TubeLots.");
+
+                        }
+
+        
+
+                        if (tubeLot.CurrentQuantity < dto.Quantity)
+
+                        {
+
+                            throw new InvalidOperationException($"Cannot record wastage of {dto.Quantity} units. Only {tubeLot.CurrentQuantity} available in lot {tubeLot.LotNumber}.");
+
+                        }
+
+                        tubeLot.CurrentQuantity -= dto.Quantity;
+
+        
+
+                        var movement = new ImsStockMovement
+
+                        {
+
+                            MovementId = Guid.NewGuid(),
+
+                            TubeId = tubeLot.TubeId,
+
+                            TubeLotId = tubeLot.LotId,
+
+                            Quantity = dto.Quantity,
+
+                            MovementType = StockMovementType.Wastage,
+
+                            ReferenceType = MovementReferenceType.Manual,
+
+                            ReasonCode = dto.ReasonCode,
+
+                            RecordedByUserId = userId,
+
+                            MovedAt = DateTimeOffset.UtcNow
+
+                        };
+
+                        await _context.ImsStockMovements.AddAsync(movement);
+
+                        _logger.LogInformation("Recorded wastage of {Quantity} from legacy TubeLot {LotNumber}. Reason: {Reason}", dto.Quantity, tubeLot.LotNumber, dto.ReasonCode);
+
+                    }
+
+        
+
+                    await _context.SaveChangesAsync();
+
                 }
-
-                if (consumableLot.Quantity < dto.Quantity)
-                {
-                    throw new InvalidOperationException($"Cannot record wastage of {dto.Quantity} units. Only {consumableLot.Quantity} available in lot {consumableLot.BatchNumber}.");
-                }
-                consumableLot.Quantity -= dto.Quantity;
-
-                var movement = new ImsStockMovement
-                {
-                    MovementId = Guid.NewGuid(),
-                    ConsumableId = consumableLot.ConsumableId,
-                    ConsumableLotId = consumableLot.LotId,
-                    TubeId = null,
-                    TubeLotId = null,
-                    Quantity = dto.Quantity,
-                    MovementType = StockMovementType.Wastage,
-                    ReferenceType = MovementReferenceType.Manual,
-                    ReasonCode = dto.ReasonCode,
-                    RecordedByUserId = userId,
-                    MovedAt = DateTimeOffset.UtcNow
-                };
-                await _context.ImsStockMovements.AddAsync(movement);
-                await _context.SaveChangesAsync();
-                _logger.LogInformation("Recorded wastage of {Quantity} from ConsumableLot {LotNumber}. Reason: {Reason}", dto.Quantity, consumableLot.BatchNumber, dto.ReasonCode);
-            }
-            else
-            {
-                // If not a ConsumableLot, attempt to resolve as ImsTubeLot
-                tubeLot = await _context.ImsTubeLots.FindAsync(dto.LotId);
-
-                if (tubeLot == null)
-                {
-                    throw new KeyNotFoundException($"Lot with ID '{dto.LotId}' not found (neither ConsumableLot nor TubeLot).");
-                }
-                // For TubeLots, we don't have ConsumableId in dto to check, but we need TubeId from the lot itself
-                // For now, assume a TubeLot implies its own TubeId for consistency.
-                // The DTO contains ConsumableId, which won't match a TubeLot directly.
-                // I need to ensure the dto.ConsumableId is compatible with the tubeLot.TubeId or skip this check for legacy.
-
-                if (tubeLot.CurrentQuantity < dto.Quantity)
-                {
-                    throw new InvalidOperationException($"Cannot record wastage of {dto.Quantity} units. Only {tubeLot.CurrentQuantity} available in lot {tubeLot.LotNumber}.");
-                }
-                tubeLot.CurrentQuantity -= dto.Quantity;
-
-                var movement = new ImsStockMovement
-                {
-                    MovementId = Guid.NewGuid(),
-                    TubeId = tubeLot.TubeId,
-                    TubeLotId = tubeLot.LotId,
-                    ConsumableId = null, // This is a legacy tube-based flow
-                    ConsumableLotId = null,
-                    Quantity = dto.Quantity,
-                    MovementType = StockMovementType.Wastage,
-                    ReferenceType = MovementReferenceType.Manual,
-                    ReasonCode = dto.ReasonCode,
-                    RecordedByUserId = userId,
-                    MovedAt = DateTimeOffset.UtcNow
-                };
-                await _context.ImsStockMovements.AddAsync(movement);
-                await _context.SaveChangesAsync();
-                _logger.LogInformation("Recorded wastage of {Quantity} from TubeLot {LotNumber}. Reason: {Reason}", dto.Quantity, tubeLot.LotNumber, dto.ReasonCode);
-            }
-        }
 
         public async Task AddStockManualAsync(LotCreateDto lotDto, Guid userId)
         {
