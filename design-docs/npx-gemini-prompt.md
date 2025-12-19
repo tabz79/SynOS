@@ -1,126 +1,127 @@
+# 🔹 GEMINI PROMPT — **DAY 16.5C-1**
 
-## 1️⃣ GEMINI PATCH PROMPT — DAY 16.4D-PATCH (SAFE & SURGICAL)
-
-You can paste this **as-is** into Gemini.
-
----
-
-### 🔹 GEMINI PROMPT — DAY 16.4D-PATCH
-
-## Fix Semantic Violations in Wastage Summary (READ-ONLY PATCH)
-
-### CONTEXT
-
-Day 16.4D wastage summary endpoint is **functionally correct**, but has **semantic violations** that must be fixed **without refactor**.
-
-Current behavior issues:
-
-* `totalCost = 0` is returned even when cost is unknown
-* `ConsumableCategory` is inferred for legacy `ImsTubeLot`
-* Legacy TubeLots are implicitly treated as Consumables
-
-These violate **no-inference / no-assumption** rules.
+## Generic Inventory Identity + Usage Profile (FOUNDATION ONLY)
 
 ---
 
-### 🎯 GOAL
+## ⚠️ READ FIRST — NON-NEGOTIABLE
 
-Correct **semantic meaning** of the wastage summary output
-**without changing behavior, schema, or analytics scope**.
+This task builds **FOUNDATIONAL MODELS ONLY**.
 
----
+You MUST NOT:
 
-### 🔒 HARD GUARDRAILS
+* Touch stock movements
+* Touch lots
+* Touch cost
+* Touch billing
+* Touch analytics
+* Touch existing services
+* Touch existing controllers
 
-* READ-ONLY
-* NO new migrations
-* NO new tables
-* NO business logic
-* NO analytics expansion
-* Do NOT touch:
-
-  * Stock movement recording
-  * Quantity math
-  * Existing controllers outside wastage summary
+If you do → **STOP AND REPORT VIOLATION**
 
 ---
 
-### 1️⃣ COST HANDLING FIX
+## 🎯 GOAL
 
-**Rule:**
+Allow SynOS to **identify ANY inventory item** and let admins define **how it behaves**, without affecting operations yet.
 
-If cost **cannot be derived from the lot**, then:
+This applies to:
 
-* `totalCost` MUST be:
-
-  * `null`
-    **NOT** `0`
-
-`0` implies “known zero”, which is false.
-
-Apply this rule for:
-
-* Legacy `ImsTubeLot`
-* Any movement without `CostPerUnit`
+* Pathology
+* Radiology
+* CT / MRI / XRAY
+* Any future department
 
 ---
 
-### 2️⃣ CATEGORY & ID INFERENCE FIX
+## 🧠 CORE PRINCIPLE (DO NOT VIOLATE)
 
-**Rule:**
+**Identity ≠ Behavior**
 
-For **legacy TubeLots**:
-
-* Do NOT infer:
-
-  * `ConsumableCategory`
-  * `ConsumableId`
-
-Instead:
-
-* `ConsumableId = null`
-* `ConsumableCategory = null`
-* `ConsumableName` may be populated from TubeMaster **explicitly**
-
-For **true ConsumableLots**:
-
-* Populate fields normally
+Inventory identity and usage behavior MUST be separate entities.
 
 ---
 
-### 3️⃣ RESPONSE CONTRACT (IMPORTANT)
+## 🔒 HARD GUARDRAILS
 
-The API response must represent **truth, not convenience**:
-
-* `null` means unknown
-* Absence means not applicable
-* Never guess or map implicitly
-
----
-
-### ✅ STOP CONDITION
-
-After patch:
-
-* Endpoint still returns 200
-* Quantities unchanged
-* No new data written
-* No assumptions encoded
-* Semantics match real-world facts
+* Backend only
+* Additive schema only
+* No refactors
+* No logic execution
+* No deductions
+* No inference
 
 ---
 
-### ❗ FINAL WARNING
+## 1️⃣ GENERIC INVENTORY IDENTITY
 
-Do NOT:
+Create a generic inventory identity entity.
 
-* Merge TubeLots into Consumables
-* Add analytics logic
-* Add cost math
-* Add dashboards
+### `IMS_InventoryItem`
 
-This is a **semantic correction only**.
+Fields:
 
-Stop after patch and confirm build success.
+* ItemId (PK)
+* Code
+* Name
+* Category (string, open-ended)
+* BaseUnitOfMeasure (string)
+* IsActive
+* CreatedAt
+
+Rules:
+
+* Represents **what the item is**
+* No medical logic
+* No consumption logic
+* No cost logic
 
 ---
+
+## 2️⃣ INVENTORY USAGE PROFILE (BEHAVIOR CONFIG)
+
+Create a **separate** admin-defined behavior entity.
+
+### `IMS_InventoryUsageProfile`
+
+One-to-one with InventoryItem.
+
+Fields:
+
+* ItemId (FK)
+* ItemType (string or enum: Reagent, Tube, Contrast, Film, EquipmentConsumable, Other)
+* ConsumptionBasis (enum: PerTest, PerSample, PerStudy, ManualOnly)
+* DefaultQuantityPerEvent
+* QuantityUnit
+* AllowsFractionalConsumption (bool)
+* RequiresLotTracking (bool)
+* AffectsTestCost (bool)
+
+Rules:
+
+* Configuration only
+* No execution
+* No deduction
+* No validation logic
+
+---
+
+## 3️⃣ ADMIN EXTENSIBILITY (REQUIRED)
+
+Admins must be able to:
+
+* Add ANY inventory item
+* Define its usage profile
+* Change behavior without code changes
+
+⚠️ No API controllers yet — models and DbContext only.
+
+---
+
+## 🛑 STOP CONDITION (16.5C-1)
+
+You MUST stop when:
+✅ Inventory items can be defined
+✅ Usage behavior is configurable
+✅ Nothing else changes

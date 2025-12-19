@@ -33,5 +33,8 @@ namespace SynOS.Models.Entities.IMS
         
         // For one-way data migration traceability
         public Guid? LegacyTubeId { get; set; }
+
+        // Navigation property to the usage profile
+        public virtual ImsInventoryUsageProfile? UsageProfile { get; set; }
     }
 }

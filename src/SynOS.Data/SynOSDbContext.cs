@@ -108,6 +108,7 @@ namespace SynOS.Data
         public DbSet<ImsConsumable> ImsConsumables { get; set; } = null!;
         public DbSet<ImsConsumableLot> ImsConsumableLots { get; set; } = null!;
         public DbSet<ImsTestConsumableMap> ImsTestConsumableMaps { get; set; } = null!;
+        public DbSet<ImsInventoryUsageProfile> ImsInventoryUsageProfiles { get; set; } = null!;
 
         #endregion
 
@@ -667,6 +668,11 @@ namespace SynOS.Data
                 entity.HasOne(e => e.Test).WithMany().HasForeignKey(e => e.TestId).OnDelete(DeleteBehavior.Restrict);
                 entity.HasOne(e => e.Consumable).WithMany().HasForeignKey(e => e.ConsumableId).OnDelete(DeleteBehavior.Restrict);
             });
+
+            modelBuilder.Entity<ImsConsumable>()
+                .HasOne(c => c.UsageProfile)
+                .WithOne(p => p.Consumable)
+                .HasForeignKey<ImsInventoryUsageProfile>(p => p.ConsumableId);
 
             #endregion
         }
