@@ -19,6 +19,7 @@ using System.IdentityModel.Tokens.Jwt;
 using Microsoft.OpenApi.Models; // Added for Swagger JWT configuration
 using SynOS.Services.Storage;
 using SynOS.Services.Stubs;
+// using SynOS.Services.CostAttribution; // 🔒 TEMPORARILY DISABLED (engine not live yet)
 using SynOS.Models.Configuration;
 using SynOS.Services.Security;
 using SynOS.Services.AnalyzerIntegration; // New
@@ -139,6 +140,11 @@ builder.Services.AddScoped<ISampleService, SampleService>(provider =>
 builder.Services.AddScoped<ITubeConsumptionService, TubeConsumptionService>();
 builder.Services.AddScoped<IPurchasingService, PurchasingService>();
 builder.Services.AddScoped<IIMSWastageInsightService, IMSWastageInsightService>();
+
+// 🔒 Cost Attribution services intentionally NOT registered yet
+// builder.Services.AddScoped<ICostAttributionPolicyResolver, CostAttributionPolicyResolver>();
+// builder.Services.AddScoped<ICostAttributionUsageFactWriter, CostAttributionUsageFactWriter>();
+
 builder.Services.AddScoped<IInvoiceService, InvoiceService>();
 builder.Services.AddScoped<IReceptionFlowService, ReceptionFlowService>(provider =>
     new ReceptionFlowService(
@@ -164,24 +170,24 @@ builder.Services.AddScoped<IRadiologyService, RadiologyService>(provider =>
         provider.GetRequiredService<IReportTemplateService>(),
         provider.GetRequiredService<IUserService>(),
         provider.GetRequiredService<IFileStorageService>()
-    )); // Register new service
+    ));
 builder.Services.AddScoped<IPacsService, PacsService>();
 builder.Services.AddScoped<IRadiologyAccessGuard, RadiologyAccessGuard>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IAccessionService, AccessionService>();
-builder.Services.AddScoped<ILabAnalyzerService, LabAnalyzerService>(); // New Lab Analyzer Service
-builder.Services.AddScoped<IAnalyzerResultMatcherService, AnalyzerResultMatcherService>(); // New Analyzer Result Matcher Service
-builder.Services.AddScoped<IAnalyzerResultImportService, AnalyzerResultImportService>(); // New Analyzer Result Import Service
-builder.Services.AddScoped<ITestMasterService, TestMasterService>(); // New Test Master Service
+builder.Services.AddScoped<ILabAnalyzerService, LabAnalyzerService>();
+builder.Services.AddScoped<IAnalyzerResultMatcherService, AnalyzerResultMatcherService>();
+builder.Services.AddScoped<IAnalyzerResultImportService, AnalyzerResultImportService>();
+builder.Services.AddScoped<ITestMasterService, TestMasterService>();
 builder.Services.AddScoped<IAuditService, AuditService>(provider =>
     new AuditService(
         provider.GetRequiredService<SynOSDbContext>(),
         provider.GetRequiredService<ILogger<AuditService>>()
-    )); // New Audit Service
-builder.Services.AddScoped<ICsvService, CsvService>(); // New CSV Service
-builder.Services.AddScoped<ITestsCacheService, TestsCacheService>(); // New Tests Cache Service
+    ));
+builder.Services.AddScoped<ICsvService, CsvService>();
+builder.Services.AddScoped<ITestsCacheService, TestsCacheService>();
 builder.Services.AddSingleton<IFileStorageService, LocalStorageService>();
-builder.Services.AddMemoryCache(); // Added
+builder.Services.AddMemoryCache();
 
 // Register AnalyzerIntegration services
 builder.Services.AddTransient<AstmProtocolParser>();
@@ -190,7 +196,7 @@ builder.Services.AddScoped<IAnalyzerProtocolParserFactory, AnalyzerProtocolParse
 
 // Configure settings
 builder.Services.Configure<PacsSettings>(builder.Configuration.GetSection("Pacs"));
-builder.Services.Configure<AnalyzerIntegrationSettings>(builder.Configuration.GetSection("AnalyzerIntegration")); // New
+builder.Services.Configure<AnalyzerIntegrationSettings>(builder.Configuration.GetSection("AnalyzerIntegration"));
 
 // Register Delivery Module Services
 builder.Services.AddScoped<IDeliveryService, DeliveryService>();
@@ -201,7 +207,7 @@ builder.Services.AddScoped<IPrintService, StubPrintService>();
 
 builder.Services.AddHostedService<NotificationWorkerService>();
 builder.Services.AddHostedService<ExpiredLockCleanupService>();
-builder.Services.AddHostedService<AnalyzerTcpListenerService>(); // New TCP Listener Hosted Service
+builder.Services.AddHostedService<AnalyzerTcpListenerService>();
 
 // Add SignalR
 builder.Services.AddSignalR();
@@ -215,10 +221,10 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowFrontend",
         policy =>
         {
-            policy.WithOrigins("http://localhost:5173") // Frontend URL
+            policy.WithOrigins("http://localhost:5173")
                   .AllowAnyHeader()
                   .AllowAnyMethod()
-                  .AllowCredentials(); // Required for SignalR
+                  .AllowCredentials();
         });
 });
 
@@ -240,17 +246,14 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
-// ✅ Always enable Swagger (for now, this is fine for dev/testing)
+// Always enable Swagger (dev/testing)
 app.UseSwagger();
 app.UseSwaggerUI();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    // Dev-only middleware to bypass auth via header
     app.UseMiddleware<DevHeaderAuthenticationMiddleware>();
 
-    // Dev-only endpoint to generate a JWT for testing
     app.MapPost("/dev-login", (string? userId, string? name, string? roles) =>
     {
         var claims = new List<Claim>
@@ -289,20 +292,18 @@ if (!string.IsNullOrEmpty(fileStorageBasePath) && Directory.Exists(fileStorageBa
     app.UseStaticFiles(new StaticFileOptions
     {
         FileProvider = new Microsoft.Extensions.FileProviders.PhysicalFileProvider(fileStorageBasePath),
-        RequestPath = "/files" // This must match the PublicBaseUrl path segment
+        RequestPath = "/files"
     });
 }
 
-
-// Add ErrorHandlerMiddleware
 app.UseMiddleware<ErrorHandlerMiddleware>();
 
-app.UseCors("AllowFrontend"); // Use the CORS policy
+app.UseCors("AllowFrontend");
 
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-app.MapHub<SynOS.Api.Hubs.SampleHub>("/sampleHub"); // Map SampleHub
+app.MapHub<SynOS.Api.Hubs.SampleHub>("/sampleHub");
 
 app.Run();

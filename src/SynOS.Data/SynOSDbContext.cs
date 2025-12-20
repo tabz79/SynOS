@@ -5,6 +5,7 @@
 using Microsoft.EntityFrameworkCore;
 using SynOS.Models.Entities;
 using SynOS.Models.Entities.IMS;
+using SynOS.Models.Entities.CostAttribution;
 
 namespace SynOS.Data
 {
@@ -109,6 +110,13 @@ namespace SynOS.Data
         public DbSet<ImsConsumableLot> ImsConsumableLots { get; set; } = null!;
         public DbSet<ImsTestConsumableMap> ImsTestConsumableMaps { get; set; } = null!;
         public DbSet<ImsInventoryUsageProfile> ImsInventoryUsageProfiles { get; set; } = null!;
+        public DbSet<ImsInventoryLot> ImsInventoryLots { get; set; } = null!;
+        public DbSet<ImsInventoryItem> ImsInventoryItems { get; set; } = null!;
+
+        // Cost Attribution DbSets
+        public DbSet<SynOS.Models.Entities.CostAttribution.CostAttribution_UsagePolicy> CostAttribution_UsagePolicies { get; set; } = null!;
+        public DbSet<SynOS.Models.Entities.CostAttribution.CostAttribution_UsagePolicyVersion> CostAttribution_UsagePolicyVersions { get; set; } = null!;
+        public DbSet<SynOS.Models.Entities.CostAttribution.CostAttribution_UsageFact> CostAttribution_UsageFacts { get; set; } = null!;
 
         #endregion
 
@@ -673,6 +681,49 @@ namespace SynOS.Data
                 .HasOne(c => c.UsageProfile)
                 .WithOne(p => p.Consumable)
                 .HasForeignKey<ImsInventoryUsageProfile>(p => p.ConsumableId);
+
+            modelBuilder.Entity<ImsInventoryLot>(entity =>
+            {
+                entity.HasIndex(e => new { e.ItemId, e.BranchId, e.BatchNumber }).IsUnique();
+                entity.HasOne(e => e.Item).WithMany().HasForeignKey(e => e.ItemId).OnDelete(DeleteBehavior.Restrict).IsRequired(false);
+                entity.HasOne(e => e.Branch).WithMany().HasForeignKey(e => e.BranchId).OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<ImsInventoryItem>(entity =>
+            {
+                entity.ToTable("IMS_InventoryItems");
+                entity.HasIndex(e => e.ItemCode).IsUnique();
+            });
+
+            // Cost Attribution Configuration
+            modelBuilder.Entity<SynOS.Models.Entities.CostAttribution.CostAttribution_UsagePolicy>(entity =>
+            {
+                entity.ToTable("CostAttribution_UsagePolicies");
+                entity.HasIndex(e => new { e.TestId, e.InventoryItemId }).IsUnique();
+                entity.HasOne(e => e.Test).WithMany().HasForeignKey(e => e.TestId).OnDelete(DeleteBehavior.Restrict);
+                entity.HasOne(e => e.InventoryItem).WithMany().HasForeignKey(e => e.InventoryItemId).OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<SynOS.Models.Entities.CostAttribution.CostAttribution_UsagePolicyVersion>(entity =>
+            {
+                entity.ToTable("CostAttribution_UsagePolicyVersions");
+                entity.HasIndex(e => new { e.UsagePolicyId, e.BranchId, e.EffectiveFrom }).IsUnique();
+                entity.Property(e => e.Quantity).HasColumnType("decimal(18, 4)");
+                entity.Property(e => e.Unit).HasMaxLength(50);
+                entity.HasOne(e => e.UsagePolicy).WithMany().HasForeignKey(e => e.UsagePolicyId).OnDelete(DeleteBehavior.Cascade); // Cascade delete versions if policy deleted
+                entity.HasOne(e => e.Branch).WithMany().HasForeignKey(e => e.BranchId).OnDelete(DeleteBehavior.Restrict);
+                entity.HasOne(e => e.CreatedByUser).WithMany().HasForeignKey(e => e.CreatedByUserId).OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<SynOS.Models.Entities.CostAttribution.CostAttribution_UsageFact>(entity =>
+            {
+                entity.ToTable("CostAttribution_UsageFacts");
+                entity.HasIndex(e => new { e.SourceEventId, e.SourceEventType, e.InventoryItemId }).IsUnique();
+                entity.HasIndex(e => e.TestId);
+                entity.HasIndex(e => e.InventoryItemId);
+                entity.HasIndex(e => e.OccurredAt);
+                entity.Property(e => e.SourceEventType).HasConversion<string>().HasMaxLength(50);
+            });
 
             #endregion
         }

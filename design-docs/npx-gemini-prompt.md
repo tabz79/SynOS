@@ -1,127 +1,51 @@
-# 🔹 GEMINI PROMPT — **DAY 16.5C-1**
+IMPLEMENTATION 16.6 I-4 — Wire ONE Cost Attribution Flow
 
-## Generic Inventory Identity + Usage Profile (FOUNDATION ONLY)
+IMPORTANT CONTEXT (DO NOT IGNORE):
+- Program.cs was intentionally cleaned.
+- Cost Attribution services are NOT registered globally in DI.
+- This is deliberate. Do NOT re-add global DI registrations.
 
----
+Task:
+Wire a single, explicit end-to-end Cost Attribution flow for ONE operational event.
 
-## ⚠️ READ FIRST — NON-NEGOTIABLE
+Chosen Event:
+- TestExecutionCompletedForCosting
 
-This task builds **FOUNDATIONAL MODELS ONLY**.
+Scope:
+- WRITE REAL CODE
+- Wire ONLY this single event
+- Use existing:
+  - CostingTriggerEvent
+  - ICostAttributionPolicyResolver
+  - ICostAttributionUsageFactWriter
+- Do NOT generalize
+- Do NOT add additional events
+- Do NOT add background workers
+- Do NOT add global DI registrations in Program.cs
 
-You MUST NOT:
+Wiring Rules:
+- The wiring should occur in the SAME service that already handles
+  test execution completion (or the closest existing place).
+- Services may be resolved locally (scoped) where needed.
+- Flow must be explicit and readable.
 
-* Touch stock movements
-* Touch lots
-* Touch cost
-* Touch billing
-* Touch analytics
-* Touch existing services
-* Touch existing controllers
+End-to-End Flow:
+1. Test execution completes
+2. Emit TestExecutionCompletedForCosting event (in-process, not a bus)
+3. Resolve applicable UsagePolicyVersion
+4. Write exactly ONE UsageFact per policy
+5. Stop
 
-If you do → **STOP AND REPORT VIOLATION**
+Hard Constraints:
+- Do NOT read inventory stock
+- Do NOT calculate costs
+- Do NOT modify existing UsageFacts
+- Do NOT touch analytics
+- Do NOT touch Spend or Revenue engines
 
----
+Deliver:
+- Exact code changes (files + snippets)
+- Short explanation of the wiring flow
+- Confirmation that Program.cs remains unchanged
 
-## 🎯 GOAL
-
-Allow SynOS to **identify ANY inventory item** and let admins define **how it behaves**, without affecting operations yet.
-
-This applies to:
-
-* Pathology
-* Radiology
-* CT / MRI / XRAY
-* Any future department
-
----
-
-## 🧠 CORE PRINCIPLE (DO NOT VIOLATE)
-
-**Identity ≠ Behavior**
-
-Inventory identity and usage behavior MUST be separate entities.
-
----
-
-## 🔒 HARD GUARDRAILS
-
-* Backend only
-* Additive schema only
-* No refactors
-* No logic execution
-* No deductions
-* No inference
-
----
-
-## 1️⃣ GENERIC INVENTORY IDENTITY
-
-Create a generic inventory identity entity.
-
-### `IMS_InventoryItem`
-
-Fields:
-
-* ItemId (PK)
-* Code
-* Name
-* Category (string, open-ended)
-* BaseUnitOfMeasure (string)
-* IsActive
-* CreatedAt
-
-Rules:
-
-* Represents **what the item is**
-* No medical logic
-* No consumption logic
-* No cost logic
-
----
-
-## 2️⃣ INVENTORY USAGE PROFILE (BEHAVIOR CONFIG)
-
-Create a **separate** admin-defined behavior entity.
-
-### `IMS_InventoryUsageProfile`
-
-One-to-one with InventoryItem.
-
-Fields:
-
-* ItemId (FK)
-* ItemType (string or enum: Reagent, Tube, Contrast, Film, EquipmentConsumable, Other)
-* ConsumptionBasis (enum: PerTest, PerSample, PerStudy, ManualOnly)
-* DefaultQuantityPerEvent
-* QuantityUnit
-* AllowsFractionalConsumption (bool)
-* RequiresLotTracking (bool)
-* AffectsTestCost (bool)
-
-Rules:
-
-* Configuration only
-* No execution
-* No deduction
-* No validation logic
-
----
-
-## 3️⃣ ADMIN EXTENSIBILITY (REQUIRED)
-
-Admins must be able to:
-
-* Add ANY inventory item
-* Define its usage profile
-* Change behavior without code changes
-
-⚠️ No API controllers yet — models and DbContext only.
-
----
-
-## 🛑 STOP CONDITION (16.5C-1)
-
-You MUST stop when:
-✅ Inventory items can be defined
-✅ Usage behavior is configurable
-✅ Nothing else changes
+STOP after this single flow is wired.

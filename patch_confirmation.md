@@ -1,0 +1,1 @@
+16.5C-2 PATCH applied. InventoryLot now references InventoryItem. No other changes made.

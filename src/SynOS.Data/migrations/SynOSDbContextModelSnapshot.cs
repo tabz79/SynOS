@@ -188,6 +188,136 @@ namespace SynOS.Data.Migrations
                     b.ToTable("Branches", (string)null);
                 });
 
+            modelBuilder.Entity("SynOS.Models.Entities.CostAttribution.CostAttribution_UsageFact", b =>
+                {
+                    b.Property<Guid>("UsageFactId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("BranchId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("CorrectionReason")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<Guid?>("CorrectsUsageFactId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("InventoryItemId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("OccurredAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<decimal>("Quantity")
+                        .HasColumnType("decimal(18, 4)");
+
+                    b.Property<DateTimeOffset>("RecordedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("SourceEventId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("SourceEventType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<Guid>("TestId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Unit")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("UsageFactId");
+
+                    b.HasIndex("InventoryItemId");
+
+                    b.HasIndex("OccurredAt");
+
+                    b.HasIndex("TestId");
+
+                    b.HasIndex("SourceEventId", "SourceEventType", "InventoryItemId")
+                        .IsUnique();
+
+                    b.ToTable("CostAttribution_UsageFacts", (string)null);
+                });
+
+            modelBuilder.Entity("SynOS.Models.Entities.CostAttribution.CostAttribution_UsagePolicy", b =>
+                {
+                    b.Property<Guid>("UsagePolicyId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("InventoryItemId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<Guid>("TestId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("UsagePolicyId");
+
+                    b.HasIndex("InventoryItemId");
+
+                    b.HasIndex("TestId", "InventoryItemId")
+                        .IsUnique();
+
+                    b.ToTable("CostAttribution_UsagePolicies", (string)null);
+                });
+
+            modelBuilder.Entity("SynOS.Models.Entities.CostAttribution.CostAttribution_UsagePolicyVersion", b =>
+                {
+                    b.Property<Guid>("UsagePolicyVersionId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("BranchId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("CreatedByUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("EffectiveFrom")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset?>("EffectiveTo")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<decimal>("Quantity")
+                        .HasColumnType("decimal(18, 4)");
+
+                    b.Property<string>("Unit")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<Guid>("UsagePolicyId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("UsagePolicyVersionId");
+
+                    b.HasIndex("BranchId");
+
+                    b.HasIndex("CreatedByUserId");
+
+                    b.HasIndex("UsagePolicyId", "BranchId", "EffectiveFrom")
+                        .IsUnique();
+
+                    b.ToTable("CostAttribution_UsagePolicyVersions", (string)null);
+                });
+
             modelBuilder.Entity("SynOS.Models.Entities.CreditNote", b =>
                 {
                     b.Property<Guid>("CreditNoteId")
@@ -774,6 +904,76 @@ namespace SynOS.Data.Migrations
                     b.HasIndex("LegacyTubeLotId");
 
                     b.ToTable("IMS_ConsumableLots", (string)null);
+                });
+
+            modelBuilder.Entity("SynOS.Models.Entities.IMS.ImsInventoryItem", b =>
+                {
+                    b.Property<Guid>("ItemId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ItemCode")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.HasKey("ItemId");
+
+                    b.HasIndex("ItemCode")
+                        .IsUnique();
+
+                    b.ToTable("IMS_InventoryItems", (string)null);
+                });
+
+            modelBuilder.Entity("SynOS.Models.Entities.IMS.ImsInventoryLot", b =>
+                {
+                    b.Property<Guid>("LotId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("BatchNumber")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<Guid>("BranchId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("ContainerSize")
+                        .HasColumnType("decimal(18, 4)");
+
+                    b.Property<decimal>("CurrentQuantity")
+                        .HasColumnType("decimal(18, 4)");
+
+                    b.Property<DateTimeOffset?>("ExpiryDate")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<Guid?>("ItemId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("ReceivedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<decimal>("UnitCostSnapshot")
+                        .HasColumnType("decimal(18, 4)");
+
+                    b.HasKey("LotId");
+
+                    b.HasIndex("BranchId");
+
+                    b.HasIndex("ItemId", "BranchId", "BatchNumber")
+                        .IsUnique()
+                        .HasFilter("[ItemId] IS NOT NULL");
+
+                    b.ToTable("IMS_InventoryLots");
                 });
 
             modelBuilder.Entity("SynOS.Models.Entities.IMS.ImsInventoryUsageProfile", b =>
@@ -3085,6 +3285,52 @@ namespace SynOS.Data.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("SynOS.Models.Entities.CostAttribution.CostAttribution_UsagePolicy", b =>
+                {
+                    b.HasOne("SynOS.Models.Entities.IMS.ImsInventoryItem", "InventoryItem")
+                        .WithMany()
+                        .HasForeignKey("InventoryItemId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SynOS.Models.Entities.Test", "Test")
+                        .WithMany()
+                        .HasForeignKey("TestId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("InventoryItem");
+
+                    b.Navigation("Test");
+                });
+
+            modelBuilder.Entity("SynOS.Models.Entities.CostAttribution.CostAttribution_UsagePolicyVersion", b =>
+                {
+                    b.HasOne("SynOS.Models.Entities.Branch", "Branch")
+                        .WithMany()
+                        .HasForeignKey("BranchId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SynOS.Models.Entities.User", "CreatedByUser")
+                        .WithMany()
+                        .HasForeignKey("CreatedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SynOS.Models.Entities.CostAttribution.CostAttribution_UsagePolicy", "UsagePolicy")
+                        .WithMany()
+                        .HasForeignKey("UsagePolicyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Branch");
+
+                    b.Navigation("CreatedByUser");
+
+                    b.Navigation("UsagePolicy");
+                });
+
             modelBuilder.Entity("SynOS.Models.Entities.CreditNote", b =>
                 {
                     b.HasOne("SynOS.Models.Entities.Invoice", "Invoice")
@@ -3263,6 +3509,24 @@ namespace SynOS.Data.Migrations
                     b.Navigation("Branch");
 
                     b.Navigation("Consumable");
+                });
+
+            modelBuilder.Entity("SynOS.Models.Entities.IMS.ImsInventoryLot", b =>
+                {
+                    b.HasOne("SynOS.Models.Entities.Branch", "Branch")
+                        .WithMany()
+                        .HasForeignKey("BranchId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SynOS.Models.Entities.IMS.ImsInventoryItem", "Item")
+                        .WithMany()
+                        .HasForeignKey("ItemId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Branch");
+
+                    b.Navigation("Item");
                 });
 
             modelBuilder.Entity("SynOS.Models.Entities.IMS.ImsInventoryUsageProfile", b =>
