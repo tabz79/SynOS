@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.DependencyInjection; // Added for IServiceProvider
 using SynOS.Data;
 using SynOS.Models.DTOs;
 using SynOS.Models.Entities;
@@ -17,15 +18,18 @@ namespace SynOS.Services
         private readonly SynOSDbContext _context;
         private readonly ILogger<ResultService> _logger;
         private readonly ICriticalValueService _criticalValueService;
+        private readonly IServiceProvider _serviceProvider;
 
         public ResultService(
             SynOSDbContext context,
             ILogger<ResultService> logger,
-            ICriticalValueService criticalValueService)
+            ICriticalValueService criticalValueService,
+            IServiceProvider serviceProvider)
         {
             _context = context;
             _logger = logger;
             _criticalValueService = criticalValueService;
+            _serviceProvider = serviceProvider;
         }
 
         public async Task<IEnumerable<ResultDto>> GetResultsForOrderAsync(Guid orderId)
@@ -197,6 +201,72 @@ namespace SynOS.Services
             }
 
             await _context.SaveChangesAsync();
+
+            // --- BEGIN COST ATTRIBUTION WIRING (16.6 I-5 REFACTOR) ---
+            try
+            {
+                await OrchestrateCostAttributionForOrderAsync(orderId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Cost attribution failed for OrderId {OrderId}", orderId);
+                // Do not block the primary workflow if cost attribution fails.
+            }
+            // --- END COST ATTRIBUTION WIRING ---
+        }
+
+        private async Task OrchestrateCostAttributionForOrderAsync(Guid orderId)
+        {
+            using (var scope = _serviceProvider.CreateScope())
+            {
+                var policyResolver = scope.ServiceProvider.GetRequiredService<CostAttribution.ICostAttributionPolicyResolver>();
+                var factWriter = scope.ServiceProvider.GetRequiredService<CostAttribution.ICostAttributionUsageFactWriter>();
+                
+                var order = await _context.Orders
+                    .Include(o => o.Visit)
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(o => o.OrderId == orderId);
+
+                if (order?.Visit == null)
+                {
+                    _logger.LogWarning("Cost attribution skipped: Order or Visit not found for OrderId {OrderId}", orderId);
+                    return;
+                }
+
+                var policies = await _context.CostAttribution_UsagePolicies
+                    .AsNoTracking()
+                    .Where(p => p.TestId == order.TestId && p.IsActive)
+                    .ToListAsync();
+
+                if (!policies.Any())
+                {
+                    return; // No policies for this test
+                }
+
+                var triggerEvent = new Models.Events.CostAttribution.CostingTriggerEvent
+                {
+                    SourceEventId = orderId,
+                    SourceEventType = Models.Entities.CostAttribution.CostAttribution_SourceEventType.TestExecution,
+                    TestId = order.TestId,
+                    BranchId = order.Visit.BranchId ?? Guid.Empty,
+                    OccurredAt = DateTimeOffset.UtcNow
+                };
+
+                foreach (var policy in policies)
+                {
+                    var policyVersion = await policyResolver.ResolvePolicyVersionAsync(
+                        order.TestId,
+                        policy.InventoryItemId,
+                        triggerEvent.BranchId,
+                        triggerEvent.OccurredAt);
+
+                    if (policyVersion != null)
+                    {
+                        policyVersion.UsagePolicy = policy;
+                        await factWriter.WriteUsageFactAsync(policyVersion, triggerEvent);
+                    }
+                }
+            }
         }
 
         public async Task<IEnumerable<ResultDto>> GetPatientHistoryForParameterAsync(

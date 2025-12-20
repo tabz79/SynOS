@@ -1,547 +1,132 @@
-✦ Interface created. Now, to implement CostAttributionUsageFactWriter.cs. First, I'll define CostingTriggerEvent in its own file under a new directory,       
-  src/SynOS.Events/CostAttribution/.
+✦ Acknowledged. I will now proceed with the refactoring of ResultService.cs as planned.
+
+  First, I will modify the ResultService constructor to accept IServiceProvider. Then I will refactor the attribution logic into its own private method using 
+  scoped service resolution.
 ╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ ✓  Shell mkdir src/SynOS.Events/CostAttribution [current working directory D:\Projects\SynOS-Synthesized-Lab-Intelligence] (Creating the directory for th… │
+│ ✓  Edit src\SynOS.Services\ResultService.cs:         private readonly ILogg... =>         private readonly ILogg...                                        │
 │                                                                                                                                                            │
-│                                                                                                                                                            │
-│                                                                                                                                                            │
-│     Directory: D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Events                                                                             │
-│                                                                                                                                                            │
-│                                                                                                                                                            │
-│ Mode                 LastWriteTime         Length Name                                                                                                     │
-│ ----                 -------------         ------ ----                                                                                                     │
-│ d-----        20-12-2025  05:33 PM                CostAttribution                                                                                          │
+│ 17   private readonly SynOSDbContext _context;                                                                                                             │
+│ 18   private readonly ILogger<ResultService> _logger;                                                                                                      │
+│ 19   private readonly ICriticalValueService _criticalValueService;                                                                                         │
+│ 20 + private readonly IServiceProvider _serviceProvider;                                                                                                   │
+│ 21                                                                                                                                                         │
+│ 22   public ResultService(                                                                                                                                 │
+│ 23       SynOSDbContext context,                                                                                                                           │
+│ 24       ILogger<ResultService> logger,                                                                                                                    │
+│ 24 -     ICriticalValueService criticalValueService)                                                                                                       │
+│ 25 +     ICriticalValueService criticalValueService,                                                                                                       │
+│ 26 +     IServiceProvider serviceProvider)                                                                                                                 │
+│ 27   {                                                                                                                                                     │
+│ 28       _context = context;                                                                                                                               │
+│ 29       _logger = logger;                                                                                                                                 │
+│ 30       _criticalValueService = criticalValueService;                                                                                                     │
+│ 31 +     _serviceProvider = serviceProvider;                                                                                                               │
+│ 32   }                                                                                                                                                     │
+│ 33                                                                                                                                                         │
+│ 34   public async Task<IEnumerable<ResultDto>> GetResultsForOrderAsync(Guid orderId)                                                                       │
 ╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-✦ Directory created. Now creating CostingTriggerEvent.cs.
+✦ Okay, plan understood. I'm refactoring ResultService.cs now: modifying SubmitForVerificationAsync to call a new private orchestrator method for attribution 
+  logic, which I'll also create using IServiceProvider.
 ╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ ✓  WriteFile Writing to src\...\CostingTriggerEvent.cs                                                                                                     │
+│ ✓  Edit src\SynOS.Services\ResultService.cs:             // --- BEGIN COST ... =>             // --- BEGIN COST ...                                        │
 │                                                                                                                                                            │
-│  1 using System;                                                                                                                                           │
-│  2 using SynOS.Models.Entities.CostAttribution;                                                                                                            │
-│  3                                                                                                                                                         │
-│  4 namespace SynOS.Events.CostAttribution                                                                                                                  │
-│  5 {                                                                                                                                                       │
-│  6     /// <summary>                                                                                                                                       │
-│  7     /// Defines the minimal data contract for an operational event that may have                                                                        │
-│  8     * resource consumption associated with it. This event is published to trigger                                                                       │
-│  9     * the Policy-to-Fact materialization process in the Cost Attribution Engine.                                                                        │
-│ 10     /// </summary>                                                                                                                                      │
-│ 11     public class CostingTriggerEvent                                                                                                                    │
-│ 12     {                                                                                                                                                   │
-│ 13         /// <summary>                                                                                                                                   │
-│ 14         * A unique identifier for the specific operational action that occurred.                                                                        │
-│ 15         * (e.g., the primary key of the TestExecution record, or a unique SampleCollectionId).                                                          │
-│ 16         * This is the anchor for ensuring idempotency.                                                                                                  │
-│ 17         /// </summary>                                                                                                                                  │
-│ 18         public Guid SourceEventId { get; set; }                                                                                                         │
-│ 19                                                                                                                                                         │
-│ 20         /// <summary>                                                                                                                                   │
-│ 21         * The type of the source event, used by the handler to understand the context.                                                                  │
-│ 22         * This corresponds to the previously defined CostAttribution_SourceEventType enum.                                                              │
-│ 23         /// </summary>                                                                                                                                  │
-│ 24         public CostAttribution_SourceEventType SourceEventType { get; set; }                                                                            │
-│ 25                                                                                                                                                         │
-│ 26         /// <summary>                                                                                                                                   │
-│ 27         * The unique identifier for the Test that this event is associated with.                                                                        │
-│ 28         * This is a primary key for resolving the applicable Usage Policy.                                                                              │
-│ 29         /// </summary>                                                                                                                                  │
-│ 30         public Guid TestId { get; set; }                                                                                                                │
-│ 31                                                                                                                                                         │
-│ 32         /// <summary>                                                                                                                                   │
-│ 33         * The unique identifier for the Branch where the event occurred.                                                                                │
-│ 34         * This is required to resolve the correct, branch-specific Usage Policy Version.                                                                │
-│ 35         /// </summary>                                                                                                                                  │
-│ 36         public Guid BranchId { get; set; }                                                                                                              │
-│ 37                                                                                                                                                         │
-│ 38         /// <summary>                                                                                                                                   │
-│ 39         * The real-world timestamp of when the operational action was completed.                                                                        │
-│ 40         * This is used to select the correct policy version based on its                                                                                │
-│ 41         * EffectiveFrom/EffectiveTo dates.                                                                                                              │
-│ 42         /// </summary>                                                                                                                                  │
-│ 43         public DateTimeOffset OccurredAt { get; set; }                                                                                                  │
-│ 44     }                                                                                                                                                   │
-│ 45 }                                                                                                                                                       │
+│ 201                                                                                                                                                        │
+│ 202       await _context.SaveChangesAsync();                                                                                                               │
+│ 203                                                                                                                                                        │
+│ 204 -     // --- BEGIN COST ATTRIBUTION WIRING (16.6 I-4) ---                                                                                              │
+│ 204 +     // --- BEGIN COST ATTRIBUTION WIRING (16.6 I-5 REFACTOR) ---                                                                                     │
+│ 205       try                                                                                                                                              │
+│ 206       {                                                                                                                                                │
+│ 207 -         await TriggerCostAttributionForOrderAsync(orderId);                                                                                          │
+│ 207 +         await OrchestrateCostAttributionForOrderAsync(orderId);                                                                                      │
+│ 208       }                                                                                                                                                │
+│ 209       catch (Exception ex)                                                                                                                             │
+│ 210       {                                                                                                                                                │
+│ 214       // --- END COST ATTRIBUTION WIRING ---                                                                                                           │
+│ 215   }                                                                                                                                                    │
+│ 216                                                                                                                                                        │
+│ 217 - private async Task TriggerCostAttributionForOrderAsync(Guid orderId)                                                                                 │
+│ 217 + private async Task OrchestrateCostAttributionForOrderAsync(Guid orderId)                                                                             │
+│ 218   {                                                                                                                                                    │
+│ 219 +     using (var scope = _serviceProvider.CreateScope())                                                                                               │
+│ 220 +     {                                                                                                                                                │
+│ 221 +         var policyResolver = scope.ServiceProvider.GetRequiredService<CostAttribution.ICostAttributionPolicyResolver>();                             │
+│ 222 +         var factWriter = scope.ServiceProvider.GetRequiredService<CostAttribution.ICostAttributionUsageFactWriter>();                                │
+│ 223 +                                                                                                                                                      │
+│ 224           var order = await _context.Orders                                                                                                            │
+│ 225               .Include(o => o.Visit)                                                                                                                   │
+│ 226               .AsNoTracking()                                                                                                                          │
+│ 232               return;                                                                                                                                  │
+│ 233           }                                                                                                                                            │
+│ 234                                                                                                                                                        │
+│ 230 -     // Manually instantiate services as per design constraints (no global DI)                                                                        │
+│ 231 -     var policyResolver = new CostAttribution.CostAttributionPolicyResolver(_context);                                                                │
+│ 232 -     var factWriterLogger = new LoggerFactory().CreateLogger<CostAttribution.CostAttributionUsageFactWriter>();                                       │
+│ 233 -     var factWriter = new CostAttribution.CostAttributionUsageFactWriter(_context, factWriterLogger);                                                 │
+│ 234 -                                                                                                                                                      │
+│ 235 -     // Find all inventory items that have a usage policy for this test                                                                               │
+│ 235           var policies = await _context.CostAttribution_UsagePolicies                                                                                  │
+│ 236               .AsNoTracking()                                                                                                                          │
+│ 237               .Where(p => p.TestId == order.TestId && p.IsActive)                                                                                      │
+│ 239                                                                                                                                                        │
+│ 240           if (!policies.Any())                                                                                                                         │
+│ 241           {                                                                                                                                            │
+│ 243 -         return; // No policies to process for this test                                                                                              │
+│ 242 +             return; // No policies for this test                                                                                                     │
+│ 243           }                                                                                                                                            │
+│ 244                                                                                                                                                        │
+│ 245           var triggerEvent = new Models.Events.CostAttribution.CostingTriggerEvent                                                                     │
+│ 246           {                                                                                                                                            │
+│ 248 -         SourceEventId = orderId, // The OrderId serves as the unique event ID                                                                        │
+│ 247 +             SourceEventId = orderId,                                                                                                                 │
+│ 248               SourceEventType = Models.Entities.CostAttribution.CostAttribution_SourceEventType.TestExecution,                                         │
+│ 249               TestId = order.TestId,                                                                                                                   │
+│ 251 -         BranchId = order.Visit.BranchId ?? Guid.Empty, // Fallback if BranchId is null                                                               │
+│ 252 -         OccurredAt = DateTimeOffset.UtcNow // The moment of "completion"                                                                             │
+│ 250 +             BranchId = order.Visit.BranchId ?? Guid.Empty,                                                                                           │
+│ 251 +             OccurredAt = DateTimeOffset.UtcNow                                                                                                       │
+│ 252           };                                                                                                                                           │
+│ 253                                                                                                                                                        │
+│ 254           foreach (var policy in policies)                                                                                                             │
+│ ══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════ │
+│ 261                                                                                                                                                        │
+│ 262               if (policyVersion != null)                                                                                                               │
+│ 263               {                                                                                                                                        │
+│ 265 -             // Manually load the navigation property required by the writer                                                                          │
+│ 264                   policyVersion.UsagePolicy = policy;                                                                                                  │
+│ 265                   await factWriter.WriteUsageFactAsync(policyVersion, triggerEvent);                                                                   │
+│ 266               }                                                                                                                                        │
+│ 267           }                                                                                                                                            │
+│ 268       }                                                                                                                                                │
+│ 269 + }                                                                                                                                                    │
+│ 270                                                                                                                                                        │
+│ 271   public async Task<IEnumerable<ResultDto>> GetPatientHistoryForParameterAsync(                                                                        │
+│ 272       Guid patientId,                                                                                                                                  │
 ╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-✦ Okay, CostingTriggerEvent.cs is done. Now to CostAttributionUsageFactWriter.cs.
+✦ ResultService.cs refactoring complete. Now, dotnet build to verify, then I'll deliver the explanation.
 ╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ ✓  WriteFile Writing to CostAttributionUsageFactWriter.cs                                                                                                  │
-│                                                                                                                                                            │
-│  1 using System;                                                                                                                                           │
-│  2 using System.Linq;                                                                                                                                      │
-│  3 using System.Threading.Tasks;                                                                                                                           │
-│  4 using Microsoft.EntityFrameworkCore;                                                                                                                    │
-│  5 using Microsoft.Extensions.Logging;                                                                                                                     │
-│  6 using SynOS.Data;                                                                                                                                       │
-│  7 using SynOS.Events.CostAttribution;                                                                                                                     │
-│  8 using SynOS.Models.Entities.CostAttribution;                                                                                                            │
-│  9                                                                                                                                                         │
-│ 10 namespace SynOS.Services.CostAttribution                                                                                                                │
-│ 11 {                                                                                                                                                       │
-│ 12     public class CostAttributionUsageFactWriter : ICostAttributionUsageFactWriter                                                                       │
-│ 13     {                                                                                                                                                   │
-│ 14         private readonly SynOSDbContext _context;                                                                                                       │
-│ 15         private readonly ILogger<CostAttributionUsageFactWriter> _logger;                                                                               │
-│ 16                                                                                                                                                         │
-│ 17         public CostAttributionUsageFactWriter(SynOSDbContext context, ILogger<CostAttributionUsageFactWriter> logger)                                   │
-│ 18         {                                                                                                                                               │
-│ 19             _context = context;                                                                                                                         │
-│ 20             _logger = logger;                                                                                                                           │
-│ 21         }                                                                                                                                               │
-│ 22                                                                                                                                                         │
-│ 23         public async Task WriteUsageFactAsync(                                                                                                          │
-│ 24             CostAttribution_UsagePolicyVersion resolvedPolicyVersion,                                                                                   │
-│ 25             CostingTriggerEvent eventPayload)                                                                                                           │
-│ 26         {                                                                                                                                               │
-│ 27             // IDEMPOTENCY CHECK:                                                                                                                       │
-│ 28             // Ensure a fact for this specific event source and inventory item does not already exist.                                                  │
-│ 29             var factExists = await _context.CostAttribution_UsageFacts                                                                                  │
-│ 30                 .AsNoTracking()                                                                                                                         │
-│ 31                 .AnyAsync(f =>                                                                                                                          │
-│ 32                     f.SourceEventId == eventPayload.SourceEventId &&                                                                                    │
-│ 33                     f.SourceEventType == eventPayload.SourceEventType &&                                                                                │
-│ 34                     f.InventoryItemId == resolvedPolicyVersion.UsagePolicy.InventoryItemId);                                                            │
-│ 35                                                                                                                                                         │
-│ 36             if (factExists)                                                                                                                             │
-│ 37             {                                                                                                                                           │
-│ 38                 _logger.LogInformation(                                                                                                                 │
-│ 39                     "Usage Fact for SourceEventId {SourceEventId} and InventoryItemId {InventoryItemId} already exists. Skipping creation.",            │
-│ 40                     eventPayload.SourceEventId,                                                                                                         │
-│ 41                     resolvedPolicyVersion.UsagePolicy.InventoryItemId);                                                                                 │
-│ 42                 return;                                                                                                                                 │
-│ 43             }                                                                                                                                           │
-│ 44                                                                                                                                                         │
-│ 45             // CREATE AND WRITE THE IMMUTABLE FACT:                                                                                                     │
-│ 46             var newFact = new CostAttribution_UsageFact                                                                                                 │
-│ 47             {                                                                                                                                           │
-│ 48                 UsageFactId = Guid.NewGuid(),                                                                                                           │
-│ 49                 TestId = eventPayload.TestId,                                                                                                           │
-│ 50                 InventoryItemId = resolvedPolicyVersion.UsagePolicy.InventoryItemId,                                                                    │
-│ 51                 BranchId = eventPayload.BranchId,                                                                                                       │
-│ 52                 Quantity = resolvedPolicyVersion.Quantity, // Direct copy                                                                               │
-│ 53                 Unit = resolvedPolicyVersion.Unit,         // Direct copy                                                                               │
-│ 54                 OccurredAt = eventPayload.OccurredAt,                                                                                                   │
-│ 55                 RecordedAt = DateTimeOffset.UtcNow,        // System-generated timestamp                                                                │
-│ 56                 SourceEventId = eventPayload.SourceEventId,                                                                                             │
-│ 57                 SourceEventType = eventPayload.SourceEventType                                                                                          │
-│ 58             };                                                                                                                                          │
-│ 59                                                                                                                                                         │
-│ 60             await _context.CostAttribution_UsageFacts.AddAsync(newFact);                                                                                │
-│ 61             await _context.SaveChangesAsync();                                                                                                          │
-│ 62                                                                                                                                                         │
-│ 63             _logger.LogInformation(                                                                                                                     │
-│ 64                 "Successfully wrote new Usage Fact {UsageFactId} for SourceEventId {SourceEventId}.",                                                   │
-│ 65                 newFact.UsageFactId,                                                                                                                    │
-│ 66                 newFact.SourceEventId);                                                                                                                 │
-│ 67         }                                                                                                                                               │
-│ 68     }                                                                                                                                                   │
-│ 69 }                                                                                                                                                       │
-╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-✦ Okay, CostAttributionUsageFactWriter class is done. Next, I'll register ICostAttributionUsageFactWriter in src/SynOS.Api/Program.cs by adding the service   
-  registration, building the project, then delivering the code and explanation before I'm finished. Reading Program.cs now.
-╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ ✓  ReadFile src\SynOS.Api\Program.cs                                                                                                                       │
-│                                                                                                                                                            │
-╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-✦ Program.cs reviewed. Adding ICostAttributionUsageFactWriter service registration.
-╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ ✓  Edit src\SynOS.Api\Program.cs: builder.Services.AddScoped<ICo... => builder.Services.AddScoped<ICo...                                                   │
-│                                                                                                                                                            │
-│ 141   builder.Services.AddScoped<IPurchasingService, PurchasingService>();                                                                                 │
-│ 142   builder.Services.AddScoped<IIMSWastageInsightService, IMSWastageInsightService>();                                                                   │
-│ 143   builder.Services.AddScoped<ICostAttributionPolicyResolver, CostAttributionPolicyResolver>();                                                         │
-│ 144 + builder.Services.AddScoped<ICostAttributionUsageFactWriter, CostAttributionUsageFactWriter>();                                                       │
-│ 145   builder.Services.AddScoped<IInvoiceService, InvoiceService>();                                                                                       │
-│ 146   builder.Services.AddScoped<IReceptionFlowService, ReceptionFlowService>(provider =>                                                                  │
-│ 147       new ReceptionFlowService(                                                                                                                        │
-╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-✦ Okay, I've registered the ICostAttributionUsageFactWriter. Now, I'll build, then deliver the code and explanation. Building now.
-╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ ✓  Shell dotnet build [current working directory D:\Projects\SynOS-Synthesized-Lab-Intelligence] (Building the project to ensure all new code for the Usa… │
-│                                                                                                                                                            │
-│   Determining projects to restore...                                                                                                                       │
-│   All projects are up-to-date for restore.                                                                                                                 │
-│   SynOS.Models -> D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\bin\Debug\net8.0\SynOS.Models.dll                                        │
-│   SynOS.Data -> D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Data\bin\Debug\net8.0\SynOS.Data.dll                                              │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CostAttribution\CostAttributionUsageFactWriter.cs(7,13): error CS0234: Th                │
-│ e type or namespace name 'Events' does not exist in the namespace 'SynOS' (are you missing an assembly reference?) [D:\Projects\SynOS-Synth                │
-│ esized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                                                          │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CostAttribution\ICostAttributionUsageFactWriter.cs(2,13): error CS0234: T                │
-│ he type or namespace name 'Events' does not exist in the namespace 'SynOS' (are you missing an assembly reference?) [D:\Projects\SynOS-Synt                │
-│ hesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                                                         │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReceptionFlowService.cs(354,91): warning CS8625: Cannot convert null lite                │
-│ ral to non-nullable reference type. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                              │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CostAttribution\CostAttributionUsageFactWriter.cs(25,13): error CS0246: T                │
-│ he type or namespace name 'CostingTriggerEvent' could not be found (are you missing a using directive or an assembly reference?) [D:\Projec                │
-│ ts\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                                            │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CostAttribution\ICostAttributionUsageFactWriter.cs(20,13): error CS0246:                 │
-│ The type or namespace name 'CostingTriggerEvent' could not be found (are you missing a using directive or an assembly reference?) [D:\Proje                │
-│ cts\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                                           │
-│                                                                                                                                                            │
-│ Build FAILED.                                                                                                                                              │
-│                                                                                                                                                            │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReceptionFlowService.cs(354,91): warning CS8625: Cannot convert null lite                │
-│ ral to non-nullable reference type. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                              │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CostAttribution\CostAttributionUsageFactWriter.cs(7,13): error CS0234: Th                │
-│ e type or namespace name 'Events' does not exist in the namespace 'SynOS' (are you missing an assembly reference?) [D:\Projects\SynOS-Synth                │
-│ esized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                                                          │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CostAttribution\ICostAttributionUsageFactWriter.cs(2,13): error CS0234: T                │
-│ he type or namespace name 'Events' does not exist in the namespace 'SynOS' (are you missing an assembly reference?) [D:\Projects\SynOS-Synt                │
-│ hesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                                                         │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CostAttribution\CostAttributionUsageFactWriter.cs(25,13): error CS0246: T                │
-│ he type or namespace name 'CostingTriggerEvent' could not be found (are you missing a using directive or an assembly reference?) [D:\Projec                │
-│ ts\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                                            │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CostAttribution\ICostAttributionUsageFactWriter.cs(20,13): error CS0246:                 │
-│ The type or namespace name 'CostingTriggerEvent' could not be found (are you missing a using directive or an assembly reference?) [D:\Proje                │
-│ cts\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                                           │
-│     1 Warning(s)                                                                                                                                           │
-│     4 Error(s)                                                                                                                                             │
-│                                                                                                                                                            │
-│ Time Elapsed 00:00:21.28                                                                                                                                   │
-╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-✦ Build failed: SynOS.Services can't find SynOS.Events. The fix is to move the Events directory into the SynOS.Models project, update the
-  CostingTriggerEvent.cs namespace to SynOS.Models.Events.CostAttribution, fix the using statements in the writer, and rebuild. I'll start by moving the      
-  directory with robocopy.
-╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ ✓  Shell robocopy src/SynOS.Events src/SynOS.Models/Events /E /MOVE [current working directory D:\Projects\SynOS-Synthesized-Lab-Intelligence] (Moving th… │
-│                                                                                                                                                            │
-│                                                                                                                                                            │
-│ -------------------------------------------------------------------------------                                                                            │
-│    ROBOCOPY     ::     Robust File Copy for Windows                                                                                                        │
-│ -------------------------------------------------------------------------------                                                                            │
-│                                                                                                                                                            │
-│   Started : 20 December 2025 17:36:01                                                                                                                      │
-│    Source : D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Events\                                                                               │
-│      Dest : D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Events\                                                                        │
-│                                                                                                                                                            │
-│     Files : *.*                                                                                                                                            │
-│                                                                                                                                                            │
-│   Options : *.* /S /E /DCOPY:DA /COPY:DAT /MOVE /R:1000000 /W:30                                                                                           │
-│                                                                                                                                                            │
-│ ------------------------------------------------------------------------------                                                                             │
-│                                                                                                                                                            │
-│           New Dir          0    D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Events\                                                           │
-│           New Dir          1    D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Events\CostAttribution\                                           │
-│ 100%        New File                1850        CostingTriggerEvent.cs                                                                                     │
-│                                                                                                                                                            │
-│ ------------------------------------------------------------------------------                                                                             │
-│                                                                                                                                                            │
-│                Total    Copied   Skipped  Mismatch    FAILED    Extras                                                                                     │
-│     Dirs :         2         2         0         0         0         0                                                                                     │
-│    Files :         1         1         0         0         0         0                                                                                     │
-│    Bytes :     1.8 k     1.8 k         0         0         0         0                                                                                     │
-│    Times :   0:00:00   0:00:00                       0:00:00   0:00:00                                                                                     │
-│    Ended : 20 December 2025 17:36:01                                                                                                                       │
-╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-✦ Moved Events. Updating namespace in CostingTriggerEvent.cs.
-╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ ✓  ReadFile src\...\CostingTriggerEvent.cs                                                                                                                 │
-│                                                                                                                                                            │
-╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-✦ Okay, CostingTriggerEvent.cs reviewed. Updating namespace to SynOS.Models.Events.CostAttribution.
-╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ ✓  Edit src\...\CostingTriggerEvent.cs: namespace SynOS.Events.CostAtt... => namespace SynOS.Models.Events....                                             │
-│                                                                                                                                                            │
-│ 1   using System;                                                                                                                                          │
-│ 2   using SynOS.Models.Entities.CostAttribution;                                                                                                           │
-│ 3                                                                                                                                                          │
-│ 4 - namespace SynOS.Events.CostAttribution                                                                                                                 │
-│ 4 + namespace SynOS.Models.Events.CostAttribution                                                                                                          │
-│ 5   {                                                                                                                                                      │
-│ 6       /// <summary>                                                                                                                                      │
-│ 7       /// Defines the minimal data contract for an operational event that may have                                                                       │
-╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-✦ Okay, namespace updated. Next, I'll update the using statements in ICostAttributionUsageFactWriter.cs and its implementation. Starting with the interface   
-  file.
-╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ ✓  Edit ICostAttributionUsageFactWriter.cs: using SynOS.Events.CostAttribu... => using SynOS.Models.Events.Cost...                                         │
-│                                                                                                                                                            │
-│ 1   using System.Threading.Tasks;                                                                                                                          │
-│ 2 - using SynOS.Events.CostAttribution;                                                                                                                    │
-│ 2 + using SynOS.Models.Events.CostAttribution;                                                                                                             │
-│ 3   using SynOS.Models.Entities.CostAttribution;                                                                                                           │
-│ 4                                                                                                                                                          │
-│ 5   namespace SynOS.Services.CostAttribution                                                                                                               │
-╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-✦ Updated ICostAttributionUsageFactWriter.cs, now updating CostAttributionUsageFactWriter.cs.
-╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ ✓  Edit CostAttributionUsageFactWriter.cs: using Microsoft.Extensions.Log... => using Microsoft.Extensions.Log...                                          │
-│                                                                                                                                                            │
-│  4   using Microsoft.EntityFrameworkCore;                                                                                                                  │
-│  5   using Microsoft.Extensions.Logging;                                                                                                                   │
-│  6   using SynOS.Data;                                                                                                                                     │
-│  7 - using SynOS.Events.CostAttribution;                                                                                                                   │
-│  7 + using SynOS.Models.Events.CostAttribution;                                                                                                            │
-│  8   using SynOS.Models.Entities.CostAttribution;                                                                                                          │
-│  9                                                                                                                                                         │
-│ 10   namespace SynOS.Services.CostAttribution                                                                                                              │
-╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-✦ Namespaces fixed. Rebuilding.
-╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ ✓  Shell dotnet build [current working directory D:\Projects\SynOS-Synthesized-Lab-Intelligence] (Rebuilding the project after correcting the namespaces.) │
-│                                                                                                                                                            │
-│ ... first 55 lines hidden ...                                                                                                                              │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Events\CostAttribution\CostingTriggerEvent.cs(27,62): error CS1514: { expec                │
-│ ted [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\SynOS.Models.csproj]                                                                  │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Events\CostAttribution\CostingTriggerEvent.cs(27,62): error CS1055: An add                 │
-│ or remove accessor expected [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\SynOS.Models.csproj]                                          │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Events\CostAttribution\CostingTriggerEvent.cs(27,65): error CS1055: An add                 │
-│ or remove accessor expected [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\SynOS.Models.csproj]                                          │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Events\CostAttribution\CostingTriggerEvent.cs(27,76): error CS1055: An add                 │
-│ or remove accessor expected [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\SynOS.Models.csproj]                                          │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Events\CostAttribution\CostingTriggerEvent.cs(27,80): error CS1055: An add                 │
-│ or remove accessor expected [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\SynOS.Models.csproj]                                          │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Events\CostAttribution\CostingTriggerEvent.cs(28,11): error CS1055: An add                 │
-│ or remove accessor expected [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\SynOS.Models.csproj]                                          │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Events\CostAttribution\CostingTriggerEvent.cs(28,16): error CS1055: An add                 │
-│ or remove accessor expected [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\SynOS.Models.csproj]                                          │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Events\CostAttribution\CostingTriggerEvent.cs(28,19): error CS1055: An add                 │
-│ or remove accessor expected [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\SynOS.Models.csproj]                                          │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Events\CostAttribution\CostingTriggerEvent.cs(28,21): error CS1055: An add                 │
-│ or remove accessor expected [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\SynOS.Models.csproj]                                          │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Events\CostAttribution\CostingTriggerEvent.cs(28,29): error CS1055: An add                 │
-│ or remove accessor expected [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\SynOS.Models.csproj]                                          │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Events\CostAttribution\CostingTriggerEvent.cs(28,33): error CS1055: An add                 │
-│ or remove accessor expected [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\SynOS.Models.csproj]                                          │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Events\CostAttribution\CostingTriggerEvent.cs(28,37): error CS1055: An add                 │
-│ or remove accessor expected [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\SynOS.Models.csproj]                                          │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Events\CostAttribution\CostingTriggerEvent.cs(28,47): error CS1055: An add                 │
-│ or remove accessor expected [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\SynOS.Models.csproj]                                          │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Events\CostAttribution\CostingTriggerEvent.cs(28,51): error CS1055: An add                 │
-│ or remove accessor expected [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\SynOS.Models.csproj]                                          │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Events\CostAttribution\CostingTriggerEvent.cs(28,62): error CS1055: An add                 │
-│ or remove accessor expected [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\SynOS.Models.csproj]                                          │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Events\CostAttribution\CostingTriggerEvent.cs(28,68): error CS1055: An add                 │
-│ or remove accessor expected [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\SynOS.Models.csproj]                                          │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Events\CostAttribution\CostingTriggerEvent.cs(28,74): error CS1055: An add                 │
-│ or remove accessor expected [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\SynOS.Models.csproj]                                          │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Events\CostAttribution\CostingTriggerEvent.cs(28,75): error CS1513: } expec                │
-│ ted [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\SynOS.Models.csproj]                                                                  │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Events\CostAttribution\CostingTriggerEvent.cs(33,9): error CS1519: Invalid                 │
-│ token '*' in class, record, struct, or interface member declaration [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\SynOS.                │
-│ Models.csproj]                                                                                                                                             │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Events\CostAttribution\CostingTriggerEvent.cs(33,22): error CS1002: ; expec                │
-│ ted [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\SynOS.Models.csproj]                                                                  │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Events\CostAttribution\CostingTriggerEvent.cs(33,33): error CS1519: Invalid                │
-│  token 'for' in class, record, struct, or interface member declaration [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Syn                │
-│ OS.Models.csproj]                                                                                                                                          │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Events\CostAttribution\CostingTriggerEvent.cs(33,48): error CS1002: ; expec                │
-│ ted [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\SynOS.Models.csproj]                                                                  │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Events\CostAttribution\CostingTriggerEvent.cs(33,58): error CS1002: ; expec                │
-│ ted [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\SynOS.Models.csproj]                                                                  │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Events\CostAttribution\CostingTriggerEvent.cs(33,73): error CS1001: Identif                │
-│ ier expected [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\SynOS.Models.csproj]                                                         │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Events\CostAttribution\CostingTriggerEvent.cs(34,16): error CS1003: Syntax                 │
-│ error, ',' expected [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\SynOS.Models.csproj]                                                  │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Events\CostAttribution\CostingTriggerEvent.cs(34,19): error CS1002: ; expec                │
-│ ted [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\SynOS.Models.csproj]                                                                  │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Events\CostAttribution\CostingTriggerEvent.cs(34,39): error CS1002: ; expec                │
-│ ted [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\SynOS.Models.csproj]                                                                  │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Events\CostAttribution\CostingTriggerEvent.cs(34,58): error CS1003: Syntax                 │
-│ error, ',' expected [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\SynOS.Models.csproj]                                                  │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Events\CostAttribution\CostingTriggerEvent.cs(34,59): error CS1002: ; expec                │
-│ ted [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\SynOS.Models.csproj]                                                                  │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Events\CostAttribution\CostingTriggerEvent.cs(34,74): error CS1002: ; expec                │
-│ ted [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\SynOS.Models.csproj]                                                                  │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Events\CostAttribution\CostingTriggerEvent.cs(34,89): error CS1001: Identif                │
-│ ier expected [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\SynOS.Models.csproj]                                                         │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Events\CostAttribution\CostingTriggerEvent.cs(34,89): error CS1003: Syntax                 │
-│ error, '(' expected [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\SynOS.Models.csproj]                                                  │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Events\CostAttribution\CostingTriggerEvent.cs(34,89): error CS1026: ) expec                │
-│ ted [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\SynOS.Models.csproj]                                                                  │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Events\CostAttribution\CostingTriggerEvent.cs(34,89): error CS1002: ; expec                │
-│ ted [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\SynOS.Models.csproj]                                                                  │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Events\CostAttribution\CostingTriggerEvent.cs(39,9): error CS1519: Invalid                 │
-│ token '*' in class, record, struct, or interface member declaration [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\SynOS.                │
-│ Models.csproj]                                                                                                                                             │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Events\CostAttribution\CostingTriggerEvent.cs(39,19): error CS1003: Syntax                 │
-│ error, ',' expected [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\SynOS.Models.csproj]                                                  │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Events\CostAttribution\CostingTriggerEvent.cs(39,20): error CS1002: ; expec                │
-│ ted [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\SynOS.Models.csproj]                                                                  │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Events\CostAttribution\CostingTriggerEvent.cs(39,36): error CS1002: ; expec                │
-│ ted [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\SynOS.Models.csproj]                                                                  │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Events\CostAttribution\CostingTriggerEvent.cs(39,44): error CS1002: ; expec                │
-│ ted [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\SynOS.Models.csproj]                                                                  │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Events\CostAttribution\CostingTriggerEvent.cs(39,60): error CS1002: ; expec                │
-│ ted [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\SynOS.Models.csproj]                                                                  │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Events\CostAttribution\CostingTriggerEvent.cs(39,71): error CS1002: ; expec                │
-│ ted [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\SynOS.Models.csproj]                                                                  │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Events\CostAttribution\CostingTriggerEvent.cs(39,81): error CS1001: Identif                │
-│ ier expected [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\SynOS.Models.csproj]                                                         │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Events\CostAttribution\CostingTriggerEvent.cs(40,16): error CS1003: Syntax                 │
-│ error, ',' expected [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\SynOS.Models.csproj]                                                  │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Events\CostAttribution\CostingTriggerEvent.cs(40,19): error CS1002: ; expec                │
-│ ted [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\SynOS.Models.csproj]                                                                  │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Events\CostAttribution\CostingTriggerEvent.cs(40,27): error CS1002: ; expec                │
-│ ted [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\SynOS.Models.csproj]                                                                  │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Events\CostAttribution\CostingTriggerEvent.cs(40,38): error CS1002: ; expec                │
-│ ted [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\SynOS.Models.csproj]                                                                  │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Events\CostAttribution\CostingTriggerEvent.cs(40,53): error CS1002: ; expec                │
-│ ted [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\SynOS.Models.csproj]                                                                  │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Events\CostAttribution\CostingTriggerEvent.cs(40,67): error CS1002: ; expec                │
-│ ted [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\SynOS.Models.csproj]                                                                  │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Events\CostAttribution\CostingTriggerEvent.cs(40,73): error CS1003: Syntax                 │
-│ error, ',' expected [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\SynOS.Models.csproj]                                                  │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Events\CostAttribution\CostingTriggerEvent.cs(41,11): error CS1002: ; expec                │
-│ ted [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\SynOS.Models.csproj]                                                                  │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Events\CostAttribution\CostingTriggerEvent.cs(41,24): error CS1519: Invalid                │
-│  token '/' in class, record, struct, or interface member declaration [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\SynOS                │
-│ .Models.csproj]                                                                                                                                            │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Events\CostAttribution\CostingTriggerEvent.cs(41,43): error CS1001: Identif                │
-│ ier expected [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\SynOS.Models.csproj]                                                         │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Events\CostAttribution\CostingTriggerEvent.cs(41,43): error CS1003: Syntax                 │
-│ error, '(' expected [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\SynOS.Models.csproj]                                                  │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Events\CostAttribution\CostingTriggerEvent.cs(41,43): error CS1026: ) expec                │
-│ ted [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\SynOS.Models.csproj]                                                                  │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Events\CostAttribution\CostingTriggerEvent.cs(41,43): error CS1002: ; expec                │
-│ ted [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\SynOS.Models.csproj]                                                                  │
-│     0 Warning(s)                                                                                                                                           │
-│     133 Error(s)                                                                                                                                           │
-│                                                                                                                                                            │
-│ Time Elapsed 00:00:08.03                                                                                                                                   │
-╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-✦ Build failed due to syntax errors in CostingTriggerEvent.cs. I'll read the file, fix the errors, and rebuild.
-╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ ✓  ReadFile src\...\CostingTriggerEvent.cs                                                                                                                 │
-│                                                                                                                                                            │
-╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-✦ CostingTriggerEvent.cs has syntax errors in the XML comments. I will fix them now by removing the invalid characters and then rebuild the project. Modifying
-  the file.
-╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ ✓  Edit src\...\CostingTriggerEvent.cs:     /// Defines the minimal da... =>     /// Defines the minimal da...                                             │
-│                                                                                                                                                            │
-│  5   {                                                                                                                                                     │
-│  6       /// <summary>                                                                                                                                     │
-│  7       /// Defines the minimal data contract for an operational event that may have                                                                      │
-│  8 -     * resource consumption associated with it. This event is published to trigger                                                                     │
-│  9 -     * the Policy-to-Fact materialization process in the Cost Attribution Engine.                                                                      │
-│  8 +     /// resource consumption associated with it. This event is published to trigger                                                                   │
-│  9 +     /// the Policy-to-Fact materialization process in the Cost Attribution Engine.                                                                    │
-│ 10       /// </summary>                                                                                                                                    │
-│ 11       public class CostingTriggerEvent                                                                                                                  │
-│ 12       {                                                                                                                                                 │
-│ 13           /// <summary>                                                                                                                                 │
-│ 14 -         * A unique identifier for the specific operational action that occurred.                                                                      │
-│ 15 -         * (e.g., the primary key of the TestExecution record, or a unique SampleCollectionId).                                                        │
-│ 16 -         * This is the anchor for ensuring idempotency.                                                                                                │
-│ 14 +         /// A unique identifier for the specific operational action that occurred.                                                                    │
-│ 15 +         /// (e.g., the primary key of the TestExecution record, or a unique SampleCollectionId).                                                      │
-│ 16 +         /// This is the anchor for ensuring idempotency.                                                                                              │
-│ 17           /// </summary>                                                                                                                                │
-│ 18           public Guid SourceEventId { get; set; }                                                                                                       │
-│ 19                                                                                                                                                         │
-│ 20           /// <summary>                                                                                                                                 │
-│ 21 -         * The type of the source event, used by the handler to understand the context.                                                                │
-│ 22 -         * This corresponds to the previously defined CostAttribution_SourceEventType enum.                                                            │
-│ 21 +         /// The type of the source event, used by the handler to understand the context.                                                              │
-│ 22 +         /// This corresponds to the previously defined CostAttribution_SourceEventType enum.                                                          │
-│ 23           /// </summary>                                                                                                                                │
-│ 24           public CostAttribution_SourceEventType SourceEventType { get; set; }                                                                          │
-│ 25                                                                                                                                                         │
-│ 26           /// <summary>                                                                                                                                 │
-│ 27 -         * The unique identifier for the Test that this event is associated with.                                                                      │
-│ 28 -         * This is a primary key for resolving the applicable Usage Policy.                                                                            │
-│ 27 +         /// The unique identifier for the Test that this event is associated with.                                                                    │
-│ 28 +         /// This is a primary key for resolving the applicable Usage Policy.                                                                          │
-│ 29           /// </summary>                                                                                                                                │
-│ 30           public Guid TestId { get; set; }                                                                                                              │
-│ 31                                                                                                                                                         │
-│ 32           /// <summary>                                                                                                                                 │
-│ 33 -         * The unique identifier for the Branch where the event occurred.                                                                              │
-│ 34 -         * This is required to resolve the correct, branch-specific Usage Policy Version.                                                              │
-│ 33 +         /// The unique identifier for the Branch where the event occurred.                                                                            │
-│ 34 +         /// This is required to resolve the correct, branch-specific Usage Policy Version.                                                            │
-│ 35           /// </summary>                                                                                                                                │
-│ 36           public Guid BranchId { get; set; }                                                                                                            │
-│ 37                                                                                                                                                         │
-│ 38           /// <summary>                                                                                                                                 │
-│ 39 -         * The real-world timestamp of when the operational action was completed.                                                                      │
-│ 40 -         * This is used to select the correct policy version based on its                                                                              │
-│ 41 -         * EffectiveFrom/EffectiveTo dates.                                                                                                            │
-│ 39 +         /// The real-world timestamp of when the operational action was completed.                                                                    │
-│ 40 +         /// This is used to select the correct policy version based on its                                                                            │
-│ 41 +         /// EffectiveFrom/EffectiveTo dates.                                                                                                          │
-│ 42           /// </summary>                                                                                                                                │
-│ 43           public DateTimeOffset OccurredAt { get; set; }                                                                                                │
-│ 44       }                                                                                                                                                 │
-╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-✦ Okay, CostingTriggerEvent.cs is fixed. Rebuilding now.
-╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ ✓  Shell dotnet build [current working directory D:\Projects\SynOS-Synthesized-Lab-Intelligence] (Rebuilding the project after correcting syntax errors.)  │
-│                                                                                                                                                            │
-│   Determining projects to restore...                                                                                                                       │
-│   All projects are up-to-date for restore.                                                                                                                 │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\DTOs\Admin\PriceConfigDtos.cs(32,21): warning CS0108: 'UpdatePriceConfigDto                │
-│ .IsActive' hides inherited member 'CreatePriceConfigDto.IsActive'. Use the new keyword if hiding was intended. [D:\Projects\SynOS-Synthesiz                │
-│ ed-Lab-Intelligence\src\SynOS.Models\SynOS.Models.csproj]                                                                                                  │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Events\CostAttribution\CostingTriggerEvent.cs(24,16): error CS0246: The typ                │
-│ e or namespace name 'CostAttribution_SourceEventType' could not be found (are you missing a using directive or an assembly reference?) [D:\                │
-│ Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\SynOS.Models.csproj]                                                                          │
-│                                                                                                                                                            │
-│ Build FAILED.                                                                                                                                              │
-│                                                                                                                                                            │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\DTOs\Admin\PriceConfigDtos.cs(32,21): warning CS0108: 'UpdatePriceConfigDto                │
-│ .IsActive' hides inherited member 'CreatePriceConfigDto.IsActive'. Use the new keyword if hiding was intended. [D:\Projects\SynOS-Synthesiz                │
-│ ed-Lab-Intelligence\src\SynOS.Models\SynOS.Models.csproj]                                                                                                  │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Events\CostAttribution\CostingTriggerEvent.cs(24,16): error CS0246: The typ                │
-│ e or namespace name 'CostAttribution_SourceEventType' could not be found (are you missing a using directive or an assembly reference?) [D:\                │
-│ Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\SynOS.Models.csproj]                                                                          │
-│     1 Warning(s)                                                                                                                                           │
-│     1 Error(s)                                                                                                                                             │
-│                                                                                                                                                            │
-│ Time Elapsed 00:00:04.91                                                                                                                                   │
-╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-✦ Build failed: CostAttribution_SourceEventType is missing. I'll create src/SynOS.Models/Entities/CostAttribution/CostAttribution_SourceEventType.cs with the 
-  enum definition, add the corresponding using statement to CostingTriggerEvent.cs, and rebuild. Creating the file now.
-╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ ✓  WriteFile Writing to CostAttribution_SourceEventType.cs                                                                                                 │
-│                                                                                                                                                            │
-│  1 namespace SynOS.Models.Entities.CostAttribution                                                                                                         │
-│  2 {                                                                                                                                                       │
-│  3     /// <summary>                                                                                                                                       │
-│  4     /// Defines the type of system event that generated a Usage Fact.                                                                                   │
-│  5     /// This is strictly for system-written, append-only facts.                                                                                         │
-│  6     /// </summary>                                                                                                                                      │
-│  7     public enum CostAttribution_SourceEventType                                                                                                         │
-│  8     {                                                                                                                                                   │
-│  9         /// <summary>                                                                                                                                   │
-│ 10         /// Consumption was triggered by the execution of a test procedure.                                                                             │
-│ 11         /// </summary>                                                                                                                                  │
-│ 12         TestExecution,                                                                                                                                  │
-│ 13                                                                                                                                                         │
-│ 14         /// <summary>                                                                                                                                   │
-│ 15         /// Consumption was triggered by the collection of a sample (e.g., use of a vacutainer).                                                        │
-│ 16         /// </summary>                                                                                                                                  │
-│ 17         SampleCollection,                                                                                                                               │
-│ 18                                                                                                                                                         │
-│ 19         /// <summary>                                                                                                                                   │
-│ 20         /// Consumption was triggered by a machine calibration event.                                                                                   │
-│ 21         /// </summary>                                                                                                                                  │
-│ 22         Calibration,                                                                                                                                    │
-│ 23                                                                                                                                                         │
-│ 24         /// <summary>                                                                                                                                   │
-│ 25         /// Consumption was recorded as wastage by a system process (e.g., expiry).                                                                     │
-│ 26         /// </summary>                                                                                                                                  │
-│ 27         Wastage,                                                                                                                                        │
-│ 28                                                                                                                                                         │
-│ 29         /// <summary>                                                                                                                                   │
-│ 30         /// A system-generated fact that corrects a previous, erroneous fact.                                                                           │
-│ 31         /// This creates an immutable audit trail for corrections.                                                                                      │
-│ 32         /// </summary>                                                                                                                                  │
-│ 33         SystemCorrection                                                                                                                                │
-│ 34     }                                                                                                                                                   │
-│ 35 }                                                                                                                                                       │
-╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-✦ Enum created. Add using to CostingTriggerEvent.cs.
-╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ ✓  ReadFile src\...\CostingTriggerEvent.cs                                                                                                                 │
-│                                                                                                                                                            │
-╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-✦ The using directive exists, so the build should have passed. The error points to CostAttribution_SourceEventType not being found, but both it and
-  CostingTriggerEvent.cs are in the same project, SynOS.Models. I'll try rebuilding; the last build might have used a stale model.
-╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ ✓  Shell dotnet build [current working directory D:\Projects\SynOS-Synthesized-Lab-Intelligence] (Rebuilding the project to ensure the compiler recognize… │
+│ ✓  Shell dotnet build [current working directory D:\Projects\SynOS-Synthesized-Lab-Intelligence] (Building the project to verify the refactoring changes.) │
 │                                                                                                                                                            │
 │ ... first 50 lines hidden ...                                                                                                                              │
+│ l reference. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                     │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliveryService.cs(613,34): warning CS8602: Dereference of a possibly nul                │
+│ l reference. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                     │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\RadiologyService.cs(290,40): warning CS8601: Possible null reference assi                │
+│ gnment. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                          │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReportService.cs(251,57): warning CS8602: Dereference of a possibly null                 │
+│ reference. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                       │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReportService.cs(252,57): warning CS8602: Dereference of a possibly null                 │
+│ reference. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                       │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReportService.cs(267,31): warning CS8602: Dereference of a possibly null                 │
+│ reference. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                       │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReportService.cs(271,32): warning CS8602: Dereference of a possibly null                 │
+│ reference. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                       │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReportService.cs(291,33): warning CS8602: Dereference of a possibly null                 │
+│ reference. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                       │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReportService.cs(291,33): warning CS8602: Dereference of a possibly null                 │
+│ reference. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                       │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SampleService.cs(212,39): warning CS8602: Dereference of a possibly null                 │
+│ reference. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                       │
 │ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SampleService.cs(213,43): warning CS8602: Dereference of a possibly null                 │
 │ reference. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                       │
 │ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SampleService.cs(215,39): warning CS8602: Dereference of a possibly null                 │
@@ -554,18 +139,23 @@
 │ reference. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                       │
 │ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SampleService.cs(226,34): warning CS8602: Dereference of a possibly null                 │
 │ reference. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                       │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SampleService.cs(245,38): warning CS8602: Dereference of a possibly null                 │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReportService.cs(327,32): warning CS8602: Dereference of a possibly null                 │
+│ reference. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                       │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\PacsService.cs(416,59): warning CS8602: Dereference of a possibly null re                │
+│ ference. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                         │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ResultService.cs(444,76): warning CS8602: Dereference of a possibly null                 │
+│ reference. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                       │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ResultService.cs(450,36): warning CS8602: Dereference of a possibly null                 │
 │ reference. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                       │
 │ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SampleService.cs(245,38): warning CS8602: Dereference of a possibly null                 │
 │ reference. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                       │
 │ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SampleService.cs(245,38): warning CS8602: Dereference of a possibly null                 │
 │ reference. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                       │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\RadiologyService.cs(290,40): warning CS8601: Possible null reference assi                │
-│ gnment. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                          │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ResultService.cs(375,76): warning CS8602: Dereference of a possibly null                 │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SampleService.cs(245,38): warning CS8602: Dereference of a possibly null                 │
 │ reference. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                       │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ResultService.cs(381,36): warning CS8602: Dereference of a possibly null                 │
-│ reference. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                       │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\TestMasterService.cs(231,83): warning CS0472: The result of the expressio                │
+│ n is always 'false' since a value of type 'bool' is never equal to 'null' of type 'bool?' [D:\Projects\SynOS-Synthesized-Lab-Intelligence\s                │
+│ rc\SynOS.Services\SynOS.Services.csproj]                                                                                                                   │
 │ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReportService.cs(361,39): warning CS8602: Dereference of a possibly null                 │
 │ reference. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                       │
 │ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReportService.cs(370,27): warning CS8602: Dereference of a possibly null                 │
@@ -576,6 +166,14 @@
 │ ent. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                             │
 │ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReportService.cs(433,31): warning CS8602: Dereference of a possibly null                 │
 │ reference. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                       │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\RadiologyService.cs(341,44): warning CS8601: Possible null reference assi                │
+│ gnment. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                          │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\RadiologyService.cs(343,38): warning CS8601: Possible null reference assi                │
+│ gnment. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                          │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\RadiologyService.cs(344,43): warning CS8601: Possible null reference assi                │
+│ gnment. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                          │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\RadiologyService.cs(345,37): warning CS8601: Possible null reference assi                │
+│ gnment. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                          │
 │ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliveryService.cs(741,21): warning CS8602: Dereference of a possibly nul                │
 │ l reference. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                     │
 │ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliveryService.cs(745,47): warning CS8602: Dereference of a possibly nul                │
@@ -586,11 +184,6 @@
 │ l reference. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                     │
 │ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliveryService.cs(761,43): warning CS8602: Dereference of a possibly nul                │
 │ l reference. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                     │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\TestMasterService.cs(231,83): warning CS0472: The result of the expressio                │
-│ n is always 'false' since a value of type 'bool' is never equal to 'null' of type 'bool?' [D:\Projects\SynOS-Synthesized-Lab-Intelligence\s                │
-│ rc\SynOS.Services\SynOS.Services.csproj]                                                                                                                   │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\PacsService.cs(416,59): warning CS8602: Dereference of a possibly null re                │
-│ ference. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                         │
 │ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliveryService.cs(849,39): warning CS8602: Dereference of a possibly nul                │
 │ l reference. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                     │
 │ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliveryService.cs(853,30): warning CS8602: Dereference of a possibly nul                │
@@ -599,13 +192,7 @@
 │ l reference. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                     │
 │ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliveryService.cs(866,30): warning CS8602: Dereference of a possibly nul                │
 │ l reference. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                     │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\RadiologyService.cs(341,44): warning CS8601: Possible null reference assi                │
-│ gnment. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                          │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\RadiologyService.cs(343,38): warning CS8601: Possible null reference assi                │
-│ gnment. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                          │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\RadiologyService.cs(344,43): warning CS8601: Possible null reference assi                │
-│ gnment. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                          │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\RadiologyService.cs(345,37): warning CS8601: Possible null reference assi                │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\RadiologyService.cs(396,48): warning CS8601: Possible null reference assi                │
 │ gnment. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                          │
 │ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliveryService.cs(919,39): warning CS8602: Dereference of a possibly nul                │
 │ l reference. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                     │
@@ -615,8 +202,6 @@
 │ l reference. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                     │
 │ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliveryService.cs(933,34): warning CS8602: Dereference of a possibly nul                │
 │ l reference. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                     │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\RadiologyService.cs(396,48): warning CS8601: Possible null reference assi                │
-│ gnment. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                          │
 │ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\RadiologyService.cs(496,28): warning CS8601: Possible null reference assi                │
 │ gnment. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                          │
 │ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\RadiologyService.cs(497,34): warning CS8601: Possible null reference assi                │
@@ -633,161 +218,76 @@
 │ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\AuditService.cs(46,38): warning CA2017: Number of parameters supplied in                 │
 │ the logging message template do not match the number of named placeholders (https://learn.microsoft.com/dotnet/fundamentals/code-analysis/q                │
 │ uality-rules/ca2017) [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                             │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CostAttribution\CostAttributionUsageFactWriter.cs(29,45): error CS1061: '                │
-│ SynOSDbContext' does not contain a definition for 'CostAttribution_UsageFacts' and no accessible extension method 'CostAttribution_UsageFac                │
-│ ts' accepting a first argument of type 'SynOSDbContext' could be found (are you missing a using directive or an assembly reference?) [D:\Pr                │
-│ ojects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                                        │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CostAttribution\CostAttributionUsageFactWriter.cs(32,23): error CS1061: '                │
-│ TEntity' does not contain a definition for 'SourceEventId' and no accessible extension method 'SourceEventId' accepting a first argument of                │
-│  type 'TEntity' could be found (are you missing a using directive or an assembly reference?) [D:\Projects\SynOS-Synthesized-Lab-Intelligenc                │
-│ e\src\SynOS.Services\SynOS.Services.csproj]                                                                                                                │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CostAttribution\CostAttributionUsageFactWriter.cs(33,23): error CS1061: '                │
-│ TEntity' does not contain a definition for 'SourceEventType' and no accessible extension method 'SourceEventType' accepting a first argumen                │
-│ t of type 'TEntity' could be found (are you missing a using directive or an assembly reference?) [D:\Projects\SynOS-Synthesized-Lab-Intelli                │
-│ gence\src\SynOS.Services\SynOS.Services.csproj]                                                                                                            │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CostAttribution\CostAttributionUsageFactWriter.cs(34,23): error CS1061: '                │
-│ TEntity' does not contain a definition for 'InventoryItemId' and no accessible extension method 'InventoryItemId' accepting a first argumen                │
-│ t of type 'TEntity' could be found (are you missing a using directive or an assembly reference?) [D:\Projects\SynOS-Synthesized-Lab-Intelli                │
-│ gence\src\SynOS.Services\SynOS.Services.csproj]                                                                                                            │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CostAttribution\CostAttributionUsageFactWriter.cs(46,31): error CS0246: T                │
-│ he type or namespace name 'CostAttribution_UsageFact' could not be found (are you missing a using directive or an assembly reference?) [D:\                │
-│ Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                                      │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CostAttribution\CostAttributionUsageFactWriter.cs(60,28): error CS1061: '                │
-│ SynOSDbContext' does not contain a definition for 'CostAttribution_UsageFacts' and no accessible extension method 'CostAttribution_UsageFac                │
-│ ts' accepting a first argument of type 'SynOSDbContext' could be found (are you missing a using directive or an assembly reference?) [D:\Pr                │
-│ ojects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                                        │
-│     388 Warning(s)                                                                                                                                         │
-│     6 Error(s)                                                                                                                                             │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ResultService.cs(219,49): error CS1061: 'IServiceProvider' does not conta                │
+│ in a definition for 'CreateScope' and no accessible extension method 'CreateScope' accepting a first argument of type 'IServiceProvider' co                │
+│ uld be found (are you missing a using directive or an assembly reference?) [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Servic                │
+│ es\SynOS.Services.csproj]                                                                                                                                  │
+│     173 Warning(s)                                                                                                                                         │
+│     1 Error(s)                                                                                                                                             │
 │                                                                                                                                                            │
-│ Time Elapsed 00:00:22.40                                                                                                                                   │
+│ Time Elapsed 00:00:21.72                                                                                                                                   │
 ╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-✦ Build failed. I forgot to create the CostAttribution_UsageFact entity and its DbSet during the "design only" phase. My plan is to create the entity file,   
-  add the DbSet and Fluent API configuration to SynOSDbContext, rebuild, generate and apply a migration, then finally deliver the UsageFactWriter code. I'll  
-  start with creating the entity file.
+✦ Build failed: IServiceProvider lacks CreateScope. I forgot the using Microsoft.Extensions.DependencyInjection; directive in ResultService.cs. I'll add it,  
+  rebuild, then deliver the final code and explanation if the build succeeds. Now, to modify ResultService.cs.
 ╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ ✓  WriteFile Writing to sr\...\CostAttribution_UsageFact.cs                                                                                                │
+│ ✓  Edit src\SynOS.Services\ResultService.cs: using Microsoft.EntityFramewor... => using Microsoft.EntityFramewor...                                        │
 │                                                                                                                                                            │
-│  1 using System;                                                                                                                                           │
-│  2 using System.ComponentModel.DataAnnotations;                                                                                                            │
-│  3 using System.ComponentModel.DataAnnotations.Schema;                                                                                                     │
-│  4 using SynOS.Models.Entities.IMS;                                                                                                                        │
-│  5                                                                                                                                                         │
-│  6 namespace SynOS.Models.Entities.CostAttribution                                                                                                         │
-│  7 {                                                                                                                                                       │
-│  8     [Table("CostAttribution_UsageFacts")]                                                                                                               │
-│  9     public class CostAttribution_UsageFact                                                                                                              │
-│ 10     {                                                                                                                                                   │
-│ 11         [Key]                                                                                                                                           │
-│ 12         public Guid UsageFactId { get; set; }                                                                                                           │
-│ 13                                                                                                                                                         │
-│ 14         [Required]                                                                                                                                      │
-│ 15         public Guid TestId { get; set; }                                                                                                                │
-│ 16                                                                                                                                                         │
-│ 17         [Required]                                                                                                                                      │
-│ 18         public Guid InventoryItemId { get; set; }                                                                                                       │
-│ 19                                                                                                                                                         │
-│ 20         [Required]                                                                                                                                      │
-│ 21         [Column(TypeName = "decimal(18, 4)")]                                                                                                           │
-│ 22         public decimal Quantity { get; set; }                                                                                                           │
-│ 23                                                                                                                                                         │
-│ 24         [Required]                                                                                                                                      │
-│ 25         [StringLength(50)]                                                                                                                              │
-│ 26         public string Unit { get; set; }                                                                                                                │
-│ 27                                                                                                                                                         │
-│ 28         [Required]                                                                                                                                      │
-│ 29         public DateTimeOffset OccurredAt { get; set; }                                                                                                  │
-│ 30                                                                                                                                                         │
-│ 31         [Required]                                                                                                                                      │
-│ 32         public Guid SourceEventId { get; set; }                                                                                                         │
-│ 33                                                                                                                                                         │
-│ 34         [Required]                                                                                                                                      │
-│ 35         public CostAttribution_SourceEventType SourceEventType { get; set; }                                                                            │
-│ 36                                                                                                                                                         │
-│ 37         [Required]                                                                                                                                      │
-│ 38         public Guid BranchId { get; set; }                                                                                                              │
-│ 39                                                                                                                                                         │
-│ 40         [Required]                                                                                                                                      │
-│ 41         public DateTimeOffset RecordedAt { get; set; } = DateTimeOffset.UtcNow;                                                                         │
-│ 42                                                                                                                                                         │
-│ 43         public Guid? CorrectsUsageFactId { get; set; }                                                                                                  │
-│ 44                                                                                                                                                         │
-│ 45         [StringLength(500)]                                                                                                                             │
-│ 46         public string? CorrectionReason { get; set; }                                                                                                   │
-│ 47     }                                                                                                                                                   │
-│ 48 }                                                                                                                                                       │
+│  6   using System.Threading.Tasks;                                                                                                                         │
+│  7   using Microsoft.EntityFrameworkCore;                                                                                                                  │
+│  8   using Microsoft.Extensions.Logging;                                                                                                                   │
+│  9 + using Microsoft.Extensions.DependencyInjection; // Added for IServiceProvider                                                                         │
+│ 10   using SynOS.Data;                                                                                                                                     │
+│ 11   using SynOS.Models.DTOs;                                                                                                                              │
+│ 12   using SynOS.Models.Entities;                                                                                                                          │
 ╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-✦ Okay, CostAttribution_UsageFact.cs is done. Now, I'm on to SynOSDbContext.cs: read, add the DbSet, and configure its relationships. Reading the file now.   
+✦ Directive added. Rebuilding.
 ╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ ✓  ReadFile src\SynOS.Data\SynOSDbContext.cs                                                                                                               │
-│                                                                                                                                                            │
-╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-✦ Okay, SynOSDbContext.cs review complete. I'll add the CostAttribution_UsageFact DbSet and configure its Fluent API. Now, I'm editing the file.
-╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ ✓  Edit src\SynOS.Data\SynOSDbContext.cs:         public DbSet<SynOS.Mod... =>         public DbSet<SynOS.Mod...                                           │
-│                                                                                                                                                            │
-│ 116   // Cost Attribution DbSets                                                                                                                           │
-│ 117   public DbSet<SynOS.Models.Entities.CostAttribution.CostAttribution_UsagePolicy> CostAttribution_UsagePolicies { get; set; } = null!;                 │
-│ 118   public DbSet<SynOS.Models.Entities.CostAttribution.CostAttribution_UsagePolicyVersion> CostAttribution_UsagePolicyVersions { get; set; } = null!;    │
-│ 119 + public DbSet<SynOS.Models.Entities.CostAttribution.CostAttribution_UsageFact> CostAttribution_UsageFacts { get; set; } = null!;                      │
-│ 120                                                                                                                                                        │
-│ 121   #endregion                                                                                                                                           │
-│ 122                                                                                                                                                        │
-╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-✦ DbSet added. Now, configuring the Fluent API.
-╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ ✓  Edit src\SynOS.Data\SynOSDbContext.cs:                 entity.HasOne(... =>                 entity.HasOne(...                                           │
-│                                                                                                                                                            │
-│ 715               entity.HasOne(e => e.CreatedByUser).WithMany().HasForeignKey(e => e.CreatedByUserId).OnDelete(DeleteBehavior.Restrict);                  │
-│ 716           });                                                                                                                                          │
-│ 717                                                                                                                                                        │
-│ 718 +         modelBuilder.Entity<SynOS.Models.Entities.CostAttribution.CostAttribution_UsageFact>(entity =>                                               │
-│ 719 +         {                                                                                                                                            │
-│ 720 +             entity.ToTable("CostAttribution_UsageFacts");                                                                                            │
-│ 721 +             entity.HasIndex(e => new { e.SourceEventId, e.SourceEventType, e.InventoryItemId }).IsUnique();                                          │
-│ 722 +             entity.HasIndex(e => e.TestId);                                                                                                          │
-│ 723 +             entity.HasIndex(e => e.InventoryItemId);                                                                                                 │
-│ 724 +             entity.HasIndex(e => e.OccurredAt);                                                                                                      │
-│ 725 +             entity.Property(e => e.SourceEventType).HasConversion<string>().HasMaxLength(50);                                                        │
-│ 726 +         });                                                                                                                                          │
-│ 727 +                                                                                                                                                      │
-│ 728           #endregion                                                                                                                                   │
-│ 729       }                                                                                                                                                │
-│ 730   }                                                                                                                                                    │
-╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-✦ DbContext updated. Now, I'll run dotnet build to confirm compilation, verifying resolution of previous entity and DbSet errors.
-╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ ✓  Shell dotnet build [current working directory D:\Projects\SynOS-Synthesized-Lab-Intelligence] (Building the project to ensure all previous compilation… │
+│ ✓  Shell dotnet build [current working directory D:\Projects\SynOS-Synthesized-Lab-Intelligence] (Rebuilding the project after adding the final using dir… │
 │                                                                                                                                                            │
 │ ... first 59 lines hidden ...                                                                                                                              │
-│ reference. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                       │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SampleService.cs(201,35): warning CS8602: Dereference of a possibly null                 │
-│ reference. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                       │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SampleService.cs(212,39): warning CS8602: Dereference of a possibly null                 │
-│ reference. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                       │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SampleService.cs(213,43): warning CS8602: Dereference of a possibly null                 │
-│ reference. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                       │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SampleService.cs(215,39): warning CS8602: Dereference of a possibly null                 │
-│ reference. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                       │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SampleService.cs(219,40): warning CS8603: Possible null reference return.                │
-│  [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                                 │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SampleService.cs(225,27): warning CS8602: Dereference of a possibly null                 │
-│ reference. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                       │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SampleService.cs(226,34): warning CS8602: Dereference of a possibly null                 │
-│ reference. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                       │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SampleService.cs(226,34): warning CS8602: Dereference of a possibly null                 │
-│ reference. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                       │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SampleService.cs(245,38): warning CS8602: Dereference of a possibly null                 │
-│ reference. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                       │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SampleService.cs(245,38): warning CS8602: Dereference of a possibly null                 │
-│ reference. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                       │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SampleService.cs(245,38): warning CS8602: Dereference of a possibly null                 │
-│ reference. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                       │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliveryService.cs(866,30): warning CS8602: Dereference of a possibly nul                │
+│ l reference. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                     │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliveryService.cs(919,39): warning CS8602: Dereference of a possibly nul                │
+│ l reference. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                     │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliveryService.cs(923,34): warning CS8602: Dereference of a possibly nul                │
+│ l reference. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                     │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliveryService.cs(923,34): warning CS8602: Dereference of a possibly nul                │
+│ l reference. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                     │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliveryService.cs(933,34): warning CS8602: Dereference of a possibly nul                │
+│ l reference. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                     │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\RadiologyService.cs(496,28): warning CS8601: Possible null reference assi                │
+│ gnment. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                          │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\RadiologyService.cs(497,34): warning CS8601: Possible null reference assi                │
+│ gnment. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                          │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\RadiologyService.cs(498,35): warning CS8601: Possible null reference assi                │
+│ gnment. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                          │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\RadiologyService.cs(502,35): warning CS8601: Possible null reference assi                │
+│ gnment. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                          │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\RadiologyService.cs(517,21): warning CS8600: Converting null literal or p                │
+│ ossible null value to non-nullable type. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                         │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\RadiologyService.cs(524,79): warning CS8604: Possible null reference argu                │
+│ ment for parameter 'templateModel' in 'Task<byte[]> IReportPdfRenderer.GeneratePdfAsync(ReportDataModel data, TemplateModel templateModel)'                │
+│ . [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                                │
 │ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\AuditService.cs(46,38): warning CA2017: Number of parameters supplied in                 │
 │ the logging message template do not match the number of named placeholders (https://learn.microsoft.com/dotnet/fundamentals/code-analysis/q                │
 │ uality-rules/ca2017) [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                             │
 │ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\Admin\CsvImportRequestDto.cs(9,26): warning CS8618: Non-nullable p                │
 │ roperty 'File' must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring the property as                │
 │  nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\SynOS.Api.csproj]                                                                 │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\MappingProfile.cs(18,100): warning CS8602: Dereference of a possibly null refe                │
+│ rence. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\SynOS.Api.csproj]                                                                     │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\MappingProfile.cs(49,85): warning CS8602: Dereference of a possibly null refer                │
+│ ence. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\SynOS.Api.csproj]                                                                      │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\MappingProfile.cs(50,77): warning CS8602: Dereference of a possibly null refer                │
+│ ence. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\SynOS.Api.csproj]                                                                      │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\MappingProfile.cs(51,79): warning CS8602: Dereference of a possibly null refer                │
+│ ence. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\SynOS.Api.csproj]                                                                      │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\MappingProfile.cs(52,84): warning CS8602: Dereference of a possibly null refer                │
+│ ence. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\SynOS.Api.csproj]                                                                      │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\MappingProfile.cs(81,73): warning CS8602: Dereference of a possibly null refer                │
+│ ence. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\SynOS.Api.csproj]                                                                      │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\MappingProfile.cs(81,73): warning CS8602: Dereference of a possibly null refer                │
+│ ence. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\SynOS.Api.csproj]                                                                      │
 │ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\IMSStockOperationController.cs(27,37): warning CS8604: Possible nu                │
 │ ll reference argument for parameter 'input' in 'Guid Guid.Parse(string input)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.A                │
 │ pi\SynOS.Api.csproj]                                                                                                                                       │
@@ -797,29 +297,24 @@
 │ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\IMSPurchasingController.cs(127,41): warning CS8604: Possible null                 │
 │ reference argument for parameter 'input' in 'Guid Guid.Parse(string input)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\                │
 │ SynOS.Api.csproj]                                                                                                                                          │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\RadiologyController.cs(30,37): warning CS8604: Possible null refer                │
-│ ence argument for parameter 'input' in 'Guid Guid.Parse(string input)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\SynOS                │
-│ .Api.csproj]                                                                                                                                               │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\RadiologyController.cs(47,37): warning CS8604: Possible null refer                │
-│ ence argument for parameter 'input' in 'Guid Guid.Parse(string input)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\SynOS                │
-│ .Api.csproj]                                                                                                                                               │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\IMSWastageController.cs(42,110): warning CS8629: Nullable value ty                │
-│ pe may be null. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\SynOS.Api.csproj]                                                            │
 │ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\RadiologyReportsController.cs(40,37): warning CS8604: Possible nul                │
 │ l reference argument for parameter 'input' in 'Guid Guid.Parse(string input)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Ap                │
 │ i\SynOS.Api.csproj]                                                                                                                                        │
 │ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\RadiologyReportsController.cs(48,37): warning CS8604: Possible nul                │
 │ l reference argument for parameter 'input' in 'Guid Guid.Parse(string input)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Ap                │
 │ i\SynOS.Api.csproj]                                                                                                                                        │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\RadiologyController.cs(30,37): warning CS8604: Possible null refer                │
+│ ence argument for parameter 'input' in 'Guid Guid.Parse(string input)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\SynOS                │
+│ .Api.csproj]                                                                                                                                               │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\RadiologyController.cs(47,37): warning CS8604: Possible null refer                │
+│ ence argument for parameter 'input' in 'Guid Guid.Parse(string input)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\SynOS                │
+│ .Api.csproj]                                                                                                                                               │
 │ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\RadiologyController.cs(61,37): warning CS8604: Possible null refer                │
 │ ence argument for parameter 'input' in 'Guid Guid.Parse(string input)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\SynOS                │
 │ .Api.csproj]                                                                                                                                               │
 │ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\RadiologyController.cs(92,37): warning CS8604: Possible null refer                │
 │ ence argument for parameter 'input' in 'Guid Guid.Parse(string input)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\SynOS                │
 │ .Api.csproj]                                                                                                                                               │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\RadiologyController.cs(101,37): warning CS8604: Possible null refe                │
-│ rence argument for parameter 'input' in 'Guid Guid.Parse(string input)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\SynO                │
-│ S.Api.csproj]                                                                                                                                              │
 │ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\Radiology\PacsAdminController.cs(25,37): warning CS8604: Possible                 │
 │ null reference argument for parameter 'input' in 'Guid Guid.Parse(string input)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS                │
 │ .Api\SynOS.Api.csproj]                                                                                                                                     │
@@ -835,26 +330,17 @@
 │ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\Radiology\PacsController.cs(45,37): warning CS8604: Possible null                 │
 │ reference argument for parameter 'input' in 'Guid Guid.Parse(string input)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\                │
 │ SynOS.Api.csproj]                                                                                                                                          │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\MappingProfile.cs(18,100): warning CS8602: Dereference of a possibly null refe                │
-│ rence. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\SynOS.Api.csproj]                                                                     │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\MappingProfile.cs(49,85): warning CS8602: Dereference of a possibly null refer                │
-│ ence. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\SynOS.Api.csproj]                                                                      │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\MappingProfile.cs(50,77): warning CS8602: Dereference of a possibly null refer                │
-│ ence. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\SynOS.Api.csproj]                                                                      │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\MappingProfile.cs(51,79): warning CS8602: Dereference of a possibly null refer                │
-│ ence. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\SynOS.Api.csproj]                                                                      │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\MappingProfile.cs(52,84): warning CS8602: Dereference of a possibly null refer                │
-│ ence. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\SynOS.Api.csproj]                                                                      │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\MappingProfile.cs(81,73): warning CS8602: Dereference of a possibly null refer                │
-│ ence. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\SynOS.Api.csproj]                                                                      │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\MappingProfile.cs(81,73): warning CS8602: Dereference of a possibly null refer                │
-│ ence. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\SynOS.Api.csproj]                                                                      │
 │ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\Radiology\PacsController.cs(59,37): warning CS8604: Possible null                 │
 │ reference argument for parameter 'input' in 'Guid Guid.Parse(string input)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\                │
 │ SynOS.Api.csproj]                                                                                                                                          │
 │ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\Radiology\PacsController.cs(68,37): warning CS8604: Possible null                 │
 │ reference argument for parameter 'input' in 'Guid Guid.Parse(string input)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\                │
 │ SynOS.Api.csproj]                                                                                                                                          │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\IMSWastageController.cs(42,110): warning CS8629: Nullable value ty                │
+│ pe may be null. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\SynOS.Api.csproj]                                                            │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\RadiologyController.cs(101,37): warning CS8604: Possible null refe                │
+│ rence argument for parameter 'input' in 'Guid Guid.Parse(string input)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\SynO                │
+│ S.Api.csproj]                                                                                                                                              │
 │ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\SecureDownloadController.cs(61,13): warning ASP0019: Use IHeaderDi                │
 │ ctionary.Append or the indexer to append or set headers. IDictionary.Add will throw an ArgumentException when attempting to add a duplicate                │
 │  key. (https://aka.ms/aspnet/analyzers) [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\SynOS.Api.csproj]                                    │
@@ -873,146 +359,138 @@
 │ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\SecureDownloadController.cs(96,13): warning ASP0019: Use IHeaderDi                │
 │ ctionary.Append or the indexer to append or set headers. IDictionary.Add will throw an ArgumentException when attempting to add a duplicate                │
 │  key. (https://aka.ms/aspnet/analyzers) [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\SynOS.Api.csproj]                                    │
-│     421 Warning(s)                                                                                                                                         │
+│     205 Warning(s)                                                                                                                                         │
 │     0 Error(s)                                                                                                                                             │
 │                                                                                                                                                            │
-│ Time Elapsed 00:00:23.88                                                                                                                                   │
+│ Time Elapsed 00:00:20.13                                                                                                                                   │
 ╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-✦ Build successful. Now, I'll create and apply the AddCostAttribution_UsageFact migration, then deliver the code and explanation before stopping. Generating  
-  the migration now.
-╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ ✓  Shell dotnet ef migrations add AddCostAttributionFact --project src/SynOS.Data --startup-project src/SynOS.Api [current working directory D:\Projects\… │
-│                                                                                                                                                            │
-│ Build started...                                                                                                                                           │
-│ Build succeeded.                                                                                                                                           │
-│ Done. To undo this action, use 'ef migrations remove'                                                                                                      │
-╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-✦ AddCostAttributionFact created. I'll apply it now, then deliver the code and explanation.
-╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ ✓  Shell dotnet ef database update --project src/SynOS.Data --startup-project src/SynOS.Api [current working directory D:\Projects\SynOS-Synthesized-Lab-… │
-│                                                                                                                                                            │
-│ Build started...                                                                                                                                           │
-│ Build succeeded.                                                                                                                                           │
-│ Done.                                                                                                                                                      │
-╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-✦ The migration was successful. Here is the implementation for the Usage Fact Writer.
+✦ Okay, refactoring's done and the build passed. Time to deliver the code and explanation.The build succeeded. I have refactored the ResultService to use     
+  scoped dependency resolution and isolate the cost attribution logic.
 
-  Implementation: Day 16.6 I-3 - Usage Fact Writer
+  Code Changes and Explanation
 
-  1. `ICostAttributionUsageFactWriter.cs` (Interface)
+  Before:
+   * `ResultService` Constructor: Did not accept IServiceProvider.
+   * `SubmitForVerificationAsync` Method: Contained a call to TriggerCostAttributionForOrderAsync, which manually instantiated the
+     CostAttributionPolicyResolver and CostAttributionUsageFactWriter using new, including a new LoggerFactory() hack.
 
-    1 // File: src/SynOS.Services/CostAttribution/ICostAttributionUsageFactWriter.cs
-    2 using System.Threading.Tasks;
-    3 using SynOS.Models.Events.CostAttribution;
-    4 using SynOS.Models.Entities.CostAttribution;
-    5
-    6 namespace SynOS.Services.CostAttribution
-    7 {
-    8     /// <summary>
-    9     /// Defines a service for writing immutable, append-only Usage Facts.
-   10     /// </summary>
-   11     public interface ICostAttributionUsageFactWriter
-   12     {
-   13         /// <summary>
-   14         /// Creates and saves a new Usage Fact based on a resolved policy and a trigger event.
-   15         /// This operation is idempotent and will not create duplicate facts for the same source event.
-   16         /// </summary>
-   17         /// <param name="resolvedPolicyVersion">The active policy version that was resolved for this event.</param>
-   18         /// <param name="eventPayload">The event payload containing the contextual information for the trigger.</param>
-   19         Task WriteUsageFactAsync(
-   20             CostAttribution_UsagePolicyVersion resolvedPolicyVersion,
-   21             CostingTriggerEvent eventPayload);
-   22     }
-   23 }
+  After:
+   * `ResultService` Constructor: Now accepts an IServiceProvider to enable local, scoped service resolution.
+   * `OrchestrateCostAttributionForOrderAsync` Method: A new private orchestrator method now contains the complete attribution logic.
+   * Scoped Resolution: This new method creates a temporary DI scope to resolve the ICostAttributionPolicyResolver and ICostAttributionUsageFactWriter. This  
+     removes all new calls and adheres to proper DI patterns without modifying Program.cs.
 
-  2. `CostAttributionUsageFactWriter.cs` (Implementation)
+  Exact Code Changes:
 
-    1 // File: src/SynOS.Services/CostAttribution/CostAttributionUsageFactWriter.cs
-    2 using System;
-    3 using System.Linq;
-    4 using System.Threading.Tasks;
-    5 using Microsoft.EntityFrameworkCore;
-    6 using Microsoft.Extensions.Logging;
-    7 using SynOS.Data;
-    8 using SynOS.Models.Events.CostAttribution;
-    9 using SynOS.Models.Entities.CostAttribution;
-   10
-   11 namespace SynOS.Services.CostAttribution
-   12 {
-   13     public class CostAttributionUsageFactWriter : ICostAttributionUsageFactWriter
-   14     {
-   15         private readonly SynOSDbContext _context;
-   16         private readonly ILogger<CostAttributionUsageFactWriter> _logger;
-   17
-   18         public CostAttributionUsageFactWriter(SynOSDbContext context, ILogger<CostAttributionUsageFactWriter> logger)
-   19         {
-   20             _context = context;
-   21             _logger = logger;
-   22         }
-   23
-   24         public async Task WriteUsageFactAsync(
-   25             CostAttribution_UsagePolicyVersion resolvedPolicyVersion,
-   26             CostingTriggerEvent eventPayload)
-   27         {
-   28             // IDEMPOTENCY CHECK:
-   29             // This query uses the unique combination of the source event, its type,
-   30             // and the specific inventory item to prevent duplicate fact creation.
-   31             var factExists = await _context.CostAttribution_UsageFacts
-   32                 .AsNoTracking()
-   33                 .AnyAsync(f =>
-   34                     f.SourceEventId == eventPayload.SourceEventId &&
-   35                     f.SourceEventType == eventPayload.SourceEventType &&
-   36                     f.InventoryItemId == resolvedPolicyVersion.UsagePolicy.InventoryItemId);
-   37
-   38             if (factExists)
-   39             {
-   40                 _logger.LogInformation(
-   41                     "Usage Fact for SourceEventId {SourceEventId} and InventoryItemId {InventoryItemId} already exists. Skipping creation.",
-   42                     eventPayload.SourceEventId,
-   43                     resolvedPolicyVersion.UsagePolicy.InventoryItemId);
-   44                 return;
-   45             }
-   46
-   47             // CREATE AND WRITE THE IMMUTABLE FACT:
-   48             var newFact = new CostAttribution_UsageFact
-   49             {
-   50                 UsageFactId = Guid.NewGuid(),
-   51                 TestId = eventPayload.TestId,
-   52                 InventoryItemId = resolvedPolicyVersion.UsagePolicy.InventoryItemId,
-   53                 BranchId = eventPayload.BranchId,
-   54                 Quantity = resolvedPolicyVersion.Quantity, // Direct copy from policy
-   55                 Unit = resolvedPolicyVersion.Unit,         // Direct copy from policy
-   56                 OccurredAt = eventPayload.OccurredAt,
-   57                 RecordedAt = DateTimeOffset.UtcNow,        // System-generated timestamp
-   58                 SourceEventId = eventPayload.SourceEventId,
-   59                 SourceEventType = eventPayload.SourceEventType
-   60             };
-   61
-   62             await _context.CostAttribution_UsageFacts.AddAsync(newFact);
-   63             await _context.SaveChangesAsync();
-   64
-   65             _logger.LogInformation(
-   66                 "Successfully wrote new Usage Fact {UsageFactId} for SourceEventId {SourceEventId}.",
-   67                 newFact.UsageFactId,
-   68                 newFact.SourceEventId);
-   69         }
-   70     }
-   71 }
+  1. `ResultService.cs` - Constructor and Fields (New)
 
-  Method Signature:
+    1 // File: src/SynOS.Services/ResultService.cs
+    2
+    3 // ... other using statements
+    4 using Microsoft.Extensions.DependencyInjection; // Added for IServiceProvider
+    5 using SynOS.Services.CostAttribution; // Added for cost attribution services
+    6
+    7 public class ResultService : IResultService
+    8 {
+    9     private readonly SynOSDbContext _context;
+   10     private readonly ILogger<ResultService> _logger;
+   11     private readonly ICriticalValueService _criticalValueService;
+   12     private readonly IServiceProvider _serviceProvider; // Added
+   13
+   14     public ResultService(
+   15         SynOSDbContext context,
+   16         ILogger<ResultService> logger,
+   17         ICriticalValueService criticalValueService,
+   18         IServiceProvider serviceProvider) // Injected
+   19     {
+   20         _context = context;
+   21         _logger = logger;
+   22         _criticalValueService = criticalValueService;
+   23         _serviceProvider = serviceProvider; // Stored
+   24     }
+   25     //...
 
-   1 Task WriteUsageFactAsync(
-   2     CostAttribution_UsagePolicyVersion resolvedPolicyVersion,
-   3     CostingTriggerEvent eventPayload);
+  2. `ResultService.cs` - Refactored Methods
 
-  Explanation of Append-Only and Idempotency:
+    1 // File: src/SynOS.Services/ResultService.cs
+    2
+    3 public async Task SubmitForVerificationAsync(Guid orderId)
+    4 {
+    5     // ... existing logic to prepare results and report ...
+    6     await _context.SaveChangesAsync();
+    7
+    8     // --- BEGIN COST ATTRIBUTION WIRING (16.6 I-5 REFACTOR) ---
+    9     try
+   10     {
+   11         // The call is now to a clean orchestrator method.
+   12         await OrchestrateCostAttributionForOrderAsync(orderId);
+   13     }
+   14     catch (Exception ex)
+   15     {
+   16         _logger.LogError(ex, "Cost attribution failed for OrderId {OrderId}", orderId);
+   17         // Do not block the primary workflow if cost attribution fails.
+   18     }
+   19     // --- END COST ATTRIBUTION WIRING ---
+   20 }
+   21
+   22 // New private method to isolate logic and use scoped resolution.
+   23 private async Task OrchestrateCostAttributionForOrderAsync(Guid orderId)
+   24 {
+   25     using (var scope = _serviceProvider.CreateScope())
+   26     {
+   27         var policyResolver = scope.ServiceProvider.GetRequiredService<ICostAttributionPolicyResolver>();
+   28         var factWriter = scope.ServiceProvider.GetRequiredService<ICostAttributionUsageFactWriter>();
+   29
+   30         var order = await _context.Orders
+   31             .Include(o => o.Visit)
+   32             .AsNoTracking()
+   33             .FirstOrDefaultAsync(o => o.OrderId == orderId);
+   34
+   35         if (order?.Visit == null)
+   36         {
+   37             _logger.LogWarning("Cost attribution skipped: Order or Visit not found for OrderId {OrderId}", orderId);
+   38             return;
+   39         }
+   40
+   41         var policies = await _context.CostAttribution_UsagePolicies
+   42             .AsNoTracking()
+   43             .Where(p => p.TestId == order.TestId && p.IsActive)
+   44             .ToListAsync();
+   45
+   46         if (!policies.Any())
+   47         {
+   48             return;
+   49         }
+   50
+   51         var triggerEvent = new Models.Events.CostAttribution.CostingTriggerEvent
+   52         {
+   53             SourceEventId = orderId,
+   54             SourceEventType = Models.Entities.CostAttribution.CostAttribution_SourceEventType.TestExecution,
+   55             TestId = order.TestId,
+   56             BranchId = order.Visit.BranchId ?? Guid.Empty,
+   57             OccurredAt = DateTimeOffset.UtcNow
+   58         };
+   59
+   60         foreach (var policy in policies)
+   61         {
+   62             var policyVersion = await policyResolver.ResolvePolicyVersionAsync(
+   63                 order.TestId,
+   64                 policy.InventoryItemId,
+   65                 triggerEvent.BranchId,
+   66                 triggerEvent.OccurredAt);
+   67
+   68             if (policyVersion != null)
+   69             {
+   70                 policyVersion.UsagePolicy = policy;
+   71                 await factWriter.WriteUsageFactAsync(policyVersion, triggerEvent);
+   72             }
+   73         }
+   74     }
+   75 }
 
-   * Append-Only: The logic is exclusively append-only because the WriteUsageFactAsync method only ever creates a new CostAttribution_UsageFact object. It    
-     never queries for an existing fact to modify its properties. The _context.CostAttribution_UsageFacts.AddAsync() and _context.SaveChangesAsync() calls    
-     translate into a pure INSERT SQL statement, preserving the immutability of all existing records.
+  Confirmation
 
-   * Idempotency: This is enforced by the AnyAsync query at the beginning of the method. It checks for a fact with the same composite key (SourceEventId,     
-     SourceEventType, InventoryItemId) before attempting to write a new one. If a record is found, the method logs the event and exits, guaranteeing that     
-     processing the same trigger event multiple times will not create duplicate facts.
+   * Behavior Unchanged: The logic produces the exact same UsageFact as the previous implementation, preserving the OrderId as the SourceEventId.
+   * `Program.cs` Unchanged: Confirmed. The Program.cs file was not modified.
 
-  I have completed the implementation as instructed.
+  I have completed the refactoring as instructed.

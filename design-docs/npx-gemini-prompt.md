@@ -1,51 +1,30 @@
-IMPLEMENTATION 16.6 I-4 — Wire ONE Cost Attribution Flow
+NEXT TASK: IMPLEMENTATION 16.6 I-5 — Cleanup & Decoupling (NO behavior change)
 
-IMPORTANT CONTEXT (DO NOT IGNORE):
-- Program.cs was intentionally cleaned.
-- Cost Attribution services are NOT registered globally in DI.
-- This is deliberate. Do NOT re-add global DI registrations.
+Context:
+- 16.6 I-4 spike is complete and builds successfully.
+- The current implementation is functionally correct but architecturally provisional.
 
-Task:
-Wire a single, explicit end-to-end Cost Attribution flow for ONE operational event.
+Objective:
+Refactor the existing wiring to reduce coupling and fix semantics,
+WITHOUT changing runtime behavior or outputs.
 
-Chosen Event:
-- TestExecutionCompletedForCosting
+Rules:
+- Do NOT change logic or add new features
+- Do NOT touch Program.cs
+- Do NOT add new engines
+- Do NOT change database schema
+- Do NOT change UsageFact contents
 
-Scope:
-- WRITE REAL CODE
-- Wire ONLY this single event
-- Use existing:
-  - CostingTriggerEvent
-  - ICostAttributionPolicyResolver
-  - ICostAttributionUsageFactWriter
-- Do NOT generalize
-- Do NOT add additional events
-- Do NOT add background workers
-- Do NOT add global DI registrations in Program.cs
-
-Wiring Rules:
-- The wiring should occur in the SAME service that already handles
-  test execution completion (or the closest existing place).
-- Services may be resolved locally (scoped) where needed.
-- Flow must be explicit and readable.
-
-End-to-End Flow:
-1. Test execution completes
-2. Emit TestExecutionCompletedForCosting event (in-process, not a bus)
-3. Resolve applicable UsagePolicyVersion
-4. Write exactly ONE UsageFact per policy
-5. Stop
-
-Hard Constraints:
-- Do NOT read inventory stock
-- Do NOT calculate costs
-- Do NOT modify existing UsageFacts
-- Do NOT touch analytics
-- Do NOT touch Spend or Revenue engines
+Required Fixes:
+1. Remove manual LoggerFactory creation.
+2. Stop manually instantiating services inline where possible.
+3. Correct SourceEventId to represent a true TestExecution identity (not OrderId).
+4. Isolate Cost Attribution triggering into a dedicated private orchestrator
+   that ResultService merely calls.
 
 Deliver:
-- Exact code changes (files + snippets)
-- Short explanation of the wiring flow
-- Confirmation that Program.cs remains unchanged
+- Exact code changes
+- Before vs after explanation
+- Confirmation that behavior is unchanged
 
-STOP after this single flow is wired.
+STOP after refactor.
