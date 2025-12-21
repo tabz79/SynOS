@@ -1,33 +1,43 @@
-TASK: 16.7 A.v — Spend Engine Guardrail Documentation (SEAL PHASE A)
+TASK: 16.7 B.i — Define Spend Fact entity (FACTS ONLY)
 
 Context:
-- Spend Engine Phase A is complete
-- This engine is a Truth Engine
-- No behavior is allowed in this task
+- Spend Engine Phase A is sealed
+- This is a Truth Engine
+- We are defining a permanent Spend Fact
 
 Instructions:
-- Add guardrail documentation for the Spend Engine
-- Documentation must clearly state:
-    - This is a Truth Engine
-    - It is write-only
-    - Records completed cash outflows only
-    - No business logic is allowed
-    - No analytics, allocation, approvals, or workflows are allowed
-    - No updates or deletes are allowed (append-only)
-    - Other modules may trigger spends but must not own them
-- Documentation may be comments or README.md files
+- Create a Spend Fact entity inside:
+  src/SynOS.Models/Entities/SpendEngine/
+- This entity represents a completed cash outflow
+- Include ONLY factual fields
 
-Placement:
-- Add documentation inside:
-    1) src/SynOS.Models/Entities/SpendEngine/
-    2) src/SynOS.Services/SpendEngine/
+Mandatory facts (must exist):
+- Unique Id
+- Amount
+- Currency
+- OccurredAt (when money actually left)
+- RecordedAt (when system recorded it)
+- Account (source of money, label only)
+- Channel (destination category, label only)
+
+Optional references (IDs only, nullable):
+- SupplierId
+- EmployeeId
+- InvoiceId
+- ObligationId
+- PayrollRunId
+- ExternalReference
 
 Hard constraints:
-- Do NOT add code logic
-- Do NOT modify existing classes
-- Do NOT add new services or interfaces
-- Do NOT touch Program.cs
-- Do NOT reference Inventory, Cost Attribution, Revenue, or IMS
+- Do NOT add status fields
+- Do NOT add enums for workflow
+- Do NOT add update methods
+- Do NOT add delete methods
+- Do NOT add validation logic
+- Do NOT reference other engines
+- Do NOT write database configuration yet
+
+This entity must be immutable once created.
 
 FINAL INSTRUCTION — STOP CONDITION
 
