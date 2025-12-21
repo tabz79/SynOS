@@ -299,3 +299,311 @@ Violation of these rules **invalidates the architecture**.
 
 ---
 
+# 📄 Spend Engine — Product Requirements Document (PRD)
+
+## System: **SynOS**
+
+## Component: **Spend Engine**
+
+## Type: **Truth Engine (Write-Only Financial Ledger)**
+
+---
+
+## 1. Purpose
+
+The Spend Engine is the **single source of truth for all money that leaves the system**.
+
+It records **only completed outflows**, exactly as they occurred in the real world.
+
+It exists to:
+
+* prevent parallel financial pipes
+* centralize cash outflow truth
+* allow HR, Accounting, Procurement, Analytics to build **on top**, not sideways
+
+This engine is **not** responsible for:
+
+* approvals
+* scheduling
+* payroll logic
+* accounting rules
+* profitability
+* forecasting
+
+Those belong to **other layers**.
+
+---
+
+## 2. Core Principles (Non-Negotiable)
+
+### 2.1 Truth-Only
+
+A spend record exists **only if money has already left** the system.
+
+No future spends.
+No planned spends.
+No assumptions.
+
+---
+
+### 2.2 Write-Only & Immutable
+
+* Spend records cannot be edited or deleted
+* Corrections happen via **new entries**
+* Historical truth is preserved forever
+
+---
+
+### 2.3 Centralized Outflow
+
+**All money outflows must pass through the Spend Engine.**
+
+No other module (HR, Accounting, Procurement, Admin) is allowed to:
+
+* record payments
+* log expenses
+* mark money as “paid”
+
+They may **trigger** spends, never own them.
+
+---
+
+### 2.4 Zero Intelligence
+
+The Spend Engine:
+
+* does not explain revenue
+* does not calculate margins
+* does not allocate costs
+* does not infer meaning
+
+It records facts.
+**Readers derive meaning later.**
+
+---
+
+## 3. What the Spend Engine Records
+
+Each spend record answers one question:
+
+> “Money left the system. What do we know for sure about that event?”
+
+### Mandatory concepts (schema-agnostic)
+
+* Amount
+* Date
+* FromAccount (source of money)
+* ToChannel (destination category)
+* Payee (entity receiving money)
+* RecordedBy (human actor)
+* RecordedAt (timestamp)
+
+---
+
+### Optional references (stored, never interpreted)
+
+* employeeId
+* supplierId
+* invoiceId
+* obligationId
+* payrollRunId
+* inventoryReferenceId
+
+These exist **only for linkage**, not logic.
+
+---
+
+## 4. Accounts (Sources of Money)
+
+Accounts represent **where money came from**, not bank integrations.
+
+They are **labels**, not live connections.
+
+### Initial system accounts
+
+* Cash
+* Bank
+
+(Admin may later add named bank accounts, still as labels.)
+
+The engine does **not** enforce balances at this stage.
+
+---
+
+## 5. Channels (Destinations of Money)
+
+### 5.1 Channel Philosophy
+
+Channels are:
+
+* **system-owned**
+* **immutable**
+* **finite**
+* **destination-based**
+
+They represent **irreducible financial endpoints**, not business intent.
+
+Admins:
+
+* ❌ cannot create channels
+* ❌ cannot rename channels
+* ❌ cannot delete channels
+
+Admins **only create pipes under these channels**.
+
+---
+
+### 5.2 Final Locked Channel Set
+
+These channels are sufficient to model **all financial outflows of a diagnostics lab**, now and in the future.
+
+### ✅ SYSTEM CHANNELS (LOCKED)
+
+1. **Salary Payable**
+   → All employees, contractors, staff
+
+2. **Supplier Payable**
+   → Reagents, consumables, equipment, AMC, services, marketing vendors
+
+3. **Rent & Lease**
+   → Building rent, equipment lease, long-term infra leases
+
+4. **Utilities**
+   → Electricity, water, internet, phone, cloud infrastructure
+
+5. **Referral / Commission Payable**
+   → Doctors, agents, partners, referral programs
+
+6. **Taxes & Statutory Payable**
+   → GST, TDS, professional tax, regulatory dues
+
+7. **Owner Draw / Capital Outflow**
+   → Owner withdrawals, partner drawings, capital return
+   *(Not an expense; structurally distinct)*
+
+8. **Misc Expense**
+   → One-off, uncategorized spends
+   → **Approval-gated**
+   → Never a bypass
+
+---
+
+### 5.3 Channel Rule (Critical)
+
+> **If a spend does not clearly fit any channel, it MUST go through `Misc Expense`.**
+
+No silent exceptions.
+No hidden pipes.
+
+---
+
+## 6. Admin Configurability (What Is Allowed)
+
+Admins **do not control structure**, only instances.
+
+### Admin MAY configure:
+
+* Payees (employees, suppliers, vendors, doctors)
+* Accounts (cash, named banks)
+* Descriptions / reasons
+* Tags / labels (e.g., Marketing, IT, Branding)
+* Attach references (invoice numbers, notes)
+* Trigger spend entries (subject to policy)
+
+---
+
+### Admin MAY NOT:
+
+* Create new channels
+* Change channel meanings
+* Bypass Spend Engine
+* Edit historical spends
+
+---
+
+## 7. Relationship to Other Engines
+
+### 7.1 Revenue Engine
+
+* Revenue Engine records **money entering**
+* Spend Engine records **money leaving**
+* No direct linkage
+* Both reference accounts
+* Correlation happens only in read layers (time-based)
+
+---
+
+### 7.2 Inventory Engine
+
+* Inventory tracks physical movement
+* Spend tracks cash movement
+* Payment may occur days/weeks later
+* Optional linking allowed, never enforced
+
+---
+
+### 7.3 Cost Attribution Engine
+
+* Cost attribution tracks consumption
+* Spend tracks payment
+* No assumption of alignment
+
+---
+
+## 8. Obligation Layer (Adjacent, Future)
+
+The Spend Engine is **obligation-aware but obligation-agnostic**.
+
+* Obligation Layer answers: *“What do we owe?”*
+* Spend Engine answers: *“What did we pay?”*
+
+Spend may reference an obligation.
+Obligations never move money.
+
+---
+
+## 9. Roles & Workflows (Explicitly Deferred)
+
+The Spend Engine:
+
+* assumes a human actor
+* does not encode roles
+* does not encode approvals
+* does not encode scheduling
+
+Roles, approvals, and workflows belong to **policy layers**, not truth engines.
+
+---
+
+## 10. What This Engine Will NEVER Do
+
+❌ No approvals
+❌ No scheduling
+❌ No alerts
+❌ No payroll math
+❌ No accounting rules
+❌ No GST calculations
+❌ No P&L
+❌ No dashboards
+
+All of the above live **above** this engine.
+
+---
+
+## 11. Success Criteria
+
+The Spend Engine is correct if:
+
+* Every rupee leaving the system is recorded once
+* No module invents its own expense records
+* Historical spend data is immutable
+* HR, Accounting, Analytics can be built later **without refactoring**
+
+---
+
+## 12. One-Line Definition (Lock This)
+
+> **The Spend Engine is the kernel-level ledger of cash outflow —
+> dumb, disciplined, immutable, and absolutely trusted.**
+
+---

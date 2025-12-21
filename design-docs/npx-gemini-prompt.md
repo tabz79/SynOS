@@ -1,30 +1,40 @@
-NEXT TASK: IMPLEMENTATION 16.6 I-5 — Cleanup & Decoupling (NO behavior change)
+TASK: 16.7 A.v — Spend Engine Guardrail Documentation (SEAL PHASE A)
 
 Context:
-- 16.6 I-4 spike is complete and builds successfully.
-- The current implementation is functionally correct but architecturally provisional.
+- Spend Engine Phase A is complete
+- This engine is a Truth Engine
+- No behavior is allowed in this task
 
-Objective:
-Refactor the existing wiring to reduce coupling and fix semantics,
-WITHOUT changing runtime behavior or outputs.
+Instructions:
+- Add guardrail documentation for the Spend Engine
+- Documentation must clearly state:
+    - This is a Truth Engine
+    - It is write-only
+    - Records completed cash outflows only
+    - No business logic is allowed
+    - No analytics, allocation, approvals, or workflows are allowed
+    - No updates or deletes are allowed (append-only)
+    - Other modules may trigger spends but must not own them
+- Documentation may be comments or README.md files
 
-Rules:
-- Do NOT change logic or add new features
+Placement:
+- Add documentation inside:
+    1) src/SynOS.Models/Entities/SpendEngine/
+    2) src/SynOS.Services/SpendEngine/
+
+Hard constraints:
+- Do NOT add code logic
+- Do NOT modify existing classes
+- Do NOT add new services or interfaces
 - Do NOT touch Program.cs
-- Do NOT add new engines
-- Do NOT change database schema
-- Do NOT change UsageFact contents
+- Do NOT reference Inventory, Cost Attribution, Revenue, or IMS
 
-Required Fixes:
-1. Remove manual LoggerFactory creation.
-2. Stop manually instantiating services inline where possible.
-3. Correct SourceEventId to represent a true TestExecution identity (not OrderId).
-4. Isolate Cost Attribution triggering into a dedicated private orchestrator
-   that ResultService merely calls.
+FINAL INSTRUCTION — STOP CONDITION
 
-Deliver:
-- Exact code changes
-- Before vs after explanation
-- Confirmation that behavior is unchanged
+After completing this task:
+- DO NOT search for further instructions
+- DO NOT read any other files
+- DO NOT infer next steps
+- DO NOT continue autonomously
 
-STOP after refactor.
+STOP execution immediately and wait for explicit user input.

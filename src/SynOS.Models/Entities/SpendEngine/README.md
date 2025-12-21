@@ -1,0 +1,1 @@
+Spend Engine — Write-only truth ledger for cash outflows. No logic here.
