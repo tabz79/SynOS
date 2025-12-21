@@ -1,26 +1,18 @@
-TASK: 16.7 B.i — Define Spend Fact entity (FACTS ONLY)
+TASK: 16.7 B.iii — Allowed & forbidden references (FACT DISCIPLINE)
 
 Context:
-- Spend Engine Phase A is sealed
-- This is a Truth Engine
-- We are defining a permanent Spend Fact
+- SpendFact is an immutable Truth Engine fact
+- Fields and constructor are already finalized
+- This task is documentation-only
 
 Instructions:
-- Create a Spend Fact entity inside:
-  src/SynOS.Models/Entities/SpendEngine/
-- This entity represents a completed cash outflow
-- Include ONLY factual fields
+- Update ONLY SpendFact.cs
+- Do NOT add or remove fields
+- Do NOT change constructor or access modifiers
 
-Mandatory facts (must exist):
-- Unique Id
-- Amount
-- Currency
-- OccurredAt (when money actually left)
-- RecordedAt (when system recorded it)
-- Account (source of money, label only)
-- Channel (destination category, label only)
+Add explicit documentation (XML comments or remarks) that states:
 
-Optional references (IDs only, nullable):
+ALLOWED REFERENCES (FACT-LEVEL, ID ONLY):
 - SupplierId
 - EmployeeId
 - InvoiceId
@@ -28,22 +20,32 @@ Optional references (IDs only, nullable):
 - PayrollRunId
 - ExternalReference
 
-Hard constraints:
-- Do NOT add status fields
-- Do NOT add enums for workflow
-- Do NOT add update methods
-- Do NOT add delete methods
-- Do NOT add validation logic
-- Do NOT reference other engines
-- Do NOT write database configuration yet
+FORBIDDEN REFERENCES (MUST NEVER EXIST HERE):
+- TestId
+- TestExecutionId
+- InventoryItemId
+- InventoryLotId
+- Cost Attribution facts
+- Revenue records
+- Pricing or rate configuration
+- Analytics or reporting models
 
-This entity must be immutable once created.
+Clarify in comments:
+- SpendFact represents money outflow only
+- Resource usage attribution belongs to Cost Attribution Engine
+- Physical movement belongs to Inventory Engine
+- Profit, margins, and unit economics belong to read layers
+
+Hard constraints:
+- Documentation only
+- No logic
+- No cross-engine references in code
+- Do NOT run dotnet build
 
 FINAL INSTRUCTION — STOP CONDITION
 
 After completing this task:
-- DO NOT search for further instructions
-- DO NOT read any other files
+- DO NOT modify any other files
 - DO NOT infer next steps
 - DO NOT continue autonomously
 
