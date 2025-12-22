@@ -1,52 +1,130 @@
-TASK: 16.7 B.iii — Allowed & forbidden references (FACT DISCIPLINE)
+## 🔹 GEMINI PROMPT — **IMPLEMENTATION 16.8 A.i**
 
-Context:
-- SpendFact is an immutable Truth Engine fact
-- Fields and constructor are already finalized
-- This task is documentation-only
+### Revenue Engine — RevenueFact Truth Definition
 
-Instructions:
-- Update ONLY SpendFact.cs
-- Do NOT add or remove fields
-- Do NOT change constructor or access modifiers
+---
 
-Add explicit documentation (XML comments or remarks) that states:
+### ⚠️ READ FIRST — NON-NEGOTIABLE
 
-ALLOWED REFERENCES (FACT-LEVEL, ID ONLY):
-- SupplierId
-- EmployeeId
-- InvoiceId
-- ObligationId
-- PayrollRunId
-- ExternalReference
+You are defining the **Revenue Engine truth model**.
 
-FORBIDDEN REFERENCES (MUST NEVER EXIST HERE):
-- TestId
-- TestExecutionId
-- InventoryItemId
-- InventoryLotId
-- Cost Attribution facts
-- Revenue records
-- Pricing or rate configuration
-- Analytics or reporting models
+This engine records **money inflow facts only**.
 
-Clarify in comments:
-- SpendFact represents money outflow only
-- Resource usage attribution belongs to Cost Attribution Engine
-- Physical movement belongs to Inventory Engine
-- Profit, margins, and unit economics belong to read layers
+You MUST NOT:
 
-Hard constraints:
-- Documentation only
-- No logic
-- No cross-engine references in code
-- Do NOT run dotnet build
+* Calculate totals
+* Infer revenue
+* Validate against other engines
+* Reference Spend, Inventory, Tests, Billing, or Pricing
+* Add business logic
+* Add analytics fields
+* Add derived or computed columns
+* Modify or delete facts
+* “Optimize” the design
 
-FINAL INSTRUCTION — STOP CONDITION
+This is a **write-only, append-only truth engine**.
 
-After completing this task:
-- DO NOT modify any other files
-- DO NOT infer next steps
-- DO NOT continue autonomously
+---
 
-STOP execution immediately and wait for explicit user input.
+### 🎯 OBJECTIVE
+
+Define the **RevenueFact data model** that represents **one real-world declaration that money was received**.
+
+This is a **fact contract**, not a reporting model.
+
+---
+
+### 🧱 CORE PRINCIPLES (DO NOT VIOLATE)
+
+* One RevenueFact = one inflow declaration
+* Truth ≠ correctness
+* Facts come from reality, not inference
+* If money was received outside the system, it is still recorded here
+* Refunds / chargebacks are recorded as **new facts**, never mutations
+
+---
+
+### 📦 REQUIRED OUTPUT
+
+Produce:
+
+1. **RevenueFact entity definition**
+
+   * Field name
+   * Type
+   * Short description
+   * Whether immutable (yes for almost all)
+
+2. Supporting enums (if needed), strictly minimal:
+
+   * RevenueDirection
+   * RevenueSourceType
+   * PaymentMode
+
+3. Explicitly list:
+
+   * What RevenueFact IS
+   * What RevenueFact IS NOT
+
+---
+
+### 📌 REQUIRED FIELDS (MINIMUM — DO NOT REMOVE)
+
+Your model MUST include these fields:
+
+* RevenueFactId (immutable)
+* OccurredAt (when money actually entered)
+* DeclaredAt (when system was told)
+* Amount
+* Currency
+* Direction (INFLOW / REVERSAL)
+* SourceType (Patient / Corporate / Insurance / Other)
+* SourceReferenceId (opaque string, not interpreted)
+* PaymentMode (Cash / UPI / Card / Bank / Other)
+* DeclaredByUserId
+* Notes (optional, never parsed)
+
+You MAY add **only** fields that strengthen auditability
+(eg. CreatedAt, ExternalReferenceId)
+—but you must justify each one.
+
+---
+
+### 🚫 HARD EXCLUSIONS
+
+RevenueFact must NOT include:
+
+* TestId
+* VisitId
+* Bill breakdowns
+* Cost
+* Profit
+* Status
+* ExpectedAmount
+* Pending flags
+* Settlement logic
+
+---
+
+### 📤 FORMAT YOUR RESPONSE AS
+
+1. **RevenueFact — Field Table**
+2. **Enum Definitions**
+3. **Invariants & Rules**
+4. **Explicit Non-Goals**
+
+Be precise. Be boring. Be strict.
+
+---
+
+### 🧠 MENTAL MODEL
+
+Think of RevenueFact as:
+
+> “A timestamped receipt stub dropped into a vault.”
+
+Nothing more.
+
+---
+
+**End of prompt.**

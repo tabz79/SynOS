@@ -1,16 +1,16 @@
-# Spend Engine Guardrails - Phase A (SEALED)
+# Spend Engine - Models Guardrails
 
-## This is a **Truth Engine**
+## This Module is **SEALED**
 
-*   **Purpose:** Records completed cash outflows only.
-*   **Nature:** It is **write-only**.
-*   **Immutability:** No updates or deletes are allowed (it is append-only). Corrections must be new entries.
-*   **Logic Constraint:** No business logic is allowed within this engine.
-*   **Forbidden Features:** No analytics, allocation, approvals, or workflows are allowed.
-*   **Ownership:** Other modules may trigger spends but must not own the process of recording them here.
+This module defines the **immutable facts** for the Spend Engine.
 
-**Do NOT add code logic.**
-**Do NOT modify existing classes.**
-**Do NOT add new services or interfaces.**
-**Do NOT touch Program.cs.**
-**Do NOT reference Inventory, Cost Attribution, Revenue, or IMS.**
+- **Purpose:** To define the structure of a `SpendFact` as a write-only, append-only truth record.
+- **Contents:** Contains ONLY the `SpendFact` entity, which is immutable by design.
+- **Evolution:** The structure is considered final. No new fields, logic, or entities should be added without formal architectural review.
+
+## 🔒 Hard Constraints
+
+- **No Business Logic:** No validation, inference, aggregation, or any other form of business logic is allowed.
+- **No Engine Triggers:** The entities in this module MUST NOT trigger other engines.
+- **No `Program.cs` Changes:** Do not add registrations or configurations related to this module to `Program.cs`.
+- **No Global Wiring:** This module and its contents are not part of any auto-wiring or global service registration scheme.

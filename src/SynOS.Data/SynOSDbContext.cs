@@ -2,10 +2,9 @@
 // Author: Gemini
 // Date: 2025-11-13
 
-using Microsoft.EntityFrameworkCore;
-using SynOS.Models.Entities;
 using SynOS.Models.Entities.IMS;
 using SynOS.Models.Entities.CostAttribution;
+using SynOS.Models.Entities.SpendEngine;
 
 namespace SynOS.Data
 {
@@ -118,6 +117,9 @@ namespace SynOS.Data
         public DbSet<SynOS.Models.Entities.CostAttribution.CostAttribution_UsagePolicyVersion> CostAttribution_UsagePolicyVersions { get; set; } = null!;
         public DbSet<SynOS.Models.Entities.CostAttribution.CostAttribution_UsageFact> CostAttribution_UsageFacts { get; set; } = null!;
 
+        // Spend Engine DbSets
+        public DbSet<SpendFact> SpendFacts { get; set; } = null!;
+        
         #endregion
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -723,6 +725,23 @@ namespace SynOS.Data
                 entity.HasIndex(e => e.InventoryItemId);
                 entity.HasIndex(e => e.OccurredAt);
                 entity.Property(e => e.SourceEventType).HasConversion<string>().HasMaxLength(50);
+            });
+
+            // Spend Engine Configuration
+            modelBuilder.Entity<SpendFact>(entity =>
+            {
+                entity.ToTable("SpendFacts");
+                entity.HasKey(e => e.SpendFactId);
+
+                entity.Property(e => e.Amount).HasColumnType("decimal(18, 4)").IsRequired();
+                entity.Property(e => e.Currency).HasMaxLength(10).IsRequired();
+                entity.Property(e => e.OccurredAt).IsRequired();
+                entity.Property(e => e.RecordedAt).IsRequired();
+                entity.Property(e => e.Account).HasMaxLength(100).IsRequired();
+                entity.Property(e => e.Channel).HasMaxLength(100).IsRequired();
+
+                // Optional references are configured by convention (nullable Guid? or string?)
+                // No navigation properties or foreign key constraints are added, as per instructions.
             });
 
             #endregion

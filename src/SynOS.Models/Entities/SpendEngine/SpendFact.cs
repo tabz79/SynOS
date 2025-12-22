@@ -36,6 +36,9 @@ namespace SynOS.Models.Entities.SpendEngine
     /// - Revenue records
     /// - Pricing or rate configuration
     /// - Analytics or reporting models
+    ///
+    /// **ENGINE SEALED (Phase A):** This entity's structure is considered final and complete.
+    /// Do not add new fields or logic without following formal architecture review.
     /// </remarks>
     public sealed class SpendFact // Class is sealed to reinforce immutability intent
     {
