@@ -2,9 +2,12 @@
 // Author: Gemini
 // Date: 2025-11-13
 
+using Microsoft.EntityFrameworkCore;
+using SynOS.Models.Entities;
 using SynOS.Models.Entities.IMS;
 using SynOS.Models.Entities.CostAttribution;
 using SynOS.Models.Entities.SpendEngine;
+using SynOS.Models.Entities.Revenue;
 
 namespace SynOS.Data
 {
@@ -117,10 +120,12 @@ namespace SynOS.Data
         public DbSet<SynOS.Models.Entities.CostAttribution.CostAttribution_UsagePolicyVersion> CostAttribution_UsagePolicyVersions { get; set; } = null!;
         public DbSet<SynOS.Models.Entities.CostAttribution.CostAttribution_UsageFact> CostAttribution_UsageFacts { get; set; } = null!;
 
-        // Spend Engine DbSets
-        public DbSet<SpendFact> SpendFacts { get; set; } = null!;
-        
-        #endregion
+                // Spend Engine DbSets
+                public DbSet<SpendFact> SpendFacts { get; set; } = null!;
+                
+                                // Revenue Engine DbSets
+                                public DbSet<RevenueFact> RevenueFacts { get; set; } = null!;
+                                #endregion // End of IMS DbSets region
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -742,6 +747,25 @@ namespace SynOS.Data
 
                 // Optional references are configured by convention (nullable Guid? or string?)
                 // No navigation properties or foreign key constraints are added, as per instructions.
+            });
+
+            // Revenue Engine Configuration
+            modelBuilder.Entity<RevenueFact>(entity =>
+            {
+                entity.ToTable("RevenueFacts");
+                entity.HasKey(e => e.RevenueFactId);
+
+                // Optional unique index for idempotency on external transaction IDs
+                entity.HasIndex(e => e.ExternalTransactionId).IsUnique().HasFilter("[ExternalTransactionId] IS NOT NULL");
+
+                entity.Property(e => e.Amount).HasColumnType("decimal(18, 4)").IsRequired();
+                entity.Property(e => e.Currency).HasMaxLength(10).IsRequired();
+                entity.Property(e => e.Direction).HasConversion<string>().HasMaxLength(20).IsRequired();
+                entity.Property(e => e.SourceType).HasConversion<string>().HasMaxLength(50).IsRequired();
+                entity.Property(e => e.PaymentMode).HasConversion<string>().HasMaxLength(50).IsRequired();
+                entity.Property(e => e.SourceReferenceId).HasMaxLength(200).IsRequired();
+
+                // No navigation properties or foreign keys are defined, keeping this a pure fact table.
             });
 
             #endregion

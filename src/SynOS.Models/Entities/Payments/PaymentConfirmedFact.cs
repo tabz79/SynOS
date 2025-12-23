@@ -17,46 +17,14 @@ namespace SynOS.Models.Entities.Payments
     /// </remarks>
     public sealed class PaymentConfirmedFact
     {
-        /// <summary>
-        /// Unique identifier for this payment confirmation event.
-        /// </summary>
-        public Guid PaymentId { get; }
-
-        /// <summary>
-        /// The direction of the money movement (In or Out).
-        /// </summary>
-        public PaymentDirection Direction { get; }
-
-        /// <summary>
-        /// The amount of money that moved.
-        /// </summary>
-        public decimal Amount { get; }
-
-        /// <summary>
-        /// A generic identifier for the other party in the transaction 
-        /// (e.g., PatientId, SupplierId, EmployeeId).
-        /// </summary>
-        public Guid CounterpartyId { get; }
-
-        /// <summary>
-        /// Optional: A generic reference to a related entity (e.g., InvoiceId, POId, VisitId).
-        /// </summary>
-        public Guid? ReferenceId { get; }
-
-        /// <summary>
-        /// The timestamp when the money actually moved (e.g., bank confirmation time).
-        /// </summary>
-        public DateTimeOffset OccurredAt { get; }
-
-        /// <summary>
-        /// The system timestamp when this fact was recorded.
-        /// </summary>
-        public DateTimeOffset RecordedAt { get; }
-
-        /// <summary>
-        /// Optional: The channel through which the payment was made (e.g., "Bank", "Cash", "UPI").
-        /// </summary>
-        public string? Channel { get; }
+        public Guid PaymentId { get; init; }
+        public PaymentDirection Direction { get; init; }
+        public decimal Amount { get; init; }
+        public Guid CounterpartyId { get; init; }
+        public Guid? ReferenceId { get; init; }
+        public DateTimeOffset OccurredAt { get; init; }
+        public DateTimeOffset RecordedAt { get; init; }
+        public string? Channel { get; init; }
 
         public PaymentConfirmedFact(
             Guid paymentId,

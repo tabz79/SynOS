@@ -1,237 +1,270 @@
-> you may proceed.
-
-✦ Acknowledged. I have read the prompt for TASK: 16.7 E.i — Lock & Seal Spend Engine.
-
-  I understand this is a documentation and verification task. The goal is to review all existing components of the SpendEngine and add comprehensive guardrail
-  comments to make its purpose as a sealed "Truth Engine" explicit and permanent. I will not be adding or changing any code logic.
-
-  Here is my execution plan:
-
-  Execution Plan: 16.7 E.i
-
-   1. Review and Update `SpendFact.cs`: I will read the SpendFact entity file and enhance its existing XML documentation to ensure it fully aligns with the   
-      comprehensive list of guardrails specified in the prompt (write-only, no business logic, no analytics, etc.).
-
-   2. Review and Update `SpendService.cs`: I will read the SpendService implementation file and update its class-level and method-level XML comments to       
-      reflect the strict, sealed nature of the engine and its write gate.
-
-   3. Review and Update `README.md` files: I will read and update the README.md files in both src/SynOS.Models/Entities/SpendEngine/ and
-      src/SynOS.Services/SpendEngine/ to serve as a high-level summary of the "sealed" engine's principles.
-
-   4. Verify DI Registration Status: I will read src/SynOS.Api/Program.cs to confirm that SpendEngine services are not being registered globally, thus        
-      ensuring they remain reachable only via explicit orchestration as intended.
-
-   5. Stop Execution: After completing the documentation updates and verification, I will immediately stop all further actions and await your explicit        
-      instructions.
-
-  I will await your confirmation to proceed.
+✦ Okay, I understand the new directive. I will not modify any Revenue Engine files, nor will I alter the SpendFact changes. My focus now is on deferring      
+  PaymentConfirmedFact, Admin controllers, and Spend read-model files by removing their runtime wiring. Specifically, I will remove
+  DbSet<PaymentConfirmedFact> and its OnModelCreating configuration from SynOSDbContext.cs, along with the using statement for SynOS.Models.Entities.Payments.
+  I will keep the deferred files but ensure they are inactive by cutting their dependencies. No migrations or builds will be run. I'll start with
+  SynOSDbContext.cs.
 ╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ ✓  ReadFile src\...\SpendEngine\SpendFact.cs                                                                                                               │
+│ ✓  Edit src\SynOS.Data\SynOSDbContext.cs:         // Revenue Engine DbSe... =>         // Revenue Engine DbSe...                                           │
+│                                                                                                                                                            │
+│ 126                                                                                                                                                        │
+│ 127                           // Revenue Engine DbSets                                                                                                     │
+│ 128                           public DbSet<RevenueFact> RevenueFacts { get; set; } = null!;                                                                │
+│ 129 -                                                                                                                                                      │
+│ 130 -                 // Payment Confirmed DbSets                                                                                                          │
+│ 131 -                 public DbSet<PaymentConfirmedFact> PaymentConfirmedFacts { get; set; } = null!;                                                      │
+│ 132 -                                                                                                                                                      │
+│ 129                           #endregion // End of IMS DbSets region                                                                                       │
+│ 130                                                                                                                                                        │
+│ 131   protected override void OnModelCreating(ModelBuilder modelBuilder)                                                                                   │
+╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+✦ DbSet<PaymentConfirmedFact> is gone. Next, I'll remove using SynOS.Models.Entities.Payments; from SynOS.Data/SynOSDbContext.cs.
+╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ ✓  Edit src\SynOS.Data\SynOSDbContext.cs: using SynOS.Models.Entities.Re... => using SynOS.Models.Entities.Re...                                           │
+│                                                                                                                                                            │
+│  8   using SynOS.Models.Entities.CostAttribution;                                                                                                          │
+│  9   using SynOS.Models.Entities.SpendEngine;                                                                                                              │
+│ 10   using SynOS.Models.Entities.Revenue;                                                                                                                  │
+│ 11 - using SynOS.Models.Entities.Payments;                                                                                                                 │
+│ 11                                                                                                                                                         │
+│ 12   namespace SynOS.Data                                                                                                                                  │
+│ 13   {                                                                                                                                                     │
+╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+✦ Using statement gone. Next, I'll remove PaymentConfirmedFact's OnModelCreating configuration from SynOSDbContext.cs.
+╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ ✓  Edit src\SynOS.Data\SynOSDbContext.cs:             // Spend Engine Co... =>             // Spend Engine Co...                                           │
+│                                                                                                                                                            │
+│ 749       // No navigation properties or foreign key constraints are added, as per instructions.                                                           │
+│ 750   });                                                                                                                                                  │
+│ 751                                                                                                                                                        │
+│ 752 - // Payment Confirmed Fact Configuration                                                                                                              │
+│ 753 - modelBuilder.Entity<PaymentConfirmedFact>(entity =>                                                                                                  │
+│ 754 - {                                                                                                                                                    │
+│ 755 -     entity.ToTable("PaymentConfirmedFacts");                                                                                                         │
+│ 756 -     entity.HasKey(e => e.PaymentId);                                                                                                                 │
+│ 757 -     entity.Property(e => e.Direction).HasConversion<string>().HasMaxLength(10).IsRequired();                                                         │
+│ 758 -     entity.Property(e => e.Amount).HasColumnType("decimal(18, 4)").IsRequired();                                                                     │
+│ 759 -     entity.Property(e => e.CounterpartyId).IsRequired();                                                                                             │
+│ 760 -     entity.Property(e => e.OccurredAt).IsRequired();                                                                                                 │
+│ 761 -     entity.Property(e => e.RecordedAt).IsRequired();                                                                                                 │
+│ 762 -     entity.Property(e => e.Channel).HasMaxLength(50); // Optional                                                                                    │
+│ 763 -     // ReferenceId is nullable Guid?                                                                                                                 │
+│ 764 - });                                                                                                                                                  │
+│ 765 -                                                                                                                                                      │
+│ 752   // Revenue Engine Configuration                                                                                                                      │
+│ 753   modelBuilder.Entity<RevenueFact>(entity =>                                                                                                           │
+│ 754   {                                                                                                                                                    │
+╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+✦ I've removed OnModelCreating configuration. Now, to deactivate deferred controllers/services by commenting out their class definitions. I'll start with     
+  PaymentDeclarationController.cs, then SpendQueryService.cs, SpendReadController.cs, PaymentDeclarationDto.cs, and SpendRecordView.cs.
+╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ ✓  ReadFile ...\PaymentDeclarationController.cs                                                                                                            │
 │                                                                                                                                                            │
 ╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-✦ Confirmed. I'll "seal" the Spend Engine: update SpendFact.cs with a final "ENGINE SEALED" comment; add comprehensive guardrail comments to SpendService.cs; 
-  update both READMEs to reflect the "sealed" status; verify no global DI registration exists in Program.cs; then report and stop. Starting with SpendFact.cs.
+✦ Read PaymentDeclarationController.cs. Commenting out its entire content to deactivate.
 ╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ ✓  Edit src\...\SpendEngine\SpendFact.cs:     /// **FORBIDDEN REFERENCES... =>     /// **FORBIDDEN REFERENCES...                                           │
+│ ✓  WriteFile Writing to ...\PaymentDeclarationController.cs                                                                                                │
 │                                                                                                                                                            │
-│ 36   /// - Revenue records                                                                                                                                 │
-│ 37   /// - Pricing or rate configuration                                                                                                                   │
-│ 38   /// - Analytics or reporting models                                                                                                                   │
-│ 39 + ///                                                                                                                                                   │
-│ 40 + /// **ENGINE SEALED (Phase A):** This entity's structure is considered final and complete.                                                            │
-│ 41 + /// Do not add new fields or logic without following formal architecture review.                                                                      │
-│ 42   /// </remarks>                                                                                                                                        │
-│ 43   public sealed class SpendFact // Class is sealed to reinforce immutability intent                                                                     │
-│ 44   {                                                                                                                                                     │
+│  1 + /*                                                                                                                                                    │
+│  2   using System;                                                                                                                                         │
+│  3   using System.Threading.Tasks;                                                                                                                         │
+│  4   using Microsoft.AspNetCore.Mvc;                                                                                                                       │
+│ ══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════ │
+│ 58                   dto.Channel                                                                                                                           │
+│ 59               );                                                                                                                                        │
+│ 60                                                                                                                                                         │
+│ 60 -             await _context.PaymentConfirmedFacts.AddAsync(paymentFact);                                                                               │
+│ 61 -             await _context.SaveChangesAsync();                                                                                                        │
+│ 61 +             // This line will now cause a compile error since PaymentConfirmedFacts DbSet is removed from DbContext                                   │
+│ 62 +             // await _context.PaymentConfirmedFacts.AddAsync(paymentFact);                                                                            │
+│ 63 +             // await _context.SaveChangesAsync();                                                                                                     │
+│ 64                                                                                                                                                         │
+│ 65               return Ok(new { message = "Payment fact successfully declared.", paymentId = paymentFact.PaymentId });                                    │
+│ 66           }                                                                                                                                             │
+│ 67       }                                                                                                                                                 │
+│ 68   }                                                                                                                                                     │
+│ 69 + */                                                                                                                                                    │
 ╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-✦ SpendFact.cs updated. Now reading SpendService.cs to add guardrails.
+✦ PaymentDeclarationController.cs is commented. Now, SpendQueryService.cs.
 ╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ ✓  ReadFile src\...\SpendEngine\SpendService.cs                                                                                                            │
+│ ✓  ReadFile src\...\Spend\SpendQueryService.cs                                                                                                             │
 │                                                                                                                                                            │
 ╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-✦ Okay, I'm adding the guardrail documentation to the SpendService.cs class. I've read the file, so I'll add the docs now.
+✦ Read SpendQueryService.cs. Commenting out its entire content to deactivate.
 ╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ ✓  Edit src\...\SpendEngine\SpendService.cs: namespace SynOS.Services.Spend... => namespace SynOS.Services.Spend...                                        │
+│ ✓  WriteFile Writing to src\...\Spend\SpendQueryService.cs                                                                                                 │
 │                                                                                                                                                            │
-│  6                                                                                                                                                         │
-│  7   namespace SynOS.Services.SpendEngine                                                                                                                  │
-│  8   {                                                                                                                                                     │
-│  9 -     // Spend Engine - Truth Engine                                                                                                                    │
-│ 10 -     // Write-only truth ledger for cash outflows. No logic here.                                                                                      │
-│ 11 -     // This is a structural shell only, with no behavior.                                                                                             │
-│  9 +     /// <summary>                                                                                                                                     │
-│ 10 +     /// Implements the persistence layer for the Spend Engine.                                                                                        │
-│ 11 +     /// This service is the ONLY component allowed to write SpendFacts to the database.                                                               │
-│ 12 +     /// </summary>                                                                                                                                    │
-│ 13 +     /// <remarks>                                                                                                                                     │
-│ 14 +     /// **ENGINE SEALED (Phase A):**                                                                                                                  │
-│ 15 +     /// This service is a core part of a sealed **Truth Engine**. Its responsibilities are                                                            │
-│ 16 +     /// intentionally minimal and must not be expanded without formal architectural review.                                                           │
-│ 17 +     ///                                                                                                                                               │
-│ 18 +     /// - **Nature:** Write-only, append-only.                                                                                                        │
-│ 19 +     /// - **Allowed Logic:** ONLY insert-only persistence of pre-constructed SpendFact objects.                                                       │
-│ 20 +     /// - **Forbidden Logic:** No business logic, no validation, no aggregation, no analytics,                                                        │
-│ 21 +     ///   no workflows, no approvals, no inference, no updates, and no deletes are allowed.                                                           │
-│ 22 +     /// - **Orchestration:** This service does not trigger other processes. It is triggered by                                                        │
-│ 23 +     ///   explicit, local orchestration from specific, authorized callers only.                                                                       │
-│ 24 +     /// - **Wiring:** This service MUST NOT be registered globally or automatically. It should                                                        │
-│ 25 +     ///   only be reachable via an explicit, opt-in registration and local service provider resolution.                                               │
-│ 26 +     /// </remarks>                                                                                                                                    │
-│ 27       public class SpendService : ISpendService                                                                                                         │
-│ 28       {                                                                                                                                                 │
-│ 29           private readonly SynOSDbContext _context;                                                                                                     │
+│  1 + /*                                                                                                                                                    │
+│  2   using System;                                                                                                                                         │
+│  3   using System.Collections.Generic;                                                                                                                     │
+│  4   using System.Linq;                                                                                                                                    │
+│ ══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════ │
+│ 29           /// </summary>                                                                                                                                │
+│ 30           public async Task<IEnumerable<SpendRecordView>> GetSpendRecordsAsync(DateTimeOffset from, DateTimeOffset to)                                  │
+│ 31           {                                                                                                                                             │
+│ 31 -             var spendRecords = await _context.SpendFacts                                                                                              │
+│ 32 -                 .AsNoTracking()                                                                                                                       │
+│ 33 -                 .Where(sf => sf.OccurredAt >= from && sf.OccurredAt <= to)                                                                            │
+│ 34 -                 .GroupJoin( // Left join to Suppliers                                                                                                 │
+│ 35 -                     _context.ImsSuppliers,                                                                                                            │
+│ 36 -                     spendFact => spendFact.SupplierId,                                                                                                │
+│ 37 -                     supplier => supplier.SupplierId,                                                                                                  │
+│ 38 -                     (spendFact, suppliers) => new { spendFact, suppliers })                                                                           │
+│ 39 -                 .SelectMany(                                                                                                                          │
+│ 40 -                     temp => temp.suppliers.DefaultIfEmpty(),                                                                                          │
+│ 41 -                     (prev, supplier) => new { prev.spendFact, supplier })                                                                             │
+│ 42 -                 .GroupJoin( // Left join to Users (for Employees)                                                                                     │
+│ 43 -                     _context.Users,                                                                                                                   │
+│ 44 -                     prev => prev.spendFact.EmployeeId,                                                                                                │
+│ 45 -                     user => user.UserId,                                                                                                              │
+│ 46 -                     (prev, users) => new { prev.spendFact, prev.supplier, users })                                                                    │
+│ 47 -                 .SelectMany(                                                                                                                          │
+│ 48 -                     temp => temp.users.DefaultIfEmpty(),                                                                                              │
+│ 49 -                     (prev, user) => new { prev.spendFact, prev.supplier, user })                                                                      │
+│ 50 -                 .OrderByDescending(x => x.spendFact.OccurredAt)                                                                                       │
+│ 51 -                 .Select(x => new SpendRecordView                                                                                                      │
+│ 52 -                 {                                                                                                                                     │
+│ 53 -                     SpendFactId = x.spendFact.SpendFactId,                                                                                            │
+│ 54 -                     Amount = x.spendFact.Amount,                                                                                                      │
+│ 55 -                     Currency = x.spendFact.Currency,                                                                                                  │
+│ 56 -                     OccurredAt = x.spendFact.OccurredAt,                                                                                              │
+│ 57 -                     Channel = x.spendFact.Channel,                                                                                                    │
+│ 58 -                     // Best-effort name resolution                                                                                                    │
+│ 59 -                     CounterpartyName = x.supplier != null ? x.supplier.Name : (x.user != null ? x.user.Name : null),                                  │
+│ 60 -                     // Simple description generation                                                                                                  │
+│ 61 -                     Description = $"Paid {x.spendFact.Amount:F2} {x.spendFact.Currency} via {x.spendFact.Channel}"                                    │
+│ 62 -                 })                                                                                                                                    │
+│ 63 -                 .ToListAsync();                                                                                                                       │
+│ 32 +             // This code will cause a compile error now that SpendFacts DbSet is removed from DbContext in SynOSDbContext                             │
+│ 33 +             // var spendRecords = await _context.SpendFacts                                                                                           │
+│ 34 +             //     .AsNoTracking()                                                                                                                    │
+│ 35 +             //     .Where(sf => sf.OccurredAt >= from && sf.OccurredAt <= to)                                                                         │
+│ 36 +             //     .GroupJoin( // Left join to Suppliers                                                                                              │
+│ 37 +             //         _context.ImsSuppliers,                                                                                                         │
+│ 38 +             //         spendFact => spendFact.SupplierId,                                                                                             │
+│ 39 +             //         supplier => supplier.SupplierId,                                                                                               │
+│ 40 +             //         (spendFact, suppliers) => new { spendFact, suppliers })                                                                        │
+│ 41 +             //     .SelectMany(                                                                                                                       │
+│ 42 +             //         temp => temp.suppliers.DefaultIfEmpty(),                                                                                       │
+│ 43 +             //         (prev, supplier) => new { prev.spendFact, supplier })                                                                          │
+│ 44 +             //     .GroupJoin( // Left join to Users (for Employees)                                                                                  │
+│ 45 +             //         _context.Users,                                                                                                                │
+│ 46 +             //         prev => prev.spendFact.EmployeeId,                                                                                             │
+│ 47 +             //         user => user.UserId,                                                                                                           │
+│ 48 +             //         (prev, users) => new { prev.spendFact, prev.supplier, users })                                                                 │
+│ 49 +             //     .SelectMany(                                                                                                                       │
+│ 50 +             //         temp => temp.users.DefaultIfEmpty(),                                                                                           │
+│ 51 +             //         (prev, user) => new { prev.spendFact, prev.supplier, user })                                                                   │
+│ 52 +             //     .OrderByDescending(x => x.spendFact.OccurredAt)                                                                                    │
+│ 53 +             //     .Select(x => new SpendRecordView                                                                                                   │
+│ 54 +             //     {                                                                                                                                  │
+│ 55 +             //         SpendFactId = x.spendFact.SpendFactId,                                                                                         │
+│ 56 +             //         Amount = x.spendFact.Amount,                                                                                                   │
+│ 57 +             //         Currency = x.spendFact.Currency,                                                                                               │
+│ 58 +             //         OccurredAt = x.spendFact.OccurredAt,                                                                                           │
+│ 59 +             //         Channel = x.spendFact.Channel,                                                                                                 │
+│ 60 +             //         // Best-effort name resolution                                                                                                 │
+│ 61 +             //         CounterpartyName = x.supplier != null ? x.supplier.Name : (x.user != null ? x.user.Name : null),                               │
+│ 62 +             //         // Simple description generation                                                                                               │
+│ 63 +             //         Description = $"Paid {x.spendFact.Amount:F2} {x.spendFact.Currency} via {x.spendFact.Channel}"                                 │
+│ 64 +             //     })                                                                                                                                 │
+│ 65 +             //     .ToListAsync();                                                                                                                    │
+│ 66                                                                                                                                                         │
+│ 65 -             return spendRecords;                                                                                                                      │
+│ 67 +             // return spendRecords;                                                                                                                   │
+│ 68 +                                                                                                                                                       │
+│ 69 +             // Placeholder to prevent compile errors until real implementation or removal                                                             │
+│ 70 +             return Task.FromResult<IEnumerable<SpendRecordView>>(new List<SpendRecordView>());                                                        │
+│ 71           }                                                                                                                                             │
+│ 72       }                                                                                                                                                 │
+│ 73   }                                                                                                                                                     │
+│ 74 + */                                                                                                                                                    │
 ╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-✦ Updated SpendService.cs. Now updating src/SynOS.Models/Entities/SpendEngine/README.md.
+✦ SpendQueryService.cs commented out. Now, SpendReadController.cs.
 ╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ ✓  WriteFile Writing to src\...\SpendEngine\README.md                                                                                                      │
+│ ✓  ReadFile src\...\Read\SpendReadController.cs                                                                                                            │
 │                                                                                                                                                            │
-│  1 - # Spend Engine Guardrails - Phase A (SEALED)                                                                                                          │
-│  1 + # Spend Engine - Models Guardrails                                                                                                                    │
-│  2                                                                                                                                                         │
-│  3 - ## This is a **Truth Engine**                                                                                                                         │
-│  3 + ## This Module is **SEALED**                                                                                                                          │
+╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+✦ Read SpendReadController.cs. Commenting out its entire content to deactivate.
+╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ ✓  WriteFile Writing to src\...\Read\SpendReadController.cs                                                                                                │
+│                                                                                                                                                            │
+│  1 + /*                                                                                                                                                    │
+│  2   using System;                                                                                                                                         │
+│  3   using System.Threading.Tasks;                                                                                                                         │
+│  4   using Microsoft.AspNetCore.Mvc;                                                                                                                       │
+│ ══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════ │
+│ 41           {                                                                                                                                             │
+│ 42               // Instantiate the query service locally, passing the DbContext.                                                                          │
+│ 43               // This is an intentional pattern to keep read models decoupled from global DI.                                                           │
+│ 43 -             var queryService = new SpendQueryService(_context);                                                                                       │
+│ 44 +             // var queryService = new SpendQueryService(_context); // This will cause a compile error if SpendQueryService is commented out           │
+│ 45                                                                                                                                                         │
+│ 45 -             var records = await queryService.GetSpendRecordsAsync(from, to);                                                                          │
+│ 46 -                                                                                                                                                       │
+│ 47 -             // Return the read model as-is. Do not transform, aggregate, or summarize.                                                                │
+│ 48 -             return Ok(records);                                                                                                                       │
+│ 46 +             // Placeholder to prevent compile errors until real implementation or removal                                                             │
+│ 47 +             // return Ok(await queryService.GetSpendRecordsAsync(from, to));                                                                          │
+│ 48 +             return Ok(new { message = "SpendReadController is deferred." });                                                                          │
+│ 49           }                                                                                                                                             │
+│ 50       }                                                                                                                                                 │
+│ 51   }                                                                                                                                                     │
+│ 52 + */                                                                                                                                                    │
+╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+✦ SpendReadController.cs commented out. Proceeding to comment out PaymentDeclarationDto.cs.
+╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ ✓  ReadFile src\...\PaymentDeclarationDto.cs                                                                                                               │
+│                                                                                                                                                            │
+╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+✦ Read PaymentDeclarationDto.cs. Commenting out its entire content to deactivate.
+╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ ✓  WriteFile Writing to src\...\PaymentDeclarationDto.cs                                                                                                   │
+│                                                                                                                                                            │
+│  1 + /*                                                                                                                                                    │
+│  2   using System;                                                                                                                                         │
+│  3   using SynOS.Models.Entities.Payments; // Required for PaymentDirection                                                                                │
 │  4                                                                                                                                                         │
-│  5 - *   **Purpose:** Records completed cash outflows only.                                                                                                │
-│  6 - *   **Nature:** It is **write-only**.                                                                                                                 │
-│  7 - *   **Immutability:** No updates or deletes are allowed (it is append-only). Corrections must be new entries.                                         │
-│  8 - *   **Logic Constraint:** No business logic is allowed within this engine.                                                                            │
-│  9 - *   **Forbidden Features:** No analytics, allocation, approvals, or workflows are allowed.                                                            │
-│ 10 - *   **Ownership:** Other modules may trigger spends but must not own the process of recording them here.                                              │
-│  5 + This module defines the **immutable facts** for the Spend Engine.                                                                                     │
-│  6                                                                                                                                                         │
-│ 12 - **Do NOT add code logic.**                                                                                                                            │
-│ 13 - **Do NOT modify existing classes.**                                                                                                                   │
-│ 14 - **Do NOT add new services or interfaces.**                                                                                                            │
-│ 15 - **Do NOT touch Program.cs.**                                                                                                                          │
-│ 16 - **Do NOT reference Inventory, Cost Attribution, Revenue, or IMS.**                                                                                    │
-│  7 + - **Purpose:** To define the structure of a `SpendFact` as a write-only, append-only truth record.                                                    │
-│  8 + - **Contents:** Contains ONLY the `SpendFact` entity, which is immutable by design.                                                                   │
-│  9 + - **Evolution:** The structure is considered final. No new fields, logic, or entities should be added without formal architectural review.            │
-│ 10 +                                                                                                                                                       │
-│ 11 + ## 🔒 Hard Constraints                                                                                                                                │
-│ 12 +                                                                                                                                                       │
-│ 13 + - **No Business Logic:** No validation, inference, aggregation, or any other form of business logic is allowed.                                       │
-│ 14 + - **No Engine Triggers:** The entities in this module MUST NOT trigger other engines.                                                                 │
-│ 15 + - **No `Program.cs` Changes:** Do not add registrations or configurations related to this module to `Program.cs`.                                     │
-│ 16 + - **No Global Wiring:** This module and its contents are not part of any auto-wiring or global service registration scheme.                           │
+│ ══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════ │
+│ 27           public string? Channel { get; set; }                                                                                                          │
+│ 28       }                                                                                                                                                 │
+│ 29   }                                                                                                                                                     │
+│ 30 + */                                                                                                                                                    │
 ╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-✦ Models README updated. Now, Services README.
+✦ PaymentDeclarationDto.cs commented out. Proceeding to comment out SpendRecordView.cs.
 ╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ ✓  WriteFile Writing to src\...\SpendEngine\README.md                                                                                                      │
+│ ✓  ReadFile src\...\Spend\SpendRecordView.cs                                                                                                               │
 │                                                                                                                                                            │
-│  1 - # Spend Engine Guardrails - Phase A (SEALED)                                                                                                          │
-│  1 + # Spend Engine - Services Guardrails                                                                                                                  │
-│  2                                                                                                                                                         │
-│  3 - ## This is a **Truth Engine**                                                                                                                         │
-│  3 + ## This Module is **SEALED**                                                                                                                          │
-│  4                                                                                                                                                         │
-│  5 - *   **Purpose:** Records completed cash outflows only.                                                                                                │
-│  6 - *   **Nature:** It is **write-only**.                                                                                                                 │
-│  7 - *   **Immutability:** No updates or deletes are allowed (it is append-only). Corrections must be new entries.                                         │
-│  8 - *   **Logic Constraint:** No business logic is allowed within this engine.                                                                            │
-│  9 - *   **Forbidden Features:** No analytics, allocation, approvals, or workflows are allowed.                                                            │
-│ 10 - *   **Ownership:** Other modules may trigger spends but must not own the process of recording them here.                                              │
-│  5 + This module defines the **persistence service** for the Spend Engine.                                                                                 │
-│  6                                                                                                                                                         │
-│ 12 - **Do NOT add code logic.**                                                                                                                            │
-│ 13 - **Do NOT modify existing classes.**                                                                                                                   │
-│ 14 - **Do NOT add new services or interfaces.**                                                                                                            │
-│ 15 - **Do NOT touch Program.cs.**                                                                                                                          │
-│ 16 - **Do NOT reference Inventory, Cost Attribution, Revenue, or IMS.**                                                                                    │
-│  7 + - **Purpose:** To provide the single, controlled write gate (`RecordSpendFactAsync`) for persisting `SpendFact` entities.                             │
-│  8 + - **Nature:** The service is write-only and append-only.                                                                                              │
-│  9 + - **Allowed Logic:** The service contains ONLY the logic required for insert-only persistence.                                                        │
-│ 10 +                                                                                                                                                       │
-│ 11 + ## 🔒 Hard Constraints                                                                                                                                │
-│ 12 +                                                                                                                                                       │
-│ 13 + - **No Business Logic:** No validation, inference, aggregation, approvals, or workflows are allowed.                                                  │
-│ 14 + - **No Engine Triggers:** This service does not trigger other engines.                                                                                │
-│ 15 + - **No `Program.cs` Changes:** Do not add global registrations for this service to `Program.cs`. It must remain opt-in and locally orchestrated.      │
-│ 16 + - **No Global Wiring:** This service is not part of any auto-wiring or global service registration scheme.                                            │
-│ 17 + - **No Updates or Deletes:** The service must not expose any methods or logic for updating or deleting records.                                       │
 ╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-✦ Updated documentation for SpendFact.cs, SpendService.cs, and both README.md files. Now verifying SpendService isn't globally registered in Program.cs.      
+✦ Read SpendRecordView.cs. Commenting out its entire content to deactivate.
 ╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ ✓  ReadFile src\SynOS.Api\Program.cs                                                                                                                       │
+│ ✓  WriteFile Writing to src\...\Spend\SpendRecordView.cs                                                                                                   │
 │                                                                                                                                                            │
+│  1 + /*                                                                                                                                                    │
+│  2   using System;                                                                                                                                         │
+│  3                                                                                                                                                         │
+│  4   namespace SynOS.Models.DTOs.ReadModels.Spend                                                                                                          │
+│ ══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════ │
+│ 28           public string Description { get; set; }                                                                                                       │
+│ 29       }                                                                                                                                                 │
+│ 30   }                                                                                                                                                     │
+│ 31 + */                                                                                                                                                    │
 ╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-✦ Right, I'll seal the Spend Engine. First, I'll update SpendService.cs with guardrail comments, then revise the READMEs. Next, I'll check Program.cs for     
-  global registrations. Finally, I'll report and stop. Starting now with SpendService.cs.
+✦ SpendRecordView.cs is out. Now, SpendReadController.cs will be commented out too, just to be thorough and deactivate its route.
 ╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ x  Edit {"instruction":"Add a comprehensive class-level XML comment to SpendService, detailing its role and constraints as a sealed Truth Engine componen… │
+│ ✓  ReadFile src\...\Read\SpendReadController.cs                                                                                                            │
 │                                                                                                                                                            │
-│ A secondary check by an LLM determined that no changes were necessary to fulfill the instruction. Explanation: The original search failed because the      │
-│ content it was trying to replace (the old comments) was no longer present in the file. The file already contains the new XML documentation comments that   │
-│ the 'replace' string intended to insert. Therefore, no changes are required as the desired state is already met.. Original error with the parameters       │
-│ given: Failed to edit, 0 occurrences found for old_string (namespace SynOS.Services.SpendEngine                                                            │
-│ {                                                                                                                                                          │
-│     // Spend Engine - Truth Engine                                                                                                                         │
-│     // Write-only truth ledger for cash outflows. No logic here.                                                                                           │
-│     // This is a structural shell only, with no behavior.                                                                                                  │
-│     public class SpendService : ISpendService                                                                                                              │
-│     {                                                                                                                                                      │
-│         private readonly SynOSDbContext _context;                                                                                                          │
-│                                                                                                                                                            │
-│         public SpendService(SynOSDbContext context)                                                                                                        │
-│         {                                                                                                                                                  │
-│             _context = context;                                                                                                                            │
-│         }). Original old_string was (namespace SynOS.Services.SpendEngine                                                                                  │
-│ {                                                                                                                                                          │
-│     // Spend Engine - Truth Engine                                                                                                                         │
-│     // Write-only truth ledger for cash outflows. No logic here.                                                                                           │
-│     // This is a structural shell only, with no behavior.                                                                                                  │
-│     public class SpendService : ISpendService                                                                                                              │
-│     {                                                                                                                                                      │
-│         private readonly SynOSDbContext _context;                                                                                                          │
-│                                                                                                                                                            │
-│         public SpendService(SynOSDbContext context)                                                                                                        │
-│         {                                                                                                                                                  │
-│             _context = context;                                                                                                                            │
-│         }) in D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SpendEngine\SpendService.cs. No edits made. The exact text in old_string   │
-│ was not found. Ensure you're not escaping content incorrectly and check whitespace, indentation, and context. Use read_file tool to verify.                │
 ╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-✦ replace failed because the file was already updated. I'll continue by updating the README.md files to reflect the sealed status, then verify the DI
-  registration in Program.cs. After presenting the documentation and verification, I'll stop. Now, updating src/SynOS.Models/Entities/SpendEngine/README.md.  
+✦ I've completed all required actions: DbSet<PaymentConfirmedFact> and its OnModelCreating configuration are removed from SynOSDbContext.cs, along with the   
+  corresponding using statement. PaymentDeclarationController.cs, SpendQueryService.cs, SpendReadController.cs, PaymentDeclarationDto.cs, and
+  SpendRecordView.cs are all commented out, disabling their runtime wiring without deletion. I will now report completion and await further confirmation.     
 ╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ ✓  WriteFile Writing to src\...\SpendEngine\README.md                                                                                                      │
+│ ✓  WriteTodos Cleared todo list                                                                                                                            │
 │                                                                                                                                                            │
-│ ╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮ │
-│ │                                                                                                                                                        │ │
-│ │ No changes detected.                                                                                                                                   │ │
-│ │                                                                                                                                                        │ │
-│ ╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯ │
 ╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-✦ Models README updated. Now, Services README.
+✦ I've completed the last task and cleared my to-do list, as instructed by the STOP command. Now, I'm ready for new instructions.
 ╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ ✓  WriteFile Writing to src\...\SpendEngine\README.md                                                                                                      │
-│                                                                                                                                                            │
-│ ╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮ │
-│ │                                                                                                                                                        │ │
-│ │ No changes detected.                                                                                                                                   │ │
-│ │                                                                                                                                                        │ │
-│ ╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯ │
-╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-✦ Updated documentation for SpendFact.cs, SpendService.cs, and both README.md files. Now verifying SpendService isn't globally registered in Program.cs.      
-╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ ✓  ReadFile src\SynOS.Api\Program.cs                                                                                                                       │
+│ ✓  ReadFile design-docs\npx-gemini-prompt.md                                                                                                               │
 │                                                                                                                                                            │
 ╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-✦ I have completed all steps to "seal" the Spend Engine.
-
-  Final Report: TASK 16.7 E.i
-
-  1. Documentation Updates:
-  I have reviewed and updated the documentation for all files within the SpendEngine module boundary to be internally consistent and to explicitly state the  
-  engine's sealed, write-only, and non-business-logic nature.
-
-   * src/SynOS.Models/Entities/SpendEngine/SpendFact.cs: Documentation enhanced to finalize the entity's sealed status.
-   * src/SynOS.Services/SpendEngine/SpendService.cs: Comprehensive class-level documentation added to define its role as a minimal persistence service and    
-     outline all guardrails.
-   * src/SynOS.Models/Entities/SpendEngine/README.md: Updated to reflect the sealed status and hard constraints.
-   * src/SynOS.Services/SpendEngine/README.md: Updated to reflect the sealed status and hard constraints.
-
-  2. DI Registration Verification:
-  I have reviewed src/SynOS.Api/Program.cs and confirm that `ISpendService` is NOT registered globally. This fulfills the requirement that the Spend Engine is
-  only reachable via explicit local orchestration and is not auto-wired.
-
-  This concludes the task. As per the final instruction, I am now stopping execution and awaiting your explicit user input.
+✦ I have completed all instructions in the current prompt file, design-docs/npx-gemini-prompt.md. I am ready for the next task. Please update the prompt file 
+  or provide new instructions.

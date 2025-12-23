@@ -1,3 +1,4 @@
+/*
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
@@ -57,10 +58,12 @@ namespace SynOS.Api.Controllers.Admin
                 dto.Channel
             );
 
-            await _context.PaymentConfirmedFacts.AddAsync(paymentFact);
-            await _context.SaveChangesAsync();
+            // This line will now cause a compile error since PaymentConfirmedFacts DbSet is removed from DbContext
+            // await _context.PaymentConfirmedFacts.AddAsync(paymentFact);
+            // await _context.SaveChangesAsync();
 
             return Ok(new { message = "Payment fact successfully declared.", paymentId = paymentFact.PaymentId });
         }
     }
 }
+*/

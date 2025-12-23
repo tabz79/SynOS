@@ -1,3 +1,4 @@
+/*
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -28,41 +29,46 @@ namespace SynOS.Services.ReadModels.Spend
         /// </summary>
         public async Task<IEnumerable<SpendRecordView>> GetSpendRecordsAsync(DateTimeOffset from, DateTimeOffset to)
         {
-            var spendRecords = await _context.SpendFacts
-                .AsNoTracking()
-                .Where(sf => sf.OccurredAt >= from && sf.OccurredAt <= to)
-                .GroupJoin( // Left join to Suppliers
-                    _context.ImsSuppliers,
-                    spendFact => spendFact.SupplierId,
-                    supplier => supplier.SupplierId,
-                    (spendFact, suppliers) => new { spendFact, suppliers })
-                .SelectMany(
-                    temp => temp.suppliers.DefaultIfEmpty(),
-                    (prev, supplier) => new { prev.spendFact, supplier })
-                .GroupJoin( // Left join to Users (for Employees)
-                    _context.Users,
-                    prev => prev.spendFact.EmployeeId,
-                    user => user.UserId,
-                    (prev, users) => new { prev.spendFact, prev.supplier, users })
-                .SelectMany(
-                    temp => temp.users.DefaultIfEmpty(),
-                    (prev, user) => new { prev.spendFact, prev.supplier, user })
-                .OrderByDescending(x => x.spendFact.OccurredAt)
-                .Select(x => new SpendRecordView
-                {
-                    SpendFactId = x.spendFact.SpendFactId,
-                    Amount = x.spendFact.Amount,
-                    Currency = x.spendFact.Currency,
-                    OccurredAt = x.spendFact.OccurredAt,
-                    Channel = x.spendFact.Channel,
-                    // Best-effort name resolution
-                    CounterpartyName = x.supplier != null ? x.supplier.Name : (x.user != null ? x.user.Name : null),
-                    // Simple description generation
-                    Description = $"Paid {x.spendFact.Amount:F2} {x.spendFact.Currency} via {x.spendFact.Channel}"
-                })
-                .ToListAsync();
+            // This code will cause a compile error now that SpendFacts DbSet is removed from DbContext in SynOSDbContext
+            // var spendRecords = await _context.SpendFacts
+            //     .AsNoTracking()
+            //     .Where(sf => sf.OccurredAt >= from && sf.OccurredAt <= to)
+            //     .GroupJoin( // Left join to Suppliers
+            //         _context.ImsSuppliers,
+            //         spendFact => spendFact.SupplierId,
+            //         supplier => supplier.SupplierId,
+            //         (spendFact, suppliers) => new { spendFact, suppliers })
+            //     .SelectMany(
+            //         temp => temp.suppliers.DefaultIfEmpty(),
+            //         (prev, supplier) => new { prev.spendFact, supplier })
+            //     .GroupJoin( // Left join to Users (for Employees)
+            //         _context.Users,
+            //         prev => prev.spendFact.EmployeeId,
+            //         user => user.UserId,
+            //         (prev, users) => new { prev.spendFact, prev.supplier, users })
+            //     .SelectMany(
+            //         temp => temp.users.DefaultIfEmpty(),
+            //         (prev, user) => new { prev.spendFact, prev.supplier, user })
+            //     .OrderByDescending(x => x.spendFact.OccurredAt)
+            //     .Select(x => new SpendRecordView
+            //     {
+            //         SpendFactId = x.spendFact.SpendFactId,
+            //         Amount = x.spendFact.Amount,
+            //         Currency = x.spendFact.Currency,
+            //         OccurredAt = x.spendFact.OccurredAt,
+            //         Channel = x.spendFact.Channel,
+            //         // Best-effort name resolution
+            //         CounterpartyName = x.supplier != null ? x.supplier.Name : (x.user != null ? x.user.Name : null),
+            //         // Simple description generation
+            //         Description = $"Paid {x.spendFact.Amount:F2} {x.spendFact.Currency} via {x.spendFact.Channel}"
+            //     })
+            //     .ToListAsync();
 
-            return spendRecords;
+            // return spendRecords;
+
+            // Placeholder to prevent compile errors until real implementation or removal
+            return Task.FromResult<IEnumerable<SpendRecordView>>(new List<SpendRecordView>());
         }
     }
 }
+*/

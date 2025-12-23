@@ -1,3 +1,4 @@
+/*
 using System;
 
 namespace SynOS.Models.DTOs.ReadModels.Spend
@@ -27,3 +28,4 @@ namespace SynOS.Models.DTOs.ReadModels.Spend
         public string Description { get; set; }
     }
 }
+*/

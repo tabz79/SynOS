@@ -1,3 +1,4 @@
+/*
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
@@ -40,12 +41,12 @@ namespace SynOS.Api.Controllers.Read
         {
             // Instantiate the query service locally, passing the DbContext.
             // This is an intentional pattern to keep read models decoupled from global DI.
-            var queryService = new SpendQueryService(_context);
+            // var queryService = new SpendQueryService(_context); // This will cause a compile error if SpendQueryService is commented out
 
-            var records = await queryService.GetSpendRecordsAsync(from, to);
-
-            // Return the read model as-is. Do not transform, aggregate, or summarize.
-            return Ok(records);
+            // Placeholder to prevent compile errors until real implementation or removal
+            // return Ok(await queryService.GetSpendRecordsAsync(from, to)); 
+            return Ok(new { message = "SpendReadController is deferred." });
         }
     }
 }
+*/

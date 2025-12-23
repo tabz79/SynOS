@@ -19,6 +19,7 @@ using System.IdentityModel.Tokens.Jwt;
 using Microsoft.OpenApi.Models; // Added for Swagger JWT configuration
 using SynOS.Services.Storage;
 using SynOS.Services.Stubs;
+using SynOS.Services.Revenue; // Add this using
 // using SynOS.Services.CostAttribution; // 🔒 TEMPORARILY DISABLED (engine not live yet)
 using SynOS.Models.Configuration;
 using SynOS.Services.Security;
@@ -140,6 +141,9 @@ builder.Services.AddScoped<ISampleService, SampleService>(provider =>
 builder.Services.AddScoped<ITubeConsumptionService, TubeConsumptionService>();
 builder.Services.AddScoped<IPurchasingService, PurchasingService>();
 builder.Services.AddScoped<IIMSWastageInsightService, IMSWastageInsightService>();
+
+// Register Revenue Engine services (OPT-IN)
+builder.Services.AddRevenueEngine();
 
 // 🔒 Cost Attribution services intentionally NOT registered yet
 // builder.Services.AddScoped<ICostAttributionPolicyResolver, CostAttributionPolicyResolver>();

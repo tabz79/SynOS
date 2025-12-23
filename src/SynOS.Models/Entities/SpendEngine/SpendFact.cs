@@ -47,69 +47,69 @@ namespace SynOS.Models.Entities.SpendEngine
         /// <summary>
         /// Unique identifier for the spend fact.
         /// </summary>
-        public Guid SpendFactId { get; }
+        public Guid SpendFactId { get; init; }
 
         /// <summary>
         /// The amount of money that was spent.
         /// </summary>
-        public decimal Amount { get; }
+        public decimal Amount { get; init; }
 
         /// <summary>
         /// The currency of the amount (e.g., "INR", "USD").
         /// </summary>
-        public string Currency { get; }
+        public string Currency { get; init; }
 
         /// <summary>
         /// The exact moment the cash outflow occurred in the real world.
         /// </summary>
-        public DateTimeOffset OccurredAt { get; }
+        public DateTimeOffset OccurredAt { get; init; }
 
         /// <summary>
         /// The exact moment this fact was recorded in the system.
         /// </summary>
-        public DateTimeOffset RecordedAt { get; }
+        public DateTimeOffset RecordedAt { get; init; }
 
         /// <summary>
         /// The source of the money (label only, e.g., "Cash", "HDFC Bank").
         /// </summary>
-        public string Account { get; }
+        public string Account { get; init; }
 
         /// <summary>
         /// The destination category of the money (label only, e.g., "Salary", "Supplier").
         /// </summary>
-        public string Channel { get; }
+        public string Channel { get; init; }
 
         // --- APPROVED OPTIONAL REFERENCES (IDs only, nullable) ---
 
         /// <summary>
         /// Optional: Link to a supplier entity.
         /// </summary>
-        public Guid? SupplierId { get; }
+        public Guid? SupplierId { get; init; }
 
         /// <summary>
         /// Optional: Link to an employee entity.
         /// </summary>
-        public Guid? EmployeeId { get; }
+        public Guid? EmployeeId { get; init; }
 
         /// <summary>
-        /// Optional: Link to an invoice entity.
+        /// Optional: Link to an an invoice entity.
         /// </summary>
-        public Guid? InvoiceId { get; }
+        public Guid? InvoiceId { get; init; }
 
         /// <summary>
         /// Optional: Link to a specific financial obligation record.
         /// </summary>
-        public Guid? ObligationId { get; }
+        public Guid? ObligationId { get; init; }
 
         /// <summary>
         /// Optional: Link to a payroll run.
         /// </summary>
-        public Guid? PayrollRunId { get; }
+        public Guid? PayrollRunId { get; init; }
 
         /// <summary>
         /// Optional: A string for any other external reference or identifier.
         /// </summary>
-        public string? ExternalReference { get; }
+        public string? ExternalReference { get; init; }
 
         /// <summary>
         /// Constructor for creating a new, immutable spend fact.
