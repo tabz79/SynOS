@@ -122,6 +122,7 @@ namespace SynOS.Data
 
                 // Spend Engine DbSets
                 public DbSet<SpendFact> SpendFacts { get; set; } = null!;
+                public DbSet<SpendLineItemFact> SpendLineItemFacts { get; set; } = null!;
                 
                                 // Revenue Engine DbSets
                                 public DbSet<RevenueFact> RevenueFacts { get; set; } = null!;
@@ -747,6 +748,20 @@ namespace SynOS.Data
 
                 // Optional references are configured by convention (nullable Guid? or string?)
                 // No navigation properties or foreign key constraints are added, as per instructions.
+            });
+            
+            modelBuilder.Entity<SpendLineItemFact>(entity =>
+            {
+                entity.ToTable("SpendLineItemFacts", "Spend"); // Assuming "Spend" schema based on SpendFact
+                entity.HasKey(e => e.SpendLineItemFactId);
+
+                entity.Property(e => e.Quantity).HasColumnType("decimal(18, 4)").IsRequired();
+                entity.Property(e => e.UnitPrice).HasColumnType("decimal(18, 4)").IsRequired();
+                entity.Property(e => e.Currency).HasMaxLength(3).IsRequired();
+                entity.Property(e => e.OccurredAt).IsRequired();
+                entity.Property(e => e.RecordedAt).IsRequired();
+
+                // No foreign key constraints for SpendFactId or PurchaseOrderItemId, as per design
             });
 
             // Revenue Engine Configuration

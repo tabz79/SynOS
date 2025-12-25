@@ -1,24 +1,53 @@
-STOP.
+GEMINI PROMPT — IMPLEMENTATION: SPEND ENGINE LINE-ITEM TRUTH (STEP 1)
 
-We are pausing implementation.
+Objective:
+Implement the SpendLineItemFact truth entity inside the Spend Engine, strictly
+following the finalized design document.
 
-Clarification:
-My instruction was to implement ONLY the Revenue Engine.
-Anything related to:
-- Payments
-- Admin controllers
-- Spend read models
-was NOT part of the Revenue Engine scope.
+Scope (STRICT):
+- Backend only
+- No changes to existing SpendFact behavior
+- No changes to Economics or BI layers
+- No pricing logic, no inference, no policies
 
-What to do now:
-1) Do NOT create or modify any new files.
-2) Do NOT run any shell commands.
-3) Do NOT apply migrations or builds.
-4) Do NOT “fix” or extend other engines.
+Tasks:
 
-Your next task:
-- List ONLY the files that belong strictly to the Revenue Engine.
-- Mark them as: KEEP.
-- Mark all other files as: OUT OF SCOPE (do not delete yet).
+1. Model
+- Create SpendLineItemFact.cs under:
+  src/SynOS.Models/Entities/SpendEngine/
+- Properties (init-only, immutable):
+  - SpendLineItemFactId (Guid)
+  - SpendFactId (Guid) // opaque reference, NO FK
+  - PurchaseOrderItemId (Guid) // opaque reference, NO FK
+  - Quantity (decimal)
+  - UnitPrice (decimal)
+  - Currency (string)
+  - OccurredAt (DateTimeOffset)
+  - RecordedAt (DateTimeOffset)
 
-Wait for my confirmation before any further action.
+2. Persistence
+- Add DbSet<SpendLineItemFact> to SynOSDbContext
+- Configure table in OnModelCreating
+- Constraints:
+  - Primary Key only
+  - NOT NULL where applicable
+  - NO foreign keys
+  - NO cascade rules
+  - NO computed columns
+
+3. Write Discipline
+- Do NOT expose any read APIs
+- Do NOT add joins or navigation properties
+- Do NOT modify existing SpendFact or SpendService
+- Validation rule (write-time only, documented):
+  Sum(Quantity × UnitPrice) MUST equal parent SpendFact.Amount
+
+4. Migration
+- Generate migration: AddSpendLineItemFact
+- Ensure existing data remains valid
+
+5. STOP
+- Do not proceed beyond this step
+- Await explicit next instruction
+
+Confirm before writing any code.

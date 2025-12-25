@@ -2085,41 +2085,6 @@ namespace SynOS.Data.Migrations
                     b.ToTable("Payments");
                 });
 
-            modelBuilder.Entity("SynOS.Models.Entities.Payments.PaymentConfirmedFact", b =>
-                {
-                    b.Property<Guid>("PaymentId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<decimal>("Amount")
-                        .HasColumnType("decimal(18, 4)");
-
-                    b.Property<string>("Channel")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<Guid>("CounterpartyId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Direction")
-                        .IsRequired()
-                        .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)");
-
-                    b.Property<DateTimeOffset>("OccurredAt")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<DateTimeOffset>("RecordedAt")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<Guid?>("ReferenceId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("PaymentId");
-
-                    b.ToTable("PaymentConfirmedFacts", (string)null);
-                });
-
             modelBuilder.Entity("SynOS.Models.Entities.PriceConfig", b =>
                 {
                     b.Property<Guid>("PriceId")
@@ -3067,6 +3032,40 @@ namespace SynOS.Data.Migrations
                     b.HasKey("SpendFactId");
 
                     b.ToTable("SpendFacts", (string)null);
+                });
+
+            modelBuilder.Entity("SynOS.Models.Entities.SpendEngine.SpendLineItemFact", b =>
+                {
+                    b.Property<Guid>("SpendLineItemFactId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Currency")
+                        .IsRequired()
+                        .HasMaxLength(3)
+                        .HasColumnType("nvarchar(3)");
+
+                    b.Property<DateTimeOffset>("OccurredAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("PurchaseOrderItemId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("Quantity")
+                        .HasColumnType("decimal(18, 4)");
+
+                    b.Property<DateTimeOffset>("RecordedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("SpendFactId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("UnitPrice")
+                        .HasColumnType("decimal(18, 4)");
+
+                    b.HasKey("SpendLineItemFactId");
+
+                    b.ToTable("SpendLineItemFacts", "Spend");
                 });
 
             modelBuilder.Entity("SynOS.Models.Entities.Test", b =>
