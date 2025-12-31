@@ -27,5 +27,10 @@ namespace SynOS.Models.DTOs
         public string? Notes { get; set; } // Added
 
         public Guid? CombinedBillingGroupId { get; set; } // Added
+
+        // Referral Fields
+        public bool? IsReferred { get; set; }
+        public Guid? ReferralPartnerId { get; set; }
+        public string? PaymentCollectionModel { get; set; }
     }
 }

@@ -7,6 +7,8 @@ using System.Text.Json;
 using System;
 using System.Linq; // Add this using directive
 using SynOS.Models.DTOs.Admin;
+using SynOS.Models.Entities.Referral;
+using SynOS.Models.DTOs.Admin.Referral;
 
 namespace SynOS.Api
 {
@@ -81,6 +83,15 @@ namespace SynOS.Api
                 .ForMember(dest => dest.Role, opt => opt.MapFrom(src => src.UserRoles.FirstOrDefault().Role.Name));
 
             CreateMap<Patient, PatientDto>();
+
+            // Referral Mappings
+            CreateMap<ReferralPartnerCreateDto, ReferralPartner>();
+            CreateMap<ReferralPartnerUpdateDto, ReferralPartner>();
+            CreateMap<ReferralPartner, ReferralPartnerReadDto>();
+
+            CreateMap<ReferralCommissionRuleCreateDto, ReferralCommissionRule>();
+            CreateMap<ReferralCommissionRuleUpdateDto, ReferralCommissionRule>();
+            CreateMap<ReferralCommissionRule, ReferralCommissionRuleReadDto>();
         }
     }
 }

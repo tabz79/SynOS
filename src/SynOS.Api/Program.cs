@@ -26,6 +26,7 @@ using SynOS.Models.Configuration;
 using SynOS.Services.Security;
 using SynOS.Services.AnalyzerIntegration; // New
 using System.Text.Json.Serialization; // Added
+using SynOS.Services.Referral; // Added to resolve build error
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -130,6 +131,8 @@ builder.Services.AddAutoMapper(typeof(Program)); // Scans for profiles in the as
 // Register application services
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IPatientService, PatientService>();
+builder.Services.AddReferralServices();
+builder.Services.AddPayableServices();
 builder.Services.AddScoped<IVisitService, VisitService>();
 builder.Services.AddScoped<IEditLockService, EditLockService>();
 builder.Services.AddScoped<ISampleService, SampleService>(provider =>
@@ -154,14 +157,16 @@ builder.Services.AddRevenueEngine();
 // builder.Services.AddScoped<ICostAttributionUsageFactWriter, CostAttributionUsageFactWriter>();
 
 builder.Services.AddScoped<IInvoiceService, InvoiceService>();
-builder.Services.AddScoped<IReceptionFlowService, ReceptionFlowService>(provider =>
+builder.Services.AddScoped<IReceptionFlowService>(provider =>
     new ReceptionFlowService(
         provider.GetRequiredService<SynOSDbContext>(),
         provider.GetRequiredService<IVisitService>(),
         provider.GetRequiredService<IInvoiceService>(),
         provider.GetRequiredService<IAccessionService>(),
         provider.GetRequiredService<ILogger<ReceptionFlowService>>(),
-        provider.GetRequiredService<ITestsCacheService>() // Injected
+        provider.GetRequiredService<ITestsCacheService>(),
+        provider.GetRequiredService<IConfiguration>(),
+        provider.GetRequiredService<IReferralFinancialService>()
     ));
 builder.Services.AddScoped<IResultService, ResultService>();
 builder.Services.AddScoped<IReportService, ReportService>();

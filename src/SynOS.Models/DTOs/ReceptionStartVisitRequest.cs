@@ -14,5 +14,10 @@ namespace SynOS.Models.DTOs
         public decimal? TaxPercent { get; set; }
         public string? Notes { get; set; }
         public Guid? CombinedBillingGroupId { get; set; }
+
+        // Referral Fields
+        public bool? IsReferred { get; set; }
+        public Guid? ReferralPartnerId { get; set; }
+        public string? PaymentCollectionModel { get; set; }
     }
 }

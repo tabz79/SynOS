@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using SynOS.Models.Entities.Referral;
 
 namespace SynOS.Models.Entities
 {
@@ -46,5 +47,12 @@ namespace SynOS.Models.Entities
 
         public ICollection<Order> Orders { get; set; } = new List<Order>();
         public ICollection<Invoice> Invoices { get; set; } = new List<Invoice>();
+
+        // Referral Fields
+        public bool IsReferred { get; set; } = false;
+        public Guid? ReferralPartnerId { get; set; }
+        [ForeignKey("ReferralPartnerId")]
+        public virtual ReferralPartner? ReferralPartner { get; set; }
+        public string? PaymentCollectionModel { get; set; }
     }
 }

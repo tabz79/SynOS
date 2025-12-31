@@ -4,10 +4,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Configuration;
 using SynOS.Data;
 using SynOS.Models.DTOs;
 using SynOS.Models.Entities;
 using SynOS.Models.Enums; // Required for TubeType
+using SynOS.Services.Referral;
 
 namespace SynOS.Services
 {
@@ -18,7 +20,9 @@ namespace SynOS.Services
         private readonly IInvoiceService _invoiceService;
         private readonly IAccessionService _accessionService;
         private readonly ILogger<ReceptionFlowService> _logger;
-        private readonly ITestsCacheService _testsCacheService; // Injected to retrieve test details
+        private readonly ITestsCacheService _testsCacheService;
+        private readonly IConfiguration _configuration;
+        private readonly IReferralFinancialService _referralFinancialService;
 
         public ReceptionFlowService(
             SynOSDbContext context,
@@ -26,16 +30,18 @@ namespace SynOS.Services
             IInvoiceService invoiceService,
             IAccessionService accessionService,
             ILogger<ReceptionFlowService> logger,
-            ITestsCacheService testsCacheService) // Injected
+            ITestsCacheService testsCacheService,
+            IConfiguration configuration,
+            IReferralFinancialService referralFinancialService)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
             _visitService = visitService ?? throw new ArgumentNullException(nameof(visitService));
-            _invoice_service_check(context, visitService, invoiceService, accessionService, logger);
-
             _invoiceService = invoiceService ?? throw new ArgumentNullException(nameof(invoiceService));
             _accessionService = accessionService ?? throw new ArgumentNullException(nameof(accessionService));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _testsCacheService = testsCacheService; // can be null; code tolerates null and falls back to DB
+            _testsCacheService = testsCacheService;
+            _configuration = configuration;
+            _referralFinancialService = referralFinancialService;
         }
 
         // small helper to centralize a defensive check (keeps ctor lines tidy)
@@ -58,6 +64,38 @@ namespace SynOS.Services
             if (request == null) throw new ArgumentNullException(nameof(request));
             if (request.TestCodes == null || request.TestCodes.Length == 0) throw new ArgumentException("At least one test code is required");
 
+            // Validate referral fields before proceeding
+            if (request.IsReferred == true)
+            {
+                if (request.ReferralPartnerId == null)
+                {
+                    throw new ArgumentException("ReferralPartnerId is required for referred visits.");
+                }
+                if (string.IsNullOrWhiteSpace(request.PaymentCollectionModel))
+                {
+                    throw new ArgumentException("PaymentCollectionModel is required for referred visits.");
+                }
+
+                var validModels = new[] { "LabCollects", "PartnerCollects" };
+                if (!validModels.Contains(request.PaymentCollectionModel, StringComparer.OrdinalIgnoreCase))
+                {
+                    throw new ArgumentException($"Invalid PaymentCollectionModel. Must be one of: {string.Join(", ", validModels)}");
+                }
+
+                var partner = await _context.ReferralPartners
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(p => p.ReferralPartnerId == request.ReferralPartnerId.Value);
+
+                if (partner == null)
+                {
+                    throw new KeyNotFoundException($"Referral partner with ID '{request.ReferralPartnerId}' not found.");
+                }
+                if (!partner.IsActive)
+                {
+                    throw new InvalidOperationException($"Referral partner '{partner.Name}' is not active.");
+                }
+            }
+
             // Validate tests exist before attempting to create the visit.
             await EnsureAllTestCodesExistAsync(request.TestCodes, request.Dept);
 
@@ -73,7 +111,11 @@ namespace SynOS.Services
                 DiscountPercent = request.DiscountPercent,
                 TaxPercent = request.TaxPercent,
                 Notes = request.Notes,
-                CombinedBillingGroupId = request.CombinedBillingGroupId
+                CombinedBillingGroupId = request.CombinedBillingGroupId,
+                // Pass referral fields
+                IsReferred = request.IsReferred,
+                ReferralPartnerId = request.ReferralPartnerId,
+                PaymentCollectionModel = request.PaymentCollectionModel
             };
 
             var visit = await _visitService.CreateVisitAsync(visitDto, null, actorUserId); // Pass actorUserId and branchId
@@ -260,6 +302,34 @@ namespace SynOS.Services
                     }
                 }
                 await _context.SaveChangesAsync();
+
+                // --- DOMAIN EVENT TRIGGER (Temporary Location) ---
+                // The following logic responds to the "Payment Committed" domain event.
+                // It is placed here for now but should eventually be moved to a dedicated
+                // event handler or messaging subscriber for better decoupling.
+                if (_configuration.GetValue<bool>("Features:ReferralEconomics:Enabled") && visit.IsReferred)
+                {
+                    try
+                    {
+                        // Idempotency Check: Ensure commission for this specific payment hasn't already been processed.
+                        var commissionAlreadyProcessed = await _context.PayableFacts.AnyAsync(pf => pf.SourcePaymentId == payment.PaymentId);
+                        if (!commissionAlreadyProcessed)
+                        {
+                            // We must reload the full visit aggregate to ensure the service has all necessary data.
+                            var fullVisitDetails = await _visitService.GetVisitDetailsAsync(visit.VisitId);
+                            if (fullVisitDetails != null)
+                            {
+                                await _referralFinancialService.ProcessCommissionRecognitionAsync(fullVisitDetails);
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Failed to process referral commission for VisitId {VisitId} and PaymentId {PaymentId}. This did not affect the payment transaction.", visit.VisitId, payment.PaymentId);
+                        // The exception is intentionally swallowed to guarantee the payment operation succeeds for the user,
+                        // leaving the failed commission recognition for offline reconciliation.
+                    }
+                }
             }
 
             var updatedVisit = await _context.Visits.FindAsync(visit.VisitId);

@@ -1,13 +1,11 @@
-// File: src/SynOS.Data/SynOSDbContext.cs
-// Author: Gemini
-// Date: 2025-11-13
-
 using Microsoft.EntityFrameworkCore;
 using SynOS.Models.Entities;
 using SynOS.Models.Entities.IMS;
 using SynOS.Models.Entities.CostAttribution;
 using SynOS.Models.Entities.SpendEngine;
 using SynOS.Models.Entities.Revenue;
+using SynOS.Models.Entities.Referral;
+using SynOS.Models.Entities.Payables;
 
 namespace SynOS.Data
 {
@@ -100,7 +98,10 @@ namespace SynOS.Data
         public DbSet<LabAnalyzerResultInbox> LabAnalyzerResultInbox { get; set; } = null!;
         public DbSet<LabAnalyzerTestMapping> LabAnalyzerTestMappings { get; set; } = null!;
 
-        #region IMS DbSets
+        // DbSets for Referral System
+        public DbSet<ReferralPartner> ReferralPartners { get; set; } = null!;
+        public DbSet<ReferralCommissionRule> ReferralCommissionRules { get; set; } = null!;
+
         public DbSet<ImsTubeMaster> ImsTubeMasters { get; set; } = null!;
         public DbSet<ImsTubeLot> ImsTubeLots { get; set; } = null!;
         public DbSet<ImsStockMovement> ImsStockMovements { get; set; } = null!;
@@ -116,21 +117,21 @@ namespace SynOS.Data
         public DbSet<ImsInventoryItem> ImsInventoryItems { get; set; } = null!;
 
         // Cost Attribution DbSets
-        public DbSet<SynOS.Models.Entities.CostAttribution.CostAttribution_UsagePolicy> CostAttribution_UsagePolicies { get; set; } = null!;
-        public DbSet<SynOS.Models.Entities.CostAttribution.CostAttribution_UsagePolicyVersion> CostAttribution_UsagePolicyVersions { get; set; } = null!;
-        public DbSet<SynOS.Models.Entities.CostAttribution.CostAttribution_UsageFact> CostAttribution_UsageFacts { get; set; } = null!;
+        public DbSet<CostAttribution_UsagePolicy> CostAttribution_UsagePolicies { get; set; } = null!;
+        public DbSet<CostAttribution_UsagePolicyVersion> CostAttribution_UsagePolicyVersions { get; set; } = null!;
+        public DbSet<CostAttribution_UsageFact> CostAttribution_UsageFacts { get; set; } = null!;
 
-                // Spend Engine DbSets
-                public DbSet<SpendFact> SpendFacts { get; set; } = null!;
-                public DbSet<SpendLineItemFact> SpendLineItemFacts { get; set; } = null!;
+        // Spend Engine DbSets
+        public DbSet<SpendFact> SpendFacts { get; set; } = null!;
+        public DbSet<SpendLineItemFact> SpendLineItemFacts { get; set; } = null!;
                 
-                                // Revenue Engine DbSets
-                                public DbSet<RevenueFact> RevenueFacts { get; set; } = null!;
-                                #endregion // End of IMS DbSets region
-
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
-            base.OnModelCreating(modelBuilder);
+                                        // Revenue Engine DbSets
+                                        public DbSet<RevenueFact> RevenueFacts { get; set; } = null!;
+        // Payables DbSets
+        public DbSet<PayableFact> PayableFacts { get; set; } = null!;
+        
+                protected override void OnModelCreating(ModelBuilder modelBuilder)
+                {            base.OnModelCreating(modelBuilder);
 
             // User entities
             modelBuilder.Entity<User>(entity => entity.HasIndex(e => e.Email).IsUnique());
@@ -143,6 +144,24 @@ namespace SynOS.Data
                     .WithMany()
                     .HasForeignKey(e => e.ActorUserId)
                     .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            // Referral System
+            modelBuilder.Entity<ReferralPartner>(entity =>
+            {
+                entity.ToTable("ReferralPartners");
+                entity.HasIndex(e => e.Name).IsUnique();
+                entity.Property(e => e.PartnerType).HasConversion<string>().HasMaxLength(50);
+            });
+
+            modelBuilder.Entity<ReferralCommissionRule>(entity =>
+            {
+                entity.ToTable("ReferralCommissionRules");
+                entity.HasIndex(e => new { e.ReferralPartnerId, e.TestId, e.EffectiveFrom }).IsUnique();
+                entity.Property(e => e.CommissionType).HasConversion<string>().HasMaxLength(50);
+                entity.Property(e => e.CommissionValue).HasColumnType("decimal(18, 4)");
+                entity.HasOne(e => e.ReferralPartner).WithMany().HasForeignKey(e => e.ReferralPartnerId).OnDelete(DeleteBehavior.Cascade);
+                entity.HasOne(e => e.Test).WithMany().HasForeignKey(e => e.TestId).OnDelete(DeleteBehavior.Restrict);
             });
 
             // Test Master
@@ -601,7 +620,6 @@ namespace SynOS.Data
                 entity.Property(e => e.RefHighOverride).HasPrecision(18, 4);
             });
 
-            #region IMS Configuration
             modelBuilder.Entity<ImsTubeMaster>(entity =>
             {
                 entity.ToTable("IMS_TubeMasters");
@@ -704,7 +722,7 @@ namespace SynOS.Data
             });
 
             // Cost Attribution Configuration
-            modelBuilder.Entity<SynOS.Models.Entities.CostAttribution.CostAttribution_UsagePolicy>(entity =>
+            modelBuilder.Entity<CostAttribution_UsagePolicy>(entity =>
             {
                 entity.ToTable("CostAttribution_UsagePolicies");
                 entity.HasIndex(e => new { e.TestId, e.InventoryItemId }).IsUnique();
@@ -712,7 +730,7 @@ namespace SynOS.Data
                 entity.HasOne(e => e.InventoryItem).WithMany().HasForeignKey(e => e.InventoryItemId).OnDelete(DeleteBehavior.Restrict);
             });
 
-            modelBuilder.Entity<SynOS.Models.Entities.CostAttribution.CostAttribution_UsagePolicyVersion>(entity =>
+            modelBuilder.Entity<CostAttribution_UsagePolicyVersion>(entity =>
             {
                 entity.ToTable("CostAttribution_UsagePolicyVersions");
                 entity.HasIndex(e => new { e.UsagePolicyId, e.BranchId, e.EffectiveFrom }).IsUnique();
@@ -723,7 +741,7 @@ namespace SynOS.Data
                 entity.HasOne(e => e.CreatedByUser).WithMany().HasForeignKey(e => e.CreatedByUserId).OnDelete(DeleteBehavior.Restrict);
             });
 
-            modelBuilder.Entity<SynOS.Models.Entities.CostAttribution.CostAttribution_UsageFact>(entity =>
+            modelBuilder.Entity<CostAttribution_UsageFact>(entity =>
             {
                 entity.ToTable("CostAttribution_UsageFacts");
                 entity.HasIndex(e => new { e.SourceEventId, e.SourceEventType, e.InventoryItemId }).IsUnique();
@@ -783,7 +801,33 @@ namespace SynOS.Data
                 // No navigation properties or foreign keys are defined, keeping this a pure fact table.
             });
 
-            #endregion
+            // Payables Configuration
+            modelBuilder.Entity<PayableFact>(entity =>
+            {
+                entity.ToTable("PayableFacts", "Payables");
+
+                entity.HasKey(e => e.PayableFactId);
+
+                entity.Property(e => e.AmountOwed)
+                      .HasColumnType("decimal(18,4)")
+                      .IsRequired();
+
+                entity.Property(e => e.Currency)
+                      .HasMaxLength(3)
+                      .IsRequired();
+
+                entity.Property(e => e.Status)
+                      .HasMaxLength(20)
+                      .IsRequired();
+
+                entity.Property(e => e.OccurredAt).IsRequired();
+                entity.Property(e => e.RecordedAt).IsRequired();
+
+                entity.Property(e => e.SourcePaymentId).IsRequired();
+                entity.HasIndex(e => e.SourcePaymentId);
+
+                // Intentionally no foreign keys (append-only ledger)
+            });
         }
     }
 }

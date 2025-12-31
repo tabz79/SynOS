@@ -89,7 +89,11 @@ namespace SynOS.Services
                 TokenDate = labLocalToday,
                 Department = visitDto.Department,
                 Status = "PendingPayment",
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.UtcNow,
+                // Persist referral metadata
+                IsReferred = visitDto.IsReferred ?? false,
+                ReferralPartnerId = visitDto.ReferralPartnerId,
+                PaymentCollectionModel = visitDto.PaymentCollectionModel
             };
 
             _context.Visits.Add(visit);

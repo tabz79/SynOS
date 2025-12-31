@@ -1,0 +1,1429 @@
+PS D:\Projects\SynOS-Synthesized-Lab-Intelligence> dotnet build
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  SynOS.Models -> D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\bin\Debug
+  \net8.0\SynOS.Models.dll
+  SynOS.Data -> D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Data\bin\Debug\net
+  8.0\SynOS.Data.dll
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReceptionFlowService.cs(3
+91,91): warning CS8625: Cannot convert null literal to non-nullable reference type. [D:\Pro
+jects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CsvService.cs(447,29): wa
+rning CS8618: Non-nullable property 'Errors' must contain a non-null value when exiting con
+structor. Consider adding the 'required' modifier or declaring the property as nullable. [D
+:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CsvService.cs(448,38): wa
+rning CS8618: Non-nullable property 'RowResults' must contain a non-null value when exiting
+ constructor. Consider adding the 'required' modifier or declaring the property as nullable
+. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CsvService.cs(454,23): wa
+rning CS8618: Non-nullable property 'TestCode' must contain a non-null value when exiting c
+onstructor. Consider adding the 'required' modifier or declaring the property as nullable.
+[D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CsvService.cs(456,23): wa
+rning CS8618: Non-nullable property 'Message' must contain a non-null value when exiting co
+nstructor. Consider adding the 'required' modifier or declaring the property as nullable. [
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CsvService.cs(413,23): wa
+rning CS8618: Non-nullable property 'TestCode' must contain a non-null value when exiting c
+onstructor. Consider adding the 'required' modifier or declaring the property as nullable.
+[D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CsvService.cs(414,23): wa
+rning CS8618: Non-nullable property 'TestName' must contain a non-null value when exiting c
+onstructor. Consider adding the 'required' modifier or declaring the property as nullable.
+[D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CsvService.cs(415,23): wa
+rning CS8618: Non-nullable property 'Department' must contain a non-null value when exiting
+ constructor. Consider adding the 'required' modifier or declaring the property as nullable
+. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CsvService.cs(416,23): wa
+rning CS8618: Non-nullable property 'Category' must contain a non-null value when exiting c
+onstructor. Consider adding the 'required' modifier or declaring the property as nullable.
+[D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CsvService.cs(419,23): wa
+rning CS8618: Non-nullable property 'ParameterCode' must contain a non-null value when exit
+ing constructor. Consider adding the 'required' modifier or declaring the property as nulla
+ble. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.cspr
+oj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CsvService.cs(420,23): wa
+rning CS8618: Non-nullable property 'ParameterName' must contain a non-null value when exit
+ing constructor. Consider adding the 'required' modifier or declaring the property as nulla
+ble. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.cspr
+oj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CsvService.cs(421,23): wa
+rning CS8618: Non-nullable property 'Unit' must contain a non-null value when exiting const
+ructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\
+Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CsvService.cs(422,23): wa
+rning CS8618: Non-nullable property 'DataType' must contain a non-null value when exiting c
+onstructor. Consider adding the 'required' modifier or declaring the property as nullable.
+[D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CsvService.cs(428,23): wa
+rning CS8618: Non-nullable property 'AgeGroup' must contain a non-null value when exiting c
+onstructor. Consider adding the 'required' modifier or declaring the property as nullable.
+[D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CsvService.cs(431,23): wa
+rning CS8618: Non-nullable property 'Sex' must contain a non-null value when exiting constr
+uctor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\P
+rojects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CsvService.cs(432,23): wa
+rning CS8618: Non-nullable property 'TextRange' must contain a non-null value when exiting
+constructor. Consider adding the 'required' modifier or declaring the property as nullable.
+ [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CsvService.cs(433,23): wa
+rning CS8618: Non-nullable property 'EffectiveFrom' must contain a non-null value when exit
+ing constructor. Consider adding the 'required' modifier or declaring the property as nulla
+ble. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.cspr
+oj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CsvService.cs(438,23): wa
+rning CS8618: Non-nullable property 'Price_EffectiveFrom' must contain a non-null value whe
+n exiting constructor. Consider adding the 'required' modifier or declaring the property as
+ nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Service
+s.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CsvService.cs(439,23): wa
+rning CS8618: Non-nullable property 'Price_EffectiveTo' must contain a non-null value when
+exiting constructor. Consider adding the 'required' modifier or declaring the property as n
+ullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.
+csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CriticalValueService.cs(4
+1,39): warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthes
+ized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CriticalValueService.cs(4
+3,39): warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthes
+ized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CriticalValueService.cs(4
+4,43): warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthes
+ized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CriticalValueService.cs(4
+6,39): warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthes
+ized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CriticalValueService.cs(4
+7,43): warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthes
+ized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CriticalValueService.cs(1
+26,33): warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthe
+sized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\VisitService.cs(57,31): w
+arning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized-Lab
+-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DICOM\DicomMetadataExtrac
+tor.cs(28,79): warning CS8600: Converting null literal or possible null value to non-nullab
+le type. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.
+csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DICOM\DicomMetadataExtrac
+tor.cs(29,97): warning CS8600: Converting null literal or possible null value to non-nullab
+le type. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.
+csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DICOM\DicomMetadataExtrac
+tor.cs(33,103): warning CS8600: Converting null literal or possible null value to non-nulla
+ble type. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services
+.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DICOM\DicomMetadataExtrac
+tor.cs(34,109): warning CS8600: Converting null literal or possible null value to non-nulla
+ble type. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services
+.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DICOM\DicomMetadataExtrac
+tor.cs(35,87): warning CS8600: Converting null literal or possible null value to non-nullab
+le type. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.
+csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CsvService.cs(78,52): war
+ning CS8601: Possible null reference assignment. [D:\Projects\SynOS-Synthesized-Lab-Intelli
+gence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CsvService.cs(82,48): war
+ning CS8601: Possible null reference assignment. [D:\Projects\SynOS-Synthesized-Lab-Intelli
+gence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CsvService.cs(93,53): war
+ning CS8601: Possible null reference assignment. [D:\Projects\SynOS-Synthesized-Lab-Intelli
+gence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CsvService.cs(107,48): wa
+rning CS8601: Possible null reference assignment. [D:\Projects\SynOS-Synthesized-Lab-Intell
+igence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CsvService.cs(111,44): wa
+rning CS8601: Possible null reference assignment. [D:\Projects\SynOS-Synthesized-Lab-Intell
+igence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CsvService.cs(128,40): wa
+rning CS8601: Possible null reference assignment. [D:\Projects\SynOS-Synthesized-Lab-Intell
+igence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CriticalValueService.cs(1
+42,29): warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthe
+sized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CriticalValueService.cs(1
+83,38): warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthe
+sized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CriticalValueService.cs(1
+92,28): warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthe
+sized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CriticalValueService.cs(1
+92,28): warning CS8601: Possible null reference assignment. [D:\Projects\SynOS-Synthesized-
+Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CriticalValueService.cs(2
+33,35): warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthe
+sized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CriticalValueService.cs(2
+39,33): warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthe
+sized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CriticalValueService.cs(2
+60,32): warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthe
+sized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\VisitService.cs(206,25):
+warning CS8601: Possible null reference assignment. [D:\Projects\SynOS-Synthesized-Lab-Inte
+lligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliveryService.cs(70,39)
+: warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized-
+Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliveryService.cs(111,43
+): warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized
+-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliveryService.cs(120,27
+): warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized
+-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliveryService.cs(121,29
+): warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized
+-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliveryService.cs(145,29
+): warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized
+-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\VisitService.cs(299,27):
+warning CS8618: Non-nullable property 'TestCode' must contain a non-null value when exiting
+ constructor. Consider adding the 'required' modifier or declaring the property as nullable
+. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\VisitService.cs(300,27):
+warning CS8618: Non-nullable property 'TestName' must contain a non-null value when exiting
+ constructor. Consider adding the 'required' modifier or declaring the property as nullable
+. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\VisitService.cs(301,27):
+warning CS8618: Non-nullable property 'Department' must contain a non-null value when exiti
+ng constructor. Consider adding the 'required' modifier or declaring the property as nullab
+le. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.cspro
+j]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CsvService.cs(208,40): wa
+rning CS8601: Possible null reference assignment. [D:\Projects\SynOS-Synthesized-Lab-Intell
+igence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CsvService.cs(209,42): wa
+rning CS8601: Possible null reference assignment. [D:\Projects\SynOS-Synthesized-Lab-Intell
+igence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliveryService.cs(292,39
+): warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized
+-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliveryService.cs(297,30
+): warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized
+-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliveryService.cs(297,30
+): warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized
+-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliveryService.cs(310,30
+): warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized
+-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliveryService.cs(377,39
+): warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized
+-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliveryService.cs(382,30
+): warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized
+-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliveryService.cs(382,30
+): warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized
+-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliveryService.cs(395,30
+): warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized
+-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\Utils\EscPosGenerator.cs(
+70,35): warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthe
+sized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\Utils\EscPosGenerator.cs(
+70,35): warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthe
+sized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\IMSWastageInsightService.
+cs(39,38): warning CS8601: Possible null reference assignment. [D:\Projects\SynOS-Synthesiz
+ed-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\EditLockService.cs(44,28)
+: warning CS8619: Nullability of reference types in value of type '(AcquireLockResponseDto,
+ LockedByInfo?)' doesn't match target type '(AcquireLockResponseDto, LockedByInfo)'. [D:\Pr
+ojects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\EditLockService.cs(50,28)
+: warning CS8601: Possible null reference assignment. [D:\Projects\SynOS-Synthesized-Lab-In
+telligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\EditLockService.cs(53,24)
+: warning CS8619: Nullability of reference types in value of type '(AcquireLockResponseDto?
+, LockedByInfo lockedByInfo)' doesn't match target type '(AcquireLockResponseDto, LockedByI
+nfo)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.cs
+proj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\EditLockService.cs(75,36)
+: warning CS8601: Possible null reference assignment. [D:\Projects\SynOS-Synthesized-Lab-In
+telligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\EditLockService.cs(80,32)
+: warning CS8619: Nullability of reference types in value of type '(AcquireLockResponseDto?
+, LockedByInfo lockedBy)' doesn't match target type '(AcquireLockResponseDto, LockedByInfo)
+'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj
+]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\EditLockService.cs(106,28
+): warning CS8619: Nullability of reference types in value of type '(AcquireLockResponseDto
+ response, LockedByInfo?)' doesn't match target type '(AcquireLockResponseDto, LockedByInfo
+)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.cspro
+j]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\EditLockService.cs(126,36
+): warning CS8601: Possible null reference assignment. [D:\Projects\SynOS-Synthesized-Lab-I
+ntelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\EditLockService.cs(130,32
+): warning CS8619: Nullability of reference types in value of type '(AcquireLockResponseDto
+?, LockedByInfo lockedBy)' doesn't match target type '(AcquireLockResponseDto, LockedByInfo
+)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.cspro
+j]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\IMSWastageInsightService.
+cs(58,38): warning CS8601: Possible null reference assignment. [D:\Projects\SynOS-Synthesiz
+ed-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\InvoiceService.cs(82,31):
+ warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized-L
+ab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\InvoiceService.cs(83,31):
+ warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized-L
+ab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\InvoiceService.cs(99,59):
+ warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized-L
+ab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\InvoiceService.cs(99,59):
+ warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized-L
+ab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\EditLockService.cs(180,32
+): warning CS8601: Possible null reference assignment. [D:\Projects\SynOS-Synthesized-Lab-I
+ntelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliveryService.cs(460,39
+): warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized
+-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliveryService.cs(465,30
+): warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized
+-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliveryService.cs(465,30
+): warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized
+-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliveryService.cs(478,30
+): warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized
+-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\IMSWastageInsightService.
+cs(77,38): warning CS8601: Possible null reference assignment. [D:\Projects\SynOS-Synthesiz
+ed-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\IMSWastageInsightService.
+cs(96,38): warning CS8601: Possible null reference assignment. [D:\Projects\SynOS-Synthesiz
+ed-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliveryService.cs(599,39
+): warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized
+-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliveryService.cs(603,34
+): warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized
+-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliveryService.cs(603,34
+): warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized
+-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliveryService.cs(613,34
+): warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized
+-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReceptionFlowService.cs(1
+49,34): warning CS8601: Possible null reference assignment. [D:\Projects\SynOS-Synthesized-
+Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReceptionFlowService.cs(1
+58,27): warning CS8601: Possible null reference assignment. [D:\Projects\SynOS-Synthesized-
+Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\Security\RadiologyAccessG
+uard.cs(40,57): warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynO
+S-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReportTemplateService.cs(
+137,34): warning CS8600: Converting null literal or possible null value to non-nullable typ
+e. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj
+]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReportTemplateService.cs(
+142,34): warning CS8600: Converting null literal or possible null value to non-nullable typ
+e. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj
+]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReportService.cs(67,39):
+warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized-La
+b-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReportService.cs(129,65):
+ warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized-L
+ab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReportService.cs(139,94):
+ warning CS8604: Possible null reference argument for parameter 'templateModel' in 'Task<by
+te[]> IReportPdfRenderer.GeneratePdfAsync(ReportDataModel data, TemplateModel templateModel
+)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.cspro
+j]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\RadiologyService.cs(200,3
+1): warning CS8601: Possible null reference assignment. [D:\Projects\SynOS-Synthesized-Lab-
+Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ResultService.cs(181,43):
+ warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized-L
+ab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ResultService.cs(195,33):
+ warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized-L
+ab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ResultService.cs(195,33):
+ warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized-L
+ab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReportService.cs(194,39):
+ warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized-L
+ab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SampleService.cs(130,32):
+ warning CS8600: Converting null literal or possible null value to non-nullable type. [D:\P
+rojects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SampleService.cs(148,55):
+ warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized-L
+ab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliveryService.cs(741,21
+): warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized
+-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliveryService.cs(745,47
+): warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized
+-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliveryService.cs(749,43
+): warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized
+-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliveryService.cs(749,43
+): warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized
+-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliveryService.cs(761,43
+): warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized
+-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReceptionFlowService.cs(1
+89,29): warning CS8601: Possible null reference assignment. [D:\Projects\SynOS-Synthesized-
+Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReceptionFlowService.cs(2
+09,33): warning CS8600: Converting null literal or possible null value to non-nullable type
+. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReceptionFlowService.cs(2
+17,40): warning CS8600: Converting null literal or possible null value to non-nullable type
+. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReceptionFlowService.cs(2
+29,32): warning CS8600: Converting null literal or possible null value to non-nullable type
+. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReceptionFlowService.cs(2
+63,45): warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthe
+sized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReceptionFlowService.cs(3
+19,31): warning CS8601: Possible null reference assignment. [D:\Projects\SynOS-Synthesized-
+Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SampleService.cs(184,39):
+ warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized-L
+ab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SampleService.cs(185,43):
+ warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized-L
+ab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SampleService.cs(187,39):
+ warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized-L
+ab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SampleService.cs(194,31):
+ warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized-L
+ab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SampleService.cs(195,38):
+ warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized-L
+ab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SampleService.cs(195,38):
+ warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized-L
+ab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SampleService.cs(201,35):
+ warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized-L
+ab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReceptionFlowService.cs(3
+41,33): warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthe
+sized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliveryService.cs(849,39
+): warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized
+-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliveryService.cs(853,30
+): warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized
+-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliveryService.cs(853,30
+): warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized
+-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliveryService.cs(866,30
+): warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized
+-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SampleService.cs(212,39):
+ warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized-L
+ab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SampleService.cs(213,43):
+ warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized-L
+ab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SampleService.cs(215,39):
+ warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized-L
+ab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SampleService.cs(219,40):
+ warning CS8603: Possible null reference return. [D:\Projects\SynOS-Synthesized-Lab-Intelli
+gence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SampleService.cs(225,27):
+ warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized-L
+ab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SampleService.cs(226,34):
+ warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized-L
+ab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SampleService.cs(226,34):
+ warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized-L
+ab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReportService.cs(251,57):
+ warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized-L
+ab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReportService.cs(252,57):
+ warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized-L
+ab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReportService.cs(267,31):
+ warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized-L
+ab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReportService.cs(271,32):
+ warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized-L
+ab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReportService.cs(291,33):
+ warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized-L
+ab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReportService.cs(291,33):
+ warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized-L
+ab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\TestMasterService.cs(231,
+83): warning CS0472: The result of the expression is always 'false' since a value of type '
+bool' is never equal to 'null' of type 'bool?' [D:\Projects\SynOS-Synthesized-Lab-Intellige
+nce\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SampleService.cs(245,38):
+ warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized-L
+ab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SampleService.cs(245,38):
+ warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized-L
+ab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SampleService.cs(245,38):
+ warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized-L
+ab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReportService.cs(327,32):
+ warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized-L
+ab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\TubeConsumptionService.cs
+(44,69): warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synth
+esized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\TubeConsumptionService.cs
+(45,69): warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synth
+esized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliveryService.cs(919,39
+): warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized
+-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliveryService.cs(923,34
+): warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized
+-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliveryService.cs(923,34
+): warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized
+-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliveryService.cs(933,34
+): warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized
+-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\RadiologyService.cs(290,4
+0): warning CS8601: Possible null reference assignment. [D:\Projects\SynOS-Synthesized-Lab-
+Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ResultService.cs(445,76):
+ warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized-L
+ab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ResultService.cs(451,36):
+ warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized-L
+ab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\PacsService.cs(416,59): w
+arning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized-Lab
+-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReportService.cs(361,39):
+ warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized-L
+ab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReportService.cs(370,27):
+ warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized-L
+ab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReportService.cs(379,28):
+ warning CS8601: Possible null reference assignment. [D:\Projects\SynOS-Synthesized-Lab-Int
+elligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReportService.cs(380,38):
+ warning CS8601: Possible null reference assignment. [D:\Projects\SynOS-Synthesized-Lab-Int
+elligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReportService.cs(433,31):
+ warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized-L
+ab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\RadiologyService.cs(341,4
+4): warning CS8601: Possible null reference assignment. [D:\Projects\SynOS-Synthesized-Lab-
+Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\RadiologyService.cs(343,3
+8): warning CS8601: Possible null reference assignment. [D:\Projects\SynOS-Synthesized-Lab-
+Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\RadiologyService.cs(344,4
+3): warning CS8601: Possible null reference assignment. [D:\Projects\SynOS-Synthesized-Lab-
+Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\RadiologyService.cs(345,3
+7): warning CS8601: Possible null reference assignment. [D:\Projects\SynOS-Synthesized-Lab-
+Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\RadiologyService.cs(396,4
+8): warning CS8601: Possible null reference assignment. [D:\Projects\SynOS-Synthesized-Lab-
+Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\RadiologyService.cs(496,2
+8): warning CS8601: Possible null reference assignment. [D:\Projects\SynOS-Synthesized-Lab-
+Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\RadiologyService.cs(497,3
+4): warning CS8601: Possible null reference assignment. [D:\Projects\SynOS-Synthesized-Lab-
+Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\RadiologyService.cs(498,3
+5): warning CS8601: Possible null reference assignment. [D:\Projects\SynOS-Synthesized-Lab-
+Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\RadiologyService.cs(502,3
+5): warning CS8601: Possible null reference assignment. [D:\Projects\SynOS-Synthesized-Lab-
+Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\RadiologyService.cs(517,2
+1): warning CS8600: Converting null literal or possible null value to non-nullable type. [D
+:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\RadiologyService.cs(524,7
+9): warning CS8604: Possible null reference argument for parameter 'templateModel' in 'Task
+<byte[]> IReportPdfRenderer.GeneratePdfAsync(ReportDataModel data, TemplateModel templateMo
+del)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.cs
+proj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\AuditService.cs(46,38): w
+arning CA2017: Number of parameters supplied in the logging message template do not match t
+he number of named placeholders (https://learn.microsoft.com/dotnet/fundamentals/code-analy
+sis/quality-rules/ca2017) [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Service
+s\SynOS.Services.csproj]
+  SynOS.Services -> D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\bin\D
+  ebug\net8.0\SynOS.Services.dll
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\Admin\CsvImportReq
+uestDto.cs(9,26): warning CS8618: Non-nullable property 'File' must contain a non-null valu
+e when exiting constructor. Consider adding the 'required' modifier or declaring the proper
+ty as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\SynOS.Api.csp
+roj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\IMSStockOperationC
+ontroller.cs(27,37): warning CS8604: Possible null reference argument for parameter 'input'
+ in 'Guid Guid.Parse(string input)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\Sy
+nOS.Api\SynOS.Api.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\IMSStockOperationC
+ontroller.cs(36,37): warning CS8604: Possible null reference argument for parameter 'input'
+ in 'Guid Guid.Parse(string input)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\Sy
+nOS.Api\SynOS.Api.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\RadiologyControlle
+r.cs(30,37): warning CS8604: Possible null reference argument for parameter 'input' in 'Gui
+d Guid.Parse(string input)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\
+SynOS.Api.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\RadiologyControlle
+r.cs(47,37): warning CS8604: Possible null reference argument for parameter 'input' in 'Gui
+d Guid.Parse(string input)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\
+SynOS.Api.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\IMSPurchasingContr
+oller.cs(127,41): warning CS8604: Possible null reference argument for parameter 'input' in
+ 'Guid Guid.Parse(string input)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS
+.Api\SynOS.Api.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\RadiologyReportsCo
+ntroller.cs(40,37): warning CS8604: Possible null reference argument for parameter 'input'
+in 'Guid Guid.Parse(string input)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\Syn
+OS.Api\SynOS.Api.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\Radiology\PacsCont
+roller.cs(32,37): warning CS8604: Possible null reference argument for parameter 'input' in
+ 'Guid Guid.Parse(string input)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS
+.Api\SynOS.Api.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\RadiologyControlle
+r.cs(61,37): warning CS8604: Possible null reference argument for parameter 'input' in 'Gui
+d Guid.Parse(string input)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\
+SynOS.Api.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\RadiologyControlle
+r.cs(92,37): warning CS8604: Possible null reference argument for parameter 'input' in 'Gui
+d Guid.Parse(string input)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\
+SynOS.Api.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\Radiology\PacsCont
+roller.cs(45,37): warning CS8604: Possible null reference argument for parameter 'input' in
+ 'Guid Guid.Parse(string input)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS
+.Api\SynOS.Api.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\RadiologyControlle
+r.cs(101,37): warning CS8604: Possible null reference argument for parameter 'input' in 'Gu
+id Guid.Parse(string input)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api
+\SynOS.Api.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\Radiology\PacsCont
+roller.cs(59,37): warning CS8604: Possible null reference argument for parameter 'input' in
+ 'Guid Guid.Parse(string input)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS
+.Api\SynOS.Api.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\RadiologyReportsCo
+ntroller.cs(48,37): warning CS8604: Possible null reference argument for parameter 'input'
+in 'Guid Guid.Parse(string input)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\Syn
+OS.Api\SynOS.Api.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\Radiology\PacsAdmi
+nController.cs(25,37): warning CS8604: Possible null reference argument for parameter 'inpu
+t' in 'Guid Guid.Parse(string input)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\
+SynOS.Api\SynOS.Api.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\Radiology\PacsAdmi
+nController.cs(33,37): warning CS8604: Possible null reference argument for parameter 'inpu
+t' in 'Guid Guid.Parse(string input)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\
+SynOS.Api\SynOS.Api.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\Radiology\PacsCont
+roller.cs(68,37): warning CS8604: Possible null reference argument for parameter 'input' in
+ 'Guid Guid.Parse(string input)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS
+.Api\SynOS.Api.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\IMSWastageControll
+er.cs(42,110): warning CS8629: Nullable value type may be null. [D:\Projects\SynOS-Synthesi
+zed-Lab-Intelligence\src\SynOS.Api\SynOS.Api.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\Radiology\PacsAdmi
+nController.cs(41,37): warning CS8604: Possible null reference argument for parameter 'inpu
+t' in 'Guid Guid.Parse(string input)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\
+SynOS.Api\SynOS.Api.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Program.cs(134,18): error CS10
+61: 'IServiceCollection' does not contain a definition for 'AddSpendEngineServices' and no
+accessible extension method 'AddSpendEngineServices' accepting a first argument of type 'IS
+erviceCollection' could be found (are you missing a using directive or an assembly referenc
+e?) [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\SynOS.Api.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Program.cs(135,18): error CS10
+61: 'IServiceCollection' does not contain a definition for 'AddReceivableServices' and no a
+ccessible extension method 'AddReceivableServices' accepting a first argument of type 'ISer
+viceCollection' could be found (are you missing a using directive or an assembly reference?
+) [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\SynOS.Api.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\MappingProfile.cs(20,100): war
+ning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized-Lab-I
+ntelligence\src\SynOS.Api\SynOS.Api.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\MappingProfile.cs(51,85): warn
+ing CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized-Lab-In
+telligence\src\SynOS.Api\SynOS.Api.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\MappingProfile.cs(52,77): warn
+ing CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized-Lab-In
+telligence\src\SynOS.Api\SynOS.Api.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\MappingProfile.cs(53,79): warn
+ing CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized-Lab-In
+telligence\src\SynOS.Api\SynOS.Api.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\MappingProfile.cs(54,84): warn
+ing CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized-Lab-In
+telligence\src\SynOS.Api\SynOS.Api.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\MappingProfile.cs(83,73): warn
+ing CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized-Lab-In
+telligence\src\SynOS.Api\SynOS.Api.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\MappingProfile.cs(83,73): warn
+ing CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized-Lab-In
+telligence\src\SynOS.Api\SynOS.Api.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\SecureDownloadCont
+roller.cs(61,13): warning ASP0019: Use IHeaderDictionary.Append or the indexer to append or
+ set headers. IDictionary.Add will throw an ArgumentException when attempting to add a dupl
+icate key. (https://aka.ms/aspnet/analyzers) [D:\Projects\SynOS-Synthesized-Lab-Intelligenc
+e\src\SynOS.Api\SynOS.Api.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\SecureDownloadCont
+roller.cs(62,13): warning ASP0019: Use IHeaderDictionary.Append or the indexer to append or
+ set headers. IDictionary.Add will throw an ArgumentException when attempting to add a dupl
+icate key. (https://aka.ms/aspnet/analyzers) [D:\Projects\SynOS-Synthesized-Lab-Intelligenc
+e\src\SynOS.Api\SynOS.Api.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\SecureDownloadCont
+roller.cs(63,13): warning ASP0019: Use IHeaderDictionary.Append or the indexer to append or
+ set headers. IDictionary.Add will throw an ArgumentException when attempting to add a dupl
+icate key. (https://aka.ms/aspnet/analyzers) [D:\Projects\SynOS-Synthesized-Lab-Intelligenc
+e\src\SynOS.Api\SynOS.Api.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\SecureDownloadCont
+roller.cs(94,13): warning ASP0019: Use IHeaderDictionary.Append or the indexer to append or
+ set headers. IDictionary.Add will throw an ArgumentException when attempting to add a dupl
+icate key. (https://aka.ms/aspnet/analyzers) [D:\Projects\SynOS-Synthesized-Lab-Intelligenc
+e\src\SynOS.Api\SynOS.Api.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\SecureDownloadCont
+roller.cs(95,13): warning ASP0019: Use IHeaderDictionary.Append or the indexer to append or
+ set headers. IDictionary.Add will throw an ArgumentException when attempting to add a dupl
+icate key. (https://aka.ms/aspnet/analyzers) [D:\Projects\SynOS-Synthesized-Lab-Intelligenc
+e\src\SynOS.Api\SynOS.Api.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\SecureDownloadCont
+roller.cs(96,13): warning ASP0019: Use IHeaderDictionary.Append or the indexer to append or
+ set headers. IDictionary.Add will throw an ArgumentException when attempting to add a dupl
+icate key. (https://aka.ms/aspnet/analyzers) [D:\Projects\SynOS-Synthesized-Lab-Intelligenc
+e\src\SynOS.Api\SynOS.Api.csproj]
+
+Build FAILED.
+
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReceptionFlowService.cs(3
+91,91): warning CS8625: Cannot convert null literal to non-nullable reference type. [D:\Pro
+jects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CsvService.cs(447,29): wa
+rning CS8618: Non-nullable property 'Errors' must contain a non-null value when exiting con
+structor. Consider adding the 'required' modifier or declaring the property as nullable. [D
+:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CsvService.cs(448,38): wa
+rning CS8618: Non-nullable property 'RowResults' must contain a non-null value when exiting
+ constructor. Consider adding the 'required' modifier or declaring the property as nullable
+. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CsvService.cs(454,23): wa
+rning CS8618: Non-nullable property 'TestCode' must contain a non-null value when exiting c
+onstructor. Consider adding the 'required' modifier or declaring the property as nullable.
+[D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CsvService.cs(456,23): wa
+rning CS8618: Non-nullable property 'Message' must contain a non-null value when exiting co
+nstructor. Consider adding the 'required' modifier or declaring the property as nullable. [
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CsvService.cs(413,23): wa
+rning CS8618: Non-nullable property 'TestCode' must contain a non-null value when exiting c
+onstructor. Consider adding the 'required' modifier or declaring the property as nullable.
+[D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CsvService.cs(414,23): wa
+rning CS8618: Non-nullable property 'TestName' must contain a non-null value when exiting c
+onstructor. Consider adding the 'required' modifier or declaring the property as nullable.
+[D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CsvService.cs(415,23): wa
+rning CS8618: Non-nullable property 'Department' must contain a non-null value when exiting
+ constructor. Consider adding the 'required' modifier or declaring the property as nullable
+. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CsvService.cs(416,23): wa
+rning CS8618: Non-nullable property 'Category' must contain a non-null value when exiting c
+onstructor. Consider adding the 'required' modifier or declaring the property as nullable.
+[D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CsvService.cs(419,23): wa
+rning CS8618: Non-nullable property 'ParameterCode' must contain a non-null value when exit
+ing constructor. Consider adding the 'required' modifier or declaring the property as nulla
+ble. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.cspr
+oj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CsvService.cs(420,23): wa
+rning CS8618: Non-nullable property 'ParameterName' must contain a non-null value when exit
+ing constructor. Consider adding the 'required' modifier or declaring the property as nulla
+ble. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.cspr
+oj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CsvService.cs(421,23): wa
+rning CS8618: Non-nullable property 'Unit' must contain a non-null value when exiting const
+ructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\
+Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CsvService.cs(422,23): wa
+rning CS8618: Non-nullable property 'DataType' must contain a non-null value when exiting c
+onstructor. Consider adding the 'required' modifier or declaring the property as nullable.
+[D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CsvService.cs(428,23): wa
+rning CS8618: Non-nullable property 'AgeGroup' must contain a non-null value when exiting c
+onstructor. Consider adding the 'required' modifier or declaring the property as nullable.
+[D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CsvService.cs(431,23): wa
+rning CS8618: Non-nullable property 'Sex' must contain a non-null value when exiting constr
+uctor. Consider adding the 'required' modifier or declaring the property as nullable. [D:\P
+rojects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CsvService.cs(432,23): wa
+rning CS8618: Non-nullable property 'TextRange' must contain a non-null value when exiting
+constructor. Consider adding the 'required' modifier or declaring the property as nullable.
+ [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CsvService.cs(433,23): wa
+rning CS8618: Non-nullable property 'EffectiveFrom' must contain a non-null value when exit
+ing constructor. Consider adding the 'required' modifier or declaring the property as nulla
+ble. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.cspr
+oj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CsvService.cs(438,23): wa
+rning CS8618: Non-nullable property 'Price_EffectiveFrom' must contain a non-null value whe
+n exiting constructor. Consider adding the 'required' modifier or declaring the property as
+ nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Service
+s.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CsvService.cs(439,23): wa
+rning CS8618: Non-nullable property 'Price_EffectiveTo' must contain a non-null value when
+exiting constructor. Consider adding the 'required' modifier or declaring the property as n
+ullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.
+csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CriticalValueService.cs(4
+1,39): warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthes
+ized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CriticalValueService.cs(4
+3,39): warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthes
+ized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CriticalValueService.cs(4
+4,43): warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthes
+ized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CriticalValueService.cs(4
+6,39): warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthes
+ized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CriticalValueService.cs(4
+7,43): warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthes
+ized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CriticalValueService.cs(1
+26,33): warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthe
+sized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\VisitService.cs(57,31): w
+arning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized-Lab
+-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DICOM\DicomMetadataExtrac
+tor.cs(28,79): warning CS8600: Converting null literal or possible null value to non-nullab
+le type. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.
+csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DICOM\DicomMetadataExtrac
+tor.cs(29,97): warning CS8600: Converting null literal or possible null value to non-nullab
+le type. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.
+csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DICOM\DicomMetadataExtrac
+tor.cs(33,103): warning CS8600: Converting null literal or possible null value to non-nulla
+ble type. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services
+.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DICOM\DicomMetadataExtrac
+tor.cs(34,109): warning CS8600: Converting null literal or possible null value to non-nulla
+ble type. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services
+.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DICOM\DicomMetadataExtrac
+tor.cs(35,87): warning CS8600: Converting null literal or possible null value to non-nullab
+le type. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.
+csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CsvService.cs(78,52): war
+ning CS8601: Possible null reference assignment. [D:\Projects\SynOS-Synthesized-Lab-Intelli
+gence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CsvService.cs(82,48): war
+ning CS8601: Possible null reference assignment. [D:\Projects\SynOS-Synthesized-Lab-Intelli
+gence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CsvService.cs(93,53): war
+ning CS8601: Possible null reference assignment. [D:\Projects\SynOS-Synthesized-Lab-Intelli
+gence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CsvService.cs(107,48): wa
+rning CS8601: Possible null reference assignment. [D:\Projects\SynOS-Synthesized-Lab-Intell
+igence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CsvService.cs(111,44): wa
+rning CS8601: Possible null reference assignment. [D:\Projects\SynOS-Synthesized-Lab-Intell
+igence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CsvService.cs(128,40): wa
+rning CS8601: Possible null reference assignment. [D:\Projects\SynOS-Synthesized-Lab-Intell
+igence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CriticalValueService.cs(1
+42,29): warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthe
+sized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CriticalValueService.cs(1
+83,38): warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthe
+sized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CriticalValueService.cs(1
+92,28): warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthe
+sized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CriticalValueService.cs(1
+92,28): warning CS8601: Possible null reference assignment. [D:\Projects\SynOS-Synthesized-
+Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CriticalValueService.cs(2
+33,35): warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthe
+sized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CriticalValueService.cs(2
+39,33): warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthe
+sized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CriticalValueService.cs(2
+60,32): warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthe
+sized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\VisitService.cs(206,25):
+warning CS8601: Possible null reference assignment. [D:\Projects\SynOS-Synthesized-Lab-Inte
+lligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliveryService.cs(70,39)
+: warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized-
+Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliveryService.cs(111,43
+): warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized
+-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliveryService.cs(120,27
+): warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized
+-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliveryService.cs(121,29
+): warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized
+-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliveryService.cs(145,29
+): warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized
+-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\VisitService.cs(299,27):
+warning CS8618: Non-nullable property 'TestCode' must contain a non-null value when exiting
+ constructor. Consider adding the 'required' modifier or declaring the property as nullable
+. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\VisitService.cs(300,27):
+warning CS8618: Non-nullable property 'TestName' must contain a non-null value when exiting
+ constructor. Consider adding the 'required' modifier or declaring the property as nullable
+. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\VisitService.cs(301,27):
+warning CS8618: Non-nullable property 'Department' must contain a non-null value when exiti
+ng constructor. Consider adding the 'required' modifier or declaring the property as nullab
+le. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.cspro
+j]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CsvService.cs(208,40): wa
+rning CS8601: Possible null reference assignment. [D:\Projects\SynOS-Synthesized-Lab-Intell
+igence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CsvService.cs(209,42): wa
+rning CS8601: Possible null reference assignment. [D:\Projects\SynOS-Synthesized-Lab-Intell
+igence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliveryService.cs(292,39
+): warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized
+-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliveryService.cs(297,30
+): warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized
+-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliveryService.cs(297,30
+): warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized
+-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliveryService.cs(310,30
+): warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized
+-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliveryService.cs(377,39
+): warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized
+-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliveryService.cs(382,30
+): warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized
+-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliveryService.cs(382,30
+): warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized
+-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliveryService.cs(395,30
+): warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized
+-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\Utils\EscPosGenerator.cs(
+70,35): warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthe
+sized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\Utils\EscPosGenerator.cs(
+70,35): warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthe
+sized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\IMSWastageInsightService.
+cs(39,38): warning CS8601: Possible null reference assignment. [D:\Projects\SynOS-Synthesiz
+ed-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\EditLockService.cs(44,28)
+: warning CS8619: Nullability of reference types in value of type '(AcquireLockResponseDto,
+ LockedByInfo?)' doesn't match target type '(AcquireLockResponseDto, LockedByInfo)'. [D:\Pr
+ojects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\EditLockService.cs(50,28)
+: warning CS8601: Possible null reference assignment. [D:\Projects\SynOS-Synthesized-Lab-In
+telligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\EditLockService.cs(53,24)
+: warning CS8619: Nullability of reference types in value of type '(AcquireLockResponseDto?
+, LockedByInfo lockedByInfo)' doesn't match target type '(AcquireLockResponseDto, LockedByI
+nfo)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.cs
+proj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\EditLockService.cs(75,36)
+: warning CS8601: Possible null reference assignment. [D:\Projects\SynOS-Synthesized-Lab-In
+telligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\EditLockService.cs(80,32)
+: warning CS8619: Nullability of reference types in value of type '(AcquireLockResponseDto?
+, LockedByInfo lockedBy)' doesn't match target type '(AcquireLockResponseDto, LockedByInfo)
+'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj
+]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\EditLockService.cs(106,28
+): warning CS8619: Nullability of reference types in value of type '(AcquireLockResponseDto
+ response, LockedByInfo?)' doesn't match target type '(AcquireLockResponseDto, LockedByInfo
+)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.cspro
+j]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\EditLockService.cs(126,36
+): warning CS8601: Possible null reference assignment. [D:\Projects\SynOS-Synthesized-Lab-I
+ntelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\EditLockService.cs(130,32
+): warning CS8619: Nullability of reference types in value of type '(AcquireLockResponseDto
+?, LockedByInfo lockedBy)' doesn't match target type '(AcquireLockResponseDto, LockedByInfo
+)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.cspro
+j]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\IMSWastageInsightService.
+cs(58,38): warning CS8601: Possible null reference assignment. [D:\Projects\SynOS-Synthesiz
+ed-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\InvoiceService.cs(82,31):
+ warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized-L
+ab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\InvoiceService.cs(83,31):
+ warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized-L
+ab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\InvoiceService.cs(99,59):
+ warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized-L
+ab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\InvoiceService.cs(99,59):
+ warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized-L
+ab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\EditLockService.cs(180,32
+): warning CS8601: Possible null reference assignment. [D:\Projects\SynOS-Synthesized-Lab-I
+ntelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliveryService.cs(460,39
+): warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized
+-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliveryService.cs(465,30
+): warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized
+-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliveryService.cs(465,30
+): warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized
+-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliveryService.cs(478,30
+): warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized
+-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\IMSWastageInsightService.
+cs(77,38): warning CS8601: Possible null reference assignment. [D:\Projects\SynOS-Synthesiz
+ed-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\IMSWastageInsightService.
+cs(96,38): warning CS8601: Possible null reference assignment. [D:\Projects\SynOS-Synthesiz
+ed-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliveryService.cs(599,39
+): warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized
+-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliveryService.cs(603,34
+): warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized
+-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliveryService.cs(603,34
+): warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized
+-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliveryService.cs(613,34
+): warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized
+-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReceptionFlowService.cs(1
+49,34): warning CS8601: Possible null reference assignment. [D:\Projects\SynOS-Synthesized-
+Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReceptionFlowService.cs(1
+58,27): warning CS8601: Possible null reference assignment. [D:\Projects\SynOS-Synthesized-
+Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\Security\RadiologyAccessG
+uard.cs(40,57): warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynO
+S-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReportTemplateService.cs(
+137,34): warning CS8600: Converting null literal or possible null value to non-nullable typ
+e. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj
+]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReportTemplateService.cs(
+142,34): warning CS8600: Converting null literal or possible null value to non-nullable typ
+e. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj
+]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReportService.cs(67,39):
+warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized-La
+b-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReportService.cs(129,65):
+ warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized-L
+ab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReportService.cs(139,94):
+ warning CS8604: Possible null reference argument for parameter 'templateModel' in 'Task<by
+te[]> IReportPdfRenderer.GeneratePdfAsync(ReportDataModel data, TemplateModel templateModel
+)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.cspro
+j]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\RadiologyService.cs(200,3
+1): warning CS8601: Possible null reference assignment. [D:\Projects\SynOS-Synthesized-Lab-
+Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ResultService.cs(181,43):
+ warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized-L
+ab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ResultService.cs(195,33):
+ warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized-L
+ab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ResultService.cs(195,33):
+ warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized-L
+ab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReportService.cs(194,39):
+ warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized-L
+ab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SampleService.cs(130,32):
+ warning CS8600: Converting null literal or possible null value to non-nullable type. [D:\P
+rojects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SampleService.cs(148,55):
+ warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized-L
+ab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliveryService.cs(741,21
+): warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized
+-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliveryService.cs(745,47
+): warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized
+-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliveryService.cs(749,43
+): warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized
+-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliveryService.cs(749,43
+): warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized
+-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliveryService.cs(761,43
+): warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized
+-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReceptionFlowService.cs(1
+89,29): warning CS8601: Possible null reference assignment. [D:\Projects\SynOS-Synthesized-
+Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReceptionFlowService.cs(2
+09,33): warning CS8600: Converting null literal or possible null value to non-nullable type
+. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReceptionFlowService.cs(2
+17,40): warning CS8600: Converting null literal or possible null value to non-nullable type
+. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReceptionFlowService.cs(2
+29,32): warning CS8600: Converting null literal or possible null value to non-nullable type
+. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReceptionFlowService.cs(2
+63,45): warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthe
+sized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReceptionFlowService.cs(3
+19,31): warning CS8601: Possible null reference assignment. [D:\Projects\SynOS-Synthesized-
+Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SampleService.cs(184,39):
+ warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized-L
+ab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SampleService.cs(185,43):
+ warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized-L
+ab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SampleService.cs(187,39):
+ warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized-L
+ab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SampleService.cs(194,31):
+ warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized-L
+ab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SampleService.cs(195,38):
+ warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized-L
+ab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SampleService.cs(195,38):
+ warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized-L
+ab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SampleService.cs(201,35):
+ warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized-L
+ab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReceptionFlowService.cs(3
+41,33): warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthe
+sized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliveryService.cs(849,39
+): warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized
+-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliveryService.cs(853,30
+): warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized
+-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliveryService.cs(853,30
+): warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized
+-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliveryService.cs(866,30
+): warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized
+-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SampleService.cs(212,39):
+ warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized-L
+ab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SampleService.cs(213,43):
+ warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized-L
+ab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SampleService.cs(215,39):
+ warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized-L
+ab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SampleService.cs(219,40):
+ warning CS8603: Possible null reference return. [D:\Projects\SynOS-Synthesized-Lab-Intelli
+gence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SampleService.cs(225,27):
+ warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized-L
+ab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SampleService.cs(226,34):
+ warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized-L
+ab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SampleService.cs(226,34):
+ warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized-L
+ab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReportService.cs(251,57):
+ warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized-L
+ab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReportService.cs(252,57):
+ warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized-L
+ab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReportService.cs(267,31):
+ warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized-L
+ab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReportService.cs(271,32):
+ warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized-L
+ab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReportService.cs(291,33):
+ warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized-L
+ab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReportService.cs(291,33):
+ warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized-L
+ab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\TestMasterService.cs(231,
+83): warning CS0472: The result of the expression is always 'false' since a value of type '
+bool' is never equal to 'null' of type 'bool?' [D:\Projects\SynOS-Synthesized-Lab-Intellige
+nce\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SampleService.cs(245,38):
+ warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized-L
+ab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SampleService.cs(245,38):
+ warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized-L
+ab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SampleService.cs(245,38):
+ warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized-L
+ab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReportService.cs(327,32):
+ warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized-L
+ab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\TubeConsumptionService.cs
+(44,69): warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synth
+esized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\TubeConsumptionService.cs
+(45,69): warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synth
+esized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliveryService.cs(919,39
+): warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized
+-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliveryService.cs(923,34
+): warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized
+-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliveryService.cs(923,34
+): warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized
+-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliveryService.cs(933,34
+): warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized
+-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\RadiologyService.cs(290,4
+0): warning CS8601: Possible null reference assignment. [D:\Projects\SynOS-Synthesized-Lab-
+Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ResultService.cs(445,76):
+ warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized-L
+ab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ResultService.cs(451,36):
+ warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized-L
+ab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\PacsService.cs(416,59): w
+arning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized-Lab
+-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReportService.cs(361,39):
+ warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized-L
+ab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReportService.cs(370,27):
+ warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized-L
+ab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReportService.cs(379,28):
+ warning CS8601: Possible null reference assignment. [D:\Projects\SynOS-Synthesized-Lab-Int
+elligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReportService.cs(380,38):
+ warning CS8601: Possible null reference assignment. [D:\Projects\SynOS-Synthesized-Lab-Int
+elligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReportService.cs(433,31):
+ warning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized-L
+ab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\RadiologyService.cs(341,4
+4): warning CS8601: Possible null reference assignment. [D:\Projects\SynOS-Synthesized-Lab-
+Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\RadiologyService.cs(343,3
+8): warning CS8601: Possible null reference assignment. [D:\Projects\SynOS-Synthesized-Lab-
+Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\RadiologyService.cs(344,4
+3): warning CS8601: Possible null reference assignment. [D:\Projects\SynOS-Synthesized-Lab-
+Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\RadiologyService.cs(345,3
+7): warning CS8601: Possible null reference assignment. [D:\Projects\SynOS-Synthesized-Lab-
+Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\RadiologyService.cs(396,4
+8): warning CS8601: Possible null reference assignment. [D:\Projects\SynOS-Synthesized-Lab-
+Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\RadiologyService.cs(496,2
+8): warning CS8601: Possible null reference assignment. [D:\Projects\SynOS-Synthesized-Lab-
+Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\RadiologyService.cs(497,3
+4): warning CS8601: Possible null reference assignment. [D:\Projects\SynOS-Synthesized-Lab-
+Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\RadiologyService.cs(498,3
+5): warning CS8601: Possible null reference assignment. [D:\Projects\SynOS-Synthesized-Lab-
+Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\RadiologyService.cs(502,3
+5): warning CS8601: Possible null reference assignment. [D:\Projects\SynOS-Synthesized-Lab-
+Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\RadiologyService.cs(517,2
+1): warning CS8600: Converting null literal or possible null value to non-nullable type. [D
+:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\RadiologyService.cs(524,7
+9): warning CS8604: Possible null reference argument for parameter 'templateModel' in 'Task
+<byte[]> IReportPdfRenderer.GeneratePdfAsync(ReportDataModel data, TemplateModel templateMo
+del)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.cs
+proj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\AuditService.cs(46,38): w
+arning CA2017: Number of parameters supplied in the logging message template do not match t
+he number of named placeholders (https://learn.microsoft.com/dotnet/fundamentals/code-analy
+sis/quality-rules/ca2017) [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Service
+s\SynOS.Services.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\Admin\CsvImportReq
+uestDto.cs(9,26): warning CS8618: Non-nullable property 'File' must contain a non-null valu
+e when exiting constructor. Consider adding the 'required' modifier or declaring the proper
+ty as nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\SynOS.Api.csp
+roj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\IMSStockOperationC
+ontroller.cs(27,37): warning CS8604: Possible null reference argument for parameter 'input'
+ in 'Guid Guid.Parse(string input)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\Sy
+nOS.Api\SynOS.Api.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\IMSStockOperationC
+ontroller.cs(36,37): warning CS8604: Possible null reference argument for parameter 'input'
+ in 'Guid Guid.Parse(string input)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\Sy
+nOS.Api\SynOS.Api.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\RadiologyControlle
+r.cs(30,37): warning CS8604: Possible null reference argument for parameter 'input' in 'Gui
+d Guid.Parse(string input)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\
+SynOS.Api.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\RadiologyControlle
+r.cs(47,37): warning CS8604: Possible null reference argument for parameter 'input' in 'Gui
+d Guid.Parse(string input)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\
+SynOS.Api.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\IMSPurchasingContr
+oller.cs(127,41): warning CS8604: Possible null reference argument for parameter 'input' in
+ 'Guid Guid.Parse(string input)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS
+.Api\SynOS.Api.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\RadiologyReportsCo
+ntroller.cs(40,37): warning CS8604: Possible null reference argument for parameter 'input'
+in 'Guid Guid.Parse(string input)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\Syn
+OS.Api\SynOS.Api.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\Radiology\PacsCont
+roller.cs(32,37): warning CS8604: Possible null reference argument for parameter 'input' in
+ 'Guid Guid.Parse(string input)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS
+.Api\SynOS.Api.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\RadiologyControlle
+r.cs(61,37): warning CS8604: Possible null reference argument for parameter 'input' in 'Gui
+d Guid.Parse(string input)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\
+SynOS.Api.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\RadiologyControlle
+r.cs(92,37): warning CS8604: Possible null reference argument for parameter 'input' in 'Gui
+d Guid.Parse(string input)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\
+SynOS.Api.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\Radiology\PacsCont
+roller.cs(45,37): warning CS8604: Possible null reference argument for parameter 'input' in
+ 'Guid Guid.Parse(string input)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS
+.Api\SynOS.Api.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\RadiologyControlle
+r.cs(101,37): warning CS8604: Possible null reference argument for parameter 'input' in 'Gu
+id Guid.Parse(string input)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api
+\SynOS.Api.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\Radiology\PacsCont
+roller.cs(59,37): warning CS8604: Possible null reference argument for parameter 'input' in
+ 'Guid Guid.Parse(string input)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS
+.Api\SynOS.Api.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\RadiologyReportsCo
+ntroller.cs(48,37): warning CS8604: Possible null reference argument for parameter 'input'
+in 'Guid Guid.Parse(string input)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\Syn
+OS.Api\SynOS.Api.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\Radiology\PacsAdmi
+nController.cs(25,37): warning CS8604: Possible null reference argument for parameter 'inpu
+t' in 'Guid Guid.Parse(string input)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\
+SynOS.Api\SynOS.Api.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\Radiology\PacsAdmi
+nController.cs(33,37): warning CS8604: Possible null reference argument for parameter 'inpu
+t' in 'Guid Guid.Parse(string input)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\
+SynOS.Api\SynOS.Api.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\Radiology\PacsCont
+roller.cs(68,37): warning CS8604: Possible null reference argument for parameter 'input' in
+ 'Guid Guid.Parse(string input)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS
+.Api\SynOS.Api.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\IMSWastageControll
+er.cs(42,110): warning CS8629: Nullable value type may be null. [D:\Projects\SynOS-Synthesi
+zed-Lab-Intelligence\src\SynOS.Api\SynOS.Api.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\Radiology\PacsAdmi
+nController.cs(41,37): warning CS8604: Possible null reference argument for parameter 'inpu
+t' in 'Guid Guid.Parse(string input)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\
+SynOS.Api\SynOS.Api.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\MappingProfile.cs(20,100): war
+ning CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized-Lab-I
+ntelligence\src\SynOS.Api\SynOS.Api.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\MappingProfile.cs(51,85): warn
+ing CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized-Lab-In
+telligence\src\SynOS.Api\SynOS.Api.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\MappingProfile.cs(52,77): warn
+ing CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized-Lab-In
+telligence\src\SynOS.Api\SynOS.Api.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\MappingProfile.cs(53,79): warn
+ing CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized-Lab-In
+telligence\src\SynOS.Api\SynOS.Api.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\MappingProfile.cs(54,84): warn
+ing CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized-Lab-In
+telligence\src\SynOS.Api\SynOS.Api.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\MappingProfile.cs(83,73): warn
+ing CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized-Lab-In
+telligence\src\SynOS.Api\SynOS.Api.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\MappingProfile.cs(83,73): warn
+ing CS8602: Dereference of a possibly null reference. [D:\Projects\SynOS-Synthesized-Lab-In
+telligence\src\SynOS.Api\SynOS.Api.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\SecureDownloadCont
+roller.cs(61,13): warning ASP0019: Use IHeaderDictionary.Append or the indexer to append or
+ set headers. IDictionary.Add will throw an ArgumentException when attempting to add a dupl
+icate key. (https://aka.ms/aspnet/analyzers) [D:\Projects\SynOS-Synthesized-Lab-Intelligenc
+e\src\SynOS.Api\SynOS.Api.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\SecureDownloadCont
+roller.cs(62,13): warning ASP0019: Use IHeaderDictionary.Append or the indexer to append or
+ set headers. IDictionary.Add will throw an ArgumentException when attempting to add a dupl
+icate key. (https://aka.ms/aspnet/analyzers) [D:\Projects\SynOS-Synthesized-Lab-Intelligenc
+e\src\SynOS.Api\SynOS.Api.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\SecureDownloadCont
+roller.cs(63,13): warning ASP0019: Use IHeaderDictionary.Append or the indexer to append or
+ set headers. IDictionary.Add will throw an ArgumentException when attempting to add a dupl
+icate key. (https://aka.ms/aspnet/analyzers) [D:\Projects\SynOS-Synthesized-Lab-Intelligenc
+e\src\SynOS.Api\SynOS.Api.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\SecureDownloadCont
+roller.cs(94,13): warning ASP0019: Use IHeaderDictionary.Append or the indexer to append or
+ set headers. IDictionary.Add will throw an ArgumentException when attempting to add a dupl
+icate key. (https://aka.ms/aspnet/analyzers) [D:\Projects\SynOS-Synthesized-Lab-Intelligenc
+e\src\SynOS.Api\SynOS.Api.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\SecureDownloadCont
+roller.cs(95,13): warning ASP0019: Use IHeaderDictionary.Append or the indexer to append or
+ set headers. IDictionary.Add will throw an ArgumentException when attempting to add a dupl
+icate key. (https://aka.ms/aspnet/analyzers) [D:\Projects\SynOS-Synthesized-Lab-Intelligenc
+e\src\SynOS.Api\SynOS.Api.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\SecureDownloadCont
+roller.cs(96,13): warning ASP0019: Use IHeaderDictionary.Append or the indexer to append or
+ set headers. IDictionary.Add will throw an ArgumentException when attempting to add a dupl
+icate key. (https://aka.ms/aspnet/analyzers) [D:\Projects\SynOS-Synthesized-Lab-Intelligenc
+e\src\SynOS.Api\SynOS.Api.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Program.cs(134,18): error CS10
+61: 'IServiceCollection' does not contain a definition for 'AddSpendEngineServices' and no
+accessible extension method 'AddSpendEngineServices' accepting a first argument of type 'IS
+erviceCollection' could be found (are you missing a using directive or an assembly referenc
+e?) [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\SynOS.Api.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Program.cs(135,18): error CS10
+61: 'IServiceCollection' does not contain a definition for 'AddReceivableServices' and no a
+ccessible extension method 'AddReceivableServices' accepting a first argument of type 'ISer
+viceCollection' could be found (are you missing a using directive or an assembly reference?
+) [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\SynOS.Api.csproj]
+    205 Warning(s)
+    2 Error(s)
+
+Time Elapsed 00:00:25.18
+PS D:\Projects\SynOS-Synthesized-Lab-Intelligence>

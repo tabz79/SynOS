@@ -2045,6 +2045,50 @@ namespace SynOS.Data.Migrations
                     b.ToTable("PatientReferrerLinks");
                 });
 
+            modelBuilder.Entity("SynOS.Models.Entities.Payables.PayableFact", b =>
+                {
+                    b.Property<Guid>("PayableFactId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("AmountOwed")
+                        .HasColumnType("decimal(18,4)");
+
+                    b.Property<string>("Currency")
+                        .IsRequired()
+                        .HasMaxLength(3)
+                        .HasColumnType("nvarchar(3)");
+
+                    b.Property<DateOnly>("DueDate")
+                        .HasColumnType("date");
+
+                    b.Property<DateTimeOffset>("OccurredAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset>("RecordedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("ReferralPartnerId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("SourcePaymentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("SourceSpendFactId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.HasKey("PayableFactId");
+
+                    b.HasIndex("SourcePaymentId");
+
+                    b.ToTable("PayableFacts", "Payables");
+                });
+
             modelBuilder.Entity("SynOS.Models.Entities.Payment", b =>
                 {
                     b.Property<Guid>("PaymentId")
@@ -2323,6 +2367,79 @@ namespace SynOS.Data.Migrations
                     b.HasIndex("ParameterId", "AgeGroup", "Sex");
 
                     b.ToTable("ReferenceRanges");
+                });
+
+            modelBuilder.Entity("SynOS.Models.Entities.Referral.ReferralCommissionRule", b =>
+                {
+                    b.Property<Guid>("RuleId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("CommissionType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<decimal>("CommissionValue")
+                        .HasColumnType("decimal(18, 4)");
+
+                    b.Property<DateOnly>("EffectiveFrom")
+                        .HasColumnType("date");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<Guid>("ReferralPartnerId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("TestId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("RuleId");
+
+                    b.HasIndex("TestId");
+
+                    b.HasIndex("ReferralPartnerId", "TestId", "EffectiveFrom")
+                        .IsUnique();
+
+                    b.ToTable("ReferralCommissionRules", (string)null);
+                });
+
+            modelBuilder.Entity("SynOS.Models.Entities.Referral.ReferralPartner", b =>
+                {
+                    b.Property<Guid>("ReferralPartnerId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ContactInfo")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("PartnerType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("ReferralPartnerId");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.ToTable("ReferralPartners", (string)null);
                 });
 
             modelBuilder.Entity("SynOS.Models.Entities.Referrer", b =>
@@ -3292,7 +3409,16 @@ namespace SynOS.Data.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
+                    b.Property<bool>("IsReferred")
+                        .HasColumnType("bit");
+
                     b.Property<Guid>("PatientId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("PaymentCollectionModel")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid?>("ReferralPartnerId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid?>("ReferrerId")
@@ -3321,6 +3447,8 @@ namespace SynOS.Data.Migrations
                     b.HasIndex("BranchId");
 
                     b.HasIndex("PatientId");
+
+                    b.HasIndex("ReferralPartnerId");
 
                     b.HasIndex("ReferrerId");
 
@@ -4111,6 +4239,25 @@ namespace SynOS.Data.Migrations
                     b.Navigation("Parameter");
                 });
 
+            modelBuilder.Entity("SynOS.Models.Entities.Referral.ReferralCommissionRule", b =>
+                {
+                    b.HasOne("SynOS.Models.Entities.Referral.ReferralPartner", "ReferralPartner")
+                        .WithMany()
+                        .HasForeignKey("ReferralPartnerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SynOS.Models.Entities.Test", "Test")
+                        .WithMany()
+                        .HasForeignKey("TestId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("ReferralPartner");
+
+                    b.Navigation("Test");
+                });
+
             modelBuilder.Entity("SynOS.Models.Entities.RefreshToken", b =>
                 {
                     b.HasOne("SynOS.Models.Entities.User", "User")
@@ -4360,6 +4507,10 @@ namespace SynOS.Data.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("SynOS.Models.Entities.Referral.ReferralPartner", "ReferralPartner")
+                        .WithMany()
+                        .HasForeignKey("ReferralPartnerId");
+
                     b.HasOne("SynOS.Models.Entities.Referrer", "Referrer")
                         .WithMany()
                         .HasForeignKey("ReferrerId");
@@ -4367,6 +4518,8 @@ namespace SynOS.Data.Migrations
                     b.Navigation("Branch");
 
                     b.Navigation("Patient");
+
+                    b.Navigation("ReferralPartner");
 
                     b.Navigation("Referrer");
                 });
