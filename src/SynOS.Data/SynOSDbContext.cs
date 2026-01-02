@@ -829,6 +829,34 @@ public DbSet<ReceivableFact> ReceivableFacts { get; set; } = null!;
 
                 // Intentionally no foreign keys (append-only ledger)
             });
+			
+			// Accounts Receivable (Flow B)
+modelBuilder.Entity<ReceivableFact>(entity =>
+{
+    entity.ToTable("ReceivableFacts", "AR");
+
+    entity.HasKey(e => e.ReceivableFactId);
+
+    entity.HasIndex(e => e.SourceVisitId)
+          .IsUnique();
+
+    entity.HasIndex(e => e.ReferralPartnerId);
+
+    entity.Property(e => e.Amount)
+          .HasColumnType("decimal(18,4)")
+          .IsRequired();
+
+    entity.Property(e => e.Currency)
+          .HasMaxLength(3)
+          .IsRequired();
+
+    entity.Property(e => e.OccurredAt)
+          .IsRequired();
+
+    entity.Property(e => e.RecordedAt)
+          .IsRequired();
+});
+
         }
     }
 }
