@@ -1,3 +1,4 @@
+using SynOS.Models.Entities.AR;
 using Microsoft.EntityFrameworkCore;
 using SynOS.Models.Entities;
 using SynOS.Models.Entities.IMS;
@@ -14,7 +15,7 @@ namespace SynOS.Data
         public SynOSDbContext(DbContextOptions<SynOSDbContext> options) : base(options)
         {
         }
-
+public DbSet<ReceivableFact> ReceivableFacts { get; set; } = null!;
         // DbSet for User entity
         public DbSet<User> Users { get; set; } = null!;
         public DbSet<Role> Roles { get; set; } = null!;
