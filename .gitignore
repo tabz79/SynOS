@@ -20,3 +20,18 @@ gemini-prompt.md
 manual-step.md
 prompts-used.md
 ppx-gemini-session.md
+# .NET build outputs
+**/bin/
+**/obj/
+
+# IDE folders
+.vs/
+.idea/
+.vscode/
+
+# OS junk
+Thumbs.db
+.DS_Store
+
+# Logs
+*.log
