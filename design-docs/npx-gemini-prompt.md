@@ -1,75 +1,75 @@
-✦ ENTER READ-ONLY AUDIT MODE.
+## ✅ Gemini Prompt — Step 5: Flow B Trigger Logic (FINAL, SAFE VERSION)
 
-You will NOT write code.
-You will NOT suggest fixes.
-You will ONLY report what exists and what does not exist in the current codebase.
-
-Context:
-This audit is for **Flow B – Partner Collects**, defined as:
-- Patient pays at Hospital / Clinic / Doctor first
-- Patient brings a paid slip to Lab
-- Lab creates visit marked as Referral + Already Paid
-- Lab performs tests
-- Hospital/Clinic later settles money with Lab
-- Referral commission is deducted during settlement
-
-Your task:
-Audit whether Flow B is actually supported anywhere in the current system.
+> **MODE:** IMPLEMENTATION MODE
+> **SCOPE:** Flow B trigger logic ONLY
+> **RESTRICTIONS:**
+>
+> * DO NOT perform any git operations
+> * DO NOT modify migrations
+> * DO NOT modify SynOSDbContext.cs
+> * DO NOT modify entity definitions
+> * DO NOT introduce new services
+> * DO NOT introduce try/catch that hides failures
+> * DO NOT touch Flow A logic
+>
+> ---
+>
+> **CONTEXT (LOCKED):**
+>
+> * Flow A (LabCollects) is complete and stable
+> * Flow B schema (`ReceivableFact`) already exists and is migrated
+> * DbContext wiring for ReceivableFact is already done
+> * Build is passing
+>
+> ---
+>
+> **TASK:**
+> Implement **Flow B (PartnerCollects) receivable creation logic**.
+>
+> ---
+>
+> **WHERE TO IMPLEMENT (STRICT):**
+>
+> * File: `src/SynOS.Services/ReportService.cs`
+> * Method: `SignReportAsync(...)`
+> * Insert logic **immediately after** the report status is persisted as `"Signed"`
+>
+> ---
+>
+> **BUSINESS RULES (DO NOT VIOLATE):**
+>
+> 1. A `ReceivableFact` is created **only once per Visit**
+> 2. It is created **only when ALL reports for that visit are Signed**
+> 3. It is created **only if**:
+>
+>    * `Visit.PaymentCollectionModel == "PartnerCollects"`
+>    * `Visit.ReferralPartnerId` exists and partner is active
+> 4. Amount must equal the **final Invoice Total**
+> 5. Currency must come from **Invoice**
+> 6. `OccurredAt` = report’s signed timestamp
+> 7. Database uniqueness (one receivable per visit) is the idempotency guard
+> 8. No reconciliation, no revenue recognition, no settlement logic here
+>
+> ---
+>
+> **EXPLICITLY FORBIDDEN:**
+>
+> * No `PayableFact`
+> * No `SpendFact`
+> * No `RevenueFact`
+> * No changes to Flow A
+>
+> ---
+>
+> **OUTPUT FORMAT REQUIRED:**
+>
+> 1. Show ONLY the modified portion of `SignReportAsync`
+> 2. Include any required `using` statements
+> 3. No explanations unless necessary for correctness
+>
+> ---
+>
+> **GOAL:**
+> Clean, minimal, deterministic Flow B trigger logic that compiles and respects the ledger design.
 
 ---
-
-### Audit Questions (answer explicitly YES / NO / PARTIAL)
-
-1. **Reception Flow**
-   - Does ReceptionFlowService support creating a visit marked as:
-     - Paid externally?
-     - PartnerCollects mode?
-   - Is there any logic that distinguishes “Lab collected payment” vs “Partner collected payment”?
-
-2. **Payment & Invoice Model**
-   - Does the Invoice or Payment model support:
-     - External payment reference (hospital slip)?
-     - Payment source ≠ Lab?
-   - Is there any persisted field indicating “money not yet received by lab”?
-
-3. **Financial Truth Engines**
-   - Is there any **Receivable / Money-to-Receive** fact written when PartnerCollects is used?
-   - Are there any facts that represent:
-     - “Hospital owes ₹X to Lab”?
-   - Or is the system currently **expense-only** (money going out)?
-
-4. **Referral Commission Logic**
-   - Is commission recognition triggered when:
-     - Lab does NOT collect money?
-   - Or is commission logic strictly tied to lab-side payment events?
-
-5. **Settlement & Reconciliation**
-   - Is there any logic, entity, or workflow that supports:
-     - Recording settlement received from hospital?
-     - Reconciling settlement with performed tests?
-   - Or is settlement entirely outside the system?
-
-6. **Reports & Analytics**
-   - Can the current system answer:
-     - “How much money is pending from hospitals?”
-     - “Which referrals are unpaid but tests are completed?”
-   - If yes, identify exactly which facts enable this.
-   - If no, say so clearly.
-
-7. **Overall Conclusion**
-   - Is Flow B:
-     - Fully supported
-     - Partially supported
-     - Not supported
-   - Justify the conclusion in 3–5 bullet points.
-
----
-
-### Output Rules
-- Do NOT propose future design.
-- Do NOT suggest fixes.
-- Do NOT rename Flow B.
-- Be brutally factual.
-- Prefer saying “does not exist” over speculation.
-
-✦ END AUDIT.

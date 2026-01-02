@@ -32,6 +32,10 @@ namespace SynOS.Models.Entities
         public decimal Total { get; set; }
 
         [Required]
+        [StringLength(3)]
+        public string Currency { get; set; }
+
+        [Required]
         [StringLength(50)]
         public string Status { get; set; } = string.Empty;
 
