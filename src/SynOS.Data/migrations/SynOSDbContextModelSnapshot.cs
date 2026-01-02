@@ -22,6 +22,42 @@ namespace SynOS.Data.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("SynOS.Models.Entities.AR.ReceivableFact", b =>
+                {
+                    b.Property<Guid>("ReceivableFactId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("decimal(18,4)");
+
+                    b.Property<string>("Currency")
+                        .IsRequired()
+                        .HasMaxLength(3)
+                        .HasColumnType("nvarchar(3)");
+
+                    b.Property<DateTimeOffset>("OccurredAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset>("RecordedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("ReferralPartnerId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("SourceVisitId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("ReceivableFactId");
+
+                    b.HasIndex("ReferralPartnerId");
+
+                    b.HasIndex("SourceVisitId")
+                        .IsUnique();
+
+                    b.ToTable("ReceivableFacts", "AR");
+                });
+
             modelBuilder.Entity("SynOS.Models.Entities.AccessionCounter", b =>
                 {
                     b.Property<int>("Id")
