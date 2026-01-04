@@ -1,75 +1,69 @@
-## ✅ Gemini Prompt — Step 5: Flow B Trigger Logic (FINAL, SAFE VERSION)
+### **Prompt: Implement Unified Referral Interpretation Layer – Phase 1 (Corrected Plan)**
 
-> **MODE:** IMPLEMENTATION MODE
-> **SCOPE:** Flow B trigger logic ONLY
-> **RESTRICTIONS:**
->
-> * DO NOT perform any git operations
-> * DO NOT modify migrations
-> * DO NOT modify SynOSDbContext.cs
-> * DO NOT modify entity definitions
-> * DO NOT introduce new services
-> * DO NOT introduce try/catch that hides failures
-> * DO NOT touch Flow A logic
->
-> ---
->
-> **CONTEXT (LOCKED):**
->
-> * Flow A (LabCollects) is complete and stable
-> * Flow B schema (`ReceivableFact`) already exists and is migrated
-> * DbContext wiring for ReceivableFact is already done
-> * Build is passing
->
-> ---
->
-> **TASK:**
-> Implement **Flow B (PartnerCollects) receivable creation logic**.
->
-> ---
->
-> **WHERE TO IMPLEMENT (STRICT):**
->
-> * File: `src/SynOS.Services/ReportService.cs`
-> * Method: `SignReportAsync(...)`
-> * Insert logic **immediately after** the report status is persisted as `"Signed"`
->
-> ---
->
-> **BUSINESS RULES (DO NOT VIOLATE):**
->
-> 1. A `ReceivableFact` is created **only once per Visit**
-> 2. It is created **only when ALL reports for that visit are Signed**
-> 3. It is created **only if**:
->
->    * `Visit.PaymentCollectionModel == "PartnerCollects"`
->    * `Visit.ReferralPartnerId` exists and partner is active
-> 4. Amount must equal the **final Invoice Total**
-> 5. Currency must come from **Invoice**
-> 6. `OccurredAt` = report’s signed timestamp
-> 7. Database uniqueness (one receivable per visit) is the idempotency guard
-> 8. No reconciliation, no revenue recognition, no settlement logic here
->
-> ---
->
-> **EXPLICITLY FORBIDDEN:**
->
-> * No `PayableFact`
-> * No `SpendFact`
-> * No `RevenueFact`
-> * No changes to Flow A
->
-> ---
->
-> **OUTPUT FORMAT REQUIRED:**
->
-> 1. Show ONLY the modified portion of `SignReportAsync`
-> 2. Include any required `using` statements
-> 3. No explanations unless necessary for correctness
->
-> ---
->
-> **GOAL:**
-> Clean, minimal, deterministic Flow B trigger logic that compiles and respects the ledger design.
+**Context:**
+
+* The Implementation Contract for the Unified Referral Interpretation Layer is LOCKED.
+* This task implements **Phase 1 only**: internal normalization + `GetPartnerStatement`.
+* The previous execution plan requires two corrections which must be enforced.
+
+**Mandatory Corrections (Non-Negotiable):**
+
+1. **Internal Normalized Event Layer**
+
+   * Before creating any output DTOs, you MUST introduce an **internal-only normalized ledger event structure**.
+   * This structure must:
+
+     * Be private/internal to the interpretation service.
+     * NOT live in the DTO folder.
+     * NOT be exposed outside the service.
+     * Represent a single financial event with:
+
+       * OccurredAt
+       * Amount
+       * EntryType (Debit | Credit)
+       * Description
+       * SourceFactType (enum, internal use only)
+
+2. **Fact Query Discipline**
+
+   * Each truth fact type (ReceivableFact, PayableFact, RevenueFact) MUST:
+
+     * Be queried independently.
+     * Be immediately projected into the internal normalized event structure.
+   * Only fully normalized events may be combined into a unified in-memory list.
+   * No EF-level unions, mixed projections, or post-hoc normalization are allowed.
+
+**Implementation Scope:**
+
+* Implement:
+
+  * Internal normalized ledger event mapping
+  * `GetPartnerStatementAsync`
+* Do NOT implement:
+
+  * Partner summaries
+  * System snapshots
+  * Any write-side logic
+  * Any optimization, caching, or reconciliation
+
+**Behavioral Requirements:**
+
+* Enforce debit/credit semantics exactly as per the contract.
+* Sort events strictly by OccurredAt.
+* Calculate running balance **in-memory only**, after sorting.
+* Return a fully materialized `List<LedgerEntryDto>` (no IQueryable leaks).
+
+**Strict Prohibitions:**
+
+* No writes of any kind
+* No static state or singletons
+* No reference to Economic or Business Intelligence layers
+* No exposure of internal normalized event types
+
+**Output Expectation:**
+
+* Clean, readable, reviewable code
+* Structure that makes architectural violations obvious
+* Implementation that can be extended in Phase-2 without refactoring Phase-1
 
 ---

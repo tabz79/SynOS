@@ -27,6 +27,7 @@ using SynOS.Services.Security;
 using SynOS.Services.AnalyzerIntegration; // New
 using System.Text.Json.Serialization; // Added
 using SynOS.Services.Referral; // Added to resolve build error
+using SynOS.Services.Interpretation; // ADDED
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -145,6 +146,9 @@ builder.Services.AddScoped<ISampleService, SampleService>(provider =>
 builder.Services.AddScoped<ITubeConsumptionService, TubeConsumptionService>();
 builder.Services.AddScoped<IPurchasingService, PurchasingService>();
 builder.Services.AddScoped<IIMSWastageInsightService, IMSWastageInsightService>();
+
+// Register Referral Interpretation Service
+builder.Services.AddScoped<IReferralInterpretationService, ReferralInterpretationService>(); // ADDED HERE
 
 // Register Revenue Engine services (OPT-IN)
 builder.Services.AddRevenueEngine();
