@@ -42,12 +42,83 @@ namespace SynOS.Services.Interpretation
         }
         // --- End Internal Structures ---
 
-
         public async Task<List<LedgerEntryDto>> GetPartnerStatementAsync(Guid referralPartnerId, DateTimeOffset? startDate, DateTimeOffset? endDate)
+        {
+            // 1. Get the unified list of normalized events from the private helper
+            var allNormalizedEvents = await GetNormalizedEventsAsync(referralPartnerId, startDate, endDate);
+
+            // 2. Sort all events chronologically and deterministically
+            allNormalizedEvents.Sort((a, b) => {
+                int dateComparison = a.OccurredAt.CompareTo(b.OccurredAt);
+                if (dateComparison != 0) return dateComparison;
+                return a.SourceFactId.CompareTo(b.SourceFactId); // Secondary sort for deterministic order
+            });
+
+            // 3. Generate final LedgerEntryDto list with running balance
+            var ledgerStatement = new List<LedgerEntryDto>();
+            decimal runningBalance = 0; // Starts at 0, accumulates based on events
+
+            foreach (var normEvent in allNormalizedEvents)
+            {
+                var debitAmount = normEvent.EntryType == EntryType.Debit ? normEvent.Amount : 0;
+                var creditAmount = normEvent.EntryType == EntryType.Credit ? normEvent.Amount : 0;
+
+                // Apply sign convention: Debit increases partner's debt to lab, Credit decreases it.
+                runningBalance += (debitAmount - creditAmount);
+
+                ledgerStatement.Add(new LedgerEntryDto
+                {
+                    EventDate = normEvent.OccurredAt,
+                    Description = normEvent.Description,
+                    Debit = debitAmount,
+                    Credit = creditAmount,
+                    RunningBalance = runningBalance
+                });
+            }
+
+            return ledgerStatement;
+        }
+        
+        public async Task<PartnerFinancialSummaryDto> GetPartnerFinancialSummaryAsync(Guid referralPartnerId)
+        {
+            // 1. Get the full history of normalized events using the private helper
+            var allNormalizedEvents = await GetNormalizedEventsAsync(referralPartnerId, null, null);
+
+            // 2. Aggregate the events into summary metrics
+            decimal totalReceivables = 0;
+            decimal totalPayables = 0;
+
+            foreach (var normEvent in allNormalizedEvents)
+            {
+                if (normEvent.EntryType == EntryType.Debit)
+                {
+                    // Debits represent receivables owed to the lab.
+                    totalReceivables += normEvent.Amount;
+                }
+                else // Credit
+                {
+                    // Credits represent payables owed by the lab to the partner.
+                    totalPayables += normEvent.Amount;
+                }
+            }
+
+            // 3. Derive Net Position and create the DTO
+            // From the lab's perspective: Positive = Partner owes Lab. Negative = Lab owes Partner.
+            var netPosition = totalReceivables - totalPayables;
+
+            return new PartnerFinancialSummaryDto
+            {
+                TotalReceivables = totalReceivables,
+                TotalPayables = totalPayables,
+                NetPosition = netPosition
+            };
+        }
+
+        private async Task<List<NormalizedLedgerEvent>> GetNormalizedEventsAsync(Guid referralPartnerId, DateTimeOffset? startDate, DateTimeOffset? endDate)
         {
             var allNormalizedEvents = new List<NormalizedLedgerEvent>();
 
-            // 1. Query and normalize ReceivableFacts (Flow B)
+            // Query and normalize ReceivableFacts (Flow B)
             var receivableQuery = _context.ReceivableFacts.Where(rf => rf.ReferralPartnerId == referralPartnerId);
             if (startDate.HasValue) receivableQuery = receivableQuery.Where(rf => rf.OccurredAt >= startDate.Value);
             if (endDate.HasValue) receivableQuery = receivableQuery.Where(rf => rf.OccurredAt <= endDate.Value);
@@ -64,7 +135,7 @@ namespace SynOS.Services.Interpretation
                 .ToListAsync();
             allNormalizedEvents.AddRange(receivableEvents);
 
-            // 2. Query and normalize PayableFacts (Flow A)
+            // Query and normalize PayableFacts (Flow A)
             var payableQuery = _context.PayableFacts.Where(pf => pf.ReferralPartnerId == referralPartnerId);
             if (startDate.HasValue) payableQuery = payableQuery.Where(pf => pf.OccurredAt >= startDate.Value);
             if (endDate.HasValue) payableQuery = payableQuery.Where(pf => pf.OccurredAt <= endDate.Value);
@@ -80,40 +151,34 @@ namespace SynOS.Services.Interpretation
                 })
                 .ToListAsync();
             allNormalizedEvents.AddRange(payableEvents);
+            
+            // RevenueFact and DisbursementFact handling is intentionally omitted for now per the contract.
 
-            // 3. RevenueFact handling removed as per instructions until partner attribution is guaranteed at the truth layer.
-            // 4. DisbursementFact (future compatible) not included in Phase 1.
+            return allNormalizedEvents;
+        }
 
-            // 5. Combine and Sort all events chronologically and deterministically
-            allNormalizedEvents.Sort((a, b) => {
-                int dateComparison = a.OccurredAt.CompareTo(b.OccurredAt);
-                if (dateComparison != 0) return dateComparison;
-                return a.SourceFactId.CompareTo(b.SourceFactId); // Secondary sort for deterministic order
-            });
+        public async Task<SystemReferralExposureDto> GetSystemReferralExposureAsync()
+        {
+            var partnerIds = await _context.ReferralPartners
+                .Select(p => p.ReferralPartnerId)
+                .ToListAsync();
 
-            // 6. Generate final LedgerEntryDto list with running balance
-            var ledgerStatement = new List<LedgerEntryDto>();
-            decimal runningBalance = 0; // Starts at 0, accumulates based on events
+            decimal systemTotalReceivables = 0;
+            decimal systemTotalPayables = 0;
 
-            foreach (var normEvent in allNormalizedEvents)
+            foreach (var partnerId in partnerIds)
             {
-                var debitAmount = normEvent.EntryType == EntryType.Debit ? normEvent.Amount : 0;
-                var creditAmount = normEvent.EntryType == EntryType.Credit ? normEvent.Amount : 0;
-
-                // Apply sign convention: Debit is positive (increases partner's debt to lab), Credit is negative (decreases partner's debt to lab)
-                runningBalance += (debitAmount - creditAmount);
-
-                ledgerStatement.Add(new LedgerEntryDto
-                {
-                    EventDate = normEvent.OccurredAt,
-                    Description = normEvent.Description,
-                    Debit = debitAmount,
-                    Credit = creditAmount,
-                    RunningBalance = runningBalance
-                });
+                var summary = await GetPartnerFinancialSummaryAsync(partnerId);
+                systemTotalReceivables += summary.TotalReceivables;
+                systemTotalPayables += summary.TotalPayables;
             }
 
-            return ledgerStatement;
+            return new SystemReferralExposureDto
+            {
+                SystemTotalReceivables = systemTotalReceivables,
+                SystemTotalPayables = systemTotalPayables,
+                SystemNetPosition = systemTotalReceivables - systemTotalPayables
+            };
         }
     }
 }

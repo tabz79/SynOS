@@ -1,69 +1,89 @@
-### **Prompt: Implement Unified Referral Interpretation Layer – Phase 1 (Corrected Plan)**
+### **Prompt: Design & Implement Phase-3 — System-Wide Referral Exposure Snapshot**
 
 **Context:**
 
-* The Implementation Contract for the Unified Referral Interpretation Layer is LOCKED.
-* This task implements **Phase 1 only**: internal normalization + `GetPartnerStatement`.
-* The previous execution plan requires two corrections which must be enforced.
+* Referral Interpretation Layer:
 
-**Mandatory Corrections (Non-Negotiable):**
+  * Phase-1 (Partner Ledger) → LOCKED
+  * Phase-2 (Partner Financial Summary) → LOCKED
+* The layer exposes **exposure-based** interpretation only:
 
-1. **Internal Normalized Event Layer**
+  * TotalReceivables
+  * TotalPayables
+  * NetPosition
+* Settlement / cash-movement logic is intentionally excluded.
+* Business Intelligence is the **only downstream consumer**.
 
-   * Before creating any output DTOs, you MUST introduce an **internal-only normalized ledger event structure**.
-   * This structure must:
+---
 
-     * Be private/internal to the interpretation service.
-     * NOT live in the DTO folder.
-     * NOT be exposed outside the service.
-     * Represent a single financial event with:
+### **Objective:**
 
-       * OccurredAt
-       * Amount
-       * EntryType (Debit | Credit)
-       * Description
-       * SourceFactType (enum, internal use only)
+Design and implement **Phase-3** of the Referral Interpretation Layer:
 
-2. **Fact Query Discipline**
+> A **system-wide snapshot** of referral exposure across all partners, derived exclusively from Phase-2 summaries.
 
-   * Each truth fact type (ReceivableFact, PayableFact, RevenueFact) MUST:
+This snapshot answers:
 
-     * Be queried independently.
-     * Be immediately projected into the internal normalized event structure.
-   * Only fully normalized events may be combined into a unified in-memory list.
-   * No EF-level unions, mixed projections, or post-hoc normalization are allowed.
+> “As of now, what is our total referral exposure as a business?”
 
-**Implementation Scope:**
+---
 
-* Implement:
+### **Requirements:**
 
-  * Internal normalized ledger event mapping
-  * `GetPartnerStatementAsync`
-* Do NOT implement:
+1. **Snapshot Definition**
 
-  * Partner summaries
-  * System snapshots
-  * Any write-side logic
-  * Any optimization, caching, or reconciliation
+   * The snapshot must provide:
 
-**Behavioral Requirements:**
+     * SystemTotalReceivables
+     * SystemTotalPayables
+     * SystemNetPosition
+   * Values represent **exposure**, not settled cash.
 
-* Enforce debit/credit semantics exactly as per the contract.
-* Sort events strictly by OccurredAt.
-* Calculate running balance **in-memory only**, after sorting.
-* Return a fully materialized `List<LedgerEntryDto>` (no IQueryable leaks).
+2. **Derivation Rules**
 
-**Strict Prohibitions:**
+   * The snapshot MUST be derived by:
 
-* No writes of any kind
-* No static state or singletons
-* No reference to Economic or Business Intelligence layers
-* No exposure of internal normalized event types
+     * Iterating over all referral partners
+     * Calling `GetPartnerFinancialSummaryAsync` for each
+     * Aggregating the results
+   * No direct querying of referral truth facts is allowed.
 
-**Output Expectation:**
+3. **Statelessness**
 
-* Clean, readable, reviewable code
-* Structure that makes architectural violations obvious
-* Implementation that can be extended in Phase-2 without refactoring Phase-1
+   * The snapshot:
+
+     * Is computed on-demand
+     * Is never stored
+     * Is never cached
+     * Holds no memory between calls
+
+4. **Strict Prohibitions**
+
+   * Do NOT introduce:
+
+     * Reconciliation logic
+     * Settlement inference
+     * Caching or persistence
+     * Optimizations that bypass partner-level summaries
+   * Do NOT modify Phase-1 or Phase-2 logic.
+
+5. **Stop Condition**
+
+   * After implementation:
+
+     * Run a build
+     * Stop
+     * Await audit
+
+---
+
+### **Output Requirements:**
+
+* Clear description of:
+
+  * What the snapshot represents
+  * What it explicitly does NOT represent
+* Implementation consistent with existing Interpretation Layer contracts
+* Treat the result as **lock-ready infrastructure**
 
 ---
