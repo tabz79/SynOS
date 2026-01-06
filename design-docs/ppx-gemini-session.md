@@ -1,79 +1,125 @@
-✦ I will revert the ReceptionFlowService.cs file by removing all references to DiscountFact and IDiscountFactWriter. This cleanup involves deleting the       
-  relevant using directive, the constructor injection, and the DiscountFact creation/writing logic within StartVisitAsync. I will use three replace operations
-  for these changes, then run dotnet build to ensure a clean compilation. Finally, I will output only the modified code blocks. Starting with reading
-  ReceptionFlowService.cs.
+✦ I need to fix Employee.cs by removing all [Required] attributes and default initializers, and changing CreatedAt and UpdatedAt to DateTime. This will be    
+  done with a single replace operation on the entire file content. My output will be the full corrected Employee.cs file. I'll begin by reading Employee.cs.  
 ╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ ✓  ReadFile src\...\ReceptionFlowService.cs                                                                                                                │
+│ ✓  ReadFile src\...\Entities\HR\Employee.cs                                                                                                                │
 │                                                                                                                                                            │
 ╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-✦ I will now remove all DiscountFact references from ReceptionFlowService.cs using three replace calls: one for the using statement, one for the constructor  
-  injection and private field, and one for the DiscountFact creation and writing logic within StartVisitAsync.
+✦ Okay, Employee.cs read. Replacing file content with corrected version.
 ╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ ✓  Edit src\...\ReceptionFlowService.cs: using SynOS.Models.Enums; // R... => using SynOS.Models.Enums; // R...                                            │
+│ ✓  Edit src\...\Entities\HR\Employee.cs: using System;... => using System;...                                                                              │
 │                                                                                                                                                            │
-│ 10   using SynOS.Models.Entities;                                                                                                                          │
-│ 11   using SynOS.Models.Enums; // Required for TubeType                                                                                                    │
-│ 12   using SynOS.Services.Referral;                                                                                                                        │
-│ 13 - using SynOS.Services.Revenue; // ADDED for IDiscountFactWriter and DiscountFact                                                                       │
-│ 13                                                                                                                                                         │
-│ 14   namespace SynOS.Services                                                                                                                              │
-│ 15   {                                                                                                                                                     │
+│  1   using System;                                                                                                                                         │
+│  2 - using System.ComponentModel.DataAnnotations;                                                                                                          │
+│  2 + using System.ComponentModel.DataAnnotations; // Keep for [Key]                                                                                        │
+│  3   using SynOS.Models.Enums; // For EmploymentType                                                                                                       │
+│  4                                                                                                                                                         │
+│  5   namespace SynOS.Models.Entities.HR                                                                                                                    │
+│ ══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════ │
+│ 13           // Identity                                                                                                                                   │
+│ 14           [Key]                                                                                                                                         │
+│ 15           public Guid EmployeeId { get; set; }                                                                                                          │
+│ 16 -         [Required]                                                                                                                                    │
+│ 17 -         public string FirstName { get; set; } = string.Empty;                                                                                         │
+│ 18 -         [Required]                                                                                                                                    │
+│ 19 -         public string LastName { get; set; } = string.Empty;                                                                                          │
+│ 16 +         public string FirstName { get; set; }                                                                                                         │
+│ 17 +         public string LastName { get; set; }                                                                                                          │
+│ 18                                                                                                                                                         │
+│ 19           // Employment Classification                                                                                                                  │
+│ 22 -         [Required]                                                                                                                                    │
+│ 20           public EmploymentType EmploymentType { get; set; }                                                                                            │
+│ 24 -         [Required]                                                                                                                                    │
+│ 25 -         public string JobTitle { get; set; } = string.Empty;                                                                                          │
+│ 26 -         [Required]                                                                                                                                    │
+│ 27 -         public string Department { get; set; } = string.Empty;                                                                                        │
+│ 21 +         public string JobTitle { get; set; }                                                                                                          │
+│ 22 +         public string Department { get; set; }                                                                                                        │
+│ 23                                                                                                                                                         │
+│ 24           // Lifecycle                                                                                                                                  │
+│ 30 -         [Required]                                                                                                                                    │
+│ 25           public DateTimeOffset JoinDate { get; set; }                                                                                                  │
+│ 26           public bool IsActive { get; set; } // Sole indicator of employment status                                                                     │
+│ 27                                                                                                                                                         │
+│ 29           public Guid? UserId { get; set; } // Nullable link to application User (login identity)                                                       │
+│ 30                                                                                                                                                         │
+│ 31           // Metadata                                                                                                                                   │
+│ ══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════ │
+│ 38 -         public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow; // Using DateTimeOffset for consistency with other entities            │
+│ 39 -         public DateTimeOffset UpdatedAt { get; set; } = DateTimeOffset.UtcNow; // Using DateTimeOffset for consistency with other entities            │
+│ 32 +         public DateTime CreatedAt { get; set; }                                                                                                       │
+│ 33 +         public DateTime UpdatedAt { get; set; }                                                                                                       │
+│ 34       }                                                                                                                                                 │
+│ 35   }                                                                                                                                                     │
 ╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-✦ using statement's gone. Next, constructor injection and the private field.
+✦ Corrected Employee.cs. Outputting content.
 ╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ ✓  Edit src\...\ReceptionFlowService.cs:             IReferralFinancial... =>             IReferralFinancial...                                            │
+│ ✓  WriteFile Writing to implementation_output.md                                                                                                           │
 │                                                                                                                                                            │
-│ 32       ILogger<ReceptionFlowService> logger,                                                                                                             │
-│ 33       ITestsCacheService testsCacheService,                                                                                                             │
-│ 34       IConfiguration configuration,                                                                                                                     │
-│ 35 -     IReferralFinancialService referralFinancialService,                                                                                               │
-│ 36 -     IDiscountFactWriter discountFactWriter) // ADDED                                                                                                  │
-│ 35 +     IReferralFinancialService referralFinancialService)                                                                                               │
-│ 36   {                                                                                                                                                     │
-│ 37       _context = context ?? throw new ArgumentNullException(nameof(context));                                                                           │
-│ 38       _visitService = visitService ?? throw new ArgumentNullException(nameof(visitService));                                                            │
-│ 42       _testsCacheService = testsCacheService;                                                                                                           │
-│ 43       _configuration = configuration;                                                                                                                   │
-│ 44       _referralFinancialService = referralFinancialService;                                                                                             │
-│ 46 -     _discountFactWriter = discountFactWriter; // ADDED                                                                                                │
-│ 45   }                                                                                                                                                     │
-│ 46                                                                                                                                                         │
-│ 49 - private readonly IDiscountFactWriter _discountFactWriter; // ADDED field                                                                              │
-│ 50 -                                                                                                                                                       │
-│ 47   // small helper to centralize a defensive check (keeps ctor lines tidy)                                                                               │
-│ 48   private void _invoice_service_check(                                                                                                                  │
-│ 49       SynOSDbContext context,                                                                                                                           │
+│  1 - ### Output for Step 1: EmploymentType Enum and Employee Entity                                                                                        │
+│  1 + ### Corrected Employee.cs file                                                                                                                        │
+│  2                                                                                                                                                         │
+│  3 - **1. `src/SynOS.Models/Enums/EmploymentType.cs`**                                                                                                     │
+│  3   ```csharp                                                                                                                                             │
+│  5 - namespace SynOS.Models.Enums                                                                                                                          │
+│  6 - {                                                                                                                                                     │
+│  7 -     public enum EmploymentType                                                                                                                        │
+│  8 -     {                                                                                                                                                 │
+│  9 -         FullTime,                                                                                                                                     │
+│ 10 -         PartTime,                                                                                                                                     │
+│ 11 -         Contractor                                                                                                                                    │
+│ 12 -     }                                                                                                                                                 │
+│ 13 - }                                                                                                                                                     │
+│ 14 - ```                                                                                                                                                   │
+│ 15 -                                                                                                                                                       │
+│ 16 - **2. `src/SynOS.Models/Entities/HR/Employee.cs`**                                                                                                     │
+│ 17 - ```csharp                                                                                                                                             │
+│  4   using System;                                                                                                                                         │
+│ ══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════ │
+│ 19 - using System.ComponentModel.DataAnnotations;                                                                                                          │
+│  5 + using System.ComponentModel.DataAnnotations; // Keep for [Key]                                                                                        │
+│  6   using SynOS.Models.Enums; // For EmploymentType                                                                                                       │
+│  7                                                                                                                                                         │
+│  8   namespace SynOS.Models.Entities.HR                                                                                                                    │
+│ ══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════ │
+│ 16           // Identity                                                                                                                                   │
+│ 17           [Key]                                                                                                                                         │
+│ 18           public Guid EmployeeId { get; set; }                                                                                                          │
+│ ══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════ │
+│ 33 -         [Required]                                                                                                                                    │
+│ 34 -         public string FirstName { get; set; } = string.Empty;                                                                                         │
+│ 35 -         [Required]                                                                                                                                    │
+│ 36 -         public string LastName { get; set; } = string.Empty;                                                                                          │
+│ 19 +         public string FirstName { get; set; }                                                                                                         │
+│ 20 +         public string LastName { get; set; }                                                                                                          │
+│ 21                                                                                                                                                         │
+│ 22           // Employment Classification                                                                                                                  │
+│ ══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════ │
+│ 39 -         [Required]                                                                                                                                    │
+│ 23           public EmploymentType EmploymentType { get; set; }                                                                                            │
+│ ══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════ │
+│ 41 -         [Required]                                                                                                                                    │
+│ 42 -         public string JobTitle { get; set; } = string.Empty;                                                                                          │
+│ 43 -         [Required]                                                                                                                                    │
+│ 44 -         public string Department { get; set; } = string.Empty;                                                                                        │
+│ 24 +         public string JobTitle { get; set; }                                                                                                          │
+│ 25 +         public string Department { get; set; }                                                                                                        │
+│ 26                                                                                                                                                         │
+│ 27           // Lifecycle                                                                                                                                  │
+│ ══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════ │
+│ 47 -         [Required]                                                                                                                                    │
+│ 28           public DateTimeOffset JoinDate { get; set; }                                                                                                  │
+│ 29           public bool IsActive { get; set; } // Sole indicator of employment status                                                                     │
+│ 30                                                                                                                                                         │
+│ 32           public Guid? UserId { get; set; } // Nullable link to application User (login identity)                                                       │
+│ 33                                                                                                                                                         │
+│ 34           // Metadata                                                                                                                                   │
+│ ══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════ │
+│ 55 -         public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow; // Using DateTimeOffset for consistency with other entities            │
+│ 56 -         public DateTimeOffset UpdatedAt { get; set; } = DateTimeOffset.UtcNow; // Using DateTimeOffset for consistency with other entities            │
+│ 35 +         public DateTime CreatedAt { get; set; }                                                                                                       │
+│ 36 +         public DateTime UpdatedAt { get; set; }                                                                                                       │
+│ 37       }                                                                                                                                                 │
+│ 38   }                                                                                                                                                     │
+│ 39   ```                                                                                                                                                   │
 ╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-✦ Okay, constructor and field removed. Now, to eliminate the DiscountFact creation and writing logic from StartVisitAsync.
-╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ ✓  Edit src\...\ReceptionFlowService.cs:             var invoice = awai... =>             var invoice = awai...                                            │
-│                                                                                                                                                            │
-│ 125       .AsNoTracking()                                                                                                                                  │
-│ 126       .FirstOrDefaultAsync(i => i.VisitId == visit.VisitId);                                                                                           │
-│ 127                                                                                                                                                        │
-│ 128 - // --- GOAL (STEP 7): Persist DiscountFacts at invoice creation time. ---                                                                            │
-│ 129 - // Assuming invoice is created by _visitService.CreateVisitAsync or similar path                                                                     │
-│ 130 - if (invoice != null && invoice.DiscountAmount > 0)                                                                                                   │
-│ 131 - {                                                                                                                                                    │
-│ 132 -     var discountFact = new DiscountFact                                                                                                              │
-│ 133 -     {                                                                                                                                                │
-│ 134 -         DiscountFactId = Guid.NewGuid(),                                                                                                             │
-│ 135 -         InvoiceId = invoice.InvoiceId,                                                                                                               │
-│ 136 -         DiscountDefinitionId = Guid.Empty, // TEMPORARY placeholder as per prompt                                                                    │
-│ 137 -         GrossAmount = invoice.GrossAmount + invoice.DiscountAmount, // Recalculate gross before discount                                             │
-│ 138 -         DiscountAmount = invoice.DiscountAmount,                                                                                                     │
-│ 139 -         // NetAmountAfterDiscount = invoice.NetAmount, // Already net of discount                                                                    │
-│ 140 -         // The prompt has NetAmountAfterDiscount as a field, which is `invoice.Total` from Invoice.cs                                                │
-│ 141 -         NetAmountAfterDiscount = invoice.Total,                                                                                                      │
-│ 142 -         AppliedBy = "System", // TEMPORARY placeholder as per prompt                                                                                 │
-│ 143 -         AppliedAt = invoice.CreatedAt, // Use invoice creation time                                                                                  │
-│ 144 -         CreatedAt = DateTime.UtcNow // When this fact is recorded                                                                                    │
-│ 145 -     };                                                                                                                                               │
-│ 146 -     await _discountFactWriter.WriteAsync(discountFact);                                                                                              │
-│ 147 - }                                                                                                                                                    │
-│ 148 - // --- END GOAL (STEP 7) ---                                                                                                                         │
-│ 149 -                                                                                                                                                      │
-│ 128   // Load patient defensively                                                                                                                          │
-│ 129   var patient = await _context.Patients                                                                                                                │
-│ 130       .AsNoTracking()                                                                                                                                  │
-╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+✦ Okay, Employee.cs outputted. All tasks done. Awaiting next command.

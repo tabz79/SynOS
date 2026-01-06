@@ -8,6 +8,7 @@ using SynOS.Models.Entities.Revenue;
 using SynOS.Models.Entities.Referral;
 using SynOS.Models.Entities.Payables;
 using SynOS.Models.Entities.Discounts; // ADDED
+using SynOS.Models.Entities.HR; // ADDED
 
 namespace SynOS.Data
 {
@@ -130,6 +131,9 @@ public DbSet<ReceivableFact> ReceivableFacts { get; set; } = null!;
                     // Discount DbSets // ADDED
                     public DbSet<DiscountMaster> DiscountMasters { get; set; } = null!; // ADDED
                     public DbSet<DiscountFact> DiscountFacts { get; set; } = null!; // ADDED
+
+                    // HR DbSets // ADDED
+                    public DbSet<Employee> Employees { get; set; } = null!; // ADDED
         
                                                 // Revenue Engine DbSets
                                                 public DbSet<RevenueFact> RevenueFacts { get; set; } = null!;        // Payables DbSets
@@ -861,18 +865,25 @@ modelBuilder.Entity<ReceivableFact>(entity =>
           .IsRequired();
 });
 
-            // Discount Configuration (Minimal) // ADDED
-            modelBuilder.Entity<DiscountMaster>(entity => // ADDED
-            {
-                entity.ToTable("DiscountMasters");
-                entity.HasKey(e => e.DiscountDefinitionId);
-            });
-
-            modelBuilder.Entity<DiscountFact>(entity => // ADDED
-            {
-                entity.ToTable("DiscountFacts");
-                entity.HasKey(e => e.DiscountFactId);
-            });
-        }
-    }
-}
+                            // Discount Configuration (Minimal) // ADDED
+                            modelBuilder.Entity<DiscountMaster>(entity => // ADDED
+                            {
+                                entity.ToTable("DiscountMasters");
+                                entity.HasKey(e => e.DiscountDefinitionId);
+                            });
+            
+                            modelBuilder.Entity<DiscountFact>(entity => // ADDED
+                            {
+                                entity.ToTable("DiscountFacts");
+                                entity.HasKey(e => e.DiscountFactId);
+                            });
+            
+                            // HR Configuration (Minimal) // ADDED
+                            modelBuilder.Entity<Employee>(entity => // ADDED
+                            {
+                                entity.ToTable("Employees");
+                                entity.HasKey(e => e.EmployeeId);
+                            });
+                        }
+                    }
+                }

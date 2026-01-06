@@ -28,6 +28,7 @@ using SynOS.Services.AnalyzerIntegration; // New
 using System.Text.Json.Serialization; // Added
 using SynOS.Services.Referral; // Added to resolve build error
 using SynOS.Services.Interpretation; // ADDED
+using SynOS.Services.HR; // ADDED
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -193,6 +194,7 @@ builder.Services.AddScoped<IPacsService, PacsService>();
 builder.Services.AddScoped<IRadiologyAccessGuard, RadiologyAccessGuard>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IAccessionService, AccessionService>();
+builder.Services.AddScoped<IEmployeeAdminService, EmployeeAdminService>(); // ADDED
 builder.Services.AddScoped<ILabAnalyzerService, LabAnalyzerService>();
 builder.Services.AddScoped<IAnalyzerResultMatcherService, AnalyzerResultMatcherService>();
 builder.Services.AddScoped<IAnalyzerResultImportService, AnalyzerResultImportService>();

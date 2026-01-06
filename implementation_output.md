@@ -1,94 +1,11 @@
-### Output for Step 8: Discount Interpretation Layer
+### Output for Step 5: Modified parts of Program.cs
 
-**1. `src/SynOS.Services/Interpretation/IDiscountInterpretationService.cs`**
+**1. Added `using` Directive:**
 ```csharp
-using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
-using SynOS.Models.Entities.Revenue;
-using SynOS.Services.Interpretation.Dto;
-
-namespace SynOS.Services.Interpretation
-{
-    public interface IDiscountInterpretationService
-    {
-        Task<IReadOnlyList<DiscountFact>> GetDiscountFactsForPeriodAsync(
-            DateTime from,
-            DateTime to,
-            CancellationToken cancellationToken = default);
-
-        Task<DiscountSummaryDto> GetDiscountSummaryAsync(
-            DateTime from,
-            DateTime to,
-            CancellationToken cancellationToken = default);
-    }
-}
+using SynOS.Services.HR; // ADDED
 ```
 
-**2. `src/SynOS.Services/Interpretation/Dto/DiscountSummaryDto.cs`**
+**2. Added Service Registration:**
 ```csharp
-namespace SynOS.Services.Interpretation.Dto
-{
-    public class DiscountSummaryDto
-    {
-        public decimal TotalDiscountAmount { get; set; }
-        public int DiscountCount { get; set; }
-    }
-}
-```
-
-**3. `src/SynOS.Services/Interpretation/DiscountInterpretationService.cs`**
-```csharp
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
-using SynOS.Data;
-using SynOS.Models.Entities.Revenue;
-using SynOS.Services.Interpretation.Dto;
-
-namespace SynOS.Services.Interpretation
-{
-    public class DiscountInterpretationService : IDiscountInterpretationService
-    {
-        private readonly SynOSDbContext _context;
-
-        public DiscountInterpretationService(SynOSDbContext context)
-        {
-            _context = context;
-        }
-
-        public async Task<IReadOnlyList<DiscountFact>> GetDiscountFactsForPeriodAsync(
-            DateTime from,
-            DateTime to,
-            CancellationToken cancellationToken = default)
-        {
-            return await _context.DiscountFacts
-                .AsNoTracking()
-                .Where(df => df.AppliedAt >= from && df.AppliedAt <= to)
-                .OrderBy(df => df.AppliedAt)
-                .ToListAsync(cancellationToken);
-        }
-
-        public async Task<DiscountSummaryDto> GetDiscountSummaryAsync(
-            DateTime from,
-            DateTime to,
-            CancellationToken cancellationToken = default)
-        {
-            var discountFacts = await GetDiscountFactsForPeriodAsync(from, to, cancellationToken);
-
-            var totalDiscountAmount = discountFacts.Sum(df => df.DiscountAmount);
-            var discountCount = discountFacts.Count;
-
-            return new DiscountSummaryDto
-            {
-                TotalDiscountAmount = totalDiscountAmount,
-                DiscountCount = discountCount
-            };
-        }
-    }
-}
+builder.Services.AddScoped<IEmployeeAdminService, EmployeeAdminService>(); // ADDED
 ```
