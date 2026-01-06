@@ -1,45 +1,3 @@
-### Output for Step 8: Discount Interpretation Layer
-
-**1. `src/SynOS.Services/Interpretation/IDiscountInterpretationService.cs`**
-```csharp
-using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
-using SynOS.Models.Entities.Revenue;
-using SynOS.Services.Interpretation.Dto;
-
-namespace SynOS.Services.Interpretation
-{
-    public interface IDiscountInterpretationService
-    {
-        Task<IReadOnlyList<DiscountFact>> GetDiscountFactsForPeriodAsync(
-            DateTime from,
-            DateTime to,
-            CancellationToken cancellationToken = default);
-
-        Task<DiscountSummaryDto> GetDiscountSummaryAsync(
-            DateTime from,
-            DateTime to,
-            CancellationToken cancellationToken = default);
-    }
-}
-```
-
-**2. `src/SynOS.Services/Interpretation/Dto/DiscountSummaryDto.cs`**
-```csharp
-namespace SynOS.Services.Interpretation.Dto
-{
-    public class DiscountSummaryDto
-    {
-        public decimal TotalDiscountAmount { get; set; }
-        public int DiscountCount { get; set; }
-    }
-}
-```
-
-**3. `src/SynOS.Services/Interpretation/DiscountInterpretationService.cs`**
-```csharp
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -91,4 +49,3 @@ namespace SynOS.Services.Interpretation
         }
     }
 }
-```

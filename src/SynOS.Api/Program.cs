@@ -149,6 +149,7 @@ builder.Services.AddScoped<IIMSWastageInsightService, IMSWastageInsightService>(
 
 // Register Referral Interpretation Service
 builder.Services.AddScoped<IReferralInterpretationService, ReferralInterpretationService>(); // ADDED HERE
+builder.Services.AddScoped<IDiscountInterpretationService, DiscountInterpretationService>(); // ADDED HERE
 
 // Register Revenue Engine services (OPT-IN)
 builder.Services.AddRevenueEngine();

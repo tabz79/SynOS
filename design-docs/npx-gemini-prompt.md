@@ -1,89 +1,55 @@
-### **Prompt: Design & Implement Phase-3 — System-Wide Referral Exposure Snapshot**
+You are in IMPLEMENTATION MODE.
 
-**Context:**
+IMPORTANT RULES:
+- Modify ONLY BusinessIntelligenceService.cs (or the exact BI service that aggregates revenue metrics).
+- Do NOT change any existing calculations.
+- Do NOT remove existing logic.
+- Do NOT touch EconomicsIntelligence.
+- This step is ADDITIVE only.
 
-* Referral Interpretation Layer:
+GOAL (STEP 10):
+Expose discount metrics in Business Intelligence using Discount Interpretation Layer.
 
-  * Phase-1 (Partner Ledger) → LOCKED
-  * Phase-2 (Partner Financial Summary) → LOCKED
-* The layer exposes **exposure-based** interpretation only:
+TASKS:
 
-  * TotalReceivables
-  * TotalPayables
-  * NetPosition
-* Settlement / cash-movement logic is intentionally excluded.
-* Business Intelligence is the **only downstream consumer**.
+1. Inject IDiscountInterpretationService into BusinessIntelligenceService
+   - Constructor injection only
+   - Do NOT remove or reorder existing dependencies
 
----
+2. Identify the main BI summary method
+   (e.g., GetOverallSummaryAsync or equivalent)
 
-### **Objective:**
+3. Using IDiscountInterpretationService:
+   - Call GetDiscountSummaryAsync(from, to)
+   - Retrieve:
+     - TotalDiscountAmount
+     - DiscountCount
 
-Design and implement **Phase-3** of the Referral Interpretation Layer:
+4. Add these values to the BI response model
+   - As NEW optional fields
+   - Do NOT alter existing fields or meanings
 
-> A **system-wide snapshot** of referral exposure across all partners, derived exclusively from Phase-2 summaries.
+   Example fields (names flexible):
+   - TotalDiscountGiven
+   - DiscountTransactionCount
 
-This snapshot answers:
+5. Do NOT:
+   - Join DiscountFacts directly
+   - Read DbContext for discounts
+   - Recalculate net revenue
+   - Modify Econ-related outputs
 
-> “As of now, what is our total referral exposure as a business?”
+6. Economics Intelligence:
+   - Leave completely untouched
+   - No new injections
+   - No changes
 
----
+7. Output:
+   - Show ONLY the modified parts of BusinessIntelligenceService.cs
+   - Show ONLY the modified parts of any BI DTOs (if extended)
+   - No explanations
+   - No commentary
 
-### **Requirements:**
-
-1. **Snapshot Definition**
-
-   * The snapshot must provide:
-
-     * SystemTotalReceivables
-     * SystemTotalPayables
-     * SystemNetPosition
-   * Values represent **exposure**, not settled cash.
-
-2. **Derivation Rules**
-
-   * The snapshot MUST be derived by:
-
-     * Iterating over all referral partners
-     * Calling `GetPartnerFinancialSummaryAsync` for each
-     * Aggregating the results
-   * No direct querying of referral truth facts is allowed.
-
-3. **Statelessness**
-
-   * The snapshot:
-
-     * Is computed on-demand
-     * Is never stored
-     * Is never cached
-     * Holds no memory between calls
-
-4. **Strict Prohibitions**
-
-   * Do NOT introduce:
-
-     * Reconciliation logic
-     * Settlement inference
-     * Caching or persistence
-     * Optimizations that bypass partner-level summaries
-   * Do NOT modify Phase-1 or Phase-2 logic.
-
-5. **Stop Condition**
-
-   * After implementation:
-
-     * Run a build
-     * Stop
-     * Await audit
-
----
-
-### **Output Requirements:**
-
-* Clear description of:
-
-  * What the snapshot represents
-  * What it explicitly does NOT represent
-* Implementation consistent with existing Interpretation Layer contracts
-* Treat the result as **lock-ready infrastructure**
-
----
+REMINDER:
+BI consumes interpretation.
+Econ consumes derived revenue deltas indirectly.

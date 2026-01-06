@@ -7,6 +7,7 @@ using SynOS.Models.Entities.SpendEngine;
 using SynOS.Models.Entities.Revenue;
 using SynOS.Models.Entities.Referral;
 using SynOS.Models.Entities.Payables;
+using SynOS.Models.Entities.Discounts; // ADDED
 
 namespace SynOS.Data
 {
@@ -122,13 +123,16 @@ public DbSet<ReceivableFact> ReceivableFacts { get; set; } = null!;
         public DbSet<CostAttribution_UsagePolicyVersion> CostAttribution_UsagePolicyVersions { get; set; } = null!;
         public DbSet<CostAttribution_UsageFact> CostAttribution_UsageFacts { get; set; } = null!;
 
-        // Spend Engine DbSets
-        public DbSet<SpendFact> SpendFacts { get; set; } = null!;
-        public DbSet<SpendLineItemFact> SpendLineItemFacts { get; set; } = null!;
-                
-                                        // Revenue Engine DbSets
-                                        public DbSet<RevenueFact> RevenueFacts { get; set; } = null!;
-        // Payables DbSets
+                    // Spend Engine DbSets
+                    public DbSet<SpendFact> SpendFacts { get; set; } = null!;
+                    public DbSet<SpendLineItemFact> SpendLineItemFacts { get; set; } = null!;
+                    
+                    // Discount DbSets // ADDED
+                    public DbSet<DiscountMaster> DiscountMasters { get; set; } = null!; // ADDED
+                    public DbSet<DiscountFact> DiscountFacts { get; set; } = null!; // ADDED
+        
+                                                // Revenue Engine DbSets
+                                                public DbSet<RevenueFact> RevenueFacts { get; set; } = null!;        // Payables DbSets
         public DbSet<PayableFact> PayableFacts { get; set; } = null!;
         
                 protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -857,6 +861,18 @@ modelBuilder.Entity<ReceivableFact>(entity =>
           .IsRequired();
 });
 
+            // Discount Configuration (Minimal) // ADDED
+            modelBuilder.Entity<DiscountMaster>(entity => // ADDED
+            {
+                entity.ToTable("DiscountMasters");
+                entity.HasKey(e => e.DiscountDefinitionId);
+            });
+
+            modelBuilder.Entity<DiscountFact>(entity => // ADDED
+            {
+                entity.ToTable("DiscountFacts");
+                entity.HasKey(e => e.DiscountFactId);
+            });
         }
     }
 }

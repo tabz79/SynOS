@@ -7,6 +7,8 @@ using SynOS.Data;
 using SynOS.Models.Entities.Payments;
 using SynOS.Models.Enums.BusinessIntelligence;
 using SynOS.Models.ReadModels.BusinessIntelligence;
+using SynOS.Services.Interpretation; // ADDED
+using SynOS.Services.Interpretation.Dto; // ADDED
 
 namespace SynOS.Services.BusinessIntelligence
 {
@@ -17,10 +19,12 @@ namespace SynOS.Services.BusinessIntelligence
     public class BusinessIntelligenceService : IBusinessIntelligenceService
     {
         private readonly SynOSDbContext _context;
+        private readonly IDiscountInterpretationService _discountInterpretationService; // ADDED
 
-        public BusinessIntelligenceService(SynOSDbContext context)
+        public BusinessIntelligenceService(SynOSDbContext context, IDiscountInterpretationService discountInterpretationService) // MODIFIED
         {
             _context = context;
+            _discountInterpretationService = discountInterpretationService; // ADDED
         }
 
         public async Task<SpendSummaryView> GetSpendSummaryAsync(DateTimeOffset from, DateTimeOffset to, string currency)
@@ -60,10 +64,19 @@ namespace SynOS.Services.BusinessIntelligence
                 .AsNoTracking()
                 .Where(f => f.OccurredAt >= from && f.OccurredAt <= to && f.Currency == currency)
                 .ToListAsync();
+            
+            // ADDED: Call Discount Interpretation Service
+            var discountSummary = await _discountInterpretationService.GetDiscountSummaryAsync(from.DateTime, to.DateTime);
 
             if (!revenueFacts.Any())
             {
-                return new RevenueSummaryView { PeriodStart = from, PeriodEnd = to, Currency = currency };
+                return new RevenueSummaryView { 
+                    PeriodStart = from, 
+                    PeriodEnd = to, 
+                    Currency = currency,
+                    TotalDiscountGiven = discountSummary.TotalDiscountAmount, // ADDED
+                    DiscountTransactionCount = discountSummary.DiscountCount // ADDED
+                };
             }
             
             var totalRevenue = revenueFacts.Sum(f => f.Direction == Models.Entities.Revenue.RevenueDirection.Inflow ? f.Amount : -f.Amount);
@@ -80,7 +93,9 @@ namespace SynOS.Services.BusinessIntelligence
                 PeriodEnd = to,
                 TotalRevenue = totalRevenue,
                 Currency = currency,
-                BreakdownBySourceType = breakdown
+                BreakdownBySourceType = breakdown,
+                TotalDiscountGiven = discountSummary.TotalDiscountAmount, // ADDED
+                DiscountTransactionCount = discountSummary.DiscountCount // ADDED
             };
         }
 

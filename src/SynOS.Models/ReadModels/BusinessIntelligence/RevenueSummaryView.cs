@@ -10,5 +10,9 @@ namespace SynOS.Models.ReadModels.BusinessIntelligence
         public decimal TotalRevenue { get; set; }
         public string Currency { get; set; } = string.Empty;
         public List<BreakdownItem> BreakdownBySourceType { get; set; } = new List<BreakdownItem>();
+
+        // New properties for discount metrics
+        public decimal? TotalDiscountGiven { get; set; }
+        public int? DiscountTransactionCount { get; set; }
     }
 }
