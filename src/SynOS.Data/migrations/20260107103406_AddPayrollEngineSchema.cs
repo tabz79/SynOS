@@ -1,215 +1,4 @@
-### Output for Step 1: Payroll Engine Foundation
-
-**1. Enum Files**
-
-**`src/SynOS.Models/Enums/PayComponentType.cs`**
-```csharp
-namespace SynOS.Models.Enums
-{
-    public enum PayComponentType
-    {
-        Earning,
-        Deduction
-    }
-}
-```
-
-**`src/SynOS.Models/Enums/PayrollPeriodStatus.cs`**
-```csharp
-namespace SynOS.Models.Enums
-{
-    public enum PayrollPeriodStatus
-    {
-        Open,
-        Finalized
-    }
-}
-```
-
-**`src/SynOS.Models/Enums/PayrollRunStatus.cs`**
-```csharp
-namespace SynOS.Models.Enums
-{
-    public enum PayrollRunStatus
-    {
-        Draft,
-        Processing,
-        Calculated,
-        Finalized,
-        Voided
-    }
-}
-```
-
-**`src/SynOS.Models/Enums/PayrollRunType.cs`**
-```csharp
-namespace SynOS.Models.Enums
-{
-    public enum PayrollRunType
-    {
-        Primary,
-        Correction
-    }
-}
-```
-
-**2. Entity Class Files**
-
-**`src/SynOS.Models/Entities/Payroll/PayComponent.cs`**
-```csharp
-using System;
-using System.ComponentModel.DataAnnotations;
-using SynOS.Models.Enums;
-
-namespace SynOS.Models.Entities.Payroll
-{
-    public class PayComponent
-    {
-        [Key]
-        public Guid PayComponentId { get; set; }
-        public string Name { get; set; }
-        public PayComponentType ComponentType { get; set; }
-    }
-}
-```
-
-**`src/SynOS.Models/Entities/Payroll/PayStructure.cs`**
-```csharp
-using System;
-using System.ComponentModel.DataAnnotations;
-
-namespace SynOS.Models.Entities.Payroll
-{
-    public class PayStructure
-    {
-        [Key]
-        public Guid PayStructureId { get; set; }
-        public string Name { get; set; }
-        public string Description { get; set; }
-    }
-}
-```
-
-**`src/SynOS.Models/Entities/Payroll/PayStructureAssignment.cs`**
-```csharp
-using System;
-using System.ComponentModel.DataAnnotations;
-
-namespace SynOS.Models.Entities.Payroll
-{
-    public class PayStructureAssignment
-    {
-        [Key]
-        public Guid PayStructureAssignmentId { get; set; }
-        public Guid EmployeeId { get; set; }
-        public Guid PayStructureId { get; set; }
-        public DateTime EffectiveDate { get; set; }
-        public DateTime? EndDate { get; set; }
-    }
-}
-```
-
-**`src/SynOS.Models/Entities/Payroll/PayrollPeriod.cs`**
-```csharp
-using System;
-using System.ComponentModel.DataAnnotations;
-using SynOS.Models.Enums;
-
-namespace SynOS.Models.Entities.Payroll
-{
-    public class PayrollPeriod
-    {
-        [Key]
-        public Guid PayrollPeriodId { get; set; }
-        public DateTime StartDate { get; set; }
-        public DateTime EndDate { get; set; }
-        public PayrollPeriodStatus Status { get; set; }
-    }
-}
-```
-
-**`src/SynOS.Models/Entities/Payroll/PayrollRun.cs`**
-```csharp
-using System;
-using System.ComponentModel.DataAnnotations;
-using SynOS.Models.Enums;
-
-namespace SynOS.Models.Entities.Payroll
-{
-    public class PayrollRun
-    {
-        [Key]
-        public Guid PayrollRunId { get; set; }
-        public Guid PayrollPeriodId { get; set; }
-        public PayrollRunStatus Status { get; set; }
-        public PayrollRunType RunType { get; set; }
-    }
-}
-```
-
-**`src/SynOS.Models/Entities/Payroll/PayrollAdjustment.cs`**
-```csharp
-using System;
-using System.ComponentModel.DataAnnotations;
-
-namespace SynOS.Models.Entities.Payroll
-{
-    public class PayrollAdjustment
-    {
-        [Key]
-        public Guid PayrollAdjustmentId { get; set; }
-        public Guid PayrollRunId { get; set; }
-        public Guid EmployeeId { get; set; }
-        public Guid PayComponentId { get; set; }
-        public decimal Amount { get; set; }
-        public string Notes { get; set; }
-    }
-}
-```
-
-**`src/SynOS.Models/Entities/Payroll/PayrollFact.cs`**
-```csharp
-using System;
-using System.ComponentModel.DataAnnotations;
-
-namespace SynOS.Models.Entities.Payroll
-{
-    public class PayrollFact
-    {
-        [Key]
-        public Guid PayrollFactId { get; set; }
-        public Guid PayrollRunId { get; set; }
-        public Guid EmployeeId { get; set; }
-        public Guid PayComponentId { get; set; }
-        public decimal Amount { get; set; }
-    }
-}
-```
-
-**3. Added Code in `SynOSDbContext.cs`**
-
-**`using` directive:**
-```csharp
-using SynOS.Models.Entities.Payroll; // ADDED
-```
-
-**`DbSet` properties:**
-```csharp
-                    // Payroll Engine DbSets // ADDED
-                    public DbSet<PayComponent> PayComponents { get; set; } = null!; // ADDED
-                    public DbSet<PayStructure> PayStructures { get; set; } = null!; // ADDED
-                    public DbSet<PayStructureAssignment> PayStructureAssignments { get; set; } = null!; // ADDED
-                    public DbSet<PayrollPeriod> PayrollPeriods { get; set; } = null!; // ADDED
-                    public DbSet<PayrollRun> PayrollRuns { get; set; } = null!; // ADDED
-                    public DbSet<PayrollAdjustment> PayrollAdjustments { get; set; } = null!; // ADDED
-                    public DbSet<PayrollFact> PayrollFacts { get; set; } = null!; // ADDED
-```
-
-**4. Full Migration File**
-
-**`src/SynOS.Data/Migrations/20260107090546_AddPayrollEngineSchema.cs`**
-```csharp
-using System;
+﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -227,7 +16,7 @@ namespace SynOS.Data.Migrations
                 columns: table => new
                 {
                     PayComponentId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     ComponentType = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
@@ -243,8 +32,8 @@ namespace SynOS.Data.Migrations
                     PayrollRunId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     EmployeeId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     PayComponentId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Amount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    Notes = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    Amount = table.Column<decimal>(type: "decimal", nullable: false),
+                    Notes = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -314,8 +103,8 @@ namespace SynOS.Data.Migrations
                 columns: table => new
                 {
                     PayStructureId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Description = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -349,4 +138,3 @@ namespace SynOS.Data.Migrations
         }
     }
 }
-```

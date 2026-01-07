@@ -9,6 +9,7 @@ using SynOS.Models.Entities.Referral;
 using SynOS.Models.Entities.Payables;
 using SynOS.Models.Entities.Discounts; // ADDED
 using SynOS.Models.Entities.HR; // ADDED
+using SynOS.Models.Entities.Payroll; // ADDED
 
 namespace SynOS.Data
 {
@@ -134,6 +135,15 @@ public DbSet<ReceivableFact> ReceivableFacts { get; set; } = null!;
 
                     // HR DbSets // ADDED
                     public DbSet<Employee> Employees { get; set; } = null!; // ADDED
+
+                    // Payroll Engine DbSets // ADDED
+                    public DbSet<PayComponent> PayComponents { get; set; }
+                    public DbSet<PayStructure> PayStructures { get; set; }
+                    public DbSet<PayStructureAssignment> PayStructureAssignments { get; set; }
+                    public DbSet<PayrollPeriod> PayrollPeriods { get; set; }
+                    public DbSet<PayrollRun> PayrollRuns { get; set; }
+                    public DbSet<PayrollAdjustment> PayrollAdjustments { get; set; }
+                    public DbSet<PayrollFact> PayrollFacts { get; set; }
         
                                                 // Revenue Engine DbSets
                                                 public DbSet<RevenueFact> RevenueFacts { get; set; } = null!;        // Payables DbSets
