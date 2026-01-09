@@ -48,7 +48,7 @@ namespace SynOS.Data.Migrations
                     PayrollRunId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     EmployeeId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     PayComponentId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Amount = table.Column<decimal>(type: "decimal(18,2)", nullable: false)
+                    Amount = table.Column<decimal>(type: "decimal", nullable: false)
                 },
                 constraints: table =>
                 {

@@ -10,5 +10,6 @@ namespace SynOS.Models.Entities.Payroll
         public Guid PayComponentId { get; set; }
         public string? Name { get; set; }
         public PayComponentType ComponentType { get; set; }
+        public bool IsActive { get; set; } = true;
     }
 }

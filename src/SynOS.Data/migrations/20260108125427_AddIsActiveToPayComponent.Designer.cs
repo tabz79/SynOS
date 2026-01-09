@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SynOS.Data;
 
@@ -11,9 +12,11 @@ using SynOS.Data;
 namespace SynOS.Data.Migrations
 {
     [DbContext(typeof(SynOSDbContext))]
-    partial class SynOSDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260108125427_AddIsActiveToPayComponent")]
+    partial class AddIsActiveToPayComponent
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -2268,7 +2271,7 @@ namespace SynOS.Data.Migrations
 
                     b.HasKey("PayComponentId");
 
-                    b.ToTable("PayComponents", (string)null);
+                    b.ToTable("PayComponents");
                 });
 
             modelBuilder.Entity("SynOS.Models.Entities.Payroll.PayStructure", b =>
@@ -2285,7 +2288,7 @@ namespace SynOS.Data.Migrations
 
                     b.HasKey("PayStructureId");
 
-                    b.ToTable("PayStructures", (string)null);
+                    b.ToTable("PayStructures");
                 });
 
             modelBuilder.Entity("SynOS.Models.Entities.Payroll.PayStructureAssignment", b =>
@@ -2308,27 +2311,7 @@ namespace SynOS.Data.Migrations
 
                     b.HasKey("PayStructureAssignmentId");
 
-                    b.ToTable("PayStructureAssignments", (string)null);
-                });
-
-            modelBuilder.Entity("SynOS.Models.Entities.Payroll.PayStructureComponent", b =>
-                {
-                    b.Property<Guid>("PayStructureComponentId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid>("PayComponentId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("PayStructureId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("PayStructureComponentId");
-
-                    b.ToTable("PayStructureComponents", (string)null);
+                    b.ToTable("PayStructureAssignments");
                 });
 
             modelBuilder.Entity("SynOS.Models.Entities.Payroll.PayrollAdjustment", b =>
@@ -2354,7 +2337,7 @@ namespace SynOS.Data.Migrations
 
                     b.HasKey("PayrollAdjustmentId");
 
-                    b.ToTable("PayrollAdjustments", (string)null);
+                    b.ToTable("PayrollAdjustments");
                 });
 
             modelBuilder.Entity("SynOS.Models.Entities.Payroll.PayrollFact", b =>
@@ -2377,7 +2360,7 @@ namespace SynOS.Data.Migrations
 
                     b.HasKey("PayrollFactId");
 
-                    b.ToTable("PayrollFacts", (string)null);
+                    b.ToTable("PayrollFacts");
                 });
 
             modelBuilder.Entity("SynOS.Models.Entities.Payroll.PayrollPeriod", b =>
@@ -2397,7 +2380,7 @@ namespace SynOS.Data.Migrations
 
                     b.HasKey("PayrollPeriodId");
 
-                    b.ToTable("PayrollPeriods", (string)null);
+                    b.ToTable("PayrollPeriods");
                 });
 
             modelBuilder.Entity("SynOS.Models.Entities.Payroll.PayrollRun", b =>
@@ -2417,7 +2400,7 @@ namespace SynOS.Data.Migrations
 
                     b.HasKey("PayrollRunId");
 
-                    b.ToTable("PayrollRuns", (string)null);
+                    b.ToTable("PayrollRuns");
                 });
 
             modelBuilder.Entity("SynOS.Models.Entities.PriceConfig", b =>

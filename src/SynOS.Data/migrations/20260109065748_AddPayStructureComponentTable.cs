@@ -1,44 +1,4 @@
-### Output for Step 1: PayStructureComponent Foundation
-
-**1. `src/SynOS.Models/Entities/Payroll/PayStructureComponent.cs`**
-```csharp
-using System;
-using System.ComponentModel.DataAnnotations;
-
-namespace SynOS.Models.Entities.Payroll
-{
-    public class PayStructureComponent
-    {
-        [Key]
-        public Guid PayStructureComponentId { get; set; }
-        public Guid PayStructureId { get; set; }
-        public Guid PayComponentId { get; set; }
-        public DateTime CreatedAt { get; set; }
-    }
-}
-```
-
-**2. Added Code in `SynOSDbContext.cs`**
-
-**`DbSet` property:**
-```csharp
-                    public DbSet<PayStructureComponent> PayStructureComponents { get; set; } // ADDED
-```
-
-**`OnModelCreating` configuration:**
-```csharp
-                modelBuilder.Entity<PayStructureComponent>(entity =>
-                {
-                    entity.ToTable("PayStructureComponents");
-                    entity.HasKey(e => e.PayStructureComponentId);
-                });
-```
-
-**3. Full Migration File**
-
-**`src/SynOS.Data/Migrations/..._AddPayStructureComponentTable.cs`**
-```csharp
-using System;
+﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -74,4 +34,3 @@ namespace SynOS.Data.Migrations
         }
     }
 }
-```

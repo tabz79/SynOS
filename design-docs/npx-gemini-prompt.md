@@ -1,111 +1,60 @@
-### 🛠️ **Gemini Fix Prompt — Payroll Foundation Mechanical Corrections (STRICT)**
+✦ Micro-Correction Directive: EndAssignmentForEmployeeAsync Ordering Fix
 
-You previously implemented the Payroll Engine V1 foundation.
+There is one optional but recommended micro-correction to apply for clarity and correctness.
+This is not a redesign and must not change any behavior or rules.
 
-This task is a **MECHANICAL FIX PASS ONLY**.
+Required Adjustment
 
-❗ **DO NOT redesign, rename, or extend anything.**
-❗ **DO NOT add new fields, entities, enums, or logic.**
+Refactor the order of validations inside EndAssignmentForEmployeeAsync as follows:
 
----
+Current logical order (to be corrected):
 
-## REQUIRED FIXES (ALL FOUR ARE MANDATORY)
+Load assignment
 
-### 1️⃣ Remove all default initializers in DbContext
+Validate endDate rules
 
-In `SynOSDbContext.cs`:
+Load employee
 
-* Remove **all** `= null!` initializers from Payroll DbSet properties
-* Leave DbSet declarations as plain auto-properties
+Reject if employee inactive
 
-✅ Allowed:
+End assignment
 
-```csharp
-public DbSet<PayComponent> PayComponents { get; set; }
-```
+Corrected order (apply this):
 
-❌ Not allowed:
+Load assignment
 
-```csharp
-public DbSet<PayComponent> PayComponents { get; set; } = null!;
-```
+Load employee
 
----
+Reject if employee is inactive or missing
 
-### 2️⃣ Make all string properties nullable in Payroll entities
+Validate endDate rules
 
-In **all Payroll entity classes**:
+End assignment and commit
 
-* Change every `string` property to `string?`
-* This applies to:
+Rationale (do not implement new logic)
 
-  * Names
-  * Notes
-  * Descriptions
-  * Codes
-  * Any free-text field
+Identity & eligibility checks must precede temporal/business rule checks.
 
-❗ Do NOT add `[Required]`, `[MaxLength]`, or validation attributes.
+Prevents misleading validation errors.
 
----
+Improves audit clarity and aligns with regulated payroll standards.
 
-### 3️⃣ Remove explicit decimal precision from migration
+Constraints
 
-In the Payroll migration file:
+No new guards
 
-* Remove **all** explicit precision definitions such as:
+No removed guards
 
-  * `decimal(18,2)`
-* Allow EF Core to use its default decimal mapping for now
+No schema changes
 
-❗ Do NOT change:
+No behavior change beyond ordering
 
-* Column names
-* Table names
-* Nullable flags
-* Relationships
+Keep transactions exactly as implemented
 
-This is a **precision deferral**, not a schema redesign.
+Output
 
----
+After applying this ordering change, respond only with:
 
-### 4️⃣ Ensure single `using` directive
+"Micro-correction applied"
 
-In `SynOSDbContext.cs`:
-
-* Ensure `using SynOS.Models.Entities.Payroll;` appears **exactly once**
-* Remove any duplicate occurrences
-
----
-
-## CONSTRAINTS (NON-NEGOTIABLE)
-
-* ❌ Do NOT add defaults anywhere
-* ❌ Do NOT add data annotations
-* ❌ Do NOT add logic or methods
-* ❌ Do NOT add navigation properties
-* ❌ Do NOT change entity structure
-* ❌ Do NOT touch HR Master or other engines
-* ❌ Do NOT introduce new migrations unless required by the above fixes
-
----
-
-## OUTPUT RULES (STRICT)
-
-1. Output **ONLY** the modified Payroll entity files
-2. Output **ONLY** the modified portion of `SynOSDbContext.cs`
-3. Output the **FULL corrected migration file**
-4. No explanations
-5. No summaries
-6. No commentary
-
----
-
-## FINAL RULE
-
-If you are unsure whether a change is required, **do not make it**.
-
-This is a correction pass, not a redesign.
-
----
-
+Proceed now.

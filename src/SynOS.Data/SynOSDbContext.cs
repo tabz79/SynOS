@@ -144,6 +144,7 @@ public DbSet<ReceivableFact> ReceivableFacts { get; set; } = null!;
                     public DbSet<PayrollRun> PayrollRuns { get; set; }
                     public DbSet<PayrollAdjustment> PayrollAdjustments { get; set; }
                     public DbSet<PayrollFact> PayrollFacts { get; set; }
+                    public DbSet<PayStructureComponent> PayStructureComponents { get; set; } // ADDED
         
                                                 // Revenue Engine DbSets
                                                 public DbSet<RevenueFact> RevenueFacts { get; set; } = null!;        // Payables DbSets
@@ -888,12 +889,54 @@ modelBuilder.Entity<ReceivableFact>(entity =>
                                 entity.HasKey(e => e.DiscountFactId);
                             });
             
-                            // HR Configuration (Minimal) // ADDED
-                            modelBuilder.Entity<Employee>(entity => // ADDED
-                            {
-                                entity.ToTable("Employees");
-                                entity.HasKey(e => e.EmployeeId);
-                            });
-                        }
-                    }
-                }
+                                            // HR Configuration (Minimal) // ADDED
+                                            modelBuilder.Entity<Employee>(entity => // ADDED
+                                            {
+                                                entity.ToTable("Employees");
+                                                entity.HasKey(e => e.EmployeeId);
+                                            });
+                            
+                                            // Payroll Configuration (Minimal) // ADDED
+                                            modelBuilder.Entity<PayComponent>(entity =>
+                                            {
+                                                entity.ToTable("PayComponents");
+                                                entity.HasKey(e => e.PayComponentId);
+                                            });
+                                            modelBuilder.Entity<PayStructure>(entity =>
+                                            {
+                                                entity.ToTable("PayStructures");
+                                                entity.HasKey(e => e.PayStructureId);
+                                            });
+                                            modelBuilder.Entity<PayStructureAssignment>(entity =>
+                                            {
+                                                entity.ToTable("PayStructureAssignments");
+                                                entity.HasKey(e => e.PayStructureAssignmentId);
+                                            });
+                                            modelBuilder.Entity<PayrollPeriod>(entity =>
+                                            {
+                                                entity.ToTable("PayrollPeriods");
+                                                entity.HasKey(e => e.PayrollPeriodId);
+                                            });
+                                            modelBuilder.Entity<PayrollRun>(entity =>
+                                            {
+                                                entity.ToTable("PayrollRuns");
+                                                entity.HasKey(e => e.PayrollRunId);
+                                            });
+                                            modelBuilder.Entity<PayrollAdjustment>(entity =>
+                                            {
+                                                entity.ToTable("PayrollAdjustments");
+                                                entity.HasKey(e => e.PayrollAdjustmentId);
+                                            });
+                                            modelBuilder.Entity<PayrollFact>(entity =>
+                                            {
+                                                entity.ToTable("PayrollFacts");
+                                                entity.HasKey(e => e.PayrollFactId);
+                                            });
+                                            modelBuilder.Entity<PayStructureComponent>(entity =>
+                                            {
+                                                entity.ToTable("PayStructureComponents");
+                                                entity.HasKey(e => e.PayStructureComponentId);
+                                            });
+                                        }
+                                    }
+                                }
