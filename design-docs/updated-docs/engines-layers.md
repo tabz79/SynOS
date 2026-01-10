@@ -610,6 +610,12 @@ The Spend Engine is correct if:
 
 
 
+
+
+
+
+
+
 Good.
 You answered **payroll** correctly — that means the mental model is now aligned.
 Now we stop hand-waving and **put this beast on paper properly**.
@@ -632,7 +638,7 @@ This is the **complete enterprise HRMS suite** for a healthcare org.
 
 ---
 
-## 1️⃣ Employee Identity & Lifecycle Module (HR Master)
+## 1 Employee Identity & Lifecycle Module (HR Master)
 
 **Purpose:**
 
@@ -661,7 +667,7 @@ This is **identity truth**.
 
 ---
 
-## 2️⃣ Compensation & Offer Structure Module
+## 2 Compensation & Offer Structure Module
 
 **Purpose:**
 
@@ -697,7 +703,7 @@ This feeds **Payroll**, but doesn’t execute it.
 
 ---
 
-## 3️⃣ Attendance & Shift Module (Time Engine UI)
+## 3 Attendance & Shift Module (Time Engine UI)
 
 **Purpose:**
 
@@ -721,7 +727,7 @@ This module **writes facts into the Time Truth Engine**.
 
 ---
 
-## 4️⃣ Leave & Absence Module
+## 4 Leave & Absence Module
 
 **Purpose:**
 
@@ -745,7 +751,7 @@ Writes **Leave Facts**, nothing else.
 
 ---
 
-## 5️⃣ Payroll Module (Truth Engine Interface)
+## 5 Payroll Module (Truth Engine Interface)
 
 **Purpose:**
 
@@ -773,7 +779,7 @@ This is **financial truth**, immutable.
 
 ---
 
-## 6️⃣ Payments & Disbursement Module
+## 6 Payments & Disbursement Module
 
 **Purpose:**
 
@@ -796,7 +802,7 @@ Consumes **Payroll Facts**, writes **Spend Facts**.
 
 ---
 
-## 7️⃣ Compliance & Statutory Module (Healthcare-ready)
+## 7 Compliance & Statutory Module (Healthcare-ready)
 
 **Purpose:**
 
@@ -812,7 +818,7 @@ Reads **Payroll Facts**, emits **Statutory Deduction Facts**.
 
 ---
 
-## 8️⃣ Admin, Policy & Governance Module
+## 8 Admin, Policy & Governance Module
 
 **Purpose:**
 

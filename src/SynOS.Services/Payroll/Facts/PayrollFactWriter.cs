@@ -1,43 +1,3 @@
-### Output for PayrollFact Idempotency Patch
-
-**1. `AddUniqueConstraintToPayrollFacts` Migration File**
-
-File: `src/SynOS.Data/Migrations/20260110113431_AddUniqueConstraintToPayrollFacts.cs`
-```csharp
-using Microsoft.EntityFrameworkCore.Migrations;
-
-#nullable disable
-
-namespace SynOS.Data.Migrations
-{
-    /// <inheritdoc />
-    public partial class AddUniqueConstraintToPayrollFacts : Migration
-    {
-        /// <inheritdoc />
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.CreateIndex(
-                name: "IX_PayrollFacts_PayrollRunId_EmployeeId_PayComponentId",
-                table: "PayrollFacts",
-                columns: new[] { "PayrollRunId", "EmployeeId", "PayComponentId" },
-                unique: true);
-        }
-
-        /// <inheritdoc />
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.DropIndex(
-                name: "IX_PayrollFacts_PayrollRunId_EmployeeId_PayComponentId",
-                table: "PayrollFacts");
-        }
-    }
-}
-```
-
-**2. Updated `PayrollFactWriter.cs` Implementation**
-
-File: `src/SynOS.Services/Payroll/Facts/PayrollFactWriter.cs`
-```csharp
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -118,4 +78,3 @@ namespace SynOS.Services.Payroll.Facts
         }
     }
 }
-```

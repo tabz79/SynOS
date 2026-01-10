@@ -8,6 +8,7 @@ namespace SynOS.Models.Entities.Payroll
         [Key]
         public Guid PayrollFactId { get; set; }
         public Guid PayrollRunId { get; set; }
+        public Guid PayrollPeriodId { get; set; }
         public Guid EmployeeId { get; set; }
         public Guid PayComponentId { get; set; }
         public decimal Amount { get; set; }

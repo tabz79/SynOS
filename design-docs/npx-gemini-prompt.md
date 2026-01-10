@@ -1,60 +1,144 @@
-✦ Micro-Correction Directive: EndAssignmentForEmployeeAsync Ordering Fix
+## 🔒 **GEMINI FORCE-EXECUTION PROMPT — PAYROLL FACT IDEMPOTENCY FIX (MANDATORY)**
 
-There is one optional but recommended micro-correction to apply for clarity and correctness.
-This is not a redesign and must not change any behavior or rules.
+You previously failed to implement **two explicitly approved, blocking requirements**.
 
-Required Adjustment
+This task is a **corrective patch only**.
+You must execute **exactly what is specified below** and nothing else.
 
-Refactor the order of validations inside EndAssignmentForEmployeeAsync as follows:
+If any required artifact is missing at the end, the task is considered **FAILED**.
 
-Current logical order (to be corrected):
+---
 
-Load assignment
+## ❗❗ BLOCKING ISSUES TO FIX (NON-NEGOTIABLE)
 
-Validate endDate rules
+### ❌ ISSUE 1 — Database idempotency is NOT enforced
 
-Load employee
+### ❌ ISSUE 2 — DbUpdateException is NOT wrapped
 
-Reject if employee inactive
+Both **must** be fixed in this run.
 
-End assignment
+---
 
-Corrected order (apply this):
+## 🎯 OBJECTIVE
 
-Load assignment
+Enforce **physical, database-level idempotency** for payroll facts and ensure **provider-agnostic failure semantics** in `PayrollFactWriter`.
 
-Load employee
+---
 
-Reject if employee is inactive or missing
+## ✅ REQUIRED FIX #1 — UNIQUE CONSTRAINT (MANDATORY)
 
-Validate endDate rules
+### You MUST do all of the following:
 
-End assignment and commit
+#### A. Modify **exact file**:
 
-Rationale (do not implement new logic)
+```
+src/SynOS.Data/SynOSDbContext.cs
+```
 
-Identity & eligibility checks must precede temporal/business rule checks.
+Inside `OnModelCreating`, add **entity configuration for PayrollFact**:
 
-Prevents misleading validation errors.
+```csharp
+modelBuilder.Entity<PayrollFact>()
+    .HasIndex(e => new { e.PayrollRunId, e.EmployeeId, e.PayComponentId })
+    .IsUnique();
+```
 
-Improves audit clarity and aligns with regulated payroll standards.
+No alternatives. No variations.
 
-Constraints
+---
 
-No new guards
+#### B. Generate a NEW migration
 
-No removed guards
+* Migration name:
 
-No schema changes
+  ```
+  AddUniqueConstraintToPayrollFacts
+  ```
 
-No behavior change beyond ordering
+* Migration must:
 
-Keep transactions exactly as implemented
+  * Add a **unique index**
+  * Be **additive**
+  * Touch **only PayrollFacts**
+  * NOT recreate tables
+  * NOT modify existing columns
 
-Output
+If the migration does anything else → FAIL.
 
-After applying this ordering change, respond only with:
+---
 
-"Micro-correction applied"
+## ✅ REQUIRED FIX #2 — DbUpdateException WRAPPING (MANDATORY)
 
-Proceed now.
+### Modify **exact file**:
+
+```
+src/SynOS.Services/Payroll/Facts/PayrollFactWriter.cs
+```
+
+### Required behavior:
+
+* Wrap **SaveChangesAsync + CommitAsync** in:
+
+```csharp
+try
+{
+    await _context.SaveChangesAsync();
+    await transaction.CommitAsync();
+}
+catch (DbUpdateException ex)
+{
+    throw new PayrollFactWriteViolationException(
+        "Payroll fact persistence failed due to a database constraint violation.",
+        ex
+    );
+}
+```
+
+### Hard rules:
+
+* ❌ Do NOT inspect inner exceptions
+* ❌ Do NOT check error codes
+* ❌ Do NOT retry
+* ❌ Do NOT log
+* ❌ Do NOT introduce new exception types
+
+Any `DbUpdateException` == **fatal payroll law violation**.
+
+---
+
+## ⛔ ABSOLUTE CONSTRAINTS
+
+* ❌ Do NOT re-generate previous migrations
+* ❌ Do NOT touch PayrollFact entity (already correct)
+* ❌ Do NOT touch orchestration code
+* ❌ Do NOT touch calculation logic
+* ❌ Do NOT add comments like “future support”
+* ❌ Do NOT refactor unrelated code
+
+This is a **surgical patch**, not a redesign.
+
+---
+
+## 📦 REQUIRED FINAL OUTPUT (ALL REQUIRED)
+
+You MUST output:
+
+1. **The full code diff** for `SynOSDbContext.cs` (showing the unique index)
+2. **The full migration file** `AddUniqueConstraintToPayrollFacts`
+3. **The updated `PayrollFactWriter.cs`** showing the try–catch
+
+If any one is missing → FAIL.
+
+---
+
+## 🧠 FINAL REMINDER (DO NOT IGNORE)
+
+> Payroll truth must be correct **even if the application is wrong**.
+
+Database constraints are the **last line of defense**.
+
+---
+
+## 🔒 END OF FORCE-EXECUTION PROMPT
+
+---

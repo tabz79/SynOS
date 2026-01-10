@@ -927,12 +927,12 @@ modelBuilder.Entity<ReceivableFact>(entity =>
                                                 entity.ToTable("PayrollAdjustments");
                                                 entity.HasKey(e => e.PayrollAdjustmentId);
                                             });
-                                            modelBuilder.Entity<PayrollFact>(entity =>
-                                            {
-                                                entity.ToTable("PayrollFacts");
-                                                entity.HasKey(e => e.PayrollFactId);
-                                            });
-                                            modelBuilder.Entity<PayStructureComponent>(entity =>
+                                                        modelBuilder.Entity<PayrollFact>(entity =>
+                                                        {
+                                                            entity.ToTable("PayrollFacts");
+                                                            entity.HasKey(e => e.PayrollFactId);
+                                                            entity.HasIndex(e => new { e.PayrollRunId, e.EmployeeId, e.PayComponentId }).IsUnique();
+                                                        });                                            modelBuilder.Entity<PayStructureComponent>(entity =>
                                             {
                                                 entity.ToTable("PayStructureComponents");
                                                 entity.HasKey(e => e.PayStructureComponentId);

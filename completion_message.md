@@ -1,1 +1,1 @@
-The micro-correction has been applied. I am ready for your next instruction.
+The `PayrollFactWriter` idempotency patch has been applied. I am ready for your next instruction.
