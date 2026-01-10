@@ -1,8 +1,23 @@
 ### Output for PayrollFact Idempotency Patch
 
-**1. `AddUniqueConstraintToPayrollFacts` Migration File**
+**1. `SynOSDbContext.cs` Diff**
 
-File: `src/SynOS.Data/Migrations/20260110113431_AddUniqueConstraintToPayrollFacts.cs`
+```diff
+--- a/src/SynOS.Data/SynOSDbContext.cs
++++ b/src/SynOS.Data/SynOSDbContext.cs
+@@ -428,6 +428,7 @@
+             {
+                 entity.ToTable("PayrollFacts");
+                 entity.HasKey(e => e.PayrollFactId);
++                entity.HasIndex(e => new { e.PayrollRunId, e.EmployeeId, e.PayComponentId }).IsUnique();
+             });
+             modelBuilder.Entity<PayStructureComponent>(entity =>
+             {
+```
+
+**2. `AddUniqueConstraintToPayrollFacts` Migration File**
+
+File: `src/SynOS.Data/Migrations/20260110124032_AddUniqueConstraintToPayrollFacts.cs`
 ```csharp
 using Microsoft.EntityFrameworkCore.Migrations;
 
@@ -34,7 +49,7 @@ namespace SynOS.Data.Migrations
 }
 ```
 
-**2. Updated `PayrollFactWriter.cs` Implementation**
+**3. Updated `PayrollFactWriter.cs` Implementation**
 
 File: `src/SynOS.Services/Payroll/Facts/PayrollFactWriter.cs`
 ```csharp

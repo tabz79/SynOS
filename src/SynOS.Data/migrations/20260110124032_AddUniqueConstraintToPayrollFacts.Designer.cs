@@ -12,7 +12,7 @@ using SynOS.Data;
 namespace SynOS.Data.Migrations
 {
     [DbContext(typeof(SynOSDbContext))]
-    [Migration("20260110113431_AddUniqueConstraintToPayrollFacts")]
+    [Migration("20260110124032_AddUniqueConstraintToPayrollFacts")]
     partial class AddUniqueConstraintToPayrollFacts
     {
         /// <inheritdoc />

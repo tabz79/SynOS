@@ -7,5 +7,9 @@ namespace SynOS.Services.Payroll.Exceptions
         public PayrollFactWriteViolationException(string message) : base(message)
         {
         }
+
+        public PayrollFactWriteViolationException(string message, Exception innerException) : base(message, innerException)
+        {
+        }
     }
 }

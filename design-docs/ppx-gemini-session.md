@@ -1,382 +1,385 @@
-✦ Okay, user confirmed PayrollFactWriter plan. I'll execute: First, modify PayrollFact.cs, generate a migration, and create the exception class. Second, I'll 
-  build the service interface and implementation. Finally, I will read all files and generate the output document. I'm starting with PayrollFact.cs now.      
+✦ Okay, I'll execute the idempotency patch. First, I'll update SynOSDbContext.cs with the unique index and generate the migration. Next, I'll add the
+  try-catch to PayrollFactWriter.cs. Finally, I'll assemble the output document including the migration, updated service, and DbContext diff. Starting with   
+  reading SynOSDbContext.cs.
 ╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ ✓  WriteTodos Set 6 todo(s)                                                                                                                                │
+│ ✓  WriteTodos Set 4 todo(s)                                                                                                                                │
 │                                                                                                                                                            │
 ╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-✦ Todo updated. I'm adding PayrollPeriodId to PayrollFact.cs.
+✦ Todo updated. Reading src/SynOS.Data/SynOSDbContext.cs.
 ╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ ✓  Edit src\...\Payroll\PayrollFact.cs:         public Guid PayrollRun... =>         public Guid PayrollRun...                                             │
-│                                                                                                                                                            │
-│  8   [Key]                                                                                                                                                 │
-│  9   public Guid PayrollFactId { get; set; }                                                                                                               │
-│ 10   public Guid PayrollRunId { get; set; }                                                                                                                │
-│ 11 + public Guid PayrollPeriodId { get; set; }                                                                                                             │
-│ 12   public Guid EmployeeId { get; set; }                                                                                                                  │
-│ 13   public Guid PayComponentId { get; set; }                                                                                                              │
-│ 14   public decimal Amount { get; set; }                                                                                                                   │
-╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-✦ PayrollFact.cs is modified. Now generating the AddPayrollPeriodIdToPayrollFact migration.
-╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ ✓  WriteTodos Set 6 todo(s)                                                                                                                                │
+│ ✓  ReadFile src\SynOS.Data\SynOSDbContext.cs                                                                                                               │
 │                                                                                                                                                            │
 ╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-✦ Todo updated. Generating migration AddPayrollPeriodIdToPayrollFact.
+✦ SynOSDbContext.cs shows the PayrollFact unique index exists. I'll complete this step and generate the migration as planned, though I expect it to be empty. 
 ╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ ✓  Shell dotnet ef migrations add AddPayrollPeriodIdToPayrollFact --project src/SynOS.Data --startup-project src/SynOS.Api -o Migrations [current working… │
+│ ✓  WriteTodos Set 4 todo(s)                                                                                                                                │
+│                                                                                                                                                            │
+╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+✦ Todo updated. Generating AddUniqueConstraintToPayrollFacts migration now.
+╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ ✓  Shell dotnet ef migrations add AddUniqueConstraintToPayrollFacts --project src/SynOS.Data --startup-project src/SynOS.Api -o Migrations [current worki… │
 │                                                                                                                                                            │
 │ Build started...                                                                                                                                           │
-│ Build succeeded.                                                                                                                                           │
-│ [16:48:04 WRN] No store type was specified for the decimal property 'MaxLimit' on entity type 'DiscountMaster'. This will cause values to be silently      │
-│ truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in      │
-│ 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.           │
-│ [16:48:04 WRN] No store type was specified for the decimal property 'MaxLimit' on entity type 'DiscountMaster'. This will cause values to be silently      │
-│ truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in      │
-│ 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.           │
-│ [16:48:04 WRN] No store type was specified for the decimal property 'Amount' on entity type 'PayrollAdjustment'. This will cause values to be silently     │
-│ truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in      │
-│ 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.           │
-│ [16:48:04 WRN] No store type was specified for the decimal property 'Amount' on entity type 'PayrollAdjustment'. This will cause values to be silently     │
-│ truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in      │
-│ 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.           │
-│ [16:48:04 WRN] No store type was specified for the decimal property 'Amount' on entity type 'PayrollFact'. This will cause values to be silently truncated │
-│ if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in                │
-│ 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.           │
-│ [16:48:04 WRN] No store type was specified for the decimal property 'Amount' on entity type 'PayrollFact'. This will cause values to be silently truncated │
-│ if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in                │
-│ 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.           │
-│ [16:48:07 WRN] No store type was specified for the decimal property 'MaxLimit' on entity type 'DiscountMaster'. This will cause values to be silently      │
-│ truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in      │
-│ 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.           │
-│ [16:48:07 WRN] No store type was specified for the decimal property 'MaxLimit' on entity type 'DiscountMaster'. This will cause values to be silently      │
-│ truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in      │
-│ 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.           │
-│ [16:48:07 WRN] No store type was specified for the decimal property 'Amount' on entity type 'PayrollAdjustment'. This will cause values to be silently     │
-│ truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in      │
-│ 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.           │
-│ [16:48:07 WRN] No store type was specified for the decimal property 'Amount' on entity type 'PayrollAdjustment'. This will cause values to be silently     │
-│ truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in      │
-│ 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.           │
-│ [16:48:07 WRN] No store type was specified for the decimal property 'Amount' on entity type 'PayrollFact'. This will cause values to be silently truncated │
-│ if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in                │
-│ 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.           │
-│ [16:48:07 WRN] No store type was specified for the decimal property 'Amount' on entity type 'PayrollFact'. This will cause values to be silently truncated │
-│ if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in                │
-│ 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.           │
-│ Done. To undo this action, use 'ef migrations remove'                                                                                                      │
+│ Build failed. Use dotnet build to see the errors.                                                                                                          │
 ╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-✦ Okay, migration AddPayrollPeriodIdToPayrollFact is done. Now, I'll make the PayrollFactWriteViolationException class, starting with its directory.
+✦ Migration failed. I'll run dotnet build to check the errors.
 ╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ ✓  WriteTodos Set 6 todo(s)                                                                                                                                │
+│ ✓  Shell dotnet build [current working directory D:\Projects\SynOS-Synthesized-Lab-Intelligence] (Running dotnet build to see the errors.)                 │
 │                                                                                                                                                            │
+│ ... first 51 lines hidden ...                                                                                                                              │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\VisitService.cs(300,27): warning CS8618: Non-nullable property 'TestName'                │
+│  must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [D:                │
+│ \Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                                     │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\VisitService.cs(301,27): warning CS8618: Non-nullable property 'Departmen                │
+│ t' must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [                │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                                   │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\RadiologyService.cs(396,48): warning CS8601: Possible null reference assi                │
+│ gnment. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                          │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliveryService.cs(741,21): warning CS8602: Dereference of a possibly nul                │
+│ l reference. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                     │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliveryService.cs(745,47): warning CS8602: Dereference of a possibly nul                │
+│ l reference. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                     │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliveryService.cs(749,43): warning CS8602: Dereference of a possibly nul                │
+│ l reference. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                     │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliveryService.cs(749,43): warning CS8602: Dereference of a possibly nul                │
+│ l reference. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                     │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliveryService.cs(761,43): warning CS8602: Dereference of a possibly nul                │
+│ l reference. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                     │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\Utils\EscPosGenerator.cs(70,35): warning CS8602: Dereference of a possibl                │
+│ y null reference. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\Utils\EscPosGenerator.cs(70,35): warning CS8602: Dereference of a possibl                │
+│ y null reference. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliveryService.cs(849,39): warning CS8602: Dereference of a possibly nul                │
+│ l reference. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                     │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliveryService.cs(853,30): warning CS8602: Dereference of a possibly nul                │
+│ l reference. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                     │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliveryService.cs(853,30): warning CS8602: Dereference of a possibly nul                │
+│ l reference. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                     │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliveryService.cs(866,30): warning CS8602: Dereference of a possibly nul                │
+│ l reference. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                     │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\RadiologyService.cs(496,28): warning CS8601: Possible null reference assi                │
+│ gnment. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                          │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\RadiologyService.cs(497,34): warning CS8601: Possible null reference assi                │
+│ gnment. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                          │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\RadiologyService.cs(498,35): warning CS8601: Possible null reference assi                │
+│ gnment. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                          │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\RadiologyService.cs(502,35): warning CS8601: Possible null reference assi                │
+│ gnment. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                          │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\RadiologyService.cs(517,21): warning CS8600: Converting null literal or p                │
+│ ossible null value to non-nullable type. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                         │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\RadiologyService.cs(524,79): warning CS8604: Possible null reference argu                │
+│ ment for parameter 'templateModel' in 'Task<byte[]> IReportPdfRenderer.GeneratePdfAsync(ReportDataModel data, TemplateModel templateModel)'                │
+│ . [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                                │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliveryService.cs(919,39): warning CS8602: Dereference of a possibly nul                │
+│ l reference. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                     │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliveryService.cs(923,34): warning CS8602: Dereference of a possibly nul                │
+│ l reference. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                     │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliveryService.cs(923,34): warning CS8602: Dereference of a possibly nul                │
+│ l reference. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                     │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliveryService.cs(933,34): warning CS8602: Dereference of a possibly nul                │
+│ l reference. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                     │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\Security\RadiologyAccessGuard.cs(40,57): warning CS8602: Dereference of a                │
+│  possibly null reference. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                        │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\TubeConsumptionService.cs(44,69): warning CS8602: Dereference of a possib                │
+│ ly null reference. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                               │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\TubeConsumptionService.cs(45,69): warning CS8602: Dereference of a possib                │
+│ ly null reference. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                               │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\TestMasterService.cs(231,83): warning CS0472: The result of the expressio                │
+│ n is always 'false' since a value of type 'bool' is never equal to 'null' of type 'bool?' [D:\Projects\SynOS-Synthesized-Lab-Intelligence\s                │
+│ rc\SynOS.Services\SynOS.Services.csproj]                                                                                                                   │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SampleService.cs(130,32): warning CS8600: Converting null literal or poss                │
+│ ible null value to non-nullable type. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                            │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SampleService.cs(148,55): warning CS8602: Dereference of a possibly null                 │
+│ reference. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                       │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ResultService.cs(181,43): warning CS8602: Dereference of a possibly null                 │
+│ reference. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                       │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ResultService.cs(195,33): warning CS8602: Dereference of a possibly null                 │
+│ reference. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                       │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ResultService.cs(195,33): warning CS8602: Dereference of a possibly null                 │
+│ reference. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                       │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SampleService.cs(184,39): warning CS8602: Dereference of a possibly null                 │
+│ reference. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                       │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SampleService.cs(185,43): warning CS8602: Dereference of a possibly null                 │
+│ reference. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                       │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SampleService.cs(187,39): warning CS8602: Dereference of a possibly null                 │
+│ reference. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                       │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SampleService.cs(194,31): warning CS8602: Dereference of a possibly null                 │
+│ reference. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                       │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SampleService.cs(195,38): warning CS8602: Dereference of a possibly null                 │
+│ reference. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                       │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SampleService.cs(195,38): warning CS8602: Dereference of a possibly null                 │
+│ reference. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                       │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SampleService.cs(201,35): warning CS8602: Dereference of a possibly null                 │
+│ reference. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                       │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SampleService.cs(212,39): warning CS8602: Dereference of a possibly null                 │
+│ reference. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                       │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SampleService.cs(213,43): warning CS8602: Dereference of a possibly null                 │
+│ reference. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                       │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SampleService.cs(215,39): warning CS8602: Dereference of a possibly null                 │
+│ reference. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                       │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SampleService.cs(219,40): warning CS8603: Possible null reference return.                │
+│  [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                                 │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SampleService.cs(225,27): warning CS8602: Dereference of a possibly null                 │
+│ reference. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                       │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SampleService.cs(226,34): warning CS8602: Dereference of a possibly null                 │
+│ reference. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                       │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SampleService.cs(226,34): warning CS8602: Dereference of a possibly null                 │
+│ reference. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                       │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SampleService.cs(245,38): warning CS8602: Dereference of a possibly null                 │
+│ reference. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                       │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SampleService.cs(245,38): warning CS8602: Dereference of a possibly null                 │
+│ reference. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                       │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SampleService.cs(245,38): warning CS8602: Dereference of a possibly null                 │
+│ reference. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                       │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ResultService.cs(445,76): warning CS8602: Dereference of a possibly null                 │
+│ reference. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                       │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ResultService.cs(451,36): warning CS8602: Dereference of a possibly null                 │
+│ reference. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                       │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\AuditService.cs(46,38): warning CA2017: Number of parameters supplied in                 │
+│ the logging message template do not match the number of named placeholders (https://learn.microsoft.com/dotnet/fundamentals/code-analysis/q                │
+│ uality-rules/ca2017) [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                             │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\Payroll\Facts\PayrollFactWriter.cs(76,27): error CS1729: 'PayrollFactWrit                │
+│ eViolationException' does not contain a constructor that takes 2 arguments [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Servic                │
+│ es\SynOS.Services.csproj]                                                                                                                                  │
+│     398 Warning(s)                                                                                                                                         │
+│     1 Error(s)                                                                                                                                             │
+│                                                                                                                                                            │
+│ Time Elapsed 00:00:28.27                                                                                                                                   │
 ╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-✦ Todo updated. Creating directory src/SynOS.Services/Payroll/Exceptions/.
-╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ ✓  Shell mkdir src\SynOS.Services\Payroll\Exceptions [current working directory D:\Projects\SynOS-Synthesized-Lab-Intelligence] (Creating directory for p… │
-│                                                                                                                                                            │
-│                                                                                                                                                            │
-│                                                                                                                                                            │
-│     Directory: D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\Payroll                                                                   │
-│                                                                                                                                                            │
-│                                                                                                                                                            │
-│ Mode                 LastWriteTime         Length Name                                                                                                     │
-│ ----                 -------------         ------ ----                                                                                                     │
-│ d-----        10-01-2026  04:48 PM                Exceptions                                                                                               │
-╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-✦ Directory created. Now creating PayrollFactWriteViolationException.cs.
-╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ ✓  WriteFile Writing to src\SynOS.Servic...tionException.cs                                                                                                │
-│                                                                                                                                                            │
-│  1 using System;                                                                                                                                           │
-│  2                                                                                                                                                         │
-│  3 namespace SynOS.Services.Payroll.Exceptions                                                                                                             │
-│  4 {                                                                                                                                                       │
-│  5     public class PayrollFactWriteViolationException : Exception                                                                                         │
-│  6     {                                                                                                                                                   │
-│  7         public PayrollFactWriteViolationException(string message) : base(message)                                                                       │
-│  8         {                                                                                                                                               │
-│  9         }                                                                                                                                               │
-│ 10     }                                                                                                                                                   │
-│ 11 }                                                                                                                                                       │
-╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-✦ Okay, exception class done. Next, IPayrollFactWriter interface. First, I'm creating the src/SynOS.Services/Payroll/Facts/ directory.
-╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ ✓  WriteTodos Set 6 todo(s)                                                                                                                                │
-│                                                                                                                                                            │
-╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-✦ Todo updated. Creating directory src/SynOS.Services/Payroll/Facts/.
-╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ ✓  Shell mkdir src\SynOS.Services\Payroll\Facts [current working directory D:\Projects\SynOS-Synthesized-Lab-Intelligence] (Creating directory for the pa… │
-│                                                                                                                                                            │
-│                                                                                                                                                            │
-│                                                                                                                                                            │
-│     Directory: D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\Payroll                                                                   │
-│                                                                                                                                                            │
-│                                                                                                                                                            │
-│ Mode                 LastWriteTime         Length Name                                                                                                     │
-│ ----                 -------------         ------ ----                                                                                                     │
-│ d-----        10-01-2026  04:49 PM                Facts                                                                                                    │
-╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-✦ Okay, directory's made. Now, creating IPayrollFactWriter.cs.
-╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ ✓  WriteFile Writing to src\...\Facts\IPayrollFactWriter.cs                                                                                                │
-│                                                                                                                                                            │
-│  1 using System.Threading.Tasks;                                                                                                                           │
-│  2 using SynOS.Models.DTOs.Payroll;                                                                                                                        │
-│  3 using SynOS.Models.Entities.Payroll;                                                                                                                    │
-│  4                                                                                                                                                         │
-│  5 namespace SynOS.Services.Payroll.Facts                                                                                                                  │
-│  6 {                                                                                                                                                       │
-│  7     public interface IPayrollFactWriter                                                                                                                 │
-│  8     {                                                                                                                                                   │
-│  9         Task WriteFactsAsync(PayrollRun payrollRun, PayrollCalculationResult calculationResult);                                                        │
-│ 10     }                                                                                                                                                   │
-│ 11 }                                                                                                                                                       │
-╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-✦ Interface created. Now implementing PayrollFactWriter.cs.
-╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ ✓  WriteTodos Set 6 todo(s)                                                                                                                                │
-│                                                                                                                                                            │
-╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-✦ Todo updated. Creating PayrollFactWriter.cs.
-╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ ✓  WriteFile Writing to src\...\Facts\PayrollFactWriter.cs                                                                                                 │
-│                                                                                                                                                            │
-│  1 using System;                                                                                                                                           │
-│  2 using System.Linq;                                                                                                                                      │
-│  3 using System.Threading.Tasks;                                                                                                                           │
-│  4 using Microsoft.EntityFrameworkCore;                                                                                                                    │
-│  5 using SynOS.Data;                                                                                                                                       │
-│  6 using SynOS.Models.DTOs.Payroll;                                                                                                                        │
-│  7 using SynOS.Models.Entities.Payroll;                                                                                                                    │
-│  8 using SynOS.Models.Enums;                                                                                                                               │
-│  9 using SynOS.Services.Payroll.Exceptions;                                                                                                                │
-│ 10                                                                                                                                                         │
-│ 11 namespace SynOS.Services.Payroll.Facts                                                                                                                  │
-│ 12 {                                                                                                                                                       │
-│ 13     public class PayrollFactWriter : IPayrollFactWriter                                                                                                 │
-│ 14     {                                                                                                                                                   │
-│ 15         private readonly SynOSDbContext _context;                                                                                                       │
-│ 16                                                                                                                                                         │
-│ 17         public PayrollFactWriter(SynOSDbContext context)                                                                                                │
-│ 18         {                                                                                                                                               │
-│ 19             _context = context;                                                                                                                         │
-│ 20         }                                                                                                                                               │
-│ 21                                                                                                                                                         │
-│ 22         public async Task WriteFactsAsync(PayrollRun payrollRun, PayrollCalculationResult calculationResult)                                            │
-│ 23         {                                                                                                                                               │
-│ 24             // State Guard                                                                                                                              │
-│ 25             if (payrollRun.Status != PayrollRunStatus.Calculated)                                                                                       │
-│ 26             {                                                                                                                                           │
-│ 27                 throw new PayrollFactWriteViolationException("Facts can only be written for a run in the 'Calculated' state.");                         │
-│ 28             }                                                                                                                                           │
-│ 29                                                                                                                                                         │
-│ 30             // Result Guard                                                                                                                             │
-│ 31             if (calculationResult == null || !calculationResult.ProvisionalResults.Any())                                                               │
-│ 32             {                                                                                                                                           │
-│ 33                 throw new PayrollFactWriteViolationException("Cannot write facts for an empty or null calculation result.");                            │
-│ 34             }                                                                                                                                           │
-│ 35                                                                                                                                                         │
-│ 36             // Validation Error Guard                                                                                                                   │
-│ 37             if (calculationResult.ValidationErrors.Any())                                                                                               │
-│ 38             {                                                                                                                                           │
-│ 39                 throw new PayrollFactWriteViolationException("Cannot write facts for a calculation result that contains validation errors.");           │
-│ 40             }                                                                                                                                           │
-│ 41                                                                                                                                                         │
-│ 42             // Duplicate Fact Guard                                                                                                                     │
-│ 43             var existingFacts = await _context.PayrollFacts                                                                                             │
-│ 44                 .AsNoTracking()                                                                                                                         │
-│ 45                 .AnyAsync(f => f.PayrollRunId == payrollRun.PayrollRunId);                                                                              │
-│ 46             if (existingFacts)                                                                                                                          │
-│ 47             {                                                                                                                                           │
-│ 48                 throw new PayrollFactWriteViolationException($"Facts for PayrollRunId '{payrollRun.PayrollRunId}' have already been written.");         │
-│ 49             }                                                                                                                                           │
-│ 50                                                                                                                                                         │
-│ 51             using var transaction = await _context.Database.BeginTransactionAsync();                                                                    │
-│ 52                                                                                                                                                         │
-│ 53             foreach (var provisionalResult in calculationResult.ProvisionalResults)                                                                     │
-│ 54             {                                                                                                                                           │
-│ 55                 var fact = new PayrollFact                                                                                                              │
-│ 56                 {                                                                                                                                       │
-│ 57                     PayrollFactId = Guid.NewGuid(),                                                                                                     │
-│ 58                     PayrollRunId = payrollRun.PayrollRunId,                                                                                             │
-│ 59                     PayrollPeriodId = payrollRun.PayrollPeriodId, // Correctly populated                                                                │
-│ 60                     EmployeeId = provisionalResult.EmployeeId,                                                                                          │
-│ 61                     PayComponentId = provisionalResult.PayComponentId,                                                                                  │
-│ 62                     Amount = provisionalResult.Amount                                                                                                   │
-│ 63                 };                                                                                                                                      │
-│ 64                 _context.PayrollFacts.Add(fact);                                                                                                        │
-│ 65             }                                                                                                                                           │
-│ 66                                                                                                                                                         │
-│ 67             await _context.SaveChangesAsync();                                                                                                          │
-│ 68             await transaction.CommitAsync();                                                                                                            │
-│ 69         }                                                                                                                                               │
-│ 70     }                                                                                                                                                   │
-│ 71 }                                                                                                                                                       │
-╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-✦ Okay, I'm outputting the files. I'll read the PayrollFact.cs entity, the new exception, the fact writer interface and implementation, and the new migration.
-  Then I'll combine them all into implementation_output.md.
-╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ ✓  WriteTodos Set 6 todo(s)                                                                                                                                │
-│                                                                                                                                                            │
-╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-✦ Todo updated. Reading modified PayrollFact.cs.
-╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ ✓  ReadFile src\...\Payroll\PayrollFact.cs                                                                                                                 │
-│                                                                                                                                                            │
-╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-✦ Read PayrollFact.cs, now reading PayrollFactWriteViolationException.cs.
+✦ Build failed: PayrollFactWriteViolationException constructor is missing a two-argument overload. I'll add a (string, Exception) constructor to
+  PayrollFactWriteViolationException.cs, rerun the AddUniqueConstraintToPayrollFacts migration, then harden PayrollFactWriter.cs with the corrected try-catch.
+  After that, I'll output all modified files. Starting with reading PayrollFactWriteViolationException.cs.
 ╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
 │ ✓  ReadFile src\SynOS.Servic...tionException.cs                                                                                                            │
 │                                                                                                                                                            │
 ╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-✦ Read PayrollFactWriteViolationException.cs. Reading IPayrollFactWriter.cs.
+✦ Okay, read PayrollFactWriteViolationException.cs. Adding the inner exception constructor now.
 ╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ ✓  ReadFile src\...\Facts\IPayrollFactWriter.cs                                                                                                            │
+│ ✓  Edit src\SynOS.Servic...tionException.cs:         public PayrollFactWrit... =>         public PayrollFactWrit...                                        │
+│                                                                                                                                                            │
+│  7           public PayrollFactWriteViolationException(string message) : base(message)                                                                     │
+│  8           {                                                                                                                                             │
+│  9           }                                                                                                                                             │
+│ 10 +                                                                                                                                                       │
+│ 11 +         public PayrollFactWriteViolationException(string message, Exception innerException) : base(message, innerException)                           │
+│ 12 +         {                                                                                                                                             │
+│ 13           }                                                                                                                                             │
+│ 14       }                                                                                                                                                 │
+│ 15 + }                                                                                                                                                     │
+╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+✦ Okay, PayrollFactWriteViolationException is fixed. Now, retrying the migration from where it failed.
+╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ ✓  WriteTodos Set 4 todo(s)                                                                                                                                │
 │                                                                                                                                                            │
 ╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-✦ Read IPayrollFactWriter.cs. Now reading PayrollFactWriter.cs.
+✦ Todo updated. Generating AddUniqueConstraintToPayrollFacts migration now.
+╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ ✓  Shell dotnet ef migrations add AddUniqueConstraintToPayrollFacts --project src/SynOS.Data --startup-project src/SynOS.Api -o Migrations [current worki… │
+│                                                                                                                                                            │
+│ Build started...                                                                                                                                           │
+│ Build succeeded.                                                                                                                                           │
+│ [18:08:37 WRN] No store type was specified for the decimal property 'MaxLimit' on entity type 'DiscountMaster'. This will cause values to be silently      │
+│ truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in      │
+│ 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.           │
+│ [18:08:37 WRN] No store type was specified for the decimal property 'MaxLimit' on entity type 'DiscountMaster'. This will cause values to be silently      │
+│ truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in      │
+│ 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.           │
+│ [18:08:38 WRN] No store type was specified for the decimal property 'Amount' on entity type 'PayrollAdjustment'. This will cause values to be silently     │
+│ truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in      │
+│ 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.           │
+│ [18:08:38 WRN] No store type was specified for the decimal property 'Amount' on entity type 'PayrollAdjustment'. This will cause values to be silently     │
+│ truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in      │
+│ 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.           │
+│ [18:08:38 WRN] No store type was specified for the decimal property 'Amount' on entity type 'PayrollFact'. This will cause values to be silently truncated │
+│ if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in                │
+│ 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.           │
+│ [18:08:38 WRN] No store type was specified for the decimal property 'Amount' on entity type 'PayrollFact'. This will cause values to be silently truncated │
+│ if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in                │
+│ 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.           │
+│ [18:08:39 WRN] No store type was specified for the decimal property 'MaxLimit' on entity type 'DiscountMaster'. This will cause values to be silently      │
+│ truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in      │
+│ 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.           │
+│ [18:08:39 WRN] No store type was specified for the decimal property 'MaxLimit' on entity type 'DiscountMaster'. This will cause values to be silently      │
+│ truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in      │
+│ 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.           │
+│ [18:08:39 WRN] No store type was specified for the decimal property 'Amount' on entity type 'PayrollAdjustment'. This will cause values to be silently     │
+│ truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in      │
+│ 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.           │
+│ [18:08:39 WRN] No store type was specified for the decimal property 'Amount' on entity type 'PayrollAdjustment'. This will cause values to be silently     │
+│ truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in      │
+│ 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.           │
+│ [18:08:39 WRN] No store type was specified for the decimal property 'Amount' on entity type 'PayrollFact'. This will cause values to be silently truncated │
+│ if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in                │
+│ 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.           │
+│ [18:08:39 WRN] No store type was specified for the decimal property 'Amount' on entity type 'PayrollFact'. This will cause values to be silently truncated │
+│ if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in                │
+│ 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.           │
+│ The name 'AddUniqueConstraintToPayrollFacts' is used by an existing migration.                                                                             │
+╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+✦ Migration failed due to a name collision. I'll remove the old migration, then re-add it, harden PayrollFactWriter.cs with a try-catch, and finally output   
+  all affected files. Starting with migration removal.
+╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ ✓  Shell dotnet ef migrations remove --project src/SynOS.Data --startup-project src/SynOS.Api [current working directory D:\Projects\SynOS-Synthesized-La… │
+│                                                                                                                                                            │
+│ Build started...                                                                                                                                           │
+│ Build succeeded.                                                                                                                                           │
+│ [18:09:35 WRN] No store type was specified for the decimal property 'MaxLimit' on entity type 'DiscountMaster'. This will cause values to be silently      │
+│ truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in      │
+│ 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.           │
+│ [18:09:35 WRN] No store type was specified for the decimal property 'MaxLimit' on entity type 'DiscountMaster'. This will cause values to be silently      │
+│ truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in      │
+│ 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.           │
+│ [18:09:35 WRN] No store type was specified for the decimal property 'Amount' on entity type 'PayrollAdjustment'. This will cause values to be silently     │
+│ truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in      │
+│ 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.           │
+│ [18:09:35 WRN] No store type was specified for the decimal property 'Amount' on entity type 'PayrollAdjustment'. This will cause values to be silently     │
+│ truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in      │
+│ 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.           │
+│ [18:09:35 WRN] No store type was specified for the decimal property 'Amount' on entity type 'PayrollFact'. This will cause values to be silently truncated │
+│ if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in                │
+│ 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.           │
+│ [18:09:35 WRN] No store type was specified for the decimal property 'Amount' on entity type 'PayrollFact'. This will cause values to be silently truncated │
+│ if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in                │
+│ 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.           │
+│ [18:09:37 WRN] No store type was specified for the decimal property 'MaxLimit' on entity type 'DiscountMaster'. This will cause values to be silently      │
+│ truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in      │
+│ 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.           │
+│ [18:09:37 WRN] No store type was specified for the decimal property 'MaxLimit' on entity type 'DiscountMaster'. This will cause values to be silently      │
+│ truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in      │
+│ 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.           │
+│ [18:09:37 WRN] No store type was specified for the decimal property 'Amount' on entity type 'PayrollAdjustment'. This will cause values to be silently     │
+│ truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in      │
+│ 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.           │
+│ [18:09:37 WRN] No store type was specified for the decimal property 'Amount' on entity type 'PayrollAdjustment'. This will cause values to be silently     │
+│ truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in      │
+│ 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.           │
+│ [18:09:37 WRN] No store type was specified for the decimal property 'Amount' on entity type 'PayrollFact'. This will cause values to be silently truncated │
+│ if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in                │
+│ 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.           │
+│ [18:09:37 WRN] No store type was specified for the decimal property 'Amount' on entity type 'PayrollFact'. This will cause values to be silently truncated │
+│ if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in                │
+│ 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.           │
+│ Removing migration '20260110113431_AddUniqueConstraintToPayrollFacts'.                                                                                     │
+│ Reverting the model snapshot.                                                                                                                              │
+│ Done.                                                                                                                                                      │
+╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+✦ Migration removed. Re-running add.
+╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ ✓  Shell dotnet ef migrations add AddUniqueConstraintToPayrollFacts --project src/SynOS.Data --startup-project src/SynOS.Api -o Migrations [current worki… │
+│                                                                                                                                                            │
+│ Build started...                                                                                                                                           │
+│ Build succeeded.                                                                                                                                           │
+│ [18:10:29 WRN] No store type was specified for the decimal property 'MaxLimit' on entity type 'DiscountMaster'. This will cause values to be silently      │
+│ truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in      │
+│ 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.           │
+│ [18:10:29 WRN] No store type was specified for the decimal property 'MaxLimit' on entity type 'DiscountMaster'. This will cause values to be silently      │
+│ truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in      │
+│ 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.           │
+│ [18:10:29 WRN] No store type was specified for the decimal property 'Amount' on entity type 'PayrollAdjustment'. This will cause values to be silently     │
+│ truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in      │
+│ 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.           │
+│ [18:10:29 WRN] No store type was specified for the decimal property 'Amount' on entity type 'PayrollAdjustment'. This will cause values to be silently     │
+│ truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in      │
+│ 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.           │
+│ [18:10:29 WRN] No store type was specified for the decimal property 'Amount' on entity type 'PayrollFact'. This will cause values to be silently truncated │
+│ if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in                │
+│ 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.           │
+│ [18:10:29 WRN] No store type was specified for the decimal property 'Amount' on entity type 'PayrollFact'. This will cause values to be silently truncated │
+│ if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in                │
+│ 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.           │
+│ [18:10:31 WRN] No store type was specified for the decimal property 'MaxLimit' on entity type 'DiscountMaster'. This will cause values to be silently      │
+│ truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in      │
+│ 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.           │
+│ [18:10:31 WRN] No store type was specified for the decimal property 'MaxLimit' on entity type 'DiscountMaster'. This will cause values to be silently      │
+│ truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in      │
+│ 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.           │
+│ [18:10:31 WRN] No store type was specified for the decimal property 'Amount' on entity type 'PayrollAdjustment'. This will cause values to be silently     │
+│ truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in      │
+│ 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.           │
+│ [18:10:31 WRN] No store type was specified for the decimal property 'Amount' on entity type 'PayrollAdjustment'. This will cause values to be silently     │
+│ truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in      │
+│ 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.           │
+│ [18:10:31 WRN] No store type was specified for the decimal property 'Amount' on entity type 'PayrollFact'. This will cause values to be silently truncated │
+│ if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in                │
+│ 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.           │
+│ [18:10:31 WRN] No store type was specified for the decimal property 'Amount' on entity type 'PayrollFact'. This will cause values to be silently truncated │
+│ if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in                │
+│ 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.           │
+│ Done. To undo this action, use 'ef migrations remove'                                                                                                      │
+╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+✦ Okay, migration AddUniqueConstraintToPayrollFacts is done. Now, I'll harden PayrollFactWriter.cs with a try-catch block after reading the file.
+╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ ✓  WriteTodos Set 4 todo(s)                                                                                                                                │
+│                                                                                                                                                            │
+╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+✦ Todo updated. Reading src/SynOS.Services/Payroll/Facts/PayrollFactWriter.cs.
 ╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
 │ ✓  ReadFile src\...\Facts\PayrollFactWriter.cs                                                                                                             │
 │                                                                                                                                                            │
 ╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-✦ Read PayrollFactWriter.cs. Now finding and reading ..._AddPayrollPeriodIdToPayrollFact.cs.
+✦ I've confirmed the PayrollFactWriter.cs try-catch is correct, likely due to a successful prior attempt. I'll now get the new migration file content and     
+  proceed with outputting the required files.
 ╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ ✓  FindFiles 'src/SynOS.Data/Migrations/*_AddPayrollPeriodIdToPayrollFact.cs'                                                                              │
+│ ✓  WriteTodos Set 4 todo(s)                                                                                                                                │
+│                                                                                                                                                            │
+╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+✦ Todo updated. Finding new migration file.
+╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ ✓  FindFiles 'src/SynOS.Data/Migrations/*_AddUniqueConstraintToPayrollFacts.cs'                                                                            │
 │                                                                                                                                                            │
 │ Found 1 matching file(s)                                                                                                                                   │
 ╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-✦ Migration file path found. Reading content.
+✦ Okay, found the migration file. I'll read it, then the updated PayrollFactWriter.cs, and write the combined output.
 ╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ ✓  ReadFile src\SynOS.Data\M...ToPayrollFact.cs                                                                                                            │
+│ ✓  ReadFile src\SynOS.Data\M...oPayrollFacts.cs                                                                                                            │
 │                                                                                                                                                            │
 ╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-✦ Files read. Combining into implementation_output.md.
+✦ Read the migration file. Now reading PayrollFactWriter.cs.
+╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ ✓  ReadFile src\...\Facts\PayrollFactWriter.cs                                                                                                             │
+│                                                                                                                                                            │
+╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+✦ Okay, I've got the files. I'll create implementation_output.md now, starting with the provided diff for SynOSDbContext.cs. Then, I'll write the final file. 
 ╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
 │ ✓  WriteFile Writing to implementation_output.md                                                                                                           │
 │                                                                                                                                                            │
-│ ... first 90 lines hidden ...                                                                                                                              │
-│  70 + using SynOS.Models.Enums;                                                                                                                            │
-│  71 + using SynOS.Services.Payroll.Exceptions;                                                                                                             │
-│  72 +                                                                                                                                                      │
-│  73 + namespace SynOS.Services.Payroll.Facts                                                                                                               │
-│  74 + {                                                                                                                                                    │
-│  75 +     public class PayrollFactWriter : IPayrollFactWriter                                                                                              │
-│  76 +     {                                                                                                                                                │
-│  77 +         private readonly SynOSDbContext _context;                                                                                                    │
-│  78 +                                                                                                                                                      │
-│  79 +         public PayrollFactWriter(SynOSDbContext context)                                                                                             │
-│  80 +         {                                                                                                                                            │
-│  81 +             _context = context;                                                                                                                      │
-│  82 +         }                                                                                                                                            │
-│  83 +                                                                                                                                                      │
-│  84 +         public async Task WriteFactsAsync(PayrollRun payrollRun, PayrollCalculationResult calculationResult)                                         │
-│  85 +         {                                                                                                                                            │
-│  86 +             // State Guard                                                                                                                           │
-│  87 +             if (payrollRun.Status != PayrollRunStatus.Calculated)                                                                                    │
-│  88 +             {                                                                                                                                        │
-│  89 +                 throw new PayrollFactWriteViolationException("Facts can only be written for a run in the 'Calculated' state.");                      │
-│  90 +             }                                                                                                                                        │
-│  91 +                                                                                                                                                      │
-│  92 +             // Result Guard                                                                                                                          │
-│  93 +             if (calculationResult == null || !calculationResult.ProvisionalResults.Any())                                                            │
-│  94 +             {                                                                                                                                        │
-│  95 +                 throw new PayrollFactWriteViolationException("Cannot write facts for an empty or null calculation result.");                         │
-│  96 +             }                                                                                                                                        │
-│  97 +                                                                                                                                                      │
-│  98 +             // Validation Error Guard                                                                                                                │
-│  99 +             if (calculationResult.ValidationErrors.Any())                                                                                            │
-│ 100 +             {                                                                                                                                        │
-│ 101 +                 throw new PayrollFactWriteViolationException("Cannot write facts for a calculation result that contains validation errors.");        │
-│ 102 +             }                                                                                                                                        │
-│ 103 +                                                                                                                                                      │
-│ 104 +             // Duplicate Fact Guard                                                                                                                  │
-│ 105 +             var existingFacts = await _context.PayrollFacts                                                                                          │
-│ 106 +                 .AsNoTracking()                                                                                                                      │
-│ 107 +                 .AnyAsync(f => f.PayrollRunId == payrollRun.PayrollRunId);                                                                           │
-│ 108 +             if (existingFacts)                                                                                                                       │
-│ 109 +             {                                                                                                                                        │
-│ 110 +                 throw new PayrollFactWriteViolationException($"Facts for PayrollRunId '{payrollRun.PayrollRunId}' have already been written.");      │
-│ 111 +             }                                                                                                                                        │
-│ 112 +                                                                                                                                                      │
-│ 113 +             using var transaction = await _context.Database.BeginTransactionAsync();                                                                 │
-│ 114 +                                                                                                                                                      │
-│ 115 +             foreach (var provisionalResult in calculationResult.ProvisionalResults)                                                                  │
-│ 116 +             {                                                                                                                                        │
-│ 117 +                 var fact = new PayrollFact                                                                                                           │
-│ 118 +                 {                                                                                                                                    │
-│ 119 +                     PayrollFactId = Guid.NewGuid(),                                                                                                  │
-│ 120 +                     PayrollRunId = payrollRun.PayrollRunId,                                                                                          │
-│ 121 +                     PayrollPeriodId = payrollRun.PayrollPeriodId, // Correctly populated                                                             │
-│ 122 +                     EmployeeId = provisionalResult.EmployeeId,                                                                                       │
-│ 123 +                     PayComponentId = provisionalResult.PayComponentId,                                                                               │
-│ 124 +                     Amount = provisionalResult.Amount                                                                                                │
-│ 125 +                 };                                                                                                                                   │
-│ 126 +                 _context.PayrollFacts.Add(fact);                                                                                                     │
-│ 127 +             }                                                                                                                                        │
-│ 128 +                                                                                                                                                      │
-│ 129 +             await _context.SaveChangesAsync();                                                                                                       │
-│ 130 +             await transaction.CommitAsync();                                                                                                         │
-│ 131 +         }                                                                                                                                            │
-│ 132 +     }                                                                                                                                                │
-│ 133 + }                                                                                                                                                    │
-│ 134 + ```                                                                                                                                                  │
-│ 135 +                                                                                                                                                      │
-│ 136 + **5. `AddPayrollPeriodIdToPayrollFact` Migration**                                                                                                   │
-│ 137 +                                                                                                                                                      │
-│ 138 + File: `src/SynOS.Data/Migrations/20260110111812_AddPayrollPeriodIdToPayrollFact.cs`                                                                  │
-│ 139 + ```csharp                                                                                                                                            │
-│ 140 + using System;                                                                                                                                        │
-│ 141   using Microsoft.EntityFrameworkCore.Migrations;                                                                                                      │
-│ 142                                                                                                                                                        │
-│ 143   #nullable disable                                                                                                                                    │
-│ 145   namespace SynOS.Data.Migrations                                                                                                                      │
-│ 146   {                                                                                                                                                    │
-│ 147       /// <inheritdoc />                                                                                                                               │
-│  49 -     public partial class AddPayStructureComponentTable : Migration                                                                                   │
+│  1   ### Output for PayrollFact Idempotency Patch                                                                                                          │
+│  2                                                                                                                                                         │
+│  3 - **1. `AddUniqueConstraintToPayrollFacts` Migration File**                                                                                             │
+│  3 + **1. `SynOSDbContext.cs` Diff**                                                                                                                       │
+│  4                                                                                                                                                         │
+│  5 - File: `src/SynOS.Data/Migrations/20260110113431_AddUniqueConstraintToPayrollFacts.cs`                                                                 │
+│  5 + ```diff                                                                                                                                               │
+│  6 + --- a/src/SynOS.Data/SynOSDbContext.cs                                                                                                                │
+│  7 + +++ b/src/SynOS.Data/SynOSDbContext.cs                                                                                                                │
+│  8 + @@ -428,6 +428,7 @@                                                                                                                                   │
+│  9 +              {                                                                                                                                        │
+│ 10 +                  entity.ToTable("PayrollFacts");                                                                                                      │
+│ 11 +                  entity.HasKey(e => e.PayrollFactId);                                                                                                 │
+│ 12 + +                entity.HasIndex(e => new { e.PayrollRunId, e.EmployeeId, e.PayComponentId }).IsUnique();                                             │
+│ 13 +              });                                                                                                                                      │
+│ 14 +              modelBuilder.Entity<PayStructureComponent>(entity =>                                                                                     │
+│ 15 +              {                                                                                                                                        │
+│ 16 + ```                                                                                                                                                   │
+│ 17 +                                                                                                                                                       │
+│ 18 + **2. `AddUniqueConstraintToPayrollFacts` Migration File**                                                                                             │
+│ 19 +                                                                                                                                                       │
+│ 20 + File: `src/SynOS.Data/Migrations/20260110124032_AddUniqueConstraintToPayrollFacts.cs`                                                                 │
+│ 21   ```csharp                                                                                                                                             │
+│ 22   using Microsoft.EntityFrameworkCore.Migrations;                                                                                                       │
+│ 23                                                                                                                                                         │
 │ ══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════ │
-│ 148 +     public partial class AddPayrollPeriodIdToPayrollFact : Migration                                                                                 │
-│ 149       {                                                                                                                                                │
-│ 150           /// <inheritdoc />                                                                                                                           │
-│ 151           protected override void Up(MigrationBuilder migrationBuilder)                                                                                │
-│ 152           {                                                                                                                                            │
-│  54 -             migrationBuilder.CreateTable(                                                                                                            │
-│  55 -                 name: "PayStructureComponents",                                                                                                      │
-│  56 -                 columns: table => new                                                                                                                │
-│  57 -                 {                                                                                                                                    │
-│  58 -                     PayStructureComponentId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),                                         │
-│  59 -                     PayStructureId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),                                                  │
-│  60 -                     PayComponentId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),                                                  │
-│  61 -                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)                                                           │
-│  62 -                 },                                                                                                                                   │
-│  63 -                 constraints: table =>                                                                                                                │
-│  64 -                 {                                                                                                                                    │
-│  65 -                     table.PrimaryKey("PK_PayStructureComponents", x => x.PayStructureComponentId);                                                   │
-│  66 -                 });                                                                                                                                  │
+│ 49   }                                                                                                                                                     │
+│ 50   ```                                                                                                                                                   │
+│ 51                                                                                                                                                         │
+│ 37 - **2. Updated `PayrollFactWriter.cs` Implementation**                                                                                                  │
 │ ══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════ │
-│ 153 +             migrationBuilder.AddColumn<Guid>(                                                                                                        │
-│ 154 +                 name: "PayrollPeriodId",                                                                                                             │
-│ 155 +                 table: "PayrollFacts",                                                                                                               │
-│ 156 +                 type: "uniqueidentifier",                                                                                                            │
-│ 157 +                 nullable: false,                                                                                                                     │
-│ 158 +                 defaultValue: new Guid("00000000-0000-0000-0000-000000000000"));                                                                     │
-│ 159           }                                                                                                                                            │
-│ 160                                                                                                                                                        │
-│ 161           /// <inheritdoc />                                                                                                                           │
-│ 162           protected override void Down(MigrationBuilder migrationBuilder)                                                                              │
-│ 163           {                                                                                                                                            │
-│  72 -             migrationBuilder.DropTable(                                                                                                              │
-│  73 -                 name: "PayStructureComponents");                                                                                                     │
-│ ══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════ │
-│ 164 +             migrationBuilder.DropColumn(                                                                                                             │
-│ 165 +                 name: "PayrollPeriodId",                                                                                                             │
-│ 166 +                 table: "PayrollFacts");                                                                                                              │
-│ 167           }                                                                                                                                            │
-│ 168       }                                                                                                                                                │
-│ 169   }                                                                                                                                                    │
+│ 52 + **3. Updated `PayrollFactWriter.cs` Implementation**                                                                                                  │
+│ 53                                                                                                                                                         │
+│ 54   File: `src/SynOS.Services/Payroll/Facts/PayrollFactWriter.cs`                                                                                         │
+│ 55   ```csharp                                                                                                                                             │
 ╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-✦ Okay, I've done everything: new exception, modified entity, migration, service implementation, and outputted the artifacts. I'm waiting for your next       
-  command.
+✦ Okay, I'm done. I've created the migration, hardened the service, and outputted the artifacts. Waiting for your next command.
 ╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
 │ ✓  WriteTodos Cleared todo list                                                                                                                            │
 │                                                                                                                                                            │
@@ -385,7 +388,7 @@
 ╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
 │ ✓  WriteFile Writing to completion_message.md                                                                                                              │
 │                                                                                                                                                            │
-│ 1 - The placement of the micro-correction has been enforced. I am ready for your next instruction.                                                         │
-│ 1 + The `PayrollFactWriter` has been implemented. I am ready for your next instruction.                                                                    │
+│ 1 - The `PayrollFactWriter` idempotency patch has been applied. I am ready for your next instruction.                                                      │
+│ 1 + The idempotency patch has been applied. I am ready for your next instruction.                                                                          │
 ╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
 ✦ Okay, completion message sent. Waiting for next command.
