@@ -1,144 +1,137 @@
-## 🔒 **GEMINI FORCE-EXECUTION PROMPT — PAYROLL FACT IDEMPOTENCY FIX (MANDATORY)**
+## 🔒 **GEMINI FORCE-FIX PROMPT — PAYROLL WORKFLOW ORCHESTRATION (PATCH ONLY)**
 
-You previously failed to implement **two explicitly approved, blocking requirements**.
+This is a **corrective patch task**.
 
-This task is a **corrective patch only**.
-You must execute **exactly what is specified below** and nothing else.
+🚫 **DO NOT redesign**
+🚫 **DO NOT add features**
+🚫 **DO NOT refactor unrelated code**
+🚫 **DO NOT introduce new abstractions**
 
-If any required artifact is missing at the end, the task is considered **FAILED**.
-
----
-
-## ❗❗ BLOCKING ISSUES TO FIX (NON-NEGOTIABLE)
-
-### ❌ ISSUE 1 — Database idempotency is NOT enforced
-
-### ❌ ISSUE 2 — DbUpdateException is NOT wrapped
-
-Both **must** be fixed in this run.
+You previously implemented PayrollWorkflowOrchestrationService, but it contains **blocking violations**.
+You must fix **only what is listed below**.
 
 ---
 
-## 🎯 OBJECTIVE
+## ❗ BLOCKING FIXES (MANDATORY)
 
-Enforce **physical, database-level idempotency** for payroll facts and ensure **provider-agnostic failure semantics** in `PayrollFactWriter`.
+### 🔴 FIX 1 — Explicitly DEFINE `PayrollRunStatus` enum (NO REUSE)
 
----
-
-## ✅ REQUIRED FIX #1 — UNIQUE CONSTRAINT (MANDATORY)
-
-### You MUST do all of the following:
-
-#### A. Modify **exact file**:
+You MUST ensure `PayrollRunStatus` is **explicitly defined** with **exactly** the following values:
 
 ```
-src/SynOS.Data/SynOSDbContext.cs
+Draft
+Processing
+Calculated
+Finalized
+Voided
 ```
 
-Inside `OnModelCreating`, add **entity configuration for PayrollFact**:
+Rules:
 
-```csharp
-modelBuilder.Entity<PayrollFact>()
-    .HasIndex(e => new { e.PayrollRunId, e.EmployeeId, e.PayComponentId })
-    .IsUnique();
-```
-
-No alternatives. No variations.
-
----
-
-#### B. Generate a NEW migration
-
-* Migration name:
+* Do NOT reuse an existing enum silently
+* If an enum already exists, **replace it** so it matches exactly
+* No extra values
+* No reordered semantics
+* File path must be:
 
   ```
-  AddUniqueConstraintToPayrollFacts
+  src/SynOS.Models/Enums/PayrollRunStatus.cs
   ```
 
-* Migration must:
+---
 
-  * Add a **unique index**
-  * Be **additive**
-  * Touch **only PayrollFacts**
-  * NOT recreate tables
-  * NOT modify existing columns
+### 🔴 FIX 2 — REMOVE orchestration-level transaction in `FinalizePayrollRunAsync`
 
-If the migration does anything else → FAIL.
+Current behavior is illegal.
+
+#### Required correction:
+
+* ❌ REMOVE any `BeginTransactionAsync()` or orchestration-owned transaction in `FinalizePayrollRunAsync`
+* ✅ `PayrollFactWriter.WriteFactsAsync(...)` must be called **without wrapping it**
+* ✅ Only AFTER FactWriter succeeds:
+
+  * Update `PayrollRun.Status = Finalized`
+  * Update `PayrollPeriod.Status = Finalized`
+  * Save changes normally
+
+Rule:
+
+> **FactWriter owns atomicity. Orchestrator must not.**
 
 ---
 
-## ✅ REQUIRED FIX #2 — DbUpdateException WRAPPING (MANDATORY)
+### 🔴 FIX 3 — REMOVE illegal re-execution semantics
 
-### Modify **exact file**:
+You MUST remove **any implication** that a PayrollRun can be re-executed.
 
-```
-src/SynOS.Services/Payroll/Facts/PayrollFactWriter.cs
-```
+Specifically:
 
-### Required behavior:
+* ❌ Remove code or comments that:
 
-* Wrap **SaveChangesAsync + CommitAsync** in:
-
-```csharp
-try
-{
-    await _context.SaveChangesAsync();
-    await transaction.CommitAsync();
-}
-catch (DbUpdateException ex)
-{
-    throw new PayrollFactWriteViolationException(
-        "Payroll fact persistence failed due to a database constraint violation.",
-        ex
-    );
-}
-```
-
-### Hard rules:
-
-* ❌ Do NOT inspect inner exceptions
-* ❌ Do NOT check error codes
-* ❌ Do NOT retry
-* ❌ Do NOT log
-* ❌ Do NOT introduce new exception types
-
-Any `DbUpdateException` == **fatal payroll law violation**.
+  * Reset `CompletedAt`
+  * Imply recalculation
+  * Reuse a PayrollRun for multiple attempts
+* ✅ A PayrollRun is **one attempt only**
+* ✅ `CompletedAt` is set once (Calculated / Voided / Finalized) and never reset
 
 ---
 
-## ⛔ ABSOLUTE CONSTRAINTS
+## 🟡 REQUIRED CLEANUP (NOT OPTIONAL)
 
-* ❌ Do NOT re-generate previous migrations
-* ❌ Do NOT touch PayrollFact entity (already correct)
-* ❌ Do NOT touch orchestration code
-* ❌ Do NOT touch calculation logic
-* ❌ Do NOT add comments like “future support”
-* ❌ Do NOT refactor unrelated code
+### 🟡 FIX 4 — `ExecuteCalculationAsync` MUST NOT return calculation data
 
-This is a **surgical patch**, not a redesign.
+Current behavior leaks internal proposal data.
+
+#### Required correction:
+
+* Change `ExecuteCalculationAsync` return type to:
+
+  * `Task` or `Task<bool>`
+* ❌ Do NOT return `PayrollCalculationResult`
+* The calculation proposal must remain:
+
+  * Internal
+  * Persisted only via `ProvisionalResultData`
+  * Not returned to callers
 
 ---
 
-## 📦 REQUIRED FINAL OUTPUT (ALL REQUIRED)
+## ⛔ HARD CONSTRAINTS
+
+* ❌ Do NOT change:
+
+  * State machines
+  * Command names
+  * FactWriter
+  * Calculation logic
+  * ProvisionalResultData design
+* ❌ Do NOT add logging
+* ❌ Do NOT add retries
+* ❌ Do NOT add comments about “future improvements”
+
+This is a **surgical correction**, not a redesign.
+
+---
+
+## 📦 REQUIRED OUTPUT (ALL REQUIRED)
 
 You MUST output:
 
-1. **The full code diff** for `SynOSDbContext.cs` (showing the unique index)
-2. **The full migration file** `AddUniqueConstraintToPayrollFacts`
-3. **The updated `PayrollFactWriter.cs`** showing the try–catch
+1. The corrected `PayrollRunStatus.cs`
+2. The corrected `PayrollWorkflowService.cs` (showing all fixes)
+3. Any interface changes required to support Fix #4
 
-If any one is missing → FAIL.
-
----
-
-## 🧠 FINAL REMINDER (DO NOT IGNORE)
-
-> Payroll truth must be correct **even if the application is wrong**.
-
-Database constraints are the **last line of defense**.
+Nothing else.
 
 ---
 
-## 🔒 END OF FORCE-EXECUTION PROMPT
+## 🧠 FINAL REMINDER
+
+> Payroll systems are hostile environments.
+> Ambiguity equals corruption.
+
+---
+
+## 🔒 END OF PROMPT
 
 ---

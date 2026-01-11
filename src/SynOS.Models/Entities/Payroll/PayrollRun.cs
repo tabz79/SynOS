@@ -10,6 +10,8 @@ namespace SynOS.Models.Entities.Payroll
         public Guid PayrollRunId { get; set; }
         public Guid PayrollPeriodId { get; set; }
         public PayrollRunStatus Status { get; set; }
-        public PayrollRunType RunType { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public DateTime? CompletedAt { get; set; }
+        public string? ProvisionalResultData { get; set; }
     }
 }
