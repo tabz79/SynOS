@@ -6,6 +6,6 @@ namespace SynOS.Services.Payroll.Calculation
 {
     public interface IPayrollCalculationLogic
     {
-        Task<PayrollCalculationResult> CalculateAsync(Guid payrollRunId);
+        Task<PayrollCalculationResult> CalculateAsync(PayrollCalculationContext context);
     }
 }

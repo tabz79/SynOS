@@ -1,137 +1,54 @@
-## 🔒 **GEMINI FORCE-FIX PROMPT — PAYROLL WORKFLOW ORCHESTRATION (PATCH ONLY)**
+✦ Execution Plan: Final Hardening Patch — LeaveFactWriter.cs (NO DESIGN CHANGES)
 
-This is a **corrective patch task**.
+You will apply a *surgical hardening patch* to the existing LeaveFactWriter.cs implementation.
+This is NOT a redesign and NOT a refactor. The Leave Engine design is LOCKED.
 
-🚫 **DO NOT redesign**
-🚫 **DO NOT add features**
-🚫 **DO NOT refactor unrelated code**
-🚫 **DO NOT introduce new abstractions**
+Scope is STRICTLY LIMITED to the three items below. Do not touch anything else.
 
-You previously implemented PayrollWorkflowOrchestrationService, but it contains **blocking violations**.
-You must fix **only what is listed below**.
+────────────────────────────────
+🔴 REQUIRED (BLOCKING)
+1. Transaction Boundary (MANDATORY)
 
----
+• CreateLeaveFactAsync MUST execute all validations and the insert inside a single explicit database transaction.
+• Use BeginTransactionAsync / CommitAsync.
+• The transaction must wrap:
+  - Finalized PayrollPeriod check
+  - Overlap guard
+  - LeaveFact insert + SaveChangesAsync
+• No other methods should be affected.
 
-## ❗ BLOCKING FIXES (MANDATORY)
+────────────────────────────────
+🟡 REQUIRED (NON-BLOCKING BUT MUST BE FIXED)
+2. Finalized PayrollPeriod Overlap Semantics
 
-### 🔴 FIX 1 — Explicitly DEFINE `PayrollRunStatus` enum (NO REUSE)
+• Replace the existing StartTime-only check.
+• Correct rule:
+  Reject creation if ANY overlap exists between:
+  [LeaveFact.StartTime, LeaveFact.EndTime]
+  and
+  [PayrollPeriod.StartDate, PayrollPeriod.EndDate]
+• This must still be enforced inside CreateLeaveFactAsync.
 
-You MUST ensure `PayrollRunStatus` is **explicitly defined** with **exactly** the following values:
+────────────────────────────────
+🟡 OPTIONAL OPTIMIZATION (DO NOT CHANGE BEHAVIOR)
+3. Cancelled LeaveFact Filtering Scope
 
-```
-Draft
-Processing
-Calculated
-Finalized
-Voided
-```
+• You MAY limit cancelled LeaveFact ID collection to the same EmployeeId.
+• This is OPTIONAL and must not alter logic.
+• If unsure, leave the current logic untouched.
 
-Rules:
+────────────────────────────────
+🚫 ABSOLUTE RULES (CRITICAL)
 
-* Do NOT reuse an existing enum silently
-* If an enum already exists, **replace it** so it matches exactly
-* No extra values
-* No reordered semantics
-* File path must be:
+• DO NOT change entity definitions
+• DO NOT touch enums
+• DO NOT modify ILeaveFactWriter interface
+• DO NOT add new services
+• DO NOT alter cancellation semantics
+• DO NOT refactor unrelated logic
+• DO NOT add payroll calculations or balances
+• DO NOT reformat code unnecessarily
 
-  ```
-  src/SynOS.Models/Enums/PayrollRunStatus.cs
-  ```
+────────────────────────────────
 
----
-
-### 🔴 FIX 2 — REMOVE orchestration-level transaction in `FinalizePayrollRunAsync`
-
-Current behavior is illegal.
-
-#### Required correction:
-
-* ❌ REMOVE any `BeginTransactionAsync()` or orchestration-owned transaction in `FinalizePayrollRunAsync`
-* ✅ `PayrollFactWriter.WriteFactsAsync(...)` must be called **without wrapping it**
-* ✅ Only AFTER FactWriter succeeds:
-
-  * Update `PayrollRun.Status = Finalized`
-  * Update `PayrollPeriod.Status = Finalized`
-  * Save changes normally
-
-Rule:
-
-> **FactWriter owns atomicity. Orchestrator must not.**
-
----
-
-### 🔴 FIX 3 — REMOVE illegal re-execution semantics
-
-You MUST remove **any implication** that a PayrollRun can be re-executed.
-
-Specifically:
-
-* ❌ Remove code or comments that:
-
-  * Reset `CompletedAt`
-  * Imply recalculation
-  * Reuse a PayrollRun for multiple attempts
-* ✅ A PayrollRun is **one attempt only**
-* ✅ `CompletedAt` is set once (Calculated / Voided / Finalized) and never reset
-
----
-
-## 🟡 REQUIRED CLEANUP (NOT OPTIONAL)
-
-### 🟡 FIX 4 — `ExecuteCalculationAsync` MUST NOT return calculation data
-
-Current behavior leaks internal proposal data.
-
-#### Required correction:
-
-* Change `ExecuteCalculationAsync` return type to:
-
-  * `Task` or `Task<bool>`
-* ❌ Do NOT return `PayrollCalculationResult`
-* The calculation proposal must remain:
-
-  * Internal
-  * Persisted only via `ProvisionalResultData`
-  * Not returned to callers
-
----
-
-## ⛔ HARD CONSTRAINTS
-
-* ❌ Do NOT change:
-
-  * State machines
-  * Command names
-  * FactWriter
-  * Calculation logic
-  * ProvisionalResultData design
-* ❌ Do NOT add logging
-* ❌ Do NOT add retries
-* ❌ Do NOT add comments about “future improvements”
-
-This is a **surgical correction**, not a redesign.
-
----
-
-## 📦 REQUIRED OUTPUT (ALL REQUIRED)
-
-You MUST output:
-
-1. The corrected `PayrollRunStatus.cs`
-2. The corrected `PayrollWorkflowService.cs` (showing all fixes)
-3. Any interface changes required to support Fix #4
-
-Nothing else.
-
----
-
-## 🧠 FINAL REMINDER
-
-> Payroll systems are hostile environments.
-> Ambiguity equals corruption.
-
----
-
-## 🔒 END OF PROMPT
-
----
+If anything is unclear, STOP and ask before proceeding.

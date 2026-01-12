@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SynOS.Data;
 
@@ -11,9 +12,11 @@ using SynOS.Data;
 namespace SynOS.Data.Migrations
 {
     [DbContext(typeof(SynOSDbContext))]
-    partial class SynOSDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260111104247_AddPayrollLifecycleEntities")]
+    partial class AddPayrollLifecycleEntities
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -3618,176 +3621,6 @@ namespace SynOS.Data.Migrations
                         .IsUnique();
 
                     b.ToTable("TestDefinitions");
-                });
-
-            modelBuilder.Entity("SynOS.Models.Entities.Time.ClockEventFact", b =>
-                {
-                    b.Property<Guid>("ClockEventFactId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<int>("Action")
-                        .HasColumnType("int");
-
-                    b.Property<Guid>("AuthorId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("EffectiveTimestamp")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid>("EmployeeId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("LocationId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("RecordedTimestamp")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("ClockEventFactId");
-
-                    b.ToTable("Time_ClockEventFacts", (string)null);
-                });
-
-            modelBuilder.Entity("SynOS.Models.Entities.Time.ManualWorkSessionAssertionFact", b =>
-                {
-                    b.Property<Guid>("ManualWorkSessionAssertionFactId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("AssertedEndTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("AssertedStartTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid>("AuthorId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("EffectiveTimestamp")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid>("EmployeeId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("ReasonCode")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("RecordedTimestamp")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("ManualWorkSessionAssertionFactId");
-
-                    b.ToTable("Time_ManualWorkSessionAssertionFacts", (string)null);
-                });
-
-            modelBuilder.Entity("SynOS.Models.Entities.Time.OvertimeMarkerFact", b =>
-                {
-                    b.Property<Guid>("OvertimeMarkerFactId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("AuthorId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("EffectiveTimestamp")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid>("EmployeeId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("EndTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("RecordedTimestamp")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("OvertimeMarkerFactId");
-
-                    b.ToTable("Time_OvertimeMarkerFacts", (string)null);
-                });
-
-            modelBuilder.Entity("SynOS.Models.Entities.Time.ShiftAttributionFact", b =>
-                {
-                    b.Property<Guid>("ShiftAttributionFactId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("AuthorId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("EffectiveTimestamp")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid>("EmployeeId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("RecordedTimestamp")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("ShiftType")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<Guid>("WorkSessionBoundaryFactId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("ShiftAttributionFactId");
-
-                    b.ToTable("Time_ShiftAttributionFacts", (string)null);
-                });
-
-            modelBuilder.Entity("SynOS.Models.Entities.Time.TimePeriod", b =>
-                {
-                    b.Property<Guid>("TimePeriodId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime?>("LockedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateOnly>("PeriodDate")
-                        .HasColumnType("date");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
-
-                    b.HasKey("TimePeriodId");
-
-                    b.HasIndex("PeriodDate")
-                        .IsUnique();
-
-                    b.ToTable("TimePeriods", (string)null);
-                });
-
-            modelBuilder.Entity("SynOS.Models.Entities.Time.WorkSessionBoundaryFact", b =>
-                {
-                    b.Property<Guid>("WorkSessionBoundaryFactId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("AuthorId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("EmployeeId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("EndTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid?>("PairedClockEventFactId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("RecordedTimestamp")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("StartTime")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("WorkSessionBoundaryFactId");
-
-                    b.ToTable("Time_WorkSessionBoundaryFacts", (string)null);
                 });
 
             modelBuilder.Entity("SynOS.Models.Entities.TokenCounter", b =>

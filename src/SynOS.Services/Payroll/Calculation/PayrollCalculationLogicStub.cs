@@ -17,37 +17,9 @@ namespace SynOS.Services.Payroll.Calculation
             _context = context;
         }
 
-        public async Task<PayrollCalculationResult> CalculateAsync(Guid payrollRunId)
+        public async Task<PayrollCalculationResult> CalculateAsync(PayrollCalculationContext context)
         {
             var result = new PayrollCalculationResult();
-
-            var payrollRun = await _context.PayrollRuns
-                .AsNoTracking()
-                .FirstOrDefaultAsync(pr => pr.PayrollRunId == payrollRunId);
-            
-            if (payrollRun == null)
-            {
-                result.ValidationErrors.Add(new PayrollValidationErrorDto
-                {
-                    EmployeeId = Guid.Empty,
-                    Message = "PayrollRun not found for calculation."
-                });
-                return result; 
-            }
-
-            var payrollPeriod = await _context.PayrollPeriods
-                .AsNoTracking()
-                .FirstOrDefaultAsync(pp => pp.PayrollPeriodId == payrollRun.PayrollPeriodId);
-
-            if (payrollPeriod == null)
-            {
-                result.ValidationErrors.Add(new PayrollValidationErrorDto
-                {
-                    EmployeeId = Guid.Empty,
-                    Message = "PayrollPeriod not found for calculation."
-                });
-                return result;
-            }
 
             var defaultPayComponent = await _context.PayComponents
                 .AsNoTracking()
@@ -65,19 +37,25 @@ namespace SynOS.Services.Payroll.Calculation
                 return result; // Cannot proceed without a base component
             }
 
-            var activeEmployees = await _context.Employees
+            var employees = await _context.Employees
                 .AsNoTracking()
-                .Where(e => e.IsActive)
+                .Where(e => context.EmployeeIds.Contains(e.EmployeeId))
                 .ToListAsync();
 
-            foreach (var employee in activeEmployees)
+            foreach (var employee in employees)
             {
+                if (!employee.IsActive)
+                {
+                    // This check is secondary, as the primary list is already filtered, but good for defense.
+                    continue;
+                }
+
                 var coveringAssignments = await _context.PayStructureAssignments
                     .AsNoTracking()
                     .Where(psa => 
                         psa.EmployeeId == employee.EmployeeId &&
-                        psa.EffectiveDate <= payrollPeriod.StartDate &&
-                        (psa.EndDate == null || psa.EndDate >= payrollPeriod.EndDate))
+                        psa.EffectiveDate <= context.PayrollPeriodStartDate &&
+                        (psa.EndDate == null || psa.EndDate >= context.PayrollPeriodEndDate))
                     .ToListAsync();
 
                 if (coveringAssignments.Count == 1)

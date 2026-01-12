@@ -126,11 +126,32 @@ namespace SynOS.Services.Payroll.Orchestration
                 throw new PayrollOrchestrationException($"Payroll Run with ID '{payrollRunId}' is not in Draft status. Cannot execute calculation.");
             }
 
-            run.Status = PayrollRunStatus.Processing;
-            // Removed: run.CompletedAt = null; // A run is one attempt, CompletedAt is set once.
-            await _context.SaveChangesAsync();
+            var period = await _context.PayrollPeriods.FindAsync(run.PayrollPeriodId);
+            if (period == null)
+            {
+                throw new PayrollOrchestrationException($"Payroll Period with ID '{run.PayrollPeriodId}' not found for the run.");
+            }
 
-            var calculationResult = await _calculationLogic.CalculateAsync(payrollRunId);
+            run.Status = PayrollRunStatus.Processing;
+            await _context.SaveChangesAsync();
+            
+            var activeEmployeeIds = await _context.Employees
+                .AsNoTracking()
+                .Where(e => e.IsActive)
+                .Select(e => e.EmployeeId)
+                .ToListAsync();
+
+            var context = new PayrollCalculationContext
+            {
+                PayrollRunId = run.PayrollRunId,
+                PayrollPeriodStartDate = period.StartDate,
+                PayrollPeriodEndDate = period.EndDate,
+                EmployeeIds = activeEmployeeIds,
+                TimeFacts = new List<PayrollTimeFactPlaceholder>(), // Empty for V1
+                LeaveFacts = new List<PayrollLeaveFactPlaceholder>() // Empty for V1
+            };
+
+            var calculationResult = await _calculationLogic.CalculateAsync(context);
 
             if (calculationResult.ValidationErrors.Any())
             {
@@ -146,8 +167,6 @@ namespace SynOS.Services.Payroll.Orchestration
                 run.CompletedAt = DateTime.UtcNow;
                 await _context.SaveChangesAsync();
             }
-
-            // Removed: return calculationResult;
         }
 
         public async Task FinalizePayrollRunAsync(Guid payrollRunId)

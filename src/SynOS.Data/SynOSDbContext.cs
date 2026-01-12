@@ -10,6 +10,8 @@ using SynOS.Models.Entities.Payables;
 using SynOS.Models.Entities.Discounts; // ADDED
 using SynOS.Models.Entities.HR; // ADDED
 using SynOS.Models.Entities.Payroll; // ADDED
+using SynOS.Models.Entities.Time; // ADDED
+
 
 namespace SynOS.Data
 {
@@ -145,6 +147,14 @@ public DbSet<ReceivableFact> ReceivableFacts { get; set; } = null!;
                     public DbSet<PayrollAdjustment> PayrollAdjustments { get; set; }
                     public DbSet<PayrollFact> PayrollFacts { get; set; }
                     public DbSet<PayStructureComponent> PayStructureComponents { get; set; } // ADDED
+
+                    // Time Engine DbSets // ADDED
+                    public DbSet<TimePeriod> TimePeriods { get; set; }
+                    public DbSet<ClockEventFact> ClockEventFacts { get; set; }
+                    public DbSet<WorkSessionBoundaryFact> WorkSessionBoundaryFacts { get; set; }
+                    public DbSet<ManualWorkSessionAssertionFact> ManualWorkSessionAssertionFacts { get; set; }
+                    public DbSet<ShiftAttributionFact> ShiftAttributionFacts { get; set; }
+                    public DbSet<OvertimeMarkerFact> OvertimeMarkerFacts { get; set; }
         
                                                 // Revenue Engine DbSets
                                                 public DbSet<RevenueFact> RevenueFacts { get; set; } = null!;        // Payables DbSets
@@ -937,6 +947,39 @@ modelBuilder.Entity<ReceivableFact>(entity =>
                                                 entity.ToTable("PayStructureComponents");
                                                 entity.HasKey(e => e.PayStructureComponentId);
                                             });
+
+            // Time Engine Configuration (Minimal) // ADDED
+            modelBuilder.Entity<TimePeriod>(entity =>
+            {
+                entity.ToTable("TimePeriods");
+                entity.HasKey(e => e.TimePeriodId);
+                entity.HasIndex(e => e.PeriodDate).IsUnique();
+            });
+            modelBuilder.Entity<ClockEventFact>(entity =>
+            {
+                entity.ToTable("Time_ClockEventFacts");
+                entity.HasKey(e => e.ClockEventFactId);
+            });
+            modelBuilder.Entity<WorkSessionBoundaryFact>(entity =>
+            {
+                entity.ToTable("Time_WorkSessionBoundaryFacts");
+                entity.HasKey(e => e.WorkSessionBoundaryFactId);
+            });
+            modelBuilder.Entity<ManualWorkSessionAssertionFact>(entity =>
+            {
+                entity.ToTable("Time_ManualWorkSessionAssertionFacts");
+                entity.HasKey(e => e.ManualWorkSessionAssertionFactId);
+            });
+            modelBuilder.Entity<ShiftAttributionFact>(entity =>
+            {
+                entity.ToTable("Time_ShiftAttributionFacts");
+                entity.HasKey(e => e.ShiftAttributionFactId);
+            });
+            modelBuilder.Entity<OvertimeMarkerFact>(entity =>
+            {
+                entity.ToTable("Time_OvertimeMarkerFacts");
+                entity.HasKey(e => e.OvertimeMarkerFactId);
+            });
                                         }
                                     }
                                 }
