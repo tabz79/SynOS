@@ -11,6 +11,7 @@ using SynOS.Models.Entities.Discounts; // ADDED
 using SynOS.Models.Entities.HR; // ADDED
 using SynOS.Models.Entities.Payroll; // ADDED
 using SynOS.Models.Entities.Time; // ADDED
+using SynOS.Models.Entities.Leave; // ADDED
 
 
 namespace SynOS.Data
@@ -155,6 +156,10 @@ public DbSet<ReceivableFact> ReceivableFacts { get; set; } = null!;
                     public DbSet<ManualWorkSessionAssertionFact> ManualWorkSessionAssertionFacts { get; set; }
                     public DbSet<ShiftAttributionFact> ShiftAttributionFacts { get; set; }
                     public DbSet<OvertimeMarkerFact> OvertimeMarkerFacts { get; set; }
+
+                    // Leave Engine DbSets // ADDED
+                    public DbSet<LeaveFact> LeaveFacts { get; set; }
+                    public DbSet<LeaveCancellationFact> LeaveCancellationFacts { get; set; }
         
                                                 // Revenue Engine DbSets
                                                 public DbSet<RevenueFact> RevenueFacts { get; set; } = null!;        // Payables DbSets
@@ -979,6 +984,18 @@ modelBuilder.Entity<ReceivableFact>(entity =>
             {
                 entity.ToTable("Time_OvertimeMarkerFacts");
                 entity.HasKey(e => e.OvertimeMarkerFactId);
+            });
+
+            // Leave Engine Configuration // ADDED
+            modelBuilder.Entity<LeaveFact>(entity =>
+            {
+                entity.ToTable("Leave_LeaveFacts");
+                entity.HasKey(e => e.LeaveFactId);
+            });
+            modelBuilder.Entity<LeaveCancellationFact>(entity =>
+            {
+                entity.ToTable("Leave_LeaveCancellationFacts");
+                entity.HasKey(e => e.LeaveCancellationFactId);
             });
                                         }
                                     }

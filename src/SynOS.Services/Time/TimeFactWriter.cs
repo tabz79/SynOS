@@ -107,7 +107,6 @@ namespace SynOS.Services.Time
                 EffectiveTimestamp = startTime,
                 RecordedTimestamp = DateTime.UtcNow,
                 AuthorId = authorId,
-                StartTime = startTime,
                 EndTime = endTime
             };
             
@@ -173,7 +172,7 @@ namespace SynOS.Services.Time
         private async Task CheckForOverlappingOvertime(Guid employeeId, DateTime start, DateTime end)
         {
             var overlappingOvt = await _context.OvertimeMarkerFacts
-                .AnyAsync(f => f.EmployeeId == employeeId && start < f.EndTime && end > f.StartTime);
+                .AnyAsync(f => f.EmployeeId == employeeId && start < f.EndTime && end > f.EffectiveTimestamp);
 
             if (overlappingOvt)
             {
