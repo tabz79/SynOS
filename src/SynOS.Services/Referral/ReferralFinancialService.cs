@@ -1,32 +1,25 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SynOS.Data;
 using SynOS.Models.Entities;
-using SynOS.Models.Entities.Payables;
 using SynOS.Models.Entities.Referral;
-using SynOS.Models.Entities.SpendEngine;
 using SynOS.Models.Enums.Referral;
-using SynOS.Services.Payables;
 
 namespace SynOS.Services.Referral
 {
     public class ReferralFinancialService : IReferralFinancialService
     {
         private readonly SynOSDbContext _context;
-        private readonly IPayableFactWriter _payableFactWriter;
         private readonly ILogger<ReferralFinancialService> _logger;
 
         public ReferralFinancialService(
             SynOSDbContext context,
-            IPayableFactWriter payableFactWriter,
             ILogger<ReferralFinancialService> logger)
         {
             _context = context;
-            _payableFactWriter = payableFactWriter;
             _logger = logger;
         }
 
@@ -34,7 +27,6 @@ namespace SynOS.Services.Referral
         {
             if (!visit.IsReferred || visit.ReferralPartnerId == null)
             {
-                // This case should ideally not be hit if called correctly
                 return;
             }
 
@@ -46,8 +38,6 @@ namespace SynOS.Services.Referral
             }
 
             var totalCommissionAmount = 0m;
-            var spendLineItems = new List<SpendLineItemFact>();
-            var spendFactId = Guid.NewGuid(); // Generate ID once for the SpendFact
 
             foreach (var order in visit.Orders)
             {
@@ -69,59 +59,28 @@ namespace SynOS.Services.Referral
                         commission = commissionRule.CommissionValue;
                     }
 
-                    if (commission > 0)
-                    {
-                        var lineItem = new SpendLineItemFact
-                        {
-                            SpendLineItemFactId = Guid.NewGuid(),
-                            SpendFactId = spendFactId, // Assign SpendFactId here during initialization
-                            PurchaseOrderItemId = Guid.Empty, // Not applicable
-                            // TODO: Link SpendLineItemFact to OrderId once schema supports it.
-                            Quantity = 1,
-                            UnitPrice = commission,
-                            Currency = "INR", // TODO: Use actual currency from Invoice once available.
-                            OccurredAt = visit.CreatedAt, // Tie to visit creation time
-                            RecordedAt = DateTimeOffset.UtcNow
-                        };
-                        spendLineItems.Add(lineItem);
-                        totalCommissionAmount += commission;
-                    }
+                    totalCommissionAmount += commission;
                 }
             }
+
             if (totalCommissionAmount > 0)
             {
-                var spendFact = new SpendFact(
-                    spendFactId: spendFactId,
-                    amount: totalCommissionAmount,
-                    currency: "INR", // TODO: Use actual currency from Invoice once available.
-                    occurredAt: visit.CreatedAt,
-                    recordedAt: DateTimeOffset.UtcNow,
-                    account: "ReferralCommissions",
-                    channel: "ReferralCommissionPayable",
-                    externalReference: visit.VisitId.ToString() // Use ExternalReference for VisitId as per SpendFact design
-                );
-
-                _context.SpendFacts.Add(spendFact);
-                _context.SpendLineItemFacts.AddRange(spendLineItems);
-
-                var payableFact = new PayableFact
+                var payableFact = new ReferralPayableFact
                 {
-                    PayableFactId = Guid.NewGuid(),
+                    ReferralPayableFactId = Guid.NewGuid(),
                     ReferralPartnerId = visit.ReferralPartnerId.Value,
-                    AmountOwed = totalCommissionAmount,
+                    Amount = totalCommissionAmount,
                     Currency = "INR", // TODO: Use actual currency from Invoice once available.
-                    SourceSpendFactId = spendFactId,
-                    DueDate = DateOnly.FromDateTime(DateTime.Today.AddDays(30)), // Example due date
-                    Status = "Due",
-                    OccurredAt = spendFact.OccurredAt,
-                    RecordedAt = spendFact.RecordedAt
+                    SourceVisitId = visit.VisitId,
+                    OccurredAt = visit.CreatedAt,
+                    RecordedAt = DateTime.UtcNow
                 };
 
-                _payableFactWriter.AddPayableFactToContext(payableFact);
+                _context.ReferralPayableFacts.Add(payableFact);
 
                 await _context.SaveChangesAsync();
 
-                _logger.LogInformation("Atomic Commission Recognition complete for Visit {VisitId}. Wrote {SpendFactId} and {PayableFactId}.", visit.VisitId, spendFactId, payableFact.PayableFactId);
+                _logger.LogInformation("Commission Recognition (Liability only) complete for Visit {VisitId}. Wrote ReferralPayableFact {ReferralPayableFactId}.", visit.VisitId, payableFact.ReferralPayableFactId);
             }
         }
     }

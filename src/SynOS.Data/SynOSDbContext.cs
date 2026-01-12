@@ -108,6 +108,7 @@ public DbSet<ReceivableFact> ReceivableFacts { get; set; } = null!;
         // DbSets for Referral System
         public DbSet<ReferralPartner> ReferralPartners { get; set; } = null!;
         public DbSet<ReferralCommissionRule> ReferralCommissionRules { get; set; } = null!;
+        public DbSet<ReferralPayableFact> ReferralPayableFacts { get; set; } = null!; // ADDED
 
         public DbSet<ImsTubeMaster> ImsTubeMasters { get; set; } = null!;
         public DbSet<ImsTubeLot> ImsTubeLots { get; set; } = null!;
@@ -129,8 +130,7 @@ public DbSet<ReceivableFact> ReceivableFacts { get; set; } = null!;
         public DbSet<CostAttribution_UsageFact> CostAttribution_UsageFacts { get; set; } = null!;
 
                     // Spend Engine DbSets
-                    public DbSet<SpendFact> SpendFacts { get; set; } = null!;
-                    public DbSet<SpendLineItemFact> SpendLineItemFacts { get; set; } = null!;
+                    public DbSet<SpendFact> SpendFacts { get; set; }
                     
                     // Discount DbSets // ADDED
                     public DbSet<DiscountMaster> DiscountMasters { get; set; } = null!; // ADDED
@@ -197,6 +197,13 @@ public DbSet<ReceivableFact> ReceivableFacts { get; set; } = null!;
                 entity.Property(e => e.CommissionValue).HasColumnType("decimal(18, 4)");
                 entity.HasOne(e => e.ReferralPartner).WithMany().HasForeignKey(e => e.ReferralPartnerId).OnDelete(DeleteBehavior.Cascade);
                 entity.HasOne(e => e.Test).WithMany().HasForeignKey(e => e.TestId).OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<ReferralPayableFact>(entity => // ADDED
+            {
+                entity.ToTable("ReferralPayableFacts");
+                entity.HasKey(e => e.ReferralPayableFactId);
+                entity.Property(e => e.Amount).HasColumnType("decimal(18, 4)");
             });
 
             // Test Master
@@ -791,6 +798,7 @@ public DbSet<ReceivableFact> ReceivableFacts { get; set; } = null!;
             {
                 entity.ToTable("SpendFacts");
                 entity.HasKey(e => e.SpendFactId);
+                entity.HasIndex(e => e.TransactionReference).IsUnique();
 
                 entity.Property(e => e.Amount).HasColumnType("decimal(18, 4)").IsRequired();
                 entity.Property(e => e.Currency).HasMaxLength(10).IsRequired();
@@ -798,23 +806,6 @@ public DbSet<ReceivableFact> ReceivableFacts { get; set; } = null!;
                 entity.Property(e => e.RecordedAt).IsRequired();
                 entity.Property(e => e.Account).HasMaxLength(100).IsRequired();
                 entity.Property(e => e.Channel).HasMaxLength(100).IsRequired();
-
-                // Optional references are configured by convention (nullable Guid? or string?)
-                // No navigation properties or foreign key constraints are added, as per instructions.
-            });
-            
-            modelBuilder.Entity<SpendLineItemFact>(entity =>
-            {
-                entity.ToTable("SpendLineItemFacts", "Spend"); // Assuming "Spend" schema based on SpendFact
-                entity.HasKey(e => e.SpendLineItemFactId);
-
-                entity.Property(e => e.Quantity).HasColumnType("decimal(18, 4)").IsRequired();
-                entity.Property(e => e.UnitPrice).HasColumnType("decimal(18, 4)").IsRequired();
-                entity.Property(e => e.Currency).HasMaxLength(3).IsRequired();
-                entity.Property(e => e.OccurredAt).IsRequired();
-                entity.Property(e => e.RecordedAt).IsRequired();
-
-                // No foreign key constraints for SpendFactId or PurchaseOrderItemId, as per design
             });
 
             // Revenue Engine Configuration

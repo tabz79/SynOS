@@ -1,147 +1,56 @@
 using System;
+using System.ComponentModel.DataAnnotations;
+using SynOS.Models.Enums;
 
 namespace SynOS.Models.Entities.SpendEngine
 {
-    /// <summary>
-    /// Represents a single, immutable fact of a cash outflow within the Spend Engine.
-    /// This is a Truth Engine entity. It records what happened (the cash outflow), not why.
-    /// </summary>
-    /// <remarks>
-    /// **IMMUTABILITY INTENT LOCK:**
-    /// - This entity is **immutable by design** once created.
-    /// - **Mutation is forbidden** after construction. All properties are get-only.
-    /// - Any future relaxation of immutability MUST be a conscious architectural decision
-    ///   and requires explicit approval, as it violates a core principle of Truth Engines.
-    /// - No status fields, workflow enums, update methods, or delete methods are allowed.
-    /// - No validation logic is allowed here; validation belongs in higher layers.
-    ///
-    /// **FACT DISCIPLINE & REFERENCES:**
-    /// This entity represents **money outflow only**. It must not be polluted with concepts from other domains.
-    /// - Resource usage attribution belongs to the **Cost Attribution Engine**.
-    /// - Physical inventory movement belongs to the **Inventory Engine**.
-    /// - Profit, margins, and unit economics belong to **read layers**, not here.
-    ///
-    /// **ALLOWED REFERENCES (FACT-LEVEL, ID ONLY):**
-    /// - SupplierId
-    /// - EmployeeId
-    /// - InvoiceId
-    /// - ObligationId
-    /// - PayrollRunId
-    /// - ExternalReference
-    ///
-    /// **FORBIDDEN REFERENCES (MUST NEVER EXIST HERE):**
-    /// - TestId, TestExecutionId
-    /// - InventoryItemId, InventoryLotId
-    /// - Cost Attribution facts
-    /// - Revenue records
-    /// - Pricing or rate configuration
-    /// - Analytics or reporting models
-    ///
-    /// **ENGINE SEALED (Phase A):** This entity's structure is considered final and complete.
-    /// Do not add new fields or logic without following formal architecture review.
-    /// </remarks>
-    public sealed class SpendFact // Class is sealed to reinforce immutability intent
+    public sealed class SpendFact
     {
-        // --- APPROVED MANDATORY FIELDS (ONLY THESE) ---
-
-        /// <summary>
-        /// Unique identifier for the spend fact.
-        /// </summary>
+        [Key]
         public Guid SpendFactId { get; init; }
-
-        /// <summary>
-        /// The amount of money that was spent.
-        /// </summary>
+        public Guid PayeeId { get; init; }
         public decimal Amount { get; init; }
-
-        /// <summary>
-        /// The currency of the amount (e.g., "INR", "USD").
-        /// </summary>
         public string Currency { get; init; }
-
-        /// <summary>
-        /// The exact moment the cash outflow occurred in the real world.
-        /// </summary>
-        public DateTimeOffset OccurredAt { get; init; }
-
-        /// <summary>
-        /// The exact moment this fact was recorded in the system.
-        /// </summary>
-        public DateTimeOffset RecordedAt { get; init; }
-
-        /// <summary>
-        /// The source of the money (label only, e.g., "Cash", "HDFC Bank").
-        /// </summary>
+        public PaymentMethod PaymentMethod { get; init; }
+        public string TransactionReference { get; init; }
+        public DateTime OccurredAt { get; init; }
+        public DateTime RecordedAt { get; init; }
         public string Account { get; init; }
-
-        /// <summary>
-        /// The destination category of the money (label only, e.g., "Salary", "Supplier").
-        /// </summary>
         public string Channel { get; init; }
+        public Guid PaymentAttemptId { get; init; }
+        public Guid PayrollRunId { get; init; }
+        public Guid PaymentBatchId { get; init; }
 
-        // --- APPROVED OPTIONAL REFERENCES (IDs only, nullable) ---
+        public SpendFact() { } // EF Core requires a parameterless constructor
 
-        /// <summary>
-        /// Optional: Link to a supplier entity.
-        /// </summary>
-        public Guid? SupplierId { get; init; }
-
-        /// <summary>
-        /// Optional: Link to an employee entity.
-        /// </summary>
-        public Guid? EmployeeId { get; init; }
-
-        /// <summary>
-        /// Optional: Link to an an invoice entity.
-        /// </summary>
-        public Guid? InvoiceId { get; init; }
-
-        /// <summary>
-        /// Optional: Link to a specific financial obligation record.
-        /// </summary>
-        public Guid? ObligationId { get; init; }
-
-        /// <summary>
-        /// Optional: Link to a payroll run.
-        /// </summary>
-        public Guid? PayrollRunId { get; init; }
-
-        /// <summary>
-        /// Optional: A string for any other external reference or identifier.
-        /// </summary>
-        public string? ExternalReference { get; init; }
-
-        /// <summary>
-        /// Constructor for creating a new, immutable spend fact.
-        /// </summary>
         public SpendFact(
             Guid spendFactId,
+            Guid payeeId,
             decimal amount,
             string currency,
-            DateTimeOffset occurredAt,
-            DateTimeOffset recordedAt,
+            PaymentMethod paymentMethod,
+            string transactionReference,
+            DateTime occurredAt,
+            DateTime recordedAt,
             string account,
             string channel,
-            Guid? supplierId = null,
-            Guid? employeeId = null,
-            Guid? invoiceId = null,
-            Guid? obligationId = null,
-            Guid? payrollRunId = null,
-            string? externalReference = null)
+            Guid paymentAttemptId,
+            Guid payrollRunId,
+            Guid paymentBatchId)
         {
             SpendFactId = spendFactId;
+            PayeeId = payeeId;
             Amount = amount;
             Currency = currency;
+            PaymentMethod = paymentMethod;
+            TransactionReference = transactionReference;
             OccurredAt = occurredAt;
             RecordedAt = recordedAt;
             Account = account;
             Channel = channel;
-            SupplierId = supplierId;
-            EmployeeId = employeeId;
-            InvoiceId = invoiceId;
-            ObligationId = obligationId;
+            PaymentAttemptId = paymentAttemptId;
             PayrollRunId = payrollRunId;
-            ExternalReference = externalReference;
+            PaymentBatchId = paymentBatchId;
         }
     }
 }

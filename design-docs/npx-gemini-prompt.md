@@ -1,93 +1,74 @@
-You are performing a STRICT ARCHITECTURAL AUDIT.
+You are designing a SINGLE TRUTH RECORD for SynOS.
 
 Context:
-System: SynOS (Healthcare Workforce Operating System)
-Focus: Payroll Proration Execution
+System: SynOS
+Module: 6 — Payments & Disbursement
 
-The following are SEALED and NON-NEGOTIABLE:
-- Modules 1–5 (HR, Time, Leave, Payroll truth engines)
-- Time Engine (Module 3) MUST NOT be modified
-- Leave Engine (Module 4) MUST NOT be modified
-- Payroll proration design and execution skeleton are FINAL
-
-You have already produced code changes.
-Your task now is NOT to fix or extend anything.
+Modules 1–6 are architecturally defined.
+This task is NOT about workflows or execution.
+This task is about the FINAL, IMMUTABLE FACT.
 
 ────────────────────────
-AUDIT OBJECTIVE
+LOCKED CONTEXT
 ────────────────────────
 
-Audit ALL changes you made and answer:
+• Spend Fact is a TRUTH ENGINE record
+• It represents that money actually left the organization
+• It is APPEND-ONLY and IMMUTABLE
+• It is written ONLY after a successful payment attempt
+• It must be auditable years later
 
-1. Whether each change is:
-   a) REQUIRED by the proration execution design
-   b) OPTIONAL but harmless
-   c) ARCHITECTURAL VIOLATION
-
-2. Whether any change:
-   - Breaks module isolation
-   - Modifies sealed truth engines
-   - Introduces hidden coupling
-   - Expands scope beyond proration execution
-
-You must be brutally honest.
-Do NOT justify based on convenience or build success.
+Spend Fact:
+- Consumes Payroll Facts indirectly
+- Is consumed later by Compliance, Audit, Intelligence
 
 ────────────────────────
-DESIGN BASELINE (YOU MUST AUDIT AGAINST THIS)
+OBJECTIVE
 ────────────────────────
 
-Payroll proration execution design states:
+Define the **Spend Fact structure**.
 
-- Only ProrationCalculator and PayrollRunOrchestrator may be touched
-- Calculator is pure math
-- Orchestrator wires calculator, asserts, and persists facts
-- NO schema changes unless explicitly planned
-- NO DbContext changes unless scoped to Payroll facts
-- NO edits to TimeFactWriter, LeaveFactWriter, or sealed modules
-- If build fails due to sealed modules → STOP and REPORT
-
-────────────────────────
-AUDIT SCOPE
-────────────────────────
-
-Audit the following actions you took:
-- Creation of Payroll proration fact entities
-- Modifications to SynOSDbContext
-- EF migrations
-- Any edits to Time Engine files
-- Any edits to Leave Engine files
-- Any code unrelated to Payroll proration orchestration
+Fields ONLY.
+No logic.
+No calculations.
+No UI.
+No retries.
+No balances.
 
 ────────────────────────
-REQUIRED OUTPUT FORMAT (STRICT)
+DESIGN CONSTRAINTS
 ────────────────────────
 
-Return the audit in this exact structure:
+Spend Fact MUST:
+• Be immutable
+• Be self-describing
+• Allow full audit trace (who was paid, why, how, when)
+• Link back to Payroll without recalculating anything
 
-1. CHANGE INVENTORY
-   - List every file you modified or created
+Spend Fact MUST NOT:
+• Store derived balances
+• Store payroll calculations
+• Reference Time or Leave
+• Mutate or overwrite past facts
 
-2. COMPLIANCE CLASSIFICATION
-   For each change:
-   - REQUIRED / OPTIONAL / VIOLATION
-   - One-line reason
+────────────────────────
+REQUIRED OUTPUT (STRICT)
+────────────────────────
 
-3. VIOLATION SUMMARY (IF ANY)
-   - List concrete design rules violated
-   - Severity: LOW / MEDIUM / HIGH
+Return ONLY:
 
-4. ROLLBACK RECOMMENDATION
-   - NONE / PARTIAL / FULL
-   - Exact files that must be reverted if rollback is needed
+1. SpendFact — Field List
+   - Each field name
+   - One-line explanation of why it exists
 
-5. FINAL VERDICT
-   - “Implementation conforms to design”
-   OR
-   - “Implementation violates design and must be corrected”
+2. Mandatory Linkages
+   - Which upstream records it must reference
+   - Why those references are required
 
-DO NOT propose fixes.
-DO NOT write new code.
-DO NOT defend decisions emotionally.
+3. Fields that are EXPLICITLY NOT allowed
+   - And why they would be dangerous
 
-This audit will decide whether code stays or is reverted.
+Use PRESENT TENSE.
+Write as FINAL DESIGN.
+Do NOT ask questions.
+Do NOT propose alternatives.

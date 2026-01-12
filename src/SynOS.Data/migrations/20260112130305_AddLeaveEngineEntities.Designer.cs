@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SynOS.Data;
 
@@ -11,9 +12,11 @@ using SynOS.Data;
 namespace SynOS.Data.Migrations
 {
     [DbContext(typeof(SynOSDbContext))]
-    partial class SynOSDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260112130305_AddLeaveEngineEntities")]
+    partial class AddLeaveEngineEntities
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -2800,36 +2803,6 @@ namespace SynOS.Data.Migrations
                     b.ToTable("ReferralPartners", (string)null);
                 });
 
-            modelBuilder.Entity("SynOS.Models.Entities.Referral.ReferralPayableFact", b =>
-                {
-                    b.Property<Guid>("ReferralPayableFactId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<decimal>("Amount")
-                        .HasColumnType("decimal(18, 4)");
-
-                    b.Property<string>("Currency")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("OccurredAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("RecordedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid>("ReferralPartnerId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("SourceVisitId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("ReferralPayableFactId");
-
-                    b.ToTable("ReferralPayableFacts", (string)null);
-                });
-
             modelBuilder.Entity("SynOS.Models.Entities.Referrer", b =>
                 {
                     b.Property<Guid>("ReferrerId")
@@ -3547,37 +3520,67 @@ namespace SynOS.Data.Migrations
                         .HasMaxLength(10)
                         .HasColumnType("nvarchar(10)");
 
-                    b.Property<DateTime>("OccurredAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid>("PayeeId")
+                    b.Property<Guid?>("EmployeeId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("PaymentAttemptId")
+                    b.Property<string>("ExternalReference")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid?>("InvoiceId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("PaymentBatchId")
+                    b.Property<Guid?>("ObligationId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<int>("PaymentMethod")
-                        .HasColumnType("int");
+                    b.Property<DateTimeOffset>("OccurredAt")
+                        .HasColumnType("datetimeoffset");
 
-                    b.Property<Guid>("PayrollRunId")
+                    b.Property<Guid?>("PayrollRunId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<DateTime>("RecordedAt")
-                        .HasColumnType("datetime2");
+                    b.Property<DateTimeOffset>("RecordedAt")
+                        .HasColumnType("datetimeoffset");
 
-                    b.Property<string>("TransactionReference")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<Guid?>("SupplierId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("SpendFactId");
 
-                    b.HasIndex("TransactionReference")
-                        .IsUnique();
-
                     b.ToTable("SpendFacts", (string)null);
+                });
+
+            modelBuilder.Entity("SynOS.Models.Entities.SpendEngine.SpendLineItemFact", b =>
+                {
+                    b.Property<Guid>("SpendLineItemFactId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Currency")
+                        .IsRequired()
+                        .HasMaxLength(3)
+                        .HasColumnType("nvarchar(3)");
+
+                    b.Property<DateTimeOffset>("OccurredAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("PurchaseOrderItemId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("Quantity")
+                        .HasColumnType("decimal(18, 4)");
+
+                    b.Property<DateTimeOffset>("RecordedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("SpendFactId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("UnitPrice")
+                        .HasColumnType("decimal(18, 4)");
+
+                    b.HasKey("SpendLineItemFactId");
+
+                    b.ToTable("SpendLineItemFacts", "Spend");
                 });
 
             modelBuilder.Entity("SynOS.Models.Entities.Test", b =>

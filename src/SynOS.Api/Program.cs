@@ -153,6 +153,8 @@ builder.Services.AddScoped<IReferralInterpretationService, ReferralInterpretatio
 builder.Services.AddScoped<IDiscountInterpretationService, DiscountInterpretationService>(); // ADDED HERE
 
 // Register Revenue Engine services (OPT-IN)
+builder.Services.AddEconomicsIntelligence();
+builder.Services.AddSpendEngineServices(); // ADDED
 builder.Services.AddRevenueEngine();
 
 // Register Economics Intelligence services (OPT-IN)
