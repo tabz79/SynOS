@@ -206,6 +206,13 @@ public DbSet<ReceivableFact> ReceivableFacts { get; set; } = null!;
                 entity.Property(e => e.Amount).HasColumnType("decimal(18, 4)");
             });
 
+            modelBuilder.Entity<ReferralPayableFact>(entity => // ADDED
+            {
+                entity.ToTable("ReferralPayableFacts");
+                entity.HasKey(e => e.ReferralPayableFactId);
+                entity.Property(e => e.Amount).HasColumnType("decimal(18, 4)");
+            });
+
             // Test Master
             modelBuilder.Entity<Test>(entity =>
             {

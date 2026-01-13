@@ -12,7 +12,7 @@ using SynOS.Data;
 namespace SynOS.Data.Migrations
 {
     [DbContext(typeof(SynOSDbContext))]
-    [Migration("20260112135908_AddReferralPayableFact")]
+    [Migration("20260112153308_AddReferralPayableFact")]
     partial class AddReferralPayableFact
     {
         /// <inheritdoc />

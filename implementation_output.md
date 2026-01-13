@@ -1,120 +1,143 @@
-### Output: LeaveFactWriter.cs
+### Code Changes Performed
+
+**1. Created `ReferralPayableFact` Entity**
+File: `src/SynOS.Models/Entities/Referral/ReferralPayableFact.cs`
+```csharp
+using System;
+using System.ComponentModel.DataAnnotations;
+
+namespace SynOS.Models.Entities.Referral
+{
+    public class ReferralPayableFact
+    {
+        [Key]
+        public Guid ReferralPayableFactId { get; init; }
+
+        public Guid ReferralPartnerId { get; init; }
+
+        public decimal Amount { get; init; }
+
+        public string Currency { get; init; } = string.Empty;
+
+        public Guid SourceVisitId { get; init; }
+
+        public DateTime OccurredAt { get; init; }
+
+        public DateTime RecordedAt { get; init; } = DateTime.UtcNow;
+    }
+}
+```
+
+**2. Updated `SynOSDbContext`**
+File: `src/SynOS.Data/SynOSDbContext.cs`
+*   Added `DbSet<ReferralPayableFact> ReferralPayableFacts`.
+*   Added configuration for `ReferralPayableFact` in `OnModelCreating`.
+
+```csharp
+// In OnModelCreating
+            modelBuilder.Entity<ReferralPayableFact>(entity => // ADDED
+            {
+                entity.ToTable("ReferralPayableFacts");
+                entity.HasKey(e => e.ReferralPayableFactId);
+                entity.Property(e => e.Amount).HasColumnType("decimal(18, 4)");
+            });
+```
+
+**3. Generated Migration `AddReferralPayableFact`**
+File: `src/SynOS.Data/Migrations/20260112153308_AddReferralPayableFact.cs`
+*(Migration creates ReferralPayableFacts table and aligns SpendFacts schema, removing SpendLineItemFacts)*
+
+**4. Refactored `ReferralFinancialService`**
+File: `src/SynOS.Services/Referral/ReferralFinancialService.cs`
+*   Removed `SpendFact` and `SpendLineItemFact` logic.
+*   Removed `IPayableFactWriter` dependency.
+*   Added logic to write `ReferralPayableFact`.
 
 ```csharp
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using SynOS.Data;
-using SynOS.Models.Entities.Leave;
-using SynOS.Models.Entities.Payroll;
-using SynOS.Models.Enums;
-using SynOS.Services.Leave.Exceptions;
+using SynOS.Models.Entities;
+using SynOS.Models.Entities.Referral;
+using SynOS.Models.Enums.Referral;
 
-namespace SynOS.Services.Leave
+namespace SynOS.Services.Referral
 {
-    public class LeaveFactWriter : ILeaveFactWriter
+    public class ReferralFinancialService : IReferralFinancialService
     {
         private readonly SynOSDbContext _context;
+        private readonly ILogger<ReferralFinancialService> _logger;
 
-        public LeaveFactWriter(SynOSDbContext context)
+        public ReferralFinancialService(
+            SynOSDbContext context,
+            ILogger<ReferralFinancialService> logger)
         {
             _context = context;
+            _logger = logger;
         }
 
-        public async Task CreateLeaveFactAsync(LeaveFact newLeaveFact)
+        public async Task ProcessCommissionRecognitionAsync(Visit visit)
         {
-            using var transaction = await _context.Database.BeginTransactionAsync();
-            try
+            if (!visit.IsReferred || visit.ReferralPartnerId == null)
             {
-                // Guard: Mandatory Fields (Explicit check for non-default values)
-                if (newLeaveFact.AuthorId == Guid.Empty)
+                return;
+            }
+
+            var invoice = visit.Invoices.FirstOrDefault();
+            if (invoice == null)
+            {
+                _logger.LogError("Cannot process commission for Visit {VisitId}: Invoice not found.", visit.VisitId);
+                throw new InvalidOperationException($"Invoice not found for visit {visit.VisitId}.");
+            }
+
+            var totalCommissionAmount = 0m;
+
+            foreach (var order in visit.Orders)
+            {
+                var commissionRule = await _context.ReferralCommissionRules
+                    .AsNoTracking()
+                    .Where(r => r.ReferralPartnerId == visit.ReferralPartnerId && r.TestId == order.TestId && r.IsActive)
+                    .OrderByDescending(r => r.EffectiveFrom)
+                    .FirstOrDefaultAsync();
+
+                if (commissionRule != null)
                 {
-                    throw new LeaveEngineViolationException("AuthorId is required and cannot be empty.");
-                }
+                    decimal commission = 0m;
+                    if (commissionRule.CommissionType == CommissionType.Percentage)
+                    {
+                        commission = order.Price * (commissionRule.CommissionValue / 100m);
+                    }
+                    else if (commissionRule.CommissionType == CommissionType.Flat)
+                    {
+                        commission = commissionRule.CommissionValue;
+                    }
 
-                if (newLeaveFact.ApprovalTimestamp == default)
+                    totalCommissionAmount += commission;
+                }
+            }
+
+            if (totalCommissionAmount > 0)
+            {
+                var payableFact = new ReferralPayableFact
                 {
-                    throw new LeaveEngineViolationException("A valid ApprovalTimestamp is required.");
-                }
+                    ReferralPayableFactId = Guid.NewGuid(),
+                    ReferralPartnerId = visit.ReferralPartnerId.Value,
+                    Amount = totalCommissionAmount,
+                    Currency = "INR", // TODO: Use actual currency from Invoice once available.
+                    SourceVisitId = visit.VisitId,
+                    OccurredAt = visit.CreatedAt,
+                    RecordedAt = DateTime.UtcNow
+                };
 
-                // Guard: Finalized Payroll Period Overlap
-                // StartTime and EndTime must not overlap with any period that is already finalized
-                var isInsideFinalizedPeriod = await _context.PayrollPeriods
-                    .AnyAsync(pp => pp.Status == PayrollPeriodStatus.Finalized &&
-                                    newLeaveFact.StartTime < pp.EndDate &&
-                                    newLeaveFact.EndTime > pp.StartDate);
+                _context.ReferralPayableFacts.Add(payableFact);
 
-                if (isInsideFinalizedPeriod)
-                {
-                    throw new LeaveEngineViolationException("Cannot record leave facts that overlap with a finalized payroll period.");
-                }
-
-                // Guard: Overlap Logic (Excluding Cancelled Facts)
-                // 1. Collect all OriginalLeaveFactIds from LeaveCancellationFacts (Unfiltered by employee)
-                var cancelledLeaveFactIds = await _context.LeaveCancellationFacts
-                    .Select(cf => cf.OriginalLeaveFactId)
-                    .ToListAsync();
-
-                // 2. Detect overlap only against LeaveFacts whose ID is NOT in the cancelled set
-                var hasOverlap = await _context.LeaveFacts
-                    .AnyAsync(lf => lf.EmployeeId == newLeaveFact.EmployeeId &&
-                                    !cancelledLeaveFactIds.Contains(lf.LeaveFactId) &&
-                                    newLeaveFact.StartTime < lf.EndTime &&
-                                    newLeaveFact.EndTime > lf.StartTime);
-
-                if (hasOverlap)
-                {
-                    throw new LeaveEngineViolationException("An active leave record already exists for the specified time range.");
-                }
-
-                // Persistence
-                newLeaveFact.RecordedTimestamp = DateTime.UtcNow;
-                _context.LeaveFacts.Add(newLeaveFact);
                 await _context.SaveChangesAsync();
 
-                await transaction.CommitAsync();
+                _logger.LogInformation("Commission Recognition (Liability only) complete for Visit {VisitId}. Wrote ReferralPayableFact {ReferralPayableFactId}.", visit.VisitId, payableFact.ReferralPayableFactId);
             }
-            catch
-            {
-                await transaction.RollbackAsync();
-                throw;
-            }
-        }
-
-        public async Task CancelLeaveFactAsync(Guid originalLeaveFactId, Guid authorId)
-        {
-            // Guard: Existence
-            var originalFact = await _context.LeaveFacts
-                .AsNoTracking()
-                .FirstOrDefaultAsync(lf => lf.LeaveFactId == originalLeaveFactId);
-
-            if (originalFact == null)
-            {
-                throw new LeaveEngineViolationException("The targeted LeaveFact does not exist.");
-            }
-
-            // Guard: Duplicate Cancellation (Strict Idempotency)
-            var alreadyCancelled = await _context.LeaveCancellationFacts
-                .AnyAsync(cf => cf.OriginalLeaveFactId == originalLeaveFactId);
-
-            if (alreadyCancelled)
-            {
-                throw new LeaveEngineViolationException("LeaveFact has already been cancelled.");
-            }
-
-            // Creation of Cancellation Fact
-            var cancellationFact = new LeaveCancellationFact
-            {
-                LeaveCancellationFactId = Guid.NewGuid(),
-                OriginalLeaveFactId = originalLeaveFactId,
-                AuthorId = authorId,
-                RecordedTimestamp = DateTime.UtcNow
-            };
-
-            _context.LeaveCancellationFacts.Add(cancellationFact);
-            await _context.SaveChangesAsync();
         }
     }
 }

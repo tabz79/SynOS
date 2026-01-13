@@ -1,74 +1,61 @@
-You are designing a SINGLE TRUTH RECORD for SynOS.
+✦ EXECUTION TASK: Referral Module Cleanup (Liability-Only)
 
-Context:
-System: SynOS
-Module: 6 — Payments & Disbursement
-
-Modules 1–6 are architecturally defined.
-This task is NOT about workflows or execution.
-This task is about the FINAL, IMMUTABLE FACT.
+You are working under a LOCKED SynOS architecture.
 
 ────────────────────────
-LOCKED CONTEXT
+CONTEXT (NON-NEGOTIABLE)
 ────────────────────────
 
-• Spend Fact is a TRUTH ENGINE record
-• It represents that money actually left the organization
-• It is APPEND-ONLY and IMMUTABLE
-• It is written ONLY after a successful payment attempt
-• It must be auditable years later
-
-Spend Fact:
-- Consumes Payroll Facts indirectly
-- Is consumed later by Compliance, Audit, Intelligence
+• SpendFact = payment truth (Module 6)
+• StatutoryObligationFact = legal obligation truth (Module 7)
+• ReferralFinancialService MUST NOT create SpendFacts
+• Referral payouts represent OWED AMOUNTS, not PAID AMOUNTS
 
 ────────────────────────
 OBJECTIVE
 ────────────────────────
 
-Define the **Spend Fact structure**.
+Fix build errors by correcting ownership in the Referral module.
 
-Fields ONLY.
-No logic.
-No calculations.
-No UI.
-No retries.
-No balances.
+Specifically:
+• Remove ALL SpendFact creation or usage
+• Remove ALL references to SpendLineItemFacts
+• Replace them with a ReferralPayable / ReferralLiability fact
 
 ────────────────────────
-DESIGN CONSTRAINTS
+SCOPE (STRICT)
 ────────────────────────
 
-Spend Fact MUST:
-• Be immutable
-• Be self-describing
-• Allow full audit trace (who was paid, why, how, when)
-• Link back to Payroll without recalculating anything
+You MAY:
+• Modify src/SynOS.Services/Referral/**
+• Create ReferralPayableFact (or equivalent) under Referral domain
+• Add DbSet for ReferralPayableFact
+• Update ReferralFinancialService to write ONLY liabilities
 
-Spend Fact MUST NOT:
-• Store derived balances
-• Store payroll calculations
-• Reference Time or Leave
-• Mutate or overwrite past facts
+You MUST NOT:
+• Modify Module 6 (Spend / Payments)
+• Modify Module 7 (Compliance)
+• Modify Payroll, Time, or Leave modules
+• Reintroduce SpendFacts into Referral
+• Run payments, batches, or bank logic
 
 ────────────────────────
-REQUIRED OUTPUT (STRICT)
+RULES
+────────────────────────
+
+• ReferralPayableFact is append-only
+• No balances, no settlement status
+• Do NOT infer or execute payments
+• If ANY build error occurs outside Referral → STOP AND REPORT
+
+────────────────────────
+OUTPUT REQUIRED
 ────────────────────────
 
 Return ONLY:
+• Code changes performed
+• Files modified / created
 
-1. SpendFact — Field List
-   - Each field name
-   - One-line explanation of why it exists
-
-2. Mandatory Linkages
-   - Which upstream records it must reference
-   - Why those references are required
-
-3. Fields that are EXPLICITLY NOT allowed
-   - And why they would be dangerous
-
-Use PRESENT TENSE.
-Write as FINAL DESIGN.
-Do NOT ask questions.
-Do NOT propose alternatives.
+NO explanations.
+NO redesign.
+NO cleanup outside scope.
