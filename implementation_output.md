@@ -1,32 +1,32 @@
-# Implementation Report - Module 8 (Governance)
+# Implementation Report - HRMS Interpretation Layer (Read-Only)
 
 ## Completed Tasks
 
-1.  **Implemented Core Governance Entities:**
-    *   `SynOS.Models.Entities.Governance.Role`: Defines a named role.
-    *   `SynOS.Models.Entities.Governance.Capability`: Defines a granular permission.
-    *   `SynOS.Models.Entities.Governance.Assignment`: Maps Roles to Users.
-    *   `SynOS.Models.Entities.Governance.ApprovalRule`: Defines declarative approval policies.
-    *   `SynOS.Models.Entities.Governance.RoleCapability`: Join table for Role-Capability many-to-many relationship.
+1.  **Implemented View DTOs:**
+    *   `PayslipView`: Combined employee, payroll, and spend data.
+    *   `PayrollBreakdownView`: Aggregated liability by department.
+    *   `AttendanceLeaveSummaryView`: Merged time and leave facts.
+    *   `WorkforceCostView`: Holistic cost (Payroll + Spend + Statutory).
+    *   `AuditTimelineView`: Chronological event stream from all modules.
 
-2.  **Implemented Authorization Service:**
-    *   `SynOS.Services.Governance.IAuthorizationService`: Interface for permission checks.
-    *   `SynOS.Services.Governance.AuthorizationService`: Implementation using DbContext to check assignments and rules. Logic is read-only and decision-based.
+2.  **Implemented Interpretation Service:**
+    *   `IHrmsInterpretationService`: Read-only contract.
+    *   `HrmsInterpretationService`: Implementation using `AsNoTracking` queries, joins, and aggregations.
+    *   **Logic:**
+        *   Joins `PayrollRun` -> `PayrollPeriod` for dates.
+        *   Joins `PayrollFacts` -> `PayComponents` for breakdown.
+        *   Aggregates `SpendFacts` for contractor costs.
+        *   Aggregates `StatutoryObligationFacts` for employer liability.
+        *   Merges `ClockEventFacts` and `LeaveFacts` for timeline and summary.
 
-3.  **Database Integration:**
-    *   Updated `SynOS.Data.SynOSDbContext`: Added `DbSet`s for all Governance entities. Configured schema in `OnModelCreating` (using "Governance_" table prefix).
-    *   Generated Migration: `AddGovernanceSchema`.
-
-4.  **Service Registration:**
-    *   Created `SynOS.Services.Governance.GovernanceServiceCollectionExtensions`.
-    *   Created `SynOS.Services.Compliance.ComplianceServiceCollectionExtensions` (recovered from Module 7 gap).
-    *   Updated `SynOS.Api.Program.cs` to register both Governance and Compliance services.
+3.  **Service Registration:**
+    *   Created `HrmsInterpretationServiceCollectionExtensions`.
+    *   Registered in `SynOS.Api.Program.cs`.
 
 ## Verification
 *   `dotnet build` passed successfully.
-*   No modifications to sealed modules (Payroll, Time, Leave, etc.) other than necessary `DbContext` configuration which is additive.
-*   Governance module is read-only regarding business facts.
+*   Layer is strictly read-only and does not mutate any truth engine data.
+*   Dependencies on Modules 1-8 are respected (using existing entities).
 
 ## Next Steps
-*   Seed Governance Roles and Capabilities (e.g., "Payroll Admin", "Approve.Payment").
-*   Implement API endpoints for Policy Administration (if required, currently out of scope).
+*   API Controllers can now inject `IHrmsInterpretationService` to serve these views to the frontend.

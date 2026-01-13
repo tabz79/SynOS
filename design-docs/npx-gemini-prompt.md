@@ -1,63 +1,47 @@
-✦ DESIGN TASK: Module 8 — Admin, Policy & Governance
+✦ DESIGN TASK: HRMS Interpretation Layer (Read-Only)
 
-You are designing MODULE 8 of SynOS.
+You are designing the HRMS INTERPRETATION LAYER of SynOS.
 
-This module is GOVERNANCE-ONLY.
-It owns permissions, roles, and approvals.
-It NEVER writes business or financial truth.
+This layer explains workforce-related truths to humans.
+It is NOT a truth engine.
+It NEVER mutates data.
 
 ────────────────────────
 LOCKED CONTEXT
 ────────────────────────
-
-• Modules 1–7 are COMPLETE and SEALED
-• Truth engines:
-  - HR Master
-  - Time
-  - Leave
-  - Payroll
-  - Spend
-  - Statutory
-• Module 8 must not contaminate any truth engine
+• Modules 1–8 are COMPLETE and SEALED
+• Truth engines own facts
+• HRMS Interpretation Layer is READ-ONLY and disposable
 
 ────────────────────────
-PURPOSE
+GOAL
 ────────────────────────
+Define the canonical HRMS Interpretation Views for:
 
-Module 8 answers:
-“Who is allowed to do what — and who approves whom?”
-
-────────────────────────
-MODULE 8 OWNS
-────────────────────────
-
-• Role definitions (HR, Payroll, Finance, Admin)
-• Capability definitions (RunPayroll, ApprovePayroll, InitiatePayment, ViewCompensation)
-• Approval matrices (who approves which action)
-• Separation-of-duties rules (e.g. creator ≠ approver)
+1. Payslip View
+2. Payroll Breakdown View
+3. Attendance & Leave Summary View
+4. Workforce Cost Intelligence View
+5. Audit Narrative Timeline View
 
 ────────────────────────
-MODULE 8 MUST NEVER
+FOR EACH VIEW
 ────────────────────────
-
-• Calculate payroll
-• Approve money movement
-• Write SpendFacts, PayrollFacts, or StatutoryFacts
-• Store balances or outcomes
-• Act as a workflow engine
+Return:
+• Purpose (1–2 lines)
+• Input truth engines & facts used
+• Aggregations performed
+• Explanations produced
+• Explicit “MUST NOT” list
 
 ────────────────────────
-REQUIRED OUTPUT (STRICT)
+PROHIBITIONS
 ────────────────────────
+• No code
+• No schemas
+• No DB tables
+• No caching strategy
+• No UI design
+• No workflow or approvals
 
-Return ONLY:
-
-1. Purpose of Module 8
-2. Core concepts (Role, Capability, ApprovalRule, Assignment)
-3. Approval & separation-of-duties model (conceptual)
-4. Data it reads (if any)
-5. Hard prohibitions
-
-NO code.
-NO implementation.
 FINAL DESIGN ONLY.

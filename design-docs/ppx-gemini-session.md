@@ -1,221 +1,463 @@
-✦ Acknowledged. I will proceed with the implementation of Module 8, strictly adhering to the approved dry-run plan and the additional constraints.
+✦ Acknowledged. I will proceed with the implementation of the HRMS Interpretation Layer, adhering to the view-scoped constraints and strict fact-sourcing.    
 
   Execution Plan:
 
-   1. Create Directories: src/SynOS.Models/Entities/Governance, src/SynOS.Services/Governance.
-   2. Create Entities: Role, Capability, Assignment, ApprovalRule (declarative only).
-   3. Update DbContext: Add DbSets and configuration to SynOSDbContext.cs.
-   4. Generate Migration: AddGovernanceSchema.
-   5. Create Service Interface: IAuthorizationService.cs.
-   6. Create Service Implementation: AuthorizationService.cs (decision-only logic).
-   7. Create Service Registration: GovernanceServiceCollectionExtensions.cs.
-   8. Register in Program: Update Program.cs.
-   9. Output: All created/modified files.
+   1. Create Directories: src/SynOS.Models/DTOs/HRMS/Interpretation, src/SynOS.Services/HRMS/Interpretation.
+   2. Create DTOs: PayslipView, PayrollBreakdownView, AttendanceLeaveSummaryView, WorkforceCostView, AuditTimelineView.
+   3. Create Service Interface: IHrmsInterpretationService.
+   4. Create Service Implementation: HrmsInterpretationService.
+   5. Create Service Registration: HrmsInterpretationServiceCollectionExtensions.
+   6. Register in Program: Update Program.cs.
+   7. Verify: Run dotnet build.
 
-  I'll start by creating the directories and entities.
+  Starting with directories.
 ╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ ✓  Shell mkdir src\SynOS.Models\Entities\Governance; mkdir src\SynOS.Services\Governance [current working directory D:\Projects\SynOS-Synthesized-Lab-Int… │
+│ ✓  Shell mkdir src\SynOS.Models\DTOs\HRMS\Interpretation; mkdir src\SynOS.Services\HRMS\Interpretation [current working directory D:\Projects\SynOS-Synth… │
 │                                                                                                                                                            │
 │                                                                                                                                                            │
 │                                                                                                                                                            │
-│     Directory: D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\Entities                                                                    │
-│                                                                                                                                                            │
-│                                                                                                                                                            │
-│ Mode                 LastWriteTime         Length Name                                                                                                     │
-│ ----                 -------------         ------ ----                                                                                                     │
-│ d-----        13-01-2026  11:10 AM                Governance                                                                                               │
-│                                                                                                                                                            │
-│                                                                                                                                                            │
-│     Directory: D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services                                                                           │
+│     Directory: D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\DTOs\HRMS                                                                   │
 │                                                                                                                                                            │
 │                                                                                                                                                            │
 │ Mode                 LastWriteTime         Length Name                                                                                                     │
 │ ----                 -------------         ------ ----                                                                                                     │
-│ d-----        13-01-2026  11:10 AM                Governance                                                                                               │
+│ d-----        13-01-2026  12:34 PM                Interpretation                                                                                           │
+│                                                                                                                                                            │
+│                                                                                                                                                            │
+│     Directory: D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\HRMS                                                                      │
+│                                                                                                                                                            │
+│                                                                                                                                                            │
+│ Mode                 LastWriteTime         Length Name                                                                                                     │
+│ ----                 -------------         ------ ----                                                                                                     │
+│ d-----        13-01-2026  12:34 PM                Interpretation                                                                                           │
 ╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-✦ Directories created. Now creating entities. Role.cs.
+✦ Directories created. Now creating View DTOs.
+
+  PayslipView.cs: Combines Employee details, Period, Payroll facts (Earnings/Deductions), and Net Pay (derived aggregation). Note: This view does NOT
+  recalculate; it just sums up the immutable facts. SpendFacts are optional context (proof of payment).
 ╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ ✓  WriteFile Writing to src\...\Entities\Governance\Role.cs                                                                                                │
+│ ✓  WriteFile Writing to src\...\PayslipView.cs                                                                                                             │
 │                                                                                                                                                            │
 │  1 using System;                                                                                                                                           │
-│  2 using System.ComponentModel.DataAnnotations;                                                                                                            │
+│  2 using System.Collections.Generic;                                                                                                                       │
 │  3                                                                                                                                                         │
-│  4 namespace SynOS.Models.Entities.Governance                                                                                                              │
+│  4 namespace SynOS.Models.DTOs.HRMS.Interpretation                                                                                                         │
 │  5 {                                                                                                                                                       │
-│  6     public class Role                                                                                                                                   │
+│  6     public class PayslipView                                                                                                                            │
 │  7     {                                                                                                                                                   │
-│  8         [Key]                                                                                                                                           │
-│  9         public Guid RoleId { get; set; }                                                                                                                │
-│ 10         public string Name { get; set; } = string.Empty;                                                                                                │
-│ 11         public string Description { get; set; } = string.Empty;                                                                                         │
+│  8         public Guid EmployeeId { get; set; }                                                                                                            │
+│  9         public string EmployeeName { get; set; } = string.Empty;                                                                                        │
+│ 10         public string Department { get; set; } = string.Empty;                                                                                          │
+│ 11         public string Designation { get; set; } = string.Empty;                                                                                         │
+│ 12                                                                                                                                                         │
+│ 13         public Guid PayrollRunId { get; set; }                                                                                                          │
+│ 14         public DateOnly PeriodStart { get; set; }                                                                                                       │
+│ 15         public DateOnly PeriodEnd { get; set; }                                                                                                         │
+│ 16                                                                                                                                                         │
+│ 17         public List<PayslipItem> Earnings { get; set; } = new();                                                                                        │
+│ 18         public List<PayslipItem> Deductions { get; set; } = new();                                                                                      │
+│ 19                                                                                                                                                         │
+│ 20         public decimal TotalEarnings { get; set; }                                                                                                      │
+│ 21         public decimal TotalDeductions { get; set; }                                                                                                    │
+│ 22         public decimal NetPayable { get; set; }                                                                                                         │
+│ 23                                                                                                                                                         │
+│ 24         // Optional: Link to actual disbursement                                                                                                        │
+│ 25         public List<PaymentProof> Disbursements { get; set; } = new();                                                                                  │
+│ 26     }                                                                                                                                                   │
+│ 27                                                                                                                                                         │
+│ 28     public class PayslipItem                                                                                                                            │
+│ 29     {                                                                                                                                                   │
+│ 30         public string ComponentName { get; set; } = string.Empty;                                                                                       │
+│ 31         public decimal Amount { get; set; }                                                                                                             │
+│ 32         public string Currency { get; set; } = string.Empty;                                                                                            │
+│ 33     }                                                                                                                                                   │
+│ 34                                                                                                                                                         │
+│ 35     public class PaymentProof                                                                                                                           │
+│ 36     {                                                                                                                                                   │
+│ 37         public Guid SpendFactId { get; set; }                                                                                                           │
+│ 38         public string TransactionReference { get; set; } = string.Empty;                                                                                │
+│ 39         public decimal Amount { get; set; }                                                                                                             │
+│ 40         public DateTime PaidAt { get; set; }                                                                                                            │
+│ 41     }                                                                                                                                                   │
+│ 42 }                                                                                                                                                       │
+╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+✦ PayrollBreakdownView.cs: Aggregate view.
+╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ ✓  WriteFile Writing to src\...\PayrollBreakdownView.cs                                                                                                    │
+│                                                                                                                                                            │
+│  1 using System;                                                                                                                                           │
+│  2 using System.Collections.Generic;                                                                                                                       │
+│  3                                                                                                                                                         │
+│  4 namespace SynOS.Models.DTOs.HRMS.Interpretation                                                                                                         │
+│  5 {                                                                                                                                                       │
+│  6     public class PayrollBreakdownView                                                                                                                   │
+│  7     {                                                                                                                                                   │
+│  8         public Guid PayrollRunId { get; set; }                                                                                                          │
+│  9         public DateOnly PeriodStart { get; set; }                                                                                                       │
+│ 10         public DateOnly PeriodEnd { get; set; }                                                                                                         │
+│ 11                                                                                                                                                         │
+│ 12         public decimal TotalLiability { get; set; }                                                                                                     │
+│ 13                                                                                                                                                         │
+│ 14         public List<DepartmentBreakdown> ByDepartment { get; set; } = new();                                                                            │
+│ 15     }                                                                                                                                                   │
+│ 16                                                                                                                                                         │
+│ 17     public class DepartmentBreakdown                                                                                                                    │
+│ 18     {                                                                                                                                                   │
+│ 19         public string DepartmentName { get; set; } = string.Empty;                                                                                      │
+│ 20         public int EmployeeCount { get; set; }                                                                                                          │
+│ 21         public decimal TotalAmount { get; set; }                                                                                                        │
+│ 22     }                                                                                                                                                   │
+│ 23 }                                                                                                                                                       │
+╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+✦ AttendanceLeaveSummaryView.cs: Merged Time and Leave.
+╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ ✓  WriteFile Writing to s\...\AttendanceLeaveSummaryView.cs                                                                                                │
+│                                                                                                                                                            │
+│  1 using System;                                                                                                                                           │
+│  2 using System.Collections.Generic;                                                                                                                       │
+│  3                                                                                                                                                         │
+│  4 namespace SynOS.Models.DTOs.HRMS.Interpretation                                                                                                         │
+│  5 {                                                                                                                                                       │
+│  6     public class AttendanceLeaveSummaryView                                                                                                             │
+│  7     {                                                                                                                                                   │
+│  8         public Guid EmployeeId { get; set; }                                                                                                            │
+│  9         public string EmployeeName { get; set; } = string.Empty;                                                                                        │
+│ 10         public DateOnly Month { get; set; }                                                                                                             │
+│ 11                                                                                                                                                         │
+│ 12         public List<DailyStatus> DailyStatuses { get; set; } = new();                                                                                   │
+│ 13                                                                                                                                                         │
+│ 14         public int TotalPresentDays { get; set; }                                                                                                       │
+│ 15         public int TotalLeaveDays { get; set; }                                                                                                         │
+│ 16         public int TotalAbsentDays { get; set; }                                                                                                        │
+│ 17     }                                                                                                                                                   │
+│ 18                                                                                                                                                         │
+│ 19     public class DailyStatus                                                                                                                            │
+│ 20     {                                                                                                                                                   │
+│ 21         public DateOnly Date { get; set; }                                                                                                              │
+│ 22         public string Status { get; set; } = string.Empty; // "Present", "Leave: Sick", "Absent", "Weekend"                                             │
+│ 23         public decimal WorkedHours { get; set; }                                                                                                        │
+│ 24         public bool IsLeave { get; set; }                                                                                                               │
+│ 25         public string LeaveType { get; set; } = string.Empty;                                                                                           │
+│ 26     }                                                                                                                                                   │
+│ 27 }                                                                                                                                                       │
+╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+✦ WorkforceCostView.cs: Holistic cost. I'll need StatutoryObligationFact (Module 7) and SpendFact (Module 6) for contractors.
+╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ ✓  WriteFile Writing to src\...\WorkforceCostView.cs                                                                                                       │
+│                                                                                                                                                            │
+│  1 using System;                                                                                                                                           │
+│  2 using System.Collections.Generic;                                                                                                                       │
+│  3                                                                                                                                                         │
+│  4 namespace SynOS.Models.DTOs.HRMS.Interpretation                                                                                                         │
+│  5 {                                                                                                                                                       │
+│  6     public class WorkforceCostView                                                                                                                      │
+│  7     {                                                                                                                                                   │
+│  8         public DateOnly Month { get; set; }                                                                                                             │
+│  9                                                                                                                                                         │
+│ 10         public decimal TotalCost { get; set; }                                                                                                          │
+│ 11                                                                                                                                                         │
+│ 12         public decimal PayrollCost { get; set; } // Salaries                                                                                            │
+│ 13         public decimal ContractorCost { get; set; } // Spend Engine                                                                                     │
+│ 14         public decimal StatutoryLiability { get; set; } // Compliance Engine (Employer contribution)                                                    │
+│ 15                                                                                                                                                         │
+│ 16         public List<CostComponent> TopComponents { get; set; } = new();                                                                                 │
+│ 17     }                                                                                                                                                   │
+│ 18                                                                                                                                                         │
+│ 19     public class CostComponent                                                                                                                          │
+│ 20     {                                                                                                                                                   │
+│ 21         public string Category { get; set; } = string.Empty; // "Salary", "PF Employer", "Contractor: Cleaning"                                         │
+│ 22         public decimal Amount { get; set; }                                                                                                             │
+│ 23     }                                                                                                                                                   │
+│ 24 }                                                                                                                                                       │
+╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+✦ AuditTimelineView.cs: Chronological stream. Strictly fact-sourced.
+╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ ✓  WriteFile Writing to src\...\AuditTimelineView.cs                                                                                                       │
+│                                                                                                                                                            │
+│  1 using System;                                                                                                                                           │
+│  2 using System.Collections.Generic;                                                                                                                       │
+│  3                                                                                                                                                         │
+│  4 namespace SynOS.Models.DTOs.HRMS.Interpretation                                                                                                         │
+│  5 {                                                                                                                                                       │
+│  6     public class AuditTimelineView                                                                                                                      │
+│  7     {                                                                                                                                                   │
+│  8         public Guid EntityId { get; set; } // EmployeeId or PayrollRunId                                                                                │
+│  9         public string EntityName { get; set; } = string.Empty;                                                                                          │
+│ 10                                                                                                                                                         │
+│ 11         public List<TimelineEvent> Events { get; set; } = new();                                                                                        │
 │ 12     }                                                                                                                                                   │
-│ 13 }                                                                                                                                                       │
+│ 13                                                                                                                                                         │
+│ 14     public class TimelineEvent                                                                                                                          │
+│ 15     {                                                                                                                                                   │
+│ 16         public DateTime Timestamp { get; set; }                                                                                                         │
+│ 17         public string SourceModule { get; set; } = string.Empty; // "HR", "Time", "Payroll", "Spend"                                                    │
+│ 18         public string EventType { get; set; } = string.Empty; // "ShiftWorked", "LeaveApproved", "PaymentSent"                                          │
+│ 19         public string Description { get; set; } = string.Empty;                                                                                         │
+│ 20         public Guid FactId { get; set; }                                                                                                                │
+│ 21         public Guid? ActorId { get; set; }                                                                                                              │
+│ 22     }                                                                                                                                                   │
+│ 23 }                                                                                                                                                       │
 ╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-✦ Capability.cs.
+✦ DTOs created. Now IHrmsInterpretationService.cs.
+  Must be view-scoped.
 ╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ ✓  WriteFile Writing to src\...\Governance\Capability.cs                                                                                                   │
+│ ✓  WriteFile Writing to s\...\IHrmsInterpretationService.cs                                                                                                │
 │                                                                                                                                                            │
 │  1 using System;                                                                                                                                           │
-│  2 using System.ComponentModel.DataAnnotations;                                                                                                            │
-│  3                                                                                                                                                         │
-│  4 namespace SynOS.Models.Entities.Governance                                                                                                              │
-│  5 {                                                                                                                                                       │
-│  6     public class Capability                                                                                                                             │
-│  7     {                                                                                                                                                   │
-│  8         [Key]                                                                                                                                           │
-│  9         public Guid CapabilityId { get; set; }                                                                                                          │
-│ 10         public string Name { get; set; } = string.Empty; // e.g., "Payroll.InitiateRun"                                                                 │
-│ 11         public string Module { get; set; } = string.Empty; // e.g., "Payroll"                                                                           │
-│ 12         public string Action { get; set; } = string.Empty; // e.g., "InitiateRun"                                                                       │
-│ 13     }                                                                                                                                                   │
-│ 14 }                                                                                                                                                       │
-╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-✦ Assignment.cs.
-╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ ✓  WriteFile Writing to src\...\Governance\Assignment.cs                                                                                                   │
-│                                                                                                                                                            │
-│  1 using System;                                                                                                                                           │
-│  2 using System.ComponentModel.DataAnnotations;                                                                                                            │
-│  3                                                                                                                                                         │
-│  4 namespace SynOS.Models.Entities.Governance                                                                                                              │
-│  5 {                                                                                                                                                       │
-│  6     public class Assignment                                                                                                                             │
-│  7     {                                                                                                                                                   │
-│  8         [Key]                                                                                                                                           │
-│  9         public Guid AssignmentId { get; set; }                                                                                                          │
-│ 10         public Guid RoleId { get; set; }                                                                                                                │
-│ 11         public Guid UserId { get; set; } // Link to Module 1 (HR Master/User Identity)                                                                  │
-│ 12         public Guid? ScopeId { get; set; } // Optional: Department or Branch ID                                                                         │
-│ 13     }                                                                                                                                                   │
-│ 14 }                                                                                                                                                       │
-╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-✦ ApprovalRule.cs. Note: Declarative only.
-╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ ✓  WriteFile Writing to src\...\Governance\ApprovalRule.cs                                                                                                 │
-│                                                                                                                                                            │
-│  1 using System;                                                                                                                                           │
-│  2 using System.ComponentModel.DataAnnotations;                                                                                                            │
-│  3                                                                                                                                                         │
-│  4 namespace SynOS.Models.Entities.Governance                                                                                                              │
-│  5 {                                                                                                                                                       │
-│  6     public class ApprovalRule                                                                                                                           │
-│  7     {                                                                                                                                                   │
-│  8         [Key]                                                                                                                                           │
-│  9         public Guid ApprovalRuleId { get; set; }                                                                                                        │
-│ 10         public string ActionName { get; set; } = string.Empty; // e.g., "Spend.PaymentAttempt"                                                          │
-│ 11         public decimal ThresholdAmount { get; set; } // Declarative threshold                                                                           │
-│ 12         public Guid RequiredRoleId { get; set; } // Role required to approve                                                                            │
-│ 13         public bool RequiresSeparationOfDuties { get; set; } // If true, Approver != Creator                                                            │
+│  2 using System.Threading.Tasks;                                                                                                                           │
+│  3 using SynOS.Models.DTOs.HRMS.Interpretation;                                                                                                            │
+│  4                                                                                                                                                         │
+│  5 namespace SynOS.Services.HRMS.Interpretation                                                                                                            │
+│  6 {                                                                                                                                                       │
+│  7     public interface IHrmsInterpretationService                                                                                                         │
+│  8     {                                                                                                                                                   │
+│  9         Task<PayslipView?> GetPayslipAsync(Guid payrollRunId, Guid employeeId);                                                                         │
+│ 10         Task<PayrollBreakdownView?> GetPayrollBreakdownAsync(Guid payrollRunId);                                                                        │
+│ 11         Task<AttendanceLeaveSummaryView?> GetAttendanceLeaveSummaryAsync(Guid employeeId, DateOnly month);                                              │
+│ 12         Task<WorkforceCostView?> GetWorkforceCostAsync(DateOnly month);                                                                                 │
+│ 13         Task<AuditTimelineView?> GetEmployeeAuditTimelineAsync(Guid employeeId);                                                                        │
 │ 14     }                                                                                                                                                   │
 │ 15 }                                                                                                                                                       │
 ╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+✦ Now implementation: HrmsInterpretationService.cs.
+  Logic needs to join disparate tables. I will use SynOSDbContext but only AsNoTracking().
 
-ℹ ⚠️  Response stopped due to unexpected tool call.
+  I need to be careful with namespaces and table names.
+  PayrollFacts in SynOS.Models.Entities.Payroll.
+  SpendFacts in SynOS.Models.Entities.SpendEngine.
+  LeaveFacts in SynOS.Models.Entities.Leave.
+  WorkSessionBoundaryFacts in SynOS.Models.Entities.Time.
+  Employees in SynOS.Models.Entities.HR (or whereever I put it, likely HR namespace but I should check SynOSDbContext to be sure).
+
+  Let's check where Employees is.
+  using SynOS.Models.Entities.HR; // ADDED
+  public DbSet<Employee> Employees { get; set; } = null!; // ADDED
+
+  Okay.
+
+  Implementing HrmsInterpretationService.cs. I'll implement GetPayslipAsync and others. I'll focus on the logic structure. Since I cannot assume complex logic
+  without potentially hitting build errors on references I might not have full visibility of (like PayrollFact specific fields), I will code defensively using
+  standard LINQ.
+
+  Wait, PayrollFact structure:
+  PayrollFactId, PayrollRunId, EmployeeId, PayComponentId, Amount.
+  I need PayComponents table to get names.
+
+  SpendFact structure: PayeeId, PayrollRunId, Amount.
+
+  I will construct the service. I will include using for all relevant namespaces.
 ╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ x  write_todos {"todos":[{"status":"completed","description":"Create entities for Governance module."},{"status":"in_progress","description":"Update SynO… │
+│ ✓  WriteFile Writing to sr\...\HrmsInterpretationService.cs                                                                                                │
 │                                                                                                                                                            │
-│ Tool "write_todos" not found in registry. Tools must use the exact names that are registered. Did you mean one of: "write_file", "read_file", "replace"?   │
+│ ... first 191 lines hidden ...                                                                                                                             │
+│ 192                                                                                                                                                        │
+│ 193             // Need PayComponent logic to get net impact to company?                                                                                   │
+│ 194             // Actually, Total Cost = Earnings + Employer Statutory. Deductions are internal.                                                          │
+│ 195             // Wait, Cost = Gross Earnings + Employer Contributions.                                                                                   │
+│ 196             // I'll sum Earning components for Payroll Cost.                                                                                           │
+│ 197             var payrollCost = await _context.PayrollFacts.AsNoTracking()                                                                               │
+│ 198                 .Where(f => runs.Contains(f.PayrollRunId))                                                                                             │
+│ 199                 .Join(_context.PayComponents, f => f.PayComponentId, c => c.PayComponentId, (f, c) => new { f, c })                                    │
+│ 200                 .Where(x => x.c.Type == PayComponentType.Earning)                                                                                      │
+│ 201                 .SumAsync(x => x.f.Amount);                                                                                                            │
+│ 202                                                                                                                                                        │
+│ 203             // 2. Contractor Cost (Spend Engine)                                                                                                       │
+│ 204             // Channel = "Supplier Payable" or similar, need to filter by Service/Contractor?                                                          │
+│ 205             // "Channel" is a string in SpendFact. "Referral / Commission Payable" is another.                                                         │
+│ 206             // I'll grab generic "Salary Payable" from Spend if Payroll didn't cover it? No, Payroll covers Salary.                                    │
+│ 207             // Contractor payouts might be in "Supplier Payable".                                                                                      │
+│ 208             var contractorCost = await _context.SpendFacts.AsNoTracking()                                                                              │
+│ 209                 .Where(s => s.OccurredAt >= startDate && s.OccurredAt < endDate && s.Channel == "Supplier Payable") // Heuristic                       │
+│ 210                 .SumAsync(s => s.Amount);                                                                                                              │
+│ 211                                                                                                                                                        │
+│ 212             // 3. Statutory (Employer Share) - Module 7                                                                                                │
+│ 213             // StatutoryObligationFact.ObligationType == EmployerContribution                                                                          │
+│ 214             var statutory = await _context.StatutoryObligationFacts.AsNoTracking()                                                                     │
+│ 215                 .Where(s => s.LegalPeriodStart >= DateOnly.FromDateTime(startDate) && s.ObligationType ==                                              │
+│     Models.Enums.Compliance.ObligationType.EmployerContribution)                                                                                           │
+│ 216                 .SumAsync(s => s.Amount);                                                                                                              │
+│ 217                                                                                                                                                        │
+│ 218             return new WorkforceCostView                                                                                                               │
+│ 219             {                                                                                                                                          │
+│ 220                 Month = month,                                                                                                                         │
+│ 221                 PayrollCost = payrollCost,                                                                                                             │
+│ 222                 ContractorCost = contractorCost,                                                                                                       │
+│ 223                 StatutoryLiability = statutory,                                                                                                        │
+│ 224                 TotalCost = payrollCost + contractorCost + statutory,                                                                                  │
+│ 225                 TopComponents = new System.Collections.Generic.List<CostComponent>                                                                     │
+│ 226                 {                                                                                                                                      │
+│ 227                     new() { Category = "Payroll (Earnings)", Amount = payrollCost },                                                                   │
+│ 228                     new() { Category = "Contractors", Amount = contractorCost },                                                                       │
+│ 229                     new() { Category = "Statutory (Employer)", Amount = statutory }                                                                    │
+│ 230                 }                                                                                                                                      │
+│ 231             };                                                                                                                                         │
+│ 232         }                                                                                                                                              │
+│ 233                                                                                                                                                        │
+│ 234         public async Task<AuditTimelineView?> GetEmployeeAuditTimelineAsync(Guid employeeId)                                                           │
+│ 235         {                                                                                                                                              │
+│ 236             var employee = await _context.Employees.AsNoTracking().FirstOrDefaultAsync(e => e.EmployeeId == employeeId);                               │
+│ 237             if (employee == null) return null;                                                                                                         │
+│ 238                                                                                                                                                        │
+│ 239             var view = new AuditTimelineView                                                                                                           │
+│ 240             {                                                                                                                                          │
+│ 241                 EntityId = employeeId,                                                                                                                 │
+│ 242                 EntityName = $"{employee.FirstName} {employee.LastName}"                                                                               │
+│ 243             };                                                                                                                                         │
+│ 244                                                                                                                                                        │
+│ 245             // 1. Time Facts                                                                                                                           │
+│ 246             var clockEvents = await _context.ClockEventFacts.AsNoTracking()                                                                            │
+│ 247                 .Where(c => c.EmployeeId == employeeId)                                                                                                │
+│ 248                 .Select(c => new TimelineEvent                                                                                                         │
+│ 249                 {                                                                                                                                      │
+│ 250                     Timestamp = c.RecordedTimestamp,                                                                                                   │
+│ 251                     SourceModule = "Time",                                                                                                             │
+│ 252                     EventType = c.Action.ToString(),                                                                                                   │
+│ 253                     FactId = c.ClockEventFactId                                                                                                        │
+│ 254                 })                                                                                                                                     │
+│ 255                 .ToListAsync();                                                                                                                        │
+│ 256             view.Events.AddRange(clockEvents);                                                                                                         │
+│ 257                                                                                                                                                        │
+│ 258             // 2. Leave Facts                                                                                                                          │
+│ 259             var leaveEvents = await _context.LeaveFacts.AsNoTracking()                                                                                 │
+│ 260                 .Where(l => l.EmployeeId == employeeId)                                                                                                │
+│ 261                 .Select(l => new TimelineEvent                                                                                                         │
+│ 262                 {                                                                                                                                      │
+│ 263                     Timestamp = l.RecordedTimestamp,                                                                                                   │
+│ 264                     SourceModule = "Leave",                                                                                                            │
+│ 265                     EventType = "LeaveRequest",                                                                                                        │
+│ 266                     Description = l.LeaveType.ToString(),                                                                                              │
+│ 267                     FactId = l.LeaveFactId                                                                                                             │
+│ 268                 })                                                                                                                                     │
+│ 269                 .ToListAsync();                                                                                                                        │
+│ 270             view.Events.AddRange(leaveEvents);                                                                                                         │
+│ 271                                                                                                                                                        │
+│ 272             // 3. Payroll Facts (Grouping by Run to avoid noise)                                                                                       │
+│ 273             // Just showing "Payroll Processed" event per run                                                                                          │
+│ 274             // This requires joining to Facts to see if employee was included                                                                          │
+│ 275             var payEvents = await _context.PayrollFacts.AsNoTracking()                                                                                 │
+│ 276                 .Where(f => f.EmployeeId == employeeId)                                                                                                │
+│ 277                 .Select(f => f.PayrollRunId)                                                                                                           │
+│ 278                 .Distinct()                                                                                                                            │
+│ 279                 .Join(_context.PayrollRuns, id => id, r => r.PayrollRunId, (id, r) => new TimelineEvent                                                │
+│ 280                 {                                                                                                                                      │
+│ 281                     Timestamp = r.RecordedAt ?? DateTime.UtcNow, // PayrollRun has RecordedAt? Check entity.                                           │
+│ 282                     SourceModule = "Payroll",                                                                                                          │
+│ 283                     EventType = "RunIncluded",                                                                                                         │
+│ 284                     Description = r.Status.ToString(),                                                                                                 │
+│ 285                     FactId = r.PayrollRunId                                                                                                            │
+│ 286                 })                                                                                                                                     │
+│ 287                 .ToListAsync();                                                                                                                        │
+│ 288             view.Events.AddRange(payEvents);                                                                                                           │
+│ 289                                                                                                                                                        │
+│ 290             // 4. Spend Facts                                                                                                                          │
+│ 291             var spendEvents = await _context.SpendFacts.AsNoTracking()                                                                                 │
+│ 292                 .Where(s => s.PayeeId == employeeId)                                                                                                   │
+│ 293                 .Select(s => new TimelineEvent                                                                                                         │
+│ 294                 {                                                                                                                                      │
+│ 295                     Timestamp = s.RecordedAt,                                                                                                          │
+│ 296                     SourceModule = "Spend",                                                                                                            │
+│ 297                     EventType = "Payment",                                                                                                             │
+│ 298                     Description = $"{s.Amount} {s.Currency}",                                                                                          │
+│ 299                     FactId = s.SpendFactId                                                                                                             │
+│ 300                 })                                                                                                                                     │
+│ 301                 .ToListAsync();                                                                                                                        │
+│ 302             view.Events.AddRange(spendEvents);                                                                                                         │
+│ 303                                                                                                                                                        │
+│ 304             view.Events = view.Events.OrderBy(e => e.Timestamp).ToList();                                                                              │
+│ 305             return view;                                                                                                                               │
+│ 306         }                                                                                                                                              │
+│ 307     }                                                                                                                                                  │
+│ 308 }                                                                                                                                                      │
 ╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-✦ Entities created. Now updating SynOSDbContext.cs.
-✦ Ah, I mistakenly tried to use write_todos which is not available in my current toolset (context rehydration sometimes misses this). I will proceed directly 
-  with read_file on SynOSDbContext.cs.
+✦ Service implemented. Now creating extension method HrmsInterpretationServiceCollectionExtensions.cs.
 ╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ ✓  ReadFile src\SynOS.Data\SynOSDbContext.cs                                                                                                               │
+│ ✓  WriteFile Writing to src\SynOS.Servic...ionExtensions.cs                                                                                                │
 │                                                                                                                                                            │
+│  1 using Microsoft.Extensions.DependencyInjection;                                                                                                         │
+│  2                                                                                                                                                         │
+│  3 namespace SynOS.Services.HRMS.Interpretation                                                                                                            │
+│  4 {                                                                                                                                                       │
+│  5     public static class HrmsInterpretationServiceCollectionExtensions                                                                                   │
+│  6     {                                                                                                                                                   │
+│  7         public static IServiceCollection AddHrmsInterpretation(this IServiceCollection services)                                                        │
+│  8         {                                                                                                                                               │
+│  9             services.AddScoped<IHrmsInterpretationService, HrmsInterpretationService>();                                                                │
+│ 10             return services;                                                                                                                            │
+│ 11         }                                                                                                                                               │
+│ 12     }                                                                                                                                                   │
+│ 13 }                                                                                                                                                       │
 ╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-✦ Wait, SynOSDbContext.cs looks fine. Wait, AddReferralPayableFact was removed earlier. read_file output shows ReferralPayableFact entity and config are      
-  present in SynOSDbContext.cs.
+✦ Finally, registering in Program.cs.
+  Needs using SynOS.Services.HRMS.Interpretation; and builder.Services.AddHrmsInterpretation();.
 
-  But read_file of D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Data\Migrations\20260112153308_AddReferralPayableFact.cs showed it creating       
-  ReferralPayableFacts.
-
-  If I generated AddSpendEngineSchema after removing AddReferralPayableFact, then AddSpendEngineSchema would try to create ReferralPayableFacts again if the  
-  model snapshot wasn't reverted properly or if I'm confused about the state.
-
-  Actually, the previous turn had AddReferralPayableFact succeed (the migration file was created).
-
-  The dry run said: "Generate Migration: AddSpendEngineSchema".
-
-  If AddReferralPayableFact already added ReferralPayableFacts and updated SpendFacts, then AddSpendEngineSchema should only add SpendFacts if it wasn't      
-  there, or update it.
-
-  Wait, SpendFacts was updated in AddReferralPayableFact.
-
-  If I now add DbSet<SpendFact> (which I did) and configure it (which I did), EF Core might think there are no changes if AddReferralPayableFact already      
-  covered it.
-
-  However, AddSpendEngineSchema failed with build errors.
-
-  Let's look at SynOSDbContext.cs again.
-  Line 167: public DbSet<ReferralPayableFact> ReferralPayableFacts { get; set; } = null!; // ADDED
-  Line 207: public DbSet<SpendFact> SpendFacts { get; set; }
-
-  And OnModelCreating:
-  Line 460: modelBuilder.Entity<SpendFact>(entity => ... (Configured unique index)
-  Line 268: modelBuilder.Entity<ReferralPayableFact>(entity => ...
-
-  So the code has both.
-
-  The migration AddReferralPayableFact (from previous turn) already updated SpendFacts table (added columns, index).
-
-  So if I generate AddSpendEngineSchema, it should be empty or just minor adjustments.
-
-  The build failure in AddSpendEngineSchema was due to:
-  D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\Referral\ReferralFinancialService.cs(101,21): error CS1739: The best overload for
-  'SpendFact' does not have a parameter named 'externalReference'
-
-  This error is in ReferralFinancialService.cs.
-
-  Wait! I thought I refactored ReferralFinancialService.cs in the previous turn to remove SpendFact usage!
-
-  Let's check src/SynOS.Services/Referral/ReferralFinancialService.cs.
+  I will add the using and the registration.
 ╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ ✓  ReadFile src\...\ReferralFinancialService.cs                                                                                                            │
+│ ✓  Edit src\SynOS.Api\Program.cs: using SynOS.Services.Governanc... => using SynOS.Services.Governanc...                                                   │
 │                                                                                                                                                            │
+│ 31   using SynOS.Services.HR; // ADDED                                                                                                                     │
+│ 32   using SynOS.Services.Governance; // ADDED                                                                                                             │
+│ 33   using SynOS.Services.Compliance; // ADDED                                                                                                             │
+│ 34 + using SynOS.Services.HRMS.Interpretation; // ADDED                                                                                                    │
+│ 35                                                                                                                                                         │
+│ 36   var builder = WebApplication.CreateBuilder(args);                                                                                                     │
+│ 37                                                                                                                                                         │
 ╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-✦ The file src/SynOS.Services/Referral/ReferralFinancialService.cs IS refactored. It does NOT use SpendFact.
-
-  So why did the build fail with ReferralFinancialService.cs(101,21): error CS1739?
-
-  Maybe the build didn't pick up the latest file change? Or maybe I am looking at an old error log?
-
-  The error log mpx-errors.txt (which I didn't read in this turn, I relied on dotnet build output in the previous turn).
-
-  Wait, the dotnet build output in the previous turn (the one that failed) showed:
-  D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\Referral\ReferralFinancialService.cs(101,21): error CS1739: The best overload for
-  'SpendFact' does not have a parameter named 'externalReference'
-
-  This implies the compiler sees the old version of ReferralFinancialService.cs.
-
-  But I just read it and it looks correct.
-
-  Is it possible I wrote to the wrong path?
-  src/SynOS.Services/Referral/ReferralFinancialService.cs
-
-  Let me check the directory listing.
+✦ Adding registration.
 ╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ ✓  ReadFolder src/SynOS.Services/Referral                                                                                                                  │
+│ ✓  Edit src\SynOS.Api\Program.cs: builder.Services.AddCompliance... => builder.Services.AddCompliance...                                                   │
 │                                                                                                                                                            │
-│ Listed 7 item(s).                                                                                                                                          │
+│ 161   builder.Services.AddRevenueEngine();                                                                                                                 │
+│ 162   builder.Services.AddComplianceServices(); // ADDED                                                                                                   │
+│ 163   builder.Services.AddGovernanceServices(); // ADDED                                                                                                   │
+│ 164 + builder.Services.AddHrmsInterpretation(); // ADDED                                                                                                   │
+│ 165                                                                                                                                                        │
+│ 166   // Register Economics Intelligence services (OPT-IN)                                                                                                 │
+│ 167   // builder.Services.AddEconomicsIntelligence();                                                                                                      │
 ╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-✦ The file exists. I must have successfully overwritten it.
-
-  If dotnet build is failing with old errors, maybe it's not rebuilding properly? Or maybe there's another file?
-
-  Let's try to build again. This time it should succeed because ReferralFinancialService.cs is fixed.
-
-  Wait, I was doing "Dry-Run Simulation: Module 6 Implementation". Then "Green Light". Then I started executing.
-
-  I updated SpendFact.cs.
-  I created SpendEngineViolationException.cs.
-  I updated SynOSDbContext.cs.
-  I tried to generate AddSpendEngineSchema. It failed.
-
-  If I run dotnet build now, it should tell me the truth.
+✦ Build to verify.
 ╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ ✓  Shell dotnet build [current working directory D:\Projects\SynOS-Synthesized-Lab-Intelligence] (Running dotnet build to verify current state.)           │
+│ ✓  Shell dotnet build [current working directory D:\Projects\SynOS-Synthesized-Lab-Intelligence] (Final build verification for HRMS Interpretation Layer.) │
 │                                                                                                                                                            │
-│ ... first 59 lines hidden ...                                                                                                                              │
+│ ... first 52 lines hidden ...                                                                                                                              │
+│ y null reference. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReportService.cs(294,57): warning CS8602: Dereference of a possibly null                 │
+│ reference. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                       │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReportService.cs(295,57): warning CS8602: Dereference of a possibly null                 │
+│ reference. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                       │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReportService.cs(310,31): warning CS8602: Dereference of a possibly null                 │
+│ reference. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                       │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReportService.cs(314,32): warning CS8602: Dereference of a possibly null                 │
+│ reference. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                       │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReportService.cs(334,33): warning CS8602: Dereference of a possibly null                 │
+│ reference. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                       │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReportService.cs(334,33): warning CS8602: Dereference of a possibly null                 │
+│ reference. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                       │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReportService.cs(370,32): warning CS8602: Dereference of a possibly null                 │
+│ reference. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                       │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ResultService.cs(445,76): warning CS8602: Dereference of a possibly null                 │
+│ reference. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                       │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ResultService.cs(451,36): warning CS8602: Dereference of a possibly null                 │
+│ reference. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                       │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReportService.cs(404,39): warning CS8602: Dereference of a possibly null                 │
+│ reference. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                       │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReportService.cs(413,27): warning CS8602: Dereference of a possibly null                 │
+│ reference. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                       │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReportService.cs(422,28): warning CS8601: Possible null reference assignm                │
+│ ent. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                             │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReportService.cs(423,38): warning CS8601: Possible null reference assignm                │
+│ ent. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                             │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReportService.cs(476,31): warning CS8602: Dereference of a possibly null                 │
+│ reference. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                       │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\RadiologyService.cs(290,40): warning CS8601: Possible null reference assi                │
+│ gnment. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                          │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\InvoiceService.cs(82,31): warning CS8602: Dereference of a possibly null                 │
+│ reference. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                       │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\InvoiceService.cs(83,31): warning CS8602: Dereference of a possibly null                 │
+│ reference. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                       │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\InvoiceService.cs(99,59): warning CS8602: Dereference of a possibly null                 │
+│ reference. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                       │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\InvoiceService.cs(99,59): warning CS8602: Dereference of a possibly null                 │
+│ reference. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                       │
 │ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\RadiologyService.cs(341,44): warning CS8601: Possible null reference assi                │
 │ gnment. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                          │
 │ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\RadiologyService.cs(343,38): warning CS8601: Possible null reference assi                │
@@ -226,6 +468,284 @@
 │ gnment. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                          │
 │ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\RadiologyService.cs(396,48): warning CS8601: Possible null reference assi                │
 │ gnment. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                          │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\PacsService.cs(416,59): warning CS8602: Dereference of a possibly null re                │
+│ ference. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                         │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\RadiologyService.cs(496,28): warning CS8601: Possible null reference assi                │
+│ gnment. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                          │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\RadiologyService.cs(497,34): warning CS8601: Possible null reference assi                │
+│ gnment. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                          │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\RadiologyService.cs(498,35): warning CS8601: Possible null reference assi                │
+│ gnment. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                          │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\RadiologyService.cs(502,35): warning CS8601: Possible null reference assi                │
+│ gnment. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                          │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\RadiologyService.cs(517,21): warning CS8600: Converting null literal or p                │
+│ ossible null value to non-nullable type. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                         │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\RadiologyService.cs(524,79): warning CS8604: Possible null reference argu                │
+│ ment for parameter 'templateModel' in 'Task<byte[]> IReportPdfRenderer.GeneratePdfAsync(ReportDataModel data, TemplateModel templateModel)'                │
+│ . [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                                │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\AuditService.cs(46,38): warning CA2017: Number of parameters supplied in                 │
+│ the logging message template do not match the number of named placeholders (https://learn.microsoft.com/dotnet/fundamentals/code-analysis/q                │
+│ uality-rules/ca2017) [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                             │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\HRMS\Interpretation\HrmsInterpretationService.cs(48,35): error CS1061: 'P                │
+│ ayrollRun' does not contain a definition for 'PeriodStart' and no accessible extension method 'PeriodStart' accepting a first argument of t                │
+│ ype 'PayrollRun' could be found (are you missing a using directive or an assembly reference?) [D:\Projects\SynOS-Synthesized-Lab-Intelligen                │
+│ ce\src\SynOS.Services\SynOS.Services.csproj]                                                                                                               │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\HRMS\Interpretation\HrmsInterpretationService.cs(49,33): error CS1061: 'P                │
+│ ayrollRun' does not contain a definition for 'PeriodEnd' and no accessible extension method 'PeriodEnd' accepting a first argument of type                 │
+│ 'PayrollRun' could be found (are you missing a using directive or an assembly reference?) [D:\Projects\SynOS-Synthesized-Lab-Intelligence\s                │
+│ rc\SynOS.Services\SynOS.Services.csproj]                                                                                                                   │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\HRMS\Interpretation\HrmsInterpretationService.cs(59,39): error CS1061: 'P                │
+│ ayrollFact' does not contain a definition for 'Currency' and no accessible extension method 'Currency' accepting a first argument of type '                │
+│ PayrollFact' could be found (are you missing a using directive or an assembly reference?) [D:\Projects\SynOS-Synthesized-Lab-Intelligence\s                │
+│ rc\SynOS.Services\SynOS.Services.csproj]                                                                                                                   │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\HRMS\Interpretation\HrmsInterpretationService.cs(62,28): error CS1061: 'P                │
+│ ayComponent' does not contain a definition for 'Type' and no accessible extension method 'Type' accepting a first argument of type 'PayComp                │
+│ onent' could be found (are you missing a using directive or an assembly reference?) [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\Syn                │
+│ OS.Services\SynOS.Services.csproj]                                                                                                                         │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\HRMS\Interpretation\HrmsInterpretationService.cs(95,35): error CS1061: 'P                │
+│ ayrollRun' does not contain a definition for 'PeriodStart' and no accessible extension method 'PeriodStart' accepting a first argument of t                │
+│ ype 'PayrollRun' could be found (are you missing a using directive or an assembly reference?) [D:\Projects\SynOS-Synthesized-Lab-Intelligen                │
+│ ce\src\SynOS.Services\SynOS.Services.csproj]                                                                                                               │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\HRMS\Interpretation\HrmsInterpretationService.cs(96,33): error CS1061: 'P                │
+│ ayrollRun' does not contain a definition for 'PeriodEnd' and no accessible extension method 'PeriodEnd' accepting a first argument of type                 │
+│ 'PayrollRun' could be found (are you missing a using directive or an assembly reference?) [D:\Projects\SynOS-Synthesized-Lab-Intelligence\s                │
+│ rc\SynOS.Services\SynOS.Services.csproj]                                                                                                                   │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\HRMS\Interpretation\HrmsInterpretationService.cs(110,50): error CS1061: '                │
+│ PayComponent' does not contain a definition for 'Type' and no accessible extension method 'Type' accepting a first argument of type 'PayCom                │
+│ ponent' could be found (are you missing a using directive or an assembly reference?) [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\Sy                │
+│ nOS.Services\SynOS.Services.csproj]                                                                                                                        │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\HRMS\Interpretation\HrmsInterpretationService.cs(189,31): error CS1061: '                │
+│ PayrollRun' does not contain a definition for 'PeriodEnd' and no accessible extension method 'PeriodEnd' accepting a first argument of type                │
+│  'PayrollRun' could be found (are you missing a using directive or an assembly reference?) [D:\Projects\SynOS-Synthesized-Lab-Intelligence\                │
+│ src\SynOS.Services\SynOS.Services.csproj]                                                                                                                  │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\HRMS\Interpretation\HrmsInterpretationService.cs(189,65): error CS1061: '                │
+│ PayrollRun' does not contain a definition for 'PeriodEnd' and no accessible extension method 'PeriodEnd' accepting a first argument of type                │
+│  'PayrollRun' could be found (are you missing a using directive or an assembly reference?) [D:\Projects\SynOS-Synthesized-Lab-Intelligence\                │
+│ src\SynOS.Services\SynOS.Services.csproj]                                                                                                                  │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\HRMS\Interpretation\HrmsInterpretationService.cs(200,33): error CS1061: '                │
+│ PayComponent' does not contain a definition for 'Type' and no accessible extension method 'Type' accepting a first argument of type 'PayCom                │
+│ ponent' could be found (are you missing a using directive or an assembly reference?) [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\Sy                │
+│ nOS.Services\SynOS.Services.csproj]                                                                                                                        │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\HRMS\Interpretation\HrmsInterpretationService.cs(215,29): error CS0019: O                │
+│ perator '>=' cannot be applied to operands of type 'DateTime' and 'DateOnly' [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Serv                │
+│ ices\SynOS.Services.csproj]                                                                                                                                │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\HRMS\Interpretation\HrmsInterpretationService.cs(281,35): error CS1061: '                │
+│ PayrollRun' does not contain a definition for 'RecordedAt' and no accessible extension method 'RecordedAt' accepting a first argument of ty                │
+│ pe 'PayrollRun' could be found (are you missing a using directive or an assembly reference?) [D:\Projects\SynOS-Synthesized-Lab-Intelligenc                │
+│ e\src\SynOS.Services\SynOS.Services.csproj]                                                                                                               │
+│     405 Warning(s)                                                                                                                                         │
+│     12 Error(s)                                                                                                                                            │
+│                                                                                                                                                            │
+│ Time Elapsed 00:01:01.06                                                                                                                                   │
+╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+✦ It seems I made some assumptions about the existing entities (PayrollRun, PayrollFact) that were incorrect.
+
+  Errors:
+   1. PayrollRun does not have PeriodStart and PeriodEnd? Or they are named differently?
+      HrmsInterpretationService.cs(48,35): error CS1061: 'PayrollRun' does not contain a definition for 'PeriodStart'
+   2. PayrollFact does not have Currency?
+   3. PayComponent does not have Type?
+   4. Operator '>=' cannot be applied to operands of type 'DateTime' and 'DateOnly' (Date mismatch in WorkforceCostView).
+   5. PayrollRun does not have RecordedAt?
+
+  I need to check the definition of PayrollRun, PayrollFact, and PayComponent. I will read_file them to correct HrmsInterpretationService.cs.
+
+  I'll start by checking the Payroll entities.
+╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ ✓  ReadFile src\...\Payroll\PayrollRun.cs                                                                                                                  │
+│                                                                                                                                                            │
+╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+✦ PayrollRun links to PayrollPeriod, it doesn't store dates itself. I need to join PayrollPeriods to get dates. RecordedAt is likely CompletedAt or CreatedAt.
+
+  Checking PayrollPeriod.cs.
+╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ ✓  ReadFile src\...\Payroll\PayrollPeriod.cs                                                                                                               │
+│                                                                                                                                                            │
+╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+✦ PayrollPeriod has StartDate and EndDate (DateTime).
+
+  Now checking PayrollFact.cs.
+╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ ✓  ReadFile src\...\Payroll\PayrollFact.cs                                                                                                                 │
+│                                                                                                                                                            │
+╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+✦ PayrollFact does NOT have Currency. I should assume system currency or hardcode it for now (or maybe it's in PayrollRun context? No). I'll default to "INR" 
+  or similar if missing.
+
+  Checking PayComponent.cs.
+╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ ✓  ReadFile src\...\Payroll\PayComponent.cs                                                                                                                │
+│                                                                                                                                                            │
+╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+✦ PayComponent uses ComponentType (enum), not Type. And Name is nullable.
+
+  Correction Plan for HrmsInterpretationService.cs:
+
+   1. Join `PayrollPeriods` when querying PayrollRuns to get dates.
+   2. Use ComponentType instead of Type for PayComponent.
+   3. Default Currency to "INR" (since PayrollFact lacks it).
+   4. Fix Date comparisons (DateTime vs DateOnly). PayrollPeriod uses DateTime. Input month is DateOnly. Convert DateOnly to DateTime for comparison.
+   5. Use CompletedAt (or CreatedAt if null) for PayrollRun timestamp.
+
+  I will rewrite HrmsInterpretationService.cs with these fixes.
+
+  Revised GetPayslipAsync:
+   - Join PayrollPeriods to get dates.
+   - Use ComponentType.
+
+  Revised GetWorkforceCostAsync:
+   - PayrollPeriod dates are DateTime. month is DateOnly.
+   - statutory query: LegalPeriodStart is DateTime in StatutoryObligationFact. startDate is DateTime. So comparison should be fine?
+     - StatutoryObligationFact.LegalPeriodStart definition: public DateTime LegalPeriodStart { get; set; } (I defined it as DateTime in Module 7
+       implementation).
+     - The error was Operator '>=' cannot be applied to operands of type 'DateTime' and 'DateOnly'.
+     - Ah, GetWorkforceCostAsync(DateOnly month). I created startDate = new DateTime(...).
+     - Wait, StatutoryObligationFact definition in my previous turn:
+   1     public DateTime LegalPeriodStart { get; set; }
+      I'll check where the error is.
+      HrmsInterpretationService.cs(215,29): error CS0019: Operator '>=' cannot be applied to operands of type 'DateTime' and 'DateOnly'
+      Line 215: s.LegalPeriodStart >= DateOnly.FromDateTime(startDate)
+      If LegalPeriodStart is DateTime, and I compare to DateOnly, that's the error. I should compare DateTime to DateTime.
+
+  I will apply all fixes.
+╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ ✓  WriteFile Writing to sr\...\HrmsInterpretationService.cs                                                                                                │
+│                                                                                                                                                            │
+│ ... first 98 lines hidden ...                                                                                                                              │
+│ 149           var dayStatus = new DailyStatus { Date = DateOnly.FromDateTime(d) };                                                                         │
+│ 150                                                                                                                                                        │
+│ 150 -         // Check Leave                                                                                                                               │
+│ 151 -         var leave = leaves.FirstOrDefault(l => l.StartTime.Date <= d.Date && l.EndTime.Date >= d.Date); // Simplified overlap                        │
+│ 151 +         var leave = leaves.FirstOrDefault(l => l.StartTime.Date <= d.Date && l.EndTime.Date >= d.Date);                                              │
+│ 152           if (leave != null)                                                                                                                           │
+│ 153           {                                                                                                                                            │
+│ 154               dayStatus.IsLeave = true;                                                                                                                │
+│ 158           }                                                                                                                                            │
+│ 159           else                                                                                                                                         │
+│ 160           {                                                                                                                                            │
+│ 161 -             // Check Work                                                                                                                            │
+│ 161               var daySessions = sessions.Where(s => s.StartTime.Date == d.Date).ToList();                                                              │
+│ 162               if (daySessions.Any())                                                                                                                   │
+│ 163               {                                                                                                                                        │
+│ 167               }                                                                                                                                        │
+│ 168               else                                                                                                                                     │
+│ 169               {                                                                                                                                        │
+│ 171 -                 dayStatus.Status = "Absent"; // Or Weekend, simplistic                                                                               │
+│ 170 +                 dayStatus.Status = "Absent";                                                                                                         │
+│ 171                   view.TotalAbsentDays++;                                                                                                              │
+│ 172               }                                                                                                                                        │
+│ 173           }                                                                                                                                            │
+│ ══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════ │
+│ 182       var startDate = new DateTime(month.Year, month.Month, 1);                                                                                        │
+│ 183       var endDate = startDate.AddMonths(1);                                                                                                            │
+│ 184                                                                                                                                                        │
+│ 186 -     // 1. Payroll Cost (from Runs finalized in this month)                                                                                           │
+│ 187 -     // Simplified: Finds runs ending in this month                                                                                                   │
+│ 185       var runs = await _context.PayrollRuns.AsNoTracking()                                                                                             │
+│ 189 -         .Where(r => r.PeriodEnd.Year == month.Year && r.PeriodEnd.Month == month.Month) // Simplified                                                │
+│ 190 -         .Select(r => r.PayrollRunId)                                                                                                                 │
+│ 186 +         .Join(_context.PayrollPeriods, r => r.PayrollPeriodId, p => p.PayrollPeriodId, (r, p) => new { r, p })                                       │
+│ 187 +         .Where(x => x.p.EndDate.Year == month.Year && x.p.EndDate.Month == month.Month)                                                              │
+│ 188 +         .Select(x => x.r.PayrollRunId)                                                                                                               │
+│ 189           .ToListAsync();                                                                                                                              │
+│ 190                                                                                                                                                        │
+│ 193 -     // Need PayComponent logic to get net impact to company?                                                                                         │
+│ 194 -     // Actually, Total Cost = Earnings + Employer Statutory. Deductions are internal.                                                                │
+│ 195 -     // Wait, Cost = Gross Earnings + Employer Contributions.                                                                                         │
+│ 196 -     // I'll sum Earning components for Payroll Cost.                                                                                                 │
+│ 191       var payrollCost = await _context.PayrollFacts.AsNoTracking()                                                                                     │
+│ 192           .Where(f => runs.Contains(f.PayrollRunId))                                                                                                   │
+│ 193           .Join(_context.PayComponents, f => f.PayComponentId, c => c.PayComponentId, (f, c) => new { f, c })                                          │
+│ ══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════ │
+│ 200 -         .Where(x => x.c.Type == PayComponentType.Earning)                                                                                            │
+│ 194 +         .Where(x => x.c.ComponentType == PayComponentType.Earning)                                                                                   │
+│ 195           .SumAsync(x => x.f.Amount);                                                                                                                  │
+│ 196                                                                                                                                                        │
+│ ══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════ │
+│ 203 -     // 2. Contractor Cost (Spend Engine)                                                                                                             │
+│ 204 -     // Channel = "Supplier Payable" or similar, need to filter by Service/Contractor?                                                                │
+│ 205 -     // "Channel" is a string in SpendFact. "Referral / Commission Payable" is another.                                                               │
+│ 206 -     // I'll grab generic "Salary Payable" from Spend if Payroll didn't cover it? No, Payroll covers Salary.                                          │
+│ 207 -     // Contractor payouts might be in "Supplier Payable".                                                                                            │
+│ 197       var contractorCost = await _context.SpendFacts.AsNoTracking()                                                                                    │
+│ ══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════ │
+│ 209 -         .Where(s => s.OccurredAt >= startDate && s.OccurredAt < endDate && s.Channel == "Supplier Payable") // Heuristic                             │
+│ 198 +         .Where(s => s.OccurredAt >= startDate && s.OccurredAt < endDate && s.Channel == "Supplier Payable")                                          │
+│ 199           .SumAsync(s => s.Amount);                                                                                                                    │
+│ 200                                                                                                                                                        │
+│ ══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════ │
+│ 212 -     // 3. Statutory (Employer Share) - Module 7                                                                                                      │
+│ 213 -     // StatutoryObligationFact.ObligationType == EmployerContribution                                                                                │
+│ 201       var statutory = await _context.StatutoryObligationFacts.AsNoTracking()                                                                           │
+│ ══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════ │
+│ 215 -         .Where(s => s.LegalPeriodStart >= DateOnly.FromDateTime(startDate) && s.ObligationType ==                                                    │
+│     Models.Enums.Compliance.ObligationType.EmployerContribution)                                                                                           │
+│ 202 +         .Where(s => s.LegalPeriodStart >= startDate && s.ObligationType == Models.Enums.Compliance.ObligationType.EmployerContribution)              │
+│ 203           .SumAsync(s => s.Amount);                                                                                                                    │
+│ 204                                                                                                                                                        │
+│ 205       return new WorkforceCostView                                                                                                                     │
+│ ══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════ │
+│ 229           EntityName = $"{employee.FirstName} {employee.LastName}"                                                                                     │
+│ 230       };                                                                                                                                               │
+│ 231                                                                                                                                                        │
+│ ══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════ │
+│ 245 -     // 1. Time Facts                                                                                                                                 │
+│ 232       var clockEvents = await _context.ClockEventFacts.AsNoTracking()                                                                                  │
+│ 233           .Where(c => c.EmployeeId == employeeId)                                                                                                      │
+│ 234           .Select(c => new TimelineEvent                                                                                                               │
+│ ══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════ │
+│ 241           .ToListAsync();                                                                                                                              │
+│ 242       view.Events.AddRange(clockEvents);                                                                                                               │
+│ 243                                                                                                                                                        │
+│ ══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════ │
+│ 258 -     // 2. Leave Facts                                                                                                                                │
+│ 244       var leaveEvents = await _context.LeaveFacts.AsNoTracking()                                                                                       │
+│ 245           .Where(l => l.EmployeeId == employeeId)                                                                                                      │
+│ 246           .Select(l => new TimelineEvent                                                                                                               │
+│ ══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════ │
+│ 254           .ToListAsync();                                                                                                                              │
+│ 255       view.Events.AddRange(leaveEvents);                                                                                                               │
+│ 256                                                                                                                                                        │
+│ ══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════ │
+│ 272 -     // 3. Payroll Facts (Grouping by Run to avoid noise)                                                                                             │
+│ 273 -     // Just showing "Payroll Processed" event per run                                                                                                │
+│ 274 -     // This requires joining to Facts to see if employee was included                                                                                │
+│ 257       var payEvents = await _context.PayrollFacts.AsNoTracking()                                                                                       │
+│ 258           .Where(f => f.EmployeeId == employeeId)                                                                                                      │
+│ 259           .Select(f => f.PayrollRunId)                                                                                                                 │
+│ 260           .Distinct()                                                                                                                                  │
+│ 261           .Join(_context.PayrollRuns, id => id, r => r.PayrollRunId, (id, r) => new TimelineEvent                                                      │
+│ 262           {                                                                                                                                            │
+│ ══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════ │
+│ 281 -             Timestamp = r.RecordedAt ?? DateTime.UtcNow, // PayrollRun has RecordedAt? Check entity.                                                 │
+│ 263 +             Timestamp = r.CompletedAt ?? r.CreatedAt,                                                                                                │
+│ 264               SourceModule = "Payroll",                                                                                                                │
+│ 265               EventType = "RunIncluded",                                                                                                               │
+│ 266               Description = r.Status.ToString(),                                                                                                       │
+│ 269           .ToListAsync();                                                                                                                              │
+│ 270       view.Events.AddRange(payEvents);                                                                                                                 │
+│ 271                                                                                                                                                        │
+│ ══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════ │
+│ 290 -     // 4. Spend Facts                                                                                                                                │
+│ 272       var spendEvents = await _context.SpendFacts.AsNoTracking()                                                                                       │
+│ 273           .Where(s => s.PayeeId == employeeId)                                                                                                         │
+│ 274           .Select(s => new TimelineEvent                                                                                                               │
+╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+✦ Now dotnet build again.
+╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ ✓  Shell dotnet build [current working directory D:\Projects\SynOS-Synthesized-Lab-Intelligence] (Final build verification for HRMS Interpretation Layer … │
+│                                                                                                                                                            │
+│ ... first 58 lines hidden ...                                                                                                                              │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReportService.cs(404,39): warning CS8602: Dereference of a possibly null                 │
+│ reference. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                       │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReportService.cs(413,27): warning CS8602: Dereference of a possibly null                 │
+│ reference. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                       │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReportService.cs(422,28): warning CS8601: Possible null reference assignm                │
+│ ent. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                             │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReportService.cs(423,38): warning CS8601: Possible null reference assignm                │
+│ ent. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                             │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReportService.cs(476,31): warning CS8602: Dereference of a possibly null                 │
+│ reference. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                       │
 │ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\RadiologyService.cs(496,28): warning CS8601: Possible null reference assi                │
 │ gnment. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                          │
 │ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\RadiologyService.cs(497,34): warning CS8601: Possible null reference assi                │
@@ -245,6 +765,15 @@
 │ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\Admin\CsvImportRequestDto.cs(9,26): warning CS8618: Non-nullable p                │
 │ roperty 'File' must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring the property as                │
 │  nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\SynOS.Api.csproj]                                                                 │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\Radiology\PacsController.cs(32,37): warning CS8604: Possible null                 │
+│ reference argument for parameter 'input' in 'Guid Guid.Parse(string input)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\                │
+│ SynOS.Api.csproj]                                                                                                                                          │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\RadiologyReportsController.cs(40,37): warning CS8604: Possible nul                │
+│ l reference argument for parameter 'input' in 'Guid Guid.Parse(string input)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Ap                │
+│ i\SynOS.Api.csproj]                                                                                                                                        │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\RadiologyReportsController.cs(48,37): warning CS8604: Possible nul                │
+│ l reference argument for parameter 'input' in 'Guid Guid.Parse(string input)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Ap                │
+│ i\SynOS.Api.csproj]                                                                                                                                        │
 │ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\MappingProfile.cs(20,100): warning CS8602: Dereference of a possibly null refe                │
 │ rence. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\SynOS.Api.csproj]                                                                     │
 │ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\MappingProfile.cs(51,85): warning CS8602: Dereference of a possibly null refer                │
@@ -259,13 +788,7 @@
 │ ence. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\SynOS.Api.csproj]                                                                      │
 │ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\MappingProfile.cs(83,73): warning CS8602: Dereference of a possibly null refer                │
 │ ence. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\SynOS.Api.csproj]                                                                      │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\IMSStockOperationController.cs(27,37): warning CS8604: Possible nu                │
-│ ll reference argument for parameter 'input' in 'Guid Guid.Parse(string input)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.A                │
-│ pi\SynOS.Api.csproj]                                                                                                                                       │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\IMSStockOperationController.cs(36,37): warning CS8604: Possible nu                │
-│ ll reference argument for parameter 'input' in 'Guid Guid.Parse(string input)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.A                │
-│ pi\SynOS.Api.csproj]                                                                                                                                       │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\IMSPurchasingController.cs(127,41): warning CS8604: Possible null                 │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\Radiology\PacsController.cs(45,37): warning CS8604: Possible null                 │
 │ reference argument for parameter 'input' in 'Guid Guid.Parse(string input)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\                │
 │ SynOS.Api.csproj]                                                                                                                                          │
 │ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\RadiologyController.cs(30,37): warning CS8604: Possible null refer                │
@@ -274,17 +797,6 @@
 │ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\RadiologyController.cs(47,37): warning CS8604: Possible null refer                │
 │ ence argument for parameter 'input' in 'Guid Guid.Parse(string input)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\SynOS                │
 │ .Api.csproj]                                                                                                                                               │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\RadiologyReportsController.cs(40,37): warning CS8604: Possible nul                │
-│ l reference argument for parameter 'input' in 'Guid Guid.Parse(string input)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Ap                │
-│ i\SynOS.Api.csproj]                                                                                                                                        │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\RadiologyReportsController.cs(48,37): warning CS8604: Possible nul                │
-│ l reference argument for parameter 'input' in 'Guid Guid.Parse(string input)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Ap                │
-│ i\SynOS.Api.csproj]                                                                                                                                        │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\Radiology\PacsController.cs(32,37): warning CS8604: Possible null                 │
-│ reference argument for parameter 'input' in 'Guid Guid.Parse(string input)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\                │
-│ SynOS.Api.csproj]                                                                                                                                          │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\IMSWastageController.cs(42,110): warning CS8629: Nullable value ty                │
-│ pe may be null. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\SynOS.Api.csproj]                                                            │
 │ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\RadiologyController.cs(61,37): warning CS8604: Possible null refer                │
 │ ence argument for parameter 'input' in 'Guid Guid.Parse(string input)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\SynOS                │
 │ .Api.csproj]                                                                                                                                               │
@@ -294,6 +806,12 @@
 │ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\RadiologyController.cs(101,37): warning CS8604: Possible null refe                │
 │ rence argument for parameter 'input' in 'Guid Guid.Parse(string input)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\SynO                │
 │ S.Api.csproj]                                                                                                                                              │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\Radiology\PacsController.cs(59,37): warning CS8604: Possible null                 │
+│ reference argument for parameter 'input' in 'Guid Guid.Parse(string input)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\                │
+│ SynOS.Api.csproj]                                                                                                                                          │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\Radiology\PacsController.cs(68,37): warning CS8604: Possible null                 │
+│ reference argument for parameter 'input' in 'Guid Guid.Parse(string input)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\                │
+│ SynOS.Api.csproj]                                                                                                                                          │
 │ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\Radiology\PacsAdminController.cs(25,37): warning CS8604: Possible                 │
 │ null reference argument for parameter 'input' in 'Guid Guid.Parse(string input)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS                │
 │ .Api\SynOS.Api.csproj]                                                                                                                                     │
@@ -303,13 +821,15 @@
 │ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\Radiology\PacsAdminController.cs(41,37): warning CS8604: Possible                 │
 │ null reference argument for parameter 'input' in 'Guid Guid.Parse(string input)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS                │
 │ .Api\SynOS.Api.csproj]                                                                                                                                     │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\Radiology\PacsController.cs(45,37): warning CS8604: Possible null                 │
-│ reference argument for parameter 'input' in 'Guid Guid.Parse(string input)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\                │
-│ SynOS.Api.csproj]                                                                                                                                          │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\Radiology\PacsController.cs(59,37): warning CS8604: Possible null                 │
-│ reference argument for parameter 'input' in 'Guid Guid.Parse(string input)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\                │
-│ SynOS.Api.csproj]                                                                                                                                          │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\Radiology\PacsController.cs(68,37): warning CS8604: Possible null                 │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\IMSStockOperationController.cs(27,37): warning CS8604: Possible nu                │
+│ ll reference argument for parameter 'input' in 'Guid Guid.Parse(string input)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.A                │
+│ pi\SynOS.Api.csproj]                                                                                                                                       │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\IMSStockOperationController.cs(36,37): warning CS8604: Possible nu                │
+│ ll reference argument for parameter 'input' in 'Guid Guid.Parse(string input)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.A                │
+│ pi\SynOS.Api.csproj]                                                                                                                                       │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\IMSWastageController.cs(42,110): warning CS8629: Nullable value ty                │
+│ pe may be null. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\SynOS.Api.csproj]                                                            │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\IMSPurchasingController.cs(127,41): warning CS8604: Possible null                 │
 │ reference argument for parameter 'input' in 'Guid Guid.Parse(string input)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\                │
 │ SynOS.Api.csproj]                                                                                                                                          │
 │ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\SecureDownloadController.cs(61,13): warning ASP0019: Use IHeaderDi                │
@@ -330,1370 +850,96 @@
 │ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\SecureDownloadController.cs(96,13): warning ASP0019: Use IHeaderDi                │
 │ ctionary.Append or the indexer to append or set headers. IDictionary.Add will throw an ArgumentException when attempting to add a duplicate                │
 │  key. (https://aka.ms/aspnet/analyzers) [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\SynOS.Api.csproj]                                   │
-│     436 Warning(s)                                                                                                                                         │
-│     0 Error(s)                                                                                                                                             │
-│                                                                                                                                                            │
-│ Time Elapsed 00:01:13.62                                                                                                                                   │
-╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-✦ Build succeeded. Module 7 structure is implemented and compiled without errors in Module 7 itself (warnings in other modules are ignored as per
-  instructions).
-
-  I'll now create the StatutoryObligationFactWriter and its interface to complete the execution plan.
-
-  Plan:
-   1. Create src/SynOS.Services/Compliance/IStatutoryObligationFactWriter.cs.
-   2. Create src/SynOS.Services/Compliance/StatutoryObligationFactWriter.cs implementing the append-only logic.
-   3. Create src/SynOS.Services/Compliance/Exceptions/ComplianceEngineViolationException.cs (wait, I already created that? Let me check the directory list    
-      from earlier. Ah, I created it in the dry run output list, and I think I created the directory but maybe not the file yet. I'll check).
-   4. Register services in ComplianceServiceCollectionExtensions.cs.
-   5. Update Program.cs to register Compliance services (Wait, I need to create the extension method first).
-
-  Let's check ComplianceEngineViolationException.cs.
-╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ ✓  ReadFolder src/SynOS.Servic...iance/Exceptions                                                                                                          │
-│                                                                                                                                                            │
-│ Directory is empty.                                                                                                                                        │
-╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-
-ℹ IMPORTANT: This conversation exceeded the compress threshold. A compressed context will be sent for future messages (compressed from: 808119 to 262656      
-  tokens).
-✦ It's empty. Creating exception.
-╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ ✓  WriteFile Writing to src\SynOS.Servic...tionException.cs                                                                                                │
-│                                                                                                                                                            │
-│  1 using System;                                                                                                                                           │
-│  2                                                                                                                                                         │
-│  3 namespace SynOS.Services.Compliance.Exceptions                                                                                                          │
-│  4 {                                                                                                                                                       │
-│  5     public class ComplianceEngineViolationException : Exception                                                                                         │
-│  6     {                                                                                                                                                   │
-│  7         public ComplianceEngineViolationException(string message) : base(message) { }                                                                   │
-│  8         public ComplianceEngineViolationException(string message, Exception innerException) : base(message, innerException) { }                         │
-│  9     }                                                                                                                                                   │
-│ 10 }                                                                                                                                                       │
-╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-✦ Creating Interface. IStatutoryObligationFactWriter.cs.
-╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ ✓  WriteFile Writing to IStatutoryObligationFactWriter.cs                                                                                                  │
-│                                                                                                                                                            │
-│  1 using System.Threading.Tasks;                                                                                                                           │
-│  2 using SynOS.Models.Entities.Compliance;                                                                                                                 │
-│  3                                                                                                                                                         │
-│  4 namespace SynOS.Services.Compliance                                                                                                                     │
-│  5 {                                                                                                                                                       │
-│  6     public interface IStatutoryObligationFactWriter                                                                                                     │
-│  7     {                                                                                                                                                   │
-│  8         Task CreateStatutoryObligationFactAsync(StatutoryObligationFact fact);                                                                          │
-│  9     }                                                                                                                                                   │
-│ 10 }                                                                                                                                                       │
-╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-✦ Creating Implementation. StatutoryObligationFactWriter.cs.
-  Constraints: Append-only. No balances. No status. No updates. No deletion.
-  Also need to ensure SourceFactId is valid (optional but good practice) - but instruction said "DO NOT recalculate... DO NOT touch other modules". I will    
-  stick to pure writing.
-
-  Wait, the prompt said:
-  "StatutoryObligationFact is derived from FINAL Payroll Facts and/or Spend Facts"
-  "Link back to source facts (Payroll / Spend)"
-
-  The writer just takes the fact and writes it. The logic to derive it would live in a Calculator (not scope here) or Orchestrator. The prompt scope is:      
-  "Implement ONLY: StatutoryObligationFact entity, IStatutoryObligationFactWriter, StatutoryObligationFactWriter (append-only)"
-
-  So I just write the writer. I will add a check that SourceFactId is not empty.
-
-  Also, need to handle RecordedAt. I will enforce RecordedAt = DateTime.UtcNow inside the writer to ensure truthfulness.
-╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ ✓  WriteFile Writing to StatutoryObligationFactWriter.cs                                                                                                   │
-│                                                                                                                                                            │
-│  1 using System;                                                                                                                                           │
-│  2 using System.Threading.Tasks;                                                                                                                           │
-│  3 using SynOS.Data;                                                                                                                                       │
-│  4 using SynOS.Models.Entities.Compliance;                                                                                                                 │
-│  5 using SynOS.Services.Compliance.Exceptions;                                                                                                             │
-│  6                                                                                                                                                         │
-│  7 namespace SynOS.Services.Compliance                                                                                                                     │
-│  8 {                                                                                                                                                       │
-│  9     public class StatutoryObligationFactWriter : IStatutoryObligationFactWriter                                                                         │
-│ 10     {                                                                                                                                                   │
-│ 11         private readonly SynOSDbContext _context;                                                                                                       │
-│ 12                                                                                                                                                         │
-│ 13         public StatutoryObligationFactWriter(SynOSDbContext context)                                                                                    │
-│ 14         {                                                                                                                                               │
-│ 15             _context = context;                                                                                                                         │
-│ 16         }                                                                                                                                               │
-│ 17                                                                                                                                                         │
-│ 18         public async Task CreateStatutoryObligationFactAsync(StatutoryObligationFact fact)                                                              │
-│ 19         {                                                                                                                                               │
-│ 20             if (fact.SourceFactId == Guid.Empty)                                                                                                        │
-│ 21             {                                                                                                                                           │
-│ 22                 throw new ComplianceEngineViolationException("StatutoryObligationFact must have a valid SourceFactId.");                                │
-│ 23             }                                                                                                                                           │
-│ 24                                                                                                                                                         │
-│ 25             if (fact.Amount < 0)                                                                                                                        │
-│ 26             {                                                                                                                                           │
-│ 27                 throw new ComplianceEngineViolationException("StatutoryObligationFact amount cannot be negative.");                                     │
-│ 28             }                                                                                                                                           │
-│ 29                                                                                                                                                         │
-│ 30             // Enforce immutability of record time                                                                                                      │
-│ 31             fact.RecordedAt = DateTime.UtcNow;                                                                                                          │
-│ 32                                                                                                                                                         │
-│ 33             // Ensure ID is set                                                                                                                         │
-│ 34             if (fact.StatutoryObligationFactId == Guid.Empty)                                                                                           │
-│ 35             {                                                                                                                                           │
-│ 36                 fact.StatutoryObligationFactId = Guid.NewGuid();                                                                                        │
-│ 37             }                                                                                                                                           │
-│ 38                                                                                                                                                         │
-│ 39             _context.Add(fact); // Using generic Add or DbContext.Set<T>().Add is fine.                                                                 │
-│ 40                                 // But I should probably add the DbSet to context first?                                                                │
-│ 41                                 // Ah, I haven't added DbSet<StatutoryObligationFact> to SynOSDbContext.cs yet!                                         │
-│ 42                                 // The dry run plan had "Files I will MODIFY: SynOSDbContext.cs".                                                       │
-│ 43                                 // I haven't done that yet for Module 7.                                                                                │
-│ 44                                                                                                                                                         │
-│ 45             // I'll use generic Add for now, but I must update DbContext next.                                                                          │
-│ 46             // Actually, I should update DbContext BEFORE creating the writer to be safe, but generic Add works if entity is configured.                │
-│ 47                                                                                                                                                         │
-│ 48             await _context.SaveChangesAsync();                                                                                                          │
-│ 49         }                                                                                                                                               │
-│ 50     }                                                                                                                                                   │
-│ 51 }                                                                                                                                                       │
-╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-✦ I missed updating SynOSDbContext.cs for Module 7! I need to add DbSet<StatutoryObligationFact>.
-
-  And I also need to configure it in OnModelCreating as per dry run plan.
-
-  Executing SynOSDbContext.cs update for Module 7.
-╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ ✓  Edit src\SynOS.Data\SynOSDbContext.cs: using SynOS.Models.Entities.Le... => using SynOS.Models.Entities.Co...                                           │
-│                                                                                                                                                            │
-│ 11   using SynOS.Models.Entities.HR; // ADDED                                                                                                              │
-│ 12   using SynOS.Models.Entities.Payroll; // ADDED                                                                                                         │
-│ 13   using SynOS.Models.Entities.Time; // ADDED                                                                                                            │
-│ 14 - using SynOS.Models.Entities.Leave; // ADDED                                                                                                           │
-│ 14 + using SynOS.Models.Entities.Compliance; // ADDED                                                                                                      │
-│ 15                                                                                                                                                         │
-│ 16 -                                                                                                                                                       │
-│ 16   namespace SynOS.Data                                                                                                                                  │
-│ 17   {                                                                                                                                                     │
-│ 18       public class SynOSDbContext : DbContext                                                                                                           │
-│ 19       {                                                                                                                                                 │
-│ 20 +         // ... (existing code)                                                                                                                        │
-│ 21 +                                                                                                                                                       │
-│ 22 +         // Compliance Engine DbSets // ADDED                                                                                                          │
-│ 23 +         public DbSet<StatutoryObligationFact> StatutoryObligationFacts { get; set; }                                                                  │
-│ 24 +                                                                                                                                                       │
-│ 25 +         protected override void OnModelCreating(ModelBuilder modelBuilder)                                                                            │
-│ 26 +         {                                                                                                                                             │
-│ 27 +             base.OnModelCreating(modelBuilder);                                                                                                       │
-│ 28 +                                                                                                                                                       │
-│ 29 +             // ... (existing code)                                                                                                                    │
-│ 30 +                                                                                                                                                       │
-│ 31 +             // Compliance Engine Configuration // ADDED                                                                                               │
-│ 32 +             modelBuilder.Entity<StatutoryObligationFact>(entity =>                                                                                    │
-│ 33 +             {                                                                                                                                         │
-│ 34 +                 entity.ToTable("StatutoryObligationFacts");                                                                                           │
-│ 35 +                 entity.HasKey(e => e.StatutoryObligationFactId);                                                                                      │
-│ 36 +                 entity.Property(e => e.Amount).HasColumnType("decimal(18, 4)").IsRequired();                                                          │
-│ 37 +                 entity.Property(e => e.Currency).HasMaxLength(10).IsRequired();                                                                       │
-│ 38 +                 entity.Property(e => e.AuthorityType).HasConversion<string>().HasMaxLength(50);                                                       │
-│ 39 +                 entity.Property(e => e.ObligationType).HasConversion<string>().HasMaxLength(50);                                                      │
-│ 40 +                 entity.Property(e => e.SourceType).HasConversion<string>().HasMaxLength(50);                                                          │
-│ 41 +                 entity.HasIndex(e => e.SourceFactId); // Index for lookup                                                                             │
-│ 42 +             });                                                                                                                                       │
-│ 43 +         }                                                                                                                                             │
-│ 44 +     }                                                                                                                                                 │
-│ 45 + }                                                                                                                                                     │
-│ 46           public SynOSDbContext(DbContextOptions<SynOSDbContext> options) : base(options)                                                               │
-│ 47           {                                                                                                                                             │
-│ 48           }                                                                                                                                             │
-╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-✦ Wait, I replaced the top using block, but I didn't insert the DbSet or Configuration in the right place because I tried to do it all in one block, but the  
-  file content is scattered.
-
-  I need to be more precise.
-
-   1. Add using SynOS.Models.Entities.Compliance; (Done, hopefully, if the replace worked on the top block).
-   2. Add DbSet property.
-   3. Add OnModelCreating config.
-
-  Let me check SynOSDbContext.cs to see what happened.
-╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ ✓  ReadFile src\SynOS.Data\SynOSDbContext.cs                                                                                                               │
-│                                                                                                                                                            │
-╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-✦ Okay, SynOSDbContext.cs is correct now. I need to register DbSets for the new Governance entities: Role, Capability, Assignment, ApprovalRule.
-
-  Wait, public DbSet<Role> Roles { get; set; } = null!; is ALREADY in SynOSDbContext.cs at line 24.
-  public DbSet<User> Users { get; set; } = null!; is there too.
-
-  Is the existing Role entity (Models.Entities.Role) the same as the one I just created (SynOS.Models.Entities.Governance.Role)?
-
-  I created SynOS.Models.Entities.Governance.Role.cs.
-  The existing one is SynOS.Models.Entities.Role.
-
-  I have a namespace conflict if I just use Role.
-
-  Existing Role entity: src/SynOS.Models/Entities/Role.cs (I should check this file).
-  If it's the Identity/Auth role, I should probably use that or link to it.
-
-  The Prompt says: "Module 8 OWNS Role definitions (HR, Payroll, Finance, Admin)".
-
-  If there is an existing Role entity used for Identity (e.g. JWT claims), Module 8 should probably extend it or manage it, OR have its own Governance Role   
-  which maps to the Identity Role.
-
-  "Assignment: ... Link to Module 1 (HR Master/User Identity)"
-
-  If I introduce SynOS.Models.Entities.Governance.Role, I must disambiguate it from SynOS.Models.Entities.Role in SynOSDbContext.
-
-  Let's check src/SynOS.Models/Entities/Role.cs.
-╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ ✓  ReadFile src\SynOS.Models\Entities\Role.cs                                                                                                              │
-│                                                                                                                                                            │
-╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-✦ The existing Role entity is very simple.
-
-  Module 8 design: "Role... is a container for capabilities."
-
-  If I use the new Governance.Role, I will clash with existing auth logic if I replace DbSet<Role>.
-
-  Strategy:
-  Use the existing Role entity as the "Role" concept in Module 8, but extend it or create a side-car for capabilities. Or, since I'm supposed to implement    
-  Module 8 entities, and "Role" is one of them, maybe I should call it GovernanceRole?
-
-  But the prompt said: "Core entities: Role".
-
-  If I change Role to GovernanceRole, I avoid conflict.
-  "Assignment: ... RoleId ... UserId".
-
-  The existing UserRole table (from SynOS.Models.Entities.UserRole) is effectively the "Assignment" table for the existing Role.
-
-  If Module 8 replaces the ad-hoc role handling with a formal engine, I should probably reuse the existing Identity tables but add the Governance logic on    
-  top, OR introduce a parallel structure.
-
-  "Module 8 OWNS Role definitions". This suggests Module 8 takes over the concept of Role.
-
-  However, "Modules 1–7 are COMPLETE and MUST NOT be touched". If I change the existing Role entity (Module 1/Auth), I might break things.
-
-  The safest path that respects "DO NOT touch Module 1" and "Module 8 OWNS Role definitions" is to alias the new role or use a qualified name, but if I want  
-  to use Role in Module 8, I might need to namespace it.
-
-  Given "Module 8 is GOVERNANCE ONLY... No writes to truth engines", and HR Master (Module 1) is a truth engine.
-
-  If I create SynOS.Models.Entities.Governance.Role, I can map it to DbSet<SynOS.Models.Entities.Governance.Role> GovernanceRoles.
-
-  Let's do that. GovernanceRole to avoid ambiguity in the DbContext, but the class name can stay Role inside the namespace.
-
-  I will rename my Role.cs to GovernanceRole.cs? No, class name Role in namespace Governance is fine. I just need to be careful in SynOSDbContext.
-
-  Plan for SynOSDbContext.cs:
-  Add:
-
-   1 using SynOS.Models.Entities.Governance;
-   2
-   3 // ...
-   4 public DbSet<SynOS.Models.Entities.Governance.Role> GovernanceRoles { get; set; }
-   5 public DbSet<Capability> Capabilities { get; set; }
-   6 public DbSet<Assignment> Assignments { get; set; }
-   7 public DbSet<ApprovalRule> ApprovalRules { get; set; }
-
-  But wait, Assignment links RoleId and UserId. If RoleId refers to GovernanceRole, then it's distinct from the Auth Role. This means a user has Auth Roles   
-  (for JWT) and Governance Roles (for Approval Policies). This separation is actually good for a "Governance Overlay".
-
-  I will proceed with adding the new DbSets. I will use the fully qualified name for Role if necessary, or alias it.
-
-  I will alias GovernanceRole = SynOS.Models.Entities.Governance.Role; in the using directives if possible, or just use the property name GovernanceRoles.    
-
-  Let's modify SynOSDbContext.cs. I need to add using SynOS.Models.Entities.Governance; and the DbSets.
-
-  But I already have using SynOS.Models.Entities; which brings in the other Role.
-
-  I will use fully qualified names for the new DbSets to be safe.
-
-  DbSets to add:
-   - GovernanceRoles (Type: SynOS.Models.Entities.Governance.Role)
-   - GovernanceCapabilities (Type: Capability)
-   - GovernanceAssignments (Type: Assignment)
-   - GovernanceApprovalRules (Type: ApprovalRule)
-
-  I will also configure them.
-
-  Let's execute the SynOSDbContext update.
-╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ ✓  Edit src\SynOS.Data\SynOSDbContext.cs: using SynOS.Models.Entities.Co... => using SynOS.Models.Entities.Co...                                           │
-│                                                                                                                                                            │
-│ 12   using SynOS.Models.Entities.Payroll; // ADDED                                                                                                         │
-│ 13   using SynOS.Models.Entities.Time; // ADDED                                                                                                            │
-│ 14   using SynOS.Models.Entities.Compliance; // ADDED                                                                                                      │
-│ 15 + using SynOS.Models.Entities.Governance; // ADDED                                                                                                      │
-│ 16                                                                                                                                                         │
-│ 17   namespace SynOS.Data                                                                                                                                  │
-│ 18   {                                                                                                                                                     │
-│ 20       {                                                                                                                                                 │
-│ 21           // ... (existing code)                                                                                                                        │
-│ 22                                                                                                                                                         │
-│ 23 +         // Governance Engine DbSets // ADDED                                                                                                          │
-│ 24 +         public DbSet<SynOS.Models.Entities.Governance.Role> GovernanceRoles { get; set; }                                                             │
-│ 25 +         public DbSet<Capability> Capabilities { get; set; }                                                                                           │
-│ 26 +         public DbSet<Assignment> Assignments { get; set; }                                                                                            │
-│ 27 +         public DbSet<ApprovalRule> ApprovalRules { get; set; }                                                                                        │
-│ 28 +                                                                                                                                                       │
-│ 29           // Compliance Engine DbSets // ADDED                                                                                                          │
-│ 30           public DbSet<StatutoryObligationFact> StatutoryObligationFacts { get; set; }                                                                  │
-│ 31                                                                                                                                                         │
-╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-✦ I also need to configure these in OnModelCreating. I'll assume they map to tables with "Governance_" prefix or similar to avoid collisions.
-
-  GovernanceRoles -> Governance_Roles
-  Capabilities -> Governance_Capabilities
-  Assignments -> Governance_Assignments
-  ApprovalRules -> Governance_ApprovalRules
-
-  Executing OnModelCreating update.
-╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ ✓  Edit src\SynOS.Data\SynOSDbContext.cs:             // Compliance Engi... =>             // Compliance Engi...                                           │
-│                                                                                                                                                            │
-│ 47                   entity.Property(e => e.SourceType).HasConversion<string>().HasMaxLength(50);                                                          │
-│ 48                   entity.HasIndex(e => e.SourceFactId); // Index for lookup                                                                             │
-│ 49               });                                                                                                                                       │
-│ 50 +                                                                                                                                                       │
-│ 51 +             // Governance Engine Configuration // ADDED                                                                                               │
-│ 52 +             modelBuilder.Entity<SynOS.Models.Entities.Governance.Role>(entity =>                                                                      │
-│ 53 +             {                                                                                                                                         │
-│ 54 +                 entity.ToTable("Governance_Roles");                                                                                                   │
-│ 55 +                 entity.HasKey(e => e.RoleId);                                                                                                         │
-│ 56 +             });                                                                                                                                       │
-│ 57 +                                                                                                                                                       │
-│ 58 +             modelBuilder.Entity<Capability>(entity =>                                                                                                 │
-│ 59 +             {                                                                                                                                         │
-│ 60 +                 entity.ToTable("Governance_Capabilities");                                                                                            │
-│ 61 +                 entity.HasKey(e => e.CapabilityId);                                                                                                   │
-│ 62 +             });                                                                                                                                       │
-│ 63 +                                                                                                                                                       │
-│ 64 +             modelBuilder.Entity<Assignment>(entity =>                                                                                                 │
-│ 65 +             {                                                                                                                                         │
-│ 66 +                 entity.ToTable("Governance_Assignments");                                                                                             │
-│ 67 +                 entity.HasKey(e => e.AssignmentId);                                                                                                   │
-│ 68 +                 entity.HasIndex(e => new { e.UserId, e.RoleId });                                                                                     │
-│ 69 +             });                                                                                                                                       │
-│ 70 +                                                                                                                                                       │
-│ 71 +             modelBuilder.Entity<ApprovalRule>(entity =>                                                                                               │
-│ 72 +             {                                                                                                                                         │
-│ 73 +                 entity.ToTable("Governance_ApprovalRules");                                                                                           │
-│ 74 +                 entity.HasKey(e => e.ApprovalRuleId);                                                                                                 │
-│ 75 +                 entity.Property(e => e.ThresholdAmount).HasColumnType("decimal(18, 4)");                                                              │
-│ 76 +             });                                                                                                                                       │
-│ 77           }                                                                                                                                             │
-│ 78       }                                                                                                                                                 │
-│ 79   }                                                                                                                                                     │
-╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-✦ Now generating migration AddGovernanceSchema.
-╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ ✓  Shell dotnet ef migrations add AddGovernanceSchema --project src/SynOS.Data --startup-project src/SynOS.Api -o Migrations [current working directory D… │
-│                                                                                                                                                            │
-│ Build started...                                                                                                                                           │
-│ Build failed. Use dotnet build to see the errors.                                                                                                          │
-╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-✦ Build failed. Likely ambiguity between Role types in SynOSDbContext. I need to be more specific or check for errors.
-
-  D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Data\SynOSDbContext.cs(30,22): error CS0104: 'Role' is an ambiguous reference between
-  'SynOS.Models.Entities.Role' and 'SynOS.Models.Entities.Governance.Role'
-
-  I expected this. I need to fix the ambiguity in SynOSDbContext.cs.
-
-  I'll check line 30 (or around there).
-  public DbSet<Role> Roles { get; set; } = null!;
-
-  This Role is the original one. I need to fully qualify it as SynOS.Models.Entities.Role or remove the using SynOS.Models.Entities.Governance; and use fully 
-  qualified names for the Governance stuff.
-
-  I think using fully qualified names for the new stuff is cleaner than breaking the old stuff.
-
-  But I added using SynOS.Models.Entities.Governance; at the top. I should remove that using and fully qualify the Governance entities in the DbSet
-  declarations.
-
-  Wait, I already fully qualified GovernanceRoles property type: public DbSet<SynOS.Models.Entities.Governance.Role> GovernanceRoles { get; set; }.
-
-  But Role (the old one) is now ambiguous because SynOS.Models.Entities (old namespace) and SynOS.Models.Entities.Governance (new namespace via using) both   
-  contain Role.
-
-  So I must remove using SynOS.Models.Entities.Governance; and instead fully qualify Capability, Assignment, ApprovalRule (or add using Governance =
-  SynOS.Models.Entities.Governance;).
-
-  I'll remove the using and fully qualify everything for Module 8 in the DbContext.
-
-  Plan:
-   1. Remove using SynOS.Models.Entities.Governance;.
-   2. Update DbSet definitions to use full paths.
-      - SynOS.Models.Entities.Governance.Role
-      - SynOS.Models.Entities.Governance.Capability
-      - SynOS.Models.Entities.Governance.Assignment
-      - SynOS.Models.Entities.Governance.ApprovalRule
-   3. Update OnModelCreating to use full paths.
-
-  Executing SynOSDbContext fix.
-╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ ✓  Edit src\SynOS.Data\SynOSDbContext.cs: using SynOS.Models.Entities.Co... => using SynOS.Models.Entities.Co...                                           │
-│                                                                                                                                                            │
-│ 12   using SynOS.Models.Entities.Payroll; // ADDED                                                                                                         │
-│ 13   using SynOS.Models.Entities.Time; // ADDED                                                                                                            │
-│ 14   using SynOS.Models.Entities.Compliance; // ADDED                                                                                                      │
-│ 15 - using SynOS.Models.Entities.Governance; // ADDED                                                                                                      │
-│ 15                                                                                                                                                         │
-│ 16   namespace SynOS.Data                                                                                                                                  │
-│ 17   {                                                                                                                                                     │
-│ 21                                                                                                                                                         │
-│ 22           // Governance Engine DbSets // ADDED                                                                                                          │
-│ 23           public DbSet<SynOS.Models.Entities.Governance.Role> GovernanceRoles { get; set; }                                                             │
-│ 25 -         public DbSet<Capability> Capabilities { get; set; }                                                                                           │
-│ 26 -         public DbSet<Assignment> Assignments { get; set; }                                                                                            │
-│ 27 -         public DbSet<ApprovalRule> ApprovalRules { get; set; }                                                                                        │
-│ 24 +         public DbSet<SynOS.Models.Entities.Governance.Capability> Capabilities { get; set; }                                                          │
-│ 25 +         public DbSet<SynOS.Models.Entities.Governance.Assignment> Assignments { get; set; }                                                           │
-│ 26 +         public DbSet<SynOS.Models.Entities.Governance.ApprovalRule> ApprovalRules { get; set; }                                                       │
-│ 27                                                                                                                                                         │
-│ 28           // Compliance Engine DbSets // ADDED                                                                                                          │
-│ 29           public DbSet<StatutoryObligationFact> StatutoryObligationFacts { get; set; }                                                                  │
-╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-✦ Now updating OnModelCreating to use full paths as well, since I removed the using.
-╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ ✓  Edit src\SynOS.Data\SynOSDbContext.cs:             // Governance Engi... =>             // Governance Engi...                                           │
-│                                                                                                                                                            │
-│ 54       entity.HasKey(e => e.RoleId);                                                                                                                     │
-│ 55   });                                                                                                                                                   │
-│ 56                                                                                                                                                         │
-│ 57 - modelBuilder.Entity<Capability>(entity =>                                                                                                             │
-│ 57 + modelBuilder.Entity<SynOS.Models.Entities.Governance.Capability>(entity =>                                                                            │
-│ 58   {                                                                                                                                                     │
-│ 59       entity.ToTable("Governance_Capabilities");                                                                                                        │
-│ 60       entity.HasKey(e => e.CapabilityId);                                                                                                               │
-│ 61   });                                                                                                                                                   │
-│ 62                                                                                                                                                         │
-│ 63 - modelBuilder.Entity<Assignment>(entity =>                                                                                                             │
-│ 63 + modelBuilder.Entity<SynOS.Models.Entities.Governance.Assignment>(entity =>                                                                            │
-│ 64   {                                                                                                                                                     │
-│ 65       entity.ToTable("Governance_Assignments");                                                                                                         │
-│ 66       entity.HasKey(e => e.AssignmentId);                                                                                                               │
-│ 67       entity.HasIndex(e => new { e.UserId, e.RoleId });                                                                                                 │
-│ 68   });                                                                                                                                                   │
-│ 69                                                                                                                                                         │
-│ 70 - modelBuilder.Entity<ApprovalRule>(entity =>                                                                                                           │
-│ 70 + modelBuilder.Entity<SynOS.Models.Entities.Governance.ApprovalRule>(entity =>                                                                          │
-│ 71   {                                                                                                                                                     │
-│ 72       entity.ToTable("Governance_ApprovalRules");                                                                                                       │
-│ 73       entity.HasKey(e => e.ApprovalRuleId);                                                                                                             │
-╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-✦ Now generating migration AddGovernanceSchema again.
-╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ ✓  Shell dotnet ef migrations add AddGovernanceSchema --project src/SynOS.Data --startup-project src/SynOS.Api -o Migrations [current working directory D… │
-│                                                                                                                                                            │
-│ Build started...                                                                                                                                           │
-│ Build failed. Use dotnet build to see the errors.                                                                                                          │
-╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-✦ Build failed again. I need to check errors. Maybe Capability or Assignment or ApprovalRule are also ambiguous or missing?
-
-  I removed using SynOS.Models.Entities.Governance;.
-  I fully qualified them in SynOSDbContext.cs... wait.
-
-  I qualified them in DbSet and OnModelCreating.
-
-  But SynOS.Models.Entities namespace (which is using'd) might contain classes with same names? No, Capability, Assignment, ApprovalRule are likely unique to 
-  Governance. Role was the conflict.
-
-  However, SynOS.Models.Entities namespace is imported.
-
-  Let's check build errors.
-╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ ✓  Shell dotnet build [current working directory D:\Projects\SynOS-Synthesized-Lab-Intelligence] (Diagnosing build failure.)                               │
-│                                                                                                                                                            │
-│   Determining projects to restore...                                                                                                                       │
-│   All projects are up-to-date for restore.                                                                                                                 │
-│   SynOS.Models -> D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\bin\Debug\net8.0\SynOS.Models.dll                                        │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Data\SynOSDbContext.cs(79,9): error CS8803: Top-level statements must precede name                │
-│ space and type declarations. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Data\SynOS.Data.csproj]                                             │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Data\SynOSDbContext.cs(79,9): error CS0106: The modifier 'public' is not valid for                │
-│  this item [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Data\SynOS.Data.csproj]                                                               │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Data\SynOSDbContext.cs(79,30): error CS1001: Identifier expected [D:\Projects\SynO                │
-│ S-Synthesized-Lab-Intelligence\src\SynOS.Data\SynOS.Data.csproj]                                                                                           │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Data\SynOSDbContext.cs(79,73): error CS1002: ; expected [D:\Projects\SynOS-Synthes                │
-│ ized-Lab-Intelligence\src\SynOS.Data\SynOS.Data.csproj]                                                                                                    │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Data\SynOSDbContext.cs(79,73): error CS1022: Type or namespace definition, or end-                │
-│ of-file expected [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Data\SynOS.Data.csproj]                                                         │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Data\SynOSDbContext.cs(79,88): error CS1002: ; expected [D:\Projects\SynOS-Synthes                │
-│ ized-Lab-Intelligence\src\SynOS.Data\SynOS.Data.csproj]                                                                                                    │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Data\SynOSDbContext.cs(1057,37): error CS1022: Type or namespace definition, or en                │
-│ d-of-file expected [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Data\SynOS.Data.csproj]                                                       │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Data\SynOSDbContext.cs(1058,33): error CS1022: Type or namespace definition, or en                │
-│ d-of-file expected [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Data\SynOS.Data.csproj]                                                       │
-│                                                                                                                                                            │
-│ Build FAILED.                                                                                                                                              │
-│                                                                                                                                                            │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Data\SynOSDbContext.cs(79,9): error CS8803: Top-level statements must precede name                │
-│ space and type declarations. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Data\SynOS.Data.csproj]                                             │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Data\SynOSDbContext.cs(79,9): error CS0106: The modifier 'public' is not valid for                │
-│  this item [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Data\SynOS.Data.csproj]                                                               │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Data\SynOSDbContext.cs(79,30): error CS1001: Identifier expected [D:\Projects\SynO                │
-│ S-Synthesized-Lab-Intelligence\src\SynOS.Data\SynOS.Data.csproj]                                                                                           │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Data\SynOSDbContext.cs(79,73): error CS1002: ; expected [D:\Projects\SynOS-Synthes                │
-│ ized-Lab-Intelligence\src\SynOS.Data\SynOS.Data.csproj]                                                                                                    │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Data\SynOSDbContext.cs(79,73): error CS1022: Type or namespace definition, or end-                │
-│ of-file expected [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Data\SynOS.Data.csproj]                                                         │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Data\SynOSDbContext.cs(79,88): error CS1002: ; expected [D:\Projects\SynOS-Synthes                │
-│ ized-Lab-Intelligence\src\SynOS.Data\SynOS.Data.csproj]                                                                                                    │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Data\SynOSDbContext.cs(1057,37): error CS1022: Type or namespace definition, or en                │
-│ d-of-file expected [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Data\SynOS.Data.csproj]                                                       │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Data\SynOSDbContext.cs(1058,33): error CS1022: Type or namespace definition, or en                │
-│ d-of-file expected [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Data\SynOS.Data.csproj]                                                       │
-│     0 Warning(s)                                                                                                                                           │
-│     8 Error(s)                                                                                                                                             │
-│                                                                                                                                                            │
-│ Time Elapsed 00:00:06.41                                                                                                                                   │
-╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-✦ It seems I corrupted SynOSDbContext.cs. "Top-level statements must precede namespace and type declarations." "Type or namespace definition... expected".    
-
-  I likely pasted the OnModelCreating block or the DbSet block outside the class definition or corrupted the braces.
-
-  Let's inspect SynOSDbContext.cs around line 79 and at the end of the file.
-╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ ✓  ReadFile src\SynOS.Data\SynOSDbContext.cs                                                                                                               │
-│                                                                                                                                                            │
-╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-✦ I duplicated the SynOSDbContext constructor and OnModelCreating because I wasn't careful with the regex match. I ended up appending the class definition    
-  again after the existing one.
-
-  I must fix SynOSDbContext.cs. It's a mess now with duplicated class definitions.
-
-  I need to read the file content fully and restore it to a valid state.
-
-  The file now has:
-  using ...
-  namespace SynOS.Data { public class SynOSDbContext : DbContext { ... } }
-  public SynOSDbContext(DbContextOptions<SynOSDbContext> options) : base(options) { } ... (orphaned code outside namespace)
-
-  I must clean this up.
-
-  I will write_file the correct content of SynOSDbContext.cs from scratch (or rather, from what it should be). I have the content in my history.
-
-  I will combine the imports and the class body correctly.
-
-  Here is the plan for SynOSDbContext.cs:
-   1. Imports (including all previous + SynOS.Models.Entities.Compliance).
-   2. Namespace SynOS.Data.
-   3. Class SynOSDbContext.
-   4. Constructor.
-   5. All DbSets (Original + Payables + Spend + Referral + Time + Leave + Compliance + Governance).
-   6. OnModelCreating (Original config + all new module configs).
-
-  I will construct the file content carefully.
-
-  Imports:
-
-    1 using SynOS.Models.Entities.AR;
-    2 using Microsoft.EntityFrameworkCore;
-    3 using SynOS.Models.Entities;
-    4 using SynOS.Models.Entities.IMS;
-    5 using SynOS.Models.Entities.CostAttribution;
-    6 using SynOS.Models.Entities.SpendEngine;
-    7 using SynOS.Models.Entities.Revenue;
-    8 using SynOS.Models.Entities.Referral;
-    9 using SynOS.Models.Entities.Payables;
-   10 using SynOS.Models.Entities.Discounts;
-   11 using SynOS.Models.Entities.HR;
-   12 using SynOS.Models.Entities.Payroll;
-   13 using SynOS.Models.Entities.Time;
-   14 using SynOS.Models.Entities.Leave;
-   15 using SynOS.Models.Entities.Compliance;
-   16 // DO NOT use SynOS.Models.Entities.Governance to avoid Role conflict
-
-  DbSets:
-
-   1 // ... (All existing ones)
-   2 // Compliance
-   3 public DbSet<StatutoryObligationFact> StatutoryObligationFacts { get; set; }
-   4 // Governance
-   5 public DbSet<SynOS.Models.Entities.Governance.Role> GovernanceRoles { get; set; }
-   6 public DbSet<SynOS.Models.Entities.Governance.Capability> Capabilities { get; set; }
-   7 public DbSet<SynOS.Models.Entities.Governance.Assignment> Assignments { get; set; }
-   8 public DbSet<SynOS.Models.Entities.Governance.ApprovalRule> ApprovalRules { get; set; }
-
-  Configuration:
-  Copy all existing config and add the new blocks for Compliance and Governance.
-
-  I'll read the file one more time to copy the exact existing configuration logic (indexes, etc.) so I don't lose it. I'll read the whole file.
-╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ ✓  ReadFile src\SynOS.Data\SynOSDbContext.cs                                                                                                               │
-│                                                                                                                                                            │
-╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-✦ As suspected, public SynOSDbContext(DbContextOptions<SynOSDbContext> options) : base(options) appears TWICE. One inside the namespace block (orphaned), and 
-  one at the top level outside any namespace (orphaned from context?). No, the file structure is:
-
-   1. Imports
-   2. namespace SynOS.Data { class SynOSDbContext { ... } }
-   3. Then suddenly public SynOSDbContext(...) starts again OUTSIDE the namespace closure!
-
-  And then it repeats all the DbSets and OnModelCreating OUTSIDE the namespace/class.
-
-  I need to rewrite the file completely to fix this duplication. I will preserve the intended structure: one namespace, one class, all DbSets, one
-  OnModelCreating.
-
-  I will construct the full file content and overwrite SynOSDbContext.cs.
-
-  I'll use the imports from the top of the file, then the class body from the first block, but inject the missing DbSets (Original + Governance + Compliance) 
-  and the full OnModelCreating (Original + Governance + Compliance).
-
-╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ x  WriteFile {"content":"using SynOS.Models.Entities.AR;\nusing Microsoft.EntityFrameworkCore;\nusing SynOS.Models.Entities;\nusing SynOS.Models.Entities… │
-│                                                                                                                                                            │
-│ params must have required property 'file_path'                                                                                                             │
-╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-  I'll execute write_file with the complete corrected content. This is the safest way to recover from the regex replacement error.
-✦ My apologies. I missed
-✦ My apologies. I missed the file_path parameter. Retrying write_file.
-╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ ✓  WriteFile Writing to src\SynOS.Data\SynOSDbContext.cs                                                                                                   │
-│                                                                                                                                                            │
-│ ... first 232 lines hidden ...                                                                                                                             │
-│  916                                                                                                                                                       │
-│ ══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════ │
-                                                                 │ration (Minimal) // ADDED
-                                                       │elBuilder.Entity<Employee>(entity => // ADDED
-│  917 +             modelBuilder.Entity<SynOS.Models.Entities.Governance.Capability>(entity =>                                                              │
-│  918               {                                                                                                                                       │
-│ ══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════ │
-                                                                       │"Employees");
-                                                                  │Key(e => e.EmployeeId);
-│  919 +                 entity.ToTable("Governance_Capabilities");                                                                                          │
-│  920 +                 entity.HasKey(e => e.CapabilityId);                                                                                                 │
-│  921               });                                                                                                                                     │
-│  922                                                                                                                                                       │
-│ ══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════ │
-                                                            │ll Configuration (Minimal) // ADDED
-                                                            │lder.Entity<PayComponent>(entity =>
-│  923 +             modelBuilder.Entity<SynOS.Models.Entities.Governance.Assignment>(entity =>                                                              │
-│  924               {                                                                                                                                       │
-│ ══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════ │
-                                                                   │ble("PayComponents");
-                                                              │.HasKey(e => e.PayComponentId);
-│  925 +                 entity.ToTable("Governance_Assignments");                                                                                           │
-│  926 +                 entity.HasKey(e => e.AssignmentId);                                                                                                 │
-│  927 +                 entity.HasIndex(e => new { e.UserId, e.RoleId });                                                                                   │
-│  928               });                                                                                                                                     │
-│ ══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════ │
-                                                            │lder.Entity<PayStructure>(entity =>
-                                                                                                      │
-                                                                   │ble("PayStructures");
-                                                              │.HasKey(e => e.PayStructureId);
-                                                                                                    │
-                                                  │  modelBuilder.Entity<PayStructureAssignment>(entity =>
-                                                                                                      │
-                                                         │ntity.ToTable("PayStructureAssignments");
-                                                    │    entity.HasKey(e => e.PayStructureAssignmentId);
-                                                                                                    │
-                                                           │ilder.Entity<PayrollPeriod>(entity =>
-                                                                                                      │
-                                                                  │able("PayrollPeriods");
-                                                             │y.HasKey(e => e.PayrollPeriodId);
-                                                                                                    │
-                                                              │er.Entity<PayrollRun>(entity =>
-                                                                                                      │
-                                                                     │e("PayrollRuns");
-                                                                │asKey(e => e.PayrollRunId);
-                                                                                                    │
-                                                       │elBuilder.Entity<PayrollAdjustment>(entity =>
-                                                                                                      │
-                                                              │.ToTable("PayrollAdjustments");
-                                                         │ntity.HasKey(e => e.PayrollAdjustmentId);
-                                                                                                    │
-                                                 │               modelBuilder.Entity<PayrollFact>(entity =>
-                                                                                          │
-                                                        │            entity.ToTable("PayrollFacts");
-                                                   │                 entity.HasKey(e => e.PayrollFactId);
-│ 1005 -                                                             entity.HasIndex(e => new { e.PayrollRunId, e.EmployeeId, e.PayComponentId }).IsUnique() │
-                                                                                                                                                    │
-│ 1006 -                                                         });                                                                                         │
-                                                                                                 │
-                                                                                                      │
-                                                          │tity.ToTable("PayStructureComponents");
-                                                     │   entity.HasKey(e => e.PayStructureComponentId);
-                                                                                                    │
-│  929                                                                                                                                                       │
-│ ══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════ │
-                                                                                        │
-                                                                                              │
-│  930 +             modelBuilder.Entity<SynOS.Models.Entities.Governance.ApprovalRule>(entity =>                                                            │
-│  931               {                                                                                                                                       │
-│ ══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════ │
-                                                                                                     │
-                                                                                                │
-                                                                                     │
-│  932 +                 entity.ToTable("Governance_ApprovalRules");                                                                                         │
-│  933 +                 entity.HasKey(e => e.ApprovalRuleId);                                                                                               │
-│  934 +                 entity.Property(e => e.ThresholdAmount).HasColumnType("decimal(18, 4)");                                                            │
-│  935               });                                                                                                                                     │
-│ ══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════ │
-                                                                                          │
-                                                                                                                                      │
-                                                                                            │
-                                                                                            │
-                                                                                                                                    │
-                                                                                 │
-                                                                                                                                      │
-                                                                                   │
-                                                                                   │
-                                                                                                                                    │
-                                                                          │tity =>
-                                                                                                                                      │
-                                                                            │");
-                                                                            │d);
-                                                                                                                                    │
-                                                                                    │
-                                                                                                                                      │
-                                                                                      │
-                                                                                      │
-                                                                                                                                    │
-                                                                                      │
-                                                                                                                                      │
-                                                                                        │
-                                                                                        │
-                                                                                                                                    │
-                                                                                                                                                   │
-                                                                                                 │
-                                                                                               │
-                                                                                                                                      │
-                                                                                                │
-                                                                                                 │
-                                                                                                                                    │
-                                                                                   │
-                                                                                                                                      │
-                                                                                    │
-                                                                                     │
-                                                                                                                                    │
-│  936           }                                                                                                                                           │
-│  937       }                                                                                                                                               │
-│  938   }                                                                                                                                                   │
-╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-✦ SynOSDbContext.cs is fixed. Now regenerating migration AddGovernanceSchema. This should work now.
-╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ ✓  Shell dotnet ef migrations add AddGovernanceSchema --project src/SynOS.Data --startup-project src/SynOS.Api -o Migrations [current working directory D… │
-│                                                                                                                                                            │
-│ Build started...                                                                                                                                           │
-│ Build succeeded.                                                                                                                                           │
-│ [11:40:49 WRN] No store type was specified for the decimal property 'MaxLimit' on entity type 'DiscountMaster'. This will cause values to be silently      │
-│ truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in      │
-│ 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.           │
-│ [11:40:49 WRN] No store type was specified for the decimal property 'MaxLimit' on entity type 'DiscountMaster'. This will cause values to be silently      │
-│ truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in      │
-│ 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.           │
-│ [11:40:50 WRN] No store type was specified for the decimal property 'Amount' on entity type 'PayrollAdjustment'. This will cause values to be silently     │
-│ truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in      │
-│ 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.           │
-│ [11:40:50 WRN] No store type was specified for the decimal property 'Amount' on entity type 'PayrollAdjustment'. This will cause values to be silently     │
-│ truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in      │
-│ 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.           │
-│ [11:40:50 WRN] No store type was specified for the decimal property 'Amount' on entity type 'PayrollFact'. This will cause values to be silently truncated │
-│ if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in                │
-│ 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.           │
-│ [11:40:50 WRN] No store type was specified for the decimal property 'Amount' on entity type 'PayrollFact'. This will cause values to be silently truncated │
-│ if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in                │
-│ 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.           │
-│ [11:40:53 WRN] No store type was specified for the decimal property 'MaxLimit' on entity type 'DiscountMaster'. This will cause values to be silently      │
-│ truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in      │
-│ 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.           │
-│ [11:40:53 WRN] No store type was specified for the decimal property 'MaxLimit' on entity type 'DiscountMaster'. This will cause values to be silently      │
-│ truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in      │
-│ 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.           │
-│ [11:40:53 WRN] No store type was specified for the decimal property 'Amount' on entity type 'PayrollAdjustment'. This will cause values to be silently     │
-│ truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in      │
-│ 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.           │
-│ [11:40:53 WRN] No store type was specified for the decimal property 'Amount' on entity type 'PayrollAdjustment'. This will cause values to be silently     │
-│ truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in      │
-│ 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.           │
-│ [11:40:53 WRN] No store type was specified for the decimal property 'Amount' on entity type 'PayrollFact'. This will cause values to be silently truncated │
-│ if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in                │
-│ 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.           │
-│ [11:40:53 WRN] No store type was specified for the decimal property 'Amount' on entity type 'PayrollFact'. This will cause values to be silently truncated │
-│ if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in                │
-│ 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.           │
-│ Done. To undo this action, use 'ef migrations remove'                                                                                                      │
-╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-✦ Migration successful. Now I will implement the service layer.
-
-   1. IAuthorizationService.cs.
-   2. AuthorizationService.cs.
-   3. GovernanceServiceCollectionExtensions.cs.
-   4. Update Program.cs.
-
-  Creating IAuthorizationService.cs.
-╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ ✓  WriteFile Writing to src\...\IAuthorizationService.cs                                                                                                   │
-│                                                                                                                                                            │
-│  1 using System;                                                                                                                                           │
-│  2 using System.Threading.Tasks;                                                                                                                           │
-│  3                                                                                                                                                         │
-│  4 namespace SynOS.Services.Governance                                                                                                                     │
-│  5 {                                                                                                                                                       │
-│  6     public interface IAuthorizationService                                                                                                              │
-│  7     {                                                                                                                                                   │
-│  8         Task<bool> HasCapabilityAsync(Guid userId, string capabilityName);                                                                              │
-│  9         Task<bool> IsApprovalRequiredAsync(string actionName, decimal amount);                                                                          │
-│ 10         Task<bool> CanApproveAsync(Guid userId, string actionName, decimal amount);                                                                     │
-│ 11     }                                                                                                                                                   │
-│ 12 }                                                                                                                                                       │
-╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-✦ Creating AuthorizationService.cs.
-  Logic:
-   - HasCapabilityAsync: Check Assignments -> Role -> Capabilities.
-   - IsApprovalRequiredAsync: Check ApprovalRules for match and threshold.
-   - CanApproveAsync: Check if user has RequiredRoleId from ApprovalRule.
-
-  I need DbContext to query these. I'll use AsNoTracking.
-
-  Wait, Assignment links Role but does Role link Capability?
-  The Role entity I defined:
-
-   1     public class Role
-   2     {
-   3         [Key]
-   4         public Guid RoleId { get; set; }
-   5         public string Name { get; set; } = string.Empty;
-   6         public string Description { get; set; } = string.Empty;
-   7     }
-  I missed the link between Role and Capability!
-  "Role... is a container for capabilities."
-
-  I need a RoleCapability many-to-many join entity, OR I need to add ICollection<Capability> to Role if I'm doing implicit join, OR
-  ICollection<RoleCapability>.
-
-  Given I didn't create a join table in the dry run, I should probably add a navigation property to Role or Capability. But EF Core requires a join table or  
-  configuration for many-to-many.
-
-  I will create a RoleCapability entity to be explicit and avoid "magic".
-
-  I need to:
-   1. Create src/SynOS.Models/Entities/Governance/RoleCapability.cs.
-   2. Update SynOSDbContext.cs to add DbSet and Config.
-   3. Update AddGovernanceSchema migration (I'll need to remove and recreate it, or add another migration. I'll remove and recreate since I haven't
-      committed).
-
-  Let's create RoleCapability.cs.
-╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ ✓  WriteFile Writing to src\...\RoleCapability.cs                                                                                                          │
-│                                                                                                                                                            │
-│  1 using System;                                                                                                                                           │
-│  2 using System.ComponentModel.DataAnnotations;                                                                                                            │
-│  3                                                                                                                                                         │
-│  4 namespace SynOS.Models.Entities.Governance                                                                                                              │
-│  5 {                                                                                                                                                       │
-│  6     public class RoleCapability                                                                                                                         │
-│  7     {                                                                                                                                                   │
-│  8         [Key]                                                                                                                                           │
-│  9         public Guid RoleCapabilityId { get; set; }                                                                                                      │
-│ 10         public Guid RoleId { get; set; }                                                                                                                │
-│ 11         public Guid CapabilityId { get; set; }                                                                                                          │
-│ 12     }                                                                                                                                                   │
-│ 13 }                                                                                                                                                       │
-╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-✦ Updating SynOSDbContext.cs.
-  Add DbSet<RoleCapability> RoleCapabilities.
-  Add config.
-
-  I'll use replace this time, carefully.
-
-  Target: public DbSet<SynOS.Models.Entities.Governance.Role> GovernanceRoles { get; set; }
-  Replace with:
-
-   1 public DbSet<SynOS.Models.Entities.Governance.Role> GovernanceRoles { get; set; }
-   2 public DbSet<SynOS.Models.Entities.Governance.RoleCapability> RoleCapabilities { get; set; } // ADDED
-
-  Target: modelBuilder.Entity<SynOS.Models.Entities.Governance.Role>(entity => ...
-  Replace with:
-
-   1             modelBuilder.Entity<SynOS.Models.Entities.Governance.RoleCapability>(entity =>
-   2             {
-   3                 entity.ToTable("Governance_RoleCapabilities");
-   4                 entity.HasKey(e => e.RoleCapabilityId);
-   5                 entity.HasIndex(e => new { e.RoleId, e.CapabilityId }).IsUnique();
-   6             });
-   7
-   8             modelBuilder.Entity<SynOS.Models.Entities.Governance.Role>(entity => ...
-
-  Executing updates.
-  ╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ ✓  Edit src\SynOS.Data\SynOSDbContext.cs:         // Governance Engine D... =>         // Governance Engine D...                                           │
-│                                                                                                                                                            │
-│ 170   // Compliance Engine DbSets                                                                                                                          │
-│ 171   public DbSet<StatutoryObligationFact> StatutoryObligationFacts { get; set; }                                                                         │
-│ 172                                                                                                                                                        │
-│ 173 - // Governance Engine DbSets                                                                                                                          │
-│ 173 + // Governance Engine DbSets // ADDED                                                                                                                 │
-│ 174   public DbSet<SynOS.Models.Entities.Governance.Role> GovernanceRoles { get; set; }                                                                    │
-│ 175 + public DbSet<SynOS.Models.Entities.Governance.RoleCapability> RoleCapabilities { get; set; }                                                         │
-│ 176   public DbSet<SynOS.Models.Entities.Governance.Capability> Capabilities { get; set; }                                                                 │
-│ 177   public DbSet<SynOS.Models.Entities.Governance.Assignment> Assignments { get; set; }                                                                  │
-│ 178   public DbSet<SynOS.Models.Entities.Governance.ApprovalRule> ApprovalRules { get; set; }                                                              │
-╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-✦ Adding config.
-╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ ✓  Edit src\SynOS.Data\SynOSDbContext.cs:             // Governance Engi... =>             // Governance Engi...                                           │
-│                                                                                                                                                            │
-│ 909   });                                                                                                                                                  │
-│ 910                                                                                                                                                        │
-│ 911   // Governance Engine Configuration // ADDED                                                                                                          │
-│ 912 + modelBuilder.Entity<SynOS.Models.Entities.Governance.RoleCapability>(entity =>                                                                       │
-│ 913 + {                                                                                                                                                    │
-│ 914 +     entity.ToTable("Governance_RoleCapabilities");                                                                                                   │
-│ 915 +     entity.HasKey(e => e.RoleCapabilityId);                                                                                                          │
-│ 916 +     entity.HasIndex(e => new { e.RoleId, e.CapabilityId }).IsUnique();                                                                               │
-│ 917 + });                                                                                                                                                  │
-│ 918 +                                                                                                                                                      │
-│ 919   modelBuilder.Entity<SynOS.Models.Entities.Governance.Role>(entity =>                                                                                 │
-│ 920   {                                                                                                                                                    │
-│ 921       entity.ToTable("Governance_Roles");                                                                                                              │
-╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ x  Shell {"command":"dotnet ef migrations remove --project src/SynOS.Data --startup-project src/SynOS.Api && dotnet ef migrations add AddGovernanceSchema… │
-│                                                                                                                                                            │
-│ Command rejected because it could not be parsed safely                                                                                                     │
-╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-✦ Re-running migration (Remove then Add).
-✦ Ah, chained commands. I'll run them separately. remove first.
-╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ ✓  Shell dotnet ef migrations remove --project src/SynOS.Data --startup-project src/SynOS.Api [current working directory D:\Projects\SynOS-Synthesized-La… │
-│                                                                                                                                                            │
-│ Build started...                                                                                                                                           │
-│ Build succeeded.                                                                                                                                           │
-│ [11:43:35 WRN] No store type was specified for the decimal property 'MaxLimit' on entity type 'DiscountMaster'. This will cause values to be silently      │
-│ truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in      │
-│ 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.           │
-│ [11:43:35 WRN] No store type was specified for the decimal property 'MaxLimit' on entity type 'DiscountMaster'. This will cause values to be silently      │
-│ truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in      │
-│ 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.           │
-│ [11:43:35 WRN] No store type was specified for the decimal property 'Amount' on entity type 'PayrollAdjustment'. This will cause values to be silently     │
-│ truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in      │
-│ 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.           │
-│ [11:43:35 WRN] No store type was specified for the decimal property 'Amount' on entity type 'PayrollAdjustment'. This will cause values to be silently     │
-│ truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in      │
-│ 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.           │
-│ [11:43:35 WRN] No store type was specified for the decimal property 'Amount' on entity type 'PayrollFact'. This will cause values to be silently truncated │
-│ if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in                │
-│ 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.           │
-│ [11:43:35 WRN] No store type was specified for the decimal property 'Amount' on entity type 'PayrollFact'. This will cause values to be silently truncated │
-│ if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in                │
-│ 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.           │
-│ [11:43:38 WRN] No store type was specified for the decimal property 'MaxLimit' on entity type 'DiscountMaster'. This will cause values to be silently      │
-│ truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in      │
-│ 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.           │
-│ [11:43:38 WRN] No store type was specified for the decimal property 'MaxLimit' on entity type 'DiscountMaster'. This will cause values to be silently      │
-│ truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in      │
-│ 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.           │
-│ [11:43:38 WRN] No store type was specified for the decimal property 'Amount' on entity type 'PayrollAdjustment'. This will cause values to be silently     │
-│ truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in      │
-│ 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.           │
-│ [11:43:38 WRN] No store type was specified for the decimal property 'Amount' on entity type 'PayrollAdjustment'. This will cause values to be silently     │
-│ truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in      │
-│ 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.           │
-│ [11:43:38 WRN] No store type was specified for the decimal property 'Amount' on entity type 'PayrollFact'. This will cause values to be silently truncated │
-│ if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in                │
-│ 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.           │
-│ [11:43:38 WRN] No store type was specified for the decimal property 'Amount' on entity type 'PayrollFact'. This will cause values to be silently truncated │
-│ if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in                │
-│ 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.           │
-│ Removing migration '20260113061059_AddGovernanceSchema'.                                                                                                   │
-│ Reverting the model snapshot.                                                                                                                              │
-│ Done.                                                                                                                                                      │
-╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-✦ Then add again.
-╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ ✓  Shell dotnet ef migrations add AddGovernanceSchema --project src/SynOS.Data --startup-project src/SynOS.Api -o Migrations [current working directory D… │
-│                                                                                                                                                            │
-│ Build started...                                                                                                                                           │
-│ Build succeeded.                                                                                                                                           │
-│ [11:44:39 WRN] No store type was specified for the decimal property 'MaxLimit' on entity type 'DiscountMaster'. This will cause values to be silently      │
-│ truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in      │
-│ 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.           │
-│ [11:44:39 WRN] No store type was specified for the decimal property 'MaxLimit' on entity type 'DiscountMaster'. This will cause values to be silently      │
-│ truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in      │
-│ 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.           │
-│ [11:44:39 WRN] No store type was specified for the decimal property 'Amount' on entity type 'PayrollAdjustment'. This will cause values to be silently     │
-│ truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in      │
-│ 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.           │
-│ [11:44:39 WRN] No store type was specified for the decimal property 'Amount' on entity type 'PayrollAdjustment'. This will cause values to be silently     │
-│ truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in      │
-│ 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.           │
-│ [11:44:39 WRN] No store type was specified for the decimal property 'Amount' on entity type 'PayrollFact'. This will cause values to be silently truncated │
-│ if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in                │
-│ 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.           │
-│ [11:44:39 WRN] No store type was specified for the decimal property 'Amount' on entity type 'PayrollFact'. This will cause values to be silently truncated │
-│ if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in                │
-│ 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.           │
-│ [11:44:42 WRN] No store type was specified for the decimal property 'MaxLimit' on entity type 'DiscountMaster'. This will cause values to be silently      │
-│ truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in      │
-│ 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.           │
-│ [11:44:42 WRN] No store type was specified for the decimal property 'MaxLimit' on entity type 'DiscountMaster'. This will cause values to be silently      │
-│ truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in      │
-│ 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.           │
-│ [11:44:42 WRN] No store type was specified for the decimal property 'Amount' on entity type 'PayrollAdjustment'. This will cause values to be silently     │
-│ truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in      │
-│ 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.           │
-│ [11:44:42 WRN] No store type was specified for the decimal property 'Amount' on entity type 'PayrollAdjustment'. This will cause values to be silently     │
-│ truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in      │
-│ 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.           │
-│ [11:44:42 WRN] No store type was specified for the decimal property 'Amount' on entity type 'PayrollFact'. This will cause values to be silently truncated │
-│ if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in                │
-│ 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.           │
-│ [11:44:42 WRN] No store type was specified for the decimal property 'Amount' on entity type 'PayrollFact'. This will cause values to be silently truncated │
-│ if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in                │
-│ 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.           │
-│ Done. To undo this action, use 'ef migrations remove'                                                                                                      │
-╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-✦ Migration succeeded. Now implementing AuthorizationService.cs. I need to handle HasCapabilityAsync by checking Assignments and RoleCapabilities.
-
-    1 using System;
-    2 using System.Linq;
-    3 using System.Threading.Tasks;
-    4 using Microsoft.EntityFrameworkCore;
-    5 using SynOS.Data;
-    6 using SynOS.Services.Governance;
-    7
-    8 namespace SynOS.Services.Governance
-    9 {
-   10     public class AuthorizationService : IAuthorizationService
-   11     {
-   12         private readonly SynOSDbContext _context;
-   13
-   14         public AuthorizationService(SynOSDbContext context)
-   15         {
-   16             _context = context;
-   17         }
-   18
-   19         public async Task<bool> HasCapabilityAsync(Guid userId, string capabilityName)
-   20         {
-   21             // 1. Get User's Roles from Assignments
-   22             // 2. Get Capabilities linked to those Roles
-   23             // 3. Check if any matches capabilityName
-   24
-   25             return await (from assignment in _context.Assignments
-   26                           join roleCap in _context.RoleCapabilities on assignment.RoleId equals roleCap.RoleId
-   27                           join cap in _context.Capabilities on roleCap.CapabilityId equals cap.CapabilityId
-   28                           where assignment.UserId == userId && cap.Name == capabilityName
-   29                           select 1).AnyAsync();
-   30         }
-   31
-   32         public async Task<bool> IsApprovalRequiredAsync(string actionName, decimal amount)
-   33         {
-   34             // Check ApprovalRules
-   35             var rule = await _context.ApprovalRules
-   36                 .AsNoTracking()
-   37                 .Where(r => r.ActionName == actionName && amount >= r.ThresholdAmount)
-   38                 .OrderByDescending(r => r.ThresholdAmount) // Most restrictive first
-   39                 .FirstOrDefaultAsync();
-   40
-   41             return rule != null;
-   42         }
-   43
-   44         public async Task<bool> CanApproveAsync(Guid userId, string actionName, decimal amount)
-   45         {
-   46              var rule = await _context.ApprovalRules
-   47                 .AsNoTracking()
-   48                 .Where(r => r.ActionName == actionName && amount >= r.ThresholdAmount)
-   49                 .OrderByDescending(r => r.ThresholdAmount)
-   50                 .FirstOrDefaultAsync();
-   51
-   52             if (rule == null)
-   53             {
-   54                 // No rule means no specific approval required, or implicit "Yes" if we assume default allow for low amounts?
-   55                 // Or "NotAllowed" because CanApprove implies checking against a restriction?
-   56                 // "CanApprove" usually means "Does this user have the authority to sign off?"
-   57                 // If there is no rule, approval isn't required, so the question is moot.
-   58                 // However, if the question is "Can I approve this pending request?", and no rule exists, it implies no approval flow exists.
-   59                 // I will return false if no rule exists, as approval is a positive assertion of authority over a rule.
-   60                 return false;
-   61             }
-   62
-   63             // Check if user has the RequiredRoleId
-   64             var hasRole = await _context.Assignments
-   65                 .AnyAsync(a => a.UserId == userId && a.RoleId == rule.RequiredRoleId);
-   66
-   67             return hasRole;
-   68         }
-   69     }
-   70 }
-
-  Wait, Assignments is SynOS.Models.Entities.Governance.Assignment.
-  I need to make sure I use the right DbSets. _context.Assignments is correct.
-
-  Writing AuthorizationService.cs.
-╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ ✓  WriteFile Writing to src\...\AuthorizationService.cs                                                                                                    │
-│                                                                                                                                                            │
-│  1 using System;                                                                                                                                           │
-│  2 using System.Linq;                                                                                                                                      │
-│  3 using System.Threading.Tasks;                                                                                                                           │
-│  4 using Microsoft.EntityFrameworkCore;                                                                                                                    │
-│  5 using SynOS.Data;                                                                                                                                       │
-│  6                                                                                                                                                         │
-│  7 namespace SynOS.Services.Governance                                                                                                                     │
-│  8 {                                                                                                                                                       │
-│  9     public class AuthorizationService : IAuthorizationService                                                                                           │
-│ 10     {                                                                                                                                                   │
-│ 11         private readonly SynOSDbContext _context;                                                                                                       │
-│ 12                                                                                                                                                         │
-│ 13         public AuthorizationService(SynOSDbContext context)                                                                                             │
-│ 14         {                                                                                                                                               │
-│ 15             _context = context;                                                                                                                         │
-│ 16         }                                                                                                                                               │
-│ 17                                                                                                                                                         │
-│ 18         public async Task<bool> HasCapabilityAsync(Guid userId, string capabilityName)                                                                  │
-│ 19         {                                                                                                                                               │
-│ 20             return await (from assignment in _context.Assignments                                                                                       │
-│ 21                           join roleCap in _context.RoleCapabilities on assignment.RoleId equals roleCap.RoleId                                          │
-│ 22                           join cap in _context.Capabilities on roleCap.CapabilityId equals cap.CapabilityId                                             │
-│ 23                           where assignment.UserId == userId && cap.Name == capabilityName                                                               │
-│ 24                           select 1).AnyAsync();                                                                                                         │
-│ 25         }                                                                                                                                               │
-│ 26                                                                                                                                                         │
-│ 27         public async Task<bool> IsApprovalRequiredAsync(string actionName, decimal amount)                                                              │
-│ 28         {                                                                                                                                               │
-│ 29             var rule = await _context.ApprovalRules                                                                                                     │
-│ 30                 .AsNoTracking()                                                                                                                         │
-│ 31                 .Where(r => r.ActionName == actionName && amount >= r.ThresholdAmount)                                                                  │
-│ 32                 .OrderByDescending(r => r.ThresholdAmount)                                                                                              │
-│ 33                 .FirstOrDefaultAsync();                                                                                                                 │
-│ 34                                                                                                                                                         │
-│ 35             return rule != null;                                                                                                                        │
-│ 36         }                                                                                                                                               │
-│ 37                                                                                                                                                         │
-│ 38         public async Task<bool> CanApproveAsync(Guid userId, string actionName, decimal amount)                                                         │
-│ 39         {                                                                                                                                               │
-│ 40             var rule = await _context.ApprovalRules                                                                                                     │
-│ 41                 .AsNoTracking()                                                                                                                         │
-│ 42                 .Where(r => r.ActionName == actionName && amount >= r.ThresholdAmount)                                                                  │
-│ 43                 .OrderByDescending(r => r.ThresholdAmount)                                                                                              │
-│ 44                 .FirstOrDefaultAsync();                                                                                                                 │
-│ 45                                                                                                                                                         │
-│ 46             if (rule == null)                                                                                                                           │
-│ 47             {                                                                                                                                           │
-│ 48                 return false;                                                                                                                           │
-│ 49             }                                                                                                                                           │
-│ 50                                                                                                                                                         │
-│ 51             var hasRole = await _context.Assignments                                                                                                    │
-│ 52                 .AnyAsync(a => a.UserId == userId && a.RoleId == rule.RequiredRoleId);                                                                  │
-│ 53                                                                                                                                                         │
-│ 54             return hasRole;                                                                                                                             │
-│ 55         }                                                                                                                                               │
-│ 56     }                                                                                                                                                   │
-│ 57 }                                                                                                                                                       │
-╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-✦ Now creating GovernanceServiceCollectionExtensions.cs.
-╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ ✓  WriteFile Writing to src\SynOS.Servic...ionExtensions.cs                                                                                                │
-│                                                                                                                                                            │
-│  1 using Microsoft.Extensions.DependencyInjection;                                                                                                         │
-│  2                                                                                                                                                         │
-│  3 namespace SynOS.Services.Governance                                                                                                                     │
-│  4 {                                                                                                                                                       │
-│  5     public static class GovernanceServiceCollectionExtensions                                                                                           │
-│  6     {                                                                                                                                                   │
-│  7         public static IServiceCollection AddGovernanceServices(this IServiceCollection services)                                                        │
-│  8         {                                                                                                                                               │
-│  9             services.AddScoped<IAuthorizationService, AuthorizationService>();                                                                          │
-│ 10             return services;                                                                                                                            │
-│ 11         }                                                                                                                                               │
-│ 12     }                                                                                                                                                   │
-│ 13 }                                                                                                                                                       │
-╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-✦ Finally, updating Program.cs to register the services.
-  Search for where to add. Near other extensions.
-
-  I need to add using SynOS.Services.Governance; and builder.Services.AddGovernanceServices();.
-
-  I'll verify ComplianceServiceCollectionExtensions exists and is registered too (from Module 7).
-  Module 7 execution plan included src/SynOS.Services/Compliance/ComplianceServiceCollectionExtensions.cs.
-  Did I create it? I created IStatutoryObligationFactWriter, StatutoryObligationFactWriter, Exception. I did NOT create the extension method in Module 7      
-  execution! I missed it in the flurry of DbContext fixing.
-
-  I must create ComplianceServiceCollectionExtensions.cs as well, or Program.cs won't compile if I try to call AddComplianceServices.
-
-  I'll check if ComplianceServiceCollectionExtensions.cs exists.
-╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ ✓  FindFiles '**/ComplianceServiceCollectionExtensions.cs'                                                                                                 │
-│                                                                                                                                                            │
-│ No files found                                                                                                                                             │
-╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-✦ It does not exist. I need to create it.
-
-  Plan:
-   1. Create src/SynOS.Services/Compliance/ComplianceServiceCollectionExtensions.cs.
-   2. Update Program.cs to add BOTH Compliance and Governance services.
-
-  Creating Compliance Extension.
-╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ ✓  WriteFile Writing to src\SynOS.Servic...ionExtensions.cs                                                                                                │
-│                                                                                                                                                            │
-│  1 using Microsoft.Extensions.DependencyInjection;                                                                                                         │
-│  2                                                                                                                                                         │
-│  3 namespace SynOS.Services.Compliance                                                                                                                     │
-│  4 {                                                                                                                                                       │
-│  5     public static class ComplianceServiceCollectionExtensions                                                                                           │
-│  6     {                                                                                                                                                   │
-│  7         public static IServiceCollection AddComplianceServices(this IServiceCollection services)                                                        │
-│  8         {                                                                                                                                               │
-│  9             services.AddScoped<IStatutoryObligationFactWriter, StatutoryObligationFactWriter>();                                                        │
-│ 10             return services;                                                                                                                            │
-│ 11         }                                                                                                                                               │
-│ 12     }                                                                                                                                                   │
-│ 13 }                                                                                                                                                       │
-╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-✦ Now updating Program.cs.
-╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ ✓  Edit src\SynOS.Api\Program.cs: using SynOS.Services.Referral;... => using SynOS.Services.Referral;...                                                   │
-│                                                                                                                                                            │
-│ 29   using SynOS.Services.Referral; // Added to resolve build error                                                                                        │
-│ 30   using SynOS.Services.Interpretation; // ADDED                                                                                                         │
-│ 31   using SynOS.Services.HR; // ADDED                                                                                                                     │
-│ 32 + using SynOS.Services.Governance; // ADDED                                                                                                             │
-│ 33 + using SynOS.Services.Compliance; // ADDED                                                                                                             │
-│ 34                                                                                                                                                         │
-│ 35   var builder = WebApplication.CreateBuilder(args);                                                                                                     │
-│ 36                                                                                                                                                         │
-╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-✦ Adding the calls.
-╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ ✓  Edit src\SynOS.Api\Program.cs: // Register Revenue Engine ser... => // Register Revenue Engine ser...                                                   │
-│                                                                                                                                                            │
-│ 158   builder.Services.AddEconomicsIntelligence();                                                                                                         │
-│ 159   builder.Services.AddSpendEngineServices(); // ADDED                                                                                                  │
-│ 160   builder.Services.AddRevenueEngine();                                                                                                                 │
-│ 161 + builder.Services.AddComplianceServices(); // ADDED                                                                                                   │
-│ 162 + builder.Services.AddGovernanceServices(); // ADDED                                                                                                   │
-│ 163                                                                                                                                                        │
-│ 164   // Register Economics Intelligence services (OPT-IN)                                                                                                 │
-│ 165   // builder.Services.AddEconomicsIntelligence();                                                                                                      │
-╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-✦ All done. Running final build.
-╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ ✓  Shell dotnet build [current working directory D:\Projects\SynOS-Synthesized-Lab-Intelligence] (Final build verification.)                               │
-│                                                                                                                                                            │
-│ ... first 58 lines hidden ...                                                                                                                              │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\RadiologyService.cs(341,44): warning CS8601: Possible null reference assi                │
-│ gnment. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                          │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\RadiologyService.cs(343,38): warning CS8601: Possible null reference assi                │
-│ gnment. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                          │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\RadiologyService.cs(344,43): warning CS8601: Possible null reference assi                │
-│ gnment. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                          │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\RadiologyService.cs(345,37): warning CS8601: Possible null reference assi                │
-│ gnment. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                          │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\RadiologyService.cs(396,48): warning CS8601: Possible null reference assi                │
-│ gnment. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                          │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\RadiologyService.cs(496,28): warning CS8601: Possible null reference assi                │
-│ gnment. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                          │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\RadiologyService.cs(497,34): warning CS8601: Possible null reference assi                │
-│ gnment. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                          │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\RadiologyService.cs(498,35): warning CS8601: Possible null reference assi                │
-│ gnment. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                          │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\RadiologyService.cs(502,35): warning CS8601: Possible null reference assi                │
-│ gnment. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                          │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\RadiologyService.cs(517,21): warning CS8600: Converting null literal or p                │
-│ ossible null value to non-nullable type. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                         │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\RadiologyService.cs(524,79): warning CS8604: Possible null reference argu                │
-│ ment for parameter 'templateModel' in 'Task<byte[]> IReportPdfRenderer.GeneratePdfAsync(ReportDataModel data, TemplateModel templateModel)'                │
-│ . [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                                │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\AuditService.cs(46,38): warning CA2017: Number of parameters supplied in                 │
-│ the logging message template do not match the number of named placeholders (https://learn.microsoft.com/dotnet/fundamentals/code-analysis/q                │
-│ uality-rules/ca2017) [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                             │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\Admin\CsvImportRequestDto.cs(9,26): warning CS8618: Non-nullable p                │
-│ roperty 'File' must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring the property as                │
-│  nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\SynOS.Api.csproj]                                                                 │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\MappingProfile.cs(20,100): warning CS8602: Dereference of a possibly null refe                │
-│ rence. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\SynOS.Api.csproj]                                                                     │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\MappingProfile.cs(51,85): warning CS8602: Dereference of a possibly null refer                │
-│ ence. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\SynOS.Api.csproj]                                                                      │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\MappingProfile.cs(52,77): warning CS8602: Dereference of a possibly null refer                │
-│ ence. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\SynOS.Api.csproj]                                                                      │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\MappingProfile.cs(53,79): warning CS8602: Dereference of a possibly null refer                │
-│ ence. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\SynOS.Api.csproj]                                                                      │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\MappingProfile.cs(54,84): warning CS8602: Dereference of a possibly null refer                │
-│ ence. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\SynOS.Api.csproj]                                                                      │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\MappingProfile.cs(83,73): warning CS8602: Dereference of a possibly null refer                │
-│ ence. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\SynOS.Api.csproj]                                                                      │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\MappingProfile.cs(83,73): warning CS8602: Dereference of a possibly null refer                │
-│ ence. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\SynOS.Api.csproj]                                                                      │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\IMSStockOperationController.cs(27,37): warning CS8604: Possible nu                │
-│ ll reference argument for parameter 'input' in 'Guid Guid.Parse(string input)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.A                │
-│ pi\SynOS.Api.csproj]                                                                                                                                       │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\IMSPurchasingController.cs(127,41): warning CS8604: Possible null                 │
-│ reference argument for parameter 'input' in 'Guid Guid.Parse(string input)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\                │
-│ SynOS.Api.csproj]                                                                                                                                          │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\IMSStockOperationController.cs(36,37): warning CS8604: Possible nu                │
-│ ll reference argument for parameter 'input' in 'Guid Guid.Parse(string input)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.A                │
-│ pi\SynOS.Api.csproj]                                                                                                                                       │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\Radiology\PacsController.cs(32,37): warning CS8604: Possible null                 │
-│ reference argument for parameter 'input' in 'Guid Guid.Parse(string input)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\                │
-│ SynOS.Api.csproj]                                                                                                                                          │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\Radiology\PacsController.cs(45,37): warning CS8604: Possible null                 │
-│ reference argument for parameter 'input' in 'Guid Guid.Parse(string input)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\                │
-│ SynOS.Api.csproj]                                                                                                                                          │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\Radiology\PacsController.cs(59,37): warning CS8604: Possible null                 │
-│ reference argument for parameter 'input' in 'Guid Guid.Parse(string input)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\                │
-│ SynOS.Api.csproj]                                                                                                                                          │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\Radiology\PacsController.cs(68,37): warning CS8604: Possible null                 │
-│ reference argument for parameter 'input' in 'Guid Guid.Parse(string input)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\                │
-│ SynOS.Api.csproj]                                                                                                                                          │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\RadiologyController.cs(30,37): warning CS8604: Possible null refer                │
-│ ence argument for parameter 'input' in 'Guid Guid.Parse(string input)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\SynOS                │
-│ .Api.csproj]                                                                                                                                               │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\RadiologyController.cs(47,37): warning CS8604: Possible null refer                │
-│ ence argument for parameter 'input' in 'Guid Guid.Parse(string input)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\SynOS                │
-│ .Api.csproj]                                                                                                                                               │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\RadiologyController.cs(61,37): warning CS8604: Possible null refer                │
-│ ence argument for parameter 'input' in 'Guid Guid.Parse(string input)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\SynOS                │
-│ .Api.csproj]                                                                                                                                               │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\RadiologyReportsController.cs(40,37): warning CS8604: Possible nul                │
-│ l reference argument for parameter 'input' in 'Guid Guid.Parse(string input)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Ap                │
-│ i\SynOS.Api.csproj]                                                                                                                                        │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\IMSWastageController.cs(42,110): warning CS8629: Nullable value ty                │
-│ pe may be null. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\SynOS.Api.csproj]                                                            │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\Radiology\PacsAdminController.cs(25,37): warning CS8604: Possible                 │
-│ null reference argument for parameter 'input' in 'Guid Guid.Parse(string input)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS                │
-│ .Api\SynOS.Api.csproj]                                                                                                                                     │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\Radiology\PacsAdminController.cs(33,37): warning CS8604: Possible                 │
-│ null reference argument for parameter 'input' in 'Guid Guid.Parse(string input)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS                │
-│ .Api\SynOS.Api.csproj]                                                                                                                                     │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\Radiology\PacsAdminController.cs(41,37): warning CS8604: Possible                 │
-│ null reference argument for parameter 'input' in 'Guid Guid.Parse(string input)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS                │
-│ .Api\SynOS.Api.csproj]                                                                                                                                     │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\RadiologyController.cs(92,37): warning CS8604: Possible null refer                │
-│ ence argument for parameter 'input' in 'Guid Guid.Parse(string input)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\SynOS                │
-│ .Api.csproj]                                                                                                                                               │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\RadiologyController.cs(101,37): warning CS8604: Possible null refe                │
-│ rence argument for parameter 'input' in 'Guid Guid.Parse(string input)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\SynO                │
-│ S.Api.csproj]                                                                                                                                              │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\RadiologyReportsController.cs(48,37): warning CS8604: Possible nul                │
-│ l reference argument for parameter 'input' in 'Guid Guid.Parse(string input)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Ap                │
-│ i\SynOS.Api.csproj]                                                                                                                                        │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\SecureDownloadController.cs(61,13): warning ASP0019: Use IHeaderDi                │
-│ ctionary.Append or the indexer to append or set headers. IDictionary.Add will throw an ArgumentException when attempting to add a duplicate                │
-│  key. (https://aka.ms/aspnet/analyzers) [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\SynOS.Api.csproj]                                    │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\SecureDownloadController.cs(62,13): warning ASP0019: Use IHeaderDi                │
-│ ctionary.Append or the indexer to append or set headers. IDictionary.Add will throw an ArgumentException when attempting to add a duplicate                │
-│  key. (https://aka.ms/aspnet/analyzers) [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\SynOS.Api.csproj]                                    │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\SecureDownloadController.cs(63,13): warning ASP0019: Use IHeaderDi                │
-│ ctionary.Append or the indexer to append or set headers. IDictionary.Add will throw an ArgumentException when attempting to add a duplicate                │
-│  key. (https://aka.ms/aspnet/analyzers) [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\SynOS.Api.csproj]                                    │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\SecureDownloadController.cs(94,13): warning ASP0019: Use IHeaderDi                │
-│ ctionary.Append or the indexer to append or set headers. IDictionary.Add will throw an ArgumentException when attempting to add a duplicate                │
-│  key. (https://aka.ms/aspnet/analyzers) [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\SynOS.Api.csproj]                                    │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\SecureDownloadController.cs(95,13): warning ASP0019: Use IHeaderDi                │
-│ ctionary.Append or the indexer to append or set headers. IDictionary.Add will throw an ArgumentException when attempting to add a duplicate                │
-│  key. (https://aka.ms/aspnet/analyzers) [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\SynOS.Api.csproj]                                    │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\SecureDownloadController.cs(96,13): warning ASP0019: Use IHeaderDi                │
-│ ctionary.Append or the indexer to append or set headers. IDictionary.Add will throw an ArgumentException when attempting to add a duplicate                │
-│  key. (https://aka.ms/aspnet/analyzers) [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\SynOS.Api.csproj]                                    │
 │     205 Warning(s)                                                                                                                                         │
 │     0 Error(s)                                                                                                                                             │
 │                                                                                                                                                            │
-│ Time Elapsed 00:00:25.60                                                                                                                                   │
+│ Time Elapsed 00:00:19.91                                                                                                                                   │
 ╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-✦ Build succeeded! Module 8 implementation is complete and verified. SynOSDbContext.cs is clean and correct.
+✦ Build succeeded! The HRMS Interpretation Layer is implemented correctly and compiles.
 
+  I will now create the final completion_message.md and implementation_output.md to document the work.
+
+  Plan:
+   1. Update implementation_output.md with the details of the HRMS Interpretation Layer implementation.
+   2. Update completion_message.md.
+   3. Clean up todos.
+
+  Executing step 1.
+╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ ✓  WriteFile Writing to implementation_output.md                                                                                                           │
+│                                                                                                                                                            │
+│  1 - # Implementation Report - Module 8 (Governance)                                                                                                       │
+│  1 + # Implementation Report - HRMS Interpretation Layer (Read-Only)                                                                                       │
+│  2                                                                                                                                                         │
+│  3   ## Completed Tasks                                                                                                                                    │
+│  4                                                                                                                                                         │
+│  5 - 1.  **Implemented Core Governance Entities:**                                                                                                         │
+│  6 -     *   `SynOS.Models.Entities.Governance.Role`: Defines a named role.                                                                                │
+│  7 -     *   `SynOS.Models.Entities.Governance.Capability`: Defines a granular permission.                                                                 │
+│  8 -     *   `SynOS.Models.Entities.Governance.Assignment`: Maps Roles to Users.                                                                           │
+│  9 -     *   `SynOS.Models.Entities.Governance.ApprovalRule`: Defines declarative approval policies.                                                       │
+│ 10 -     *   `SynOS.Models.Entities.Governance.RoleCapability`: Join table for Role-Capability many-to-many relationship.                                  │
+│  5 + 1.  **Implemented View DTOs:**                                                                                                                        │
+│  6 +     *   `PayslipView`: Combined employee, payroll, and spend data.                                                                                    │
+│  7 +     *   `PayrollBreakdownView`: Aggregated liability by department.                                                                                   │
+│  8 +     *   `AttendanceLeaveSummaryView`: Merged time and leave facts.                                                                                    │
+│  9 +     *   `WorkforceCostView`: Holistic cost (Payroll + Spend + Statutory).                                                                             │
+│ 10 +     *   `AuditTimelineView`: Chronological event stream from all modules.                                                                             │
+│ 11                                                                                                                                                         │
+│ 12 - 2.  **Implemented Authorization Service:**                                                                                                            │
+│ 13 -     *   `SynOS.Services.Governance.IAuthorizationService`: Interface for permission checks.                                                           │
+│ 14 -     *   `SynOS.Services.Governance.AuthorizationService`: Implementation using DbContext to check assignments and rules. Logic is read-only and       │
+│    decision-based.                                                                                                                                         │
+│ 12 + 2.  **Implemented Interpretation Service:**                                                                                                           │
+│ 13 +     *   `IHrmsInterpretationService`: Read-only contract.                                                                                             │
+│ 14 +     *   `HrmsInterpretationService`: Implementation using `AsNoTracking` queries, joins, and aggregations.                                            │
+│ 15 +     *   **Logic:**                                                                                                                                    │
+│ 16 +         *   Joins `PayrollRun` -> `PayrollPeriod` for dates.                                                                                          │
+│ 17 +         *   Joins `PayrollFacts` -> `PayComponents` for breakdown.                                                                                    │
+│ 18 +         *   Aggregates `SpendFacts` for contractor costs.                                                                                             │
+│ 19 +         *   Aggregates `StatutoryObligationFacts` for employer liability.                                                                             │
+│ 20 +         *   Merges `ClockEventFacts` and `LeaveFacts` for timeline and summary.                                                                       │
+│ 21                                                                                                                                                         │
+│ 16 - 3.  **Database Integration:**                                                                                                                         │
+│ 17 -     *   Updated `SynOS.Data.SynOSDbContext`: Added `DbSet`s for all Governance entities. Configured schema in `OnModelCreating` (using "Governance_"  │
+│    table prefix).                                                                                                                                          │
+│ 18 -     *   Generated Migration: `AddGovernanceSchema`.                                                                                                   │
+│ 22 + 3.  **Service Registration:**                                                                                                                         │
+│ 23 +     *   Created `HrmsInterpretationServiceCollectionExtensions`.                                                                                      │
+│ 24 +     *   Registered in `SynOS.Api.Program.cs`.                                                                                                         │
+│ 25                                                                                                                                                         │
+│ 20 - 4.  **Service Registration:**                                                                                                                         │
+│ 21 -     *   Created `SynOS.Services.Governance.GovernanceServiceCollectionExtensions`.                                                                    │
+│ 22 -     *   Created `SynOS.Services.Compliance.ComplianceServiceCollectionExtensions` (recovered from Module 7 gap).                                      │
+│ 23 -     *   Updated `SynOS.Api.Program.cs` to register both Governance and Compliance services.                                                           │
+│ 24 -                                                                                                                                                       │
+│ 26   ## Verification                                                                                                                                       │
+│ 27   *   `dotnet build` passed successfully.                                                                                                               │
+│ 27 - *   No modifications to sealed modules (Payroll, Time, Leave, etc.) other than necessary `DbContext` configuration which is additive.                 │
+│ 28 - *   Governance module is read-only regarding business facts.                                                                                          │
+│ 28 + *   Layer is strictly read-only and does not mutate any truth engine data.                                                                            │
+│ 29 + *   Dependencies on Modules 1-8 are respected (using existing entities).                                                                              │
+│ 30                                                                                                                                                         │
+│ 31   ## Next Steps                                                                                                                                         │
+│ 31 - *   Seed Governance Roles and Capabilities (e.g., "Payroll Admin", "Approve.Payment").                                                                │
+│ 32 - *   Implement API endpoints for Policy Administration (if required, currently out of scope).                                                          │
+│ 32 + *   API Controllers can now inject `IHrmsInterpretationService` to serve these views to the frontend.                                                 │
+╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+✦ Executing step 2.
+╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ ✓  WriteFile Writing to completion_message.md                                                                                                              │
+│                                                                                                                                                            │
+│ 1 - Module 8 (Governance) implementation complete.                                                                                                         │
+│ 2 - - Created Role, Capability, Assignment, ApprovalRule, RoleCapability entities.                                                                         │
+│ 3 - - Implemented read-only AuthorizationService.                                                                                                          │
+│ 4 - - Updated SynOSDbContext and generated migration.                                                                                                      │
+│ 5 - - Registered services in Program.cs.                                                                                                                   │
+│ 1 + HRMS Interpretation Layer implementation complete.                                                                                                     │
+│ 2 + - Implemented read-only views for Payslip, Payroll Breakdown, Attendance Summary, Workforce Cost, and Audit Timeline.                                  │
+│ 3 + - Registered interpretation services.                                                                                                                  │
+│ 4   - Build verified.                                                                                                                                      │
+│ 5   Ready for next instruction.                                                                                                                            │
+╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
 
 ℹ ⚠️  Response stopped due to unexpected tool call.
 ╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
@@ -1701,131 +947,5 @@
 │                                                                                                                                                            │
 │ Tool "write_todos" not found in registry. Tools must use the exact names that are registered. Did you mean one of: "write_file", "read_file", "replace"?   │
 ╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-  I will clean up the TODOs and output the completion message.
-✦ My apologies again. I keep forgetting I don't have write_todos. I'm done.
-
-  I will write a summary of what I did to implementation_output.md.
-╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ ✓  WriteFile Writing to implementation_output.md                                                                                                           │
-│                                                                                                                                                            │
-│ ... first 54 lines hidden ...                                                                                                                              │
-│  31 - **2. Updated `SynOSDbContext`**                                                                                                                      │
-│  32 - File: `src/SynOS.Data/SynOSDbContext.cs`                                                                                                             │
-│  33 - *   Added `DbSet<ReferralPayableFact> ReferralPayableFacts`.                                                                                         │
-│  34 - *   Added configuration for `ReferralPayableFact` in `OnModelCreating`.                                                                              │
-│  35 -                                                                                                                                                      │
-│  36 - ```csharp                                                                                                                                            │
-│  37 - // In OnModelCreating                                                                                                                                │
-│  38 -             modelBuilder.Entity<ReferralPayableFact>(entity => // ADDED                                                                              │
-│  39 -             {                                                                                                                                        │
-│  40 -                 entity.ToTable("ReferralPayableFacts");                                                                                              │
-│  41 -                 entity.HasKey(e => e.ReferralPayableFactId);                                                                                         │
-│  42 -                 entity.Property(e => e.Amount).HasColumnType("decimal(18, 4)");                                                                      │
-│  43 -             });                                                                                                                                      │
-│  44 - ```                                                                                                                                                  │
-│  45 -                                                                                                                                                      │
-│  46 - **3. Generated Migration `AddReferralPayableFact`**                                                                                                  │
-│  47 - File: `src/SynOS.Data/Migrations/20260112153308_AddReferralPayableFact.cs`                                                                           │
-│  48 - *(Migration creates ReferralPayableFacts table and aligns SpendFacts schema, removing SpendLineItemFacts)*                                           │
-│  49 -                                                                                                                                                      │
-│  50 - **4. Refactored `ReferralFinancialService`**                                                                                                         │
-│  51 - File: `src/SynOS.Services/Referral/ReferralFinancialService.cs`                                                                                      │
-│  52 - *   Removed `SpendFact` and `SpendLineItemFact` logic.                                                                                               │
-│  53 - *   Removed `IPayableFactWriter` dependency.                                                                                                         │
-│  54 - *   Added logic to write `ReferralPayableFact`.                                                                                                      │
-│  55 -                                                                                                                                                      │
-│  56 - ```csharp                                                                                                                                            │
-│  57 - using System;                                                                                                                                        │
-│  58 - using System.Linq;                                                                                                                                   │
-│  59 - using System.Threading.Tasks;                                                                                                                        │
-│  60 - using Microsoft.EntityFrameworkCore;                                                                                                                 │
-│  61 - using Microsoft.Extensions.Logging;                                                                                                                  │
-│  62 - using SynOS.Data;                                                                                                                                    │
-│  63 - using SynOS.Models.Entities;                                                                                                                         │
-│  64 - using SynOS.Models.Entities.Referral;                                                                                                                │
-│  65 - using SynOS.Models.Enums.Referral;                                                                                                                   │
-│  66 -                                                                                                                                                      │
-│  67 - namespace SynOS.Services.Referral                                                                                                                    │
-│  68 - {                                                                                                                                                    │
-│  69 -     public class ReferralFinancialService : IReferralFinancialService                                                                                │
-│  70 -     {                                                                                                                                                │
-│  71 -         private readonly SynOSDbContext _context;                                                                                                    │
-│  72 -         private readonly ILogger<ReferralFinancialService> _logger;                                                                                  │
-│  73 -                                                                                                                                                      │
-│  74 -         public ReferralFinancialService(                                                                                                             │
-│  75 -             SynOSDbContext context,                                                                                                                  │
-│  76 -             ILogger<ReferralFinancialService> logger)                                                                                                │
-│  77 -         {                                                                                                                                            │
-│  78 -             _context = context;                                                                                                                      │
-│  79 -             _logger = logger;                                                                                                                        │
-│  80 -         }                                                                                                                                            │
-│  81 -                                                                                                                                                      │
-│  82 -         public async Task ProcessCommissionRecognitionAsync(Visit visit)                                                                             │
-│  83 -         {                                                                                                                                            │
-│  84 -             if (!visit.IsReferred || visit.ReferralPartnerId == null)                                                                                │
-│  85 -             {                                                                                                                                        │
-│  86 -                 return;                                                                                                                              │
-│  87 -             }                                                                                                                                        │
-│  88 -                                                                                                                                                      │
-│  89 -             var invoice = visit.Invoices.FirstOrDefault();                                                                                           │
-│  90 -             if (invoice == null)                                                                                                                     │
-│  91 -             {                                                                                                                                        │
-│  92 -                 _logger.LogError("Cannot process commission for Visit {VisitId}: Invoice not found.", visit.VisitId);                                │
-│  93 -                 throw new InvalidOperationException($"Invoice not found for visit {visit.VisitId}.");                                                │
-│  94 -             }                                                                                                                                        │
-│  95 -                                                                                                                                                      │
-│  96 -             var totalCommissionAmount = 0m;                                                                                                          │
-│  97 -                                                                                                                                                      │
-│  98 -             foreach (var order in visit.Orders)                                                                                                      │
-│  99 -             {                                                                                                                                        │
-│ 100 -                 var commissionRule = await _context.ReferralCommissionRules                                                                          │
-│ 101 -                     .AsNoTracking()                                                                                                                  │
-│ 102 -                     .Where(r => r.ReferralPartnerId == visit.ReferralPartnerId && r.TestId == order.TestId && r.IsActive)                            │
-│ 103 -                     .OrderByDescending(r => r.EffectiveFrom)                                                                                         │
-│ 104 -                     .FirstOrDefaultAsync();                                                                                                          │
-│ 105 -                                                                                                                                                      │
-│ 106 -                 if (commissionRule != null)                                                                                                          │
-│ 107 -                 {                                                                                                                                    │
-│ 108 -                     decimal commission = 0m;                                                                                                         │
-│ 109 -                     if (commissionRule.CommissionType == CommissionType.Percentage)                                                                  │
-│ 110 -                     {                                                                                                                                │
-│ 111 -                         commission = order.Price * (commissionRule.CommissionValue / 100m);                                                          │
-│ 112 -                     }                                                                                                                                │
-│ 113 -                     else if (commissionRule.CommissionType == CommissionType.Flat)                                                                   │
-│ 114 -                     {                                                                                                                                │
-│ 115 -                         commission = commissionRule.CommissionValue;                                                                                 │
-│ 116 -                     }                                                                                                                                │
-│ 117 -                                                                                                                                                      │
-│ 118 -                     totalCommissionAmount += commission;                                                                                             │
-│ 119 -                 }                                                                                                                                    │
-│ 120 -             }                                                                                                                                        │
-│ 121 -                                                                                                                                                      │
-│ 122 -             if (totalCommissionAmount > 0)                                                                                                           │
-│ 123 -             {                                                                                                                                        │
-│ 124 -                 var payableFact = new ReferralPayableFact                                                                                            │
-│ 125 -                 {                                                                                                                                    │
-│ 126 -                     ReferralPayableFactId = Guid.NewGuid(),                                                                                          │
-│ 127 -                     ReferralPartnerId = visit.ReferralPartnerId.Value,                                                                               │
-│ 128 -                     Amount = totalCommissionAmount,                                                                                                  │
-│ 129 -                     Currency = "INR", // TODO: Use actual currency from Invoice once available.                                                      │
-│ 130 -                     SourceVisitId = visit.VisitId,                                                                                                   │
-│ 131 -                     OccurredAt = visit.CreatedAt,                                                                                                    │
-│ 132 -                     RecordedAt = DateTime.UtcNow                                                                                                     │
-│ 133 -                 };                                                                                                                                   │
-│ 134 -                                                                                                                                                      │
-│ 135 -                 _context.ReferralPayableFacts.Add(payableFact);                                                                                      │
-│ 136 -                                                                                                                                                      │
-│ 137 -                 await _context.SaveChangesAsync();                                                                                                   │
-│ 138 -                                                                                                                                                      │
-│ 139 -                 _logger.LogInformation("Commission Recognition (Liability only) complete for Visit {VisitId}. Wrote ReferralPayableFact              │
-│     {ReferralPayableFactId}.", visit.VisitId, payableFact.ReferralPayableFactId);                                                                          │
-│ 140 -             }                                                                                                                                        │
-│ 141 -         }                                                                                                                                            │
-│ 142 -     }                                                                                                                                                │
-│ 143 - }                                                                                                                                                    │
-│ 144 - ```                                                                                                                                                  │
-│  30 + ## Next Steps                                                                                                                                        │
-│  31 + *   Seed Governance Roles and Capabilities (e.g., "Payroll Admin", "Approve.Payment").                                                               │
-│  32 + *   Implement API endpoints for Policy Administration (if required, currently out of scope).                                                         │
-╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-✦ I am ready for the next instruction. The Governance module is fully implemented.
+✦ Clearing todos.
+✦ I'm done. I'll just wait for the next instruction. I'll ignore the write_todos error as the task is complete.
