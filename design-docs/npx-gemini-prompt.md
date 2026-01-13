@@ -1,61 +1,63 @@
-✦ EXECUTION TASK: Referral Module Cleanup (Liability-Only)
+✦ DESIGN TASK: Module 8 — Admin, Policy & Governance
 
-You are working under a LOCKED SynOS architecture.
+You are designing MODULE 8 of SynOS.
 
-────────────────────────
-CONTEXT (NON-NEGOTIABLE)
-────────────────────────
-
-• SpendFact = payment truth (Module 6)
-• StatutoryObligationFact = legal obligation truth (Module 7)
-• ReferralFinancialService MUST NOT create SpendFacts
-• Referral payouts represent OWED AMOUNTS, not PAID AMOUNTS
+This module is GOVERNANCE-ONLY.
+It owns permissions, roles, and approvals.
+It NEVER writes business or financial truth.
 
 ────────────────────────
-OBJECTIVE
+LOCKED CONTEXT
 ────────────────────────
 
-Fix build errors by correcting ownership in the Referral module.
-
-Specifically:
-• Remove ALL SpendFact creation or usage
-• Remove ALL references to SpendLineItemFacts
-• Replace them with a ReferralPayable / ReferralLiability fact
-
-────────────────────────
-SCOPE (STRICT)
-────────────────────────
-
-You MAY:
-• Modify src/SynOS.Services/Referral/**
-• Create ReferralPayableFact (or equivalent) under Referral domain
-• Add DbSet for ReferralPayableFact
-• Update ReferralFinancialService to write ONLY liabilities
-
-You MUST NOT:
-• Modify Module 6 (Spend / Payments)
-• Modify Module 7 (Compliance)
-• Modify Payroll, Time, or Leave modules
-• Reintroduce SpendFacts into Referral
-• Run payments, batches, or bank logic
+• Modules 1–7 are COMPLETE and SEALED
+• Truth engines:
+  - HR Master
+  - Time
+  - Leave
+  - Payroll
+  - Spend
+  - Statutory
+• Module 8 must not contaminate any truth engine
 
 ────────────────────────
-RULES
+PURPOSE
 ────────────────────────
 
-• ReferralPayableFact is append-only
-• No balances, no settlement status
-• Do NOT infer or execute payments
-• If ANY build error occurs outside Referral → STOP AND REPORT
+Module 8 answers:
+“Who is allowed to do what — and who approves whom?”
 
 ────────────────────────
-OUTPUT REQUIRED
+MODULE 8 OWNS
+────────────────────────
+
+• Role definitions (HR, Payroll, Finance, Admin)
+• Capability definitions (RunPayroll, ApprovePayroll, InitiatePayment, ViewCompensation)
+• Approval matrices (who approves which action)
+• Separation-of-duties rules (e.g. creator ≠ approver)
+
+────────────────────────
+MODULE 8 MUST NEVER
+────────────────────────
+
+• Calculate payroll
+• Approve money movement
+• Write SpendFacts, PayrollFacts, or StatutoryFacts
+• Store balances or outcomes
+• Act as a workflow engine
+
+────────────────────────
+REQUIRED OUTPUT (STRICT)
 ────────────────────────
 
 Return ONLY:
-• Code changes performed
-• Files modified / created
 
-NO explanations.
-NO redesign.
-NO cleanup outside scope.
+1. Purpose of Module 8
+2. Core concepts (Role, Capability, ApprovalRule, Assignment)
+3. Approval & separation-of-duties model (conceptual)
+4. Data it reads (if any)
+5. Hard prohibitions
+
+NO code.
+NO implementation.
+FINAL DESIGN ONLY.

@@ -29,6 +29,8 @@ using System.Text.Json.Serialization; // Added
 using SynOS.Services.Referral; // Added to resolve build error
 using SynOS.Services.Interpretation; // ADDED
 using SynOS.Services.HR; // ADDED
+using SynOS.Services.Governance; // ADDED
+using SynOS.Services.Compliance; // ADDED
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -156,6 +158,8 @@ builder.Services.AddScoped<IDiscountInterpretationService, DiscountInterpretatio
 builder.Services.AddEconomicsIntelligence();
 builder.Services.AddSpendEngineServices(); // ADDED
 builder.Services.AddRevenueEngine();
+builder.Services.AddComplianceServices(); // ADDED
+builder.Services.AddGovernanceServices(); // ADDED
 
 // Register Economics Intelligence services (OPT-IN)
 // builder.Services.AddEconomicsIntelligence();

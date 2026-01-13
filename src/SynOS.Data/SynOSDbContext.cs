@@ -7,12 +7,12 @@ using SynOS.Models.Entities.SpendEngine;
 using SynOS.Models.Entities.Revenue;
 using SynOS.Models.Entities.Referral;
 using SynOS.Models.Entities.Payables;
-using SynOS.Models.Entities.Discounts; // ADDED
-using SynOS.Models.Entities.HR; // ADDED
-using SynOS.Models.Entities.Payroll; // ADDED
-using SynOS.Models.Entities.Time; // ADDED
-using SynOS.Models.Entities.Leave; // ADDED
-
+using SynOS.Models.Entities.Discounts;
+using SynOS.Models.Entities.HR;
+using SynOS.Models.Entities.Payroll;
+using SynOS.Models.Entities.Time;
+using SynOS.Models.Entities.Leave;
+using SynOS.Models.Entities.Compliance;
 
 namespace SynOS.Data
 {
@@ -21,7 +21,8 @@ namespace SynOS.Data
         public SynOSDbContext(DbContextOptions<SynOSDbContext> options) : base(options)
         {
         }
-public DbSet<ReceivableFact> ReceivableFacts { get; set; } = null!;
+
+        public DbSet<ReceivableFact> ReceivableFacts { get; set; } = null!;
         // DbSet for User entity
         public DbSet<User> Users { get; set; } = null!;
         public DbSet<Role> Roles { get; set; } = null!;
@@ -29,7 +30,6 @@ public DbSet<ReceivableFact> ReceivableFacts { get; set; } = null!;
         public DbSet<RefreshToken> RefreshTokens { get; set; } = null!;
         public DbSet<AuditLog> AuditLogs { get; set; } = null!;
         public DbSet<Branch> Branches { get; set; } = null!; // New Branch entity
-
 
         // DbSets for Patient entities
         public DbSet<Patient> Patients { get; set; } = null!;
@@ -108,7 +108,7 @@ public DbSet<ReceivableFact> ReceivableFacts { get; set; } = null!;
         // DbSets for Referral System
         public DbSet<ReferralPartner> ReferralPartners { get; set; } = null!;
         public DbSet<ReferralCommissionRule> ReferralCommissionRules { get; set; } = null!;
-        public DbSet<ReferralPayableFact> ReferralPayableFacts { get; set; } = null!; // ADDED
+        public DbSet<ReferralPayableFact> ReferralPayableFacts { get; set; } = null!;
 
         public DbSet<ImsTubeMaster> ImsTubeMasters { get; set; } = null!;
         public DbSet<ImsTubeLot> ImsTubeLots { get; set; } = null!;
@@ -129,44 +129,57 @@ public DbSet<ReceivableFact> ReceivableFacts { get; set; } = null!;
         public DbSet<CostAttribution_UsagePolicyVersion> CostAttribution_UsagePolicyVersions { get; set; } = null!;
         public DbSet<CostAttribution_UsageFact> CostAttribution_UsageFacts { get; set; } = null!;
 
-                    // Spend Engine DbSets
-                    public DbSet<SpendFact> SpendFacts { get; set; }
-                    
-                    // Discount DbSets // ADDED
-                    public DbSet<DiscountMaster> DiscountMasters { get; set; } = null!; // ADDED
-                    public DbSet<DiscountFact> DiscountFacts { get; set; } = null!; // ADDED
-
-                    // HR DbSets // ADDED
-                    public DbSet<Employee> Employees { get; set; } = null!; // ADDED
-
-                    // Payroll Engine DbSets // ADDED
-                    public DbSet<PayComponent> PayComponents { get; set; }
-                    public DbSet<PayStructure> PayStructures { get; set; }
-                    public DbSet<PayStructureAssignment> PayStructureAssignments { get; set; }
-                    public DbSet<PayrollPeriod> PayrollPeriods { get; set; }
-                    public DbSet<PayrollRun> PayrollRuns { get; set; }
-                    public DbSet<PayrollAdjustment> PayrollAdjustments { get; set; }
-                    public DbSet<PayrollFact> PayrollFacts { get; set; }
-                    public DbSet<PayStructureComponent> PayStructureComponents { get; set; } // ADDED
-
-                    // Time Engine DbSets // ADDED
-                    public DbSet<TimePeriod> TimePeriods { get; set; }
-                    public DbSet<ClockEventFact> ClockEventFacts { get; set; }
-                    public DbSet<WorkSessionBoundaryFact> WorkSessionBoundaryFacts { get; set; }
-                    public DbSet<ManualWorkSessionAssertionFact> ManualWorkSessionAssertionFacts { get; set; }
-                    public DbSet<ShiftAttributionFact> ShiftAttributionFacts { get; set; }
-                    public DbSet<OvertimeMarkerFact> OvertimeMarkerFacts { get; set; }
-
-                    // Leave Engine DbSets // ADDED
-                    public DbSet<LeaveFact> LeaveFacts { get; set; }
-                    public DbSet<LeaveCancellationFact> LeaveCancellationFacts { get; set; }
+        // Spend Engine DbSets
+        public DbSet<SpendFact> SpendFacts { get; set; }
         
-                                                // Revenue Engine DbSets
-                                                public DbSet<RevenueFact> RevenueFacts { get; set; } = null!;        // Payables DbSets
+        // Discount DbSets
+        public DbSet<DiscountMaster> DiscountMasters { get; set; } = null!;
+        public DbSet<DiscountFact> DiscountFacts { get; set; } = null!;
+
+        // HR DbSets
+        public DbSet<Employee> Employees { get; set; } = null!;
+
+        // Payroll Engine DbSets
+        public DbSet<PayComponent> PayComponents { get; set; }
+        public DbSet<PayStructure> PayStructures { get; set; }
+        public DbSet<PayStructureAssignment> PayStructureAssignments { get; set; }
+        public DbSet<PayrollPeriod> PayrollPeriods { get; set; }
+        public DbSet<PayrollRun> PayrollRuns { get; set; }
+        public DbSet<PayrollAdjustment> PayrollAdjustments { get; set; }
+        public DbSet<PayrollFact> PayrollFacts { get; set; }
+        public DbSet<PayStructureComponent> PayStructureComponents { get; set; }
+
+        // Time Engine DbSets
+        public DbSet<TimePeriod> TimePeriods { get; set; }
+        public DbSet<ClockEventFact> ClockEventFacts { get; set; }
+        public DbSet<WorkSessionBoundaryFact> WorkSessionBoundaryFacts { get; set; }
+        public DbSet<ManualWorkSessionAssertionFact> ManualWorkSessionAssertionFacts { get; set; }
+        public DbSet<ShiftAttributionFact> ShiftAttributionFacts { get; set; }
+        public DbSet<OvertimeMarkerFact> OvertimeMarkerFacts { get; set; }
+
+        // Leave Engine DbSets
+        public DbSet<LeaveFact> LeaveFacts { get; set; }
+        public DbSet<LeaveCancellationFact> LeaveCancellationFacts { get; set; }
+
+        // Revenue Engine DbSets
+        public DbSet<RevenueFact> RevenueFacts { get; set; } = null!;
+        
+        // Payables DbSets
         public DbSet<PayableFact> PayableFacts { get; set; } = null!;
-        
-                protected override void OnModelCreating(ModelBuilder modelBuilder)
-                {            base.OnModelCreating(modelBuilder);
+
+        // Compliance Engine DbSets
+        public DbSet<StatutoryObligationFact> StatutoryObligationFacts { get; set; }
+
+        // Governance Engine DbSets // ADDED
+        public DbSet<SynOS.Models.Entities.Governance.Role> GovernanceRoles { get; set; }
+        public DbSet<SynOS.Models.Entities.Governance.RoleCapability> RoleCapabilities { get; set; }
+        public DbSet<SynOS.Models.Entities.Governance.Capability> Capabilities { get; set; }
+        public DbSet<SynOS.Models.Entities.Governance.Assignment> Assignments { get; set; }
+        public DbSet<SynOS.Models.Entities.Governance.ApprovalRule> ApprovalRules { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
 
             // User entities
             modelBuilder.Entity<User>(entity => entity.HasIndex(e => e.Email).IsUnique());
@@ -199,14 +212,7 @@ public DbSet<ReceivableFact> ReceivableFacts { get; set; } = null!;
                 entity.HasOne(e => e.Test).WithMany().HasForeignKey(e => e.TestId).OnDelete(DeleteBehavior.Restrict);
             });
 
-            modelBuilder.Entity<ReferralPayableFact>(entity => // ADDED
-            {
-                entity.ToTable("ReferralPayableFacts");
-                entity.HasKey(e => e.ReferralPayableFactId);
-                entity.Property(e => e.Amount).HasColumnType("decimal(18, 4)");
-            });
-
-            modelBuilder.Entity<ReferralPayableFact>(entity => // ADDED
+            modelBuilder.Entity<ReferralPayableFact>(entity =>
             {
                 entity.ToTable("ReferralPayableFacts");
                 entity.HasKey(e => e.ReferralPayableFactId);
@@ -889,112 +895,52 @@ modelBuilder.Entity<ReceivableFact>(entity =>
           .IsRequired();
 });
 
-                            // Discount Configuration (Minimal) // ADDED
-                            modelBuilder.Entity<DiscountMaster>(entity => // ADDED
-                            {
-                                entity.ToTable("DiscountMasters");
-                                entity.HasKey(e => e.DiscountDefinitionId);
-                            });
-            
-                            modelBuilder.Entity<DiscountFact>(entity => // ADDED
-                            {
-                                entity.ToTable("DiscountFacts");
-                                entity.HasKey(e => e.DiscountFactId);
-                            });
-            
-                                            // HR Configuration (Minimal) // ADDED
-                                            modelBuilder.Entity<Employee>(entity => // ADDED
-                                            {
-                                                entity.ToTable("Employees");
-                                                entity.HasKey(e => e.EmployeeId);
-                                            });
-                            
-                                            // Payroll Configuration (Minimal) // ADDED
-                                            modelBuilder.Entity<PayComponent>(entity =>
-                                            {
-                                                entity.ToTable("PayComponents");
-                                                entity.HasKey(e => e.PayComponentId);
-                                            });
-                                            modelBuilder.Entity<PayStructure>(entity =>
-                                            {
-                                                entity.ToTable("PayStructures");
-                                                entity.HasKey(e => e.PayStructureId);
-                                            });
-                                            modelBuilder.Entity<PayStructureAssignment>(entity =>
-                                            {
-                                                entity.ToTable("PayStructureAssignments");
-                                                entity.HasKey(e => e.PayStructureAssignmentId);
-                                            });
-                                            modelBuilder.Entity<PayrollPeriod>(entity =>
-                                            {
-                                                entity.ToTable("PayrollPeriods");
-                                                entity.HasKey(e => e.PayrollPeriodId);
-                                            });
-                                            modelBuilder.Entity<PayrollRun>(entity =>
-                                            {
-                                                entity.ToTable("PayrollRuns");
-                                                entity.HasKey(e => e.PayrollRunId);
-                                            });
-                                            modelBuilder.Entity<PayrollAdjustment>(entity =>
-                                            {
-                                                entity.ToTable("PayrollAdjustments");
-                                                entity.HasKey(e => e.PayrollAdjustmentId);
-                                            });
-                                                        modelBuilder.Entity<PayrollFact>(entity =>
-                                                        {
-                                                            entity.ToTable("PayrollFacts");
-                                                            entity.HasKey(e => e.PayrollFactId);
-                                                            entity.HasIndex(e => new { e.PayrollRunId, e.EmployeeId, e.PayComponentId }).IsUnique();
-                                                        });                                            modelBuilder.Entity<PayStructureComponent>(entity =>
-                                            {
-                                                entity.ToTable("PayStructureComponents");
-                                                entity.HasKey(e => e.PayStructureComponentId);
-                                            });
-
-            // Time Engine Configuration (Minimal) // ADDED
-            modelBuilder.Entity<TimePeriod>(entity =>
+            // Compliance Engine Configuration // ADDED
+            modelBuilder.Entity<StatutoryObligationFact>(entity =>
             {
-                entity.ToTable("TimePeriods");
-                entity.HasKey(e => e.TimePeriodId);
-                entity.HasIndex(e => e.PeriodDate).IsUnique();
-            });
-            modelBuilder.Entity<ClockEventFact>(entity =>
-            {
-                entity.ToTable("Time_ClockEventFacts");
-                entity.HasKey(e => e.ClockEventFactId);
-            });
-            modelBuilder.Entity<WorkSessionBoundaryFact>(entity =>
-            {
-                entity.ToTable("Time_WorkSessionBoundaryFacts");
-                entity.HasKey(e => e.WorkSessionBoundaryFactId);
-            });
-            modelBuilder.Entity<ManualWorkSessionAssertionFact>(entity =>
-            {
-                entity.ToTable("Time_ManualWorkSessionAssertionFacts");
-                entity.HasKey(e => e.ManualWorkSessionAssertionFactId);
-            });
-            modelBuilder.Entity<ShiftAttributionFact>(entity =>
-            {
-                entity.ToTable("Time_ShiftAttributionFacts");
-                entity.HasKey(e => e.ShiftAttributionFactId);
-            });
-            modelBuilder.Entity<OvertimeMarkerFact>(entity =>
-            {
-                entity.ToTable("Time_OvertimeMarkerFacts");
-                entity.HasKey(e => e.OvertimeMarkerFactId);
+                entity.ToTable("StatutoryObligationFacts");
+                entity.HasKey(e => e.StatutoryObligationFactId);
+                entity.Property(e => e.Amount).HasColumnType("decimal(18, 4)").IsRequired();
+                entity.Property(e => e.Currency).HasMaxLength(10).IsRequired();
+                entity.Property(e => e.AuthorityType).HasConversion<string>().HasMaxLength(50);
+                entity.Property(e => e.ObligationType).HasConversion<string>().HasMaxLength(50);
+                entity.Property(e => e.SourceType).HasConversion<string>().HasMaxLength(50);
+                entity.HasIndex(e => e.SourceFactId); // Index for lookup
             });
 
-            // Leave Engine Configuration // ADDED
-            modelBuilder.Entity<LeaveFact>(entity =>
+            // Governance Engine Configuration // ADDED
+            modelBuilder.Entity<SynOS.Models.Entities.Governance.RoleCapability>(entity =>
             {
-                entity.ToTable("Leave_LeaveFacts");
-                entity.HasKey(e => e.LeaveFactId);
+                entity.ToTable("Governance_RoleCapabilities");
+                entity.HasKey(e => e.RoleCapabilityId);
+                entity.HasIndex(e => new { e.RoleId, e.CapabilityId }).IsUnique();
             });
-            modelBuilder.Entity<LeaveCancellationFact>(entity =>
+
+            modelBuilder.Entity<SynOS.Models.Entities.Governance.Role>(entity =>
             {
-                entity.ToTable("Leave_LeaveCancellationFacts");
-                entity.HasKey(e => e.LeaveCancellationFactId);
+                entity.ToTable("Governance_Roles");
+                entity.HasKey(e => e.RoleId);
             });
-                                        }
-                                    }
-                                }
+
+            modelBuilder.Entity<SynOS.Models.Entities.Governance.Capability>(entity =>
+            {
+                entity.ToTable("Governance_Capabilities");
+                entity.HasKey(e => e.CapabilityId);
+            });
+
+            modelBuilder.Entity<SynOS.Models.Entities.Governance.Assignment>(entity =>
+            {
+                entity.ToTable("Governance_Assignments");
+                entity.HasKey(e => e.AssignmentId);
+                entity.HasIndex(e => new { e.UserId, e.RoleId });
+            });
+
+            modelBuilder.Entity<SynOS.Models.Entities.Governance.ApprovalRule>(entity =>
+            {
+                entity.ToTable("Governance_ApprovalRules");
+                entity.HasKey(e => e.ApprovalRuleId);
+                entity.Property(e => e.ThresholdAmount).HasColumnType("decimal(18, 4)");
+            });
+        }
+    }
+}
