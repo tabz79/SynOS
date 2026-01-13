@@ -32,6 +32,7 @@ using SynOS.Services.HR; // ADDED
 using SynOS.Services.Governance; // ADDED
 using SynOS.Services.Compliance; // ADDED
 using SynOS.Services.HRMS.Interpretation; // ADDED
+using SynOS.Services.HRMS.IntelligenceWiring; // ADDED
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -162,6 +163,7 @@ builder.Services.AddRevenueEngine();
 builder.Services.AddComplianceServices(); // ADDED
 builder.Services.AddGovernanceServices(); // ADDED
 builder.Services.AddHrmsInterpretation(); // ADDED
+builder.Services.AddHrmsIntelligenceWiring(); // ADDED
 
 // Register Economics Intelligence services (OPT-IN)
 // builder.Services.AddEconomicsIntelligence();
