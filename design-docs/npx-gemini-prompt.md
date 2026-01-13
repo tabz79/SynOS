@@ -1,98 +1,119 @@
-SYSTEM AUDIT + WIRING ANALYSIS ONLY.
-NO CODE. NO DESIGN CHANGES. NO SCHEMA. NO IMPLEMENTATION.
 
-You are auditing the COMPLETE SynOS / CINOS ecosystem to verify flow correctness,
-interpretation ownership, and intelligence wiring discipline.
 
-────────────────────────────────
-SECTION 1 — ENGINE TRUTH & INTERPRETATION
-────────────────────────────────
+## 🔒 GEMINI PROMPT — SynOS Frontend Architecture (OS-Grade, 2026+)
 
-For EACH engine below, answer:
+> You have **full access to the SynOS codebase**.
+>
+> SynOS is a **Healthcare Operations & Finance Operating System**, not an app.
+> It coordinates diagnostics operations, money, inventory, workforce, compliance, and intelligence using immutable fact engines and strict architectural discipline.
+>
+> ### NON-NEGOTIABLE BACKEND LAWS
+>
+> * Truth engines write **append-only, immutable facts**
+> * Interpretation layers explain facts, never mutate them
+> * Intelligence layers analyze facts, never resummarize truth
+> * UI **never** decides eligibility, workflow, or calculations
+> * Liability ≠ Cash
+> * Accrual ≠ Settlement
+> * No module computes another module’s truth
+>
+> The backend is **sealed and correct**.
+> You must design the frontend to **respect and preserve this architecture**.
+>
+> ---
+>
+> ### YOUR ROLE
+>
+> Act as a **Senior OS-grade Frontend Architect (2026+)** designing professional, long-session, high-stakes software (healthcare + finance).
+>
+> This is **not** a consumer app, admin panel, or marketing UI.
+>
+> ---
+>
+> ### YOUR TASK
+>
+> Propose a **Frontend Architecture Blueprint** (not implementation) for SynOS.
+>
+> The frontend is **role-specific**, but roles **do NOT own workflows**.
+> Roles only:
+>
+> * Observe truth
+> * See queues derived from facts
+> * Emit single, atomic user intents
+>
+> ---
+>
+> ### REQUIRED OUTPUT (MANDATORY)
+>
+> **1️⃣ Frontend Architectural Layers**
+>
+> * Logical layers (NOT framework-specific yet)
+> * Responsibilities and boundaries of each layer
+>
+> **2️⃣ Role-Based UI Philosophy**
+> Address these roles explicitly:
+>
+> * Receptionist
+> * Phlebotomist
+> * Pathologist
+> * Radiologist
+> * X-Ray Technician
+> * MRI Technician
+> * Delivery Desk
+> * Inventory Manager
+> * HR Manager
+> * Accounts / Finance
+> * System Admin
+>
+> Explain how the *same truth* is surfaced differently per role **without duplicating logic**.
+>
+> **3️⃣ Queue-Driven Interface Design**
+>
+> * How queues are derived purely from backend facts
+> * How queue visibility differs by role
+> * How queues drive attention without frontend workflows
+>
+> **4️⃣ OS-Grade UX Principles (2026+)**
+>
+> * Information density vs calm
+> * Time as a first-class UI dimension
+> * Fatigue-aware UI design
+> * Error, latency, and failure visibility
+> * Accessibility and long-hour usage
+>
+> **5️⃣ Interaction & Navigation Model**
+>
+> * How navigation responds to backend state changes
+> * Why wizards, step-flows, and optimistic UI are dangerous here
+> * How user intent is captured safely
+>
+> **6️⃣ Visual & Design System Philosophy**
+>
+> * Color semantics (status-driven, not decorative)
+> * Typography hierarchy
+> * Motion rules (when allowed, when forbidden)
+> * What makes it “futuristic” without being flashy
+>
+> **7️⃣ Explicit Anti-Patterns to Avoid**
+>
+> * UI-side computations
+> * Frontend state ownership
+> * Role-owned workflows
+> * Cross-engine summaries in UI
+>
+> ---
+>
+> ### STRICT RULES
+>
+> * Do NOT invent backend logic
+> * Do NOT propose frontend workflow engines
+> * Do NOT calculate money, inventory, or eligibility in UI
+> * Do NOT suggest optimistic UI for financial or clinical actions
+> * Do NOT produce wireframes or React code
+>
+> Output a **serious design document**, not a blog post.
+>
+> Assume this frontend will be **audited**.
+>
+> ---
 
-A. What question this ENGINE answers (truth owned)
-B. What the ENGINE explicitly does NOT answer
-C. What its INTERPRETATION LAYER answers (human / business questions)
-D. What interpretation MUST NEVER do
-
-Engines:
-1. Inventory Engine
-2. Cost Attribution Engine
-3. Spend Engine
-4. Revenue Engine
-
-────────────────────────────────
-SECTION 2 — ENGINE → INTELLIGENCE WIRING
-────────────────────────────────
-
-For EACH intelligence layer below, answer:
-
-A. Which ENGINES it consumes
-B. Which INTERPRETATION LAYERS it consumes (if any)
-C. What QUESTIONS it answers in terms of engines
-D. What QUESTIONS it MUST NEVER answer
-E. What it MUST NEVER accept as direct input
-
-Intelligence Layers:
-1. Economic Intelligence Layer
-2. Business Intelligence Layer
-
-────────────────────────────────
-SECTION 3 — REFERRAL & DISCOUNT SYSTEM BEHAVIOR
-────────────────────────────────
-
-For EACH system below, answer:
-
-A. What truth it owns vs what it borrows
-B. Which ENGINE(s) it writes to
-C. Which ENGINE(s) it reads from
-D. What its INTERPRETATION LAYER explains
-E. What its interpretation MUST NEVER explain
-F. Where monetary impact ultimately lands (engine-level)
-
-Systems:
-1. Referral System
-   - Flow A
-   - Flow B
-2. Discount System
-
-────────────────────────────────
-SECTION 4 — REFERRAL & DISCOUNT → INTELLIGENCE FLOW
-────────────────────────────────
-
-For EACH intelligence layer, explain:
-
-A. How referral data influences it
-B. How discount data influences it
-C. Whether influence is:
-   - Direct (via engine facts)
-   - Indirect (via interpretation output)
-D. What business questions intelligence answers about:
-   - Referrals
-   - Discounts
-E. What intelligence MUST NEVER infer or calculate about them
-
-────────────────────────────────
-SECTION 5 — HRMS WIRING READINESS (FINAL)
-────────────────────────────────
-
-ONLY AFTER answering Sections 1–4:
-
-A. Which HRMS engines produce facts relevant to:
-   - Economic Intelligence
-   - Business Intelligence
-
-B. Which HRMS outputs MUST go through:
-   - Cost Attribution Engine
-   - Spend Engine
-   - Revenue Engine
-   before touching intelligence
-
-C. Where HRMS risks OVERWHELM or DOUBLE-COUNTING if wired incorrectly
-
-D. HIGH-LEVEL, NON-TECHNICAL wiring principles for HRMS:
-   - What it feeds
-   - What it never feeds
-   - What it only explains
-
-This is a SYSTEM UNDERSTANDING & FLOW VERIFICATION exercise.
