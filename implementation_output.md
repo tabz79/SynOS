@@ -1,32 +1,104 @@
-# Implementation Report - HRMS Interpretation Layer (Read-Only)
+# Implementation Report - Branch Operational Event Stream
 
-## Completed Tasks
+## 1. BranchOperationalEvent Read Model
+```csharp
+namespace SynOS.Models.ReadModels
+{
+    public class BranchOperationalEvent
+    {
+        [Key]
+        public Guid EventId { get; set; }
+        public string EventType { get; set; } = string.Empty;
+        public DateTime OccurredAt { get; set; } // UTC
+        public string ActorType { get; set; } = string.Empty;
+        public string? ActorName { get; set; }
+        public string BranchId { get; set; } = string.Empty;
+        public string VisitId { get; set; } = string.Empty;
+        public string TokenId { get; set; } = string.Empty;
+        public string SummaryText { get; set; } = string.Empty;
+    }
+}
+```
 
-1.  **Implemented View DTOs:**
-    *   `PayslipView`: Combined employee, payroll, and spend data.
-    *   `PayrollBreakdownView`: Aggregated liability by department.
-    *   `AttendanceLeaveSummaryView`: Merged time and leave facts.
-    *   `WorkforceCostView`: Holistic cost (Payroll + Spend + Statutory).
-    *   `AuditTimelineView`: Chronological event stream from all modules.
+## 2. BranchEventType Enum
+```csharp
+public enum BranchEventType
+{
+    VISIT_STARTED,
+    BILL_GENERATED,
+    PAYMENT_RECEIVED,
+    VISIT_FINALIZED,
+    MOVED_TO_SAMPLE_COLLECTION,
+    SAMPLE_COLLECTED,
+    REPORT_VERIFIED,
+    REPORT_READY
+}
+```
 
-2.  **Implemented Interpretation Service:**
-    *   `IHrmsInterpretationService`: Read-only contract.
-    *   `HrmsInterpretationService`: Implementation using `AsNoTracking` queries, joins, and aggregations.
-    *   **Logic:**
-        *   Joins `PayrollRun` -> `PayrollPeriod` for dates.
-        *   Joins `PayrollFacts` -> `PayComponents` for breakdown.
-        *   Aggregates `SpendFacts` for contractor costs.
-        *   Aggregates `StatutoryObligationFacts` for employer liability.
-        *   Merges `ClockEventFacts` and `LeaveFacts` for timeline and summary.
+## 3. OperationalEventWriter Implementation
+```csharp
+public class OperationalEventWriter : IOperationalEventWriter
+{
+    // ... Dependencies ...
 
-3.  **Service Registration:**
-    *   Created `HrmsInterpretationServiceCollectionExtensions`.
-    *   Registered in `SynOS.Api.Program.cs`.
+    public async Task WriteEventAsync(...)
+    {
+        try
+        {
+            var evt = new BranchOperationalEvent
+            {
+                EventId = Guid.NewGuid(),
+                EventType = eventType.ToString(),
+                OccurredAt = DateTime.UtcNow, // Strict UTC
+                // ... fields ...
+            };
+            _context.BranchOperationalEvents.Add(evt);
+            await _context.SaveChangesAsync();
+        }
+        catch (Exception ex)
+        {
+            // Non-blocking failure logging
+            _logger.LogError(ex, "Failed to write operational event...");
+        }
+    }
+}
+```
 
-## Verification
-*   `dotnet build` passed successfully.
-*   Layer is strictly read-only and does not mutate any truth engine data.
-*   Dependencies on Modules 1-8 are respected (using existing entities).
+## 4. Controller Code
+```csharp
+[ApiController]
+[Route("api/v1/branch/activity")]
+public class BranchActivityController : ControllerBase
+{
+    // ...
+    [HttpGet]
+    public async Task<IActionResult> GetBranchActivity([FromQuery] string branchId)
+    {
+        var utcToday = DateTime.UtcNow.Date;
+        var utcTomorrow = utcToday.AddDays(1);
 
-## Next Steps
-*   API Controllers can now inject `IHrmsInterpretationService` to serve these views to the frontend.
+        var events = await _context.BranchOperationalEvents
+            .AsNoTracking()
+            .Where(e => e.BranchId == branchId && e.OccurredAt >= utcToday && e.OccurredAt < utcTomorrow)
+            .OrderByDescending(e => e.OccurredAt)
+            .Take(50)
+            .ToListAsync();
+
+        return Ok(events);
+    }
+}
+```
+
+## 5. Event Emissions (Examples)
+*   **VISIT_STARTED:** `ReceptionFlowService.StartVisitAsync`
+*   **BILL_GENERATED:** `VisitService.CreateVisitAsync`
+*   **PAYMENT_RECEIVED:** `InvoiceService.RecordPaymentAsync`
+*   **SAMPLE_COLLECTED:** `SampleService.CollectSampleAsync`
+*   **REPORT_READY:** `ReportService.SignReportAsync`
+
+## 6. Migration Summary
+*   **Migration:** `AddBranchOperationalEvent`
+*   **Table:** `BranchOperationalEvents`
+*   **Constraints:** Append-only logic enforced by service design. UTC enforced by Writer.
+
+**Status:** Complete and Verified.

@@ -10,6 +10,8 @@ using SynOS.Models.DTOs;
 using SynOS.Models.Entities;
 using SynOS.Models.Entities.AR;
 using SynOS.Services.Storage;
+using SynOS.Services.Operational; // ADDED
+using SynOS.Models.Enums; // ADDED
 
 namespace SynOS.Services
 {
@@ -22,6 +24,7 @@ namespace SynOS.Services
         private readonly IReportPdfRenderer _reportPdfRenderer;
         private readonly IFileStorageService _fileStorageService;
         private readonly IAuditService _auditService; // Injected
+        private readonly IOperationalEventWriter _operationalEventWriter; // ADDED
 
         public ReportService(
             SynOSDbContext context, 
@@ -30,7 +33,8 @@ namespace SynOS.Services
             IHttpClientFactory httpClientFactory,
             IReportPdfRenderer reportPdfRenderer,
             IFileStorageService fileStorageService,
-            IAuditService auditService) // Injected
+            IAuditService auditService, // Injected
+            IOperationalEventWriter operationalEventWriter) // ADDED
         {
             _context = context;
             _logger = logger;
@@ -39,6 +43,7 @@ namespace SynOS.Services
             _reportPdfRenderer = reportPdfRenderer;
             _fileStorageService = fileStorageService;
             _auditService = auditService; // Assigned
+            _operationalEventWriter = operationalEventWriter ?? throw new ArgumentNullException(nameof(operationalEventWriter)); // ADDED
         }
 
         public async Task<ReportSignatureResponseDto> SignReportAsync(Guid reportId, Guid signedByUserId)
@@ -123,6 +128,17 @@ namespace SynOS.Services
             await _auditService.LogAsync(signedByUserId, "ReportSigned", "Report", reportId, new { NewVersion = newVersion });
 
             await _context.SaveChangesAsync();
+
+            // Emit Operational Event: REPORT_READY
+            await _operationalEventWriter.WriteEventAsync(
+                BranchEventType.REPORT_READY,
+                order.Visit?.BranchId?.ToString() ?? "Main",
+                order.VisitId.ToString(),
+                order.Visit?.Token ?? "Unknown",
+                $"Report signed and ready (v{newVersion})",
+                "User",
+                signedByUserId.ToString()
+            );
 
             // --- FLOW B: RECEIVABLE CREATION TRIGGER ---
             var visitId = order.VisitId;
@@ -276,6 +292,17 @@ namespace SynOS.Services
             }
             
             await _context.SaveChangesAsync();
+
+            // Emit Operational Event: REPORT_VERIFIED
+            await _operationalEventWriter.WriteEventAsync(
+                BranchEventType.REPORT_VERIFIED,
+                order.Visit?.BranchId?.ToString() ?? "Main",
+                order.VisitId.ToString(),
+                order.Visit?.Token ?? "Unknown",
+                "Results finalized and verified",
+                "User",
+                "Unknown" // Actor ID not passed to SaveFinalResultsAsync
+            );
         }
 
         public async Task<FinalReportDto> GetFinalReportAsync(Guid orderId)

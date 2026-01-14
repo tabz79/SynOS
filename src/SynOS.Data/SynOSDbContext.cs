@@ -13,6 +13,8 @@ using SynOS.Models.Entities.Payroll;
 using SynOS.Models.Entities.Time;
 using SynOS.Models.Entities.Leave;
 using SynOS.Models.Entities.Compliance;
+using SynOS.Models.Entities.Governance;
+using SynOS.Models.ReadModels; // ADDED
 
 namespace SynOS.Data
 {
@@ -22,10 +24,12 @@ namespace SynOS.Data
         {
         }
 
+        public DbSet<BranchOperationalEvent> BranchOperationalEvents { get; set; } = null!; // ADDED
+
         public DbSet<ReceivableFact> ReceivableFacts { get; set; } = null!;
         // DbSet for User entity
         public DbSet<User> Users { get; set; } = null!;
-        public DbSet<Role> Roles { get; set; } = null!;
+        public DbSet<SynOS.Models.Entities.Role> Roles { get; set; } = null!;
         public DbSet<UserRole> UserRoles { get; set; } = null!;
         public DbSet<RefreshToken> RefreshTokens { get; set; } = null!;
         public DbSet<AuditLog> AuditLogs { get; set; } = null!;
@@ -906,6 +910,18 @@ modelBuilder.Entity<ReceivableFact>(entity =>
                 entity.Property(e => e.ObligationType).HasConversion<string>().HasMaxLength(50);
                 entity.Property(e => e.SourceType).HasConversion<string>().HasMaxLength(50);
                 entity.HasIndex(e => e.SourceFactId); // Index for lookup
+            });
+
+            // Operational Read Model Configuration // ADDED
+            modelBuilder.Entity<BranchOperationalEvent>(entity =>
+            {
+                entity.ToTable("BranchOperationalEvents");
+                entity.HasKey(e => e.EventId);
+                entity.Property(e => e.EventType).IsRequired().HasMaxLength(50);
+                entity.Property(e => e.BranchId).IsRequired().HasMaxLength(50);
+                entity.Property(e => e.OccurredAt).IsRequired();
+                entity.HasIndex(e => e.BranchId); // Filter by Branch
+                entity.HasIndex(e => e.OccurredAt); // Sort/Filter by Time
             });
 
             // Governance Engine Configuration // ADDED

@@ -9,6 +9,7 @@ using SynOS.Models.Entities;
 using Microsoft.Extensions.Logging;
 using SynOS.Services.Utils;
 using SynOS.Models.Enums; // Required for TubeType
+using SynOS.Services.Operational; // ADDED
 
 namespace SynOS.Services
 {
@@ -18,6 +19,7 @@ namespace SynOS.Services
         private readonly ILogger<VisitService> _logger;
         private readonly ITestsCacheService _testsCacheService; // Injected
         private readonly IAuditService _auditService; // Injected
+        private readonly IOperationalEventWriter _operationalEventWriter; // ADDED
 
         // TODO: Configure lab timezone in appsettings or a dedicated config service
         private static TimeZoneInfo _labTimeZone = TimeZoneInfo.Local; // Default to server local timezone
@@ -26,12 +28,14 @@ namespace SynOS.Services
             SynOSDbContext context, 
             ILogger<VisitService> logger, 
             ITestsCacheService testsCacheService, 
-            IAuditService auditService)
+            IAuditService auditService,
+            IOperationalEventWriter operationalEventWriter) // ADDED
         {
             _context = context;
             _logger = logger;
             _testsCacheService = testsCacheService;
             _auditService = auditService;
+            _operationalEventWriter = operationalEventWriter ?? throw new ArgumentNullException(nameof(operationalEventWriter)); // ADDED
         }
 
         public async Task<VisitTokenPrintDto> GetVisitTokenForPrintingAsync(Guid visitId)
@@ -151,6 +155,17 @@ namespace SynOS.Services
 
             await _context.SaveChangesAsync();
             await _auditService.LogAsync(actorUserId, "CreateVisit", "Visit", visit.VisitId, visitDto); // Audit visit creation
+
+            // Emit Operational Event: BILL_GENERATED
+            await _operationalEventWriter.WriteEventAsync(
+                BranchEventType.BILL_GENERATED,
+                visit.BranchId?.ToString() ?? "Main", // Default to "Main" if BranchId is missing
+                visit.VisitId.ToString(),
+                visit.Token,
+                $"Bill generated for {invoice.Total:F2}",
+                "User",
+                actorUserId.ToString()
+            );
 
             return visit;
         }

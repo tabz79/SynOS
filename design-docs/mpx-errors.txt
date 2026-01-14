@@ -1,1482 +1,781 @@
-D:\Projects\SynOS-Synthesized-Lab-Intelligence>dotnet build
-  Determining projects to restore...
-  All projects are up-to-date for restore.
-  SynOS.Models -> D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.M
-  odels\bin\Debug\net8.0\SynOS.Models.dll
-  SynOS.Data -> D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Dat
-  a\bin\Debug\net8.0\SynOS.Data.dll
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReceptionF
-lowService.cs(424,91): warning CS8625: Cannot convert null literal to non-nu
-llable reference type. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\S
-ynOS.Services\SynOS.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\VisitServi
-ce.cs(57,31): warning CS8602: Dereference of a possibly null reference. [D:\
-Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Service
-s.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\VisitServi
-ce.cs(206,25): warning CS8601: Possible null reference assignment. [D:\Proje
-cts\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csp
-roj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\VisitServi
-ce.cs(299,27): warning CS8618: Non-nullable property 'TestCode' must contain
- a non-null value when exiting constructor. Consider adding the 'required' m
-odifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesize
-d-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\VisitServi
-ce.cs(300,27): warning CS8618: Non-nullable property 'TestName' must contain
- a non-null value when exiting constructor. Consider adding the 'required' m
-odifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesize
-d-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\VisitServi
-ce.cs(301,27): warning CS8618: Non-nullable property 'Department' must conta
-in a non-null value when exiting constructor. Consider adding the 'required'
- modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesi
-zed-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\Utils\EscP
-osGenerator.cs(70,35): warning CS8602: Dereference of a possibly null refere
-nce. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynO
-S.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\Utils\EscP
-osGenerator.cs(70,35): warning CS8602: Dereference of a possibly null refere
-nce. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynO
-S.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CriticalVa
-lueService.cs(41,39): warning CS8602: Dereference of a possibly null referen
-ce. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS
-.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CriticalVa
-lueService.cs(43,39): warning CS8602: Dereference of a possibly null referen
-ce. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS
-.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CriticalVa
-lueService.cs(44,43): warning CS8602: Dereference of a possibly null referen
-ce. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS
-.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CriticalVa
-lueService.cs(46,39): warning CS8602: Dereference of a possibly null referen
-ce. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS
-.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CriticalVa
-lueService.cs(47,43): warning CS8602: Dereference of a possibly null referen
-ce. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS
-.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CriticalVa
-lueService.cs(126,33): warning CS8602: Dereference of a possibly null refere
-nce. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynO
-S.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CriticalVa
-lueService.cs(142,29): warning CS8602: Dereference of a possibly null refere
-nce. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynO
-S.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CsvService
-.cs(413,23): warning CS8618: Non-nullable property 'TestCode' must contain a
- non-null value when exiting constructor. Consider adding the 'required' mod
-ifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-
-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CsvService
-.cs(414,23): warning CS8618: Non-nullable property 'TestName' must contain a
- non-null value when exiting constructor. Consider adding the 'required' mod
-ifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-
-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CsvService
-.cs(415,23): warning CS8618: Non-nullable property 'Department' must contain
- a non-null value when exiting constructor. Consider adding the 'required' m
-odifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesize
-d-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CsvService
-.cs(416,23): warning CS8618: Non-nullable property 'Category' must contain a
- non-null value when exiting constructor. Consider adding the 'required' mod
-ifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-
-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CsvService
-.cs(419,23): warning CS8618: Non-nullable property 'ParameterCode' must cont
-ain a non-null value when exiting constructor. Consider adding the 'required
-' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthes
-ized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CsvService
-.cs(420,23): warning CS8618: Non-nullable property 'ParameterName' must cont
-ain a non-null value when exiting constructor. Consider adding the 'required
-' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthes
-ized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CsvService
-.cs(421,23): warning CS8618: Non-nullable property 'Unit' must contain a non
--null value when exiting constructor. Consider adding the 'required' modifie
-r or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-
-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CsvService
-.cs(422,23): warning CS8618: Non-nullable property 'DataType' must contain a
- non-null value when exiting constructor. Consider adding the 'required' mod
-ifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-
-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CsvService
-.cs(428,23): warning CS8618: Non-nullable property 'AgeGroup' must contain a
- non-null value when exiting constructor. Consider adding the 'required' mod
-ifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-
-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CsvService
-.cs(431,23): warning CS8618: Non-nullable property 'Sex' must contain a non-
-null value when exiting constructor. Consider adding the 'required' modifier
- or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-I
-ntelligence\src\SynOS.Services\SynOS.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CsvService
-.cs(432,23): warning CS8618: Non-nullable property 'TextRange' must contain
-a non-null value when exiting constructor. Consider adding the 'required' mo
-difier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized
--Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CsvService
-.cs(433,23): warning CS8618: Non-nullable property 'EffectiveFrom' must cont
-ain a non-null value when exiting constructor. Consider adding the 'required
-' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthes
-ized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CsvService
-.cs(438,23): warning CS8618: Non-nullable property 'Price_EffectiveFrom' mus
-t contain a non-null value when exiting constructor. Consider adding the 're
-quired' modifier or declaring the property as nullable. [D:\Projects\SynOS-S
-ynthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CsvService
-.cs(439,23): warning CS8618: Non-nullable property 'Price_EffectiveTo' must
-contain a non-null value when exiting constructor. Consider adding the 'requ
-ired' modifier or declaring the property as nullable. [D:\Projects\SynOS-Syn
-thesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CriticalVa
-lueService.cs(183,38): warning CS8602: Dereference of a possibly null refere
-nce. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynO
-S.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CriticalVa
-lueService.cs(192,28): warning CS8602: Dereference of a possibly null refere
-nce. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynO
-S.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CriticalVa
-lueService.cs(192,28): warning CS8601: Possible null reference assignment. [
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Serv
-ices.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CsvService
-.cs(447,29): warning CS8618: Non-nullable property 'Errors' must contain a n
-on-null value when exiting constructor. Consider adding the 'required' modif
-ier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-La
-b-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CsvService
-.cs(448,38): warning CS8618: Non-nullable property 'RowResults' must contain
- a non-null value when exiting constructor. Consider adding the 'required' m
-odifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesize
-d-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CriticalVa
-lueService.cs(233,35): warning CS8602: Dereference of a possibly null refere
-nce. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynO
-S.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CriticalVa
-lueService.cs(239,33): warning CS8602: Dereference of a possibly null refere
-nce. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynO
-S.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CriticalVa
-lueService.cs(260,32): warning CS8602: Dereference of a possibly null refere
-nce. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynO
-S.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CsvService
-.cs(454,23): warning CS8618: Non-nullable property 'TestCode' must contain a
- non-null value when exiting constructor. Consider adding the 'required' mod
-ifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-
-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CsvService
-.cs(456,23): warning CS8618: Non-nullable property 'Message' must contain a
-non-null value when exiting constructor. Consider adding the 'required' modi
-fier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-L
-ab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CsvService
-.cs(78,52): warning CS8601: Possible null reference assignment. [D:\Projects
-\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj
-]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CsvService
-.cs(82,48): warning CS8601: Possible null reference assignment. [D:\Projects
-\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj
-]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CsvService
-.cs(93,53): warning CS8601: Possible null reference assignment. [D:\Projects
-\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj
-]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CsvService
-.cs(107,48): warning CS8601: Possible null reference assignment. [D:\Project
-s\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.cspro
-j]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CsvService
-.cs(111,44): warning CS8601: Possible null reference assignment. [D:\Project
-s\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.cspro
-j]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CsvService
-.cs(128,40): warning CS8601: Possible null reference assignment. [D:\Project
-s\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.cspro
-j]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\TubeConsum
-ptionService.cs(44,69): warning CS8602: Dereference of a possibly null refer
-ence. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\Syn
-OS.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\TubeConsum
-ptionService.cs(45,69): warning CS8602: Dereference of a possibly null refer
-ence. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\Syn
-OS.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DICOM\Dico
-mMetadataExtractor.cs(28,79): warning CS8600: Converting null literal or pos
-sible null value to non-nullable type. [D:\Projects\SynOS-Synthesized-Lab-In
-telligence\src\SynOS.Services\SynOS.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DICOM\Dico
-mMetadataExtractor.cs(29,97): warning CS8600: Converting null literal or pos
-sible null value to non-nullable type. [D:\Projects\SynOS-Synthesized-Lab-In
-telligence\src\SynOS.Services\SynOS.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DICOM\Dico
-mMetadataExtractor.cs(33,103): warning CS8600: Converting null literal or po
-ssible null value to non-nullable type. [D:\Projects\SynOS-Synthesized-Lab-I
-ntelligence\src\SynOS.Services\SynOS.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DICOM\Dico
-mMetadataExtractor.cs(34,109): warning CS8600: Converting null literal or po
-ssible null value to non-nullable type. [D:\Projects\SynOS-Synthesized-Lab-I
-ntelligence\src\SynOS.Services\SynOS.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DICOM\Dico
-mMetadataExtractor.cs(35,87): warning CS8600: Converting null literal or pos
-sible null value to non-nullable type. [D:\Projects\SynOS-Synthesized-Lab-In
-telligence\src\SynOS.Services\SynOS.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\EditLockSe
-rvice.cs(44,28): warning CS8619: Nullability of reference types in value of
-type '(AcquireLockResponseDto, LockedByInfo?)' doesn't match target type '(A
-cquireLockResponseDto, LockedByInfo)'. [D:\Projects\SynOS-Synthesized-Lab-In
-telligence\src\SynOS.Services\SynOS.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\EditLockSe
-rvice.cs(50,28): warning CS8601: Possible null reference assignment. [D:\Pro
-jects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.c
-sproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\EditLockSe
-rvice.cs(53,24): warning CS8619: Nullability of reference types in value of
-type '(AcquireLockResponseDto?, LockedByInfo lockedByInfo)' doesn't match ta
-rget type '(AcquireLockResponseDto, LockedByInfo)'. [D:\Projects\SynOS-Synth
-esized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\EditLockSe
-rvice.cs(75,36): warning CS8601: Possible null reference assignment. [D:\Pro
-jects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.c
-sproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\EditLockSe
-rvice.cs(80,32): warning CS8619: Nullability of reference types in value of
-type '(AcquireLockResponseDto?, LockedByInfo lockedBy)' doesn't match target
- type '(AcquireLockResponseDto, LockedByInfo)'. [D:\Projects\SynOS-Synthesiz
-ed-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\EditLockSe
-rvice.cs(106,28): warning CS8619: Nullability of reference types in value of
- type '(AcquireLockResponseDto response, LockedByInfo?)' doesn't match targe
-t type '(AcquireLockResponseDto, LockedByInfo)'. [D:\Projects\SynOS-Synthesi
-zed-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\EditLockSe
-rvice.cs(126,36): warning CS8601: Possible null reference assignment. [D:\Pr
-ojects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.
-csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\EditLockSe
-rvice.cs(130,32): warning CS8619: Nullability of reference types in value of
- type '(AcquireLockResponseDto?, LockedByInfo lockedBy)' doesn't match targe
-t type '(AcquireLockResponseDto, LockedByInfo)'. [D:\Projects\SynOS-Synthesi
-zed-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\IMSWastage
-InsightService.cs(39,38): warning CS8601: Possible null reference assignment
-. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.S
-ervices.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\EditLockSe
-rvice.cs(180,32): warning CS8601: Possible null reference assignment. [D:\Pr
-ojects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.
-csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\IMSWastage
-InsightService.cs(58,38): warning CS8601: Possible null reference assignment
-. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.S
-ervices.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CsvService
-.cs(208,40): warning CS8601: Possible null reference assignment. [D:\Project
-s\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.cspro
-j]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CsvService
-.cs(209,42): warning CS8601: Possible null reference assignment. [D:\Project
-s\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.cspro
-j]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\IMSWastage
-InsightService.cs(77,38): warning CS8601: Possible null reference assignment
-. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.S
-ervices.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliverySe
-rvice.cs(70,39): warning CS8602: Dereference of a possibly null reference. [
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Serv
-ices.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliverySe
-rvice.cs(111,43): warning CS8602: Dereference of a possibly null reference.
-[D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Ser
-vices.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliverySe
-rvice.cs(120,27): warning CS8602: Dereference of a possibly null reference.
-[D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Ser
-vices.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliverySe
-rvice.cs(121,29): warning CS8602: Dereference of a possibly null reference.
-[D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Ser
-vices.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliverySe
-rvice.cs(145,29): warning CS8602: Dereference of a possibly null reference.
-[D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Ser
-vices.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\IMSWastage
-InsightService.cs(96,38): warning CS8601: Possible null reference assignment
-. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.S
-ervices.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\InvoiceSer
-vice.cs(82,31): warning CS8602: Dereference of a possibly null reference. [D
-:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Servi
-ces.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\InvoiceSer
-vice.cs(83,31): warning CS8602: Dereference of a possibly null reference. [D
-:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Servi
-ces.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\InvoiceSer
-vice.cs(99,59): warning CS8602: Dereference of a possibly null reference. [D
-:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Servi
-ces.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\InvoiceSer
-vice.cs(99,59): warning CS8602: Dereference of a possibly null reference. [D
-:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Servi
-ces.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliverySe
-rvice.cs(292,39): warning CS8602: Dereference of a possibly null reference.
-[D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Ser
-vices.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliverySe
-rvice.cs(297,30): warning CS8602: Dereference of a possibly null reference.
-[D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Ser
-vices.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliverySe
-rvice.cs(297,30): warning CS8602: Dereference of a possibly null reference.
-[D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Ser
-vices.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliverySe
-rvice.cs(310,30): warning CS8602: Dereference of a possibly null reference.
-[D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Ser
-vices.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\Time\TimeF
-actWriter.cs(110,17): error CS0117: 'OvertimeMarkerFact' does not contain a
-definition for 'StartTime' [D:\Projects\SynOS-Synthesized-Lab-Intelligence\s
-rc\SynOS.Services\SynOS.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliverySe
-rvice.cs(377,39): warning CS8602: Dereference of a possibly null reference.
-[D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Ser
-vices.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliverySe
-rvice.cs(382,30): warning CS8602: Dereference of a possibly null reference.
-[D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Ser
-vices.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliverySe
-rvice.cs(382,30): warning CS8602: Dereference of a possibly null reference.
-[D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Ser
-vices.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliverySe
-rvice.cs(395,30): warning CS8602: Dereference of a possibly null reference.
-[D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Ser
-vices.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\Time\TimeF
-actWriter.cs(176,91): error CS1061: 'OvertimeMarkerFact' does not contain a
-definition for 'StartTime' and no accessible extension method 'StartTime' ac
-cepting a first argument of type 'OvertimeMarkerFact' could be found (are yo
-u missing a using directive or an assembly reference?) [D:\Projects\SynOS-Sy
-nthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliverySe
-rvice.cs(460,39): warning CS8602: Dereference of a possibly null reference.
-[D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Ser
-vices.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliverySe
-rvice.cs(465,30): warning CS8602: Dereference of a possibly null reference.
-[D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Ser
-vices.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliverySe
-rvice.cs(465,30): warning CS8602: Dereference of a possibly null reference.
-[D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Ser
-vices.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliverySe
-rvice.cs(478,30): warning CS8602: Dereference of a possibly null reference.
-[D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Ser
-vices.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliverySe
-rvice.cs(599,39): warning CS8602: Dereference of a possibly null reference.
-[D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Ser
-vices.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliverySe
-rvice.cs(603,34): warning CS8602: Dereference of a possibly null reference.
-[D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Ser
-vices.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliverySe
-rvice.cs(603,34): warning CS8602: Dereference of a possibly null reference.
-[D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Ser
-vices.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliverySe
-rvice.cs(613,34): warning CS8602: Dereference of a possibly null reference.
-[D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Ser
-vices.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliverySe
-rvice.cs(741,21): warning CS8602: Dereference of a possibly null reference.
-[D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Ser
-vices.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliverySe
-rvice.cs(745,47): warning CS8602: Dereference of a possibly null reference.
-[D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Ser
-vices.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliverySe
-rvice.cs(749,43): warning CS8602: Dereference of a possibly null reference.
-[D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Ser
-vices.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliverySe
-rvice.cs(749,43): warning CS8602: Dereference of a possibly null reference.
-[D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Ser
-vices.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliverySe
-rvice.cs(761,43): warning CS8602: Dereference of a possibly null reference.
-[D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Ser
-vices.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\PacsServic
-e.cs(416,59): warning CS8602: Dereference of a possibly null reference. [D:\
-Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Service
-s.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliverySe
-rvice.cs(849,39): warning CS8602: Dereference of a possibly null reference.
-[D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Ser
-vices.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliverySe
-rvice.cs(853,30): warning CS8602: Dereference of a possibly null reference.
-[D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Ser
-vices.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliverySe
-rvice.cs(853,30): warning CS8602: Dereference of a possibly null reference.
-[D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Ser
-vices.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliverySe
-rvice.cs(866,30): warning CS8602: Dereference of a possibly null reference.
-[D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Ser
-vices.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\TestMaster
-Service.cs(231,83): warning CS0472: The result of the expression is always '
-false' since a value of type 'bool' is never equal to 'null' of type 'bool?'
- [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Se
-rvices.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliverySe
-rvice.cs(919,39): warning CS8602: Dereference of a possibly null reference.
-[D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Ser
-vices.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliverySe
-rvice.cs(923,34): warning CS8602: Dereference of a possibly null reference.
-[D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Ser
-vices.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliverySe
-rvice.cs(923,34): warning CS8602: Dereference of a possibly null reference.
-[D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Ser
-vices.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliverySe
-rvice.cs(933,34): warning CS8602: Dereference of a possibly null reference.
-[D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Ser
-vices.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReceptionF
-lowService.cs(154,34): warning CS8601: Possible null reference assignment. [
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Serv
-ices.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReceptionF
-lowService.cs(163,27): warning CS8601: Possible null reference assignment. [
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Serv
-ices.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\Security\R
-adiologyAccessGuard.cs(40,57): warning CS8602: Dereference of a possibly nul
-l reference. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Servi
-ces\SynOS.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\RadiologyS
-ervice.cs(200,31): warning CS8601: Possible null reference assignment. [D:\P
-rojects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services
-.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReceptionF
-lowService.cs(194,29): warning CS8601: Possible null reference assignment. [
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Serv
-ices.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReceptionF
-lowService.cs(214,33): warning CS8600: Converting null literal or possible n
-ull value to non-nullable type. [D:\Projects\SynOS-Synthesized-Lab-Intellige
-nce\src\SynOS.Services\SynOS.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReceptionF
-lowService.cs(222,40): warning CS8600: Converting null literal or possible n
-ull value to non-nullable type. [D:\Projects\SynOS-Synthesized-Lab-Intellige
-nce\src\SynOS.Services\SynOS.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReceptionF
-lowService.cs(234,32): warning CS8600: Converting null literal or possible n
-ull value to non-nullable type. [D:\Projects\SynOS-Synthesized-Lab-Intellige
-nce\src\SynOS.Services\SynOS.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReceptionF
-lowService.cs(268,45): warning CS8602: Dereference of a possibly null refere
-nce. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynO
-S.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReceptionF
-lowService.cs(352,31): warning CS8601: Possible null reference assignment. [
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Serv
-ices.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReceptionF
-lowService.cs(374,33): warning CS8602: Dereference of a possibly null refere
-nce. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynO
-S.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\RadiologyS
-ervice.cs(290,40): warning CS8601: Possible null reference assignment. [D:\P
-rojects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services
-.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SampleServ
-ice.cs(130,32): warning CS8600: Converting null literal or possible null val
-ue to non-nullable type. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src
-\SynOS.Services\SynOS.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SampleServ
-ice.cs(148,55): warning CS8602: Dereference of a possibly null reference. [D
-:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Servi
-ces.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SampleServ
-ice.cs(184,39): warning CS8602: Dereference of a possibly null reference. [D
-:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Servi
-ces.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SampleServ
-ice.cs(185,43): warning CS8602: Dereference of a possibly null reference. [D
-:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Servi
-ces.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SampleServ
-ice.cs(187,39): warning CS8602: Dereference of a possibly null reference. [D
-:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Servi
-ces.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SampleServ
-ice.cs(194,31): warning CS8602: Dereference of a possibly null reference. [D
-:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Servi
-ces.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SampleServ
-ice.cs(195,38): warning CS8602: Dereference of a possibly null reference. [D
-:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Servi
-ces.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SampleServ
-ice.cs(195,38): warning CS8602: Dereference of a possibly null reference. [D
-:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Servi
-ces.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SampleServ
-ice.cs(201,35): warning CS8602: Dereference of a possibly null reference. [D
-:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Servi
-ces.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SampleServ
-ice.cs(212,39): warning CS8602: Dereference of a possibly null reference. [D
-:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Servi
-ces.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SampleServ
-ice.cs(213,43): warning CS8602: Dereference of a possibly null reference. [D
-:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Servi
-ces.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SampleServ
-ice.cs(215,39): warning CS8602: Dereference of a possibly null reference. [D
-:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Servi
-ces.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SampleServ
-ice.cs(219,40): warning CS8603: Possible null reference return. [D:\Projects
-\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj
-]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SampleServ
-ice.cs(225,27): warning CS8602: Dereference of a possibly null reference. [D
-:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Servi
-ces.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SampleServ
-ice.cs(226,34): warning CS8602: Dereference of a possibly null reference. [D
-:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Servi
-ces.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SampleServ
-ice.cs(226,34): warning CS8602: Dereference of a possibly null reference. [D
-:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Servi
-ces.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ResultServ
-ice.cs(181,43): warning CS8602: Dereference of a possibly null reference. [D
-:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Servi
-ces.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ResultServ
-ice.cs(195,33): warning CS8602: Dereference of a possibly null reference. [D
-:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Servi
-ces.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ResultServ
-ice.cs(195,33): warning CS8602: Dereference of a possibly null reference. [D
-:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Servi
-ces.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SampleServ
-ice.cs(245,38): warning CS8602: Dereference of a possibly null reference. [D
-:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Servi
-ces.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SampleServ
-ice.cs(245,38): warning CS8602: Dereference of a possibly null reference. [D
-:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Servi
-ces.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SampleServ
-ice.cs(245,38): warning CS8602: Dereference of a possibly null reference. [D
-:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Servi
-ces.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\RadiologyS
-ervice.cs(341,44): warning CS8601: Possible null reference assignment. [D:\P
-rojects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services
-.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\RadiologyS
-ervice.cs(343,38): warning CS8601: Possible null reference assignment. [D:\P
-rojects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services
-.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\RadiologyS
-ervice.cs(344,43): warning CS8601: Possible null reference assignment. [D:\P
-rojects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services
-.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\RadiologyS
-ervice.cs(345,37): warning CS8601: Possible null reference assignment. [D:\P
-rojects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services
-.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReportTemp
-lateService.cs(137,34): warning CS8600: Converting null literal or possible
-null value to non-nullable type. [D:\Projects\SynOS-Synthesized-Lab-Intellig
-ence\src\SynOS.Services\SynOS.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReportTemp
-lateService.cs(142,34): warning CS8600: Converting null literal or possible
-null value to non-nullable type. [D:\Projects\SynOS-Synthesized-Lab-Intellig
-ence\src\SynOS.Services\SynOS.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\RadiologyS
-ervice.cs(396,48): warning CS8601: Possible null reference assignment. [D:\P
-rojects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services
-.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ResultServ
-ice.cs(445,76): warning CS8602: Dereference of a possibly null reference. [D
-:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Servi
-ces.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ResultServ
-ice.cs(451,36): warning CS8602: Dereference of a possibly null reference. [D
-:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Servi
-ces.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReportServ
-ice.cs(68,39): warning CS8602: Dereference of a possibly null reference. [D:
-\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Servic
-es.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReportServ
-ice.cs(172,65): warning CS8602: Dereference of a possibly null reference. [D
-:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Servi
-ces.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReportServ
-ice.cs(182,94): warning CS8604: Possible null reference argument for paramet
-er 'templateModel' in 'Task<byte[]> IReportPdfRenderer.GeneratePdfAsync(Repo
-rtDataModel data, TemplateModel templateModel)'. [D:\Projects\SynOS-Synthesi
-zed-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReportServ
-ice.cs(237,39): warning CS8602: Dereference of a possibly null reference. [D
-:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Servi
-ces.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\RadiologyS
-ervice.cs(496,28): warning CS8601: Possible null reference assignment. [D:\P
-rojects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services
-.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\RadiologyS
-ervice.cs(497,34): warning CS8601: Possible null reference assignment. [D:\P
-rojects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services
-.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\RadiologyS
-ervice.cs(498,35): warning CS8601: Possible null reference assignment. [D:\P
-rojects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services
-.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\RadiologyS
-ervice.cs(502,35): warning CS8601: Possible null reference assignment. [D:\P
-rojects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services
-.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\RadiologyS
-ervice.cs(517,21): warning CS8600: Converting null literal or possible null
-value to non-nullable type. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\
-src\SynOS.Services\SynOS.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\RadiologyS
-ervice.cs(524,79): warning CS8604: Possible null reference argument for para
-meter 'templateModel' in 'Task<byte[]> IReportPdfRenderer.GeneratePdfAsync(R
-eportDataModel data, TemplateModel templateModel)'. [D:\Projects\SynOS-Synth
-esized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReportServ
-ice.cs(294,57): warning CS8602: Dereference of a possibly null reference. [D
-:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Servi
-ces.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReportServ
-ice.cs(295,57): warning CS8602: Dereference of a possibly null reference. [D
-:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Servi
-ces.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReportServ
-ice.cs(310,31): warning CS8602: Dereference of a possibly null reference. [D
-:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Servi
-ces.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReportServ
-ice.cs(314,32): warning CS8602: Dereference of a possibly null reference. [D
-:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Servi
-ces.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReportServ
-ice.cs(334,33): warning CS8602: Dereference of a possibly null reference. [D
-:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Servi
-ces.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReportServ
-ice.cs(334,33): warning CS8602: Dereference of a possibly null reference. [D
-:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Servi
-ces.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReportServ
-ice.cs(370,32): warning CS8602: Dereference of a possibly null reference. [D
-:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Servi
-ces.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReportServ
-ice.cs(404,39): warning CS8602: Dereference of a possibly null reference. [D
-:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Servi
-ces.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReportServ
-ice.cs(413,27): warning CS8602: Dereference of a possibly null reference. [D
-:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Servi
-ces.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReportServ
-ice.cs(422,28): warning CS8601: Possible null reference assignment. [D:\Proj
-ects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.cs
-proj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReportServ
-ice.cs(423,38): warning CS8601: Possible null reference assignment. [D:\Proj
-ects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.cs
-proj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReportServ
-ice.cs(476,31): warning CS8602: Dereference of a possibly null reference. [D
-:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Servi
-ces.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\AuditServi
-ce.cs(46,38): warning CA2017: Number of parameters supplied in the logging m
-essage template do not match the number of named placeholders (https://learn
-.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2017) [D:\P
-rojects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services
-.csproj]
+http://localhost:5173/
+http://localhost:5173/@vite/client
+http://localhost:5173/src/main.jsx?t=1768400693233
+chrome-extension://ojplmecpdpgccookcobabopnaifgidhf/assets/autoCouponUI.js-j1dx59q9.js
+http://localhost:5173/@react-refresh
+http://localhost:5173/node_modules/vite/dist/client/env.mjs
+http://localhost:5173/node_modules/.vite/deps/react_jsx-dev-runtime.js?v=70266093
+http://localhost:5173/node_modules/.vite/deps/react.js?v=70266093
+http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=70266093
+http://localhost:5173/src/index.css?t=1768400693233
+http://localhost:5173/src/App.jsx?t=1768400581050
+chrome-extension://ojplmecpdpgccookcobabopnaifgidhf/assets/autoCouponUI-BSRHB3pC.js
+chrome-extension://ojplmecpdpgccookcobabopnaifgidhf/assets/utility_all2-0mYDd1Oa.js
+http://localhost:5173/node_modules/.vite/deps/chunk-WUR7D6NS.js?v=70266093
+http://localhost:5173/node_modules/.vite/deps/chunk-G3PMV62Z.js?v=70266093
+http://localhost:5173/src/features/reception/hooks/useReceptionPanelUI.jsx
+http://localhost:5173/src/features/reception/ReceptionScreen.jsx?t=1768400581050
+http://localhost:5173/node_modules/.vite/deps/chunk-YF4B4G2L.js?v=70266093
+ws://localhost:5173/?token=1n8GaVesVFrq
+http://localhost:5173/node_modules/.vite/deps/lucide-react.js?v=70266093
+http://localhost:5173/src/components/layout/SystemBar.jsx
+http://localhost:5173/src/components/layout/RealitySummary.jsx
+http://localhost:5173/src/components/layout/ActionQueue.jsx
+http://localhost:5173/src/components/layout/ActivityStream.jsx
+http://localhost:5173/src/features/reception/components/IntentPanel.jsx?t=1768400550741
+http://localhost:5173/src/api/reception.js?t=1768400550741
+http://localhost:5173/src/lib/utils.js
+http://localhost:5173/src/features/reception/components/PatientIdentification.jsx
+http://localhost:5173/src/features/reception/components/VisitDetails.jsx
+http://localhost:5173/src/features/reception/components/BillingSummary.jsx
+http://localhost:5173/node_modules/.vite/deps/clsx.js?v=70266093
+http://localhost:5173/node_modules/.vite/deps/tailwind-merge.js?v=70266093
+chrome-extension://ojplmecpdpgccookcobabopnaifgidhf/assets/utility_all2.js-CcXPEkEi.js
+chrome-extension://ojplmecpdpgccookcobabopnaifgidhf/assets/zeptoContentScript.js-7p6uDDH1.js
+chrome-extension://ojplmecpdpgccookcobabopnaifgidhf/assets/jiomartContentScript.js-DuvfALSk.js
+chrome-extension://ojplmecpdpgccookcobabopnaifgidhf/assets/commonScrapper.js-Bs9RgRqr.js
+chrome-extension://ojplmecpdpgccookcobabopnaifgidhf/assets/searchHTMLscrapper.js-iSusZ_QP.js
+chrome-extension://ojplmecpdpgccookcobabopnaifgidhf/assets/categoryScrapper.js-4J2qvZno.js
+chrome-extension://ojplmecpdpgccookcobabopnaifgidhf/assets/filterScrapper.js-dUN6_LdV.js
+chrome-extension://ojplmecpdpgccookcobabopnaifgidhf/assets/spendCalculate.js-CYjvsrnH.js
+chrome-extension://ojplmecpdpgccookcobabopnaifgidhf/assets/monitor.js-q1XQB6t-.js
+chrome-extension://ojplmecpdpgccookcobabopnaifgidhf/assets/monitorGrafana.js-DKpb91qN.js
+chrome-extension://ojplmecpdpgccookcobabopnaifgidhf/assets/wishlistScrapper.js-CTGa_b_d.js
+chrome-extension://ojplmecpdpgccookcobabopnaifgidhf/assets/couponCollection.js--mf-Bo2K.js
+chrome-extension://ojplmecpdpgccookcobabopnaifgidhf/assets/untrustedPriceComparison.js-Cc4lQ26t.js
+chrome-extension://ojplmecpdpgccookcobabopnaifgidhf/assets/untrustedAC.js-CeE8Aav-.js
+chrome-extension://ojplmecpdpgccookcobabopnaifgidhf/assets/checkoutScrapper.js-BFR1KeZt.js
+chrome-extension://ojplmecpdpgccookcobabopnaifgidhf/assets/savedPricePopUp.js-ScCuDrog.js
+chrome-extension://ojplmecpdpgccookcobabopnaifgidhf/assets/ctUtils.js-Rd2BqR25.js
+chrome-extension://ojplmecpdpgccookcobabopnaifgidhf/assets/counter.js-BKi-Lx4v.js
+chrome-extension://ojplmecpdpgccookcobabopnaifgidhf/assets/index.ts-BpqwjxNB.js
+chrome-extension://ojplmecpdpgccookcobabopnaifgidhf/assets/content.ts-DS6eMfks.js
+http://localhost:5173/api/v1/branch/activity
+http://localhost:5173/api/v1/branch/activity
+http://localhost:5173/vite.svg
+chrome-extension://ojplmecpdpgccookcobabopnaifgidhf/assets/applyThems-BXA35g4K.js
+chrome-extension://ojplmecpdpgccookcobabopnaifgidhf/assets/sentry-y_Iga7PX.js
+chrome-extension://ojplmecpdpgccookcobabopnaifgidhf/assets/en-CXHi8RO1.js
 
-Build FAILED.
-
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReceptionF
-lowService.cs(424,91): warning CS8625: Cannot convert null literal to non-nu
-llable reference type. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\S
-ynOS.Services\SynOS.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\VisitServi
-ce.cs(57,31): warning CS8602: Dereference of a possibly null reference. [D:\
-Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Service
-s.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\VisitServi
-ce.cs(206,25): warning CS8601: Possible null reference assignment. [D:\Proje
-cts\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csp
-roj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\VisitServi
-ce.cs(299,27): warning CS8618: Non-nullable property 'TestCode' must contain
- a non-null value when exiting constructor. Consider adding the 'required' m
-odifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesize
-d-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\VisitServi
-ce.cs(300,27): warning CS8618: Non-nullable property 'TestName' must contain
- a non-null value when exiting constructor. Consider adding the 'required' m
-odifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesize
-d-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\VisitServi
-ce.cs(301,27): warning CS8618: Non-nullable property 'Department' must conta
-in a non-null value when exiting constructor. Consider adding the 'required'
- modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesi
-zed-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\Utils\EscP
-osGenerator.cs(70,35): warning CS8602: Dereference of a possibly null refere
-nce. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynO
-S.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\Utils\EscP
-osGenerator.cs(70,35): warning CS8602: Dereference of a possibly null refere
-nce. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynO
-S.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CriticalVa
-lueService.cs(41,39): warning CS8602: Dereference of a possibly null referen
-ce. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS
-.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CriticalVa
-lueService.cs(43,39): warning CS8602: Dereference of a possibly null referen
-ce. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS
-.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CriticalVa
-lueService.cs(44,43): warning CS8602: Dereference of a possibly null referen
-ce. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS
-.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CriticalVa
-lueService.cs(46,39): warning CS8602: Dereference of a possibly null referen
-ce. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS
-.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CriticalVa
-lueService.cs(47,43): warning CS8602: Dereference of a possibly null referen
-ce. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS
-.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CriticalVa
-lueService.cs(126,33): warning CS8602: Dereference of a possibly null refere
-nce. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynO
-S.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CriticalVa
-lueService.cs(142,29): warning CS8602: Dereference of a possibly null refere
-nce. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynO
-S.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CsvService
-.cs(413,23): warning CS8618: Non-nullable property 'TestCode' must contain a
- non-null value when exiting constructor. Consider adding the 'required' mod
-ifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-
-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CsvService
-.cs(414,23): warning CS8618: Non-nullable property 'TestName' must contain a
- non-null value when exiting constructor. Consider adding the 'required' mod
-ifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-
-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CsvService
-.cs(415,23): warning CS8618: Non-nullable property 'Department' must contain
- a non-null value when exiting constructor. Consider adding the 'required' m
-odifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesize
-d-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CsvService
-.cs(416,23): warning CS8618: Non-nullable property 'Category' must contain a
- non-null value when exiting constructor. Consider adding the 'required' mod
-ifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-
-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CsvService
-.cs(419,23): warning CS8618: Non-nullable property 'ParameterCode' must cont
-ain a non-null value when exiting constructor. Consider adding the 'required
-' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthes
-ized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CsvService
-.cs(420,23): warning CS8618: Non-nullable property 'ParameterName' must cont
-ain a non-null value when exiting constructor. Consider adding the 'required
-' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthes
-ized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CsvService
-.cs(421,23): warning CS8618: Non-nullable property 'Unit' must contain a non
--null value when exiting constructor. Consider adding the 'required' modifie
-r or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-
-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CsvService
-.cs(422,23): warning CS8618: Non-nullable property 'DataType' must contain a
- non-null value when exiting constructor. Consider adding the 'required' mod
-ifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-
-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CsvService
-.cs(428,23): warning CS8618: Non-nullable property 'AgeGroup' must contain a
- non-null value when exiting constructor. Consider adding the 'required' mod
-ifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-
-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CsvService
-.cs(431,23): warning CS8618: Non-nullable property 'Sex' must contain a non-
-null value when exiting constructor. Consider adding the 'required' modifier
- or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-Lab-I
-ntelligence\src\SynOS.Services\SynOS.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CsvService
-.cs(432,23): warning CS8618: Non-nullable property 'TextRange' must contain
-a non-null value when exiting constructor. Consider adding the 'required' mo
-difier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized
--Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CsvService
-.cs(433,23): warning CS8618: Non-nullable property 'EffectiveFrom' must cont
-ain a non-null value when exiting constructor. Consider adding the 'required
-' modifier or declaring the property as nullable. [D:\Projects\SynOS-Synthes
-ized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CsvService
-.cs(438,23): warning CS8618: Non-nullable property 'Price_EffectiveFrom' mus
-t contain a non-null value when exiting constructor. Consider adding the 're
-quired' modifier or declaring the property as nullable. [D:\Projects\SynOS-S
-ynthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CsvService
-.cs(439,23): warning CS8618: Non-nullable property 'Price_EffectiveTo' must
-contain a non-null value when exiting constructor. Consider adding the 'requ
-ired' modifier or declaring the property as nullable. [D:\Projects\SynOS-Syn
-thesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CriticalVa
-lueService.cs(183,38): warning CS8602: Dereference of a possibly null refere
-nce. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynO
-S.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CriticalVa
-lueService.cs(192,28): warning CS8602: Dereference of a possibly null refere
-nce. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynO
-S.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CriticalVa
-lueService.cs(192,28): warning CS8601: Possible null reference assignment. [
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Serv
-ices.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CsvService
-.cs(447,29): warning CS8618: Non-nullable property 'Errors' must contain a n
-on-null value when exiting constructor. Consider adding the 'required' modif
-ier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-La
-b-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CsvService
-.cs(448,38): warning CS8618: Non-nullable property 'RowResults' must contain
- a non-null value when exiting constructor. Consider adding the 'required' m
-odifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesize
-d-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CriticalVa
-lueService.cs(233,35): warning CS8602: Dereference of a possibly null refere
-nce. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynO
-S.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CriticalVa
-lueService.cs(239,33): warning CS8602: Dereference of a possibly null refere
-nce. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynO
-S.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CriticalVa
-lueService.cs(260,32): warning CS8602: Dereference of a possibly null refere
-nce. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynO
-S.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CsvService
-.cs(454,23): warning CS8618: Non-nullable property 'TestCode' must contain a
- non-null value when exiting constructor. Consider adding the 'required' mod
-ifier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-
-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CsvService
-.cs(456,23): warning CS8618: Non-nullable property 'Message' must contain a
-non-null value when exiting constructor. Consider adding the 'required' modi
-fier or declaring the property as nullable. [D:\Projects\SynOS-Synthesized-L
-ab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CsvService
-.cs(78,52): warning CS8601: Possible null reference assignment. [D:\Projects
-\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj
-]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CsvService
-.cs(82,48): warning CS8601: Possible null reference assignment. [D:\Projects
-\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj
-]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CsvService
-.cs(93,53): warning CS8601: Possible null reference assignment. [D:\Projects
-\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj
-]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CsvService
-.cs(107,48): warning CS8601: Possible null reference assignment. [D:\Project
-s\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.cspro
-j]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CsvService
-.cs(111,44): warning CS8601: Possible null reference assignment. [D:\Project
-s\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.cspro
-j]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CsvService
-.cs(128,40): warning CS8601: Possible null reference assignment. [D:\Project
-s\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.cspro
-j]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\TubeConsum
-ptionService.cs(44,69): warning CS8602: Dereference of a possibly null refer
-ence. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\Syn
-OS.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\TubeConsum
-ptionService.cs(45,69): warning CS8602: Dereference of a possibly null refer
-ence. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\Syn
-OS.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DICOM\Dico
-mMetadataExtractor.cs(28,79): warning CS8600: Converting null literal or pos
-sible null value to non-nullable type. [D:\Projects\SynOS-Synthesized-Lab-In
-telligence\src\SynOS.Services\SynOS.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DICOM\Dico
-mMetadataExtractor.cs(29,97): warning CS8600: Converting null literal or pos
-sible null value to non-nullable type. [D:\Projects\SynOS-Synthesized-Lab-In
-telligence\src\SynOS.Services\SynOS.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DICOM\Dico
-mMetadataExtractor.cs(33,103): warning CS8600: Converting null literal or po
-ssible null value to non-nullable type. [D:\Projects\SynOS-Synthesized-Lab-I
-ntelligence\src\SynOS.Services\SynOS.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DICOM\Dico
-mMetadataExtractor.cs(34,109): warning CS8600: Converting null literal or po
-ssible null value to non-nullable type. [D:\Projects\SynOS-Synthesized-Lab-I
-ntelligence\src\SynOS.Services\SynOS.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DICOM\Dico
-mMetadataExtractor.cs(35,87): warning CS8600: Converting null literal or pos
-sible null value to non-nullable type. [D:\Projects\SynOS-Synthesized-Lab-In
-telligence\src\SynOS.Services\SynOS.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\EditLockSe
-rvice.cs(44,28): warning CS8619: Nullability of reference types in value of
-type '(AcquireLockResponseDto, LockedByInfo?)' doesn't match target type '(A
-cquireLockResponseDto, LockedByInfo)'. [D:\Projects\SynOS-Synthesized-Lab-In
-telligence\src\SynOS.Services\SynOS.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\EditLockSe
-rvice.cs(50,28): warning CS8601: Possible null reference assignment. [D:\Pro
-jects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.c
-sproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\EditLockSe
-rvice.cs(53,24): warning CS8619: Nullability of reference types in value of
-type '(AcquireLockResponseDto?, LockedByInfo lockedByInfo)' doesn't match ta
-rget type '(AcquireLockResponseDto, LockedByInfo)'. [D:\Projects\SynOS-Synth
-esized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\EditLockSe
-rvice.cs(75,36): warning CS8601: Possible null reference assignment. [D:\Pro
-jects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.c
-sproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\EditLockSe
-rvice.cs(80,32): warning CS8619: Nullability of reference types in value of
-type '(AcquireLockResponseDto?, LockedByInfo lockedBy)' doesn't match target
- type '(AcquireLockResponseDto, LockedByInfo)'. [D:\Projects\SynOS-Synthesiz
-ed-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\EditLockSe
-rvice.cs(106,28): warning CS8619: Nullability of reference types in value of
- type '(AcquireLockResponseDto response, LockedByInfo?)' doesn't match targe
-t type '(AcquireLockResponseDto, LockedByInfo)'. [D:\Projects\SynOS-Synthesi
-zed-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\EditLockSe
-rvice.cs(126,36): warning CS8601: Possible null reference assignment. [D:\Pr
-ojects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.
-csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\EditLockSe
-rvice.cs(130,32): warning CS8619: Nullability of reference types in value of
- type '(AcquireLockResponseDto?, LockedByInfo lockedBy)' doesn't match targe
-t type '(AcquireLockResponseDto, LockedByInfo)'. [D:\Projects\SynOS-Synthesi
-zed-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\IMSWastage
-InsightService.cs(39,38): warning CS8601: Possible null reference assignment
-. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.S
-ervices.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\EditLockSe
-rvice.cs(180,32): warning CS8601: Possible null reference assignment. [D:\Pr
-ojects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.
-csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\IMSWastage
-InsightService.cs(58,38): warning CS8601: Possible null reference assignment
-. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.S
-ervices.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CsvService
-.cs(208,40): warning CS8601: Possible null reference assignment. [D:\Project
-s\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.cspro
-j]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CsvService
-.cs(209,42): warning CS8601: Possible null reference assignment. [D:\Project
-s\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.cspro
-j]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\IMSWastage
-InsightService.cs(77,38): warning CS8601: Possible null reference assignment
-. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.S
-ervices.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliverySe
-rvice.cs(70,39): warning CS8602: Dereference of a possibly null reference. [
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Serv
-ices.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliverySe
-rvice.cs(111,43): warning CS8602: Dereference of a possibly null reference.
-[D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Ser
-vices.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliverySe
-rvice.cs(120,27): warning CS8602: Dereference of a possibly null reference.
-[D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Ser
-vices.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliverySe
-rvice.cs(121,29): warning CS8602: Dereference of a possibly null reference.
-[D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Ser
-vices.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliverySe
-rvice.cs(145,29): warning CS8602: Dereference of a possibly null reference.
-[D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Ser
-vices.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\IMSWastage
-InsightService.cs(96,38): warning CS8601: Possible null reference assignment
-. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.S
-ervices.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\InvoiceSer
-vice.cs(82,31): warning CS8602: Dereference of a possibly null reference. [D
-:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Servi
-ces.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\InvoiceSer
-vice.cs(83,31): warning CS8602: Dereference of a possibly null reference. [D
-:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Servi
-ces.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\InvoiceSer
-vice.cs(99,59): warning CS8602: Dereference of a possibly null reference. [D
-:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Servi
-ces.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\InvoiceSer
-vice.cs(99,59): warning CS8602: Dereference of a possibly null reference. [D
-:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Servi
-ces.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliverySe
-rvice.cs(292,39): warning CS8602: Dereference of a possibly null reference.
-[D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Ser
-vices.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliverySe
-rvice.cs(297,30): warning CS8602: Dereference of a possibly null reference.
-[D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Ser
-vices.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliverySe
-rvice.cs(297,30): warning CS8602: Dereference of a possibly null reference.
-[D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Ser
-vices.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliverySe
-rvice.cs(310,30): warning CS8602: Dereference of a possibly null reference.
-[D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Ser
-vices.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliverySe
-rvice.cs(377,39): warning CS8602: Dereference of a possibly null reference.
-[D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Ser
-vices.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliverySe
-rvice.cs(382,30): warning CS8602: Dereference of a possibly null reference.
-[D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Ser
-vices.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliverySe
-rvice.cs(382,30): warning CS8602: Dereference of a possibly null reference.
-[D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Ser
-vices.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliverySe
-rvice.cs(395,30): warning CS8602: Dereference of a possibly null reference.
-[D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Ser
-vices.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliverySe
-rvice.cs(460,39): warning CS8602: Dereference of a possibly null reference.
-[D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Ser
-vices.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliverySe
-rvice.cs(465,30): warning CS8602: Dereference of a possibly null reference.
-[D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Ser
-vices.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliverySe
-rvice.cs(465,30): warning CS8602: Dereference of a possibly null reference.
-[D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Ser
-vices.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliverySe
-rvice.cs(478,30): warning CS8602: Dereference of a possibly null reference.
-[D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Ser
-vices.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliverySe
-rvice.cs(599,39): warning CS8602: Dereference of a possibly null reference.
-[D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Ser
-vices.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliverySe
-rvice.cs(603,34): warning CS8602: Dereference of a possibly null reference.
-[D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Ser
-vices.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliverySe
-rvice.cs(603,34): warning CS8602: Dereference of a possibly null reference.
-[D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Ser
-vices.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliverySe
-rvice.cs(613,34): warning CS8602: Dereference of a possibly null reference.
-[D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Ser
-vices.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliverySe
-rvice.cs(741,21): warning CS8602: Dereference of a possibly null reference.
-[D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Ser
-vices.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliverySe
-rvice.cs(745,47): warning CS8602: Dereference of a possibly null reference.
-[D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Ser
-vices.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliverySe
-rvice.cs(749,43): warning CS8602: Dereference of a possibly null reference.
-[D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Ser
-vices.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliverySe
-rvice.cs(749,43): warning CS8602: Dereference of a possibly null reference.
-[D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Ser
-vices.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliverySe
-rvice.cs(761,43): warning CS8602: Dereference of a possibly null reference.
-[D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Ser
-vices.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\PacsServic
-e.cs(416,59): warning CS8602: Dereference of a possibly null reference. [D:\
-Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Service
-s.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliverySe
-rvice.cs(849,39): warning CS8602: Dereference of a possibly null reference.
-[D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Ser
-vices.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliverySe
-rvice.cs(853,30): warning CS8602: Dereference of a possibly null reference.
-[D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Ser
-vices.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliverySe
-rvice.cs(853,30): warning CS8602: Dereference of a possibly null reference.
-[D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Ser
-vices.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliverySe
-rvice.cs(866,30): warning CS8602: Dereference of a possibly null reference.
-[D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Ser
-vices.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\TestMaster
-Service.cs(231,83): warning CS0472: The result of the expression is always '
-false' since a value of type 'bool' is never equal to 'null' of type 'bool?'
- [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Se
-rvices.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliverySe
-rvice.cs(919,39): warning CS8602: Dereference of a possibly null reference.
-[D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Ser
-vices.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliverySe
-rvice.cs(923,34): warning CS8602: Dereference of a possibly null reference.
-[D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Ser
-vices.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliverySe
-rvice.cs(923,34): warning CS8602: Dereference of a possibly null reference.
-[D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Ser
-vices.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliverySe
-rvice.cs(933,34): warning CS8602: Dereference of a possibly null reference.
-[D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Ser
-vices.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReceptionF
-lowService.cs(154,34): warning CS8601: Possible null reference assignment. [
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Serv
-ices.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReceptionF
-lowService.cs(163,27): warning CS8601: Possible null reference assignment. [
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Serv
-ices.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\Security\R
-adiologyAccessGuard.cs(40,57): warning CS8602: Dereference of a possibly nul
-l reference. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Servi
-ces\SynOS.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\RadiologyS
-ervice.cs(200,31): warning CS8601: Possible null reference assignment. [D:\P
-rojects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services
-.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReceptionF
-lowService.cs(194,29): warning CS8601: Possible null reference assignment. [
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Serv
-ices.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReceptionF
-lowService.cs(214,33): warning CS8600: Converting null literal or possible n
-ull value to non-nullable type. [D:\Projects\SynOS-Synthesized-Lab-Intellige
-nce\src\SynOS.Services\SynOS.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReceptionF
-lowService.cs(222,40): warning CS8600: Converting null literal or possible n
-ull value to non-nullable type. [D:\Projects\SynOS-Synthesized-Lab-Intellige
-nce\src\SynOS.Services\SynOS.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReceptionF
-lowService.cs(234,32): warning CS8600: Converting null literal or possible n
-ull value to non-nullable type. [D:\Projects\SynOS-Synthesized-Lab-Intellige
-nce\src\SynOS.Services\SynOS.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReceptionF
-lowService.cs(268,45): warning CS8602: Dereference of a possibly null refere
-nce. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynO
-S.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReceptionF
-lowService.cs(352,31): warning CS8601: Possible null reference assignment. [
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Serv
-ices.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReceptionF
-lowService.cs(374,33): warning CS8602: Dereference of a possibly null refere
-nce. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynO
-S.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\RadiologyS
-ervice.cs(290,40): warning CS8601: Possible null reference assignment. [D:\P
-rojects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services
-.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SampleServ
-ice.cs(130,32): warning CS8600: Converting null literal or possible null val
-ue to non-nullable type. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src
-\SynOS.Services\SynOS.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SampleServ
-ice.cs(148,55): warning CS8602: Dereference of a possibly null reference. [D
-:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Servi
-ces.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SampleServ
-ice.cs(184,39): warning CS8602: Dereference of a possibly null reference. [D
-:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Servi
-ces.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SampleServ
-ice.cs(185,43): warning CS8602: Dereference of a possibly null reference. [D
-:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Servi
-ces.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SampleServ
-ice.cs(187,39): warning CS8602: Dereference of a possibly null reference. [D
-:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Servi
-ces.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SampleServ
-ice.cs(194,31): warning CS8602: Dereference of a possibly null reference. [D
-:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Servi
-ces.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SampleServ
-ice.cs(195,38): warning CS8602: Dereference of a possibly null reference. [D
-:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Servi
-ces.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SampleServ
-ice.cs(195,38): warning CS8602: Dereference of a possibly null reference. [D
-:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Servi
-ces.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SampleServ
-ice.cs(201,35): warning CS8602: Dereference of a possibly null reference. [D
-:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Servi
-ces.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SampleServ
-ice.cs(212,39): warning CS8602: Dereference of a possibly null reference. [D
-:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Servi
-ces.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SampleServ
-ice.cs(213,43): warning CS8602: Dereference of a possibly null reference. [D
-:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Servi
-ces.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SampleServ
-ice.cs(215,39): warning CS8602: Dereference of a possibly null reference. [D
-:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Servi
-ces.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SampleServ
-ice.cs(219,40): warning CS8603: Possible null reference return. [D:\Projects
-\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj
-]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SampleServ
-ice.cs(225,27): warning CS8602: Dereference of a possibly null reference. [D
-:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Servi
-ces.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SampleServ
-ice.cs(226,34): warning CS8602: Dereference of a possibly null reference. [D
-:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Servi
-ces.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SampleServ
-ice.cs(226,34): warning CS8602: Dereference of a possibly null reference. [D
-:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Servi
-ces.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ResultServ
-ice.cs(181,43): warning CS8602: Dereference of a possibly null reference. [D
-:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Servi
-ces.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ResultServ
-ice.cs(195,33): warning CS8602: Dereference of a possibly null reference. [D
-:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Servi
-ces.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ResultServ
-ice.cs(195,33): warning CS8602: Dereference of a possibly null reference. [D
-:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Servi
-ces.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SampleServ
-ice.cs(245,38): warning CS8602: Dereference of a possibly null reference. [D
-:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Servi
-ces.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SampleServ
-ice.cs(245,38): warning CS8602: Dereference of a possibly null reference. [D
-:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Servi
-ces.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SampleServ
-ice.cs(245,38): warning CS8602: Dereference of a possibly null reference. [D
-:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Servi
-ces.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\RadiologyS
-ervice.cs(341,44): warning CS8601: Possible null reference assignment. [D:\P
-rojects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services
-.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\RadiologyS
-ervice.cs(343,38): warning CS8601: Possible null reference assignment. [D:\P
-rojects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services
-.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\RadiologyS
-ervice.cs(344,43): warning CS8601: Possible null reference assignment. [D:\P
-rojects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services
-.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\RadiologyS
-ervice.cs(345,37): warning CS8601: Possible null reference assignment. [D:\P
-rojects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services
-.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReportTemp
-lateService.cs(137,34): warning CS8600: Converting null literal or possible
-null value to non-nullable type. [D:\Projects\SynOS-Synthesized-Lab-Intellig
-ence\src\SynOS.Services\SynOS.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReportTemp
-lateService.cs(142,34): warning CS8600: Converting null literal or possible
-null value to non-nullable type. [D:\Projects\SynOS-Synthesized-Lab-Intellig
-ence\src\SynOS.Services\SynOS.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\RadiologyS
-ervice.cs(396,48): warning CS8601: Possible null reference assignment. [D:\P
-rojects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services
-.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ResultServ
-ice.cs(445,76): warning CS8602: Dereference of a possibly null reference. [D
-:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Servi
-ces.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ResultServ
-ice.cs(451,36): warning CS8602: Dereference of a possibly null reference. [D
-:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Servi
-ces.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReportServ
-ice.cs(68,39): warning CS8602: Dereference of a possibly null reference. [D:
-\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Servic
-es.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReportServ
-ice.cs(172,65): warning CS8602: Dereference of a possibly null reference. [D
-:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Servi
-ces.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReportServ
-ice.cs(182,94): warning CS8604: Possible null reference argument for paramet
-er 'templateModel' in 'Task<byte[]> IReportPdfRenderer.GeneratePdfAsync(Repo
-rtDataModel data, TemplateModel templateModel)'. [D:\Projects\SynOS-Synthesi
-zed-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReportServ
-ice.cs(237,39): warning CS8602: Dereference of a possibly null reference. [D
-:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Servi
-ces.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\RadiologyS
-ervice.cs(496,28): warning CS8601: Possible null reference assignment. [D:\P
-rojects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services
-.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\RadiologyS
-ervice.cs(497,34): warning CS8601: Possible null reference assignment. [D:\P
-rojects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services
-.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\RadiologyS
-ervice.cs(498,35): warning CS8601: Possible null reference assignment. [D:\P
-rojects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services
-.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\RadiologyS
-ervice.cs(502,35): warning CS8601: Possible null reference assignment. [D:\P
-rojects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services
-.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\RadiologyS
-ervice.cs(517,21): warning CS8600: Converting null literal or possible null
-value to non-nullable type. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\
-src\SynOS.Services\SynOS.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\RadiologyS
-ervice.cs(524,79): warning CS8604: Possible null reference argument for para
-meter 'templateModel' in 'Task<byte[]> IReportPdfRenderer.GeneratePdfAsync(R
-eportDataModel data, TemplateModel templateModel)'. [D:\Projects\SynOS-Synth
-esized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReportServ
-ice.cs(294,57): warning CS8602: Dereference of a possibly null reference. [D
-:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Servi
-ces.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReportServ
-ice.cs(295,57): warning CS8602: Dereference of a possibly null reference. [D
-:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Servi
-ces.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReportServ
-ice.cs(310,31): warning CS8602: Dereference of a possibly null reference. [D
-:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Servi
-ces.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReportServ
-ice.cs(314,32): warning CS8602: Dereference of a possibly null reference. [D
-:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Servi
-ces.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReportServ
-ice.cs(334,33): warning CS8602: Dereference of a possibly null reference. [D
-:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Servi
-ces.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReportServ
-ice.cs(334,33): warning CS8602: Dereference of a possibly null reference. [D
-:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Servi
-ces.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReportServ
-ice.cs(370,32): warning CS8602: Dereference of a possibly null reference. [D
-:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Servi
-ces.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReportServ
-ice.cs(404,39): warning CS8602: Dereference of a possibly null reference. [D
-:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Servi
-ces.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReportServ
-ice.cs(413,27): warning CS8602: Dereference of a possibly null reference. [D
-:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Servi
-ces.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReportServ
-ice.cs(422,28): warning CS8601: Possible null reference assignment. [D:\Proj
-ects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.cs
-proj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReportServ
-ice.cs(423,38): warning CS8601: Possible null reference assignment. [D:\Proj
-ects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.cs
-proj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReportServ
-ice.cs(476,31): warning CS8602: Dereference of a possibly null reference. [D
-:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Servi
-ces.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\AuditServi
-ce.cs(46,38): warning CA2017: Number of parameters supplied in the logging m
-essage template do not match the number of named placeholders (https://learn
-.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2017) [D:\P
-rojects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services
-.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\Time\TimeF
-actWriter.cs(110,17): error CS0117: 'OvertimeMarkerFact' does not contain a
-definition for 'StartTime' [D:\Projects\SynOS-Synthesized-Lab-Intelligence\s
-rc\SynOS.Services\SynOS.Services.csproj]
-D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\Time\TimeF
-actWriter.cs(176,91): error CS1061: 'OvertimeMarkerFact' does not contain a
-definition for 'StartTime' and no accessible extension method 'StartTime' ac
-cepting a first argument of type 'OvertimeMarkerFact' could be found (are yo
-u missing a using directive or an assembly reference?) [D:\Projects\SynOS-Sy
-nthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
-    173 Warning(s)
-    2 Error(s)
-
-Time Elapsed 00:00:14.53
-
-D:\Projects\SynOS-Synthesized-Lab-Intelligence>
+fetch
+fetch("http://localhost:5173/", {
+  "headers": {
+    "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+    "accept-language": "en-IN,en;q=0.9,te;q=0.8",
+    "cache-control": "max-age=0",
+    "if-none-match": "W/\"26a-qVPn18LSphwkpX89tfkK9PdAO9A\"",
+    "sec-ch-ua": "\"Google Chrome\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\"",
+    "sec-ch-ua-mobile": "?0",
+    "sec-ch-ua-platform": "\"Windows\"",
+    "sec-fetch-dest": "document",
+    "sec-fetch-mode": "navigate",
+    "sec-fetch-site": "same-origin",
+    "sec-fetch-user": "?1",
+    "upgrade-insecure-requests": "1"
+  },
+  "referrer": "http://localhost:5173/",
+  "body": null,
+  "method": "GET",
+  "mode": "cors",
+  "credentials": "include"
+}); ;
+fetch("http://localhost:5173/@vite/client", {
+  "headers": {
+    "accept": "*/*",
+    "accept-language": "en-IN,en;q=0.9,te;q=0.8",
+    "if-none-match": "W/\"8411-GQ5JamatLGpvqLZaHco5iLLKHQE\"",
+    "sec-ch-ua": "\"Google Chrome\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\"",
+    "sec-ch-ua-mobile": "?0",
+    "sec-ch-ua-platform": "\"Windows\"",
+    "sec-fetch-dest": "script",
+    "sec-fetch-mode": "cors",
+    "sec-fetch-site": "same-origin"
+  },
+  "referrer": "http://localhost:5173/",
+  "body": null,
+  "method": "GET",
+  "mode": "cors",
+  "credentials": "include"
+}); ;
+fetch("http://localhost:5173/src/main.jsx?t=1768400693233", {
+  "headers": {
+    "accept": "*/*",
+    "accept-language": "en-IN,en;q=0.9,te;q=0.8",
+    "sec-ch-ua": "\"Google Chrome\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\"",
+    "sec-ch-ua-mobile": "?0",
+    "sec-ch-ua-platform": "\"Windows\"",
+    "sec-fetch-dest": "script",
+    "sec-fetch-mode": "cors",
+    "sec-fetch-site": "same-origin"
+  },
+  "referrer": "http://localhost:5173/",
+  "body": null,
+  "method": "GET",
+  "mode": "cors",
+  "credentials": "include"
+}); ;
+fetch("chrome-extension://ojplmecpdpgccookcobabopnaifgidhf/assets/autoCouponUI.js-j1dx59q9.js", {
+  "referrer": "",
+  "body": null,
+  "method": "GET",
+  "mode": "cors",
+  "credentials": "omit"
+}); ;
+fetch("http://localhost:5173/@react-refresh", {
+  "headers": {
+    "accept": "*/*",
+    "accept-language": "en-IN,en;q=0.9,te;q=0.8",
+    "if-none-match": "W/\"5367-h8iO905IyT3hT92qDTgpgcseDiA\"",
+    "sec-ch-ua": "\"Google Chrome\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\"",
+    "sec-ch-ua-mobile": "?0",
+    "sec-ch-ua-platform": "\"Windows\"",
+    "sec-fetch-dest": "script",
+    "sec-fetch-mode": "cors",
+    "sec-fetch-site": "same-origin"
+  },
+  "referrer": "http://localhost:5173/",
+  "body": null,
+  "method": "GET",
+  "mode": "cors",
+  "credentials": "include"
+}); ;
+fetch("http://localhost:5173/node_modules/vite/dist/client/env.mjs", {
+  "headers": {
+    "accept": "*/*",
+    "accept-language": "en-IN,en;q=0.9,te;q=0.8",
+    "if-none-match": "W/\"25b-V2bmMiQli1AsiiEb1NEXbTMk57g\"",
+    "sec-ch-ua": "\"Google Chrome\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\"",
+    "sec-ch-ua-mobile": "?0",
+    "sec-ch-ua-platform": "\"Windows\"",
+    "sec-fetch-dest": "script",
+    "sec-fetch-mode": "cors",
+    "sec-fetch-site": "same-origin"
+  },
+  "referrer": "http://localhost:5173/@vite/client",
+  "body": null,
+  "method": "GET",
+  "mode": "cors",
+  "credentials": "include"
+}); ;
+fetch("http://localhost:5173/node_modules/.vite/deps/react_jsx-dev-runtime.js?v=70266093", {
+  "headers": {
+    "sec-ch-ua": "\"Google Chrome\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\"",
+    "sec-ch-ua-mobile": "?0",
+    "sec-ch-ua-platform": "\"Windows\""
+  },
+  "referrer": "http://localhost:5173/src/main.jsx?t=1768400693233",
+  "body": null,
+  "method": "GET",
+  "mode": "cors",
+  "credentials": "omit"
+}); ;
+fetch("http://localhost:5173/node_modules/.vite/deps/react.js?v=70266093", {
+  "headers": {
+    "sec-ch-ua": "\"Google Chrome\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\"",
+    "sec-ch-ua-mobile": "?0",
+    "sec-ch-ua-platform": "\"Windows\""
+  },
+  "referrer": "http://localhost:5173/src/main.jsx?t=1768400693233",
+  "body": null,
+  "method": "GET",
+  "mode": "cors",
+  "credentials": "omit"
+}); ;
+fetch("http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=70266093", {
+  "headers": {
+    "sec-ch-ua": "\"Google Chrome\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\"",
+    "sec-ch-ua-mobile": "?0",
+    "sec-ch-ua-platform": "\"Windows\""
+  },
+  "referrer": "http://localhost:5173/src/main.jsx?t=1768400693233",
+  "body": null,
+  "method": "GET",
+  "mode": "cors",
+  "credentials": "omit"
+}); ;
+fetch("http://localhost:5173/src/index.css?t=1768400693233", {
+  "headers": {
+    "accept": "*/*",
+    "accept-language": "en-IN,en;q=0.9,te;q=0.8",
+    "if-none-match": "W/\"7baf-nGyteSIlR1HCOCvBW+UiMcSxhAg\"",
+    "sec-ch-ua": "\"Google Chrome\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\"",
+    "sec-ch-ua-mobile": "?0",
+    "sec-ch-ua-platform": "\"Windows\"",
+    "sec-fetch-dest": "script",
+    "sec-fetch-mode": "cors",
+    "sec-fetch-site": "same-origin"
+  },
+  "referrer": "http://localhost:5173/src/main.jsx?t=1768400693233",
+  "body": null,
+  "method": "GET",
+  "mode": "cors",
+  "credentials": "include"
+}); ;
+fetch("http://localhost:5173/src/App.jsx?t=1768400581050", {
+  "headers": {
+    "accept": "*/*",
+    "accept-language": "en-IN,en;q=0.9,te;q=0.8",
+    "sec-ch-ua": "\"Google Chrome\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\"",
+    "sec-ch-ua-mobile": "?0",
+    "sec-ch-ua-platform": "\"Windows\"",
+    "sec-fetch-dest": "script",
+    "sec-fetch-mode": "cors",
+    "sec-fetch-site": "same-origin"
+  },
+  "referrer": "http://localhost:5173/src/main.jsx?t=1768400693233",
+  "body": null,
+  "method": "GET",
+  "mode": "cors",
+  "credentials": "include"
+}); ;
+fetch("chrome-extension://ojplmecpdpgccookcobabopnaifgidhf/assets/autoCouponUI-BSRHB3pC.js", {
+  "referrer": "",
+  "body": null,
+  "method": "GET",
+  "mode": "cors",
+  "credentials": "omit"
+}); ;
+fetch("chrome-extension://ojplmecpdpgccookcobabopnaifgidhf/assets/utility_all2-0mYDd1Oa.js", {
+  "referrer": "",
+  "body": null,
+  "method": "GET",
+  "mode": "cors",
+  "credentials": "omit"
+}); ;
+fetch("http://localhost:5173/node_modules/.vite/deps/chunk-WUR7D6NS.js?v=70266093", {
+  "headers": {
+    "sec-ch-ua": "\"Google Chrome\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\"",
+    "sec-ch-ua-mobile": "?0",
+    "sec-ch-ua-platform": "\"Windows\""
+  },
+  "referrer": "http://localhost:5173/node_modules/.vite/deps/react.js?v=70266093",
+  "body": null,
+  "method": "GET",
+  "mode": "cors",
+  "credentials": "omit"
+}); ;
+fetch("http://localhost:5173/node_modules/.vite/deps/chunk-G3PMV62Z.js?v=70266093", {
+  "headers": {
+    "sec-ch-ua": "\"Google Chrome\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\"",
+    "sec-ch-ua-mobile": "?0",
+    "sec-ch-ua-platform": "\"Windows\""
+  },
+  "referrer": "http://localhost:5173/node_modules/.vite/deps/react.js?v=70266093",
+  "body": null,
+  "method": "GET",
+  "mode": "cors",
+  "credentials": "omit"
+}); ;
+fetch("http://localhost:5173/src/features/reception/hooks/useReceptionPanelUI.jsx", {
+  "headers": {
+    "accept": "*/*",
+    "accept-language": "en-IN,en;q=0.9,te;q=0.8",
+    "if-none-match": "W/\"1349-lVANzDIQbxa0dhLwknIQJM0sGlk\"",
+    "sec-ch-ua": "\"Google Chrome\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\"",
+    "sec-ch-ua-mobile": "?0",
+    "sec-ch-ua-platform": "\"Windows\"",
+    "sec-fetch-dest": "script",
+    "sec-fetch-mode": "cors",
+    "sec-fetch-site": "same-origin"
+  },
+  "referrer": "http://localhost:5173/src/App.jsx?t=1768400581050",
+  "body": null,
+  "method": "GET",
+  "mode": "cors",
+  "credentials": "include"
+}); ;
+fetch("http://localhost:5173/src/features/reception/ReceptionScreen.jsx?t=1768400581050", {
+  "headers": {
+    "accept": "*/*",
+    "accept-language": "en-IN,en;q=0.9,te;q=0.8",
+    "if-none-match": "W/\"2d29-um+8TlJVxSUTwPaqRULbrTiIm8c\"",
+    "sec-ch-ua": "\"Google Chrome\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\"",
+    "sec-ch-ua-mobile": "?0",
+    "sec-ch-ua-platform": "\"Windows\"",
+    "sec-fetch-dest": "script",
+    "sec-fetch-mode": "cors",
+    "sec-fetch-site": "same-origin"
+  },
+  "referrer": "http://localhost:5173/src/App.jsx?t=1768400581050",
+  "body": null,
+  "method": "GET",
+  "mode": "cors",
+  "credentials": "include"
+}); ;
+fetch("http://localhost:5173/node_modules/.vite/deps/chunk-YF4B4G2L.js?v=70266093", {
+  "headers": {
+    "sec-ch-ua": "\"Google Chrome\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\"",
+    "sec-ch-ua-mobile": "?0",
+    "sec-ch-ua-platform": "\"Windows\""
+  },
+  "referrer": "http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=70266093",
+  "body": null,
+  "method": "GET",
+  "mode": "cors",
+  "credentials": "omit"
+}); ;
+fetch("ws://localhost:5173/?token=1n8GaVesVFrq", {
+  "headers": {
+    "accept-language": "en-IN,en;q=0.9,te;q=0.8",
+    "cache-control": "no-cache",
+    "pragma": "no-cache",
+    "sec-websocket-extensions": "permessage-deflate; client_max_window_bits",
+    "sec-websocket-key": "Rw0dG1SVbnphfnbKIT6OTw==",
+    "sec-websocket-protocol": "vite-hmr",
+    "sec-websocket-version": "13"
+  },
+  "body": null,
+  "method": "GET",
+  "mode": "cors",
+  "credentials": "include"
+}); ;
+fetch("http://localhost:5173/node_modules/.vite/deps/lucide-react.js?v=70266093", {
+  "headers": {
+    "sec-ch-ua": "\"Google Chrome\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\"",
+    "sec-ch-ua-mobile": "?0",
+    "sec-ch-ua-platform": "\"Windows\""
+  },
+  "referrer": "http://localhost:5173/src/features/reception/ReceptionScreen.jsx?t=1768400581050",
+  "body": null,
+  "method": "GET",
+  "mode": "cors",
+  "credentials": "omit"
+}); ;
+fetch("http://localhost:5173/src/components/layout/SystemBar.jsx", {
+  "headers": {
+    "accept": "*/*",
+    "accept-language": "en-IN,en;q=0.9,te;q=0.8",
+    "if-none-match": "W/\"2070-BxP/75TCiM4ccKZB8HI9qUK46V8\"",
+    "sec-ch-ua": "\"Google Chrome\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\"",
+    "sec-ch-ua-mobile": "?0",
+    "sec-ch-ua-platform": "\"Windows\"",
+    "sec-fetch-dest": "script",
+    "sec-fetch-mode": "cors",
+    "sec-fetch-site": "same-origin"
+  },
+  "referrer": "http://localhost:5173/src/features/reception/ReceptionScreen.jsx?t=1768400581050",
+  "body": null,
+  "method": "GET",
+  "mode": "cors",
+  "credentials": "include"
+}); ;
+fetch("http://localhost:5173/src/components/layout/RealitySummary.jsx", {
+  "headers": {
+    "accept": "*/*",
+    "accept-language": "en-IN,en;q=0.9,te;q=0.8",
+    "if-none-match": "W/\"140d-/RAz5Ki3XSeRtEA1+6gRey6Um7o\"",
+    "sec-ch-ua": "\"Google Chrome\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\"",
+    "sec-ch-ua-mobile": "?0",
+    "sec-ch-ua-platform": "\"Windows\"",
+    "sec-fetch-dest": "script",
+    "sec-fetch-mode": "cors",
+    "sec-fetch-site": "same-origin"
+  },
+  "referrer": "http://localhost:5173/src/features/reception/ReceptionScreen.jsx?t=1768400581050",
+  "body": null,
+  "method": "GET",
+  "mode": "cors",
+  "credentials": "include"
+}); ;
+fetch("http://localhost:5173/src/components/layout/ActionQueue.jsx", {
+  "headers": {
+    "accept": "*/*",
+    "accept-language": "en-IN,en;q=0.9,te;q=0.8",
+    "if-none-match": "W/\"1776-xmTderVy+9PTsI2Jh2sK1mZ8kD4\"",
+    "sec-ch-ua": "\"Google Chrome\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\"",
+    "sec-ch-ua-mobile": "?0",
+    "sec-ch-ua-platform": "\"Windows\"",
+    "sec-fetch-dest": "script",
+    "sec-fetch-mode": "cors",
+    "sec-fetch-site": "same-origin"
+  },
+  "referrer": "http://localhost:5173/src/features/reception/ReceptionScreen.jsx?t=1768400581050",
+  "body": null,
+  "method": "GET",
+  "mode": "cors",
+  "credentials": "include"
+}); ;
+fetch("http://localhost:5173/src/components/layout/ActivityStream.jsx", {
+  "headers": {
+    "accept": "*/*",
+    "accept-language": "en-IN,en;q=0.9,te;q=0.8",
+    "if-none-match": "W/\"261f-N9fn5TOFn1cpCOxvZtotZYuwf8s\"",
+    "sec-ch-ua": "\"Google Chrome\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\"",
+    "sec-ch-ua-mobile": "?0",
+    "sec-ch-ua-platform": "\"Windows\"",
+    "sec-fetch-dest": "script",
+    "sec-fetch-mode": "cors",
+    "sec-fetch-site": "same-origin"
+  },
+  "referrer": "http://localhost:5173/src/features/reception/ReceptionScreen.jsx?t=1768400581050",
+  "body": null,
+  "method": "GET",
+  "mode": "cors",
+  "credentials": "include"
+}); ;
+fetch("http://localhost:5173/src/features/reception/components/IntentPanel.jsx?t=1768400550741", {
+  "headers": {
+    "accept": "*/*",
+    "accept-language": "en-IN,en;q=0.9,te;q=0.8",
+    "if-none-match": "W/\"3178-Zw7Egvm/7cuDAzFMYOeIwkBqtAk\"",
+    "sec-ch-ua": "\"Google Chrome\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\"",
+    "sec-ch-ua-mobile": "?0",
+    "sec-ch-ua-platform": "\"Windows\"",
+    "sec-fetch-dest": "script",
+    "sec-fetch-mode": "cors",
+    "sec-fetch-site": "same-origin"
+  },
+  "referrer": "http://localhost:5173/src/features/reception/ReceptionScreen.jsx?t=1768400581050",
+  "body": null,
+  "method": "GET",
+  "mode": "cors",
+  "credentials": "include"
+}); ;
+fetch("http://localhost:5173/src/api/reception.js?t=1768400550741", {
+  "headers": {
+    "accept": "*/*",
+    "accept-language": "en-IN,en;q=0.9,te;q=0.8",
+    "if-none-match": "W/\"783-b7Dgxt1yvByeVbTOoiiy4kytZKA\"",
+    "sec-ch-ua": "\"Google Chrome\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\"",
+    "sec-ch-ua-mobile": "?0",
+    "sec-ch-ua-platform": "\"Windows\"",
+    "sec-fetch-dest": "script",
+    "sec-fetch-mode": "cors",
+    "sec-fetch-site": "same-origin"
+  },
+  "referrer": "http://localhost:5173/src/components/layout/ActivityStream.jsx",
+  "body": null,
+  "method": "GET",
+  "mode": "cors",
+  "credentials": "include"
+}); ;
+fetch("http://localhost:5173/src/lib/utils.js", {
+  "headers": {
+    "accept": "*/*",
+    "accept-language": "en-IN,en;q=0.9,te;q=0.8",
+    "if-none-match": "W/\"dd-8faafTJbIU/1Wquk7SovCSgdV4M\"",
+    "sec-ch-ua": "\"Google Chrome\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\"",
+    "sec-ch-ua-mobile": "?0",
+    "sec-ch-ua-platform": "\"Windows\"",
+    "sec-fetch-dest": "script",
+    "sec-fetch-mode": "cors",
+    "sec-fetch-site": "same-origin"
+  },
+  "referrer": "http://localhost:5173/src/components/layout/ActivityStream.jsx",
+  "body": null,
+  "method": "GET",
+  "mode": "cors",
+  "credentials": "include"
+}); ;
+fetch("http://localhost:5173/src/features/reception/components/PatientIdentification.jsx", {
+  "headers": {
+    "accept": "*/*",
+    "accept-language": "en-IN,en;q=0.9,te;q=0.8",
+    "if-none-match": "W/\"5a66-Pf6C+eFpUTSxfy/Twydd991UU1U\"",
+    "sec-ch-ua": "\"Google Chrome\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\"",
+    "sec-ch-ua-mobile": "?0",
+    "sec-ch-ua-platform": "\"Windows\"",
+    "sec-fetch-dest": "script",
+    "sec-fetch-mode": "cors",
+    "sec-fetch-site": "same-origin"
+  },
+  "referrer": "http://localhost:5173/src/features/reception/components/IntentPanel.jsx?t=1768400550741",
+  "body": null,
+  "method": "GET",
+  "mode": "cors",
+  "credentials": "include"
+}); ;
+fetch("http://localhost:5173/src/features/reception/components/VisitDetails.jsx", {
+  "headers": {
+    "accept": "*/*",
+    "accept-language": "en-IN,en;q=0.9,te;q=0.8",
+    "if-none-match": "W/\"2fe1-3PZBILGpsbpT/k0+55vHaDZyMYo\"",
+    "sec-ch-ua": "\"Google Chrome\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\"",
+    "sec-ch-ua-mobile": "?0",
+    "sec-ch-ua-platform": "\"Windows\"",
+    "sec-fetch-dest": "script",
+    "sec-fetch-mode": "cors",
+    "sec-fetch-site": "same-origin"
+  },
+  "referrer": "http://localhost:5173/src/features/reception/components/IntentPanel.jsx?t=1768400550741",
+  "body": null,
+  "method": "GET",
+  "mode": "cors",
+  "credentials": "include"
+}); ;
+fetch("http://localhost:5173/src/features/reception/components/BillingSummary.jsx", {
+  "headers": {
+    "accept": "*/*",
+    "accept-language": "en-IN,en;q=0.9,te;q=0.8",
+    "if-none-match": "W/\"1c58-TOq/pin5lcXYDDN9SypOhZU8oCg\"",
+    "sec-ch-ua": "\"Google Chrome\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\"",
+    "sec-ch-ua-mobile": "?0",
+    "sec-ch-ua-platform": "\"Windows\"",
+    "sec-fetch-dest": "script",
+    "sec-fetch-mode": "cors",
+    "sec-fetch-site": "same-origin"
+  },
+  "referrer": "http://localhost:5173/src/features/reception/components/IntentPanel.jsx?t=1768400550741",
+  "body": null,
+  "method": "GET",
+  "mode": "cors",
+  "credentials": "include"
+}); ;
+fetch("http://localhost:5173/node_modules/.vite/deps/clsx.js?v=70266093", {
+  "headers": {
+    "sec-ch-ua": "\"Google Chrome\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\"",
+    "sec-ch-ua-mobile": "?0",
+    "sec-ch-ua-platform": "\"Windows\""
+  },
+  "referrer": "http://localhost:5173/src/lib/utils.js",
+  "body": null,
+  "method": "GET",
+  "mode": "cors",
+  "credentials": "omit"
+}); ;
+fetch("http://localhost:5173/node_modules/.vite/deps/tailwind-merge.js?v=70266093", {
+  "headers": {
+    "sec-ch-ua": "\"Google Chrome\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\"",
+    "sec-ch-ua-mobile": "?0",
+    "sec-ch-ua-platform": "\"Windows\""
+  },
+  "referrer": "http://localhost:5173/src/lib/utils.js",
+  "body": null,
+  "method": "GET",
+  "mode": "cors",
+  "credentials": "omit"
+}); ;
+fetch("chrome-extension://ojplmecpdpgccookcobabopnaifgidhf/assets/utility_all2.js-CcXPEkEi.js", {
+  "referrer": "",
+  "body": null,
+  "method": "GET",
+  "mode": "cors",
+  "credentials": "omit"
+}); ;
+fetch("chrome-extension://ojplmecpdpgccookcobabopnaifgidhf/assets/zeptoContentScript.js-7p6uDDH1.js", {
+  "referrer": "",
+  "body": null,
+  "method": "GET",
+  "mode": "cors",
+  "credentials": "omit"
+}); ;
+fetch("chrome-extension://ojplmecpdpgccookcobabopnaifgidhf/assets/jiomartContentScript.js-DuvfALSk.js", {
+  "referrer": "",
+  "body": null,
+  "method": "GET",
+  "mode": "cors",
+  "credentials": "omit"
+}); ;
+fetch("chrome-extension://ojplmecpdpgccookcobabopnaifgidhf/assets/commonScrapper.js-Bs9RgRqr.js", {
+  "referrer": "",
+  "body": null,
+  "method": "GET",
+  "mode": "cors",
+  "credentials": "omit"
+}); ;
+fetch("chrome-extension://ojplmecpdpgccookcobabopnaifgidhf/assets/searchHTMLscrapper.js-iSusZ_QP.js", {
+  "referrer": "",
+  "body": null,
+  "method": "GET",
+  "mode": "cors",
+  "credentials": "omit"
+}); ;
+fetch("chrome-extension://ojplmecpdpgccookcobabopnaifgidhf/assets/categoryScrapper.js-4J2qvZno.js", {
+  "referrer": "",
+  "body": null,
+  "method": "GET",
+  "mode": "cors",
+  "credentials": "omit"
+}); ;
+fetch("chrome-extension://ojplmecpdpgccookcobabopnaifgidhf/assets/filterScrapper.js-dUN6_LdV.js", {
+  "referrer": "",
+  "body": null,
+  "method": "GET",
+  "mode": "cors",
+  "credentials": "omit"
+}); ;
+fetch("chrome-extension://ojplmecpdpgccookcobabopnaifgidhf/assets/spendCalculate.js-CYjvsrnH.js", {
+  "referrer": "",
+  "body": null,
+  "method": "GET",
+  "mode": "cors",
+  "credentials": "omit"
+}); ;
+fetch("chrome-extension://ojplmecpdpgccookcobabopnaifgidhf/assets/monitor.js-q1XQB6t-.js", {
+  "referrer": "",
+  "body": null,
+  "method": "GET",
+  "mode": "cors",
+  "credentials": "omit"
+}); ;
+fetch("chrome-extension://ojplmecpdpgccookcobabopnaifgidhf/assets/monitorGrafana.js-DKpb91qN.js", {
+  "referrer": "",
+  "body": null,
+  "method": "GET",
+  "mode": "cors",
+  "credentials": "omit"
+}); ;
+fetch("chrome-extension://ojplmecpdpgccookcobabopnaifgidhf/assets/wishlistScrapper.js-CTGa_b_d.js", {
+  "referrer": "",
+  "body": null,
+  "method": "GET",
+  "mode": "cors",
+  "credentials": "omit"
+}); ;
+fetch("chrome-extension://ojplmecpdpgccookcobabopnaifgidhf/assets/couponCollection.js--mf-Bo2K.js", {
+  "referrer": "",
+  "body": null,
+  "method": "GET",
+  "mode": "cors",
+  "credentials": "omit"
+}); ;
+fetch("chrome-extension://ojplmecpdpgccookcobabopnaifgidhf/assets/untrustedPriceComparison.js-Cc4lQ26t.js", {
+  "referrer": "",
+  "body": null,
+  "method": "GET",
+  "mode": "cors",
+  "credentials": "omit"
+}); ;
+fetch("chrome-extension://ojplmecpdpgccookcobabopnaifgidhf/assets/untrustedAC.js-CeE8Aav-.js", {
+  "referrer": "",
+  "body": null,
+  "method": "GET",
+  "mode": "cors",
+  "credentials": "omit"
+}); ;
+fetch("chrome-extension://ojplmecpdpgccookcobabopnaifgidhf/assets/checkoutScrapper.js-BFR1KeZt.js", {
+  "referrer": "",
+  "body": null,
+  "method": "GET",
+  "mode": "cors",
+  "credentials": "omit"
+}); ;
+fetch("chrome-extension://ojplmecpdpgccookcobabopnaifgidhf/assets/savedPricePopUp.js-ScCuDrog.js", {
+  "referrer": "",
+  "body": null,
+  "method": "GET",
+  "mode": "cors",
+  "credentials": "omit"
+}); ;
+fetch("chrome-extension://ojplmecpdpgccookcobabopnaifgidhf/assets/ctUtils.js-Rd2BqR25.js", {
+  "referrer": "",
+  "body": null,
+  "method": "GET",
+  "mode": "cors",
+  "credentials": "omit"
+}); ;
+fetch("chrome-extension://ojplmecpdpgccookcobabopnaifgidhf/assets/counter.js-BKi-Lx4v.js", {
+  "referrer": "",
+  "body": null,
+  "method": "GET",
+  "mode": "cors",
+  "credentials": "omit"
+}); ;
+fetch("chrome-extension://ojplmecpdpgccookcobabopnaifgidhf/assets/index.ts-BpqwjxNB.js", {
+  "referrer": "",
+  "body": null,
+  "method": "GET",
+  "mode": "cors",
+  "credentials": "omit"
+}); ;
+fetch("chrome-extension://ojplmecpdpgccookcobabopnaifgidhf/assets/content.ts-DS6eMfks.js", {
+  "referrer": "",
+  "body": null,
+  "method": "GET",
+  "mode": "cors",
+  "credentials": "omit"
+}); ;
+fetch("http://localhost:5173/api/v1/branch/activity", {
+  "headers": {
+    "accept": "*/*",
+    "accept-language": "en-IN,en;q=0.9,te;q=0.8",
+    "if-none-match": "W/\"27a-B+6ow0dUb4KQ/vHf8pSUUsxkYIQ\"",
+    "sec-ch-ua": "\"Google Chrome\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\"",
+    "sec-ch-ua-mobile": "?0",
+    "sec-ch-ua-platform": "\"Windows\"",
+    "sec-fetch-dest": "empty",
+    "sec-fetch-mode": "cors",
+    "sec-fetch-site": "same-origin"
+  },
+  "referrer": "http://localhost:5173/",
+  "body": null,
+  "method": "GET",
+  "mode": "cors",
+  "credentials": "include"
+}); ;
+fetch("http://localhost:5173/api/v1/branch/activity", {
+  "headers": {
+    "accept": "*/*",
+    "accept-language": "en-IN,en;q=0.9,te;q=0.8",
+    "if-none-match": "W/\"27a-B+6ow0dUb4KQ/vHf8pSUUsxkYIQ\"",
+    "sec-ch-ua": "\"Google Chrome\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\"",
+    "sec-ch-ua-mobile": "?0",
+    "sec-ch-ua-platform": "\"Windows\"",
+    "sec-fetch-dest": "empty",
+    "sec-fetch-mode": "cors",
+    "sec-fetch-site": "same-origin"
+  },
+  "referrer": "http://localhost:5173/",
+  "body": null,
+  "method": "GET",
+  "mode": "cors",
+  "credentials": "include"
+}); ;
+fetch("http://localhost:5173/vite.svg", {
+  "headers": {
+    "accept": "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
+    "accept-language": "en-IN,en;q=0.9,te;q=0.8",
+    "if-modified-since": "Tue, 13 Jan 2026 15:05:05 GMT",
+    "if-none-match": "W/\"1497-1768316705829\"",
+    "sec-ch-ua": "\"Google Chrome\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\"",
+    "sec-ch-ua-mobile": "?0",
+    "sec-ch-ua-platform": "\"Windows\"",
+    "sec-fetch-dest": "image",
+    "sec-fetch-mode": "no-cors",
+    "sec-fetch-site": "same-origin"
+  },
+  "referrer": "http://localhost:5173/",
+  "body": null,
+  "method": "GET",
+  "mode": "cors",
+  "credentials": "include"
+}); ;
+fetch("chrome-extension://ojplmecpdpgccookcobabopnaifgidhf/assets/applyThems-BXA35g4K.js", {
+  "referrer": "",
+  "body": null,
+  "method": "GET",
+  "mode": "cors",
+  "credentials": "omit"
+}); ;
+fetch("chrome-extension://ojplmecpdpgccookcobabopnaifgidhf/assets/sentry-y_Iga7PX.js", {
+  "referrer": "",
+  "body": null,
+  "method": "GET",
+  "mode": "cors",
+  "credentials": "omit"
+}); ;
+fetch("chrome-extension://ojplmecpdpgccookcobabopnaifgidhf/assets/en-CXHi8RO1.js", {
+  "referrer": "",
+  "body": null,
+  "method": "GET",
+  "mode": "cors",
+  "credentials": "omit"
+}); ;
+fetch("http://localhost:5173/api/v1/branch/activity", {
+  "headers": {
+    "accept": "*/*",
+    "accept-language": "en-IN,en;q=0.9,te;q=0.8",
+    "if-none-match": "W/\"27a-B+6ow0dUb4KQ/vHf8pSUUsxkYIQ\"",
+    "sec-ch-ua": "\"Google Chrome\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\"",
+    "sec-ch-ua-mobile": "?0",
+    "sec-ch-ua-platform": "\"Windows\"",
+    "sec-fetch-dest": "empty",
+    "sec-fetch-mode": "cors",
+    "sec-fetch-site": "same-origin"
+  },
+  "referrer": "http://localhost:5173/",
+  "body": null,
+  "method": "GET",
+  "mode": "cors",
+  "credentials": "include"
+});

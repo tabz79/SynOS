@@ -1,189 +1,120 @@
-You are implementing REAL, production-grade frontend code for SynOS.
-This is NOT a UI mockup task and NOT a static form-building task.
+You are the frontend engineer for SynOS.
 
-SYSTEM CONTEXT (LOCKED):
-- SynOS is an OS-grade healthcare operating system.
-- The frontend is a STATE-REFLECTIVE SURFACE, not a workflow driver.
-- The backend architecture and truth engines are SEALED.
-- Frontend must strictly reflect backend truth and backend state.
+Context:
+SynOS is an OS-grade healthcare operations system.
+The backend is sealed and exposes a read-only operational event stream.
 
-CRITICAL UI CONCEPT (NON-NEGOTIABLE):
-SynOS uses a SINGLE, ADAPTIVE, RIGHT-SIDE INTENT PANEL as its primary interaction mechanism.
+Your task is to IMPLEMENT the RIGHT-SIDE PANEL for the Receptionist screen,
+now officially called:
 
-This panel is:
-- Context-aware
-- State-driven
-- Dynamically adaptive
-- NOT static
-- NOT step-based
-- NOT a wizard
-- NOT a generic modal
-- NOT a decorative side panel
+→ “Activity Stream”
 
-The panel behaves like an OS intent surface, similar to:
-- System dialogs in operating systems
-- Context panels in professional terminals
-- Operational consoles, not SaaS forms
+IMPORTANT:
+This is NOT a new layout.
+We are simply REPLACING the existing “Detail / Audit Panel” with “Activity Stream”.
+NO layout changes are allowed.
 
-The word “smart” here means:
-- Dynamically adapting its visible sections based on backend state
-- Conditionally revealing or hiding sections
-- Reacting to backend responses in real time
-- WITHOUT embedding business logic in the frontend
+The Universal Screen Skeleton remains unchanged.
+Only the content and rendering of this panel changes.
 
-There is NO AI logic in the panel.
+--------------------------------
+WHAT THIS PANEL IS
+--------------------------------
+Activity Stream is a LIVE, READ-ONLY operational awareness feed.
 
----
+It shows:
+- What has ACTUALLY happened
+- Across the branch
+- Across roles (Reception, Billing, Phlebotomy, Lab, Doctor)
+- Using backend-emitted events only
 
-VISUAL & INTERACTION REFERENCE:
-- You are provided with a Nanobanana-generated SynOS Receptionist screen image.
-- Treat this image as the CANONICAL VISUAL AND INTERACTION REFERENCE.
-- DO NOT redesign layout, spacing philosophy, or interaction model.
-- DO NOT simplify the panel into a flat form.
+It is NOT:
+- A workflow controller
+- A per-patient detail view
+- A dashboard
+- A reporting screen
 
----
-
-ABSOLUTE PROHIBITIONS:
-- DO NOT use mock or placeholder data.
-- DO NOT hardcode patients, tests, prices, totals, or statuses.
-- DO NOT invent API endpoints.
-- DO NOT simulate backend logic in the frontend.
-- DO NOT calculate money, discounts, referrals, or inventory client-side.
-- DO NOT assume workflow order.
-- DO NOT convert the panel into a multi-step wizard.
-
-If required backend APIs or contracts are missing:
-STOP and REPORT instead of inventing.
-
----
-
-TASK SCOPE:
-Implement the REAL Receptionist flow using the OS-grade adaptive panel pattern.
-
----
-
-1️⃣ ACTION QUEUE (CORE WORK SURFACE)
-- Populate Action Queue strictly from backend Visit / Queue projections.
-- Show only ACTIVE visits requiring attention.
-- No static rows.
-- No demo data.
-- Queue rows represent BACKEND STATE, not UI state.
-
----
-
-2️⃣ “+ New Walk-In” TOP-LEVEL INTENT
-
-The SynOS Receptionist screen MUST include a visible top-level button labeled:
-
-“+ New Walk-In”
-
-This button DOES NOT exist in the current frontend and MUST be newly implemented.
-
-Placement:
-- Positioned above the Action Queue
-- Visually aligned with the OS-grade layout shown in the reference image
-- Styled consistently with the existing SynOS design system (dark, dense, professional)
+--------------------------------
+BACKEND CONTRACT (LOCKED)
+--------------------------------
+Endpoint:
+GET /api/v1/branch/activity
 
 Behavior:
-- Clicking “+ New Walk-In” opens the RIGHT-SIDE ADAPTIVE INTENT PANEL
-- The panel slides in from the right
-- It overlays or replaces the Audit / Detail panel
-- The Action Queue and Reality Summary remain visible in the background
+- Returns last 50 events
+- Ordered DESC by OccurredAt
+- Automatically scoped to CURRENT UTC DAY
+- Filtered by BranchId
+- No pagination
 
-Purpose:
-- This is the PRIMARY and ONLY entry point for:
-  - Creating a new Visit
-  - Optionally creating or linking a Patient
-  - Initiating billing for that Visit
+Event fields:
+- eventType (enum)
+- occurredAt (UTC, ISO string)
+- summaryText (human-readable, preformatted)
+- actorType ("User" / "System")
+- actorName (nullable)
+- tokenId (primary human identifier)
+- visitId
+- branchId
 
-The panel opened by this button is NOT static.
-It is a dynamically adaptive, state-driven panel whose visible sections change
-based on backend responses (existing patient vs new patient, etc.).
+--------------------------------
+FRONTEND RULES (NON-NEGOTIABLE)
+--------------------------------
+1. DO NOT infer workflow state from events.
+2. DO NOT parse or modify summaryText. Render verbatim.
+3. DO NOT perform client-side calculations (money or time).
+   Relative time display (“2m ago”) is allowed as pure formatting only.
+4. Treat the stream as EPHEMERAL (resets daily UTC).
+5. Poll every 30–60 seconds or refresh on relevant user actions.
+6. NO mock data. Backend only.
+7. If something is missing → STOP & REPORT.
 
-The agent MUST implement this button and wire it to the adaptive panel behavior.
+--------------------------------
+UI DESIGN INSTRUCTIONS
+--------------------------------
+Layout:
+- Reuse the EXISTING right-side panel layout as-is.
+- No resizing, no repositioning, no structural changes.
+- Only the internal content changes.
 
----
+Rendering:
+- Vertical list, newest events at the top.
+- High-density, calm, professional.
+- Designed for continuous peripheral awareness.
 
-3️⃣ ADAPTIVE PANEL BEHAVIOR (VERY IMPORTANT)
+Each row should visually contain:
+- Token ID (most prominent anchor)
+- summaryText (primary text)
+- actorName (secondary, if present)
+- occurredAt (subtle time indicator)
 
-The panel is ONE CONTINUOUS SURFACE whose visible sections adapt dynamically:
+Behavior:
+- Read-only
+- No buttons
+- No filters (for now)
+- No pagination
+- No charts
+- No animations except subtle entry fade (optional)
 
-SECTION A — Patient Identification (ALWAYS VISIBLE)
-- Mobile number input
-- Live backend lookup as the user types
-- NO explicit “Search” button
+--------------------------------
+REFERENCE IMAGE
+--------------------------------
+I will provide a reference image showing:
+- Density
+- Typography
+- Spacing
+- Visual hierarchy
 
-Backend responses determine panel behavior:
-- If patient exists → show read-only identity summary
-- If patient does not exist → reveal identity input fields
+You MUST follow the reference image for visual presentation.
+Do NOT invent a new visual style or structure.
 
-Frontend does NOT decide this — backend response does.
+--------------------------------
+GOAL
+--------------------------------
+Replace the existing Detail/Audit panel with Activity Stream,
+keeping the screen stable, predictable, and OS-grade.
 
----
+This panel exists to keep multiple receptionists in sync,
+not to drive actions.
 
-SECTION B — Identity Facts (CONDITIONAL)
-- Visible ONLY when backend indicates patient does not exist
-- Minimal required fields only (e.g. name, gender)
-- No ERP-style long form
-- No optional noise
-
----
-
-SECTION C — Visit Details (ALWAYS VISIBLE)
-- Test selection sourced ONLY from backend Test Master API
-- Real test names
-- Real prices
-- No hardcoded catalog
-- UI submits intent; backend returns computed values
-
----
-
-SECTION D — Billing & Financial Summary (STATE-REFLECTIVE)
-- Billing data returned from backend
-- Discounts applied ONLY through backend Discount Engine
-- Referral handling through backend Referral Engine (Flow A / Flow B)
-- Frontend shows backend-calculated payable amounts
-- NO client-side calculations
-
-This section updates dynamically as backend responses change.
-
----
-
-SECTION E — COMMIT ACTION (SINGLE COMMIT)
-Primary button:
-- “Create Visit & Generate Bill”
-
-This triggers ONE backend command that:
-- Creates Visit
-- Links or creates Patient
-- Applies billing
-- Emits Revenue facts
-- Triggers Inventory and Cost Attribution hooks
-
-Frontend waits for backend confirmation.
-NO optimistic UI.
-
----
-
-ERROR & STATE HANDLING:
-- Backend rejections must be surfaced verbatim.
-- Truth-blocking errors are persistent and blocking.
-- No silent retries.
-- No fallback assumptions.
-
----
-
-DELIVERABLE EXPECTATIONS:
-- REAL frontend components
-- REAL API wiring
-- Zero mock data
-- Clear comments where backend contracts are assumed
-
-IMPLEMENTATION PROCESS:
-- First: audit and list existing backend endpoints relevant to Receptionist flow
-- Second: confirm data contracts
-- Third: wire UI incrementally to real APIs
-- Only THEN write UI logic
-
-BEGIN WITH:
-Backend API audit and mapping for the Receptionist role.
+Proceed with implementation.

@@ -10,6 +10,7 @@ using SynOS.Models.DTOs;
 using SynOS.Models.Entities;
 using SynOS.Models.Enums; // Required for TubeType
 using SynOS.Services.Referral;
+using SynOS.Services.Operational; // ADDED
 
 namespace SynOS.Services
 {
@@ -23,6 +24,7 @@ namespace SynOS.Services
         private readonly ITestsCacheService _testsCacheService;
         private readonly IConfiguration _configuration;
         private readonly IReferralFinancialService _referralFinancialService;
+        private readonly IOperationalEventWriter _operationalEventWriter; // ADDED
 
         public ReceptionFlowService(
             SynOSDbContext context,
@@ -32,7 +34,8 @@ namespace SynOS.Services
             ILogger<ReceptionFlowService> logger,
             ITestsCacheService testsCacheService,
             IConfiguration configuration,
-            IReferralFinancialService referralFinancialService)
+            IReferralFinancialService referralFinancialService,
+            IOperationalEventWriter operationalEventWriter) // ADDED
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
             _visitService = visitService ?? throw new ArgumentNullException(nameof(visitService));
@@ -42,6 +45,7 @@ namespace SynOS.Services
             _testsCacheService = testsCacheService;
             _configuration = configuration;
             _referralFinancialService = referralFinancialService;
+            _operationalEventWriter = operationalEventWriter ?? throw new ArgumentNullException(nameof(operationalEventWriter)); // ADDED
         }
 
         // small helper to centralize a defensive check (keeps ctor lines tidy)
@@ -143,6 +147,17 @@ namespace SynOS.Services
                     Price = o.Price,
                     Discount = o.Discount
                 }).ToListAsync();
+
+            // Emit Operational Event: VISIT_STARTED
+            await _operationalEventWriter.WriteEventAsync(
+                BranchEventType.VISIT_STARTED,
+                visit.BranchId?.ToString() ?? "Main", 
+                visit.VisitId.ToString(),
+                visit.Token,
+                $"Visit started for {patient?.FirstName} {patient?.LastName}",
+                "User",
+                actorUserId.ToString()
+            );
 
             return new ReceptionStartVisitResponse
             {
@@ -330,6 +345,17 @@ namespace SynOS.Services
                         // leaving the failed commission recognition for offline reconciliation.
                     }
                 }
+
+                // Emit Operational Event: VISIT_FINALIZED
+                await _operationalEventWriter.WriteEventAsync(
+                    BranchEventType.VISIT_FINALIZED,
+                    visit.BranchId?.ToString() ?? "Main",
+                    visit.VisitId.ToString(),
+                    visit.Token,
+                    "Visit finalized and fully paid",
+                    "User",
+                    userId.ToString()
+                );
             }
 
             var updatedVisit = await _context.Visits.FindAsync(visit.VisitId);

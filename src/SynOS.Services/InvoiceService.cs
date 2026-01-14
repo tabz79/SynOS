@@ -7,6 +7,8 @@ using SynOS.Data;
 using SynOS.Models.DTOs;
 using SynOS.Models.Entities;
 using SynOS.Services.Utils;
+using SynOS.Services.Operational; // ADDED
+using SynOS.Models.Enums; // ADDED
 
 namespace SynOS.Services
 {
@@ -14,11 +16,13 @@ namespace SynOS.Services
     {
         private readonly SynOSDbContext _context;
         private readonly ILogger<InvoiceService> _logger;
+        private readonly IOperationalEventWriter _operationalEventWriter; // ADDED
 
-        public InvoiceService(SynOSDbContext context, ILogger<InvoiceService> logger)
+        public InvoiceService(SynOSDbContext context, ILogger<InvoiceService> logger, IOperationalEventWriter operationalEventWriter) // ADDED
         {
             _context = context;
             _logger = logger;
+            _operationalEventWriter = operationalEventWriter ?? throw new ArgumentNullException(nameof(operationalEventWriter)); // ADDED
         }
 
         public async Task<Payment> RecordPaymentAsync(Guid invoiceId, PaymentRequestDto paymentDto)
@@ -26,6 +30,7 @@ namespace SynOS.Services
             var invoice = await _context.Invoices
                 .Include(i => i.Payments)
                 .Include(i => i.PartialPayments)
+                .Include(i => i.Visit) // ADDED: Need Visit for operational event context
                 .FirstOrDefaultAsync(i => i.InvoiceId == invoiceId);
 
             if (invoice == null) throw new KeyNotFoundException($"Invoice not found for ID {invoiceId}.");
@@ -73,6 +78,18 @@ namespace SynOS.Services
             }
 
             await _context.SaveChangesAsync();
+
+            // Emit Operational Event: PAYMENT_RECEIVED
+            await _operationalEventWriter.WriteEventAsync(
+                BranchEventType.PAYMENT_RECEIVED,
+                invoice.Visit?.BranchId?.ToString() ?? "Main",
+                invoice.VisitId.ToString(),
+                invoice.Visit?.Token ?? "Unknown",
+                $"Payment received {payment.Amount:F2} ({payment.Method})",
+                "User",
+                payment.ReceivedByUserId.ToString()
+            );
+
             return payment;
         }
         

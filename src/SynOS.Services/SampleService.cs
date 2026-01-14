@@ -9,6 +9,8 @@ using SynOS.Models.DTOs;
 using SynOS.Models.Entities;
 using SynOS.Models.Enums;
 using SynOS.Services.Utils;
+using SynOS.Services.Operational; // ADDED
+using SynOS.Models.Enums; // ADDED
 
 namespace SynOS.Services
 {
@@ -18,17 +20,20 @@ namespace SynOS.Services
         private readonly ISampleNotifier _sampleNotifier;
         private readonly ITubeConsumptionService _tubeConsumptionService;
         private readonly ILogger<SampleService> _logger;
+        private readonly IOperationalEventWriter _operationalEventWriter; // ADDED
 
         public SampleService(
             SynOSDbContext context, 
             ISampleNotifier sampleNotifier,
             ITubeConsumptionService tubeConsumptionService,
-            ILogger<SampleService> logger)
+            ILogger<SampleService> logger,
+            IOperationalEventWriter operationalEventWriter) // ADDED
         {
             _context = context;
             _sampleNotifier = sampleNotifier;
             _tubeConsumptionService = tubeConsumptionService;
             _logger = logger;
+            _operationalEventWriter = operationalEventWriter ?? throw new ArgumentNullException(nameof(operationalEventWriter)); // ADDED
         }
 
         public async Task<IEnumerable<SampleDto>> CreateSamplesForVisitAsync(Guid visitId)
@@ -80,7 +85,10 @@ namespace SynOS.Services
 
         public async Task<SampleDto> CollectSampleAsync(Guid sampleId, Guid userId)
         {
-            var sample = await _context.Samples.FindAsync(sampleId);
+            var sample = await _context.Samples
+                .Include(s => s.Order).ThenInclude(o => o.Visit) // ADDED: Include Visit
+                .FirstOrDefaultAsync(s => s.SampleId == sampleId);
+
             if (sample == null) throw new KeyNotFoundException("Sample not found.");
 
             if (sample.Status == SampleStatus.Collected)
@@ -103,6 +111,17 @@ namespace SynOS.Services
             {
                 _logger.LogError(ex, "Error occurred during tube consumption for SampleId {SampleId}. The sample collection status was updated, but stock was not deducted.", sampleId);
             }
+
+            // Emit Operational Event: SAMPLE_COLLECTED
+            await _operationalEventWriter.WriteEventAsync(
+                BranchEventType.SAMPLE_COLLECTED,
+                sample.Order?.Visit?.BranchId?.ToString() ?? "Main",
+                sample.Order?.Visit?.VisitId.ToString() ?? "Unknown",
+                sample.Order?.Visit?.Token ?? "Unknown",
+                $"Sample collected ({sample.TubeType})",
+                "User",
+                userId.ToString()
+            );
 
             var updatedDto = await GetSampleByIdAsync(sampleId);
             await _sampleNotifier.NotifySampleUpdateAsync(updatedDto);

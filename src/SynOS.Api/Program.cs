@@ -33,6 +33,7 @@ using SynOS.Services.Governance; // ADDED
 using SynOS.Services.Compliance; // ADDED
 using SynOS.Services.HRMS.Interpretation; // ADDED
 using SynOS.Services.HRMS.IntelligenceWiring; // ADDED
+using SynOS.Services.Operational; // ADDED
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -146,7 +147,8 @@ builder.Services.AddScoped<ISampleService, SampleService>(provider =>
         provider.GetRequiredService<SynOSDbContext>(),
         provider.GetRequiredService<ISampleNotifier>(),
         provider.GetRequiredService<ITubeConsumptionService>(),
-        provider.GetRequiredService<ILogger<SampleService>>()
+        provider.GetRequiredService<ILogger<SampleService>>(),
+        provider.GetRequiredService<IOperationalEventWriter>() // ADDED
     ));
 builder.Services.AddScoped<ITubeConsumptionService, TubeConsumptionService>();
 builder.Services.AddScoped<IPurchasingService, PurchasingService>();
@@ -164,6 +166,7 @@ builder.Services.AddComplianceServices(); // ADDED
 builder.Services.AddGovernanceServices(); // ADDED
 builder.Services.AddHrmsInterpretation(); // ADDED
 builder.Services.AddHrmsIntelligenceWiring(); // ADDED
+builder.Services.AddOperationalServices(); // ADDED
 
 // Register Economics Intelligence services (OPT-IN)
 // builder.Services.AddEconomicsIntelligence();
@@ -182,7 +185,8 @@ builder.Services.AddScoped<IReceptionFlowService>(provider =>
         provider.GetRequiredService<ILogger<ReceptionFlowService>>(),
         provider.GetRequiredService<ITestsCacheService>(),
         provider.GetRequiredService<IConfiguration>(),
-        provider.GetRequiredService<IReferralFinancialService>()
+        provider.GetRequiredService<IReferralFinancialService>(),
+        provider.GetRequiredService<IOperationalEventWriter>() // ADDED
     ));
 builder.Services.AddScoped<IResultService, ResultService>();
 builder.Services.AddScoped<IReportService, ReportService>();

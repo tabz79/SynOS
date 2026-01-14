@@ -17,6 +17,10 @@ module.exports = {
             },
         },
         extend: {
+            gridTemplateColumns: {
+                'synos-default': '3fr 1fr',
+                'synos-focus': '60% 40%',
+            },
             fontFamily: {
                 sans: ['Inter', 'system-ui', 'sans-serif'],
                 mono: ['"JetBrains Mono"', '"Roboto Mono"', 'monospace'],
