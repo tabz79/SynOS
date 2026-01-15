@@ -11,6 +11,7 @@ using SynOS.Models.Entities;
 using SynOS.Models.Enums; // Required for TubeType
 using SynOS.Services.Referral;
 using SynOS.Services.Operational; // ADDED
+using SynOS.Services.Security; // ADDED
 
 namespace SynOS.Services
 {
@@ -25,6 +26,7 @@ namespace SynOS.Services
         private readonly IConfiguration _configuration;
         private readonly IReferralFinancialService _referralFinancialService;
         private readonly IOperationalEventWriter _operationalEventWriter; // ADDED
+        private readonly IUserContext _userContext; // ADDED
 
         public ReceptionFlowService(
             SynOSDbContext context,
@@ -35,7 +37,8 @@ namespace SynOS.Services
             ITestsCacheService testsCacheService,
             IConfiguration configuration,
             IReferralFinancialService referralFinancialService,
-            IOperationalEventWriter operationalEventWriter) // ADDED
+            IOperationalEventWriter operationalEventWriter,
+            IUserContext userContext) // ADDED
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
             _visitService = visitService ?? throw new ArgumentNullException(nameof(visitService));
@@ -45,7 +48,8 @@ namespace SynOS.Services
             _testsCacheService = testsCacheService;
             _configuration = configuration;
             _referralFinancialService = referralFinancialService;
-            _operationalEventWriter = operationalEventWriter ?? throw new ArgumentNullException(nameof(operationalEventWriter)); // ADDED
+            _operationalEventWriter = operationalEventWriter ?? throw new ArgumentNullException(nameof(operationalEventWriter));
+            _userContext = userContext ?? throw new ArgumentNullException(nameof(userContext)); // ADDED
         }
 
         // small helper to centralize a defensive check (keeps ctor lines tidy)
@@ -151,7 +155,7 @@ namespace SynOS.Services
             // Emit Operational Event: VISIT_STARTED
             await _operationalEventWriter.WriteEventAsync(
                 BranchEventType.VISIT_STARTED,
-                visit.BranchId?.ToString() ?? "Main", 
+                _userContext.CurrentBranchId.ToString(), // FIX: Use context
                 visit.VisitId.ToString(),
                 visit.Token,
                 $"Visit started for {patient?.FirstName} {patient?.LastName}",
@@ -349,7 +353,7 @@ namespace SynOS.Services
                 // Emit Operational Event: VISIT_FINALIZED
                 await _operationalEventWriter.WriteEventAsync(
                     BranchEventType.VISIT_FINALIZED,
-                    visit.BranchId?.ToString() ?? "Main",
+                    _userContext.CurrentBranchId.ToString(), // FIX: Use context
                     visit.VisitId.ToString(),
                     visit.Token,
                     "Visit finalized and fully paid",

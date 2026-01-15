@@ -10,7 +10,7 @@ using SynOS.Models.Entities;
 using SynOS.Models.Enums;
 using SynOS.Services.Utils;
 using SynOS.Services.Operational; // ADDED
-using SynOS.Models.Enums; // ADDED
+using SynOS.Services.Security; // ADDED
 
 namespace SynOS.Services
 {
@@ -21,19 +21,22 @@ namespace SynOS.Services
         private readonly ITubeConsumptionService _tubeConsumptionService;
         private readonly ILogger<SampleService> _logger;
         private readonly IOperationalEventWriter _operationalEventWriter; // ADDED
+        private readonly IUserContext _userContext; // ADDED
 
         public SampleService(
             SynOSDbContext context, 
             ISampleNotifier sampleNotifier,
             ITubeConsumptionService tubeConsumptionService,
             ILogger<SampleService> logger,
-            IOperationalEventWriter operationalEventWriter) // ADDED
+            IOperationalEventWriter operationalEventWriter,
+            IUserContext userContext) // ADDED
         {
             _context = context;
             _sampleNotifier = sampleNotifier;
             _tubeConsumptionService = tubeConsumptionService;
             _logger = logger;
-            _operationalEventWriter = operationalEventWriter ?? throw new ArgumentNullException(nameof(operationalEventWriter)); // ADDED
+            _operationalEventWriter = operationalEventWriter ?? throw new ArgumentNullException(nameof(operationalEventWriter));
+            _userContext = userContext ?? throw new ArgumentNullException(nameof(userContext)); // ADDED
         }
 
         public async Task<IEnumerable<SampleDto>> CreateSamplesForVisitAsync(Guid visitId)
@@ -115,7 +118,7 @@ namespace SynOS.Services
             // Emit Operational Event: SAMPLE_COLLECTED
             await _operationalEventWriter.WriteEventAsync(
                 BranchEventType.SAMPLE_COLLECTED,
-                sample.Order?.Visit?.BranchId?.ToString() ?? "Main",
+                _userContext.CurrentBranchId.ToString(), // FIX: Use context
                 sample.Order?.Visit?.VisitId.ToString() ?? "Unknown",
                 sample.Order?.Visit?.Token ?? "Unknown",
                 $"Sample collected ({sample.TubeType})",
@@ -193,11 +196,6 @@ namespace SynOS.Services
 
         public async Task<IEnumerable<SampleDto>> GetSampleWorklistAsync(SampleStatus status)
         {
-            // The `s` in the .Select(s => new SampleDto { ... }) context refers to the Sample entity itself.
-            // The previous code had `s.Order.Visit.Patient.FirstName` which was correct,
-            // but the error message suggested `s` was not in context.
-            // This re-writes the projection to correctly access properties.
-
             return await _context.Samples
                 .Include(s => s.Order)
                     .ThenInclude(o => o.Visit)
@@ -236,6 +234,14 @@ namespace SynOS.Services
                 .FirstOrDefaultAsync(s => s.SampleId == sampleId);
 
             if (sample == null) return null;
+
+            // Cross-Branch Security Guard
+            if (sample.Order?.Visit?.BranchId.HasValue == true && sample.Order.Visit.BranchId != _userContext.CurrentBranchId)
+            {
+                _logger.LogWarning("Cross-branch sample access attempt blocked. SampleId: {SampleId}, Branch: {Branch}, User: {UserBranch}",
+                    sampleId, sample.Order.Visit.BranchId, _userContext.CurrentBranchId);
+                throw new UnauthorizedAccessException("Access to this sample is restricted.");
+            }
 
             return new SampleDto
             {

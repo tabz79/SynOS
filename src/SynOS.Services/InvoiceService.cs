@@ -9,6 +9,7 @@ using SynOS.Models.Entities;
 using SynOS.Services.Utils;
 using SynOS.Services.Operational; // ADDED
 using SynOS.Models.Enums; // ADDED
+using SynOS.Services.Security; // ADDED
 
 namespace SynOS.Services
 {
@@ -17,12 +18,14 @@ namespace SynOS.Services
         private readonly SynOSDbContext _context;
         private readonly ILogger<InvoiceService> _logger;
         private readonly IOperationalEventWriter _operationalEventWriter; // ADDED
+        private readonly IUserContext _userContext; // ADDED
 
-        public InvoiceService(SynOSDbContext context, ILogger<InvoiceService> logger, IOperationalEventWriter operationalEventWriter) // ADDED
+        public InvoiceService(SynOSDbContext context, ILogger<InvoiceService> logger, IOperationalEventWriter operationalEventWriter, IUserContext userContext) // ADDED
         {
             _context = context;
             _logger = logger;
-            _operationalEventWriter = operationalEventWriter ?? throw new ArgumentNullException(nameof(operationalEventWriter)); // ADDED
+            _operationalEventWriter = operationalEventWriter ?? throw new ArgumentNullException(nameof(operationalEventWriter));
+            _userContext = userContext ?? throw new ArgumentNullException(nameof(userContext)); // ADDED
         }
 
         public async Task<Payment> RecordPaymentAsync(Guid invoiceId, PaymentRequestDto paymentDto)
@@ -34,6 +37,8 @@ namespace SynOS.Services
                 .FirstOrDefaultAsync(i => i.InvoiceId == invoiceId);
 
             if (invoice == null) throw new KeyNotFoundException($"Invoice not found for ID {invoiceId}.");
+
+            // ... (checks)
 
             if (invoice.Status == "Paid" || invoice.Status == "Cancelled")
             {
@@ -82,7 +87,7 @@ namespace SynOS.Services
             // Emit Operational Event: PAYMENT_RECEIVED
             await _operationalEventWriter.WriteEventAsync(
                 BranchEventType.PAYMENT_RECEIVED,
-                invoice.Visit?.BranchId?.ToString() ?? "Main",
+                _userContext.CurrentBranchId.ToString(), // FIX: Use context
                 invoice.VisitId.ToString(),
                 invoice.Visit?.Token ?? "Unknown",
                 $"Payment received {payment.Amount:F2} ({payment.Method})",

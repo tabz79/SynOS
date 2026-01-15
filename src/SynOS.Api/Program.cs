@@ -34,6 +34,7 @@ using SynOS.Services.Compliance; // ADDED
 using SynOS.Services.HRMS.Interpretation; // ADDED
 using SynOS.Services.HRMS.IntelligenceWiring; // ADDED
 using SynOS.Services.Operational; // ADDED
+using SynOS.Services.Admin; // ADDED
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -47,6 +48,9 @@ Log.Logger = new LoggerConfiguration()
 builder.Host.UseSerilog();
 
 // Add services to the container.
+builder.Services.AddHttpContextAccessor(); // ADDED
+builder.Services.AddScoped<IUserContext, UserContext>(); // ADDED
+
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
@@ -137,6 +141,7 @@ builder.Services.AddAutoMapper(typeof(Program)); // Scans for profiles in the as
 
 // Register application services
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IAdminUserService, AdminUserService>(); // ADDED
 builder.Services.AddScoped<IPatientService, PatientService>();
 builder.Services.AddReferralServices();
 builder.Services.AddPayableServices();
@@ -148,7 +153,8 @@ builder.Services.AddScoped<ISampleService, SampleService>(provider =>
         provider.GetRequiredService<ISampleNotifier>(),
         provider.GetRequiredService<ITubeConsumptionService>(),
         provider.GetRequiredService<ILogger<SampleService>>(),
-        provider.GetRequiredService<IOperationalEventWriter>() // ADDED
+        provider.GetRequiredService<IOperationalEventWriter>(),
+        provider.GetRequiredService<IUserContext>() // ADDED
     ));
 builder.Services.AddScoped<ITubeConsumptionService, TubeConsumptionService>();
 builder.Services.AddScoped<IPurchasingService, PurchasingService>();
@@ -186,7 +192,8 @@ builder.Services.AddScoped<IReceptionFlowService>(provider =>
         provider.GetRequiredService<ITestsCacheService>(),
         provider.GetRequiredService<IConfiguration>(),
         provider.GetRequiredService<IReferralFinancialService>(),
-        provider.GetRequiredService<IOperationalEventWriter>() // ADDED
+        provider.GetRequiredService<IOperationalEventWriter>(),
+        provider.GetRequiredService<IUserContext>() // ADDED
     ));
 builder.Services.AddScoped<IResultService, ResultService>();
 builder.Services.AddScoped<IReportService, ReportService>();

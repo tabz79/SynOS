@@ -1,120 +1,149 @@
-You are the frontend engineer for SynOS.
+## ✦ ANTI-GRAVITY FRONTEND PROMPT
 
-Context:
-SynOS is an OS-grade healthcare operations system.
-The backend is sealed and exposes a read-only operational event stream.
+### (Auth + Routing Only — Zero UI Rebuild)
 
-Your task is to IMPLEMENT the RIGHT-SIDE PANEL for the Receptionist screen,
-now officially called:
+### SYSTEM CONTEXT
 
-→ “Activity Stream”
+* Project: **SynOS**
+* Frontend stack already exists.
+* **Reception UI is ALREADY BUILT** and currently renders at `/`.
+* Backend is **strictly JWT-based**, role-aware, branch-aware.
+* Roles exist in DB (Receptionist, Admin, etc.).
+* Backend login endpoint:
+  `POST /api/v1/auth/login`
+* JWT contains:
 
-IMPORTANT:
-This is NOT a new layout.
-We are simply REPLACING the existing “Detail / Audit Panel” with “Activity Stream”.
-NO layout changes are allowed.
+  * `role`
+  * `branch_id`
+* Reception APIs require:
 
-The Universal Screen Skeleton remains unchanged.
-Only the content and rendering of this panel changes.
+  * Valid JWT
+  * Role = `Receptionist`
 
---------------------------------
-WHAT THIS PANEL IS
---------------------------------
-Activity Stream is a LIVE, READ-ONLY operational awareness feed.
+---
 
-It shows:
-- What has ACTUALLY happened
-- Across the branch
-- Across roles (Reception, Billing, Phlebotomy, Lab, Doctor)
-- Using backend-emitted events only
+## 🔒 OBJECTIVE (NON-NEGOTIABLE)
 
-It is NOT:
-- A workflow controller
-- A per-patient detail view
-- A dashboard
-- A reporting screen
+**DO NOT redesign or rebuild any UI.**
+**DO NOT touch visual layout, components, or styling.**
 
---------------------------------
-BACKEND CONTRACT (LOCKED)
---------------------------------
-Endpoint:
-GET /api/v1/branch/activity
+Your job is ONLY to:
 
-Behavior:
-- Returns last 50 events
-- Ordered DESC by OccurredAt
-- Automatically scoped to CURRENT UTC DAY
-- Filtered by BranchId
-- No pagination
+1. Introduce **proper authentication flow**
+2. Introduce **route-level protection**
+3. Mount the **existing Reception UI at the correct route**
 
-Event fields:
-- eventType (enum)
-- occurredAt (UTC, ISO string)
-- summaryText (human-readable, preformatted)
-- actorType ("User" / "System")
-- actorName (nullable)
-- tokenId (primary human identifier)
-- visitId
-- branchId
+---
 
---------------------------------
-FRONTEND RULES (NON-NEGOTIABLE)
---------------------------------
-1. DO NOT infer workflow state from events.
-2. DO NOT parse or modify summaryText. Render verbatim.
-3. DO NOT perform client-side calculations (money or time).
-   Relative time display (“2m ago”) is allowed as pure formatting only.
-4. Treat the stream as EPHEMERAL (resets daily UTC).
-5. Poll every 30–60 seconds or refresh on relevant user actions.
-6. NO mock data. Backend only.
-7. If something is missing → STOP & REPORT.
+## ✅ REQUIRED ROUTING BEHAVIOR
 
---------------------------------
-UI DESIGN INSTRUCTIONS
---------------------------------
-Layout:
-- Reuse the EXISTING right-side panel layout as-is.
-- No resizing, no repositioning, no structural changes.
-- Only the internal content changes.
+### Routes to implement
 
-Rendering:
-- Vertical list, newest events at the top.
-- High-density, calm, professional.
-- Designed for continuous peripheral awareness.
+| URL          | Behavior                          |
+| ------------ | --------------------------------- |
+| `/login`     | New Login screen (simple form)    |
+| `/reception` | Existing Reception UI (UNCHANGED) |
+| `/`          | Smart redirect only (no UI)       |
 
-Each row should visually contain:
-- Token ID (most prominent anchor)
-- summaryText (primary text)
-- actorName (secondary, if present)
-- occurredAt (subtle time indicator)
+---
 
-Behavior:
-- Read-only
-- No buttons
-- No filters (for now)
-- No pagination
-- No charts
-- No animations except subtle entry fade (optional)
+### `/login` behavior
 
---------------------------------
-REFERENCE IMAGE
---------------------------------
-I will provide a reference image showing:
-- Density
-- Typography
-- Spacing
-- Visual hierarchy
+* Show email + password fields
+* On submit:
 
-You MUST follow the reference image for visual presentation.
-Do NOT invent a new visual style or structure.
+  * Call `POST /api/v1/auth/login`
+  * On success:
 
---------------------------------
-GOAL
---------------------------------
-Replace the existing Detail/Audit panel with Activity Stream,
-keeping the screen stable, predictable, and OS-grade.
+    * Store JWT securely (localStorage or memory — choose one, be consistent)
+    * Decode JWT
+    * Read `role`
+    * Redirect:
 
-This panel exists to keep multiple receptionists in sync,
-not to drive actions.
+      * `Receptionist` → `/reception`
+      * Other roles → show “Role not supported yet”
+* On failure:
 
-Proceed with implementation.
+  * Show backend error message
+
+---
+
+### `/reception` behavior
+
+* This route MUST be **protected**
+* Rules:
+
+  * If **no JWT** → redirect to `/login`
+  * If JWT exists but `role !== Receptionist` → show “Unauthorized”
+  * If valid → render the **existing Reception screen**
+* All API calls from this screen MUST:
+
+  * Attach `Authorization: Bearer <JWT>`
+
+⚠️ **Do not modify the Reception UI component itself**
+Only move where it is mounted.
+
+---
+
+### `/` (root) behavior
+
+This route must NEVER render UI.
+
+Logic:
+
+```text
+if no token → redirect /login
+if token exists:
+  if role == Receptionist → redirect /reception
+  else → show “Role not supported yet”
+```
+
+---
+
+## 🧠 AUTH STATE RULES
+
+* Create a minimal `AuthContext` or equivalent
+* Responsibilities:
+
+  * Store JWT
+  * Expose `isAuthenticated`
+  * Expose `role`
+  * Expose `logout()`
+* Do NOT invent complex state machines
+* Do NOT hardcode users or roles
+
+---
+
+## 🚫 HARD NOs (IMPORTANT)
+
+* ❌ Do NOT create a new “Reception Layout”
+* ❌ Do NOT duplicate the Reception UI
+* ❌ Do NOT hardcode branch or role values
+* ❌ Do NOT bypass backend auth
+* ❌ Do NOT add mock tokens
+* ❌ Do NOT redesign header/sidebar/etc.
+
+---
+
+## ✅ DELIVERABLES
+
+You must provide:
+
+1. Updated routing configuration
+2. Login screen implementation
+3. Auth guard / protected route logic
+4. Confirmation that:
+
+   * Reception UI code is untouched
+   * Activity Stream now works due to JWT being present
+
+---
+
+## 🧭 MENTAL MODEL (IMPORTANT)
+
+> The Reception UI is **not the app root**.
+> It is a **post-login, role-protected destination**.
+
+Treat it exactly like a real hospital system would.
+
+---

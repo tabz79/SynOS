@@ -10,6 +10,7 @@ using Microsoft.Extensions.Logging;
 using SynOS.Services.Utils;
 using SynOS.Models.Enums; // Required for TubeType
 using SynOS.Services.Operational; // ADDED
+using SynOS.Services.Security; // ADDED
 
 namespace SynOS.Services
 {
@@ -20,6 +21,7 @@ namespace SynOS.Services
         private readonly ITestsCacheService _testsCacheService; // Injected
         private readonly IAuditService _auditService; // Injected
         private readonly IOperationalEventWriter _operationalEventWriter; // ADDED
+        private readonly IUserContext _userContext; // ADDED
 
         // TODO: Configure lab timezone in appsettings or a dedicated config service
         private static TimeZoneInfo _labTimeZone = TimeZoneInfo.Local; // Default to server local timezone
@@ -29,13 +31,15 @@ namespace SynOS.Services
             ILogger<VisitService> logger, 
             ITestsCacheService testsCacheService, 
             IAuditService auditService,
-            IOperationalEventWriter operationalEventWriter) // ADDED
+            IOperationalEventWriter operationalEventWriter,
+            IUserContext userContext) // ADDED
         {
             _context = context;
             _logger = logger;
             _testsCacheService = testsCacheService;
             _auditService = auditService;
-            _operationalEventWriter = operationalEventWriter ?? throw new ArgumentNullException(nameof(operationalEventWriter)); // ADDED
+            _operationalEventWriter = operationalEventWriter ?? throw new ArgumentNullException(nameof(operationalEventWriter));
+            _userContext = userContext ?? throw new ArgumentNullException(nameof(userContext)); // ADDED
         }
 
         public async Task<VisitTokenPrintDto> GetVisitTokenForPrintingAsync(Guid visitId)
@@ -89,6 +93,7 @@ namespace SynOS.Services
             {
                 VisitId = Guid.NewGuid(),
                 PatientId = visitDto.PatientId,
+                BranchId = _userContext.CurrentBranchId, // FIX: Set from context
                 Token = token,
                 TokenDate = labLocalToday,
                 Department = visitDto.Department,
@@ -147,6 +152,7 @@ namespace SynOS.Services
                 NetAmount = netAmount,
                 TaxAmount = taxAmount,
                 Total = totalAmount,
+                Currency = "INR", // Mandatory field
                 Status = "PendingPayment",
                 DueDate = labLocalToday.AddDays(7), // Due in 7 days from local date
                 CreatedAt = DateTime.UtcNow
@@ -159,7 +165,7 @@ namespace SynOS.Services
             // Emit Operational Event: BILL_GENERATED
             await _operationalEventWriter.WriteEventAsync(
                 BranchEventType.BILL_GENERATED,
-                visit.BranchId?.ToString() ?? "Main", // Default to "Main" if BranchId is missing
+                _userContext.CurrentBranchId.ToString(), // FIX: Use context
                 visit.VisitId.ToString(),
                 visit.Token,
                 $"Bill generated for {invoice.Total:F2}",
@@ -172,7 +178,7 @@ namespace SynOS.Services
 
         public async Task<Visit?> GetVisitDetailsAsync(Guid visitId)
         {
-            return await _context.Visits
+            var visit = await _context.Visits
                 .Include(v => v.Patient)
                 .Include(v => v.Orders)
                     .ThenInclude(o => o.Test)
@@ -181,6 +187,16 @@ namespace SynOS.Services
                 .Include(v => v.Invoices)
                     .ThenInclude(i => i.PartialPayments)
                 .FirstOrDefaultAsync(v => v.VisitId == visitId);
+
+            // Cross-Branch Security Guard
+            if (visit != null && visit.BranchId.HasValue && visit.BranchId != _userContext.CurrentBranchId)
+            {
+                _logger.LogWarning("Cross-branch access attempt blocked. VisitId: {VisitId}, VisitBranch: {VisitBranch}, UserBranch: {UserBranch}", 
+                    visitId, visit.BranchId, _userContext.CurrentBranchId);
+                throw new UnauthorizedAccessException("Access to this visit is restricted to its originating branch.");
+            }
+
+            return visit;
         }
 
         public async Task<IEnumerable<Visit>> GetVisitsAsync(string department, string status, int limit)

@@ -31,6 +31,7 @@ namespace SynOS.Data
         public DbSet<User> Users { get; set; } = null!;
         public DbSet<SynOS.Models.Entities.Role> Roles { get; set; } = null!;
         public DbSet<UserRole> UserRoles { get; set; } = null!;
+        public DbSet<UserBranchRole> UserBranchRoles { get; set; } = null!; // ADDED: Multi-branch Auth
         public DbSet<RefreshToken> RefreshTokens { get; set; } = null!;
         public DbSet<AuditLog> AuditLogs { get; set; } = null!;
         public DbSet<Branch> Branches { get; set; } = null!; // New Branch entity
@@ -188,6 +189,15 @@ namespace SynOS.Data
             // User entities
             modelBuilder.Entity<User>(entity => entity.HasIndex(e => e.Email).IsUnique());
             modelBuilder.Entity<UserRole>(entity => entity.HasKey(ur => new { ur.UserId, ur.RoleId }));
+
+            // Multi-branch Auth
+            modelBuilder.Entity<UserBranchRole>(entity =>
+            {
+                entity.HasIndex(e => new { e.UserId, e.BranchId, e.RoleId }).IsUnique();
+                entity.HasOne(e => e.User).WithMany().HasForeignKey(e => e.UserId).OnDelete(DeleteBehavior.Cascade);
+                entity.HasOne(e => e.Branch).WithMany().HasForeignKey(e => e.BranchId).OnDelete(DeleteBehavior.Restrict);
+                entity.HasOne(e => e.Role).WithMany().HasForeignKey(e => e.RoleId).OnDelete(DeleteBehavior.Restrict);
+            });
             
             // AuditLog
             modelBuilder.Entity<AuditLog>(entity =>

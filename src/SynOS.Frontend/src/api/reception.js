@@ -49,8 +49,18 @@ export const ReceptionApi = {
      * @returns {Promise<Array>}
      */
     getActivityStream: async () => {
-        const response = await fetch('/api/v1/branch/activity');
+        // FIX: Added mandatory branchId param per debug prompt & Logged response
+        const response = await fetch('/api/v1/branch/activity?branchId=Main');
         if (!response.ok) throw new Error("Failed to load activity stream");
-        return response.json();
+
+        const data = await response.json();
+        console.log("DEBUG: Activity Stream Payload:", data);
+
+        if (!Array.isArray(data)) {
+            console.error("CRITICAL: Expected Array, got:", typeof data);
+            return []; // Fail safe
+        }
+
+        return data;
     }
 };

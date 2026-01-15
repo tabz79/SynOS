@@ -6,26 +6,44 @@ using Microsoft.EntityFrameworkCore;
 using SynOS.Data;
 using SynOS.Models.ReadModels;
 
+using Microsoft.AspNetCore.Authorization; // ADDED
+using SynOS.Services.Security;
+
 namespace SynOS.Api.Controllers
 {
+    [Authorize] // ADDED: Enforce authentication
     [ApiController]
     [Route("api/v1/branch/activity")]
     public class BranchActivityController : ControllerBase
     {
         private readonly SynOSDbContext _context;
+        private readonly IUserContext _userContext;
 
-        public BranchActivityController(SynOSDbContext context)
+        public BranchActivityController(SynOSDbContext context, IUserContext userContext)
         {
             _context = context;
+            _userContext = userContext ?? throw new ArgumentNullException(nameof(userContext));
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetBranchActivity([FromQuery] string branchId)
+        public async Task<IActionResult> GetBranchActivity([FromQuery] string? branchId)
         {
-            if (string.IsNullOrWhiteSpace(branchId))
+            // 1. Enforce Context
+            if (_userContext.CurrentBranchId == Guid.Empty)
             {
-                return BadRequest("BranchId is required.");
+                return Forbid(); // 403: Authenticated but no branch context
             }
+
+            var contextBranchId = _userContext.CurrentBranchId.ToString();
+
+            // 2. Validate Query Param (if present, must match context)
+            if (!string.IsNullOrWhiteSpace(branchId) && !string.Equals(branchId, contextBranchId, StringComparison.OrdinalIgnoreCase))
+            {
+                return BadRequest("Requested BranchId does not match authenticated user context.");
+            }
+
+            // 3. Strict Filtering
+            var targetBranchId = contextBranchId;
 
             // UTC Day Filtering (Strict Mode)
             var utcToday = DateTime.UtcNow.Date;
@@ -33,7 +51,7 @@ namespace SynOS.Api.Controllers
 
             var events = await _context.BranchOperationalEvents
                 .AsNoTracking()
-                .Where(e => e.BranchId == branchId && e.OccurredAt >= utcToday && e.OccurredAt < utcTomorrow)
+                .Where(e => e.BranchId == targetBranchId && e.OccurredAt >= utcToday && e.OccurredAt < utcTomorrow)
                 .OrderByDescending(e => e.OccurredAt)
                 .Take(50)
                 .ToListAsync();

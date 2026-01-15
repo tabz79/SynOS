@@ -12,6 +12,7 @@ using SynOS.Models.Entities.AR;
 using SynOS.Services.Storage;
 using SynOS.Services.Operational; // ADDED
 using SynOS.Models.Enums; // ADDED
+using SynOS.Services.Security; // ADDED
 
 namespace SynOS.Services
 {
@@ -25,6 +26,7 @@ namespace SynOS.Services
         private readonly IFileStorageService _fileStorageService;
         private readonly IAuditService _auditService; // Injected
         private readonly IOperationalEventWriter _operationalEventWriter; // ADDED
+        private readonly IUserContext _userContext; // ADDED
 
         public ReportService(
             SynOSDbContext context, 
@@ -34,7 +36,8 @@ namespace SynOS.Services
             IReportPdfRenderer reportPdfRenderer,
             IFileStorageService fileStorageService,
             IAuditService auditService, // Injected
-            IOperationalEventWriter operationalEventWriter) // ADDED
+            IOperationalEventWriter operationalEventWriter,
+            IUserContext userContext) // ADDED
         {
             _context = context;
             _logger = logger;
@@ -43,7 +46,8 @@ namespace SynOS.Services
             _reportPdfRenderer = reportPdfRenderer;
             _fileStorageService = fileStorageService;
             _auditService = auditService; // Assigned
-            _operationalEventWriter = operationalEventWriter ?? throw new ArgumentNullException(nameof(operationalEventWriter)); // ADDED
+            _operationalEventWriter = operationalEventWriter ?? throw new ArgumentNullException(nameof(operationalEventWriter));
+            _userContext = userContext ?? throw new ArgumentNullException(nameof(userContext)); // ADDED
         }
 
         public async Task<ReportSignatureResponseDto> SignReportAsync(Guid reportId, Guid signedByUserId)
@@ -132,7 +136,7 @@ namespace SynOS.Services
             // Emit Operational Event: REPORT_READY
             await _operationalEventWriter.WriteEventAsync(
                 BranchEventType.REPORT_READY,
-                order.Visit?.BranchId?.ToString() ?? "Main",
+                _userContext.CurrentBranchId.ToString(), // FIX: Use context
                 order.VisitId.ToString(),
                 order.Visit?.Token ?? "Unknown",
                 $"Report signed and ready (v{newVersion})",
@@ -296,7 +300,7 @@ namespace SynOS.Services
             // Emit Operational Event: REPORT_VERIFIED
             await _operationalEventWriter.WriteEventAsync(
                 BranchEventType.REPORT_VERIFIED,
-                order.Visit?.BranchId?.ToString() ?? "Main",
+                _userContext.CurrentBranchId.ToString(), // FIX: Use context
                 order.VisitId.ToString(),
                 order.Visit?.Token ?? "Unknown",
                 "Results finalized and verified",
@@ -325,6 +329,13 @@ namespace SynOS.Services
             if (order == null)
             {
                 throw new InvalidOperationException($"Order with ID {orderId} not found for report.");
+            }
+
+            // Cross-Branch Security Guard
+            if (order.Visit?.BranchId.HasValue == true && order.Visit.BranchId != _userContext.CurrentBranchId)
+            {
+                _logger.LogWarning("Cross-branch report access blocked. OrderId: {OrderId}", orderId);
+                throw new UnauthorizedAccessException("Access to this report is restricted.");
             }
 
 
@@ -435,6 +446,13 @@ namespace SynOS.Services
             {
                 _logger.LogWarning("Order not found for report {ReportId} with SourceId {SourceId}", report.ReportId, report.SourceId);
                 return null;
+            }
+
+            // Cross-Branch Security Guard
+            if (order.Visit?.BranchId.HasValue == true && order.Visit.BranchId != _userContext.CurrentBranchId)
+            {
+                _logger.LogWarning("Cross-branch PDF access blocked. ReportId: {ReportId}", report.ReportId);
+                throw new UnauthorizedAccessException("Access to this report PDF is restricted.");
             }
 
             var patient = order.Visit.Patient;

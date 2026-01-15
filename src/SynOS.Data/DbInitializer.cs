@@ -241,15 +241,34 @@ namespace SynOS.Data
                 .Select(ur => ur.UserId + "|" + ur.RoleId)
                 .ToHashSet();
 
+            // --- UserBranchRoles Seeding (Multi-Branch Auth) ---
+            var existingUserBranchRoles = context.UserBranchRoles
+                .Select(ubr => ubr.UserId + "|" + ubr.BranchId + "|" + ubr.RoleId)
+                .ToHashSet();
+
             foreach (var userData in usersToSeed)
             {
                 var user = existingUsers[userData.Email];
                 var role = existingRoles[userData.RoleName];
                 var userRoleKey = user.UserId + "|" + role.RoleId;
 
+                // Legacy seeding (Deprecated)
                 if (!existingUserRoles.Contains(userRoleKey))
                 {
                     context.UserRoles.Add(new UserRole { UserId = user.UserId, RoleId = role.RoleId });
+                }
+
+                // New Multi-branch seeding
+                var branchKey = user.UserId + "|" + DefaultBranchId + "|" + role.RoleId;
+                if (!existingUserBranchRoles.Contains(branchKey))
+                {
+                    context.UserBranchRoles.Add(new UserBranchRole 
+                    { 
+                        UserBranchRoleId = Guid.NewGuid(),
+                        UserId = user.UserId, 
+                        BranchId = DefaultBranchId, 
+                        RoleId = role.RoleId 
+                    });
                 }
             }
             context.SaveChanges();

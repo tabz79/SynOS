@@ -57,14 +57,42 @@ namespace SynOS.Services
                 throw new UnauthorizedAccessException("Account is locked.");
             }
 
-            user.FailedLoginAttempts = 0;
-            await _context.SaveChangesAsync();
+            if (!user.IsActive)
+            {
+                throw new UnauthorizedAccessException("Your account has been deactivated. Please contact your administrator.");
+            }
 
-            var jwtToken = GenerateJwtToken(user);
+            // Context Selection Logic (Phase 1: Auto-select single branch)
+            var userBranchRoles = await _context.UserBranchRoles
+                .Include(ubr => ubr.Role)
+                .Where(ubr => ubr.UserId == user.UserId)
+                .ToListAsync();
+
+            Guid selectedBranchId;
+            string selectedRoleName;
+
+            if (userBranchRoles.Count == 1)
+            {
+                var context = userBranchRoles.First();
+                selectedBranchId = context.BranchId;
+                selectedRoleName = context.Role.Name;
+            }
+            else if (userBranchRoles.Count > 1)
+            {
+                // Phase 1: Reject multi-branch users until UI supports selection
+                throw new UnauthorizedAccessException("Multiple branch assignments detected. Branch selection is not yet supported.");
+            }
+            else
+            {
+                // No branch assigned. Fail secure.
+                throw new UnauthorizedAccessException("No active branch assignment found for this user.");
+            }
+
+            var jwtToken = GenerateJwtToken(user, selectedBranchId, selectedRoleName);
             var refreshToken = GenerateRefreshToken(ipAddress);
             user.RefreshTokens.Add(refreshToken);
 
-            await _auditService.LogAsync(user.UserId, "Login", "User", user.UserId, new { IpAddress = ipAddress });
+            await _auditService.LogAsync(user.UserId, "Login", "User", user.UserId, new { IpAddress = ipAddress, BranchId = selectedBranchId });
 
             await _context.SaveChangesAsync();
 
@@ -79,13 +107,20 @@ namespace SynOS.Services
 
         public async Task<LoginResponse> RefreshToken(string token, string? ipAddress)
         {
+            // ... (existing refresh logic needs to persist branch context? 
+            // For Phase 1, we can re-resolve or store branch in RefreshToken?
+            // RefreshToken entity doesn't have BranchId.
+            // I will re-resolve using the same logic as Login for now.
+            // This assumes role/branch assignment hasn't changed.
+            
             var user = await _context.Users
                 .Include(u => u.RefreshTokens)
-                .Include(u => u.UserRoles)
-                .ThenInclude(ur => ur.Role)
+                // .Include(u => u.UserRoles) // Deprecated
                 .SingleOrDefaultAsync(u => u.RefreshTokens.Any(t => t.Token == token));
 
             if (user == null) throw new UnauthorizedAccessException("Invalid token");
+
+            if (!user.IsActive) throw new UnauthorizedAccessException("Account is deactivated.");
 
             var refreshToken = user.RefreshTokens.Single(x => x.Token == token);
 
@@ -101,7 +136,30 @@ namespace SynOS.Services
             _context.Update(user);
             await _context.SaveChangesAsync();
 
-            var jwtToken = GenerateJwtToken(user);
+            // Re-resolve branch context
+             var userBranchRoles = await _context.UserBranchRoles
+                .Include(ubr => ubr.Role)
+                .Where(ubr => ubr.UserId == user.UserId)
+                .ToListAsync();
+
+            Guid selectedBranchId;
+            string selectedRoleName;
+
+            if (userBranchRoles.Count == 1)
+            {
+                var context = userBranchRoles.First();
+                selectedBranchId = context.BranchId;
+                selectedRoleName = context.Role.Name;
+            }
+            else
+            {
+                 // Fallback or Fail. For Refresh, if they became multi-branch, this might break.
+                 // Phase 1 assumption: 1 user = 1 branch.
+                 if (userBranchRoles.Count > 1) throw new UnauthorizedAccessException("Multiple branches. Please log in again.");
+                 throw new UnauthorizedAccessException("No branch assignment.");
+            }
+
+            var jwtToken = GenerateJwtToken(user, selectedBranchId, selectedRoleName);
             
             await _auditService.LogAsync(user.UserId, "RefreshToken", "User", user.UserId, new { IpAddress = ipAddress });
             await _context.SaveChangesAsync();
@@ -134,7 +192,7 @@ namespace SynOS.Services
             return true;
         }
 
-        private string GenerateJwtToken(User user)
+        private string GenerateJwtToken(User user, Guid branchId, string roleName)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
             var jwtSecret = _configuration["Jwt:Secret"] ?? throw new InvalidOperationException("Jwt:Secret not configured");
@@ -144,12 +202,9 @@ namespace SynOS.Services
                 new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
                 new Claim(ClaimTypes.Email, user.Email),
                 new Claim(ClaimTypes.Name, user.Name),
+                new Claim("branch_id", branchId.ToString()), // ADDED: Branch Claim
+                new Claim(ClaimTypes.Role, roleName) // Scoped Role
             });
-
-            foreach (var userRole in user.UserRoles)
-            {
-                claims.AddClaim(new Claim(ClaimTypes.Role, userRole.Role?.Name ?? string.Empty));
-            }
 
             var jwtExpiryMinutes = _configuration.GetValue<int>("Jwt:ExpiryMinutes", 60); // Default to 60 minutes
             var jwtIssuer = _configuration["Jwt:Issuer"] ?? throw new InvalidOperationException("Jwt:Issuer not configured");
