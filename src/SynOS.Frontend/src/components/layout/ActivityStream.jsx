@@ -1,7 +1,22 @@
 import { useEffect, useState } from 'react'
 import { ReceptionApi } from '@/api/reception'
 import { cn } from '@/lib/utils'
-import { Loader2, RefreshCcw, AlertCircle } from 'lucide-react'
+import {
+    Loader2, RefreshCcw, AlertCircle,
+    UserPlus, FlaskConical, FileText, CheckCircle2, DollarSign, Clock, AlertTriangle
+} from 'lucide-react'
+
+// Backend Semantic ID -> Lucide Component Map
+const IconMap = {
+    'user-plus': UserPlus,
+    'flask': FlaskConical,
+    'file-text': FileText,
+    'check-circle': CheckCircle2,
+    'dollar-sign': DollarSign,
+    'clock': Clock,
+    // Fallback
+    'default': AlertTriangle
+};
 
 export function ActivityStream() {
     const [events, setEvents] = useState([]);
@@ -10,13 +25,11 @@ export function ActivityStream() {
 
     const fetchActivity = async () => {
         try {
-            // setError(null); // Optional: clear error on refetch? Or keep stale data?
-            // Going with: Keep old data if refetch fails (silent fail), unless no data.
             const data = await ReceptionApi.getActivityStream();
 
-            // Defensive check
+            // Defensive check for array
             if (!Array.isArray(data)) {
-                console.error("ActivityStream Error: expected array, got", typeof data, data);
+                // If it's a known error object from our API wrapper
                 if (data && data.message) throw new Error(data.message);
                 throw new Error("Invalid format received from server");
             }
@@ -27,7 +40,6 @@ export function ActivityStream() {
         } catch (err) {
             console.error("Activity Stream Poll Failed:", err);
             if (events.length === 0) {
-                // Show actual error message to help debug
                 setError(err.message || "Failed to load activity stream.");
                 setLoading(false);
             }
@@ -40,7 +52,7 @@ export function ActivityStream() {
         return () => clearInterval(interval);
     }, []);
 
-    // Format Relative Time (Visual Only)
+    // Format Relative Time (Visual Only - Permitted)
     const getRelativeTime = (isoString) => {
         const diff = Date.now() - new Date(isoString).getTime();
         const minutes = Math.floor(diff / 60000);
@@ -49,12 +61,12 @@ export function ActivityStream() {
         if (minutes < 60) return `${minutes}m ago`;
         const hours = Math.floor(minutes / 60);
         if (hours < 24) return `${hours}h ago`;
-        return 'Today'; // Scope is today
+        return 'Today';
     };
 
     return (
         <div className="bg-zinc-900 border border-synos-border rounded-xl h-full flex flex-col overflow-hidden">
-            {/* Header - Consistent with ActionQueueHeader style */}
+            {/* Header */}
             <div className="h-10 border-b border-synos-border/50 flex items-center justify-between px-3 bg-white/5 backdrop-blur-sm">
                 <div className="flex items-center gap-2">
                     <span className="w-1.5 h-1.5 rounded-full bg-synos-emerald animate-pulse"></span>
@@ -81,33 +93,45 @@ export function ActivityStream() {
 
                 {/* Timeline */}
                 <div className="relative border-l border-zinc-800 ml-2 space-y-6 pb-4">
-                    {events.map((event, index) => (
-                        <div key={event.eventId || index} className="pl-6 relative group">
-                            {/* Dot */}
-                            <div className={cn(
-                                "absolute -left-[5px] top-1.5 w-2.5 h-2.5 rounded-full border-2 border-zinc-900",
-                                index === 0 ? "bg-synos-primary animate-pulse" : "bg-zinc-700 group-hover:bg-zinc-500"
-                            )}></div>
+                    {events.map((event, index) => {
+                        // Dynamic Icon Resolution
+                        const IconComponent = IconMap[event.icon] || IconMap['default'];
 
-                            {/* Time (Absolute format available in tooltip, Visual is relative) */}
-                            <div className="text-[10px] items-center gap-2 flex text-zinc-500 font-mono mb-0.5">
-                                <span title={new Date(event.occurredAt).toLocaleTimeString()}>{getRelativeTime(event.occurredAt)}</span>
-                                {event.actorName && (
-                                    <span className="text-zinc-600">• {event.actorName}</span>
-                                )}
-                            </div>
+                        return (
+                            <div key={event.eventId || index} className="pl-6 relative group">
+                                {/* Icon Indicator - Backend Driven Color */}
+                                <div
+                                    className="absolute -left-[9px] top-1 rounded-full bg-zinc-900 border border-zinc-800 p-0.5"
+                                    style={{ borderColor: event.color }} // Optional: Tint border with event color
+                                >
+                                    <IconComponent
+                                        className="w-3.5 h-3.5"
+                                        style={{ color: event.color || '#71717a' }} // Fallback to zinc-500
+                                    />
+                                </div>
 
-                            {/* Token */}
-                            <div className="text-xs font-bold text-zinc-200 mb-0.5 font-mono tracking-tight">
-                                {event.tokenId}
-                            </div>
+                                {/* Time & Actor */}
+                                <div className="text-[10px] items-center gap-2 flex text-zinc-500 font-mono mb-0.5">
+                                    <span title={new Date(event.occurredAt).toLocaleTimeString()}>
+                                        {getRelativeTime(event.occurredAt)}
+                                    </span>
+                                    {event.actorName && (
+                                        <span className="text-zinc-600">• {event.actorName}</span>
+                                    )}
+                                </div>
 
-                            {/* Summary */}
-                            <div className="text-xs text-zinc-400 leading-snug break-words">
-                                {event.summaryText}
+                                {/* Token */}
+                                <div className="text-xs font-bold text-zinc-200 mb-0.5 font-mono tracking-tight">
+                                    {event.token || event.tokenId} {/* Handle DTO variation gracefully */}
+                                </div>
+
+                                {/* Summary / Message - Verbatim */}
+                                <div className="text-xs text-zinc-400 leading-snug break-words">
+                                    {event.message || event.summaryText} {/* Handle DTO variation gracefully */}
+                                </div>
                             </div>
-                        </div>
-                    ))}
+                        );
+                    })}
                 </div>
             </div>
         </div>

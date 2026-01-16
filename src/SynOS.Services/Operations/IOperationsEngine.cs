@@ -1,7 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using SynOS.Models.DTOs; // ADDED
-using SynOS.Models.DTOs.Dashboard;
+using SynOS.Models.DTOs.Dashboard; // ADDED
 using System.Collections.Generic;
 
 namespace SynOS.Services.Operations
@@ -9,7 +9,7 @@ namespace SynOS.Services.Operations
     public interface IOperationsEngine
     {
         // Read Ports (Truth)
-        Task<TodaysSummaryDto> GetDailyFulfillmentStatsAsync(Guid branchId);
+        Task<OperationsStatsDto> GetDailyOperationsStatsAsync(Guid branchId);
         
         // Sample Lifecycle Write Authority
         Task RecordSampleCollectedAsync(Guid sampleId, Guid branchId, Guid actorId);

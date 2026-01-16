@@ -23,7 +23,7 @@ namespace SynOS.Services.Operations
             _eventWriter = eventWriter;
         }
 
-        public async Task<TodaysSummaryDto> GetDailyFulfillmentStatsAsync(Guid branchId)
+        public async Task<OperationsStatsDto> GetDailyOperationsStatsAsync(Guid branchId)
         {
             if (branchId == Guid.Empty) throw new ArgumentException("BranchId required");
 
@@ -33,23 +33,13 @@ namespace SynOS.Services.Operations
             DateTime utcStart = localStart.ToUniversalTime();
             DateTime utcEnd = localEnd.ToUniversalTime();
 
-            // 1. Walk-Ins (Visit Created)
-            var walkIns = await _context.Visits
-                .CountAsync(v => v.BranchId == branchId && v.CreatedAt >= utcStart && v.CreatedAt <= utcEnd);
-
-            // 2. Payments (Financial Event observed)
-            var payments = await _context.Payments
-                .Include(p => p.Invoice).ThenInclude(i => i.Visit)
-                .Where(p => p.Invoice.Visit.BranchId == branchId && p.ReceivedAt >= utcStart && p.ReceivedAt <= utcEnd)
-                .SumAsync(p => p.Amount);
-
-            // 3. Pending Reports (Operational State)
+            // 1. Pending Reports (Operational State)
             // Definition: Report exists, Visit is in this branch, Status is NOT Signed/Finalized
             var pendingReports = await _context.Reports
                 .Join(_context.Visits, r => r.VisitId, v => v.VisitId, (r, v) => new { r, v })
                 .CountAsync(x => x.v.BranchId == branchId && x.r.Status != "Signed" && x.r.Status != "Finalized");
 
-            // 4. TAT (Operational Metric)
+            // 2. TAT (Operational Metric)
             var finalizedReports = await _context.Reports
                 .Join(_context.Visits, r => r.VisitId, v => v.VisitId, (r, v) => new { r, v })
                 .Where(x => x.v.BranchId == branchId && x.r.Status == "Signed" && x.r.SignedAt >= utcStart && x.r.SignedAt <= utcEnd)
@@ -79,17 +69,15 @@ namespace SynOS.Services.Operations
                 if (durations.Any()) avgTime = durations.Average();
             }
 
-            return new TodaysSummaryDto
+            return new OperationsStatsDto
             {
-                WalkInsToday = walkIns,
-                PaymentsCollected = payments,
                 PendingReports = pendingReports,
                 AvgReportTimeMinutes = Math.Round(avgTime, 2)
             };
         }
 
         // Private Helper for Event Emission (Internal Use Only)
-        private async Task EmitEventAsync(BranchEventType eventType, Guid branchId, Guid entityId, string token, string description, Guid actorId)
+        private async Task EmitEventAsync(BranchEventType eventType, Guid branchId, Guid entityId, string token, string description, Guid actorId, Guid? sourceId = null, string? sourceType = null)
         {
             await _eventWriter.WriteEventAsync(
                 eventType,
@@ -99,7 +87,9 @@ namespace SynOS.Services.Operations
                 description,
                 "User",
                 actorId.ToString(),
-                saveChanges: false // ATOMICITY FIX: Defer save to transaction owner
+                saveChanges: false, // ATOMICITY FIX: Defer save to transaction owner
+                sourceId: sourceId,
+                sourceType: sourceType
             );
         }
 
@@ -244,7 +234,9 @@ namespace SynOS.Services.Operations
                 report.VisitId,
                 report.ReportId.ToString(),
                 $"Report signed (Version {report.CurrentVersion})",
-                actorId
+                actorId,
+                report.ReportId,
+                "Report"
             );
 
             // Persist (Atomic State + Event)

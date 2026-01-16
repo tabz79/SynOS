@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SynOS.Services;
+using SynOS.Services.Operational; // ADDED
+using SynOS.Services.Security; // ADDED
 using System;
 using System.Threading.Tasks;
 using System.Security.Claims; // Added for ClaimTypes
@@ -14,10 +16,14 @@ namespace SynOS.Api.Controllers
     public class RadiologyReportsController : ControllerBase
     {
         private readonly IRadiologyService _radiologyService;
+        private readonly IOperationalStatsProjector _projector; // ADDED
+        private readonly IUserContext _userContext; // ADDED
 
-        public RadiologyReportsController(IRadiologyService radiologyService)
+        public RadiologyReportsController(IRadiologyService radiologyService, IOperationalStatsProjector projector, IUserContext userContext)
         {
             _radiologyService = radiologyService;
+            _projector = projector;
+            _userContext = userContext;
         }
 
         [HttpGet("worklist")]
@@ -47,6 +53,10 @@ namespace SynOS.Api.Controllers
         {
             var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
             var reportDto = await _radiologyService.SignReportAsync(request.StudyId, userId);
+            
+            // Trigger live projection
+            await _projector.ProjectPendingEventsAsync(_userContext.CurrentBranchId);
+
             return Ok(reportDto);
         }
     }

@@ -9,6 +9,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using SynOS.Services.Storage;
 using SynOS.Models.DTOs.ReportTemplateDsl; // Added for TemplateModel
+using SynOS.Services.Operational; // ADDED
+using SynOS.Models.Enums; // ADDED
 
 namespace SynOS.Services
 {
@@ -20,6 +22,7 @@ namespace SynOS.Services
         private readonly IReportTemplateService _templateService;
         private readonly IUserService _userService;
         private readonly IFileStorageService _fileStorageService;
+        private readonly IOperationalEventWriter _eventWriter; // ADDED
 
         public RadiologyService(
             SynOSDbContext context,
@@ -27,7 +30,8 @@ namespace SynOS.Services
             IReportPdfRenderer pdfRenderer,
             IReportTemplateService templateService,
             IUserService userService,
-            IFileStorageService fileStorageService)
+            IFileStorageService fileStorageService,
+            IOperationalEventWriter eventWriter) // ADDED
         {
             _context = context;
             _mapper = mapper;
@@ -35,6 +39,7 @@ namespace SynOS.Services
             _templateService = templateService;
             _userService = userService;
             _fileStorageService = fileStorageService;
+            _eventWriter = eventWriter;
         }
 
         public async Task<ReportAttachmentDto> AddAttachmentToStudyAsync(
@@ -548,6 +553,23 @@ namespace SynOS.Services
             _context.ReportAttachments.Add(pdfAttachment);
 
             await _context.SaveChangesAsync();
+
+            // Emit Operational Event
+            if (studyEntity.Visit.BranchId.HasValue)
+            {
+                await _eventWriter.WriteEventAsync(
+                    BranchEventType.REPORT_SIGNED,
+                    studyEntity.Visit.BranchId.Value.ToString(),
+                    studyEntity.Visit.VisitId.ToString(),
+                    report.ReportId.ToString(),
+                    $"Report signed (Version {report.CurrentVersion})",
+                    "User",
+                    userId.ToString(),
+                    false, // Already saved
+                    report.ReportId,
+                    "Report"
+                );
+            }
 
             await _context.Entry(report).Reference(r => r.SignedBy).LoadAsync();
             await _context.Entry(report).Collection(r => r.Attachments).LoadAsync();

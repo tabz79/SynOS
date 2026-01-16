@@ -37,6 +37,7 @@ using SynOS.Services.Operational; // ADDED
 using SynOS.Services.Admin; // ADDED
 using SynOS.Services.Dashboard; // ADDED
 using SynOS.Services.Operations; // ADDED
+using SynOS.Api.Services; // ADDED
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -146,6 +147,7 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IAdminUserService, AdminUserService>(); 
 builder.Services.AddScoped<IOperationsEngine, OperationsEngine>(); // ADDED
 builder.Services.AddScoped<IDashboardService, DashboardService>(); // Auto-wired OK
+builder.Services.AddScoped<IDashboardNotificationService, SignalRDashboardNotificationService>(); // ADDED: Phase 2
 builder.Services.AddScoped<IPatientService, PatientService>();
 builder.Services.AddReferralServices();
 builder.Services.AddPayableServices();
@@ -214,7 +216,8 @@ builder.Services.AddScoped<IRadiologyService, RadiologyService>(provider =>
         provider.GetRequiredService<IReportPdfRenderer>(),
         provider.GetRequiredService<IReportTemplateService>(),
         provider.GetRequiredService<IUserService>(),
-        provider.GetRequiredService<IFileStorageService>()
+        provider.GetRequiredService<IFileStorageService>(),
+        provider.GetRequiredService<IOperationalEventWriter>() // ADDED
     ));
 builder.Services.AddScoped<IPacsService, PacsService>();
 builder.Services.AddScoped<IRadiologyAccessGuard, RadiologyAccessGuard>();
@@ -351,5 +354,6 @@ app.UseAuthorization();
 
 app.MapControllers();
 app.MapHub<SynOS.Api.Hubs.SampleHub>("/sampleHub");
+app.MapHub<SynOS.Api.Hubs.DashboardHub>("/dashboardHub"); // ADDED
 
 app.Run();

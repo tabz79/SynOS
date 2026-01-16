@@ -26,7 +26,9 @@ namespace SynOS.Services.Operational
             string summaryText,
             string actorType = "System",
             string? actorName = null,
-            bool saveChanges = true)
+            bool saveChanges = true,
+            Guid? sourceId = null,
+            string? sourceType = null)
         {
             try
             {
@@ -40,7 +42,9 @@ namespace SynOS.Services.Operational
                     TokenId = tokenId,
                     SummaryText = summaryText,
                     ActorType = actorType,
-                    ActorName = actorName
+                    ActorName = actorName,
+                    SourceId = sourceId,
+                    SourceType = sourceType
                 };
 
                 _context.BranchOperationalEvents.Add(evt);

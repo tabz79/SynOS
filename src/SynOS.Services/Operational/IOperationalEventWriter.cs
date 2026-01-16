@@ -18,6 +18,8 @@ namespace SynOS.Services.Operational
             string summaryText,
             string actorType = "System",
             string? actorName = null,
-            bool saveChanges = true);
+            bool saveChanges = true,
+            Guid? sourceId = null,
+            string? sourceType = null);
     }
 }

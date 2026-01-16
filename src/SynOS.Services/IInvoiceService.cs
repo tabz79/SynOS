@@ -1,13 +1,15 @@
 using System;
 using System.Threading.Tasks;
 using SynOS.Models.DTOs;
-using SynOS.Models.Entities;
+using SynOS.Models.DTOs.Dashboard;
+using SynOS.Models.Entities; // ADDED
 
 namespace SynOS.Services
 {
     public interface IInvoiceService
     {
-        Task<Payment> RecordPaymentAsync(Guid invoiceId, PaymentRequestDto paymentDto);
-        Task<InvoicePrintDto> GetInvoiceForPrintingAsync(Guid invoiceId);
+        Task<Payment> RecordPaymentAsync(Guid invoiceId, PaymentRequestDto request);
+        Task<RevenueStatsDto> GetDailyRevenueStatsAsync(Guid branchId);
+        Task<InvoicePrintDto> GetInvoiceForPrintingAsync(Guid invoiceId); // RESTORED
     }
 }

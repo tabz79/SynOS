@@ -15,5 +15,8 @@ namespace SynOS.Models.ReadModels
         public string VisitId { get; set; } = string.Empty;
         public string TokenId { get; set; } = string.Empty;
         public string SummaryText { get; set; } = string.Empty;
+        
+        public Guid? SourceId { get; set; } // ADDED: For strict entity lookup
+        public string? SourceType { get; set; } // ADDED: e.g. "Payment", "Report"
     }
 }

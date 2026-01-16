@@ -9,6 +9,7 @@ using SynOS.Models.DTOs;
 using SynOS.Models.Entities;
 using Microsoft.Extensions.Logging; // Added for logging
 using SynOS.Services;
+using SynOS.Services.Operational; // ADDED
 
 namespace SynOS.Api.Controllers
 {
@@ -20,12 +21,14 @@ namespace SynOS.Api.Controllers
         private readonly IVisitService _visitService;
         private readonly IInvoiceService _invoiceService;
         private readonly ILogger<VisitsController> _logger;
+        private readonly IOperationalStatsProjector _projector; // ADDED
 
-        public VisitsController(IVisitService visitService, IInvoiceService invoiceService, ILogger<VisitsController> logger)
+        public VisitsController(IVisitService visitService, IInvoiceService invoiceService, ILogger<VisitsController> logger, IOperationalStatsProjector projector) // ADDED
         {
             _visitService = visitService;
             _invoiceService = invoiceService;
             _logger = logger;
+            _projector = projector;
         }
 
         [HttpPost]
@@ -107,6 +110,13 @@ namespace SynOS.Api.Controllers
                 paymentDto.ReceivedByUserId = userId;
 
                 var payment = await _invoiceService.RecordPaymentAsync(invoiceId, paymentDto);
+                
+                // Trigger live projection
+                if (visit.BranchId.HasValue)
+                {
+                    await _projector.ProjectPendingEventsAsync(visit.BranchId.Value);
+                }
+
                 return Ok(new ApiResponse<Payment>(payment));
             }
             catch (KeyNotFoundException ex)

@@ -7,6 +7,8 @@ using Microsoft.Extensions.Logging;
 using SynOS.Api.Authorization;
 using SynOS.Models.DTOs;
 using SynOS.Services;
+using SynOS.Services.Operational; // ADDED
+using SynOS.Services.Security; // ADDED
 
 namespace SynOS.Api.Controllers
 {
@@ -17,11 +19,15 @@ namespace SynOS.Api.Controllers
     {
         private readonly IReceptionFlowService _receptionFlowService;
         private readonly ILogger<ReceptionController> _logger;
+        private readonly IOperationalStatsProjector _projector; // ADDED
+        private readonly IUserContext _userContext; // ADDED
 
-        public ReceptionController(IReceptionFlowService receptionFlowService, ILogger<ReceptionController> logger)
+        public ReceptionController(IReceptionFlowService receptionFlowService, ILogger<ReceptionController> logger, IOperationalStatsProjector projector, IUserContext userContext)
         {
             _receptionFlowService = receptionFlowService;
             _logger = logger;
+            _projector = projector;
+            _userContext = userContext;
         }
 
         [HttpPost("start-visit")]
@@ -35,6 +41,10 @@ namespace SynOS.Api.Controllers
                     return Unauthorized(new { message = "User ID not found in token or invalid." });
                 }
                 var responseDto = await _receptionFlowService.StartVisitAsync(request, actorUserId);
+                
+                // Trigger live projection
+                await _projector.ProjectPendingEventsAsync(_userContext.CurrentBranchId);
+
                 return CreatedAtAction(nameof(GetVisitSummary), new { visitId = responseDto.VisitId }, new ApiResponse<ReceptionStartVisitResponse>(responseDto));
             }
             catch (KeyNotFoundException ex)
@@ -60,6 +70,10 @@ namespace SynOS.Api.Controllers
                 }
 
                 var responseDto = await _receptionFlowService.CompletePaymentAsync(request, userId);
+                
+                // Trigger live projection
+                await _projector.ProjectPendingEventsAsync(_userContext.CurrentBranchId);
+
                 return Ok(new ApiResponse<ReceptionCompletePaymentResponse>(responseDto));
             }
             catch (KeyNotFoundException ex)

@@ -25,6 +25,9 @@ namespace SynOS.Data
         }
 
         public DbSet<BranchOperationalEvent> BranchOperationalEvents { get; set; } = null!; // ADDED
+        public DbSet<UserOperationalStats> UserOperationalStats { get; set; } = null!; // ADDED: Projections
+        public DbSet<BranchOperationalStats> BranchOperationalStats { get; set; } = null!; // ADDED: Projections
+        public DbSet<ProcessedProjectionEvent> ProcessedProjectionEvents { get; set; } = null!; // ADDED: Idempotency
 
         public DbSet<ReceivableFact> ReceivableFacts { get; set; } = null!;
         // DbSet for User entity
@@ -966,6 +969,37 @@ modelBuilder.Entity<ReceivableFact>(entity =>
                 entity.ToTable("Governance_ApprovalRules");
                 entity.HasKey(e => e.ApprovalRuleId);
                 entity.Property(e => e.ThresholdAmount).HasColumnType("decimal(18, 4)");
+            });
+
+            // Operational Counters Projection (Read Models)
+            modelBuilder.Entity<UserOperationalStats>(entity =>
+            {
+                entity.ToTable("UserOperationalStats");
+                // Composite Key: User + Branch + Date
+                entity.HasKey(x => new { x.UserId, x.BranchId, x.Date });
+                
+                // Index for performant querying
+                entity.HasIndex(x => new { x.UserId, x.BranchId, x.Date });
+                
+                entity.Property(e => e.PaymentsTotal).HasColumnType("decimal(18, 2)");
+            });
+
+            modelBuilder.Entity<BranchOperationalStats>(entity =>
+            {
+                entity.ToTable("BranchOperationalStats");
+                // Composite Key: Branch + Date
+                entity.HasKey(x => new { x.BranchId, x.Date });
+                
+                entity.HasIndex(x => new { x.BranchId, x.Date });
+            });
+
+            modelBuilder.Entity<ProcessedProjectionEvent>(entity =>
+            {
+                entity.ToTable("ProcessedProjectionEvents");
+                // Composite Key: Event + Projection Name
+                entity.HasKey(x => new { x.EventId, x.ProjectionName });
+                
+                entity.HasIndex(x => x.EventId);
             });
         }
     }

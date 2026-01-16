@@ -1,3 +1,14 @@
 2026-01-16 11:56:43.062 +05:30 [INF] Analyzer TCP Listener Service stopping...
 2026-01-16 11:56:43.075 +05:30 [INF] Analyzer TCP Listener Service stopped.
 2026-01-16 11:56:43.090 +05:30 [INF] Notification Worker Service stopping gracefully.
+2026-01-16 16:44:45.345 +05:30 [WRN] No store type was specified for the decimal property 'MaxLimit' on entity type 'DiscountMaster'. This will cause values to be silently truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.
+2026-01-16 16:44:45.432 +05:30 [WRN] No store type was specified for the decimal property 'Amount' on entity type 'PayrollAdjustment'. This will cause values to be silently truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.
+2026-01-16 16:44:45.450 +05:30 [WRN] No store type was specified for the decimal property 'Amount' on entity type 'PayrollFact'. This will cause values to be silently truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.
+2026-01-16 16:44:54.407 +05:30 [INF] Notification Worker Service running.
+2026-01-16 16:44:54.537 +05:30 [INF] ExpiredLockCleanupService is starting.
+2026-01-16 16:44:54.641 +05:30 [INF] Analyzer TCP Listener Service starting...
+2026-01-16 16:44:54.646 +05:30 [WRN] No analyzer TCP listeners configured in appsettings.json.
+2026-01-16 16:45:30.936 +05:30 [WRN] Failed to determine the https port for redirect.
+2026-01-16 17:32:35.080 +05:30 [INF] Analyzer TCP Listener Service stopping...
+2026-01-16 17:32:35.087 +05:30 [INF] Analyzer TCP Listener Service stopped.
+2026-01-16 17:32:35.096 +05:30 [INF] Notification Worker Service stopping gracefully.

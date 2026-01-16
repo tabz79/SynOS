@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SynOS.Data;
 using SynOS.Models.DTOs;
+using SynOS.Models.DTOs.Dashboard; // ADDED
 using SynOS.Models.Entities;
 using SynOS.Services.Utils;
 using SynOS.Services.Operational; // ADDED
@@ -26,6 +27,32 @@ namespace SynOS.Services
             _logger = logger;
             _operationalEventWriter = operationalEventWriter ?? throw new ArgumentNullException(nameof(operationalEventWriter));
             _userContext = userContext ?? throw new ArgumentNullException(nameof(userContext)); // ADDED
+        }
+
+        public async Task<RevenueStatsDto> GetDailyRevenueStatsAsync(Guid branchId)
+        {
+            if (branchId == Guid.Empty) throw new ArgumentException("BranchId required");
+
+            DateTime localStart = DateTime.Today;
+            DateTime localEnd = DateTime.Now;
+            DateTime utcStart = localStart.ToUniversalTime();
+            DateTime utcEnd = localEnd.ToUniversalTime();
+
+            // 1. Walk-Ins (Visit Created - Revenue Opportunity)
+            var walkIns = await _context.Visits
+                .CountAsync(v => v.BranchId == branchId && v.CreatedAt >= utcStart && v.CreatedAt <= utcEnd);
+
+            // 2. Payments (Actual Revenue)
+            var payments = await _context.Payments
+                .Include(p => p.Invoice).ThenInclude(i => i.Visit)
+                .Where(p => p.Invoice.Visit.BranchId == branchId && p.ReceivedAt >= utcStart && p.ReceivedAt <= utcEnd)
+                .SumAsync(p => p.Amount);
+
+            return new RevenueStatsDto
+            {
+                WalkInsToday = walkIns,
+                PaymentsCollected = payments
+            };
         }
 
         public async Task<Payment> RecordPaymentAsync(Guid invoiceId, PaymentRequestDto paymentDto)
@@ -92,7 +119,10 @@ namespace SynOS.Services
                 invoice.Visit?.Token ?? "Unknown",
                 $"Payment received {payment.Amount:F2} ({payment.Method})",
                 "User",
-                payment.ReceivedByUserId.ToString()
+                payment.ReceivedByUserId.ToString(),
+                true, // saveChanges
+                payment.PaymentId, // sourceId
+                "Payment" // sourceType
             );
 
             return payment;

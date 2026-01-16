@@ -8,6 +8,7 @@ namespace SynOS.Services.Operational
         {
             services.AddScoped<IOperationalEventWriter, OperationalEventWriter>();
             services.AddScoped<IActivityStreamService, ActivityStreamService>(); // ADDED
+            services.AddScoped<IOperationalStatsProjector, OperationalStatsProjector>(); // ADDED: Phase 2
             return services;
         }
     }

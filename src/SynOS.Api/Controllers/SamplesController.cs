@@ -6,6 +6,8 @@ using Microsoft.Extensions.Logging; // Added for ILogger
 using SynOS.Models.DTOs;
 using SynOS.Models.Entities;
 using SynOS.Services;
+using SynOS.Services.Operational; // ADDED
+using SynOS.Services.Security; // ADDED
 
 namespace SynOS.Api.Controllers
 {
@@ -16,11 +18,15 @@ namespace SynOS.Api.Controllers
     {
         private readonly ISampleService _sampleService;
         private readonly ILogger<SamplesController> _logger;
+        private readonly IOperationalStatsProjector _projector; // ADDED
+        private readonly IUserContext _userContext; // ADDED
 
-        public SamplesController(ISampleService sampleService, ILogger<SamplesController> logger)
+        public SamplesController(ISampleService sampleService, ILogger<SamplesController> logger, IOperationalStatsProjector projector, IUserContext userContext)
         {
             _sampleService = sampleService;
             _logger = logger;
+            _projector = projector;
+            _userContext = userContext;
         }
 
         [HttpPost("create-for-visit")]
@@ -34,6 +40,10 @@ namespace SynOS.Api.Controllers
         public async Task<IActionResult> CollectSample(Guid id, [FromBody] CollectSampleRequestDto request)
         {
             var sample = await _sampleService.CollectSampleAsync(id, request.CollectedByUserId);
+            
+            // Trigger live projection
+            await _projector.ProjectPendingEventsAsync(_userContext.CurrentBranchId);
+
             return Ok(sample);
         }
 
