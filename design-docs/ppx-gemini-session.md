@@ -1,179 +1,266 @@
-✦ I will start by addressing Issue 1: Removing Generic Event Emission.
+✦ Proceeding with Option B: Atomic Activity Stream via Optional Save Parameter.
 
-  First, I'll modify IOperationsEngine to remove RecordEventAsync.
+  Step 1: Update IOperationalEventWriter Interface
+
+  I will add the optional saveChanges parameter to the interface.
+
+    1 Task WriteEventAsync(
+    2     BranchEventType eventType,
+    3     string branchId,
+    4     string visitId,
+    5     string tokenId,
+    6     string summaryText,
+    7     string actorType = "System",
+    8     string? actorName = null,
+    9     bool saveChanges = true // ADDED
+   10 );
 ╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ ✓  Edit src\...\IOperationsEngine.cs:         // Read Ports (Truth)... =>         // Read Ports (Truth)...                                                 │
+│ ✓  Edit src\...\IOperationalEventWriter.cs:         Task WriteEventAsync(... =>         Task WriteEventAsync(...                                           │
 │                                                                                                                                                            │
-│ 10   // Read Ports (Truth)                                                                                                                                 │
-│ 11   Task<TodaysSummaryDto> GetDailyFulfillmentStatsAsync(Guid branchId);                                                                                  │
-│ 12                                                                                                                                                         │
-│ 13 - // Write Ports (State Transitions & Events)                                                                                                           │
-│ 14 - Task RecordEventAsync(string eventType, Guid branchId, Guid entityId, string token, string description, Guid actorId);                                │
-│ 15 -                                                                                                                                                       │
-│ 13   // Sample Lifecycle Write Authority                                                                                                                   │
-│ 14   Task RecordSampleCollectedAsync(Guid sampleId, Guid branchId, Guid actorId);                                                                          │
-│ 15   Task RecordSampleRejectedAsync(Guid sampleId, Guid branchId, Guid actorId, string reason, bool requiresRecollection = false);                         │
+│ 17               string tokenId,                                                                                                                           │
+│ 18               string summaryText,                                                                                                                       │
+│ 19               string actorType = "System",                                                                                                              │
+│ 20 -             string? actorName = null);                                                                                                                │
+│ 20 +             string? actorName = null,                                                                                                                 │
+│ 21 +             bool saveChanges = true);                                                                                                                 │
+│ 22       }                                                                                                                                                 │
+│ 23   }                                                                                                                                                     │
 ╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-✦ Now I will modify OperationsEngine.cs to handle both Issue 1 (Internalize Event Emission) and Issue 2 (Fail-Fast Branch Integrity).
+✦ Step 2: Update OperationalEventWriter Implementation
 
-  Changes:
-   1. Remove public RecordEventAsync.
-   2. Add private helper EmitEventAsync taking BranchEventType.
-   3. Update RecordSampleCollectedAsync and RecordSampleRejectedAsync to:
-       * Call EmitEventAsync.
-       * Implement strict null checks for sample.Order and sample.Order.Visit.
+  I will update the implementation to respect the saveChanges flag.
 
-  Executing changes.
+    1         public async Task WriteEventAsync(
+    2             BranchEventType eventType,
+    3             string branchId,
+    4             string visitId,
+    5             string tokenId,
+    6             string summaryText,
+    7             string actorType = "System",
+    8             string? actorName = null,
+    9             bool saveChanges = true)
+   10         {
+   11             try
+   12             {
+   13                 var evt = new BranchOperationalEvent
+   14                 {
+   15                     // ... props ...
+   16                 };
+   17
+   18                 _context.BranchOperationalEvents.Add(evt);
+   19
+   20                 if (saveChanges)
+   21                 {
+   22                     await _context.SaveChangesAsync();
+   23                 }
+   24             }
+   25             // ... catch ...
+   26         }
 ╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ ✓  ReadFile src\...\OperationsEngine.cs                                                                                                                    │
+│ ✓  Edit src\...\OperationalEventWriter.cs:         public async Task Writ... =>         public async Task Writ...                                          │
 │                                                                                                                                                            │
+│ 25       string tokenId,                                                                                                                                   │
+│ 26       string summaryText,                                                                                                                               │
+│ 27       string actorType = "System",                                                                                                                      │
+│ 28 -     string? actorName = null)                                                                                                                         │
+│ 28 +     string? actorName = null,                                                                                                                         │
+│ 29 +     bool saveChanges = true)                                                                                                                          │
+│ 30   {                                                                                                                                                     │
+│ 31       try                                                                                                                                               │
+│ 32       {                                                                                                                                                 │
+│ ══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════ │
+│ 44           };                                                                                                                                            │
+│ 45                                                                                                                                                         │
+│ 46           _context.BranchOperationalEvents.Add(evt);                                                                                                    │
+│ 47 +                                                                                                                                                       │
+│ 48 +         if (saveChanges)                                                                                                                              │
+│ 49 +         {                                                                                                                                             │
+│ 50               await _context.SaveChangesAsync();                                                                                                        │
+│ 51           }                                                                                                                                             │
+│ 52 +     }                                                                                                                                                 │
+│ 53       catch (Exception ex)                                                                                                                              │
+│ 54       {                                                                                                                                                 │
+│ 55           // NEVER throw. Situational awareness must not block core ops.                                                                                │
 ╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-✦ I'll rewrite the entire file to incorporate the fixes cleanly.
+✦ Step 3: Update OperationsEngine
 
-  Fixes:
-   1. Remove `RecordEventAsync` from public. (It was already removed from interface, now removing method or making private). I will make it private helper    
-      EmitEventAsync.
-   2. Strict Branch/Data Integrity Checks. Replace:
-   1     if (sample.Order?.Visit?.BranchId != null && sample.Order.Visit.BranchId != branchId)
-      with:
+  Now the critical part: modifying OperationsEngine.cs to enable atomic transactions.
 
-   1     if (sample.Order == null || sample.Order.Visit == null)
-   2         throw new InvalidOperationException($"Data Corruption: Sample {sampleId} is orphaned (missing Order or Visit).");
-   3
-   4     if (sample.Order.Visit.BranchId != branchId)
-   5         throw new UnauthorizedAccessException("Sample does not belong to this branch.");
+  Changes Required:
+   1. `EmitEventAsync`: Update to pass saveChanges: false.
+   2. `RecordSampleCollectedAsync`: Remove the first SaveChangesAsync. Call EmitEventAsync. Then call SaveChangesAsync.
+   3. `RecordSampleRejectedAsync`: Same pattern.
+   4. `RecordReportSignedAsync`: Same pattern.
+   5. `RecordReportDeliveredAsync`: Same pattern.
+   6. `RecordResultsVerifiedAsync`: Same pattern.
 
-  Refactoring OperationsEngine.cs.
+  I'll start by updating the EmitEventAsync helper method at the top of the class (or wherever it is). And then I will go method by method.
+
+  Actually, it's better to replace the methods entirely to ensure the order is correct.
+
+  1. EmitEventAsync:
+
+    1         private async Task EmitEventAsync(BranchEventType eventType, Guid branchId, Guid entityId, string token, string description, Guid actorId)      
+    2         {
+    3             await _eventWriter.WriteEventAsync(
+    4                 eventType,
+    5                 branchId.ToString(),
+    6                 entityId.ToString(),
+    7                 token,
+    8                 description,
+    9                 "User",
+   10                 actorId.ToString(),
+   11                 saveChanges: false // ATOMICITY FIX
+   12             );
+   13         }
+
+  2. RecordSampleCollectedAsync:
+
+   1             // ... update state ...
+   2             sample.Status = SampleStatus.Collected;
+   3             // ...
+   4
+   5             // Emit Event (Adds to Context)
+   6             await EmitEventAsync(...);
+   7
+   8             // ATOMIC SAVE (State + Event)
+   9             await _context.SaveChangesAsync();
+
+  I will apply these changes. OperationsEngine.cs is large, so I will do replacements method by method or group them if close.
+
+  First, let's update EmitEventAsync and RecordSampleCollectedAsync.
 ╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ ✓  WriteFile Writing to src\...\OperationsEngine.cs                                                                                                        │
+│ ✓  Edit src\...\OperationsEngine.cs:         // Private Helper for ... =>         // Private Helper for ...                                                │
 │                                                                                                                                                            │
-│ ... first 29 lines hidden ...                                                                                                                              │
-│  97 -                 return;                                                                                                                              │
-│  98 -             }                                                                                                                                        │
-│  99 -                                                                                                                                                      │
-│  92               await _eventWriter.WriteEventAsync(                                                                                                      │
-│  93                   eventType,                                                                                                                           │
-│  94                   branchId.ToString(),                                                                                                                 │
-│  95                   entityId.ToString(),                                                                                                                 │
-│  96                   token,                                                                                                                               │
-│  97                   description,                                                                                                                         │
+│  98           token,                                                                                                                                       │
+│  99           description,                                                                                                                                 │
+│ 100           "User",                                                                                                                                      │
+│ 101 -         actorId.ToString()                                                                                                                           │
+│ 101 +         actorId.ToString(),                                                                                                                          │
+│ 102 +         saveChanges: false // ATOMICITY FIX: Defer save to transaction owner                                                                         │
+│ 103       );                                                                                                                                               │
+│ 104   }                                                                                                                                                    │
+│ 105                                                                                                                                                        │
 │ ══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════ │
-│ 106 -                 "User", // Standardize actor type                                                                                                    │
-│  98 +                 "User",                                                                                                                              │
-│  99                   actorId.ToString()                                                                                                                   │
-│ 100               );                                                                                                                                       │
-│ 101           }                                                                                                                                            │
-│ ══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════ │
-│ 109                                                                                                                                                        │
-│ 110               if (sample == null) throw new KeyNotFoundException($"Sample {sampleId} not found");                                                      │
-│ 111                                                                                                                                                        │
-│ ══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════ │
-│ 120 -             // Security Check: Branch Scope                                                                                                          │
-│ 121 -             // Note: If Order or Visit is null, data integrity is broken, but we check what we can.                                                  │
-│ 122 -             if (sample.Order?.Visit?.BranchId != null && sample.Order.Visit.BranchId != branchId)                                                    │
-│ 123 -                 throw new UnauthorizedAccessException("Sample does not belong to this branch.");                                                     │
-│ 112 +             // Issue 2 Fix: Fail Fast on Data Corruption                                                                                             │
-│ 113 +             if (sample.Order == null || sample.Order.Visit == null)                                                                                  │
-│ 114 +             {                                                                                                                                        │
-│ 115 +                 throw new InvalidOperationException($"Data Corruption: Sample {sampleId} is orphaned (missing Order or Visit links).");              │
-│ 116 +             }                                                                                                                                        │
-│ 117                                                                                                                                                        │
-│ ══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════ │
-│ 125 -             // Invariant: Cannot collect twice or if rejected (unless recollecting, which might be a new sample ID in some models, but if same ID,   │
-│     status check is key)                                                                                                                                   │
-│ 118 +             // Issue 2 Fix: Strict Branch Check                                                                                                      │
-│ 119 +             if (sample.Order.Visit.BranchId != branchId)                                                                                             │
-│ 120 +             {                                                                                                                                        │
-│ 121 +                 throw new UnauthorizedAccessException($"Sample {sampleId} belongs to branch {sample.Order.Visit.BranchId}, access denied for context │
-│     branch {branchId}.");                                                                                                                                  │
-│ 122 +             }                                                                                                                                        │
-│ 123 +                                                                                                                                                      │
-│ 124 +             // Invariant: Cannot collect twice                                                                                                       │
-│ 125               if (sample.Status != SampleStatus.Pending && sample.Status != SampleStatus.Recollect)                                                    │
-│ 126               {                                                                                                                                        │
-│ 127                   throw new InvalidOperationException($"Cannot collect sample in state {sample.Status}");                                              │
-│ ══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════ │
-│ 140               // Persist                                                                                                                               │
-│ 141               await _context.SaveChangesAsync();                                                                                                       │
+│ 140       sample.CollectedAt = DateTime.UtcNow; // Standard: UTC                                                                                           │
+│ 141       sample.CollectedByUserId = actorId;                                                                                                              │
 │ 142                                                                                                                                                        │
-│ 144 -             // Emit Event                                                                                                                            │
-│ 145 -             var visitId = sample.Order?.VisitId.ToString() ?? "Unknown";                                                                             │
-│ 146 -             await _eventWriter.WriteEventAsync(                                                                                                      │
-│ 143 +             // Emit Event (Issue 1 Fix: Internal emission only)                                                                                      │
-│ 144 +             await EmitEventAsync(                                                                                                                    │
-│ 145                   BranchEventType.SAMPLE_COLLECTED,                                                                                                    │
-│ 148 -                 branchId.ToString(),                                                                                                                 │
-│ 149 -                 visitId,                                                                                                                             │
-│ 150 -                 sample.Barcode, // Using Barcode as token                                                                                            │
-│ 146 +                 branchId,                                                                                                                            │
-│ 147 +                 sample.Order.VisitId,                                                                                                                │
-│ 148 +                 sample.Barcode,                                                                                                                      │
-│ 149                   $"Sample {sample.Barcode} collected",                                                                                                │
-│ 152 -                 "User",                                                                                                                              │
-│ 153 -                 actorId.ToString()                                                                                                                   │
-│ 150 +                 actorId                                                                                                                              │
-│ 151               );                                                                                                                                       │
-│ 152           }                                                                                                                                            │
-│ 153                                                                                                                                                        │
-│ ══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════ │
-│ 160                                                                                                                                                        │
-│ 161               if (sample == null) throw new KeyNotFoundException($"Sample {sampleId} not found");                                                      │
-│ 162                                                                                                                                                        │
-│ 166 -             if (sample.Order?.Visit?.BranchId != null && sample.Order.Visit.BranchId != branchId)                                                    │
-│ 167 -                 throw new UnauthorizedAccessException("Sample does not belong to this branch.");                                                     │
-│ 163 +             // Issue 2 Fix: Fail Fast on Data Corruption                                                                                             │
-│ 164 +             if (sample.Order == null || sample.Order.Visit == null)                                                                                  │
-│ 165 +             {                                                                                                                                        │
-│ 166 +                 throw new InvalidOperationException($"Data Corruption: Sample {sampleId} is orphaned (missing Order or Visit links).");              │
-│ 167 +             }                                                                                                                                        │
-│ 168                                                                                                                                                        │
-│ 169 +             // Issue 2 Fix: Strict Branch Check                                                                                                      │
-│ 170 +             if (sample.Order.Visit.BranchId != branchId)                                                                                             │
-│ 171 +             {                                                                                                                                        │
-│ 172 +                 throw new UnauthorizedAccessException($"Sample {sampleId} belongs to branch {sample.Order.Visit.BranchId}, access denied for context │
-│     branch {branchId}.");                                                                                                                                  │
-│ 173 +             }                                                                                                                                        │
-│ 174 +                                                                                                                                                      │
-│ 175               // Update State                                                                                                                          │
-│ 176               sample.Status = requiresRecollection ? SampleStatus.Recollect : SampleStatus.Rejected;                                                   │
-│ 177               sample.IsRejected = true;                                                                                                                │
-│ ══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════ │
-│ 189                                                                                                                                                        │
-│ 190               await _context.SaveChangesAsync();                                                                                                       │
-│ 191                                                                                                                                                        │
-│ 186 -             var visitId = sample.Order?.VisitId.ToString() ?? "Unknown";                                                                             │
-│ 187 -             await _eventWriter.WriteEventAsync(                                                                                                      │
-│ 192 +             // Emit Event (Issue 1 Fix: Internal emission only)                                                                                      │
-│ 193 +             await EmitEventAsync(                                                                                                                    │
-│ 194                   BranchEventType.SAMPLE_REJECTED,                                                                                                     │
-│ 189 -                 branchId.ToString(),                                                                                                                 │
-│ 190 -                 visitId,                                                                                                                             │
-│ 195 +                 branchId,                                                                                                                            │
-│ 196 +                 sample.Order.VisitId,                                                                                                                │
-│ 197                   sample.Barcode,                                                                                                                      │
-│ 198                   $"Sample rejected: {reason} (Recollect: {requiresRecollection})",                                                                    │
-│ 193 -                 "User",                                                                                                                              │
-│ 194 -                 actorId.ToString()                                                                                                                   │
-│ 199 +                 actorId                                                                                                                              │
-│ 200               );                                                                                                                                       │
-│ 201           }                                                                                                                                            │
-│ 202       }                                                                                                                                                │
+│ 142 -     // Persist                                                                                                                                       │
+│ 143 -     await _context.SaveChangesAsync();                                                                                                               │
+│ 144 -                                                                                                                                                      │
+│ 143       // Emit Event (Issue 1 Fix: Internal emission only)                                                                                              │
+│ 144       await EmitEventAsync(                                                                                                                            │
+│ 145           BranchEventType.SAMPLE_COLLECTED,                                                                                                            │
+│ 149           $"Sample {sample.Barcode} collected",                                                                                                        │
+│ 150           actorId                                                                                                                                      │
+│ 151       );                                                                                                                                               │
+│ 152 +                                                                                                                                                      │
+│ 153 +     // Persist (Atomic State + Event)                                                                                                                │
+│ 154 +     await _context.SaveChangesAsync();                                                                                                               │
+│ 155   }                                                                                                                                                    │
+│ 156                                                                                                                                                        │
+│ 157   public async Task RecordSampleRejectedAsync(Guid sampleId, Guid branchId, Guid actorId, string reason, bool requiresRecollection = false)            │
 ╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-✦ I also need to verify that RecordEventAsync was removed from the interface IOperationsEngine in the earlier step.
-  Checking IOperationsEngine.cs.
+✦ Now RecordSampleRejectedAsync.
 ╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ ✓  ReadFile src\...\IOperationsEngine.cs                                                                                                                   │
+│ ✓  Edit src\...\OperationsEngine.cs:             // Add Rejection R... =>             // Add Rejection R...                                                │
 │                                                                                                                                                            │
+│ 190           RejectedByUserId = actorId                                                                                                                   │
+│ 191       });                                                                                                                                              │
+│ 192                                                                                                                                                        │
+│ 193 -     await _context.SaveChangesAsync();                                                                                                               │
+│ 194 -                                                                                                                                                      │
+│ 193       // Emit Event (Issue 1 Fix: Internal emission only)                                                                                              │
+│ 194       await EmitEventAsync(                                                                                                                            │
+│ 195           BranchEventType.SAMPLE_REJECTED,                                                                                                             │
+│ 199           $"Sample rejected: {reason} (Recollect: {requiresRecollection})",                                                                            │
+│ 200           actorId                                                                                                                                      │
+│ 201       );                                                                                                                                               │
+│ 202 +                                                                                                                                                      │
+│ 203 +     // Persist (Atomic State + Event)                                                                                                                │
+│ 204 +     await _context.SaveChangesAsync();                                                                                                               │
+│ 205   }                                                                                                                                                    │
+│ 206                                                                                                                                                        │
+│ 207   public async Task RecordReportSignedAsync(Guid reportId, Guid branchId, Guid actorId)                                                                │
 ╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-✦ It is removed.
+✦ Now RecordReportSignedAsync.
+╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ ✓  Edit src\...\OperationsEngine.cs:             // Update State (T... =>             // Update State (T...                                                │
+│                                                                                                                                                            │
+│ 237       report.SignedByUserId = actorId;                                                                                                                 │
+│ 238       report.CurrentVersion++; // Increment version on sign-off                                                                                        │
+│ 239                                                                                                                                                        │
+│ 240 -     // Persist                                                                                                                                       │
+│ 241 -     await _context.SaveChangesAsync();                                                                                                               │
+│ 242 -                                                                                                                                                      │
+│ 240       // Emit Event                                                                                                                                    │
+│ 241       await EmitEventAsync(                                                                                                                            │
+│ 242           BranchEventType.REPORT_SIGNED,                                                                                                               │
+│ 246           $"Report signed (Version {report.CurrentVersion})",                                                                                          │
+│ 247           actorId                                                                                                                                      │
+│ 248       );                                                                                                                                               │
+│ 249 +                                                                                                                                                      │
+│ 250 +     // Persist (Atomic State + Event)                                                                                                                │
+│ 251 +     await _context.SaveChangesAsync();                                                                                                               │
+│ 252   }                                                                                                                                                    │
+│ 253                                                                                                                                                        │
+│ 254   public async Task RecordReportDeliveredAsync(Guid reportId, Guid branchId, Guid actorId)                                                             │
+╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+✦ Now RecordReportDeliveredAsync.
+╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ ✓  Edit src\...\OperationsEngine.cs:             // Update State... =>             // Update State...                                                      │
+│                                                                                                                                                            │
+│ 285       report.Delivered = true;                                                                                                                         │
+│ 286       report.DeliveredAt = DateTime.UtcNow;                                                                                                            │
+│ 287                                                                                                                                                        │
+│ 288 -     await _context.SaveChangesAsync();                                                                                                               │
+│ 289 -                                                                                                                                                      │
+│ 288       await EmitEventAsync(                                                                                                                            │
+│ 289           BranchEventType.REPORT_DELIVERED,                                                                                                            │
+│ 290           branchId,                                                                                                                                    │
+│ 293           "Report delivered",                                                                                                                          │
+│ 294           actorId                                                                                                                                      │
+│ 295       );                                                                                                                                               │
+│ 296 +                                                                                                                                                      │
+│ 297 +     // Persist (Atomic State + Event)                                                                                                                │
+│ 298 +     await _context.SaveChangesAsync();                                                                                                               │
+│ 299   }                                                                                                                                                    │
+│ 300                                                                                                                                                        │
+│ 301   public async Task RecordResultsVerifiedAsync(Guid orderId, Guid branchId, Guid actorId, List<FinalResultDto> results)                                │
+╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+✦ Finally RecordResultsVerifiedAsync.
+╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ ✓  Edit src\...\OperationsEngine.cs:                 result.Value =... =>                 result.Value =...                                                │
+│                                                                                                                                                            │
+│ 344                   result.Status = "Finalized";                                                                                                         │
+│ 345               }                                                                                                                                        │
+│ 346                                                                                                                                                        │
+│ 347 -             await _context.SaveChangesAsync();                                                                                                       │
+│ 348 -                                                                                                                                                      │
+│ 347               await EmitEventAsync(                                                                                                                    │
+│ 348                   BranchEventType.REPORT_VERIFIED,                                                                                                     │
+│ 349                   branchId,                                                                                                                            │
+│ 352                   "Results finalized and verified",                                                                                                    │
+│ 353                   actorId                                                                                                                              │
+│ 354               );                                                                                                                                       │
+│ 355 +                                                                                                                                                      │
+│ 356 +             // Persist (Atomic State + Event)                                                                                                        │
+│ 357 +             await _context.SaveChangesAsync();                                                                                                       │
+│ 358           }                                                                                                                                            │
+│ 359       }                                                                                                                                                │
+│ 360   }                                                                                                                                                    │
+╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+✦ All modifications complete.
+  Atomicity is now guaranteed: EmitEventAsync adds the entity to the Context (via Writer with saveChanges: false), and _context.SaveChangesAsync() commits    
+  both the State changes and the Event entity in a single transaction.
 
-  Final Build Verification.
+  Verification: Build.
 ╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ ✓  Shell dotnet build [current working directory D:\Projects\SynOS-Synthesized-Lab-Intelligence] (Final verification build for Operations Engine Audit Fi… │
+│ ✓  Shell dotnet build [current working directory D:\Projects\SynOS-Synthesized-Lab-Intelligence] (Verify build after Atomicity Refactor.)                  │
 │                                                                                                                                                            │
-│ ... first 67 lines hidden ...                                                                                                                              │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\RadiologyService.cs(396,48): warning CS8601: Possible null reference assi                │
-│ gnment. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                          │
+│ ... first 66 lines hidden ...                                                                                                                              │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\DeliveryService.cs(933,34): warning CS8602: Dereference of a possibly nul                │
+│ l reference. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                     │
 │ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\RadiologyService.cs(496,28): warning CS8601: Possible null reference assi                │
 │ gnment. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]                                                          │
 │ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\RadiologyService.cs(497,34): warning CS8601: Possible null reference assi                │
@@ -193,6 +280,15 @@
 │ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\Admin\CsvImportRequestDto.cs(9,26): warning CS8618: Non-nullable p                │
 │ roperty 'File' must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring the property as                │
 │  nullable. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\SynOS.Api.csproj]                                                                 │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\IMSStockOperationController.cs(27,37): warning CS8604: Possible nu                │
+│ ll reference argument for parameter 'input' in 'Guid Guid.Parse(string input)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.A                │
+│ pi\SynOS.Api.csproj]                                                                                                                                       │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\IMSStockOperationController.cs(36,37): warning CS8604: Possible nu                │
+│ ll reference argument for parameter 'input' in 'Guid Guid.Parse(string input)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.A                │
+│ pi\SynOS.Api.csproj]                                                                                                                                       │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\IMSPurchasingController.cs(127,41): warning CS8604: Possible null                 │
+│ reference argument for parameter 'input' in 'Guid Guid.Parse(string input)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\                │
+│ SynOS.Api.csproj]                                                                                                                                          │
 │ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\MappingProfile.cs(20,100): warning CS8602: Dereference of a possibly null refe                │
 │ rence. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\SynOS.Api.csproj]                                                                     │
 │ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\MappingProfile.cs(51,85): warning CS8602: Dereference of a possibly null refer                │
@@ -210,24 +306,6 @@
 │ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\Radiology\PacsController.cs(32,37): warning CS8604: Possible null                 │
 │ reference argument for parameter 'input' in 'Guid Guid.Parse(string input)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\                │
 │ SynOS.Api.csproj]                                                                                                                                          │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\Radiology\PacsController.cs(45,37): warning CS8604: Possible null                 │
-│ reference argument for parameter 'input' in 'Guid Guid.Parse(string input)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\                │
-│ SynOS.Api.csproj]                                                                                                                                          │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\Radiology\PacsController.cs(59,37): warning CS8604: Possible null                 │
-│ reference argument for parameter 'input' in 'Guid Guid.Parse(string input)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\                │
-│ SynOS.Api.csproj]                                                                                                                                          │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\Radiology\PacsController.cs(68,37): warning CS8604: Possible null                 │
-│ reference argument for parameter 'input' in 'Guid Guid.Parse(string input)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\                │
-│ SynOS.Api.csproj]                                                                                                                                          │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\Radiology\PacsAdminController.cs(25,37): warning CS8604: Possible                 │
-│ null reference argument for parameter 'input' in 'Guid Guid.Parse(string input)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS                │
-│ .Api\SynOS.Api.csproj]                                                                                                                                     │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\Radiology\PacsAdminController.cs(33,37): warning CS8604: Possible                 │
-│ null reference argument for parameter 'input' in 'Guid Guid.Parse(string input)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS                │
-│ .Api\SynOS.Api.csproj]                                                                                                                                     │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\Radiology\PacsAdminController.cs(41,37): warning CS8604: Possible                 │
-│ null reference argument for parameter 'input' in 'Guid Guid.Parse(string input)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS                │
-│ .Api\SynOS.Api.csproj]                                                                                                                                     │
 │ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\RadiologyReportsController.cs(40,37): warning CS8604: Possible nul                │
 │ l reference argument for parameter 'input' in 'Guid Guid.Parse(string input)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Ap                │
 │ i\SynOS.Api.csproj]                                                                                                                                        │
@@ -243,21 +321,30 @@
 │ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\RadiologyController.cs(61,37): warning CS8604: Possible null refer                │
 │ ence argument for parameter 'input' in 'Guid Guid.Parse(string input)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\SynOS                │
 │ .Api.csproj]                                                                                                                                               │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\Radiology\PacsController.cs(45,37): warning CS8604: Possible null                 │
+│ reference argument for parameter 'input' in 'Guid Guid.Parse(string input)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\                │
+│ SynOS.Api.csproj]                                                                                                                                          │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\Radiology\PacsController.cs(59,37): warning CS8604: Possible null                 │
+│ reference argument for parameter 'input' in 'Guid Guid.Parse(string input)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\                │
+│ SynOS.Api.csproj]                                                                                                                                          │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\Radiology\PacsController.cs(68,37): warning CS8604: Possible null                 │
+│ reference argument for parameter 'input' in 'Guid Guid.Parse(string input)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\                │
+│ SynOS.Api.csproj]                                                                                                                                          │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\Radiology\PacsAdminController.cs(25,37): warning CS8604: Possible                 │
+│ null reference argument for parameter 'input' in 'Guid Guid.Parse(string input)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS                │
+│ .Api\SynOS.Api.csproj]                                                                                                                                     │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\Radiology\PacsAdminController.cs(33,37): warning CS8604: Possible                 │
+│ null reference argument for parameter 'input' in 'Guid Guid.Parse(string input)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS                │
+│ .Api\SynOS.Api.csproj]                                                                                                                                     │
 │ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\RadiologyController.cs(92,37): warning CS8604: Possible null refer                │
 │ ence argument for parameter 'input' in 'Guid Guid.Parse(string input)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\SynOS                │
 │ .Api.csproj]                                                                                                                                               │
 │ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\RadiologyController.cs(101,37): warning CS8604: Possible null refe                │
 │ rence argument for parameter 'input' in 'Guid Guid.Parse(string input)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\SynO                │
 │ S.Api.csproj]                                                                                                                                              │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\IMSStockOperationController.cs(27,37): warning CS8604: Possible nu                │
-│ ll reference argument for parameter 'input' in 'Guid Guid.Parse(string input)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.A                │
-│ pi\SynOS.Api.csproj]                                                                                                                                       │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\IMSStockOperationController.cs(36,37): warning CS8604: Possible nu                │
-│ ll reference argument for parameter 'input' in 'Guid Guid.Parse(string input)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.A                │
-│ pi\SynOS.Api.csproj]                                                                                                                                       │
-│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\IMSPurchasingController.cs(127,41): warning CS8604: Possible null                 │
-│ reference argument for parameter 'input' in 'Guid Guid.Parse(string input)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\                │
-│ SynOS.Api.csproj]                                                                                                                                          │
+│ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\Radiology\PacsAdminController.cs(41,37): warning CS8604: Possible                 │
+│ null reference argument for parameter 'input' in 'Guid Guid.Parse(string input)'. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS                │
+│ .Api\SynOS.Api.csproj]                                                                                                                                     │
 │ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\IMSWastageController.cs(42,110): warning CS8629: Nullable value ty                │
 │ pe may be null. [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\SynOS.Api.csproj]                                                            │
 │ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\SecureDownloadController.cs(61,13): warning ASP0019: Use IHeaderDi                │
@@ -278,20 +365,26 @@
 │ D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\SecureDownloadController.cs(96,13): warning ASP0019: Use IHeaderDi                │
 │ ctionary.Append or the indexer to append or set headers. IDictionary.Add will throw an ArgumentException when attempting to add a duplicate                │
 │  key. (https://aka.ms/aspnet/analyzers) [D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\SynOS.Api.csproj]                                    │
-│     210 Warning(s)                                                                                                                                         │
+│     440 Warning(s)                                                                                                                                         │
 │     0 Error(s)                                                                                                                                             │
 │                                                                                                                                                            │
-│ Time Elapsed 00:00:26.42                                                                                                                                   │
-╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+│ Time Elapsed 00:01:03.04                                                                                                                                   │
 ╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
 ✦ Build Succeeded.
 
-  Operations Engine Cleanup Complete (Issues 1 & 2):
+  I have completed the Atomic Activity Stream refactor.
+   1. `IOperationalEventWriter`: Added saveChanges = true parameter.
+   2. `OperationalEventWriter`: Implemented conditional saving.
+   3. `OperationsEngine`:
+       * Updated EmitEventAsync to saveChanges: false.
+       * Moved _context.SaveChangesAsync() to the end of all 5 lifecycle methods to commit State + Event atomically.
 
-   1. Generic Event Emission Sealed: RecordEventAsync is removed from IOperationsEngine. It is now a private helper EmitEventAsync inside OperationsEngine.cs,
-      accepting only strong BranchEventType.
-   2. Branch Integrity Enforced: RecordSampleCollectedAsync and RecordSampleRejectedAsync now explicitly check sample.Order and sample.Order.Visit for nulls  
-      and throw InvalidOperationException (Fail Fast) instead of proceeding with potential null-reference or security bypass. They also strictly enforce      
-      branch matching.
+  Explanation of Atomicity Guarantee:
+  Previously, state and events were saved in two separate transactions (SaveChangesAsync calls). If the second one failed, the event was lost.
+  Now, OperationsEngine prepares the Domain Entity changes (State) and adds the BranchOperationalEvent entity to the DbContext (Event). It then calls
+  SaveChangesAsync() once.
+  EF Core wraps this in a single database transaction. If anything fails, nothing is committed. This guarantees that Execution State and Activity Stream are  
+  always in sync.
 
-  The Engine is now tighter and safer.
+  The saveChanges: true default in OperationalEventWriter ensures that other services (ReceptionFlowService, VisitService, etc.) continue to work as before   
+  (immediate save), preserving existing behavior for non-execution events.

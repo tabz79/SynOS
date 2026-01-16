@@ -25,7 +25,8 @@ namespace SynOS.Services.Operational
             string tokenId,
             string summaryText,
             string actorType = "System",
-            string? actorName = null)
+            string? actorName = null,
+            bool saveChanges = true)
         {
             try
             {
@@ -43,7 +44,11 @@ namespace SynOS.Services.Operational
                 };
 
                 _context.BranchOperationalEvents.Add(evt);
-                await _context.SaveChangesAsync();
+
+                if (saveChanges)
+                {
+                    await _context.SaveChangesAsync();
+                }
             }
             catch (Exception ex)
             {

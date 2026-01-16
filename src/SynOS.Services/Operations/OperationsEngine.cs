@@ -98,7 +98,8 @@ namespace SynOS.Services.Operations
                 token,
                 description,
                 "User",
-                actorId.ToString()
+                actorId.ToString(),
+                saveChanges: false // ATOMICITY FIX: Defer save to transaction owner
             );
         }
 
@@ -139,9 +140,6 @@ namespace SynOS.Services.Operations
             sample.CollectedAt = DateTime.UtcNow; // Standard: UTC
             sample.CollectedByUserId = actorId;
 
-            // Persist
-            await _context.SaveChangesAsync();
-
             // Emit Event (Issue 1 Fix: Internal emission only)
             await EmitEventAsync(
                 BranchEventType.SAMPLE_COLLECTED,
@@ -151,6 +149,9 @@ namespace SynOS.Services.Operations
                 $"Sample {sample.Barcode} collected",
                 actorId
             );
+
+            // Persist (Atomic State + Event)
+            await _context.SaveChangesAsync();
         }
 
         public async Task RecordSampleRejectedAsync(Guid sampleId, Guid branchId, Guid actorId, string reason, bool requiresRecollection = false)
@@ -189,8 +190,6 @@ namespace SynOS.Services.Operations
                 RejectedByUserId = actorId
             });
 
-            await _context.SaveChangesAsync();
-
             // Emit Event (Issue 1 Fix: Internal emission only)
             await EmitEventAsync(
                 BranchEventType.SAMPLE_REJECTED,
@@ -200,6 +199,9 @@ namespace SynOS.Services.Operations
                 $"Sample rejected: {reason} (Recollect: {requiresRecollection})",
                 actorId
             );
+
+            // Persist (Atomic State + Event)
+            await _context.SaveChangesAsync();
         }
 
         public async Task RecordReportSignedAsync(Guid reportId, Guid branchId, Guid actorId)
@@ -235,9 +237,6 @@ namespace SynOS.Services.Operations
             report.SignedByUserId = actorId;
             report.CurrentVersion++; // Increment version on sign-off
 
-            // Persist
-            await _context.SaveChangesAsync();
-
             // Emit Event
             await EmitEventAsync(
                 BranchEventType.REPORT_SIGNED,
@@ -247,6 +246,9 @@ namespace SynOS.Services.Operations
                 $"Report signed (Version {report.CurrentVersion})",
                 actorId
             );
+
+            // Persist (Atomic State + Event)
+            await _context.SaveChangesAsync();
         }
 
         public async Task RecordReportDeliveredAsync(Guid reportId, Guid branchId, Guid actorId)
@@ -283,8 +285,6 @@ namespace SynOS.Services.Operations
             report.Delivered = true;
             report.DeliveredAt = DateTime.UtcNow;
 
-            await _context.SaveChangesAsync();
-
             await EmitEventAsync(
                 BranchEventType.REPORT_DELIVERED,
                 branchId,
@@ -293,6 +293,9 @@ namespace SynOS.Services.Operations
                 "Report delivered",
                 actorId
             );
+
+            // Persist (Atomic State + Event)
+            await _context.SaveChangesAsync();
         }
 
         public async Task RecordResultsVerifiedAsync(Guid orderId, Guid branchId, Guid actorId, List<FinalResultDto> results)
@@ -341,8 +344,6 @@ namespace SynOS.Services.Operations
                 result.Status = "Finalized"; 
             }
 
-            await _context.SaveChangesAsync();
-
             await EmitEventAsync(
                 BranchEventType.REPORT_VERIFIED,
                 branchId,
@@ -351,6 +352,9 @@ namespace SynOS.Services.Operations
                 "Results finalized and verified",
                 actorId
             );
+
+            // Persist (Atomic State + Event)
+            await _context.SaveChangesAsync();
         }
     }
 }

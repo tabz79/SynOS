@@ -17,6 +17,7 @@ namespace SynOS.Services.Operational
             string tokenId,
             string summaryText,
             string actorType = "System",
-            string? actorName = null);
+            string? actorName = null,
+            bool saveChanges = true);
     }
 }

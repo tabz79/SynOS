@@ -6,26 +6,48 @@ using Microsoft.EntityFrameworkCore;
 using SynOS.Data;
 using SynOS.Models.ReadModels;
 
-using Microsoft.AspNetCore.Authorization; // ADDED
+using Microsoft.AspNetCore.Authorization; 
 using SynOS.Services.Security;
+using SynOS.Services.Operational; // ADDED
 
 namespace SynOS.Api.Controllers
 {
-    [Authorize] // ADDED: Enforce authentication
+    [Authorize] 
     [ApiController]
     [Route("api/v1/branch/activity")]
     public class BranchActivityController : ControllerBase
     {
         private readonly SynOSDbContext _context;
         private readonly IUserContext _userContext;
+        private readonly IActivityStreamService _activityStreamService; // ADDED
 
-        public BranchActivityController(SynOSDbContext context, IUserContext userContext)
+        public BranchActivityController(SynOSDbContext context, IUserContext userContext, IActivityStreamService activityStreamService)
         {
             _context = context;
             _userContext = userContext ?? throw new ArgumentNullException(nameof(userContext));
+            _activityStreamService = activityStreamService ?? throw new ArgumentNullException(nameof(activityStreamService));
         }
 
+        // NEW: Role-Based Projection Endpoint (BFF)
+        [HttpGet("{role}")]
+        public async Task<IActionResult> GetActivityForRole(string role)
+        {
+            if (string.IsNullOrWhiteSpace(role)) return BadRequest("Role required.");
+
+            if (_userContext.CurrentBranchId == Guid.Empty)
+            {
+                return Forbid();
+            }
+
+            // Backend owns the projection logic
+            var activity = await _activityStreamService.GetActivityForRoleAsync(_userContext.CurrentBranchId, role);
+            
+            return Ok(activity);
+        }
+
+        // LEGACY: Raw Event Access (Obsolete - Do not use in new UI)
         [HttpGet]
+        [Obsolete("Use /api/v1/branch/activity/{role} for role-specific projections.")]
         public async Task<IActionResult> GetBranchActivity([FromQuery] string? branchId)
         {
             // 1. Enforce Context

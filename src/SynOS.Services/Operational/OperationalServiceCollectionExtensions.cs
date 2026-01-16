@@ -7,6 +7,7 @@ namespace SynOS.Services.Operational
         public static IServiceCollection AddOperationalServices(this IServiceCollection services)
         {
             services.AddScoped<IOperationalEventWriter, OperationalEventWriter>();
+            services.AddScoped<IActivityStreamService, ActivityStreamService>(); // ADDED
             return services;
         }
     }
