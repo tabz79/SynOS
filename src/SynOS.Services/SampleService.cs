@@ -9,8 +9,9 @@ using SynOS.Models.DTOs;
 using SynOS.Models.Entities;
 using SynOS.Models.Enums;
 using SynOS.Services.Utils;
-using SynOS.Services.Operational; // ADDED
-using SynOS.Services.Security; // ADDED
+using SynOS.Services.Operational; 
+using SynOS.Services.Security; 
+using SynOS.Services.Operations; // ADDED
 
 namespace SynOS.Services
 {
@@ -20,8 +21,9 @@ namespace SynOS.Services
         private readonly ISampleNotifier _sampleNotifier;
         private readonly ITubeConsumptionService _tubeConsumptionService;
         private readonly ILogger<SampleService> _logger;
-        private readonly IOperationalEventWriter _operationalEventWriter; // ADDED
-        private readonly IUserContext _userContext; // ADDED
+        private readonly IOperationalEventWriter _operationalEventWriter; 
+        private readonly IUserContext _userContext; 
+        private readonly IOperationsEngine _operationsEngine; // ADDED
 
         public SampleService(
             SynOSDbContext context, 
@@ -29,14 +31,16 @@ namespace SynOS.Services
             ITubeConsumptionService tubeConsumptionService,
             ILogger<SampleService> logger,
             IOperationalEventWriter operationalEventWriter,
-            IUserContext userContext) // ADDED
+            IUserContext userContext,
+            IOperationsEngine operationsEngine) // ADDED
         {
             _context = context;
             _sampleNotifier = sampleNotifier;
             _tubeConsumptionService = tubeConsumptionService;
             _logger = logger;
             _operationalEventWriter = operationalEventWriter ?? throw new ArgumentNullException(nameof(operationalEventWriter));
-            _userContext = userContext ?? throw new ArgumentNullException(nameof(userContext)); // ADDED
+            _userContext = userContext ?? throw new ArgumentNullException(nameof(userContext));
+            _operationsEngine = operationsEngine ?? throw new ArgumentNullException(nameof(operationsEngine)); // ADDED
         }
 
         public async Task<IEnumerable<SampleDto>> CreateSamplesForVisitAsync(Guid visitId)
@@ -88,43 +92,20 @@ namespace SynOS.Services
 
         public async Task<SampleDto> CollectSampleAsync(Guid sampleId, Guid userId)
         {
-            var sample = await _context.Samples
-                .Include(s => s.Order).ThenInclude(o => o.Visit) // ADDED: Include Visit
-                .FirstOrDefaultAsync(s => s.SampleId == sampleId);
-
-            if (sample == null) throw new KeyNotFoundException("Sample not found.");
-
-            if (sample.Status == SampleStatus.Collected)
-            {
-                _logger.LogWarning("Sample {SampleId} has already been collected. Skipping collection and consumption logic.", sampleId);
-                return await GetSampleByIdAsync(sampleId);
-            }
-
-            sample.Status = SampleStatus.Collected;
-            sample.CollectedAt = DateTime.UtcNow;
-            sample.CollectedByUserId = userId;
-
-            await _context.SaveChangesAsync();
+            var branchId = _userContext.CurrentBranchId;
             
+            // Facade: Delegate to Operations Engine (Truth Authority)
+            await _operationsEngine.RecordSampleCollectedAsync(sampleId, branchId, userId);
+            
+            // Legacy/Inventory Side Effects
             try
             {
                 await _tubeConsumptionService.ConsumeStockOnSampleCollectedAsync(sampleId, userId);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error occurred during tube consumption for SampleId {SampleId}. The sample collection status was updated, but stock was not deducted.", sampleId);
+                _logger.LogError(ex, "Error occurred during tube consumption for SampleId {SampleId}.", sampleId);
             }
-
-            // Emit Operational Event: SAMPLE_COLLECTED
-            await _operationalEventWriter.WriteEventAsync(
-                BranchEventType.SAMPLE_COLLECTED,
-                _userContext.CurrentBranchId.ToString(), // FIX: Use context
-                sample.Order?.Visit?.VisitId.ToString() ?? "Unknown",
-                sample.Order?.Visit?.Token ?? "Unknown",
-                $"Sample collected ({sample.TubeType})",
-                "User",
-                userId.ToString()
-            );
 
             var updatedDto = await GetSampleByIdAsync(sampleId);
             await _sampleNotifier.NotifySampleUpdateAsync(updatedDto);
@@ -134,55 +115,42 @@ namespace SynOS.Services
 
         public async Task<SampleDto> RejectSampleAsync(Guid sampleId, RejectSampleRequestDto rejectionInfo)
         {
-            var originalSample = await _context.Samples.FindAsync(sampleId);
-            if (originalSample == null) throw new KeyNotFoundException("Sample not found.");
+            var branchId = _userContext.CurrentBranchId;
 
-            originalSample.IsRejected = true;
+            // Facade: Delegate to Operations Engine
+            await _operationsEngine.RecordSampleRejectedAsync(sampleId, branchId, rejectionInfo.RejectedByUserId, rejectionInfo.Reason, rejectionInfo.RequiresRecollection);
 
-            var rejection = new SampleRejection
-            {
-                RejectionId = Guid.NewGuid(),
-                SampleId = sampleId,
-                Reason = rejectionInfo.Reason,
-                RequiresRecollection = rejectionInfo.RequiresRecollection,
-                RejectedByUserId = rejectionInfo.RejectedByUserId,
-                RejectedAt = DateTime.UtcNow
-            };
-
+            // Handle Recollection (Creation of new sample) - Only logic remaining here
             Sample newSample = null;
             if (rejectionInfo.RequiresRecollection)
             {
-                originalSample.Status = SampleStatus.Recollect;
-
-                var visit = await _context.Orders
-                    .Where(o => o.OrderId == originalSample.OrderId)
-                    .Select(o => o.Visit)
-                    .FirstAsync();
-
-                newSample = new Sample
+                // Note: We need to fetch original to get Order details for new sample
+                var originalSample = await _context.Samples.AsNoTracking().FirstOrDefaultAsync(s => s.SampleId == sampleId);
+                if (originalSample != null)
                 {
-                    SampleId = Guid.NewGuid(),
-                    OrderId = originalSample.OrderId,
-                    TubeType = originalSample.TubeType,
-                    Status = SampleStatus.Pending
-                };
-                
-                var payload = $"{newSample.SampleId}|{visit.VisitId}|{visit.Token}|{newSample.TubeType}";
-                var checksum = CalculateChecksum(payload);
-                newSample.Barcode = $"{payload}|{checksum}";
+                    var visit = await _context.Orders
+                        .Where(o => o.OrderId == originalSample.OrderId)
+                        .Select(o => o.Visit)
+                        .FirstAsync();
 
-                _context.Samples.Add(newSample);
-                rejection.NewSampleId = newSample.SampleId;
-            }
-            else
-            {
-                originalSample.Status = SampleStatus.Rejected;
-            }
+                    newSample = new Sample
+                    {
+                        SampleId = Guid.NewGuid(),
+                        OrderId = originalSample.OrderId,
+                        TubeType = originalSample.TubeType,
+                        Status = SampleStatus.Pending
+                    };
+                    
+                    var payload = $"{newSample.SampleId}|{visit.VisitId}|{visit.Token}|{newSample.TubeType}";
+                    var checksum = CalculateChecksum(payload);
+                    newSample.Barcode = $"{payload}|{checksum}";
 
-            _context.SampleRejections.Add(rejection);
-            await _context.SaveChangesAsync();
+                    _context.Samples.Add(newSample);
+                    await _context.SaveChangesAsync();
+                }
+            }
             
-            var originalSampleDto = await GetSampleByIdAsync(originalSample.SampleId);
+            var originalSampleDto = await GetSampleByIdAsync(sampleId);
             await _sampleNotifier.NotifySampleUpdateAsync(originalSampleDto);
 
             if (newSample != null)

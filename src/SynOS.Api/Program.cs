@@ -35,6 +35,8 @@ using SynOS.Services.HRMS.Interpretation; // ADDED
 using SynOS.Services.HRMS.IntelligenceWiring; // ADDED
 using SynOS.Services.Operational; // ADDED
 using SynOS.Services.Admin; // ADDED
+using SynOS.Services.Dashboard; // ADDED
+using SynOS.Services.Operations; // ADDED
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -141,7 +143,9 @@ builder.Services.AddAutoMapper(typeof(Program)); // Scans for profiles in the as
 
 // Register application services
 builder.Services.AddScoped<IAuthService, AuthService>();
-builder.Services.AddScoped<IAdminUserService, AdminUserService>(); // ADDED
+builder.Services.AddScoped<IAdminUserService, AdminUserService>(); 
+builder.Services.AddScoped<IOperationsEngine, OperationsEngine>(); // ADDED
+builder.Services.AddScoped<IDashboardService, DashboardService>(); // Auto-wired OK
 builder.Services.AddScoped<IPatientService, PatientService>();
 builder.Services.AddReferralServices();
 builder.Services.AddPayableServices();
@@ -154,7 +158,8 @@ builder.Services.AddScoped<ISampleService, SampleService>(provider =>
         provider.GetRequiredService<ITubeConsumptionService>(),
         provider.GetRequiredService<ILogger<SampleService>>(),
         provider.GetRequiredService<IOperationalEventWriter>(),
-        provider.GetRequiredService<IUserContext>() // ADDED
+        provider.GetRequiredService<IUserContext>(),
+        provider.GetRequiredService<IOperationsEngine>() // ADDED
     ));
 builder.Services.AddScoped<ITubeConsumptionService, TubeConsumptionService>();
 builder.Services.AddScoped<IPurchasingService, PurchasingService>();
