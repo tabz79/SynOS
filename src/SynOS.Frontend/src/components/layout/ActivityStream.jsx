@@ -13,15 +13,24 @@ export function ActivityStream() {
             // setError(null); // Optional: clear error on refetch? Or keep stale data?
             // Going with: Keep old data if refetch fails (silent fail), unless no data.
             const data = await ReceptionApi.getActivityStream();
+
+            // Defensive check
+            if (!Array.isArray(data)) {
+                console.error("ActivityStream Error: expected array, got", typeof data, data);
+                if (data && data.message) throw new Error(data.message);
+                throw new Error("Invalid format received from server");
+            }
+
             setEvents(data);
             setLoading(false);
             setError(null);
         } catch (err) {
+            console.error("Activity Stream Poll Failed:", err);
             if (events.length === 0) {
-                setError("Failed to load activity stream.");
+                // Show actual error message to help debug
+                setError(err.message || "Failed to load activity stream.");
                 setLoading(false);
             }
-            console.error("Activity Stream Poll Failed:", err);
         }
     };
 

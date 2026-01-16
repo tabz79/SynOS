@@ -292,3 +292,11 @@ Swashbuckle.AspNetCore.SwaggerGen.SwaggerGeneratorException: Conflicting method/
 2026-01-15 16:39:07.088 +05:30 [INF] Analyzer TCP Listener Service stopping...
 2026-01-15 16:39:07.732 +05:30 [INF] Analyzer TCP Listener Service stopped.
 2026-01-15 16:39:07.778 +05:30 [INF] Notification Worker Service stopping gracefully.
+2026-01-15 16:40:51.896 +05:30 [WRN] No store type was specified for the decimal property 'MaxLimit' on entity type 'DiscountMaster'. This will cause values to be silently truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.
+2026-01-15 16:40:52.004 +05:30 [WRN] No store type was specified for the decimal property 'Amount' on entity type 'PayrollAdjustment'. This will cause values to be silently truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.
+2026-01-15 16:40:52.051 +05:30 [WRN] No store type was specified for the decimal property 'Amount' on entity type 'PayrollFact'. This will cause values to be silently truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.
+2026-01-15 16:40:57.113 +05:30 [INF] Notification Worker Service running.
+2026-01-15 16:40:57.256 +05:30 [INF] ExpiredLockCleanupService is starting.
+2026-01-15 16:40:57.410 +05:30 [INF] Analyzer TCP Listener Service starting...
+2026-01-15 16:40:57.420 +05:30 [WRN] No analyzer TCP listeners configured in appsettings.json.
+2026-01-15 16:43:03.958 +05:30 [WRN] Failed to determine the https port for redirect.

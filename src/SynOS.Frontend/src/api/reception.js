@@ -1,4 +1,14 @@
 export const ReceptionApi = {
+    // Helper to get headers
+    getHeaders: () => {
+        const token = localStorage.getItem('synos_jwt');
+        const headers = { 'Content-Type': 'application/json' };
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+        }
+        return headers;
+    },
+
     /**
      * Commits the reception intent to start a visit.
      * @param {Object} payload - ReceptionStartVisitRequest
@@ -7,10 +17,7 @@ export const ReceptionApi = {
     startVisit: async (payload) => {
         const response = await fetch('/api/v1/reception/start-visit', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                // 'Authorization': 'Bearer ...' // TODO: Add Auth Token when Auth context is ready
-            },
+            headers: ReceptionApi.getHeaders(),
             body: JSON.stringify(payload)
         });
 
@@ -29,7 +36,9 @@ export const ReceptionApi = {
      */
     searchPatients: async (query) => {
         if (!query || query.length < 3) return [];
-        const response = await fetch(`/api/v1/patients?q=${encodeURIComponent(query)}`);
+        const response = await fetch(`/api/v1/patients?q=${encodeURIComponent(query)}`, {
+            headers: ReceptionApi.getHeaders()
+        });
         if (!response.ok) throw new Error("Failed to search patients");
         return response.json();
     },
@@ -39,7 +48,9 @@ export const ReceptionApi = {
      * @returns {Promise<Array>}
      */
     getTestCatalog: async () => {
-        const response = await fetch('/api/v1/admin/tests');
+        const response = await fetch('/api/v1/admin/tests', {
+            headers: ReceptionApi.getHeaders()
+        });
         if (!response.ok) throw new Error("Failed to load test catalog");
         return response.json();
     },
@@ -49,9 +60,17 @@ export const ReceptionApi = {
      * @returns {Promise<Array>}
      */
     getActivityStream: async () => {
-        // FIX: Added mandatory branchId param per debug prompt & Logged response
-        const response = await fetch('/api/v1/branch/activity?branchId=Main');
-        if (!response.ok) throw new Error("Failed to load activity stream");
+        // FIX: Using correct Default Branch GUID provided by user
+        const branchGuid = "A0000000-0000-0000-0000-000000000001";
+        const response = await fetch(`/api/v1/branch/activity?branchId=${branchGuid}`, {
+            headers: ReceptionApi.getHeaders()
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error("DEBUG: Activity Stream Failed Response:", response.status, errorText);
+            throw new Error(`Activity Stream Failed (${response.status}): ${errorText}`);
+        }
 
         const data = await response.json();
         console.log("DEBUG: Activity Stream Payload:", data);
