@@ -56,6 +56,25 @@ export const ReceptionApi = {
     },
 
     /**
+     * Fetches the live dashboard summary snapshot.
+     * @returns {Promise<Object>}
+     */
+    getDashboardSummary: async () => {
+        const response = await fetch('/api/v1/dashboard/reception/summary', {
+            headers: ReceptionApi.getHeaders()
+        });
+
+        if (!response.ok) {
+            // Silently return default/null or throw? 
+            // Prompt says: "Render values directly". If init fails, maybe empty state is better.
+            console.error("Failed to load dashboard summary");
+            return null;
+        }
+
+        return response.json();
+    },
+
+    /**
      * Fetches the live activity stream for the branch.
      * @returns {Promise<Array>}
      */

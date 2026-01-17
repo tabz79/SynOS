@@ -7,7 +7,7 @@ namespace SynOS.Api.Controllers
 {
     [Authorize]
     [ApiController]
-    [Route("api/dashboard")]
+    [Route("api/v1/dashboard")] // UPDATED
     public class DashboardController : ControllerBase
     {
         private readonly IDashboardService _dashboardService;
@@ -17,7 +17,7 @@ namespace SynOS.Api.Controllers
             _dashboardService = dashboardService;
         }
 
-        [HttpGet("todays-summary")]
+        [HttpGet("reception/summary")] // UPDATED
         public async Task<IActionResult> GetTodaysSummary()
         {
             var summary = await _dashboardService.GetTodaysSummaryAsync();

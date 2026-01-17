@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Plus, Users, ClipboardList, Bed, Clock } from 'lucide-react'
 import { SystemBar } from '@/components/layout/SystemBar'
 import { RealitySummary } from '@/components/layout/RealitySummary'
@@ -6,18 +6,59 @@ import { ActionQueue, ActionQueueHeader } from '@/components/layout/ActionQueue'
 import { ActivityStream } from '@/components/layout/ActivityStream'
 import { IntentPanel } from '@/features/reception/components/IntentPanel'
 import { useReceptionPanelUI } from '@/features/reception/hooks/useReceptionPanelUI'
+import { ReceptionApi } from '@/api/reception'
+import { SignalRService } from '@/lib/signalr'
 
 export function ReceptionScreen() {
     const [activeQueue, setActiveQueue] = useState("pending");
+    const [summary, setSummary] = useState(null);
     const { isOpen: isIntentPanelOpen, openPanel } = useReceptionPanelUI();
 
-    // Locked Reality Data (Verbatim from Prompt)
-    // TODO: Connect to VisitsController.GetStats() and ReceptionController.GetDailyCollection()
-    const realityTiles = [
-        { value: "12", label: "Walk-Ins Today", icon: Users, color: "amber" },
-        { value: "₹4,500", label: "Payments Collected", icon: ClipboardList, color: "emerald" }, // User Scoped
-        { value: "3", label: "Pending Reports", icon: Bed, color: "red" }, // Bed Icon is placeholder, maybe FileText?
-        { value: "45m", label: "Avg Report Time", icon: Clock, color: "default" }, // Vanity
+    // Wiring: Initial Load + SignalR Subscription
+    useEffect(() => {
+        // 1. Initial Snapshot
+        const loadInitial = async () => {
+            try {
+                const data = await ReceptionApi.getDashboardSummary();
+                if (data) setSummary(data);
+            } catch (e) {
+                console.error("Failed to fetch initial summary", e);
+            }
+        };
+
+        loadInitial();
+
+        // 2. Connect SignalR
+        const connect = async () => {
+            await SignalRService.startConnection();
+
+            // 3. Subscribe to Updates (Pure Replacement)
+            SignalRService.onReceptionSummaryUpdated((payload) => {
+                // STRICT: Replace pure state. No merging.
+                setSummary(payload);
+            });
+        };
+
+        connect();
+
+        // Cleanup
+        return () => {
+            SignalRService.stopConnection();
+        };
+    }, []);
+
+    // Derived strictly for display (formatting only)
+    const realityTiles = summary ? [
+        { value: summary.walkInsToday?.toString() || "0", label: "Walk-Ins Today", icon: Users, color: "amber" },
+        { value: `₹${(summary.paymentsCollected || 0).toLocaleString()}`, label: "Payments Collected", icon: ClipboardList, color: "emerald" },
+        { value: summary.pendingReports?.toString() || "0", label: "Pending Reports", icon: Bed, color: "red" }, // Semantic ID: Bed -> Pending
+        { value: `${summary.avgReportTimeMinutes || 0}m`, label: "Avg Report Time", icon: Clock, color: "default" },
+    ] : [
+        // Skeleton / Empty State while loading
+        { value: "—", label: "Walk-Ins Today", icon: Users, color: "default" },
+        { value: "—", label: "Payments Collected", icon: ClipboardList, color: "default" },
+        { value: "—", label: "Pending Reports", icon: Bed, color: "default" },
+        { value: "—", label: "Avg Report Time", icon: Clock, color: "default" },
     ];
 
     // Dummy Queue Data

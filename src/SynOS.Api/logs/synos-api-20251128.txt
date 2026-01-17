@@ -1,7 +1,0 @@
-2025-11-28 11:31:38.973 +05:30 [INF] ExpiredLockCleanupService is starting.
-2025-11-28 11:51:54.985 +05:30 [INF] ExpiredLockCleanupService is starting.
-2025-11-28 11:52:06.685 +05:30 [WRN] Failed to determine the https port for redirect.
-2025-11-28 12:06:26.909 +05:30 [INF] ExpiredLockCleanupService is starting.
-2025-11-28 12:07:06.415 +05:30 [WRN] Failed to determine the https port for redirect.
-2025-11-28 13:02:04.562 +05:30 [INF] ExpiredLockCleanupService is starting.
-2025-11-28 13:03:41.785 +05:30 [WRN] Failed to determine the https port for redirect.
