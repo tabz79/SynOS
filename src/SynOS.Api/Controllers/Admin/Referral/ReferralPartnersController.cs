@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SynOS.Models.DTOs.Admin.Referral;
 using SynOS.Services.Referral;
+using SynOS.Services.Security;
 using System;
 using System.Threading.Tasks;
 
@@ -13,17 +14,28 @@ namespace SynOS.Api.Controllers.Admin.Referral
     public class ReferralPartnersController : ControllerBase
     {
         private readonly IReferralPartnerService _referralPartnerService;
+        private readonly IUserContext _userContext;
 
-        public ReferralPartnersController(IReferralPartnerService referralPartnerService)
+        public ReferralPartnersController(IReferralPartnerService referralPartnerService, IUserContext userContext)
         {
             _referralPartnerService = referralPartnerService;
+            _userContext = userContext;
         }
 
         [HttpPost]
         public async Task<IActionResult> CreateReferralPartner([FromBody] ReferralPartnerCreateDto createDto)
         {
-            var partner = await _referralPartnerService.CreateReferralPartnerAsync(createDto);
-            return CreatedAtAction(nameof(GetReferralPartnerById), new { id = partner.ReferralPartnerId }, partner);
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+            
+            try 
+            {
+                var partner = await _referralPartnerService.CreateReferralPartnerAsync(createDto, _userContext.CurrentUserId);
+                return CreatedAtAction(nameof(GetReferralPartnerById), new { id = partner.ReferralPartnerId }, partner);
+            } 
+            catch (InvalidOperationException ex) 
+            { 
+                return Conflict(new { message = ex.Message }); 
+            }
         }
 
         [HttpGet]
@@ -36,22 +48,35 @@ namespace SynOS.Api.Controllers.Admin.Referral
         [HttpGet("{id}")]
         public async Task<IActionResult> GetReferralPartnerById(Guid id)
         {
-            var partner = await _referralPartnerService.GetReferralPartnerByIdAsync(id);
-            return Ok(partner);
+            try 
+            {
+                var partner = await _referralPartnerService.GetReferralPartnerByIdAsync(id);
+                return Ok(partner);
+            } 
+            catch (System.Collections.Generic.KeyNotFoundException) 
+            { 
+                return NotFound(); 
+            }
         }
 
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateReferralPartner(Guid id, [FromBody] ReferralPartnerUpdateDto updateDto)
         {
-            var partner = await _referralPartnerService.UpdateReferralPartnerAsync(id, updateDto);
-            return Ok(partner);
-        }
+            if (!ModelState.IsValid) return BadRequest(ModelState);
 
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteReferralPartner(Guid id)
-        {
-            await _referralPartnerService.DeleteReferralPartnerAsync(id);
-            return NoContent();
+            try 
+            {
+                var partner = await _referralPartnerService.UpdateReferralPartnerAsync(id, updateDto, _userContext.CurrentUserId);
+                return Ok(partner);
+            } 
+            catch (System.Collections.Generic.KeyNotFoundException) 
+            { 
+                return NotFound(); 
+            }
+            catch (InvalidOperationException ex) 
+            { 
+                return Conflict(new { message = ex.Message }); 
+            }
         }
     }
 }

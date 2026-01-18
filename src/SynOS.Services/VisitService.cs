@@ -11,6 +11,9 @@ using SynOS.Services.Utils;
 using SynOS.Models.Enums; // Required for TubeType
 using SynOS.Services.Operational; // ADDED
 using SynOS.Services.Security; // ADDED
+using SynOS.Models.Entities.Discounts; // ADDED
+using SynOS.Models.Entities.Revenue; // ADDED
+using SynOS.Models.Entities.Referral; // ADDED
 
 namespace SynOS.Services
 {
@@ -89,6 +92,24 @@ namespace SynOS.Services
             var labLocalToday = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, _labTimeZone).Date;
             var token = await GenerateDailyTokenAsync(visitDto.Department, labLocalToday, actorUserId);
 
+            // PHASE 4.5: Validate Referral Partner (Backend Trust Enforcement)
+            if (visitDto.ReferralPartnerId.HasValue)
+            {
+                var partner = await _context.ReferralPartners
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(p => p.ReferralPartnerId == visitDto.ReferralPartnerId.Value);
+
+                if (partner == null)
+                {
+                    throw new KeyNotFoundException($"Referral partner with ID {visitDto.ReferralPartnerId} not found.");
+                }
+
+                if (!partner.IsActive)
+                {
+                    throw new InvalidOperationException($"Referral partner '{partner.Name}' is inactive and cannot be used.");
+                }
+            }
+
             var visit = new Visit
             {
                 VisitId = Guid.NewGuid(),
@@ -137,9 +158,56 @@ namespace SynOS.Services
             }
             _context.Orders.AddRange(orders);
 
-            // TODO: Implement proper tax calculation logic
+            // PHASE 2: Discount Logic (Backend Truth Enforcement)
+            decimal discountAmount = 0;
+            DiscountMaster? appliedDiscount = null;
+
+            if (!string.IsNullOrEmpty(visitDto.DiscountCode))
+            {
+                appliedDiscount = await _context.DiscountMasters
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(d => d.Code == visitDto.DiscountCode);
+
+                if (appliedDiscount == null)
+                {
+                    throw new KeyNotFoundException($"Discount code '{visitDto.DiscountCode}' not found.");
+                }
+
+                if (!appliedDiscount.IsActive)
+                {
+                    throw new InvalidOperationException($"Discount '{visitDto.DiscountCode}' is inactive.");
+                }
+
+                var now = DateTime.UtcNow;
+                if (appliedDiscount.EffectiveFrom.HasValue && appliedDiscount.EffectiveFrom > now)
+                     throw new InvalidOperationException($"Discount '{visitDto.DiscountCode}' is not yet effective.");
+                
+                if (appliedDiscount.EffectiveTo.HasValue && appliedDiscount.EffectiveTo < now)
+                     throw new InvalidOperationException($"Discount '{visitDto.DiscountCode}' has expired.");
+
+                // Calculate
+                if (appliedDiscount.Type == DiscountType.Percentage)
+                {
+                    discountAmount = grossAmount * (appliedDiscount.Value / 100m);
+                }
+                else
+                {
+                    discountAmount = appliedDiscount.Value;
+                }
+
+                // Max Limit
+                if (appliedDiscount.MaxLimit.HasValue && discountAmount > appliedDiscount.MaxLimit.Value)
+                {
+                    discountAmount = appliedDiscount.MaxLimit.Value;
+                }
+                
+                // Cap at gross
+                if (discountAmount > grossAmount) discountAmount = grossAmount;
+            }
+
+            // Tax Calculation: Tax on Net (Gross - Discount)
             decimal taxRate = 0.05m; // 5% tax placeholder
-            decimal netAmount = grossAmount; // Assuming no discounts for now
+            decimal netAmount = grossAmount - discountAmount;
             decimal taxAmount = netAmount * taxRate;
             decimal totalAmount = netAmount + taxAmount;
 
@@ -148,7 +216,7 @@ namespace SynOS.Services
                 InvoiceId = Guid.NewGuid(),
                 VisitId = visit.VisitId,
                 GrossAmount = grossAmount,
-                DiscountAmount = 0, // TODO: Implement discount logic
+                DiscountAmount = discountAmount,
                 NetAmount = netAmount,
                 TaxAmount = taxAmount,
                 Total = totalAmount,
@@ -158,6 +226,72 @@ namespace SynOS.Services
                 CreatedAt = DateTime.UtcNow
             };
             _context.Invoices.Add(invoice);
+
+            // Record Discount Fact & Event
+            if (appliedDiscount != null)
+            {
+                var discountFact = new DiscountFact
+                {
+                    DiscountFactId = Guid.NewGuid(),
+                    InvoiceId = invoice.InvoiceId,
+                    DiscountDefinitionId = appliedDiscount.DiscountDefinitionId,
+                    GrossAmount = grossAmount,
+                    DiscountAmount = discountAmount,
+                    NetAmountAfterDiscount = netAmount,
+                    AppliedBy = actorUserId.ToString(),
+                    AppliedAt = DateTime.UtcNow,
+                    CreatedAt = DateTime.UtcNow
+                };
+                _context.DiscountFacts.Add(discountFact);
+
+                await _operationalEventWriter.WriteEventAsync(
+                    BranchEventType.DISCOUNT_APPLIED,
+                    _userContext.CurrentBranchId.ToString(),
+                    visit.VisitId.ToString(),
+                    visit.Token,
+                    $"Discount {appliedDiscount.Code} applied: {discountAmount:F2}",
+                    "User",
+                    actorUserId.ToString(),
+                    false, // Defer save
+                    discountFact.DiscountFactId,
+                    "DiscountFact"
+                );
+            }
+
+            // FLOW B: Partner Collects (Operational Clearance)
+            Payment? flowBPayment = null;
+            if (visit.PaymentCollectionModel == "PartnerCollects" && visit.ReferralPartnerId.HasValue)
+            {
+                // 1. Create Virtual Payment to close Invoice
+                flowBPayment = new Payment
+                {
+                    PaymentId = Guid.NewGuid(),
+                    InvoiceId = invoice.InvoiceId,
+                    Amount = invoice.Total, // Gross amount
+                    Method = "PartnerAccount", // Locked System Method
+                    ReceiptNo = $"SYS-{visit.Token}",
+                    ReceivedAt = DateTime.UtcNow,
+                    ReceivedByUserId = Guid.Empty // System User
+                };
+                _context.Payments.Add(flowBPayment);
+
+                // 2. Update Status (Unblock Operations)
+                invoice.Status = "Paid";
+                visit.Status = "Paid";
+
+                // 3. Record Receivable Fact (Financial Truth)
+                var receivable = new SynOS.Models.Entities.AR.ReceivableFact
+                {
+                    ReceivableFactId = Guid.NewGuid(),
+                    SourceVisitId = visit.VisitId,
+                    ReferralPartnerId = visit.ReferralPartnerId.Value,
+                    Amount = invoice.Total,
+                    Currency = invoice.Currency,
+                    OccurredAt = DateTimeOffset.UtcNow,
+                    RecordedAt = DateTimeOffset.UtcNow
+                };
+                _context.ReceivableFacts.Add(receivable);
+            }
 
             await _context.SaveChangesAsync();
             await _auditService.LogAsync(actorUserId, "CreateVisit", "Visit", visit.VisitId, visitDto); // Audit visit creation
@@ -172,6 +306,23 @@ namespace SynOS.Services
                 "User",
                 actorUserId.ToString()
             );
+
+            // FLOW B Event Emission
+            if (flowBPayment != null)
+            {
+                await _operationalEventWriter.WriteEventAsync(
+                    BranchEventType.PAYMENT_RECEIVED,
+                    _userContext.CurrentBranchId.ToString(),
+                    visit.VisitId.ToString(),
+                    visit.Token,
+                    $"Paid via Partner Account (System)",
+                    "System",
+                    "System",
+                    true, // Save immediately (transaction already committed)
+                    flowBPayment.PaymentId,
+                    "Payment"
+                );
+            }
 
             return visit;
         }

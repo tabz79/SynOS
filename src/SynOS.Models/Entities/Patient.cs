@@ -22,7 +22,12 @@ namespace SynOS.Models.Entities
         [StringLength(100)]
         public string LastName { get; set; } = string.Empty;
 
+        [StringLength(256)]
+        public string? DisplayName { get; set; }
+
         public DateTime DateOfBirth { get; set; }
+
+        public bool IsDateOfBirthKnown { get; set; }
 
         [Required]
         [StringLength(10)]

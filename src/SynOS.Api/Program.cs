@@ -168,6 +168,7 @@ builder.Services.AddReferralServices();
 builder.Services.AddPayableServices();
 builder.Services.AddScoped<IVisitService, VisitService>();
 builder.Services.AddScoped<IEditLockService, EditLockService>();
+builder.Services.AddScoped<IDiscountService, DiscountService>(); // ADDED
 builder.Services.AddScoped<ISampleService, SampleService>(provider =>
     new SampleService(
         provider.GetRequiredService<SynOSDbContext>(),
@@ -218,6 +219,8 @@ builder.Services.AddScoped<IReceptionFlowService>(provider =>
         provider.GetRequiredService<IUserContext>() // ADDED
     ));
 builder.Services.AddScoped<IResultService, ResultService>();
+builder.Services.AddScoped<SynOS.Services.Reception.IReceptionSnapshotService, SynOS.Services.Reception.ReceptionSnapshotService>();
+builder.Services.AddScoped<SynOS.Services.Reception.IReceptionPatientService, SynOS.Services.Reception.ReceptionPatientService>(); // ADDED
 builder.Services.AddScoped<IReportService, ReportService>();
 builder.Services.AddScoped<ICriticalValueService, CriticalValueService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();

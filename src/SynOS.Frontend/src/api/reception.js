@@ -11,11 +11,12 @@ export const ReceptionApi = {
 
     /**
      * Commits the reception intent to start a visit.
-     * @param {Object} payload - ReceptionStartVisitRequest
-     * @returns {Promise<Object>} - Response data
+     * @param {Object} payload - { patientId, referralPartnerId, paymentCollectionModel }
+     * @returns {Promise<Object>} - { visitId }
      */
     startVisit: async (payload) => {
-        const response = await fetch('/api/v1/reception/start-visit', {
+        // PER OPTION B: POST /api/v1/reception/visit
+        const response = await fetch('/api/v1/reception/visit', {
             method: 'POST',
             headers: ReceptionApi.getHeaders(),
             body: JSON.stringify(payload)
@@ -56,22 +57,120 @@ export const ReceptionApi = {
     },
 
     /**
-     * Fetches the live dashboard summary snapshot.
-     * @returns {Promise<Object>}
+     * Fetches the dashboard summary metrics.
+     * @returns {Promise<any>}
      */
     getDashboardSummary: async () => {
-        const response = await fetch('/api/v1/dashboard/reception/summary', {
+        const baseUrl = '/api/v1';
+        const response = await fetch(`${baseUrl}/dashboard/reception/summary`, {
+            method: 'GET',
             headers: ReceptionApi.getHeaders()
         });
 
         if (!response.ok) {
-            // Silently return default/null or throw? 
-            // Prompt says: "Render values directly". If init fails, maybe empty state is better.
-            console.error("Failed to load dashboard summary");
-            return null;
+            throw new Error('Failed to fetch dashboard summary');
         }
 
-        return response.json();
+        return await response.json();
+    },
+
+    /**
+     * Fetches the current intake snapshot (Stateless).
+     * @param {string|null} patientId 
+     * @param {string|null} visitId 
+     * @returns {Promise<any>}
+     */
+    getIntakeSnapshot: async (patientId, visitId) => {
+        // Construct Query Params
+        const params = new URLSearchParams();
+        if (patientId) params.append('patientId', patientId);
+        if (visitId) params.append('visitId', visitId);
+
+        const response = await fetch(`/api/v1/reception/intake/snapshot?${params.toString()}`, {
+            method: 'GET',
+            headers: ReceptionApi.getHeaders()
+        });
+
+        if (!response.ok) {
+            if (response.status === 404) return null; // Or empty snapshot
+            throw new Error('Failed to fetch intake snapshot');
+        }
+
+        return await response.json();
+    },
+
+    // DELETED: setIntakePatient (Stateless frontend owns ID)
+    // DELETED: clearIntakePatient (Stateless frontend clears ID)
+
+    /**
+     * Adds a test to the specified visit.
+     * @param {string} visitId
+     * @param {string} testCode 
+     * @returns {Promise<void>}
+     */
+    addTestToVisit: async (visitId, testCode) => {
+        const response = await fetch('/api/v1/reception/visit/test', {
+            method: 'POST',
+            headers: ReceptionApi.getHeaders(),
+            body: JSON.stringify({ visitId, testCode })
+        });
+        if (!response.ok) throw new Error('Failed to add test');
+    },
+
+    /**
+     * Removes a test from the specified visit.
+     * @param {string} visitId
+     * @param {string} testCode 
+     * @returns {Promise<void>}
+     */
+    removeTestFromVisit: async (visitId, testCode) => {
+        const response = await fetch(`/api/v1/reception/visit/test?visitId=${visitId}&testCode=${encodeURIComponent(testCode)}`, {
+            method: 'DELETE',
+            headers: ReceptionApi.getHeaders()
+        });
+        if (!response.ok) throw new Error('Failed to remove test');
+    },
+
+    /**
+     * Applies a discount code to the specified visit.
+     * @param {string} visitId
+     * @param {string} discountCode 
+     * @returns {Promise<void>}
+     */
+    applyDiscountToVisit: async (visitId, discountCode) => {
+        const response = await fetch('/api/v1/reception/visit/discount', {
+            method: 'POST',
+            headers: ReceptionApi.getHeaders(),
+            body: JSON.stringify({ visitId, discountCode })
+        });
+        if (!response.ok) throw new Error('Failed to apply discount');
+    },
+
+    /**
+     * Removes the discount from the specified visit.
+     * @param {string} visitId
+     * @returns {Promise<void>}
+     */
+    removeDiscountFromVisit: async (visitId) => {
+        const response = await fetch(`/api/v1/reception/visit/discount?visitId=${visitId}`, {
+            method: 'DELETE',
+            headers: ReceptionApi.getHeaders()
+        });
+        if (!response.ok) throw new Error('Failed to remove discount');
+    },
+
+    /**
+     * Commits the visit.
+     * @param {string} visitId
+     * @returns {Promise<void>}
+     */
+    commitVisit: async (visitId) => {
+        const response = await fetch('/api/v1/reception/visit/commit', {
+            method: 'POST',
+            headers: ReceptionApi.getHeaders(),
+            body: JSON.stringify({ visitId })
+        });
+        if (!response.ok) throw new Error('Failed to generate bill');
     },
 
     /**

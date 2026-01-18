@@ -78,6 +78,21 @@ export const SignalRService = {
     },
 
     /**
+     * Subscribes to the Intake Snapshot updates.
+     * @param {Function} callback - (snapshot) => void
+     */
+    onIntakeSnapshotUpdated: (callback) => {
+        if (!connection) return;
+        // Clean up previous listeners to avoid duplicates
+        connection.off("ReceptionIntakeUpdated");
+
+        connection.on("ReceptionIntakeUpdated", (snapshot) => {
+            console.log("SignalR: ReceptionIntakeUpdated received", snapshot);
+            callback(snapshot);
+        });
+    },
+
+    /**
      * Stops the connection with a grace period.
      * Only actually disconnects if no subscribers remain after delay.
      */

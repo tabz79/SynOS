@@ -2,8 +2,10 @@ namespace SynOS.Models.Enums
 {
     public enum BranchEventType
     {
+        PATIENT_REGISTERED, // ADDED
         VISIT_STARTED,
         BILL_GENERATED,
+        DISCOUNT_APPLIED, // ADDED
         PAYMENT_RECEIVED,
         VISIT_FINALIZED,
         MOVED_TO_SAMPLE_COLLECTION,

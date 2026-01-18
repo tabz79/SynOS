@@ -9,6 +9,7 @@ namespace SynOS.Models.DTOs.Admin.Referral
         public string Name { get; set; } = string.Empty;
         public PartnerType PartnerType { get; set; }
         public string? ContactInfo { get; set; }
+        public string? PaymentCollectionModel { get; set; } // "LabCollects" or "PartnerCollects"
         public bool IsActive { get; set; }
         public DateTimeOffset CreatedAt { get; set; }
         public DateTimeOffset UpdatedAt { get; set; }
@@ -26,6 +27,9 @@ namespace SynOS.Models.DTOs.Admin.Referral
         [StringLength(500)]
         public string? ContactInfo { get; set; }
 
+        [Required]
+        public string PaymentCollectionModel { get; set; } = "LabCollects";
+
         public bool IsActive { get; set; } = true;
     }
 
@@ -40,6 +44,9 @@ namespace SynOS.Models.DTOs.Admin.Referral
 
         [StringLength(500)]
         public string? ContactInfo { get; set; }
+
+        [Required]
+        public string PaymentCollectionModel { get; set; } = "LabCollects";
         
         public bool IsActive { get; set; }
     }

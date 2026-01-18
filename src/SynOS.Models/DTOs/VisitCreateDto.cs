@@ -19,9 +19,12 @@ namespace SynOS.Models.DTOs
         [Required]
         public List<string> TestCodes { get; set; } = new List<string>();
 
-        public decimal? DiscountAmount { get; set; } // Added
-        public decimal? DiscountPercent { get; set; } // Added
-        public decimal? TaxPercent { get; set; } // Added
+        public string? DiscountCode { get; set; } // ADDED: Backend Truth Authority
+
+        // DEPRECATED: Ignored by backend. Use DiscountCode.
+        public decimal? DiscountAmount { get; set; } 
+        public decimal? DiscountPercent { get; set; } 
+        public decimal? TaxPercent { get; set; } 
 
         [StringLength(500)]
         public string? Notes { get; set; } // Added

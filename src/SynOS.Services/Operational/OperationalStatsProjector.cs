@@ -90,22 +90,23 @@ namespace SynOS.Services.Operational
 
                         case BranchEventType.PAYMENT_RECEIVED:
                             // Rule: Load Payment by SourceId. 
-                            // If SourceId is missing (Legacy), we might fail to get amount.
-                            // We can try to parse TokenId if we decide to pass PaymentId there, or wait for SourceId schema update.
-                            // Assuming SourceId is added to BranchOperationalEvent.
-                            
-                            // NOTE: Since I am editing this file before the Entity, I will assume SourceId exists.
-                            // If it doesn't compile, I will know I missed the Entity update step.
-                            // I will use reflection or dynamic if needed, but better to update Entity first.
-                            // Proceeding with assumption that I WILL update Entity in next step.
-                            
                             if (evt.SourceId.HasValue)
                             {
                                 var payment = await _context.Payments.FindAsync(evt.SourceId.Value);
                                 if (payment != null)
                                 {
-                                    userStats.PaymentsTotal += payment.Amount;
-                                    updated = true;
+                                    // CRITICAL: Filter virtual payments (Flow B)
+                                    if (payment.Method != "PartnerAccount")
+                                    {
+                                        userStats.PaymentsTotal += payment.Amount;
+                                        updated = true;
+                                    }
+                                    else
+                                    {
+                                        // It's a valid event, but we don't count it.
+                                        // We still need to mark it processed.
+                                        updated = true; // Trigger save of idempotency record
+                                    }
                                 }
                             }
                             break;

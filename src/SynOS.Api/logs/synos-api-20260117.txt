@@ -420,3 +420,32 @@ Error Number:207,State:1,Class:16
 2026-01-17 11:43:55.941 +05:30 [INF] Analyzer TCP Listener Service stopping...
 2026-01-17 11:43:55.952 +05:30 [INF] Analyzer TCP Listener Service stopped.
 2026-01-17 11:43:55.962 +05:30 [INF] Notification Worker Service stopping gracefully.
+2026-01-17 11:44:27.082 +05:30 [WRN] No store type was specified for the decimal property 'MaxLimit' on entity type 'DiscountMaster'. This will cause values to be silently truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.
+2026-01-17 11:44:27.263 +05:30 [WRN] No store type was specified for the decimal property 'Amount' on entity type 'PayrollAdjustment'. This will cause values to be silently truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.
+2026-01-17 11:44:27.297 +05:30 [WRN] No store type was specified for the decimal property 'Amount' on entity type 'PayrollFact'. This will cause values to be silently truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.
+2026-01-17 11:44:34.514 +05:30 [INF] Notification Worker Service running.
+2026-01-17 11:44:34.715 +05:30 [INF] ExpiredLockCleanupService is starting.
+2026-01-17 11:44:34.905 +05:30 [INF] Analyzer TCP Listener Service starting...
+2026-01-17 11:44:34.919 +05:30 [WRN] No analyzer TCP listeners configured in appsettings.json.
+2026-01-17 11:44:54.937 +05:30 [WRN] Failed to determine the https port for redirect.
+2026-01-17 12:50:46.650 +05:30 [INF] Analyzer TCP Listener Service stopping...
+2026-01-17 12:50:46.664 +05:30 [INF] Analyzer TCP Listener Service stopped.
+2026-01-17 12:50:46.680 +05:30 [INF] Notification Worker Service stopping gracefully.
+2026-01-17 18:13:59.286 +05:30 [WRN] No store type was specified for the decimal property 'MaxLimit' on entity type 'DiscountMaster'. This will cause values to be silently truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.
+2026-01-17 18:13:59.406 +05:30 [WRN] No store type was specified for the decimal property 'Amount' on entity type 'PayrollAdjustment'. This will cause values to be silently truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.
+2026-01-17 18:13:59.439 +05:30 [WRN] No store type was specified for the decimal property 'Amount' on entity type 'PayrollFact'. This will cause values to be silently truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.
+2026-01-17 18:14:09.377 +05:30 [INF] Notification Worker Service running.
+2026-01-17 18:14:09.551 +05:30 [INF] ExpiredLockCleanupService is starting.
+2026-01-17 18:14:09.702 +05:30 [INF] Analyzer TCP Listener Service starting...
+2026-01-17 18:14:09.714 +05:30 [WRN] No analyzer TCP listeners configured in appsettings.json.
+2026-01-17 18:17:57.524 +05:30 [INF] Analyzer TCP Listener Service stopping...
+2026-01-17 18:17:57.531 +05:30 [INF] Analyzer TCP Listener Service stopped.
+2026-01-17 18:17:57.551 +05:30 [INF] Notification Worker Service stopping gracefully.
+2026-01-17 18:42:51.489 +05:30 [WRN] No store type was specified for the decimal property 'MaxLimit' on entity type 'DiscountMaster'. This will cause values to be silently truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.
+2026-01-17 18:42:51.599 +05:30 [WRN] No store type was specified for the decimal property 'Amount' on entity type 'PayrollAdjustment'. This will cause values to be silently truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.
+2026-01-17 18:42:51.626 +05:30 [WRN] No store type was specified for the decimal property 'Amount' on entity type 'PayrollFact'. This will cause values to be silently truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.
+2026-01-17 18:42:57.981 +05:30 [INF] Notification Worker Service running.
+2026-01-17 18:42:58.124 +05:30 [INF] ExpiredLockCleanupService is starting.
+2026-01-17 18:42:58.244 +05:30 [INF] Analyzer TCP Listener Service starting...
+2026-01-17 18:42:58.251 +05:30 [WRN] No analyzer TCP listeners configured in appsettings.json.
+2026-01-17 18:45:26.000 +05:30 [WRN] Failed to determine the https port for redirect.

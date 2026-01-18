@@ -9,6 +9,9 @@ using SynOS.Data;
 using SynOS.Models.DTOs;
 using SynOS.Models.Entities;
 
+using SynOS.Services.Operational; // ADDED
+using SynOS.Services.Security; // ADDED
+
 namespace SynOS.Services
 {
     public class PatientService : IPatientService
@@ -16,12 +19,21 @@ namespace SynOS.Services
         private readonly SynOSDbContext _context;
         private readonly IAuditService _auditService;
         private readonly IMapper _mapper;
+        private readonly IOperationalEventWriter _operationalEventWriter; // ADDED
+        private readonly IUserContext _userContext; // ADDED
 
-        public PatientService(SynOSDbContext context, IAuditService auditService, IMapper mapper)
+        public PatientService(
+            SynOSDbContext context, 
+            IAuditService auditService, 
+            IMapper mapper,
+            IOperationalEventWriter operationalEventWriter,
+            IUserContext userContext)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
             _auditService = auditService ?? throw new ArgumentNullException(nameof(auditService));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+            _operationalEventWriter = operationalEventWriter ?? throw new ArgumentNullException(nameof(operationalEventWriter));
+            _userContext = userContext ?? throw new ArgumentNullException(nameof(userContext));
         }
 
         // Create patient and return PatientDto (avoids returning entity with navigation properties)
@@ -79,6 +91,25 @@ namespace SynOS.Services
                     dto.Gender,
                     dto.CurrentPhoneNumber
                 }
+            );
+
+            // PHASE 3: Emit Patient Registered Event
+            var age = DateTime.UtcNow.Year - patient.DateOfBirth.Year;
+            
+            if (patient.DateOfBirth > DateTime.UtcNow.AddYears(-age)) age--;
+
+            var summary = $"New patient registered: {patient.FirstName} {patient.LastName} ({patient.Gender}, {age})";
+            var currentUserId = _userContext.CurrentUserId != Guid.Empty ? _userContext.CurrentUserId.ToString() : "System";
+            var currentBranchId = _userContext.CurrentBranchId != Guid.Empty ? _userContext.CurrentBranchId.ToString() : Guid.Empty.ToString();
+
+            await _operationalEventWriter.WriteEventAsync(
+                Models.Enums.BranchEventType.PATIENT_REGISTERED,
+                currentBranchId,
+                patient.PatientId.ToString(),
+                patient.MRN,
+                summary,
+                "Patient",
+                currentUserId
             );
 
             return dto;
