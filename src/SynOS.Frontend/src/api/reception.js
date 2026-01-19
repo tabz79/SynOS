@@ -15,19 +15,27 @@ export const ReceptionApi = {
      * @returns {Promise<Object>} - { visitId }
      */
     startVisit: async (payload) => {
-        // PER OPTION B: POST /api/v1/reception/visit
-        const response = await fetch('/api/v1/reception/visit', {
+        // PER OPTION B: POST /api/v1/reception/start-visit (Confirmed in ReceptionController.cs)
+        const response = await fetch('/api/v1/reception/start-visit', {
             method: 'POST',
             headers: ReceptionApi.getHeaders(),
             body: JSON.stringify(payload)
         });
 
         if (!response.ok) {
+            if (response.status === 401) {
+                console.warn("Unauthorized: Session expired or invalid.");
+                localStorage.removeItem('synos_jwt');
+                window.location.href = '/login'; // Force re-auth
+                throw new Error("Unauthorized");
+            }
             const errorData = await response.json().catch(() => ({}));
             throw new Error(errorData.message || `Server Error: ${response.status}`);
         }
 
-        return response.json();
+        const json = await response.json();
+        // UNWRAP API RESPONSE: Backend wraps in { data: { ... }, success: true }
+        return json.data || json;
     },
 
     /**
@@ -109,6 +117,7 @@ export const ReceptionApi = {
      * @returns {Promise<void>}
      */
     addTestToVisit: async (visitId, testCode) => {
+        // PER PHASE 6.2: POST /api/v1/reception/visit/test
         const response = await fetch('/api/v1/reception/visit/test', {
             method: 'POST',
             headers: ReceptionApi.getHeaders(),
@@ -124,6 +133,7 @@ export const ReceptionApi = {
      * @returns {Promise<void>}
      */
     removeTestFromVisit: async (visitId, testCode) => {
+        // PER PHASE 6.2: DELETE /api/v1/reception/visit/test
         const response = await fetch(`/api/v1/reception/visit/test?visitId=${visitId}&testCode=${encodeURIComponent(testCode)}`, {
             method: 'DELETE',
             headers: ReceptionApi.getHeaders()
@@ -185,6 +195,12 @@ export const ReceptionApi = {
         });
 
         if (!response.ok) {
+            if (response.status === 401) {
+                console.warn("Unauthorized: Session expired or invalid.");
+                localStorage.removeItem('synos_jwt');
+                window.location.href = '/login';
+                throw new Error("Unauthorized");
+            }
             const errorText = await response.text();
             console.error("DEBUG: Activity Stream Failed Response:", response.status, errorText);
             throw new Error(`Activity Stream Failed (${response.status}): ${errorText}`);
@@ -199,5 +215,25 @@ export const ReceptionApi = {
         }
 
         return data;
+    },
+
+    /**
+     * Registers a new patient.
+     * @param {Object} payload - { name, mobile, age, gender }
+     * @returns {Promise<Object>} - { patientId }
+     */
+    registerPatient: async (payload) => {
+        const response = await fetch('/api/v1/reception/intake/register-patient', {
+            method: 'POST',
+            headers: ReceptionApi.getHeaders(),
+            body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) {
+            const error = await response.json().catch(() => ({}));
+            throw new Error(error.message || "Failed to register patient");
+        }
+
+        return response.json();
     }
 };

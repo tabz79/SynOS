@@ -233,6 +233,7 @@ namespace SynOS.Data
             {
                 entity.ToTable("ReferralPayableFacts");
                 entity.HasKey(e => e.ReferralPayableFactId);
+                entity.HasIndex(e => e.SourceVisitId).IsUnique(); // ADDED: Idempotency enforcement
                 entity.Property(e => e.Amount).HasColumnType("decimal(18, 4)");
             });
 

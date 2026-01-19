@@ -83,10 +83,38 @@ namespace SynOS.Services.Reception
                 Mobile = visit.Patient.CurrentPhoneNumber
             };
 
-            // Resolve Referral Partner Name (Optimization: query only if needed or Include above?)
-            // Visit entity might not have navigation prop for ReferralPartner if not configured.
-            // Let's assume we query it if ID exists.
-            IntakeReferralPartner? referralInfo = null;
+            // 1. Resolve Active Invoice and Meta-data
+            var invoice = visit.Invoices.OrderByDescending(i => i.CreatedAt).FirstOrDefault();
+            
+            AppliedDiscountInfo? appliedDiscount = null;
+            if (invoice != null)
+            {
+                var discountFact = await _context.DiscountFacts
+                    .AsNoTracking()
+                    .Where(df => df.InvoiceId == invoice.InvoiceId)
+                    .OrderByDescending(df => df.AppliedAt)
+                    .FirstOrDefaultAsync();
+
+                if (discountFact != null)
+                {
+                    var master = await _context.DiscountMasters
+                        .AsNoTracking()
+                        .FirstOrDefaultAsync(dm => dm.DiscountDefinitionId == discountFact.DiscountDefinitionId);
+                    
+                    if (master != null)
+                    {
+                        appliedDiscount = new AppliedDiscountInfo
+                        {
+                            Id = master.DiscountDefinitionId,
+                            Code = master.Code,
+                            Name = master.Name,
+                            Amount = discountFact.DiscountAmount
+                        };
+                    }
+                }
+            }
+
+            ReferralInfo? referralBillingInfo = null;
             if (visit.ReferralPartnerId.HasValue)
             {
                 var partner = await _context.ReferralPartners
@@ -95,7 +123,15 @@ namespace SynOS.Services.Reception
                 
                 if (partner != null)
                 {
-                    referralInfo = new IntakeReferralPartner
+                    referralBillingInfo = new ReferralInfo
+                    {
+                        Id = partner.ReferralPartnerId,
+                        Name = partner.Name,
+                        FlowType = partner.PaymentCollectionModel == "PartnerCollects" ? "FlowA" : "FlowB"
+                    };
+                    
+                    // Also update the Visit level partner info for legacy compatibility if needed
+                    snapshot.Visit.ReferralPartner = new IntakeReferralPartner
                     {
                         PartnerId = partner.ReferralPartnerId,
                         Name = partner.Name,
@@ -104,26 +140,7 @@ namespace SynOS.Services.Reception
                 }
             }
 
-            // Populate Visit
-            snapshot.Visit = new IntakeVisit
-            {
-                VisitId = visit.VisitId,
-                VisitToken = visit.Token,
-                Status = visit.Status,
-                IsReferred = visit.IsReferred,
-                ReferralPartner = referralInfo,
-                Tests = visit.Orders.Select(o => new IntakeTestItem
-                {
-                    TestId = o.TestId,
-                    TestCode = o.TestCode,
-                    TestName = o.Test.TestName, // Assuming Order has Nav prop to Test
-                    Department = o.Department,
-                    Price = o.Price
-                }).ToList()
-            };
-
-            // Populate Billing
-            var invoice = visit.Invoices.OrderByDescending(i => i.CreatedAt).FirstOrDefault(); // Active invoice
+            // 2. Populate Billing Contract
             if (invoice != null)
             {
                 snapshot.Billing = new IntakeBilling
@@ -131,16 +148,23 @@ namespace SynOS.Services.Reception
                     InvoiceId = invoice.InvoiceId,
                     GrossAmount = invoice.GrossAmount,
                     DiscountAmount = invoice.DiscountAmount,
+                    NetAmount = invoice.NetAmount,
                     TaxAmount = invoice.TaxAmount,
-                    NetAmount = invoice.Total, // Total is Net + Tax usually.
-                    PaymentStatus = invoice.Status,
-                    PaymentMethod = invoice.Payments.FirstOrDefault()?.Method, // Simplified
-                    IsLocked = invoice.Status == "Paid" || invoice.Status == "Cancelled"
+                    TotalAmount = invoice.Total,
+                    
+                    AppliedDiscount = appliedDiscount,
+                    Referral = referralBillingInfo,
+                    
+                    PaymentStatus = invoice.Status, // "PendingPayment" | "Paid"
+                    PaymentMethod = invoice.Payments.FirstOrDefault()?.Method,
+                    
+                    IsEditable = visit.Status != "Paid" && visit.Status != "Cancelled",
+                    IsLocked = visit.Status == "Paid"
                 };
             }
 
-            // Derived UI State
-            bool isPaid = visit.Status == "Paid" || (snapshot.Billing?.PaymentStatus == "Paid");
+            // 3. Derived UI Hints (using logic from Billing contract)
+            bool isPaid = visit.Status == "Paid";
             bool isCancelled = visit.Status == "Cancelled";
             bool hasTests = snapshot.Visit.Tests.Any();
             bool hasBill = snapshot.Billing != null;
@@ -151,14 +175,8 @@ namespace SynOS.Services.Reception
 
             if (!snapshot.UiState.IsReadOnly)
             {
-                snapshot.UiState.CanAddTests = true; // Can allow add/remove until locked/paid? Usually until Bill Gen?
-                // Requirement: "Billed Visit (Invoice generated, awaiting payment)". Usually locks tests?
-                // Let's assume Generating Bill locks tests structure in V1.
-                if (hasBill) 
-                {
-                    snapshot.UiState.CanAddTests = false; 
-                    snapshot.UiState.ReadOnlyReason = "Bill Generated"; // Soft lock
-                }
+                snapshot.UiState.CanAddTests = !hasBill; // Locked once billed in V1 flow
+                if (hasBill) snapshot.UiState.ReadOnlyReason = "Bill Generated";
 
                 snapshot.UiState.CanGenerateBill = hasTests && !hasBill;
                 snapshot.UiState.CanAcceptPayment = hasBill && !isPaid;

@@ -20,48 +20,80 @@ export function IntentPanel() {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
 
-    // State for Patient ID (Fix-1)
+    // State for Patient ID (Fix-1) & Visit ID (Phase 6.1)
     const [currentPatientId, setCurrentPatientId] = useState(null);
+    const [currentVisitId, setCurrentVisitId] = useState(null);
+
+    const loadSnapshot = async () => {
+        setIsLoading(true);
+        try {
+            const data = await ReceptionApi.getIntakeSnapshot(currentPatientId, currentVisitId);
+            console.log("Intake Snapshot Loaded:", data);
+            setSnapshot(data);
+
+            // Sync local state if snapshot returns a visit (e.g. continuing existing)
+            if (data?.visit?.id && !currentVisitId) {
+                setCurrentVisitId(data.visit.id);
+            }
+            if (data?.visit?.visitId && !currentVisitId) {
+                setCurrentVisitId(data.visit.visitId);
+            }
+        } catch (err) {
+            console.error("Failed to load intake snapshot:", err);
+            setError("Failed to load session. Please try closing and reopening.");
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     // Initial Fetch & Subscription
     useEffect(() => {
         if (!isOpen) return;
-
-        const loadSnapshot = async () => {
-            setIsLoading(true);
-            try {
-                // Pass patientId if we have it? 
-                // Fix-1 just says fix the crash. 
-                // We'll keep the basic call for now, or update it if the previous "getSnapshot" change was already done.
-                // Assuming "reception.js" might have been updated in my "Option B" attempt partially?
-                // I will pass `currentPatientId` if the API supports it, otherwise default.
-                const data = await ReceptionApi.getIntakeSnapshot(currentPatientId);
-                console.log("Intake Snapshot Loaded:", data);
-                setSnapshot(data);
-            } catch (err) {
-                console.error("Failed to load intake snapshot:", err);
-                setError("Failed to load session. Please try closing and reopening.");
-            } finally {
-                setIsLoading(false);
-            }
-        };
 
         loadSnapshot();
 
         const handleUpdate = (newSnapshot) => {
             console.log("Snapshot Update:", newSnapshot);
             setSnapshot(newSnapshot);
+            // Sync visit ID if provided
+            if (newSnapshot?.visit?.id) setCurrentVisitId(newSnapshot.visit.id);
+            if (newSnapshot?.visit?.visitId) setCurrentVisitId(newSnapshot.visit.visitId);
         };
         SignalRService.onIntakeSnapshotUpdated(handleUpdate);
-    }, [isOpen, currentPatientId]); // Refetch on patient change
+    }, [isOpen, currentPatientId, currentVisitId]);
 
-    // Fix-1 HANDLERS
+    // HANDLERS
     const handleSelectPatient = (patient) => {
         setCurrentPatientId(patient.id);
+        // We might want to see if this patient has an active visit? 
+        // For now, let snapshot resolve that.
     };
 
     const handleClearPatient = () => {
         setCurrentPatientId(null);
+        setCurrentVisitId(null);
+    };
+
+    const handleStartVisit = async () => {
+        if (!currentPatientId) return;
+        setIsLoading(true);
+        try {
+            // Default payload for Phase 6.1 (Strict per prompt & DTO)
+            const payload = {
+                patientId: currentPatientId,
+                dept: "Pathology", // Matched to DTO 'Dept'
+                testCodes: [],     // Explicit empty array (Backend allows this now)
+                paymentCollectionModel: "Direct",
+                referralPartnerId: null
+            };
+            const { visitId } = await ReceptionApi.startVisit(payload);
+            setCurrentVisitId(visitId);
+            // Effect will trigger snapshot reload
+        } catch (err) {
+            console.error("Start Visit Failed", err);
+            setError("Failed to start visit: " + err.message);
+            setIsLoading(false); // Only unset on error, otherwise wait for snapshot
+        }
     };
 
     if (!isOpen) return null;
@@ -115,13 +147,31 @@ export function IntentPanel() {
                             onClearPatient={handleClearPatient}
                         />
 
-                        {/* Section 2: Visit & Tests */}
+                        {/* CTA: Start Visit (Phase 6.1) */}
+                        {hasPatient && !hasVisit && !isLoading && (
+                            <div className="animate-in fade-in slide-in-from-top-4">
+                                <button
+                                    onClick={handleStartVisit}
+                                    className="w-full bg-synos-primary hover:bg-synos-primary/90 text-white font-bold py-3 px-4 rounded-lg shadow-lg shadow-synos-primary/20 flex items-center justify-center gap-2 transition-all transform hover:scale-[1.02]"
+                                >
+                                    <span>Start Visit & Proceed to Tests</span>
+                                    <ArrowRight className="w-5 h-5" />
+                                </button>
+                                <div className="text-center mt-2 text-xs text-zinc-500">
+                                    Creating Direct Visit (Cash/Card)
+                                </div>
+                            </div>
+                        )}
 
                         {/* Section 2: Visit & Tests */}
-                        {/* Only visible if Patient is identified */}
-                        {hasPatient && (
+                        {/* Only visible if Visit is initialized */}
+                        {hasVisit && (
                             <div className="animate-in slide-in-from-bottom-5 duration-500 fade-in">
-                                <VisitDetails snapshot={snapshot} />
+                                <VisitDetails
+                                    snapshot={snapshot}
+                                    visitId={snapshot.visit.visitId || snapshot.visit.id}
+                                    onVisitUpdated={loadSnapshot}
+                                />
                             </div>
                         )}
 
@@ -151,7 +201,7 @@ export function IntentPanel() {
                                 const btn = document.activeElement;
                                 if (btn) btn.disabled = true;
 
-                                await ReceptionApi.commitIntake();
+                                await ReceptionApi.commitVisit(snapshot.visit.id);
                                 // Success - Panel might close or show "Success" state based on next snapshot.
                                 // If snapshot dictates "Session Closed", the panel effect should handle it 
                                 // or we might get a specific event. 
@@ -173,7 +223,7 @@ export function IntentPanel() {
                             <>Generate Bill & Print <ArrowRight className="w-4 h-4" /></>
                         ) : (
                             <span className="flex items-center gap-2">
-                                {snapshot.visit ? "Add Tests to Proceed" : "Identify Patient to Proceed"}
+                                {hasVisit ? "Add Tests to Proceed" : "Identify Patient & Start Visit"}
                             </span>
                         )}
                     </button>

@@ -1,185 +1,29 @@
+console logs:
 react-dom_client.js?v=4bd38141:20103 Download the React DevTools for a better development experience: https://react.dev/link/react-devtools
 signalr.js:16 SignalR: Subscriber added (Total: 1)
-signalr.js:48 [2026-01-17T13:18:43.625Z] Information: Normalizing '/dashboardHub' to 'http://localhost:5173/dashboardHub'.
-signalr.js:52 SignalR: Starting connection...
-signalr.js:101 SignalR: Subscriber removed (Total: 0)
+signalr.js:49 [2026-01-18T12:39:42.987Z] Information: Normalizing '/dashboardHub' to 'http://localhost:5173/dashboardHub'.
+signalr.js:53 SignalR: Starting connection...
+signalr.js:102 SignalR: Subscriber removed (Total: 0)
 signalr.js:16 SignalR: Subscriber added (Total: 1)
 signalr.js:22 SignalR: Aborted scheduled disconnect
-@microsoft_signalr.js?v=4bd38141:301 [2026-01-17T13:18:43.830Z] Information: WebSocket connected to ws://localhost:5173/dashboardHub?access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiJhN2ZjZjkzYy04OTg4LTRhZDgtYmU4My1iOTIyZGExNTVmNDIiLCJlbWFpbCI6InJlY2VwdGlvbkBsYWIuY29tIiwidW5pcXVlX25hbWUiOiJSZWNlcHRpb24gVXNlciIsImJyYW5jaF9pZCI6ImEwMDAwMDAwLTAwMDAtMDAwMC0wMDAwLTAwMDAwMDAwMDAwMSIsInJvbGUiOiJSZWNlcHRpb25pc3QiLCJuYmYiOjE3Njg2Mjk0MTYsImV4cCI6MTc2ODcxNTgxNiwiaWF0IjoxNzY4NjI5NDE2LCJpc3MiOiJTeW5PUy5BcGkiLCJhdWQiOiJTeW5PUy5BcHAifQ.z5vM2HyAVBF70lVZMS6mk4yXWUGoDzyYQTxBje3qo4s.
-@microsoft_signalr.js?v=4bd38141:301 [2026-01-17T13:18:43.836Z] Information: Using HubProtocol 'json'.
-signalr.js:55 SignalR: Connected to /dashboardHub
-reception.js:207 DEBUG: Activity Stream Payload: []
-reception.js:207 DEBUG: Activity Stream Payload: []
-IntentPanel.jsx:31 Intake Snapshot Loaded: {context: {…}, patient: null, visit: null, billing: null, uiState: {…}}
-IntentPanel.jsx:31 Intake Snapshot Loaded: {context: {…}, patient: null, visit: null, billing: null, uiState: {…}}
-reception.js:104  POST http://localhost:5173/api/v1/reception/intake/patient 404 (Not Found)
-setIntakePatient @ reception.js:104
-handleSelectPatient @ PatientIdentification.jsx:65
-onClick @ PatientIdentification.jsx:199
-executeDispatch @ react-dom_client.js?v=4bd38141:13622
-runWithFiberInDEV @ react-dom_client.js?v=4bd38141:997
-processDispatchQueue @ react-dom_client.js?v=4bd38141:13658
-(anonymous) @ react-dom_client.js?v=4bd38141:14071
-batchedUpdates$1 @ react-dom_client.js?v=4bd38141:2626
-dispatchEventForPluginEventSystem @ react-dom_client.js?v=4bd38141:13763
-dispatchEvent @ react-dom_client.js?v=4bd38141:16784
-dispatchDiscreteEvent @ react-dom_client.js?v=4bd38141:16765
-<button>
-exports.jsxDEV @ react_jsx-dev-runtime.js?v=4bd38141:247
-PatientIdentification @ PatientIdentification.jsx:195
-react_stack_bottom_frame @ react-dom_client.js?v=4bd38141:18509
-renderWithHooksAgain @ react-dom_client.js?v=4bd38141:5729
-renderWithHooks @ react-dom_client.js?v=4bd38141:5665
-updateFunctionComponent @ react-dom_client.js?v=4bd38141:7475
-beginWork @ react-dom_client.js?v=4bd38141:8525
-runWithFiberInDEV @ react-dom_client.js?v=4bd38141:997
-performUnitOfWork @ react-dom_client.js?v=4bd38141:12561
-workLoopSync @ react-dom_client.js?v=4bd38141:12424
-renderRootSync @ react-dom_client.js?v=4bd38141:12408
-performWorkOnRoot @ react-dom_client.js?v=4bd38141:11766
-performSyncWorkOnRoot @ react-dom_client.js?v=4bd38141:13517
-flushSyncWorkAcrossRoots_impl @ react-dom_client.js?v=4bd38141:13414
-processRootScheduleInMicrotask @ react-dom_client.js?v=4bd38141:13437
-(anonymous) @ react-dom_client.js?v=4bd38141:13531
-<PatientIdentification>
-exports.jsxDEV @ react_jsx-dev-runtime.js?v=4bd38141:247
-IntentPanel @ IntentPanel.jsx:104
-react_stack_bottom_frame @ react-dom_client.js?v=4bd38141:18509
-renderWithHooksAgain @ react-dom_client.js?v=4bd38141:5729
-renderWithHooks @ react-dom_client.js?v=4bd38141:5665
-updateFunctionComponent @ react-dom_client.js?v=4bd38141:7475
-beginWork @ react-dom_client.js?v=4bd38141:8525
-runWithFiberInDEV @ react-dom_client.js?v=4bd38141:997
-performUnitOfWork @ react-dom_client.js?v=4bd38141:12561
-workLoopSync @ react-dom_client.js?v=4bd38141:12424
-renderRootSync @ react-dom_client.js?v=4bd38141:12408
-performWorkOnRoot @ react-dom_client.js?v=4bd38141:11766
-performWorkOnRootViaSchedulerTask @ react-dom_client.js?v=4bd38141:13505
-performWorkUntilDeadline @ react-dom_client.js?v=4bd38141:36
-<IntentPanel>
-exports.jsxDEV @ react_jsx-dev-runtime.js?v=4bd38141:247
-ReceptionScreen @ ReceptionScreen.jsx:137
-react_stack_bottom_frame @ react-dom_client.js?v=4bd38141:18509
-renderWithHooksAgain @ react-dom_client.js?v=4bd38141:5729
-renderWithHooks @ react-dom_client.js?v=4bd38141:5665
-updateFunctionComponent @ react-dom_client.js?v=4bd38141:7475
-beginWork @ react-dom_client.js?v=4bd38141:8525
-runWithFiberInDEV @ react-dom_client.js?v=4bd38141:997
-performUnitOfWork @ react-dom_client.js?v=4bd38141:12561
-workLoopSync @ react-dom_client.js?v=4bd38141:12424
-renderRootSync @ react-dom_client.js?v=4bd38141:12408
-performWorkOnRoot @ react-dom_client.js?v=4bd38141:11766
-performSyncWorkOnRoot @ react-dom_client.js?v=4bd38141:13517
-flushSyncWorkAcrossRoots_impl @ react-dom_client.js?v=4bd38141:13414
-processRootScheduleInMicrotask @ react-dom_client.js?v=4bd38141:13437
-(anonymous) @ react-dom_client.js?v=4bd38141:13531
-<ReceptionScreen>
-exports.jsxDEV @ react_jsx-dev-runtime.js?v=4bd38141:247
-App @ App.jsx:29
-react_stack_bottom_frame @ react-dom_client.js?v=4bd38141:18509
-renderWithHooksAgain @ react-dom_client.js?v=4bd38141:5729
-renderWithHooks @ react-dom_client.js?v=4bd38141:5665
-updateFunctionComponent @ react-dom_client.js?v=4bd38141:7475
-beginWork @ react-dom_client.js?v=4bd38141:8525
-runWithFiberInDEV @ react-dom_client.js?v=4bd38141:997
-performUnitOfWork @ react-dom_client.js?v=4bd38141:12561
-workLoopSync @ react-dom_client.js?v=4bd38141:12424
-renderRootSync @ react-dom_client.js?v=4bd38141:12408
-performWorkOnRoot @ react-dom_client.js?v=4bd38141:11766
-performWorkOnRootViaSchedulerTask @ react-dom_client.js?v=4bd38141:13505
-performWorkUntilDeadline @ react-dom_client.js?v=4bd38141:36
-<App>
-exports.jsxDEV @ react_jsx-dev-runtime.js?v=4bd38141:247
-(anonymous) @ main.jsx:8
-PatientIdentification.jsx:69 Failed to set patient Error: Failed to set patient
-    at Object.setIntakePatient (reception.js:109:33)
-    at async handleSelectPatient (PatientIdentification.jsx:65:13)
-handleSelectPatient @ PatientIdentification.jsx:69
-await in handleSelectPatient
-onClick @ PatientIdentification.jsx:199
-executeDispatch @ react-dom_client.js?v=4bd38141:13622
-runWithFiberInDEV @ react-dom_client.js?v=4bd38141:997
-processDispatchQueue @ react-dom_client.js?v=4bd38141:13658
-(anonymous) @ react-dom_client.js?v=4bd38141:14071
-batchedUpdates$1 @ react-dom_client.js?v=4bd38141:2626
-dispatchEventForPluginEventSystem @ react-dom_client.js?v=4bd38141:13763
-dispatchEvent @ react-dom_client.js?v=4bd38141:16784
-dispatchDiscreteEvent @ react-dom_client.js?v=4bd38141:16765
-<button>
-exports.jsxDEV @ react_jsx-dev-runtime.js?v=4bd38141:247
-PatientIdentification @ PatientIdentification.jsx:195
-react_stack_bottom_frame @ react-dom_client.js?v=4bd38141:18509
-renderWithHooksAgain @ react-dom_client.js?v=4bd38141:5729
-renderWithHooks @ react-dom_client.js?v=4bd38141:5665
-updateFunctionComponent @ react-dom_client.js?v=4bd38141:7475
-beginWork @ react-dom_client.js?v=4bd38141:8525
-runWithFiberInDEV @ react-dom_client.js?v=4bd38141:997
-performUnitOfWork @ react-dom_client.js?v=4bd38141:12561
-workLoopSync @ react-dom_client.js?v=4bd38141:12424
-renderRootSync @ react-dom_client.js?v=4bd38141:12408
-performWorkOnRoot @ react-dom_client.js?v=4bd38141:11766
-performSyncWorkOnRoot @ react-dom_client.js?v=4bd38141:13517
-flushSyncWorkAcrossRoots_impl @ react-dom_client.js?v=4bd38141:13414
-processRootScheduleInMicrotask @ react-dom_client.js?v=4bd38141:13437
-(anonymous) @ react-dom_client.js?v=4bd38141:13531
-<PatientIdentification>
-exports.jsxDEV @ react_jsx-dev-runtime.js?v=4bd38141:247
-IntentPanel @ IntentPanel.jsx:104
-react_stack_bottom_frame @ react-dom_client.js?v=4bd38141:18509
-renderWithHooksAgain @ react-dom_client.js?v=4bd38141:5729
-renderWithHooks @ react-dom_client.js?v=4bd38141:5665
-updateFunctionComponent @ react-dom_client.js?v=4bd38141:7475
-beginWork @ react-dom_client.js?v=4bd38141:8525
-runWithFiberInDEV @ react-dom_client.js?v=4bd38141:997
-performUnitOfWork @ react-dom_client.js?v=4bd38141:12561
-workLoopSync @ react-dom_client.js?v=4bd38141:12424
-renderRootSync @ react-dom_client.js?v=4bd38141:12408
-performWorkOnRoot @ react-dom_client.js?v=4bd38141:11766
-performWorkOnRootViaSchedulerTask @ react-dom_client.js?v=4bd38141:13505
-performWorkUntilDeadline @ react-dom_client.js?v=4bd38141:36
-<IntentPanel>
-exports.jsxDEV @ react_jsx-dev-runtime.js?v=4bd38141:247
-ReceptionScreen @ ReceptionScreen.jsx:137
-react_stack_bottom_frame @ react-dom_client.js?v=4bd38141:18509
-renderWithHooksAgain @ react-dom_client.js?v=4bd38141:5729
-renderWithHooks @ react-dom_client.js?v=4bd38141:5665
-updateFunctionComponent @ react-dom_client.js?v=4bd38141:7475
-beginWork @ react-dom_client.js?v=4bd38141:8525
-runWithFiberInDEV @ react-dom_client.js?v=4bd38141:997
-performUnitOfWork @ react-dom_client.js?v=4bd38141:12561
-workLoopSync @ react-dom_client.js?v=4bd38141:12424
-renderRootSync @ react-dom_client.js?v=4bd38141:12408
-performWorkOnRoot @ react-dom_client.js?v=4bd38141:11766
-performSyncWorkOnRoot @ react-dom_client.js?v=4bd38141:13517
-flushSyncWorkAcrossRoots_impl @ react-dom_client.js?v=4bd38141:13414
-processRootScheduleInMicrotask @ react-dom_client.js?v=4bd38141:13437
-(anonymous) @ react-dom_client.js?v=4bd38141:13531
-<ReceptionScreen>
-exports.jsxDEV @ react_jsx-dev-runtime.js?v=4bd38141:247
-App @ App.jsx:29
-react_stack_bottom_frame @ react-dom_client.js?v=4bd38141:18509
-renderWithHooksAgain @ react-dom_client.js?v=4bd38141:5729
-renderWithHooks @ react-dom_client.js?v=4bd38141:5665
-updateFunctionComponent @ react-dom_client.js?v=4bd38141:7475
-beginWork @ react-dom_client.js?v=4bd38141:8525
-runWithFiberInDEV @ react-dom_client.js?v=4bd38141:997
-performUnitOfWork @ react-dom_client.js?v=4bd38141:12561
-workLoopSync @ react-dom_client.js?v=4bd38141:12424
-renderRootSync @ react-dom_client.js?v=4bd38141:12408
-performWorkOnRoot @ react-dom_client.js?v=4bd38141:11766
-performWorkOnRootViaSchedulerTask @ react-dom_client.js?v=4bd38141:13505
-performWorkUntilDeadline @ react-dom_client.js?v=4bd38141:36
-<App>
-exports.jsxDEV @ react_jsx-dev-runtime.js?v=4bd38141:247
-(anonymous) @ main.jsx:8
+@microsoft_signalr.js?v=4bd38141:301 [2026-01-18T12:39:43.264Z] Information: WebSocket connected to ws://localhost:5173/dashboardHub?access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiJhN2ZjZjkzYy04OTg4LTRhZDgtYmU4My1iOTIyZGExNTVmNDIiLCJlbWFpbCI6InJlY2VwdGlvbkBsYWIuY29tIiwidW5pcXVlX25hbWUiOiJSZWNlcHRpb24gVXNlciIsImJyYW5jaF9pZCI6ImEwMDAwMDAwLTAwMDAtMDAwMC0wMDAwLTAwMDAwMDAwMDAwMSIsInJvbGUiOiJSZWNlcHRpb25pc3QiLCJuYmYiOjE3Njg3MTk5MjEsImV4cCI6MTc2ODgwNjMyMSwiaWF0IjoxNzY4NzE5OTIxLCJpc3MiOiJTeW5PUy5BcGkiLCJhdWQiOiJTeW5PUy5BcHAifQ.dZuY3NuWfwOKdsCr47zmhW2hJCAv6bmYmXJ3D4qGZeQ.
+@microsoft_signalr.js?v=4bd38141:301 [2026-01-18T12:39:43.266Z] Information: Using HubProtocol 'json'.
+reception.js:206 DEBUG: Activity Stream Payload: (14) [{…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}]
+signalr.js:56 SignalR: Connected to /dashboardHub
+reception.js:206 DEBUG: Activity Stream Payload: (14) [{…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}]
+IntentPanel.jsx:35 Intake Snapshot Loaded: {context: {…}, patient: null, visit: null, billing: null, uiState: {…}}
+IntentPanel.jsx:35 Intake Snapshot Loaded: {context: {…}, patient: null, visit: null, billing: null, uiState: {…}}
+IntentPanel.jsx:35 Intake Snapshot Loaded: {context: {…}, patient: {…}, visit: null, billing: null, uiState: {…}}
+signalr.js:76 SignalR: ReceptionSummaryUpdated received {walkInsToday: 3, paymentsCollected: 0, pendingReports: 0, avgReportTimeMinutes: 0}
+IntentPanel.jsx:35 Intake Snapshot Loaded: {context: {…}, patient: {…}, visit: null, billing: null, uiState: {…}}
 
-fetch :
+fetch:
 fetch("http://localhost:5173/reception", {
   "headers": {
     "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
     "accept-language": "en-IN,en;q=0.9,te;q=0.8",
     "cache-control": "max-age=0",
-    "if-none-match": "W/\"27a-lU23rU1wy/ycpWuSrYQkYq7UT5I\"",
+    "if-none-match": "W/\"26a-qVPn18LSphwkpX89tfkK9PdAO9A\"",
     "sec-ch-ua": "\"Google Chrome\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\"",
     "sec-ch-ua-mobile": "?0",
     "sec-ch-ua-platform": "\"Windows\"",
@@ -195,147 +39,11 @@ fetch("http://localhost:5173/reception", {
   "mode": "cors",
   "credentials": "include"
 }); ;
-fetch("http://localhost:5173/src/features/reception/ReceptionScreen.jsx?t=1768655872120", {
-  "headers": {
-    "accept": "*/*",
-    "accept-language": "en-IN,en;q=0.9,te;q=0.8",
-    "sec-ch-ua": "\"Google Chrome\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\"",
-    "sec-ch-ua-mobile": "?0",
-    "sec-ch-ua-platform": "\"Windows\"",
-    "sec-fetch-dest": "script",
-    "sec-fetch-mode": "cors",
-    "sec-fetch-site": "same-origin"
-  },
-  "referrer": "http://localhost:5173/@vite/client",
-  "body": null,
-  "method": "GET",
-  "mode": "cors",
-  "credentials": "include"
-}); ;
-fetch("http://localhost:5173/src/components/layout/ActivityStream.jsx?t=1768655872120", {
-  "headers": {
-    "accept": "*/*",
-    "accept-language": "en-IN,en;q=0.9,te;q=0.8",
-    "sec-ch-ua": "\"Google Chrome\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\"",
-    "sec-ch-ua-mobile": "?0",
-    "sec-ch-ua-platform": "\"Windows\"",
-    "sec-fetch-dest": "script",
-    "sec-fetch-mode": "cors",
-    "sec-fetch-site": "same-origin"
-  },
-  "referrer": "http://localhost:5173/@vite/client",
-  "body": null,
-  "method": "GET",
-  "mode": "cors",
-  "credentials": "include"
-}); ;
-fetch("http://localhost:5173/src/features/reception/components/IntentPanel.jsx?t=1768655872120", {
-  "headers": {
-    "accept": "*/*",
-    "accept-language": "en-IN,en;q=0.9,te;q=0.8",
-    "sec-ch-ua": "\"Google Chrome\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\"",
-    "sec-ch-ua-mobile": "?0",
-    "sec-ch-ua-platform": "\"Windows\"",
-    "sec-fetch-dest": "script",
-    "sec-fetch-mode": "cors",
-    "sec-fetch-site": "same-origin"
-  },
-  "referrer": "http://localhost:5173/@vite/client",
-  "body": null,
-  "method": "GET",
-  "mode": "cors",
-  "credentials": "include"
-}); ;
-fetch("http://localhost:5173/src/features/reception/components/VisitDetails.jsx?t=1768655872120", {
-  "headers": {
-    "accept": "*/*",
-    "accept-language": "en-IN,en;q=0.9,te;q=0.8",
-    "sec-ch-ua": "\"Google Chrome\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\"",
-    "sec-ch-ua-mobile": "?0",
-    "sec-ch-ua-platform": "\"Windows\"",
-    "sec-fetch-dest": "script",
-    "sec-fetch-mode": "cors",
-    "sec-fetch-site": "same-origin"
-  },
-  "referrer": "http://localhost:5173/@vite/client",
-  "body": null,
-  "method": "GET",
-  "mode": "cors",
-  "credentials": "include"
-}); ;
-fetch("http://localhost:5173/src/features/reception/components/PatientIdentification.jsx?t=1768655872120", {
-  "headers": {
-    "accept": "*/*",
-    "accept-language": "en-IN,en;q=0.9,te;q=0.8",
-    "sec-ch-ua": "\"Google Chrome\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\"",
-    "sec-ch-ua-mobile": "?0",
-    "sec-ch-ua-platform": "\"Windows\"",
-    "sec-fetch-dest": "script",
-    "sec-fetch-mode": "cors",
-    "sec-fetch-site": "same-origin"
-  },
-  "referrer": "http://localhost:5173/@vite/client",
-  "body": null,
-  "method": "GET",
-  "mode": "cors",
-  "credentials": "include"
-}); ;
-fetch("http://localhost:5173/src/features/reception/components/BillingSummary.jsx?t=1768655872120", {
-  "headers": {
-    "accept": "*/*",
-    "accept-language": "en-IN,en;q=0.9,te;q=0.8",
-    "sec-ch-ua": "\"Google Chrome\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\"",
-    "sec-ch-ua-mobile": "?0",
-    "sec-ch-ua-platform": "\"Windows\"",
-    "sec-fetch-dest": "script",
-    "sec-fetch-mode": "cors",
-    "sec-fetch-site": "same-origin"
-  },
-  "referrer": "http://localhost:5173/@vite/client",
-  "body": null,
-  "method": "GET",
-  "mode": "cors",
-  "credentials": "include"
-}); ;
-fetch("http://localhost:5173/src/index.css?t=1768655872120", {
-  "headers": {
-    "accept": "*/*",
-    "accept-language": "en-IN,en;q=0.9,te;q=0.8",
-    "sec-ch-ua": "\"Google Chrome\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\"",
-    "sec-ch-ua-mobile": "?0",
-    "sec-ch-ua-platform": "\"Windows\"",
-    "sec-fetch-dest": "script",
-    "sec-fetch-mode": "cors",
-    "sec-fetch-site": "same-origin"
-  },
-  "referrer": "http://localhost:5173/@vite/client",
-  "body": null,
-  "method": "GET",
-  "mode": "cors",
-  "credentials": "include"
-}); ;
-fetch("http://localhost:5173/src/api/reception.js?t=1768655872120", {
-  "headers": {
-    "accept": "*/*",
-    "accept-language": "en-IN,en;q=0.9,te;q=0.8",
-    "sec-ch-ua": "\"Google Chrome\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\"",
-    "sec-ch-ua-mobile": "?0",
-    "sec-ch-ua-platform": "\"Windows\"",
-    "sec-fetch-dest": "script",
-    "sec-fetch-mode": "cors",
-    "sec-fetch-site": "same-origin"
-  },
-  "referrer": "http://localhost:5173/src/features/reception/ReceptionScreen.jsx?t=1768655872120",
-  "body": null,
-  "method": "GET",
-  "mode": "cors",
-  "credentials": "include"
-}); ;
 fetch("http://localhost:5173/@vite/client", {
   "headers": {
     "accept": "*/*",
     "accept-language": "en-IN,en;q=0.9,te;q=0.8",
-    "if-none-match": "W/\"8411-8kqw6yJIf+MX1cD6TiD+JNLHX30\"",
+    "if-none-match": "W/\"8411-b5AdfyfsrnjFBAKMAqXGMxzWZkI\"",
     "sec-ch-ua": "\"Google Chrome\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\"",
     "sec-ch-ua-mobile": "?0",
     "sec-ch-ua-platform": "\"Windows\"",
@@ -349,10 +57,11 @@ fetch("http://localhost:5173/@vite/client", {
   "mode": "cors",
   "credentials": "include"
 }); ;
-fetch("http://localhost:5173/src/main.jsx?t=1768655872120", {
+fetch("http://localhost:5173/src/main.jsx", {
   "headers": {
     "accept": "*/*",
     "accept-language": "en-IN,en;q=0.9,te;q=0.8",
+    "if-none-match": "W/\"3fd-WEzdTf1jDawatV2P+dECp5aKgS4\"",
     "sec-ch-ua": "\"Google Chrome\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\"",
     "sec-ch-ua-mobile": "?0",
     "sec-ch-ua-platform": "\"Windows\"",
@@ -391,91 +100,6 @@ fetch("http://localhost:5173/@react-refresh", {
   "mode": "cors",
   "credentials": "include"
 }); ;
-fetch("chrome-extension://ojplmecpdpgccookcobabopnaifgidhf/assets/autoCouponUI-GRvRg_in.js", {
-  "referrer": "",
-  "body": null,
-  "method": "GET",
-  "mode": "cors",
-  "credentials": "omit"
-}); ;
-fetch("chrome-extension://ojplmecpdpgccookcobabopnaifgidhf/assets/utility_all2-BV_7obfO.js", {
-  "referrer": "",
-  "body": null,
-  "method": "GET",
-  "mode": "cors",
-  "credentials": "omit"
-}); ;
-fetch("http://localhost:5173/node_modules/.vite/deps/react_jsx-dev-runtime.js?v=4bd38141", {
-  "headers": {
-    "sec-ch-ua": "\"Google Chrome\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\"",
-    "sec-ch-ua-mobile": "?0",
-    "sec-ch-ua-platform": "\"Windows\""
-  },
-  "referrer": "http://localhost:5173/src/main.jsx?t=1768655872120",
-  "body": null,
-  "method": "GET",
-  "mode": "cors",
-  "credentials": "omit"
-}); ;
-fetch("http://localhost:5173/node_modules/.vite/deps/react.js?v=4bd38141", {
-  "headers": {
-    "sec-ch-ua": "\"Google Chrome\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\"",
-    "sec-ch-ua-mobile": "?0",
-    "sec-ch-ua-platform": "\"Windows\""
-  },
-  "referrer": "http://localhost:5173/src/main.jsx?t=1768655872120",
-  "body": null,
-  "method": "GET",
-  "mode": "cors",
-  "credentials": "omit"
-}); ;
-fetch("http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=4bd38141", {
-  "headers": {
-    "sec-ch-ua": "\"Google Chrome\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\"",
-    "sec-ch-ua-mobile": "?0",
-    "sec-ch-ua-platform": "\"Windows\""
-  },
-  "referrer": "http://localhost:5173/src/main.jsx?t=1768655872120",
-  "body": null,
-  "method": "GET",
-  "mode": "cors",
-  "credentials": "omit"
-}); ;
-fetch("http://localhost:5173/src/index.css?t=1768655872120", {
-  "headers": {
-    "accept": "*/*",
-    "accept-language": "en-IN,en;q=0.9,te;q=0.8",
-    "if-none-match": "W/\"80d7-E/Jy4aTfpxZF0o+QCvx+tNujYK0\"",
-    "sec-ch-ua": "\"Google Chrome\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\"",
-    "sec-ch-ua-mobile": "?0",
-    "sec-ch-ua-platform": "\"Windows\"",
-    "sec-fetch-dest": "script",
-    "sec-fetch-mode": "cors",
-    "sec-fetch-site": "same-origin"
-  },
-  "referrer": "http://localhost:5173/src/main.jsx?t=1768655872120",
-  "body": null,
-  "method": "GET",
-  "mode": "cors",
-  "credentials": "include"
-}); ;
-fetch("http://localhost:5173/src/App.jsx?t=1768655872120", {
-  "headers": {
-    "accept": "*/*",
-    "accept-language": "en-IN,en;q=0.9,te;q=0.8",
-    "sec-ch-ua": "\"Google Chrome\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\"",
-    "sec-ch-ua-mobile": "?0",
-    "sec-ch-ua-platform": "\"Windows\"",
-    "sec-fetch-dest": "script",
-    "sec-fetch-mode": "cors",
-    "sec-fetch-site": "same-origin"
-  },
-  "referrer": "http://localhost:5173/src/main.jsx?t=1768655872120",
-  "body": null,
-  "method": "GET",
-  "mode": "cors",
-  "credentials": "include"
-}); ;
 fetch("http://localhost:5173/node_modules/vite/dist/client/env.mjs", {
   "headers": {
     "accept": "*/*",
@@ -494,13 +118,85 @@ fetch("http://localhost:5173/node_modules/vite/dist/client/env.mjs", {
   "mode": "cors",
   "credentials": "include"
 }); ;
+fetch("http://localhost:5173/node_modules/.vite/deps/react_jsx-dev-runtime.js?v=4bd38141", {
+  "headers": {
+    "sec-ch-ua": "\"Google Chrome\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\"",
+    "sec-ch-ua-mobile": "?0",
+    "sec-ch-ua-platform": "\"Windows\""
+  },
+  "referrer": "http://localhost:5173/src/main.jsx",
+  "body": null,
+  "method": "GET",
+  "mode": "cors",
+  "credentials": "omit"
+}); ;
+fetch("http://localhost:5173/node_modules/.vite/deps/react.js?v=4bd38141", {
+  "headers": {
+    "sec-ch-ua": "\"Google Chrome\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\"",
+    "sec-ch-ua-mobile": "?0",
+    "sec-ch-ua-platform": "\"Windows\""
+  },
+  "referrer": "http://localhost:5173/src/main.jsx",
+  "body": null,
+  "method": "GET",
+  "mode": "cors",
+  "credentials": "omit"
+}); ;
+fetch("http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=4bd38141", {
+  "headers": {
+    "sec-ch-ua": "\"Google Chrome\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\"",
+    "sec-ch-ua-mobile": "?0",
+    "sec-ch-ua-platform": "\"Windows\""
+  },
+  "referrer": "http://localhost:5173/src/main.jsx",
+  "body": null,
+  "method": "GET",
+  "mode": "cors",
+  "credentials": "omit"
+}); ;
+fetch("http://localhost:5173/src/index.css", {
+  "headers": {
+    "accept": "*/*",
+    "accept-language": "en-IN,en;q=0.9,te;q=0.8",
+    "if-none-match": "W/\"83d8-U9Ob3vBseFSwnJVLGx/1sHYLhB0\"",
+    "sec-ch-ua": "\"Google Chrome\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\"",
+    "sec-ch-ua-mobile": "?0",
+    "sec-ch-ua-platform": "\"Windows\"",
+    "sec-fetch-dest": "script",
+    "sec-fetch-mode": "cors",
+    "sec-fetch-site": "same-origin"
+  },
+  "referrer": "http://localhost:5173/src/main.jsx",
+  "body": null,
+  "method": "GET",
+  "mode": "cors",
+  "credentials": "include"
+}); ;
+fetch("http://localhost:5173/src/App.jsx", {
+  "headers": {
+    "accept": "*/*",
+    "accept-language": "en-IN,en;q=0.9,te;q=0.8",
+    "if-none-match": "W/\"1921-wh5XuWaM+dBRBLVvCMpk0tCY/+4\"",
+    "sec-ch-ua": "\"Google Chrome\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\"",
+    "sec-ch-ua-mobile": "?0",
+    "sec-ch-ua-platform": "\"Windows\"",
+    "sec-fetch-dest": "script",
+    "sec-fetch-mode": "cors",
+    "sec-fetch-site": "same-origin"
+  },
+  "referrer": "http://localhost:5173/src/main.jsx",
+  "body": null,
+  "method": "GET",
+  "mode": "cors",
+  "credentials": "include"
+}); ;
 fetch("http://localhost:5173/node_modules/.vite/deps/chunk-APAI5QCZ.js?v=4bd38141", {
   "headers": {
     "sec-ch-ua": "\"Google Chrome\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\"",
     "sec-ch-ua-mobile": "?0",
     "sec-ch-ua-platform": "\"Windows\""
   },
-  "referrer": "http://localhost:5173/node_modules/.vite/deps/react.js?v=4bd38141",
+  "referrer": "http://localhost:5173/node_modules/.vite/deps/react_jsx-dev-runtime.js?v=4bd38141",
   "body": null,
   "method": "GET",
   "mode": "cors",
@@ -512,7 +208,33 @@ fetch("http://localhost:5173/node_modules/.vite/deps/chunk-PR4QN5HX.js?v=4bd3814
     "sec-ch-ua-mobile": "?0",
     "sec-ch-ua-platform": "\"Windows\""
   },
-  "referrer": "http://localhost:5173/node_modules/.vite/deps/react.js?v=4bd38141",
+  "referrer": "http://localhost:5173/node_modules/.vite/deps/react_jsx-dev-runtime.js?v=4bd38141",
+  "body": null,
+  "method": "GET",
+  "mode": "cors",
+  "credentials": "omit"
+}); ;
+fetch("http://localhost:5173/node_modules/.vite/deps/chunk-F554S2KQ.js?v=4bd38141", {
+  "headers": {
+    "sec-ch-ua": "\"Google Chrome\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\"",
+    "sec-ch-ua-mobile": "?0",
+    "sec-ch-ua-platform": "\"Windows\""
+  },
+  "referrer": "http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=4bd38141",
+  "body": null,
+  "method": "GET",
+  "mode": "cors",
+  "credentials": "omit"
+}); ;
+fetch("chrome-extension://ojplmecpdpgccookcobabopnaifgidhf/assets/autoCouponUI-GRvRg_in.js", {
+  "referrer": "",
+  "body": null,
+  "method": "GET",
+  "mode": "cors",
+  "credentials": "omit"
+}); ;
+fetch("chrome-extension://ojplmecpdpgccookcobabopnaifgidhf/assets/utility_all2-BV_7obfO.js", {
+  "referrer": "",
   "body": null,
   "method": "GET",
   "mode": "cors",
@@ -524,7 +246,7 @@ fetch("http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=4bd38
     "sec-ch-ua-mobile": "?0",
     "sec-ch-ua-platform": "\"Windows\""
   },
-  "referrer": "http://localhost:5173/src/App.jsx?t=1768655872120",
+  "referrer": "http://localhost:5173/src/App.jsx",
   "body": null,
   "method": "GET",
   "mode": "cors",
@@ -542,7 +264,7 @@ fetch("http://localhost:5173/src/context/AuthContext.jsx", {
     "sec-fetch-mode": "cors",
     "sec-fetch-site": "same-origin"
   },
-  "referrer": "http://localhost:5173/src/App.jsx?t=1768655872120",
+  "referrer": "http://localhost:5173/src/App.jsx",
   "body": null,
   "method": "GET",
   "mode": "cors",
@@ -560,17 +282,17 @@ fetch("http://localhost:5173/src/features/reception/hooks/useReceptionPanelUI.js
     "sec-fetch-mode": "cors",
     "sec-fetch-site": "same-origin"
   },
-  "referrer": "http://localhost:5173/src/App.jsx?t=1768655872120",
+  "referrer": "http://localhost:5173/src/App.jsx",
   "body": null,
   "method": "GET",
   "mode": "cors",
   "credentials": "include"
 }); ;
-fetch("http://localhost:5173/src/features/reception/ReceptionScreen.jsx?t=1768655872120", {
+fetch("http://localhost:5173/src/features/reception/ReceptionScreen.jsx", {
   "headers": {
     "accept": "*/*",
     "accept-language": "en-IN,en;q=0.9,te;q=0.8",
-    "if-none-match": "W/\"324d-sHjC3hfMaoKyrMEXn5hNZPX7g6k\"",
+    "if-none-match": "W/\"321d-8Q23NagN6bzPPJKV0azqaQ/E9H8\"",
     "sec-ch-ua": "\"Google Chrome\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\"",
     "sec-ch-ua-mobile": "?0",
     "sec-ch-ua-platform": "\"Windows\"",
@@ -578,7 +300,7 @@ fetch("http://localhost:5173/src/features/reception/ReceptionScreen.jsx?t=176865
     "sec-fetch-mode": "cors",
     "sec-fetch-site": "same-origin"
   },
-  "referrer": "http://localhost:5173/src/App.jsx?t=1768655872120",
+  "referrer": "http://localhost:5173/src/App.jsx",
   "body": null,
   "method": "GET",
   "mode": "cors",
@@ -596,7 +318,7 @@ fetch("http://localhost:5173/src/pages/LoginPage.jsx", {
     "sec-fetch-mode": "cors",
     "sec-fetch-site": "same-origin"
   },
-  "referrer": "http://localhost:5173/src/App.jsx?t=1768655872120",
+  "referrer": "http://localhost:5173/src/App.jsx",
   "body": null,
   "method": "GET",
   "mode": "cors",
@@ -614,31 +336,19 @@ fetch("http://localhost:5173/src/components/auth/ProtectedRoute.jsx", {
     "sec-fetch-mode": "cors",
     "sec-fetch-site": "same-origin"
   },
-  "referrer": "http://localhost:5173/src/App.jsx?t=1768655872120",
+  "referrer": "http://localhost:5173/src/App.jsx",
   "body": null,
   "method": "GET",
   "mode": "cors",
   "credentials": "include"
 }); ;
-fetch("http://localhost:5173/node_modules/.vite/deps/chunk-F554S2KQ.js?v=4bd38141", {
-  "headers": {
-    "sec-ch-ua": "\"Google Chrome\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\"",
-    "sec-ch-ua-mobile": "?0",
-    "sec-ch-ua-platform": "\"Windows\""
-  },
-  "referrer": "http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=4bd38141",
-  "body": null,
-  "method": "GET",
-  "mode": "cors",
-  "credentials": "omit"
-}); ;
-fetch("ws://localhost:5173/?token=CCJJl9goellc", {
+fetch("ws://localhost:5173/?token=9p4Pb4uwa-uv", {
   "headers": {
     "accept-language": "en-IN,en;q=0.9,te;q=0.8",
     "cache-control": "no-cache",
     "pragma": "no-cache",
     "sec-websocket-extensions": "permessage-deflate; client_max_window_bits",
-    "sec-websocket-key": "KBk0Cw2JdM7LRyPnMsjKdg==",
+    "sec-websocket-key": "qq14HvQyN4CU6GpX8wPBjQ==",
     "sec-websocket-protocol": "vite-hmr",
     "sec-websocket-version": "13"
   },
@@ -665,7 +375,7 @@ fetch("http://localhost:5173/node_modules/.vite/deps/lucide-react.js?v=4bd38141"
     "sec-ch-ua-mobile": "?0",
     "sec-ch-ua-platform": "\"Windows\""
   },
-  "referrer": "http://localhost:5173/src/features/reception/ReceptionScreen.jsx?t=1768655872120",
+  "referrer": "http://localhost:5173/src/features/reception/ReceptionScreen.jsx",
   "body": null,
   "method": "GET",
   "mode": "cors",
@@ -683,7 +393,7 @@ fetch("http://localhost:5173/src/components/layout/SystemBar.jsx", {
     "sec-fetch-mode": "cors",
     "sec-fetch-site": "same-origin"
   },
-  "referrer": "http://localhost:5173/src/features/reception/ReceptionScreen.jsx?t=1768655872120",
+  "referrer": "http://localhost:5173/src/features/reception/ReceptionScreen.jsx",
   "body": null,
   "method": "GET",
   "mode": "cors",
@@ -701,7 +411,7 @@ fetch("http://localhost:5173/src/components/layout/RealitySummary.jsx", {
     "sec-fetch-mode": "cors",
     "sec-fetch-site": "same-origin"
   },
-  "referrer": "http://localhost:5173/src/features/reception/ReceptionScreen.jsx?t=1768655872120",
+  "referrer": "http://localhost:5173/src/features/reception/ReceptionScreen.jsx",
   "body": null,
   "method": "GET",
   "mode": "cors",
@@ -719,17 +429,17 @@ fetch("http://localhost:5173/src/components/layout/ActionQueue.jsx", {
     "sec-fetch-mode": "cors",
     "sec-fetch-site": "same-origin"
   },
-  "referrer": "http://localhost:5173/src/features/reception/ReceptionScreen.jsx?t=1768655872120",
+  "referrer": "http://localhost:5173/src/features/reception/ReceptionScreen.jsx",
   "body": null,
   "method": "GET",
   "mode": "cors",
   "credentials": "include"
 }); ;
-fetch("http://localhost:5173/src/components/layout/ActivityStream.jsx?t=1768655872120", {
+fetch("http://localhost:5173/src/components/layout/ActivityStream.jsx", {
   "headers": {
     "accept": "*/*",
     "accept-language": "en-IN,en;q=0.9,te;q=0.8",
-    "if-none-match": "W/\"2b37-xuWL6VZ0NBnY5HHw4P2kR/qv8eI\"",
+    "if-none-match": "W/\"2b27-a1itkPlJkKItik37so9TXi2yQyA\"",
     "sec-ch-ua": "\"Google Chrome\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\"",
     "sec-ch-ua-mobile": "?0",
     "sec-ch-ua-platform": "\"Windows\"",
@@ -737,17 +447,17 @@ fetch("http://localhost:5173/src/components/layout/ActivityStream.jsx?t=17686558
     "sec-fetch-mode": "cors",
     "sec-fetch-site": "same-origin"
   },
-  "referrer": "http://localhost:5173/src/features/reception/ReceptionScreen.jsx?t=1768655872120",
+  "referrer": "http://localhost:5173/src/features/reception/ReceptionScreen.jsx",
   "body": null,
   "method": "GET",
   "mode": "cors",
   "credentials": "include"
 }); ;
-fetch("http://localhost:5173/src/features/reception/components/IntentPanel.jsx?t=1768655872120", {
+fetch("http://localhost:5173/src/features/reception/components/IntentPanel.jsx", {
   "headers": {
     "accept": "*/*",
     "accept-language": "en-IN,en;q=0.9,te;q=0.8",
-    "if-none-match": "W/\"346a-j5grVRhYQtAxAEKEum58kMb0oWY\"",
+    "if-none-match": "W/\"426f-CRTl0X2NBzqxd5jRS1UvA/Wg8BA\"",
     "sec-ch-ua": "\"Google Chrome\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\"",
     "sec-ch-ua-mobile": "?0",
     "sec-ch-ua-platform": "\"Windows\"",
@@ -755,17 +465,17 @@ fetch("http://localhost:5173/src/features/reception/components/IntentPanel.jsx?t
     "sec-fetch-mode": "cors",
     "sec-fetch-site": "same-origin"
   },
-  "referrer": "http://localhost:5173/src/features/reception/ReceptionScreen.jsx?t=1768655872120",
+  "referrer": "http://localhost:5173/src/features/reception/ReceptionScreen.jsx",
   "body": null,
   "method": "GET",
   "mode": "cors",
   "credentials": "include"
 }); ;
-fetch("http://localhost:5173/src/api/reception.js?t=1768655872120", {
+fetch("http://localhost:5173/src/api/reception.js", {
   "headers": {
     "accept": "*/*",
     "accept-language": "en-IN,en;q=0.9,te;q=0.8",
-    "if-none-match": "W/\"1cff-Sb0OaZS9EpakCbpzD1kDeTG/y74\"",
+    "if-none-match": "W/\"204e-59GWx04vCVF8nF63IdN9SgU55Tk\"",
     "sec-ch-ua": "\"Google Chrome\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\"",
     "sec-ch-ua-mobile": "?0",
     "sec-ch-ua-platform": "\"Windows\"",
@@ -773,7 +483,7 @@ fetch("http://localhost:5173/src/api/reception.js?t=1768655872120", {
     "sec-fetch-mode": "cors",
     "sec-fetch-site": "same-origin"
   },
-  "referrer": "http://localhost:5173/src/features/reception/ReceptionScreen.jsx?t=1768655872120",
+  "referrer": "http://localhost:5173/src/features/reception/ReceptionScreen.jsx",
   "body": null,
   "method": "GET",
   "mode": "cors",
@@ -783,7 +493,7 @@ fetch("http://localhost:5173/src/lib/signalr.js", {
   "headers": {
     "accept": "*/*",
     "accept-language": "en-IN,en;q=0.9,te;q=0.8",
-    "if-none-match": "W/\"125d-M6IU3Z1iZNFo8CEtJFDIX85rlak\"",
+    "if-none-match": "W/\"12c8-f5/UP0ICv+JlH1omrpJkeXIps8k\"",
     "sec-ch-ua": "\"Google Chrome\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\"",
     "sec-ch-ua-mobile": "?0",
     "sec-ch-ua-platform": "\"Windows\"",
@@ -791,7 +501,7 @@ fetch("http://localhost:5173/src/lib/signalr.js", {
     "sec-fetch-mode": "cors",
     "sec-fetch-site": "same-origin"
   },
-  "referrer": "http://localhost:5173/src/features/reception/ReceptionScreen.jsx?t=1768655872120",
+  "referrer": "http://localhost:5173/src/features/reception/ReceptionScreen.jsx",
   "body": null,
   "method": "GET",
   "mode": "cors",
@@ -809,7 +519,61 @@ fetch("http://localhost:5173/src/lib/utils.js", {
     "sec-fetch-mode": "cors",
     "sec-fetch-site": "same-origin"
   },
-  "referrer": "http://localhost:5173/src/components/layout/ActionQueue.jsx",
+  "referrer": "http://localhost:5173/src/components/layout/SystemBar.jsx",
+  "body": null,
+  "method": "GET",
+  "mode": "cors",
+  "credentials": "include"
+}); ;
+fetch("http://localhost:5173/src/features/reception/components/PatientIdentification.jsx", {
+  "headers": {
+    "accept": "*/*",
+    "accept-language": "en-IN,en;q=0.9,te;q=0.8",
+    "if-none-match": "W/\"6e4a-RmYuljijhjyN5La8dbko/T5h/0E\"",
+    "sec-ch-ua": "\"Google Chrome\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\"",
+    "sec-ch-ua-mobile": "?0",
+    "sec-ch-ua-platform": "\"Windows\"",
+    "sec-fetch-dest": "script",
+    "sec-fetch-mode": "cors",
+    "sec-fetch-site": "same-origin"
+  },
+  "referrer": "http://localhost:5173/src/features/reception/components/IntentPanel.jsx",
+  "body": null,
+  "method": "GET",
+  "mode": "cors",
+  "credentials": "include"
+}); ;
+fetch("http://localhost:5173/src/features/reception/components/VisitDetails.jsx", {
+  "headers": {
+    "accept": "*/*",
+    "accept-language": "en-IN,en;q=0.9,te;q=0.8",
+    "if-none-match": "W/\"472c-bq67y8WGGZain//uWRToKOdawvI\"",
+    "sec-ch-ua": "\"Google Chrome\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\"",
+    "sec-ch-ua-mobile": "?0",
+    "sec-ch-ua-platform": "\"Windows\"",
+    "sec-fetch-dest": "script",
+    "sec-fetch-mode": "cors",
+    "sec-fetch-site": "same-origin"
+  },
+  "referrer": "http://localhost:5173/src/features/reception/components/IntentPanel.jsx",
+  "body": null,
+  "method": "GET",
+  "mode": "cors",
+  "credentials": "include"
+}); ;
+fetch("http://localhost:5173/src/features/reception/components/BillingSummary.jsx", {
+  "headers": {
+    "accept": "*/*",
+    "accept-language": "en-IN,en;q=0.9,te;q=0.8",
+    "if-none-match": "W/\"3d8b-uGsTYZo2SzuBSb6kAeqjbsNQZr4\"",
+    "sec-ch-ua": "\"Google Chrome\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\"",
+    "sec-ch-ua-mobile": "?0",
+    "sec-ch-ua-platform": "\"Windows\"",
+    "sec-fetch-dest": "script",
+    "sec-fetch-mode": "cors",
+    "sec-fetch-site": "same-origin"
+  },
+  "referrer": "http://localhost:5173/src/features/reception/components/IntentPanel.jsx",
   "body": null,
   "method": "GET",
   "mode": "cors",
@@ -826,60 +590,6 @@ fetch("http://localhost:5173/node_modules/.vite/deps/@microsoft_signalr.js?v=4bd
   "method": "GET",
   "mode": "cors",
   "credentials": "omit"
-}); ;
-fetch("http://localhost:5173/src/features/reception/components/PatientIdentification.jsx?t=1768655872120", {
-  "headers": {
-    "accept": "*/*",
-    "accept-language": "en-IN,en;q=0.9,te;q=0.8",
-    "if-none-match": "W/\"4e85-dVW89/Hal4X1HDrTO2FyJSY/vU0\"",
-    "sec-ch-ua": "\"Google Chrome\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\"",
-    "sec-ch-ua-mobile": "?0",
-    "sec-ch-ua-platform": "\"Windows\"",
-    "sec-fetch-dest": "script",
-    "sec-fetch-mode": "cors",
-    "sec-fetch-site": "same-origin"
-  },
-  "referrer": "http://localhost:5173/src/features/reception/components/IntentPanel.jsx?t=1768655872120",
-  "body": null,
-  "method": "GET",
-  "mode": "cors",
-  "credentials": "include"
-}); ;
-fetch("http://localhost:5173/src/features/reception/components/VisitDetails.jsx?t=1768655872120", {
-  "headers": {
-    "accept": "*/*",
-    "accept-language": "en-IN,en;q=0.9,te;q=0.8",
-    "if-none-match": "W/\"470b-lvWu1+o5HJrK/lRxv1EVcoFlwJc\"",
-    "sec-ch-ua": "\"Google Chrome\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\"",
-    "sec-ch-ua-mobile": "?0",
-    "sec-ch-ua-platform": "\"Windows\"",
-    "sec-fetch-dest": "script",
-    "sec-fetch-mode": "cors",
-    "sec-fetch-site": "same-origin"
-  },
-  "referrer": "http://localhost:5173/src/features/reception/components/IntentPanel.jsx?t=1768655872120",
-  "body": null,
-  "method": "GET",
-  "mode": "cors",
-  "credentials": "include"
-}); ;
-fetch("http://localhost:5173/src/features/reception/components/BillingSummary.jsx?t=1768655872120", {
-  "headers": {
-    "accept": "*/*",
-    "accept-language": "en-IN,en;q=0.9,te;q=0.8",
-    "if-none-match": "W/\"3d9b-JFI1MiQ0LvHANJgrh4IS0o1+AAw\"",
-    "sec-ch-ua": "\"Google Chrome\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\"",
-    "sec-ch-ua-mobile": "?0",
-    "sec-ch-ua-platform": "\"Windows\"",
-    "sec-fetch-dest": "script",
-    "sec-fetch-mode": "cors",
-    "sec-fetch-site": "same-origin"
-  },
-  "referrer": "http://localhost:5173/src/features/reception/components/IntentPanel.jsx?t=1768655872120",
-  "body": null,
-  "method": "GET",
-  "mode": "cors",
-  "credentials": "include"
 }); ;
 fetch("http://localhost:5173/node_modules/.vite/deps/clsx.js?v=4bd38141", {
   "headers": {
@@ -1068,7 +778,7 @@ fetch("http://localhost:5173/api/v1/branch/activity?branchId=A0000000-0000-0000-
   "headers": {
     "accept": "*/*",
     "accept-language": "en-IN,en;q=0.9,te;q=0.8",
-    "authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiJhN2ZjZjkzYy04OTg4LTRhZDgtYmU4My1iOTIyZGExNTVmNDIiLCJlbWFpbCI6InJlY2VwdGlvbkBsYWIuY29tIiwidW5pcXVlX25hbWUiOiJSZWNlcHRpb24gVXNlciIsImJyYW5jaF9pZCI6ImEwMDAwMDAwLTAwMDAtMDAwMC0wMDAwLTAwMDAwMDAwMDAwMSIsInJvbGUiOiJSZWNlcHRpb25pc3QiLCJuYmYiOjE3Njg2Mjk0MTYsImV4cCI6MTc2ODcxNTgxNiwiaWF0IjoxNzY4NjI5NDE2LCJpc3MiOiJTeW5PUy5BcGkiLCJhdWQiOiJTeW5PUy5BcHAifQ.z5vM2HyAVBF70lVZMS6mk4yXWUGoDzyYQTxBje3qo4s",
+    "authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiJhN2ZjZjkzYy04OTg4LTRhZDgtYmU4My1iOTIyZGExNTVmNDIiLCJlbWFpbCI6InJlY2VwdGlvbkBsYWIuY29tIiwidW5pcXVlX25hbWUiOiJSZWNlcHRpb24gVXNlciIsImJyYW5jaF9pZCI6ImEwMDAwMDAwLTAwMDAtMDAwMC0wMDAwLTAwMDAwMDAwMDAwMSIsInJvbGUiOiJSZWNlcHRpb25pc3QiLCJuYmYiOjE3Njg3MTk5MjEsImV4cCI6MTc2ODgwNjMyMSwiaWF0IjoxNzY4NzE5OTIxLCJpc3MiOiJTeW5PUy5BcGkiLCJhdWQiOiJTeW5PUy5BcHAifQ.dZuY3NuWfwOKdsCr47zmhW2hJCAv6bmYmXJ3D4qGZeQ",
     "content-type": "application/json",
     "sec-ch-ua": "\"Google Chrome\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\"",
     "sec-ch-ua-mobile": "?0",
@@ -1087,7 +797,7 @@ fetch("http://localhost:5173/api/v1/dashboard/reception/summary", {
   "headers": {
     "accept": "*/*",
     "accept-language": "en-IN,en;q=0.9,te;q=0.8",
-    "authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiJhN2ZjZjkzYy04OTg4LTRhZDgtYmU4My1iOTIyZGExNTVmNDIiLCJlbWFpbCI6InJlY2VwdGlvbkBsYWIuY29tIiwidW5pcXVlX25hbWUiOiJSZWNlcHRpb24gVXNlciIsImJyYW5jaF9pZCI6ImEwMDAwMDAwLTAwMDAtMDAwMC0wMDAwLTAwMDAwMDAwMDAwMSIsInJvbGUiOiJSZWNlcHRpb25pc3QiLCJuYmYiOjE3Njg2Mjk0MTYsImV4cCI6MTc2ODcxNTgxNiwiaWF0IjoxNzY4NjI5NDE2LCJpc3MiOiJTeW5PUy5BcGkiLCJhdWQiOiJTeW5PUy5BcHAifQ.z5vM2HyAVBF70lVZMS6mk4yXWUGoDzyYQTxBje3qo4s",
+    "authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiJhN2ZjZjkzYy04OTg4LTRhZDgtYmU4My1iOTIyZGExNTVmNDIiLCJlbWFpbCI6InJlY2VwdGlvbkBsYWIuY29tIiwidW5pcXVlX25hbWUiOiJSZWNlcHRpb24gVXNlciIsImJyYW5jaF9pZCI6ImEwMDAwMDAwLTAwMDAtMDAwMC0wMDAwLTAwMDAwMDAwMDAwMSIsInJvbGUiOiJSZWNlcHRpb25pc3QiLCJuYmYiOjE3Njg3MTk5MjEsImV4cCI6MTc2ODgwNjMyMSwiaWF0IjoxNzY4NzE5OTIxLCJpc3MiOiJTeW5PUy5BcGkiLCJhdWQiOiJTeW5PUy5BcHAifQ.dZuY3NuWfwOKdsCr47zmhW2hJCAv6bmYmXJ3D4qGZeQ",
     "content-type": "application/json",
     "sec-ch-ua": "\"Google Chrome\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\"",
     "sec-ch-ua-mobile": "?0",
@@ -1106,7 +816,7 @@ fetch("http://localhost:5173/api/v1/branch/activity?branchId=A0000000-0000-0000-
   "headers": {
     "accept": "*/*",
     "accept-language": "en-IN,en;q=0.9,te;q=0.8",
-    "authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiJhN2ZjZjkzYy04OTg4LTRhZDgtYmU4My1iOTIyZGExNTVmNDIiLCJlbWFpbCI6InJlY2VwdGlvbkBsYWIuY29tIiwidW5pcXVlX25hbWUiOiJSZWNlcHRpb24gVXNlciIsImJyYW5jaF9pZCI6ImEwMDAwMDAwLTAwMDAtMDAwMC0wMDAwLTAwMDAwMDAwMDAwMSIsInJvbGUiOiJSZWNlcHRpb25pc3QiLCJuYmYiOjE3Njg2Mjk0MTYsImV4cCI6MTc2ODcxNTgxNiwiaWF0IjoxNzY4NjI5NDE2LCJpc3MiOiJTeW5PUy5BcGkiLCJhdWQiOiJTeW5PUy5BcHAifQ.z5vM2HyAVBF70lVZMS6mk4yXWUGoDzyYQTxBje3qo4s",
+    "authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiJhN2ZjZjkzYy04OTg4LTRhZDgtYmU4My1iOTIyZGExNTVmNDIiLCJlbWFpbCI6InJlY2VwdGlvbkBsYWIuY29tIiwidW5pcXVlX25hbWUiOiJSZWNlcHRpb24gVXNlciIsImJyYW5jaF9pZCI6ImEwMDAwMDAwLTAwMDAtMDAwMC0wMDAwLTAwMDAwMDAwMDAwMSIsInJvbGUiOiJSZWNlcHRpb25pc3QiLCJuYmYiOjE3Njg3MTk5MjEsImV4cCI6MTc2ODgwNjMyMSwiaWF0IjoxNzY4NzE5OTIxLCJpc3MiOiJTeW5PUy5BcGkiLCJhdWQiOiJTeW5PUy5BcHAifQ.dZuY3NuWfwOKdsCr47zmhW2hJCAv6bmYmXJ3D4qGZeQ",
     "content-type": "application/json",
     "sec-ch-ua": "\"Google Chrome\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\"",
     "sec-ch-ua-mobile": "?0",
@@ -1125,7 +835,7 @@ fetch("http://localhost:5173/api/v1/dashboard/reception/summary", {
   "headers": {
     "accept": "*/*",
     "accept-language": "en-IN,en;q=0.9,te;q=0.8",
-    "authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiJhN2ZjZjkzYy04OTg4LTRhZDgtYmU4My1iOTIyZGExNTVmNDIiLCJlbWFpbCI6InJlY2VwdGlvbkBsYWIuY29tIiwidW5pcXVlX25hbWUiOiJSZWNlcHRpb24gVXNlciIsImJyYW5jaF9pZCI6ImEwMDAwMDAwLTAwMDAtMDAwMC0wMDAwLTAwMDAwMDAwMDAwMSIsInJvbGUiOiJSZWNlcHRpb25pc3QiLCJuYmYiOjE3Njg2Mjk0MTYsImV4cCI6MTc2ODcxNTgxNiwiaWF0IjoxNzY4NjI5NDE2LCJpc3MiOiJTeW5PUy5BcGkiLCJhdWQiOiJTeW5PUy5BcHAifQ.z5vM2HyAVBF70lVZMS6mk4yXWUGoDzyYQTxBje3qo4s",
+    "authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiJhN2ZjZjkzYy04OTg4LTRhZDgtYmU4My1iOTIyZGExNTVmNDIiLCJlbWFpbCI6InJlY2VwdGlvbkBsYWIuY29tIiwidW5pcXVlX25hbWUiOiJSZWNlcHRpb24gVXNlciIsImJyYW5jaF9pZCI6ImEwMDAwMDAwLTAwMDAtMDAwMC0wMDAwLTAwMDAwMDAwMDAwMSIsInJvbGUiOiJSZWNlcHRpb25pc3QiLCJuYmYiOjE3Njg3MTk5MjEsImV4cCI6MTc2ODgwNjMyMSwiaWF0IjoxNzY4NzE5OTIxLCJpc3MiOiJTeW5PUy5BcGkiLCJhdWQiOiJTeW5PUy5BcHAifQ.dZuY3NuWfwOKdsCr47zmhW2hJCAv6bmYmXJ3D4qGZeQ",
     "content-type": "application/json",
     "sec-ch-ua": "\"Google Chrome\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\"",
     "sec-ch-ua-mobile": "?0",
@@ -1140,13 +850,13 @@ fetch("http://localhost:5173/api/v1/dashboard/reception/summary", {
   "mode": "cors",
   "credentials": "include"
 }); ;
-fetch("ws://localhost:5173/dashboardHub?access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiJhN2ZjZjkzYy04OTg4LTRhZDgtYmU4My1iOTIyZGExNTVmNDIiLCJlbWFpbCI6InJlY2VwdGlvbkBsYWIuY29tIiwidW5pcXVlX25hbWUiOiJSZWNlcHRpb24gVXNlciIsImJyYW5jaF9pZCI6ImEwMDAwMDAwLTAwMDAtMDAwMC0wMDAwLTAwMDAwMDAwMDAwMSIsInJvbGUiOiJSZWNlcHRpb25pc3QiLCJuYmYiOjE3Njg2Mjk0MTYsImV4cCI6MTc2ODcxNTgxNiwiaWF0IjoxNzY4NjI5NDE2LCJpc3MiOiJTeW5PUy5BcGkiLCJhdWQiOiJTeW5PUy5BcHAifQ.z5vM2HyAVBF70lVZMS6mk4yXWUGoDzyYQTxBje3qo4s", {
+fetch("ws://localhost:5173/dashboardHub?access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiJhN2ZjZjkzYy04OTg4LTRhZDgtYmU4My1iOTIyZGExNTVmNDIiLCJlbWFpbCI6InJlY2VwdGlvbkBsYWIuY29tIiwidW5pcXVlX25hbWUiOiJSZWNlcHRpb24gVXNlciIsImJyYW5jaF9pZCI6ImEwMDAwMDAwLTAwMDAtMDAwMC0wMDAwLTAwMDAwMDAwMDAwMSIsInJvbGUiOiJSZWNlcHRpb25pc3QiLCJuYmYiOjE3Njg3MTk5MjEsImV4cCI6MTc2ODgwNjMyMSwiaWF0IjoxNzY4NzE5OTIxLCJpc3MiOiJTeW5PUy5BcGkiLCJhdWQiOiJTeW5PUy5BcHAifQ.dZuY3NuWfwOKdsCr47zmhW2hJCAv6bmYmXJ3D4qGZeQ", {
   "headers": {
     "accept-language": "en-IN,en;q=0.9,te;q=0.8",
     "cache-control": "no-cache",
     "pragma": "no-cache",
     "sec-websocket-extensions": "permessage-deflate; client_max_window_bits",
-    "sec-websocket-key": "j36hajVQL3OXZrC7BpQOsA==",
+    "sec-websocket-key": "Y/3rcZpH4OL+phgZFjHSLA==",
     "sec-websocket-version": "13"
   },
   "body": null,
@@ -1175,11 +885,11 @@ fetch("chrome-extension://ojplmecpdpgccookcobabopnaifgidhf/assets/en-CXHi8RO1.js
   "mode": "cors",
   "credentials": "omit"
 }); ;
-fetch("http://localhost:5173/api/v1/reception/intake/snapshot", {
+fetch("http://localhost:5173/api/v1/reception/intake/snapshot?", {
   "headers": {
     "accept": "*/*",
     "accept-language": "en-IN,en;q=0.9,te;q=0.8",
-    "authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiJhN2ZjZjkzYy04OTg4LTRhZDgtYmU4My1iOTIyZGExNTVmNDIiLCJlbWFpbCI6InJlY2VwdGlvbkBsYWIuY29tIiwidW5pcXVlX25hbWUiOiJSZWNlcHRpb24gVXNlciIsImJyYW5jaF9pZCI6ImEwMDAwMDAwLTAwMDAtMDAwMC0wMDAwLTAwMDAwMDAwMDAwMSIsInJvbGUiOiJSZWNlcHRpb25pc3QiLCJuYmYiOjE3Njg2Mjk0MTYsImV4cCI6MTc2ODcxNTgxNiwiaWF0IjoxNzY4NjI5NDE2LCJpc3MiOiJTeW5PUy5BcGkiLCJhdWQiOiJTeW5PUy5BcHAifQ.z5vM2HyAVBF70lVZMS6mk4yXWUGoDzyYQTxBje3qo4s",
+    "authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiJhN2ZjZjkzYy04OTg4LTRhZDgtYmU4My1iOTIyZGExNTVmNDIiLCJlbWFpbCI6InJlY2VwdGlvbkBsYWIuY29tIiwidW5pcXVlX25hbWUiOiJSZWNlcHRpb24gVXNlciIsImJyYW5jaF9pZCI6ImEwMDAwMDAwLTAwMDAtMDAwMC0wMDAwLTAwMDAwMDAwMDAwMSIsInJvbGUiOiJSZWNlcHRpb25pc3QiLCJuYmYiOjE3Njg3MTk5MjEsImV4cCI6MTc2ODgwNjMyMSwiaWF0IjoxNzY4NzE5OTIxLCJpc3MiOiJTeW5PUy5BcGkiLCJhdWQiOiJTeW5PUy5BcHAifQ.dZuY3NuWfwOKdsCr47zmhW2hJCAv6bmYmXJ3D4qGZeQ",
     "content-type": "application/json",
     "sec-ch-ua": "\"Google Chrome\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\"",
     "sec-ch-ua-mobile": "?0",
@@ -1194,11 +904,11 @@ fetch("http://localhost:5173/api/v1/reception/intake/snapshot", {
   "mode": "cors",
   "credentials": "include"
 }); ;
-fetch("http://localhost:5173/api/v1/reception/intake/snapshot", {
+fetch("http://localhost:5173/api/v1/reception/intake/snapshot?", {
   "headers": {
     "accept": "*/*",
     "accept-language": "en-IN,en;q=0.9,te;q=0.8",
-    "authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiJhN2ZjZjkzYy04OTg4LTRhZDgtYmU4My1iOTIyZGExNTVmNDIiLCJlbWFpbCI6InJlY2VwdGlvbkBsYWIuY29tIiwidW5pcXVlX25hbWUiOiJSZWNlcHRpb24gVXNlciIsImJyYW5jaF9pZCI6ImEwMDAwMDAwLTAwMDAtMDAwMC0wMDAwLTAwMDAwMDAwMDAwMSIsInJvbGUiOiJSZWNlcHRpb25pc3QiLCJuYmYiOjE3Njg2Mjk0MTYsImV4cCI6MTc2ODcxNTgxNiwiaWF0IjoxNzY4NjI5NDE2LCJpc3MiOiJTeW5PUy5BcGkiLCJhdWQiOiJTeW5PUy5BcHAifQ.z5vM2HyAVBF70lVZMS6mk4yXWUGoDzyYQTxBje3qo4s",
+    "authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiJhN2ZjZjkzYy04OTg4LTRhZDgtYmU4My1iOTIyZGExNTVmNDIiLCJlbWFpbCI6InJlY2VwdGlvbkBsYWIuY29tIiwidW5pcXVlX25hbWUiOiJSZWNlcHRpb24gVXNlciIsImJyYW5jaF9pZCI6ImEwMDAwMDAwLTAwMDAtMDAwMC0wMDAwLTAwMDAwMDAwMDAwMSIsInJvbGUiOiJSZWNlcHRpb25pc3QiLCJuYmYiOjE3Njg3MTk5MjEsImV4cCI6MTc2ODgwNjMyMSwiaWF0IjoxNzY4NzE5OTIxLCJpc3MiOiJTeW5PUy5BcGkiLCJhdWQiOiJTeW5PUy5BcHAifQ.dZuY3NuWfwOKdsCr47zmhW2hJCAv6bmYmXJ3D4qGZeQ",
     "content-type": "application/json",
     "sec-ch-ua": "\"Google Chrome\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\"",
     "sec-ch-ua-mobile": "?0",
@@ -1213,11 +923,11 @@ fetch("http://localhost:5173/api/v1/reception/intake/snapshot", {
   "mode": "cors",
   "credentials": "include"
 }); ;
-fetch("http://localhost:5173/api/v1/patients?q=98669", {
+fetch("http://localhost:5173/api/v1/patients?q=123", {
   "headers": {
     "accept": "*/*",
     "accept-language": "en-IN,en;q=0.9,te;q=0.8",
-    "authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiJhN2ZjZjkzYy04OTg4LTRhZDgtYmU4My1iOTIyZGExNTVmNDIiLCJlbWFpbCI6InJlY2VwdGlvbkBsYWIuY29tIiwidW5pcXVlX25hbWUiOiJSZWNlcHRpb24gVXNlciIsImJyYW5jaF9pZCI6ImEwMDAwMDAwLTAwMDAtMDAwMC0wMDAwLTAwMDAwMDAwMDAwMSIsInJvbGUiOiJSZWNlcHRpb25pc3QiLCJuYmYiOjE3Njg2Mjk0MTYsImV4cCI6MTc2ODcxNTgxNiwiaWF0IjoxNzY4NjI5NDE2LCJpc3MiOiJTeW5PUy5BcGkiLCJhdWQiOiJTeW5PUy5BcHAifQ.z5vM2HyAVBF70lVZMS6mk4yXWUGoDzyYQTxBje3qo4s",
+    "authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiJhN2ZjZjkzYy04OTg4LTRhZDgtYmU4My1iOTIyZGExNTVmNDIiLCJlbWFpbCI6InJlY2VwdGlvbkBsYWIuY29tIiwidW5pcXVlX25hbWUiOiJSZWNlcHRpb24gVXNlciIsImJyYW5jaF9pZCI6ImEwMDAwMDAwLTAwMDAtMDAwMC0wMDAwLTAwMDAwMDAwMDAwMSIsInJvbGUiOiJSZWNlcHRpb25pc3QiLCJuYmYiOjE3Njg3MTk5MjEsImV4cCI6MTc2ODgwNjMyMSwiaWF0IjoxNzY4NzE5OTIxLCJpc3MiOiJTeW5PUy5BcGkiLCJhdWQiOiJTeW5PUy5BcHAifQ.dZuY3NuWfwOKdsCr47zmhW2hJCAv6bmYmXJ3D4qGZeQ",
     "content-type": "application/json",
     "sec-ch-ua": "\"Google Chrome\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\"",
     "sec-ch-ua-mobile": "?0",
@@ -1232,11 +942,11 @@ fetch("http://localhost:5173/api/v1/patients?q=98669", {
   "mode": "cors",
   "credentials": "include"
 }); ;
-fetch("http://localhost:5173/api/v1/patients?q=986696298", {
+fetch("http://localhost:5173/api/v1/patients?q=12345", {
   "headers": {
     "accept": "*/*",
     "accept-language": "en-IN,en;q=0.9,te;q=0.8",
-    "authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiJhN2ZjZjkzYy04OTg4LTRhZDgtYmU4My1iOTIyZGExNTVmNDIiLCJlbWFpbCI6InJlY2VwdGlvbkBsYWIuY29tIiwidW5pcXVlX25hbWUiOiJSZWNlcHRpb24gVXNlciIsImJyYW5jaF9pZCI6ImEwMDAwMDAwLTAwMDAtMDAwMC0wMDAwLTAwMDAwMDAwMDAwMSIsInJvbGUiOiJSZWNlcHRpb25pc3QiLCJuYmYiOjE3Njg2Mjk0MTYsImV4cCI6MTc2ODcxNTgxNiwiaWF0IjoxNzY4NjI5NDE2LCJpc3MiOiJTeW5PUy5BcGkiLCJhdWQiOiJTeW5PUy5BcHAifQ.z5vM2HyAVBF70lVZMS6mk4yXWUGoDzyYQTxBje3qo4s",
+    "authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiJhN2ZjZjkzYy04OTg4LTRhZDgtYmU4My1iOTIyZGExNTVmNDIiLCJlbWFpbCI6InJlY2VwdGlvbkBsYWIuY29tIiwidW5pcXVlX25hbWUiOiJSZWNlcHRpb24gVXNlciIsImJyYW5jaF9pZCI6ImEwMDAwMDAwLTAwMDAtMDAwMC0wMDAwLTAwMDAwMDAwMDAwMSIsInJvbGUiOiJSZWNlcHRpb25pc3QiLCJuYmYiOjE3Njg3MTk5MjEsImV4cCI6MTc2ODgwNjMyMSwiaWF0IjoxNzY4NzE5OTIxLCJpc3MiOiJTeW5PUy5BcGkiLCJhdWQiOiJTeW5PUy5BcHAifQ.dZuY3NuWfwOKdsCr47zmhW2hJCAv6bmYmXJ3D4qGZeQ",
     "content-type": "application/json",
     "sec-ch-ua": "\"Google Chrome\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\"",
     "sec-ch-ua-mobile": "?0",
@@ -1251,11 +961,11 @@ fetch("http://localhost:5173/api/v1/patients?q=986696298", {
   "mode": "cors",
   "credentials": "include"
 }); ;
-fetch("http://localhost:5173/api/v1/patients?q=98669629892", {
+fetch("http://localhost:5173/api/v1/reception/intake/snapshot?patientId=38127113-b239-4237-be34-b290467301c9", {
   "headers": {
     "accept": "*/*",
     "accept-language": "en-IN,en;q=0.9,te;q=0.8",
-    "authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiJhN2ZjZjkzYy04OTg4LTRhZDgtYmU4My1iOTIyZGExNTVmNDIiLCJlbWFpbCI6InJlY2VwdGlvbkBsYWIuY29tIiwidW5pcXVlX25hbWUiOiJSZWNlcHRpb24gVXNlciIsImJyYW5jaF9pZCI6ImEwMDAwMDAwLTAwMDAtMDAwMC0wMDAwLTAwMDAwMDAwMDAwMSIsInJvbGUiOiJSZWNlcHRpb25pc3QiLCJuYmYiOjE3Njg2Mjk0MTYsImV4cCI6MTc2ODcxNTgxNiwiaWF0IjoxNzY4NjI5NDE2LCJpc3MiOiJTeW5PUy5BcGkiLCJhdWQiOiJTeW5PUy5BcHAifQ.z5vM2HyAVBF70lVZMS6mk4yXWUGoDzyYQTxBje3qo4s",
+    "authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiJhN2ZjZjkzYy04OTg4LTRhZDgtYmU4My1iOTIyZGExNTVmNDIiLCJlbWFpbCI6InJlY2VwdGlvbkBsYWIuY29tIiwidW5pcXVlX25hbWUiOiJSZWNlcHRpb24gVXNlciIsImJyYW5jaF9pZCI6ImEwMDAwMDAwLTAwMDAtMDAwMC0wMDAwLTAwMDAwMDAwMDAwMSIsInJvbGUiOiJSZWNlcHRpb25pc3QiLCJuYmYiOjE3Njg3MTk5MjEsImV4cCI6MTc2ODgwNjMyMSwiaWF0IjoxNzY4NzE5OTIxLCJpc3MiOiJTeW5PUy5BcGkiLCJhdWQiOiJTeW5PUy5BcHAifQ.dZuY3NuWfwOKdsCr47zmhW2hJCAv6bmYmXJ3D4qGZeQ",
     "content-type": "application/json",
     "sec-ch-ua": "\"Google Chrome\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\"",
     "sec-ch-ua-mobile": "?0",
@@ -1270,11 +980,11 @@ fetch("http://localhost:5173/api/v1/patients?q=98669629892", {
   "mode": "cors",
   "credentials": "include"
 }); ;
-fetch("http://localhost:5173/api/v1/reception/intake/patient", {
+fetch("http://localhost:5173/api/v1/reception/start-visit", {
   "headers": {
     "accept": "*/*",
     "accept-language": "en-IN,en;q=0.9,te;q=0.8",
-    "authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiJhN2ZjZjkzYy04OTg4LTRhZDgtYmU4My1iOTIyZGExNTVmNDIiLCJlbWFpbCI6InJlY2VwdGlvbkBsYWIuY29tIiwidW5pcXVlX25hbWUiOiJSZWNlcHRpb24gVXNlciIsImJyYW5jaF9pZCI6ImEwMDAwMDAwLTAwMDAtMDAwMC0wMDAwLTAwMDAwMDAwMDAwMSIsInJvbGUiOiJSZWNlcHRpb25pc3QiLCJuYmYiOjE3Njg2Mjk0MTYsImV4cCI6MTc2ODcxNTgxNiwiaWF0IjoxNzY4NjI5NDE2LCJpc3MiOiJTeW5PUy5BcGkiLCJhdWQiOiJTeW5PUy5BcHAifQ.z5vM2HyAVBF70lVZMS6mk4yXWUGoDzyYQTxBje3qo4s",
+    "authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiJhN2ZjZjkzYy04OTg4LTRhZDgtYmU4My1iOTIyZGExNTVmNDIiLCJlbWFpbCI6InJlY2VwdGlvbkBsYWIuY29tIiwidW5pcXVlX25hbWUiOiJSZWNlcHRpb24gVXNlciIsImJyYW5jaF9pZCI6ImEwMDAwMDAwLTAwMDAtMDAwMC0wMDAwLTAwMDAwMDAwMDAwMSIsInJvbGUiOiJSZWNlcHRpb25pc3QiLCJuYmYiOjE3Njg3MTk5MjEsImV4cCI6MTc2ODgwNjMyMSwiaWF0IjoxNzY4NzE5OTIxLCJpc3MiOiJTeW5PUy5BcGkiLCJhdWQiOiJTeW5PUy5BcHAifQ.dZuY3NuWfwOKdsCr47zmhW2hJCAv6bmYmXJ3D4qGZeQ",
     "content-type": "application/json",
     "sec-ch-ua": "\"Google Chrome\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\"",
     "sec-ch-ua-mobile": "?0",
@@ -1284,8 +994,27 @@ fetch("http://localhost:5173/api/v1/reception/intake/patient", {
     "sec-fetch-site": "same-origin"
   },
   "referrer": "http://localhost:5173/reception",
-  "body": "{\"patientId\":\"new-p1\"}",
+  "body": "{\"patientId\":\"38127113-b239-4237-be34-b290467301c9\",\"dept\":\"Pathology\",\"testCodes\":[],\"paymentCollectionModel\":\"Direct\",\"referralPartnerId\":null}",
   "method": "POST",
+  "mode": "cors",
+  "credentials": "include"
+}); ;
+fetch("http://localhost:5173/api/v1/reception/intake/snapshot?patientId=38127113-b239-4237-be34-b290467301c9", {
+  "headers": {
+    "accept": "*/*",
+    "accept-language": "en-IN,en;q=0.9,te;q=0.8",
+    "authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiJhN2ZjZjkzYy04OTg4LTRhZDgtYmU4My1iOTIyZGExNTVmNDIiLCJlbWFpbCI6InJlY2VwdGlvbkBsYWIuY29tIiwidW5pcXVlX25hbWUiOiJSZWNlcHRpb24gVXNlciIsImJyYW5jaF9pZCI6ImEwMDAwMDAwLTAwMDAtMDAwMC0wMDAwLTAwMDAwMDAwMDAwMSIsInJvbGUiOiJSZWNlcHRpb25pc3QiLCJuYmYiOjE3Njg3MTk5MjEsImV4cCI6MTc2ODgwNjMyMSwiaWF0IjoxNzY4NzE5OTIxLCJpc3MiOiJTeW5PUy5BcGkiLCJhdWQiOiJTeW5PUy5BcHAifQ.dZuY3NuWfwOKdsCr47zmhW2hJCAv6bmYmXJ3D4qGZeQ",
+    "content-type": "application/json",
+    "sec-ch-ua": "\"Google Chrome\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\"",
+    "sec-ch-ua-mobile": "?0",
+    "sec-ch-ua-platform": "\"Windows\"",
+    "sec-fetch-dest": "empty",
+    "sec-fetch-mode": "cors",
+    "sec-fetch-site": "same-origin"
+  },
+  "referrer": "http://localhost:5173/reception",
+  "body": null,
+  "method": "GET",
   "mode": "cors",
   "credentials": "include"
 });

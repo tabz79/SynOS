@@ -39,7 +39,8 @@ export const SignalRService = {
         if (!connection) {
             connection = new HubConnectionBuilder()
                 .withUrl("/dashboardHub", {
-                    accessTokenFactory: () => token,
+                    // FIX: Read directly from storage to avoid stale closure
+                    accessTokenFactory: () => localStorage.getItem('synos_jwt'),
                     skipNegotiation: true,
                     transport: HttpTransportType.WebSockets
                 })

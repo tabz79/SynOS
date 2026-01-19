@@ -61,11 +61,32 @@ namespace SynOS.Models.DTOs.Reception
         public Guid InvoiceId { get; set; }
         public decimal GrossAmount { get; set; }
         public decimal DiscountAmount { get; set; }
+        public decimal NetAmount { get; set; } // Gross - Discount
         public decimal TaxAmount { get; set; }
-        public decimal NetAmount { get; set; }
-        public string PaymentStatus { get; set; } = "Pending";
+        public decimal TotalAmount { get; set; } // Net + Tax
+        
+        public AppliedDiscountInfo? AppliedDiscount { get; set; }
+        public ReferralInfo? Referral { get; set; }
+        
+        public string PaymentStatus { get; set; } = "PendingPayment"; // PendingPayment | Paid
         public string? PaymentMethod { get; set; }
+        public bool IsEditable { get; set; }
         public bool IsLocked { get; set; }
+    }
+
+    public class AppliedDiscountInfo
+    {
+        public Guid Id { get; set; }
+        public string Code { get; set; } = string.Empty;
+        public string Name { get; set; } = string.Empty;
+        public decimal Amount { get; set; }
+    }
+
+    public class ReferralInfo
+    {
+        public Guid Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string FlowType { get; set; } = string.Empty; // FlowA | FlowB
     }
 
     public class IntakeUiHints

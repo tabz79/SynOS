@@ -3,7 +3,7 @@ import { Search, X, Plus, Loader2, Lock } from 'lucide-react'
 import { ReceptionApi } from '@/api/reception'
 import { cn } from '@/lib/utils'
 
-export function VisitDetails({ snapshot, visitId }) {
+export function VisitDetails({ snapshot, visitId, onVisitUpdated }) {
     // Local UI State for Search Interaction ONLY
     const [filter, setFilter] = useState("");
     const [catalog, setCatalog] = useState([]); // Master list for search suggestions
@@ -30,10 +30,11 @@ export function VisitDetails({ snapshot, visitId }) {
     }, []);
 
     // Filter Logic for Search (UI Only)
+    // Backend returns: { testName, testCode, basePrice, department }
     const suggestions = filter.length < 2 ? [] : catalog.filter(t =>
-        (t.name.toLowerCase().includes(filter.toLowerCase()) ||
-            t.code.toLowerCase().includes(filter.toLowerCase())) &&
-        !tests.some(existing => existing.code === t.code) // Don't suggest already added
+        ((t.testName || t.name || "").toLowerCase().includes(filter.toLowerCase()) ||
+            (t.testCode || t.code || "").toLowerCase().includes(filter.toLowerCase())) &&
+        !tests.some(existing => existing.code === (t.testCode || t.code)) // Don't suggest already added
     );
 
     // COMMAND: Add Test
@@ -42,14 +43,19 @@ export function VisitDetails({ snapshot, visitId }) {
         setIsProcessing(true);
         setFilter(""); // Clear UI input immediately
         try {
-            await ReceptionApi.addTestToVisit(visitId, test.code);
+            // Support both formats just in case
+            const code = test.testCode || test.code;
+            await ReceptionApi.addTestToVisit(visitId, code);
             // No local mutation. Wait for snapshot.
+            if (onVisitUpdated) onVisitUpdated();
         } catch (err) {
             console.error("Failed to add test", err);
+            alert("Failed to add test: " + err.message); // Simple feedback
         } finally {
             setIsProcessing(false);
         }
     };
+
 
     // COMMAND: Remove Test
     const handleRemoveTest = async (testCode) => {
@@ -58,8 +64,10 @@ export function VisitDetails({ snapshot, visitId }) {
         try {
             await ReceptionApi.removeTestFromVisit(visitId, testCode);
             // No local mutation. Wait for snapshot.
+            if (onVisitUpdated) onVisitUpdated();
         } catch (err) {
             console.error("Failed to remove test", err);
+            alert("Failed to remove test: " + err.message);
         } finally {
             setIsProcessing(false);
         }
@@ -107,16 +115,16 @@ export function VisitDetails({ snapshot, visitId }) {
                             <div className="absolute top-full left-0 right-0 mt-1 bg-zinc-900 border border-synos-border rounded-lg shadow-xl max-h-60 overflow-y-auto">
                                 {suggestions.map(test => (
                                     <button
-                                        key={test.code}
+                                        key={test.testCode || test.code}
                                         onClick={() => handleAddTest(test)}
                                         className="w-full text-left px-3 py-2 hover:bg-zinc-800 flex items-center justify-between group transition-colors"
                                     >
                                         <div>
-                                            <div className="text-sm font-bold text-zinc-200">{test.name}</div>
-                                            <div className="text-xs text-zinc-500 font-mono">{test.code}</div>
+                                            <div className="text-sm font-bold text-zinc-200">{test.testName || test.name}</div>
+                                            <div className="text-xs text-zinc-500 font-mono">{test.testCode || test.code}</div>
                                         </div>
                                         <div className="flex items-center gap-2">
-                                            <span className="text-xs font-mono text-synos-emerald">₹{test.price}</span>
+                                            <span className="text-xs font-mono text-synos-emerald">₹{test.basePrice || test.price}</span>
                                             <Plus className="w-4 h-4 text-zinc-500 group-hover:text-synos-primary" />
                                         </div>
                                     </button>
@@ -135,21 +143,21 @@ export function VisitDetails({ snapshot, visitId }) {
                     )}
 
                     {tests.map(test => (
-                        <div key={test.code} className="bg-synos-surface border border-synos-border rounded-lg p-3 flex items-center justify-between group animate-in zoom-in-95 duration-200">
+                        <div key={test.testCode || test.code} className="bg-synos-surface border border-synos-border rounded-lg p-3 flex items-center justify-between group animate-in zoom-in-95 duration-200">
                             <div className="flex items-center gap-3">
                                 <div className="w-8 h-8 rounded bg-zinc-800 flex items-center justify-center text-[10px] font-bold text-zinc-500 font-mono border border-zinc-700/50">
-                                    {test.code}
+                                    {test.testCode || test.code}
                                 </div>
                                 <div>
-                                    <div className="text-sm font-bold text-white leading-tight">{test.name}</div>
+                                    <div className="text-sm font-bold text-white leading-tight">{test.testName || test.name}</div>
                                     <div className="text-[10px] text-zinc-500 uppercase tracking-widest mt-0.5">{test.dept || test.category}</div>
                                 </div>
                             </div>
                             <div className="flex items-center gap-4">
-                                <div className="text-sm font-mono text-synos-emerald font-medium">₹{test.price}</div>
+                                <div className="text-sm font-mono text-synos-emerald font-medium">₹{test.basePrice || test.price}</div>
                                 {!isReadOnly && (
                                     <button
-                                        onClick={() => handleRemoveTest(test.code)}
+                                        onClick={() => handleRemoveTest(test.testCode || test.code)}
                                         disabled={isProcessing}
                                         className="text-zinc-500 hover:text-red-400 p-1 hover:bg-red-400/10 rounded transition-colors"
                                     >
@@ -160,15 +168,17 @@ export function VisitDetails({ snapshot, visitId }) {
                         </div>
                     ))}
                 </div>
-            </div>
+            </div >
 
             {/* Referral / Other Metadata from Snapshot (Simplification: Just show if present) */}
-            {visit.referralDoctor && (
-                <div className="mt-4 pt-4 border-t border-dashed border-zinc-800">
-                    <div className="text-xs text-zinc-500 mb-1">Ref By</div>
-                    <div className="text-sm text-zinc-300 font-medium">{visit.referralDoctor}</div>
-                </div>
-            )}
-        </div>
+            {
+                visit.referralDoctor && (
+                    <div className="mt-4 pt-4 border-t border-dashed border-zinc-800">
+                        <div className="text-xs text-zinc-500 mb-1">Ref By</div>
+                        <div className="text-sm text-zinc-300 font-medium">{visit.referralDoctor}</div>
+                    </div>
+                )
+            }
+        </div >
     )
 }

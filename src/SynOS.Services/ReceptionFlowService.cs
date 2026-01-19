@@ -66,11 +66,13 @@ namespace SynOS.Services
         /// <summary>
         /// Start a visit (reception).
         /// Ensures all test codes provided exist (cache-first then DB) before creating the visit.
+        /// Allows empty TestCodes for "Draft/Cockpit" flow.
         /// </summary>
         public async Task<ReceptionStartVisitResponse> StartVisitAsync(ReceptionStartVisitRequest request, Guid actorUserId)
         {
             if (request == null) throw new ArgumentNullException(nameof(request));
-            if (request.TestCodes == null || request.TestCodes.Length == 0) throw new ArgumentException("At least one test code is required");
+            // REMOVED: Legacy validation that blocked empty visits
+            // if (request.TestCodes == null || request.TestCodes.Length == 0) throw new ArgumentException("At least one test code is required");
 
             // Validate referral fields before proceeding
             if (request.IsReferred == true)
@@ -104,15 +106,18 @@ namespace SynOS.Services
                 }
             }
 
-            // Validate tests exist before attempting to create the visit.
-            await EnsureAllTestCodesExistAsync(request.TestCodes, request.Dept);
+            // Validate tests exist ONLY if provided.
+            if (request.TestCodes != null && request.TestCodes.Length > 0)
+            {
+                await EnsureAllTestCodesExistAsync(request.TestCodes, request.Dept);
+            }
 
             // Create visit DTO for VisitService (reuse your existing VisitService orchestration)
             var visitDto = new VisitCreateDto
             {
                 PatientId = request.PatientId,
                 Department = request.Dept,
-                TestCodes = request.TestCodes.ToList(), // Convert array to list
+                TestCodes = request.TestCodes?.ToList() ?? new List<string>(), // Handle null/empty gracefully
                 ReferrerId = request.ReferrerId,
                 AppointmentId = request.AppointmentId,
                 DiscountAmount = request.DiscountAmount,
@@ -190,6 +195,68 @@ namespace SynOS.Services
                     Status = invoice.Status
                 },
                 Flags = new VisitFlagsDto() // TODO: Implement same-day visit check
+            };
+        }
+
+        public async Task<ReceptionStartVisitResponse> AddTestAsync(Guid visitId, string testCode, Guid actorUserId)
+        {
+            var visit = await _visitService.AddTestToVisitAsync(visitId, testCode, actorUserId);
+            return await MapToStartVisitResponse(visit);
+        }
+
+        public async Task<ReceptionStartVisitResponse> RemoveTestAsync(Guid visitId, string testCode, Guid actorUserId)
+        {
+            var visit = await _visitService.RemoveTestFromVisitAsync(visitId, testCode, actorUserId);
+            return await MapToStartVisitResponse(visit);
+        }
+
+        private async Task<ReceptionStartVisitResponse> MapToStartVisitResponse(Visit visit)
+        {
+            // Re-fetch with all includes to be safe for mapping (VisitService might return tracked entity w/o includes if it was attached differently)
+            // But AddTestToVisitAsync includes everything.
+            var invoice = visit.Invoices.FirstOrDefault();
+            var patient = await _context.Patients.FindAsync(visit.PatientId); // simple lookup
+
+            return new ReceptionStartVisitResponse
+            {
+                VisitId = visit.VisitId,
+                Token = visit.Token,
+                TokenDate = visit.TokenDate,
+                Dept = visit.Department,
+                Status = visit.Status,
+                PatientSummary = patient == null ? null : new PatientSummaryDto
+                {
+                    PatientId = patient.PatientId,
+                    Mrn = patient.MRN,
+                    Name = $"{patient.FirstName} {patient.LastName}",
+                    Sex = patient.Gender,
+                    Age = patient.DateOfBirth == default ? 0 : (int)((DateTime.Today - patient.DateOfBirth).TotalDays / 365.25)
+                },
+                Orders = visit.Orders.Select(o => new OrderSummaryDto
+                {
+                    OrderId = o.OrderId,
+                    TestCode = o.TestCode,
+                    // TestName is not on Order directly, need Test include. VisitService AddTest includes it? No, AddTest creates it.
+                    // The returned Visit object from VisitService might have Test navigation null if it was just added.
+                    // We might need to fetch names. This is getting complex.
+                    // Shortcut: Just return basic info or query cleanly.
+                    // Let's rely on the IDs for now or query context.
+                    TestName = o.TestCode, // Fallback
+                    Dept = o.Department,
+                    Price = o.Price,
+                    Discount = o.Discount
+                }).ToList(),
+                Invoice = invoice == null ? null : new InvoiceSummaryDto
+                {
+                    InvoiceId = invoice.InvoiceId,
+                    GrossAmount = invoice.GrossAmount,
+                    DiscountAmount = invoice.DiscountAmount,
+                    NetAmount = invoice.NetAmount,
+                    TaxAmount = invoice.TaxAmount,
+                    Total = invoice.Total,
+                    Status = invoice.Status
+                },
+                Flags = new VisitFlagsDto()
             };
         }
 

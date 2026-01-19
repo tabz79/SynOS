@@ -12,7 +12,6 @@ namespace SynOS.Api.Controllers.Admin
 {
     [ApiController]
     [Route("api/v1/admin/tests")]
-    [Authorize(Roles = "Admin")]
     public class TestMasterController : ControllerBase
     {
         private readonly ITestMasterService _testMasterService;
@@ -27,6 +26,7 @@ namespace SynOS.Api.Controllers.Admin
         }
 
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> CreateTest([FromBody] CreateTestDto dto)
         {
             var test = await _testMasterService.CreateTestAsync(dto, GetCurrentUserId());
@@ -34,6 +34,7 @@ namespace SynOS.Api.Controllers.Admin
         }
 
         [HttpGet]
+        [Authorize(Roles = "Admin,Receptionist")]
         public async Task<IActionResult> GetTests()
         {
             var tests = await _testMasterService.GetTestsAsync();
@@ -41,6 +42,7 @@ namespace SynOS.Api.Controllers.Admin
         }
 
         [HttpGet("{id}")]
+        [Authorize(Roles = "Admin,Receptionist")]
         public async Task<IActionResult> GetTest(Guid id)
         {
             var test = await _testMasterService.GetTestAsync(id);
@@ -49,6 +51,7 @@ namespace SynOS.Api.Controllers.Admin
         }
 
         [HttpPut("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> UpdateTest(Guid id, [FromBody] UpdateTestDto dto)
         {
             var test = await _testMasterService.UpdateTestAsync(id, dto, GetCurrentUserId());
@@ -56,6 +59,7 @@ namespace SynOS.Api.Controllers.Admin
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteTest(Guid id)
         {
             await _testMasterService.DeleteTestAsync(id, GetCurrentUserId());
@@ -63,6 +67,7 @@ namespace SynOS.Api.Controllers.Admin
         }
 
         [HttpGet("template-csv")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetTemplateCsv()
         {
             var bytes = await _csvService.GetTemplateCsvBytesAsync();
@@ -70,6 +75,7 @@ namespace SynOS.Api.Controllers.Admin
         }
 
         [HttpPost("import-csv")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> ImportCsv([FromForm] CsvImportRequestDto request)
         {
             if (request.File == null || request.File.Length == 0)
@@ -85,6 +91,7 @@ namespace SynOS.Api.Controllers.Admin
         }
 
         [HttpGet("export-csv")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> ExportCsv()
         {
             var bytes = await _csvService.ExportTestsToCsvAsync();

@@ -185,6 +185,18 @@ namespace SynOS.Services.Operational
 
         private async Task<UserOperationalStats> GetOrCreateUserStats(Guid userId, Guid branchId, DateTime date)
         {
+            // Fix: Use FindAsync which checks Local cache first, preventing identity resolution conflicts
+            // Assuming PK is Composite: UserId, BranchId, Date (in that order based on common sense, but verified in DbContext usually)
+            // If FindAsync fails due to wrong PK order, we fall back to manual query but with tracking check.
+            
+            // Best Practice Safe Pattern:
+            // 1. Check Local manually to be 100% sure what we have
+            var localStats = _context.UserOperationalStats.Local
+                .FirstOrDefault(x => x.UserId == userId && x.BranchId == branchId && x.Date == date);
+            
+            if (localStats != null) return localStats;
+
+            // 2. Check Database
             var stats = await _context.UserOperationalStats
                 .FirstOrDefaultAsync(x => x.UserId == userId && x.BranchId == branchId && x.Date == date);
 
@@ -204,6 +216,11 @@ namespace SynOS.Services.Operational
 
         private async Task<BranchOperationalStats> GetOrCreateBranchStats(Guid branchId, DateTime date)
         {
+            var localStats = _context.BranchOperationalStats.Local
+                .FirstOrDefault(x => x.BranchId == branchId && x.Date == date);
+
+            if (localStats != null) return localStats;
+
             var stats = await _context.BranchOperationalStats
                 .FirstOrDefaultAsync(x => x.BranchId == branchId && x.Date == date);
 

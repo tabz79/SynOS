@@ -4,6 +4,7 @@ namespace SynOS.Models.Enums
     {
         PATIENT_REGISTERED, // ADDED
         VISIT_STARTED,
+        VISIT_UPDATED,
         BILL_GENERATED,
         DISCOUNT_APPLIED, // ADDED
         PAYMENT_RECEIVED,

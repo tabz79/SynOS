@@ -112,24 +112,28 @@ export function PatientIdentification({ snapshot, onSelectPatient, onClearPatien
                     {/* Results */}
                     {matches.length > 0 && (
                         <div className="space-y-2">
-                            {matches.map(p => (
-                                <div
-                                    key={p.id}
-                                    onClick={() => handleSelectPatient(p)}
-                                    className="bg-zinc-800/50 hover:bg-zinc-800 border border-synos-border hover:border-synos-primary/50 p-3 rounded-lg cursor-pointer flex items-center justify-between group transition-all"
-                                >
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-8 h-8 rounded-full bg-synos-primary/20 flex items-center justify-center text-synos-primary">
-                                            <UserCheck className="w-4 h-4" />
+                            {matches.map(p => {
+                                // Robust ID extraction to handle casing mismatch (id vs Id)
+                                const pId = p.id || p.Id || p.patientId;
+                                return (
+                                    <div
+                                        key={pId}
+                                        onClick={() => handleSelectPatient({ ...p, id: pId })}
+                                        className="bg-zinc-800/50 hover:bg-zinc-800 border border-synos-border hover:border-synos-primary/50 p-3 rounded-lg cursor-pointer flex items-center justify-between group transition-all"
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-8 h-8 rounded-full bg-synos-primary/20 flex items-center justify-center text-synos-primary">
+                                                <UserCheck className="w-4 h-4" />
+                                            </div>
+                                            <div>
+                                                <div className="text-sm font-bold text-zinc-200 group-hover:text-white">{p.name || p.Name}</div>
+                                                <div className="text-xs text-zinc-500 font-mono">{p.mobile || p.Mobile || p.phoneNumber || p.PhoneNumber} • {p.age || p.Age}Y / {p.gender || p.Gender}</div>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <div className="text-sm font-bold text-zinc-200 group-hover:text-white">{p.name}</div>
-                                            <div className="text-xs text-zinc-500 font-mono">{p.mobile} • {p.age}Y / {p.gender}</div>
-                                        </div>
+                                        <span className="text-xs text-zinc-500 group-hover:text-synos-primary font-mono">Select &rarr;</span>
                                     </div>
-                                    <span className="text-xs text-zinc-500 group-hover:text-synos-primary font-mono">Select &rarr;</span>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
                     )}
 
@@ -149,30 +153,106 @@ export function PatientIdentification({ snapshot, onSelectPatient, onClearPatien
                 </div>
             )}
 
-            {/* NEW PATIENT FORM (Placeholder for Phase 6 Register Command) */}
+            {/* NEW PATIENT FORM (Inline) */}
             {isNewPatientMode && !selectedPatient && (
-                <div className="bg-zinc-900 border border-synos-border p-4 rounded-lg space-y-4 animate-in slide-in-from-top-2">
+                <form
+                    onSubmit={async (e) => {
+                        e.preventDefault();
+                        // Inline Registration Logic
+                        const formData = new FormData(e.target);
+                        const payload = {
+                            name: formData.get("name"),
+                            // STRATEGY: Send ALL likely keys to hit the backend model binding
+                            mobile: formData.get("mobile"),
+                            phoneNumber: formData.get("mobile"),
+                            phone: formData.get("mobile"),
+                            mobileNumber: formData.get("mobile"),
+                            contactNumber: formData.get("mobile"),
+                            age: parseInt(formData.get("age")),
+                            gender: formData.get("gender")
+                        };
+
+                        if (!payload.name || !payload.phoneNumber || !payload.age || !payload.gender) {
+                            alert("Please fill all fields");
+                            return;
+                        }
+
+                        // Local loading state could be here, but we rely on async wait
+                        try {
+                            const btn = document.getElementById("btn-register-submit");
+                            if (btn) {
+                                btn.disabled = true;
+                                btn.innerText = "Registering...";
+                            }
+
+                            const { patientId } = await ReceptionApi.registerPatient(payload);
+
+                            // Success! Select the patient immediately.
+                            // This triggers IntentPanel -> Set patientId -> Fetch Snapshot
+                            // Fix: normalize mobile for UI (backend returns/expects phoneNumber, UI might want mobile)
+                            onSelectPatient({ ...payload, mobile: payload.phoneNumber, id: patientId });
+
+                            // Reset Mode
+                            setIsNewPatientMode(false);
+                        } catch (err) {
+                            console.error("Registration failed", err);
+                            alert("Failed to register: " + err.message);
+                            const btn = document.getElementById("btn-register-submit");
+                            if (btn) {
+                                btn.disabled = false;
+                                btn.innerText = "Create Profile";
+                            }
+                        }
+                    }}
+                    className="bg-zinc-900 border border-synos-border p-4 rounded-lg space-y-4 animate-in slide-in-from-top-2"
+                >
                     <div className="flex items-center justify-between border-b border-zinc-800 pb-2 mb-2">
                         <span className="text-xs font-bold text-synos-primary uppercase tracking-wider flex items-center gap-2">
                             <UserPlus className="w-3.5 h-3.5" />
                             New Patient Entry
                         </span>
-                        <button onClick={() => setIsNewPatientMode(false)} className="text-xs text-zinc-500 hover:text-white">Cancel</button>
-                    </div>
-                    <div className="text-center text-zinc-500 text-sm py-4">
-                        [Stub: Register Patient Command Form would go here]
-                        <br />
                         <button
-                            className="mt-2 text-synos-primary hover:underline"
-                            onClick={() => {
-                                // Mock Register for flow
-                                handleSelectPatient({ id: "new-p1", name: "New Patient Input", mobile: searchQuery, age: 30, gender: "F" });
-                            }}
+                            type="button"
+                            onClick={() => setIsNewPatientMode(false)}
+                            className="text-xs text-zinc-500 hover:text-white"
                         >
-                            Simulate Register &rarr;
+                            Cancel
                         </button>
                     </div>
-                </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                        <div className="col-span-2">
+                            <label className="text-[10px] text-zinc-500 uppercase font-bold tracking-wider">Full Name</label>
+                            <input name="name" type="text" placeholder="e.g. Rahul Sharma" className="w-full bg-zinc-950 border border-zinc-800 rounded p-2 text-sm text-white focus:border-synos-primary outline-none" autoFocus required />
+                        </div>
+                        <div>
+                            <label className="text-[10px] text-zinc-500 uppercase font-bold tracking-wider">Mobile</label>
+                            <input name="mobile" type="tel" defaultValue={searchQuery} placeholder="9876543210" className="w-full bg-zinc-950 border border-zinc-800 rounded p-2 text-sm text-white focus:border-synos-primary outline-none font-mono" required />
+                        </div>
+                        <div className="flex gap-2">
+                            <div className="w-1/2">
+                                <label className="text-[10px] text-zinc-500 uppercase font-bold tracking-wider">Age</label>
+                                <input name="age" type="number" placeholder="25" className="w-full bg-zinc-950 border border-zinc-800 rounded p-2 text-sm text-white focus:border-synos-primary outline-none font-mono" required />
+                            </div>
+                            <div className="w-1/2">
+                                <label className="text-[10px] text-zinc-500 uppercase font-bold tracking-wider">Gender</label>
+                                <select name="gender" className="w-full bg-zinc-950 border border-zinc-800 rounded p-2 text-sm text-white focus:border-synos-primary outline-none" required>
+                                    <option value="M">Male</option>
+                                    <option value="F">Female</option>
+                                    <option value="O">Other</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button
+                        id="btn-register-submit"
+                        type="submit"
+                        className="w-full bg-white hover:bg-zinc-200 text-black font-bold py-2 rounded-md text-sm transition-colors mt-2"
+                    >
+                        Create Profile
+                    </button>
+                </form>
             )}
         </div>
     )

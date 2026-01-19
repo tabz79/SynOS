@@ -201,3 +201,84 @@ Before touching Billing or anything else:
 Once that’s done, the cockpit will *feel* right again.
 
 Say the word when you want help reviewing that refactor.
+
+
+
+
+
+
+
+
+
+## The correct way forward (DO NOT SKIP STEPS)
+
+We now lock into **Phase 6.3**, but in the **right order**.
+
+### 🔒 Phase 6.3 — FINAL EXECUTION ORDER
+
+#### Step 1 (Backend only – no UI)
+
+**Create a single revenue kernel**
+
+```
+RecalculateFinancialsAsync(visitId)
+```
+
+Everything funnels through this. No exceptions.
+
+---
+
+#### Step 2
+
+Refactor:
+
+* AddTest
+* RemoveTest
+* ApplyDiscount
+* RemoveDiscount
+  → to call this kernel
+
+This fixes percentage discounts forever.
+
+---
+
+#### Step 3
+
+Fix Flow A commission:
+
+* Call commission engine when:
+
+  * system creates payment
+  * OR recalculation finalizes a fully paid visit
+
+This restores financial truth.
+
+---
+
+#### Step 4
+
+**Snapshot enrichment (contract lock)**
+
+Expose:
+
+* appliedReferral (id, name, flow)
+* activeDiscount (code, label, amount)
+* billing.isLocked
+* billing.paymentStatus
+
+No engine internals. No formulas.
+
+---
+
+#### Step 5 (only then)
+
+Frontend:
+
+* dropdown selectors
+* read-only rendering
+* no math
+* no guessing
+
+---
+
+
