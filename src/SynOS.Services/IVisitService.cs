@@ -17,5 +17,7 @@ namespace SynOS.Services
         Task<VisitTokenPrintDto> GetVisitTokenForPrintingAsync(Guid visitId);
         Task ApplyDiscountToVisitAsync(Guid visitId, Guid discountMasterId, Guid actorUserId);
         Task RemoveDiscountFromVisitAsync(Guid visitId, Guid actorUserId);
+        Task SetVisitReferralAsync(Guid visitId, Guid referralPartnerId, Guid actorUserId);
+        Task RemoveVisitReferralAsync(Guid visitId, Guid actorUserId);
     }
 }

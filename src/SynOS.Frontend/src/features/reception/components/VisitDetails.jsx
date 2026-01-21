@@ -7,27 +7,69 @@ export function VisitDetails({ snapshot, visitId, onVisitUpdated }) {
     // Local UI State for Search Interaction ONLY
     const [filter, setFilter] = useState("");
     const [catalog, setCatalog] = useState([]); // Master list for search suggestions
+    const [referralPartners, setReferralPartners] = useState([]); // Referral Master
     const [isSearching, setIsSearching] = useState(false);
     const [isProcessing, setIsProcessing] = useState(false); // Command spinner
 
     // 1. PURE RENDER SOURCE: Snapshot
     const visit = snapshot?.visit;
     const tests = visit?.tests || [];
-    const isReadOnly = snapshot?.uiHints?.isReadOnly || false;
-    const readOnlyReason = snapshot?.uiHints?.readOnlyReason;
+    const isBillingEditable = snapshot?.billing?.isEditable ?? true;
+    const isReadOnly = (snapshot?.uiHints?.isReadOnly || false) || !isBillingEditable;
+    const readOnlyReason = snapshot?.uiHints?.readOnlyReason || (!isBillingEditable ? "BILLING LOCKED" : null);
 
-    // Load Catalog once for search (This is essentially "static data" or "cache", not business state)
+    // Load Catalogs (Test + Referral) 
+    // Load independently so one failure (e.g. 403 on Referrals) doesn't block the other (Tests).
     useEffect(() => {
-        const loadCatalog = async () => {
+        const loadCatalogs = async () => {
+            // 1. Load Test Catalog (Critical)
             try {
-                const data = await ReceptionApi.getTestCatalog();
-                setCatalog(data || []);
+                const testData = await ReceptionApi.getTestCatalog();
+                setCatalog(testData || []);
             } catch (err) {
-                console.error("Failed to load catalog for search", err);
+                console.error("Failed to load test catalog", err);
+            }
+
+            // 2. Load Referral Partners (Secondary - might be 403 for Receptionist)
+            try {
+                const referralData = await ReceptionApi.getReferralPartners();
+                setReferralPartners(referralData || []);
+            } catch (err) {
+                console.warn("Failed to load referral partners (likely permission)", err);
             }
         };
-        loadCatalog();
+        loadCatalogs();
     }, []);
+
+    // COMMAND: Apply Referral (Step 5.4)
+    const handleApplyReferral = async (partnerId) => {
+        if (isReadOnly || !visitId) return;
+        setIsProcessing(true);
+        try {
+            await ReceptionApi.applyReferralToVisit(visitId, partnerId);
+            if (onVisitUpdated) onVisitUpdated();
+        } catch (err) {
+            console.error("Failed to apply referral", err);
+            alert("Failed to apply referral: " + err.message);
+        } finally {
+            setIsProcessing(false);
+        }
+    };
+
+    // COMMAND: Remove Referral
+    const handleRemoveReferral = async () => {
+        if (isReadOnly || !visitId) return;
+        setIsProcessing(true);
+        try {
+            await ReceptionApi.removeReferralFromVisit(visitId);
+            if (onVisitUpdated) onVisitUpdated();
+        } catch (err) {
+            console.error("Failed to remove referral", err);
+            alert("Failed to remove referral: " + err.message);
+        } finally {
+            setIsProcessing(false);
+        }
+    };
 
     // Filter Logic for Search (UI Only)
     // Backend returns: { testName, testCode, basePrice, department }
@@ -170,15 +212,47 @@ export function VisitDetails({ snapshot, visitId, onVisitUpdated }) {
                 </div>
             </div >
 
-            {/* Referral / Other Metadata from Snapshot (Simplification: Just show if present) */}
-            {
-                visit.referralDoctor && (
-                    <div className="mt-4 pt-4 border-t border-dashed border-zinc-800">
-                        <div className="text-xs text-zinc-500 mb-1">Ref By</div>
-                        <div className="text-sm text-zinc-300 font-medium">{visit.referralDoctor}</div>
+            {/* Referral Selector (Step 5.4) */}
+            <div className="mt-4 pt-4 border-t border-dashed border-zinc-800 animate-in fade-in">
+                <div className="text-xs text-zinc-500 mb-1">Referral Partner</div>
+
+                {visit.referralPartner?.partnerId ? (
+                    // READ ONLY MODE (Once set)
+                    <div className="flex items-center gap-2 text-zinc-300 font-medium bg-zinc-800/50 p-2 rounded border border-zinc-700/50">
+                        <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
+                        {referralPartners.find(p => p.referralPartnerId === visit.referralPartner.partnerId)?.name || visit.referralPartner.name || "Unknown Partner"}
+                        
+                        {isReadOnly ? (
+                            <Lock className="w-3 h-3 text-zinc-600 ml-auto" />
+                        ) : (
+                            <button 
+                                onClick={handleRemoveReferral}
+                                disabled={isProcessing}
+                                className="ml-auto text-zinc-500 hover:text-red-400 p-1 hover:bg-red-400/10 rounded transition-colors"
+                            >
+                                <X className="w-3 h-3" />
+                            </button>
+                        )}
                     </div>
-                )
-            }
+                ) : (
+                    // SELECTOR MODE
+                    !isReadOnly && (
+                        <select
+                            className="w-full bg-zinc-900 border border-synos-border rounded-md px-3 py-2 text-xs text-white focus:border-synos-primary outline-none transition-colors disabled:opacity-50"
+                            disabled={isProcessing}
+                            value=""
+                            onChange={(e) => handleApplyReferral(e.target.value)}
+                        >
+                            <option value="" disabled>Select Referral Partner...</option>
+                            {referralPartners.map(p => (
+                                <option key={p.referralPartnerId} value={p.referralPartnerId}>
+                                    {p.name}
+                                </option>
+                            ))}
+                        </select>
+                    )
+                )}
+            </div>
         </div >
     )
 }

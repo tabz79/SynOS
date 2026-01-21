@@ -10,7 +10,7 @@ namespace SynOS.Api.Controllers.Admin.Referral
 {
     [ApiController]
     [Route("api/v1/admin/referral-partners")]
-    [Authorize(Roles = "Admin")]
+    [Authorize] // Auth required, roles defined on methods
     public class ReferralPartnersController : ControllerBase
     {
         private readonly IReferralPartnerService _referralPartnerService;
@@ -23,6 +23,7 @@ namespace SynOS.Api.Controllers.Admin.Referral
         }
 
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> CreateReferralPartner([FromBody] ReferralPartnerCreateDto createDto)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
@@ -39,6 +40,7 @@ namespace SynOS.Api.Controllers.Admin.Referral
         }
 
         [HttpGet]
+        [Authorize(Roles = "Admin,Receptionist")]
         public async Task<IActionResult> GetAllReferralPartners()
         {
             var partners = await _referralPartnerService.GetAllReferralPartnersAsync();
@@ -46,6 +48,7 @@ namespace SynOS.Api.Controllers.Admin.Referral
         }
 
         [HttpGet("{id}")]
+        [Authorize(Roles = "Admin,Receptionist")]
         public async Task<IActionResult> GetReferralPartnerById(Guid id)
         {
             try 
@@ -60,6 +63,7 @@ namespace SynOS.Api.Controllers.Admin.Referral
         }
 
         [HttpPut("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> UpdateReferralPartner(Guid id, [FromBody] ReferralPartnerUpdateDto updateDto)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);

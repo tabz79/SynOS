@@ -1,268 +1,259 @@
-✦ I will now proceed with the adjusted plan for Step 4: Snapshot Contract Lock, ensuring PaymentStatus is explicitly included.
+✦ I will execute the implementation with the mandatory PaymentCollectionModel synchronization.
 
-  Execution Plan: Step 4 Hardening
+  Revised Plan:
 
-  1. Locate Targets:
-   * DTO: src/SynOS.Models/ReadModels/ReceptionIntakeSnapshotDto.cs (checking exact path).
-   * Service: src/SynOS.Services/Reception/ReceptionSnapshotService.cs.
+   1. Read Files: Check IntakeVisitController.cs and VisitService.cs.
+   2. Define DTO: Add SetReferralRequestDto (VisitId, ReferralPartnerId) to a suitable DTO file (e.g., VisitDtos.cs or nested in Controller file for now if   
+      simple).
+   3. Update Interface: IVisitService.SetVisitReferralAsync.
+   4. Update Service: VisitService.SetVisitReferralAsync with:
+       * Validation (Visit exists/editable, Partner exists/active).
+       * Mutation: ReferralPartnerId, IsReferred = true, `PaymentCollectionModel = partner.PaymentCollectionModel`.
+       * Kernel Call: RecalculateFinancialsAsync.
+       * Event: VISIT_UPDATED.
+   5. Update Controller: IntakeVisitController adds POST referral.
+   6. Verify: Build.
 
-  2. Implementation Logic:
-
-   * DTO Enrichment (`IntakeBilling`):
-       * Add AppliedDiscountInfo class: Id, Code, Name, Amount.
-       * Add ReferralInfo class: Id, Name, FlowType.
-       * Update IntakeBilling to include:
-           * AppliedDiscount (nullable).
-           * Referral (nullable).
-           * PaymentStatus (string).
-           * IsEditable (bool).
-           * IsLocked (bool).
-
-   * Service Enrichment (`GetSnapshotAsync`):
-       * Referral: Map from Visit.ReferralPartner entity.
-       * Discount: Query DiscountFact -> DiscountMaster. Map to AppliedDiscountInfo.
-       * PaymentStatus: Map from Invoice.Status (primary) or Visit.Status.
-       * Flags:
-           * IsEditable: visit.Status != "Paid" && visit.Status != "Cancelled".
-           * IsLocked: visit.Status == "Paid".
-
-  3. Verification:
-   * Build solution.
-
-  Plan Steps:
-   1. Read Files: Verify exact DTO structure.
-   2. Modify DTOs: Update contract.
-   3. Modify Service: Populate from backend truth.
-   4. Verify: Build.
-
+  I'll start by reading the controller.
 ╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ ✓  FindFiles '**/*ReceptionIntakeSnapshotDto.cs'                                                                                                           │
-│                                                                                                                                                            │
-│ Found 1 matching file(s)                                                                                                                                   │
-╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-  I will start by reading the DTO file.
-╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ ✓  ReadFile s\...\ReceptionIntakeSnapshotDto.cs                                                                                                            │
-│                                                                                                                                                            │
-│                                                                                                                                                            │
-│ ✓  ReadFile src\...\ReceptionSnapshotService.cs                                                                                                            │
+│ ✓  ReadFile src\...\IntakeVisitController.cs                                                                                                               │
 │                                                                                                                                                            │
 ╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-✦ I will now implement Step 4: Snapshot Contract Lock, ensuring the IntakeBilling DTO is enriched with the required financial and meta-information while      
-  explicitly isolating PaymentStatus.
 
-  DTO Changes in `ReceptionIntakeSnapshotDto.cs`
-   * Add AppliedDiscountInfo and ReferralInfo classes.
-   * Enrich IntakeBilling with GrossAmount, DiscountAmount, NetAmount, TaxAmount, TotalAmount.
-   * Add AppliedDiscount, Referral, PaymentStatus, IsEditable, and IsLocked to IntakeBilling.
+ℹ IMPORTANT: This conversation exceeded the compress threshold. A compressed context will be sent for future messages (compressed from: 525039 to 104660      
+  tokens).
+✦ The controller uses IReceptionFlowService. Wait, my previous plan assumed IVisitService.
+  ReceptionFlowService seems to be a facade over VisitService for reception tasks.
+  I should check IReceptionFlowService and ReceptionFlowService.cs.
+  It might delegate to VisitService or implement logic itself. The AddTest logic is usually in VisitService.
 
-  Service Changes in `ReceptionSnapshotService.cs`
-   * Query DiscountFact and DiscountMaster to populate AppliedDiscountInfo.
-   * Map ReferralPartner to ReferralInfo (FlowA/FlowB derivation).
-   * Explicitly populate PaymentStatus from Invoice.Status.
-   * Calculate IsEditable and IsLocked flags based on Visit.Status.
-
+  I will read src/SynOS.Services/ReceptionFlowService.cs and src/SynOS.Services/IReceptionFlowService.cs.
 ╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ ✓  Edit s\...\ReceptionIntakeSnapshotDto.cs:     public class IntakeBilling... =>     public class IntakeBilling...                                        │
+│ ✓  ReadFile src\...\IReceptionFlowService.cs                                                                                                               │
 │                                                                                                                                                            │
-│ 61       public Guid InvoiceId { get; set; }                                                                                                               │
-│ 62       public decimal GrossAmount { get; set; }                                                                                                          │
-│ 63       public decimal DiscountAmount { get; set; }                                                                                                       │
-│ 64 +     public decimal NetAmount { get; set; } // Gross - Discount                                                                                        │
-│ 65       public decimal TaxAmount { get; set; }                                                                                                            │
-│ 65 -     public decimal NetAmount { get; set; }                                                                                                            │
-│ 66 -     public string PaymentStatus { get; set; } = "Pending";                                                                                            │
-│ 66 +     public decimal TotalAmount { get; set; } // Net + Tax                                                                                             │
-│ 67 +                                                                                                                                                       │
-│ 68 +     public AppliedDiscountInfo? AppliedDiscount { get; set; }                                                                                         │
-│ 69 +     public ReferralInfo? Referral { get; set; }                                                                                                       │
-│ 70 +                                                                                                                                                       │
-│ 71 +     public string PaymentStatus { get; set; } = "PendingPayment"; // PendingPayment | Paid                                                            │
-│ 72       public string? PaymentMethod { get; set; }                                                                                                        │
-│ 73 +     public bool IsEditable { get; set; }                                                                                                              │
-│ 74       public bool IsLocked { get; set; }                                                                                                                │
-│ 75   }                                                                                                                                                     │
-│ 76                                                                                                                                                         │
-│ 77 + public class AppliedDiscountInfo                                                                                                                      │
-│ 78 + {                                                                                                                                                     │
-│ 79 +     public Guid Id { get; set; }                                                                                                                      │
-│ 80 +     public string Code { get; set; } = string.Empty;                                                                                                  │
-│ 81 +     public string Name { get; set; } = string.Empty;                                                                                                  │
-│ 82 +     public decimal Amount { get; set; }                                                                                                               │
-│ 83 + }                                                                                                                                                     │
-│ 84 +                                                                                                                                                       │
-│ 85 + public class ReferralInfo                                                                                                                             │
-│ 86 + {                                                                                                                                                     │
-│ 87 +     public Guid Id { get; set; }                                                                                                                      │
-│ 88 +     public string Name { get; set; } = string.Empty;                                                                                                  │
-│ 89 +     public string FlowType { get; set; } = string.Empty; // FlowA | FlowB                                                                             │
-│ 90 + }                                                                                                                                                     │
-│ 91 +                                                                                                                                                       │
-│ 92   public class IntakeUiHints                                                                                                                            │
-│ 93   {                                                                                                                                                     │
-│ 94       public bool CanRegisterPatient { get; set; }                                                                                                      │
-╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-  I'll start by modifying the DTO.
-✦ Now I will update ReceptionSnapshotService.cs to populate these fields.
-
-  Note on Data Access:
-  To populate AppliedDiscountInfo, I need to query DiscountFact and DiscountMaster.
-  I'll add logic to LoadVisitContextAsync to perform this lookup.
-
-  For ReferralInfo.FlowType, I'll map PaymentCollectionModel:
-   * "PartnerCollects" -> "FlowA"
-   * "LabCollects" -> "FlowB"
-
-╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ ✓  ReadFile src\...\ReceptionSnapshotService.cs                                                                                                            │
+│                                                                                                                                                            │
+│ ✓  ReadFile src\...\ReceptionFlowService.cs                                                                                                                │
 │                                                                                                                                                            │
 ╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-  I'll read the service again to get the exact location for population.
-✦ I will now implement the enrichment logic in ReceptionSnapshotService.cs to populate the hardened IntakeBilling contract.
+✦ I see the structure now. ReceptionFlowService orchestrates most operations but relies on VisitService for core logic like CreateVisitAsync,
+  AddTestToVisitAsync.
 
-  Changes:
-   1. Lookup DiscountFact and DiscountMaster to populate AppliedDiscount.
-   2. Map ReferralPartner to ReferralInfo (deriving FlowA/FlowB).
-   3. Populate full financials from Invoice properties.
-   4. Populate PaymentStatus, IsEditable, and IsLocked based on persisted backend truth.
+  Design Decision:
+  The command SetVisitReferralAsync is a core Visit mutation logic involving financial recalculation. It fits best in VisitService (Kernel owner).
+  ReceptionFlowService (Facade) should expose it if needed, or the Controller can call VisitService directly.
+  However, IntakeVisitController injects IReceptionFlowService. So I should add SetVisitReferralAsync to IReceptionFlowService and implement it in
+  ReceptionFlowService by delegating to VisitService.
 
+  Wait, VisitService has RecalculateFinancialsAsync (private or public? Public in interface).
+  I should put the logic in VisitService to keep validation and mutation together.
+  VisitService.SetVisitReferralAsync(visitId, partnerId, actorId).
+
+  Plan Refined:
+   1. DTO: Create SetReferralRequestDto.
+   2. IVisitService / VisitService: Implement SetVisitReferralAsync.
+       * Logic:
+           * Load Visit (with Invoices).
+           * Validate (Status, Partner).
+           * Set ReferralPartnerId, IsReferred = true, `PaymentCollectionModel = partner.PaymentCollectionModel`.
+           * Call RecalculateFinancialsAsync.
+           * Persist.
+           * Emit VISIT_UPDATED.
+   3. IReceptionFlowService / ReceptionFlowService: Add method to expose it (facade pattern).
+   4. IntakeVisitController: Add endpoint POST referral calling _service.SetVisitReferralAsync.
+
+  Step 1: DTO
+  I'll create src/SynOS.Models/DTOs/Reception/SetReferralRequestDto.cs.
+
+  Step 2: VisitService
+  I'll modify IVisitService.cs and VisitService.cs.
+
+  Step 3: ReceptionFlowService
+  I'll modify IReceptionFlowService.cs and ReceptionFlowService.cs.
+
+  Step 4: Controller
+  I'll modify IntakeVisitController.cs.
+
+  I'll start with the DTO.
 ╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ ✓  Edit src\...\ReceptionSnapshotService.cs:             // Resolve Referra... =>             // 1. Resolve Acti...                                        │
+│ ✓  WriteFile Writing to src\...\SetReferralRequestDto.cs                                                                                                   │
 │                                                                                                                                                            │
-│ ... first 26 lines hidden ...                                                                                                                              │
-│ 105 +         {                                                                                                                                            │
-│ 106 +             appliedDiscount = new AppliedDiscountInfo                                                                                                │
-│ 107 +             {                                                                                                                                        │
-│ 108 +                 Id = master.DiscountDefinitionId,                                                                                                    │
-│ 109 +                 Code = master.Code,                                                                                                                  │
-│ 110 +                 Name = master.Name,                                                                                                                  │
-│ 111 +                 Amount = discountFact.DiscountAmount                                                                                                 │
-│ 112 +             };                                                                                                                                       │
-│ 113 +         }                                                                                                                                            │
-│ 114 +     }                                                                                                                                                │
-│ 115 + }                                                                                                                                                    │
-│ 116 +                                                                                                                                                      │
-│ 117 + ReferralInfo? referralBillingInfo = null;                                                                                                            │
-│ 118   if (visit.ReferralPartnerId.HasValue)                                                                                                                │
-│ 119   {                                                                                                                                                    │
-│ 120       var partner = await _context.ReferralPartners                                                                                                    │
-│ 123                                                                                                                                                        │
-│ 124       if (partner != null)                                                                                                                             │
-│ 125       {                                                                                                                                                │
-│  98 -         referralInfo = new IntakeReferralPartner                                                                                                     │
-│ ══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════ │
-│ 126 +         referralBillingInfo = new ReferralInfo                                                                                                       │
-│ 127           {                                                                                                                                            │
-│ 128 +             Id = partner.ReferralPartnerId,                                                                                                          │
-│ 129 +             Name = partner.Name,                                                                                                                     │
-│ 130 +             FlowType = partner.PaymentCollectionModel == "PartnerCollects" ? "FlowA" : "FlowB"                                                       │
-│ 131 +         };                                                                                                                                           │
-│ 132 +                                                                                                                                                      │
-│ 133 +         // Also update the Visit level partner info for legacy compatibility if needed                                                               │
-│ 134 +         snapshot.Visit.ReferralPartner = new IntakeReferralPartner                                                                                   │
-│ 135 +         {                                                                                                                                            │
-│ 136               PartnerId = partner.ReferralPartnerId,                                                                                                   │
-│ 137               Name = partner.Name,                                                                                                                     │
-│ 138               PaymentCollectionModel = partner.PaymentCollectionModel                                                                                  │
-│ 140       }                                                                                                                                                │
-│ 141   }                                                                                                                                                    │
-│ 142                                                                                                                                                        │
-│ 107 - // Populate Visit                                                                                                                                    │
-│ 108 - snapshot.Visit = new IntakeVisit                                                                                                                     │
-│ 109 - {                                                                                                                                                    │
-│ 110 -     VisitId = visit.VisitId,                                                                                                                         │
-│ 111 -     VisitToken = visit.Token,                                                                                                                        │
-│ 112 -     Status = visit.Status,                                                                                                                           │
-│ 113 -     IsReferred = visit.IsReferred,                                                                                                                   │
-│ 114 -     ReferralPartner = referralInfo,                                                                                                                  │
-│ 115 -     Tests = visit.Orders.Select(o => new IntakeTestItem                                                                                              │
-│ 116 -     {                                                                                                                                                │
-│ 117 -         TestId = o.TestId,                                                                                                                           │
-│ 118 -         TestCode = o.TestCode,                                                                                                                       │
-│ 119 -         TestName = o.Test.TestName, // Assuming Order has Nav prop to Test                                                                           │
-│ 120 -         Department = o.Department,                                                                                                                   │
-│ 121 -         Price = o.Price                                                                                                                              │
-│ 122 -     }).ToList()                                                                                                                                      │
-│ 123 - };                                                                                                                                                   │
-│ 124 -                                                                                                                                                      │
-│ 125 - // Populate Billing                                                                                                                                  │
-│ 126 - var invoice = visit.Invoices.OrderByDescending(i => i.CreatedAt).FirstOrDefault(); // Active invoice                                                 │
-│ ══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════ │
-│ 143 + // 2. Populate Billing Contract                                                                                                                      │
-│ 144   if (invoice != null)                                                                                                                                 │
-│ 145   {                                                                                                                                                    │
-│ 146       snapshot.Billing = new IntakeBilling                                                                                                             │
-│ 148           InvoiceId = invoice.InvoiceId,                                                                                                               │
-│ 149           GrossAmount = invoice.GrossAmount,                                                                                                           │
-│ 150           DiscountAmount = invoice.DiscountAmount,                                                                                                     │
-│ 151 +         NetAmount = invoice.NetAmount,                                                                                                               │
-│ 152           TaxAmount = invoice.TaxAmount,                                                                                                               │
-│ 135 -         NetAmount = invoice.Total, // Total is Net + Tax usually.                                                                                    │
-│ 136 -         PaymentStatus = invoice.Status,                                                                                                              │
-│ 137 -         PaymentMethod = invoice.Payments.FirstOrDefault()?.Method, // Simplified                                                                     │
-│ 138 -         IsLocked = invoice.Status == "Paid" || invoice.Status == "Cancelled"                                                                         │
-│ ══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════ │
-│ 153 +         TotalAmount = invoice.Total,                                                                                                                 │
-│ 154 +                                                                                                                                                      │
-│ 155 +         AppliedDiscount = appliedDiscount,                                                                                                           │
-│ 156 +         Referral = referralBillingInfo,                                                                                                              │
-│ 157 +                                                                                                                                                      │
-│ 158 +         PaymentStatus = invoice.Status, // "PendingPayment" | "Paid"                                                                                 │
-│ 159 +         PaymentMethod = invoice.Payments.FirstOrDefault()?.Method,                                                                                   │
-│ 160 +                                                                                                                                                      │
-│ 161 +         IsEditable = visit.Status != "Paid" && visit.Status != "Cancelled",                                                                          │
-│ 162 +         IsLocked = visit.Status == "Paid"                                                                                                            │
-│ 163       };                                                                                                                                               │
-│ 164   }                                                                                                                                                    │
-│ 165                                                                                                                                                        │
-│ 142 - // Derived UI State                                                                                                                                  │
-│ 143 - bool isPaid = visit.Status == "Paid" || (snapshot.Billing?.PaymentStatus == "Paid");                                                                 │
-│ ══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════ │
-│ 166 + // 3. Derived UI Hints (using logic from Billing contract)                                                                                           │
-│ 167 + bool isPaid = visit.Status == "Paid";                                                                                                                │
-│ 168   bool isCancelled = visit.Status == "Cancelled";                                                                                                      │
-│ 169   bool hasTests = snapshot.Visit.Tests.Any();                                                                                                          │
-│ 170   bool hasBill = snapshot.Billing != null;                                                                                                             │
-│ 175                                                                                                                                                        │
-│ 176   if (!snapshot.UiState.IsReadOnly)                                                                                                                    │
-│ 177   {                                                                                                                                                    │
-│ 154 -     snapshot.UiState.CanAddTests = true; // Can allow add/remove until locked/paid? Usually until Bill Gen?                                          │
-│ 155 -     // Requirement: "Billed Visit (Invoice generated, awaiting payment)". Usually locks tests?                                                       │
-│ 156 -     // Let's assume Generating Bill locks tests structure in V1.                                                                                     │
-│ 157 -     if (hasBill)                                                                                                                                     │
-│ 158 -     {                                                                                                                                                │
-│ 159 -         snapshot.UiState.CanAddTests = false;                                                                                                        │
-│ 160 -         snapshot.UiState.ReadOnlyReason = "Bill Generated"; // Soft lock                                                                             │
-│ 161 -     }                                                                                                                                                │
-│ ══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════ │
-│ 178 +     snapshot.UiState.CanAddTests = !hasBill; // Locked once billed in V1 flow                                                                        │
-│ 179 +     if (hasBill) snapshot.UiState.ReadOnlyReason = "Bill Generated";                                                                                 │
-│ 180                                                                                                                                                        │
-│ 181       snapshot.UiState.CanGenerateBill = hasTests && !hasBill;                                                                                         │
-│ 182       snapshot.UiState.CanAcceptPayment = hasBill && !isPaid;                                                                                          │
+│  1 using System;                                                                                                                                           │
+│  2                                                                                                                                                         │
+│  3 namespace SynOS.Models.DTOs.Reception                                                                                                                   │
+│  4 {                                                                                                                                                       │
+│  5     public class SetReferralRequestDto                                                                                                                  │
+│  6     {                                                                                                                                                   │
+│  7         public Guid VisitId { get; set; }                                                                                                               │
+│  8         public Guid ReferralPartnerId { get; set; }                                                                                                     │
+│  9     }                                                                                                                                                   │
+│ 10 }                                                                                                                                                       │
 ╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-  I'll proceed with the replacement in ReceptionSnapshotService.cs.
-✦ Verification Build
-  I will now build the solution to confirm that the DTO and Service changes are correct.
+✦ Now I will modify IVisitService.cs to add the method signature.
+╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ ✓  ReadFile src\SynOS.Services\IVisitService.cs                                                                                                            │
+│                                                                                                                                                            │
+╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+✦ I will add SetVisitReferralAsync to the interface.
+╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ ✓  Edit src\SynOS.Services\IVisitService.cs:         Task ApplyDiscountToVi... =>         Task ApplyDiscountToVi...                                        │
+│                                                                                                                                                            │
+│ 17           Task<VisitTokenPrintDto> GetVisitTokenForPrintingAsync(Guid visitId);                                                                         │
+│ 18           Task ApplyDiscountToVisitAsync(Guid visitId, Guid discountMasterId, Guid actorUserId);                                                        │
+│ 19           Task RemoveDiscountFromVisitAsync(Guid visitId, Guid actorUserId);                                                                            │
+│ 20 +         Task SetVisitReferralAsync(Guid visitId, Guid referralPartnerId, Guid actorUserId);                                                           │
+│ 21       }                                                                                                                                                 │
+│ 22   }                                                                                                                                                     │
+╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+✦ Now I will implement SetVisitReferralAsync in VisitService.cs. I need to read it first to place the method correctly and ensure I have access to _context   
+  and RecalculateFinancialsAsync.
+╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ ✓  ReadFile src\SynOS.Services\VisitService.cs                                                                                                             │
+│                                                                                                                                                            │
+╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+✦ I will implement SetVisitReferralAsync in VisitService.cs as the next step in my execution plan.
+
+  Key Logic:
+   1. Load Visit + Invoices.
+   2. Validate Visit status (not Paid/Cancelled).
+   3. Load ReferralPartner (AsNoTracking ok, but need to check Active).
+   4. Update ReferralPartnerId, IsReferred = true.
+   5. Critical: PaymentCollectionModel = partner.PaymentCollectionModel.
+   6. Call RecalculateFinancialsAsync.
+   7. Write Event VISIT_UPDATED.
+
+  I'll perform the replacement to add this method.
+╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ ✓  Edit src\SynOS.Services\VisitService.cs:         /// <summary>... =>         public async Task SetV...                                                  │
+│                                                                                                                                                            │
+│ 504       );                                                                                                                                               │
+│ 505   }                                                                                                                                                    │
+│ 506                                                                                                                                                        │
+│ 507 + public async Task SetVisitReferralAsync(Guid visitId, Guid referralPartnerId, Guid actorUserId)                                                      │
+│ 508 + {                                                                                                                                                    │
+│ 509 +     var visit = await _context.Visits                                                                                                                │
+│ 510 +         .Include(v => v.Invoices)                                                                                                                    │
+│ 511 +         .FirstOrDefaultAsync(v => v.VisitId == visitId);                                                                                             │
+│ 512 +                                                                                                                                                      │
+│ 513 +     if (visit == null) throw new KeyNotFoundException($"Visit {visitId} not found.");                                                                │
+│ 514 +                                                                                                                                                      │
+│ 515 +     // Editable check                                                                                                                                │
+│ 516 +     if (visit.Status == "Paid" || visit.Status == "Cancelled")                                                                                       │
+│ 517 +         throw new InvalidOperationException($"Cannot update referral on visit in status '{visit.Status}'.");                                         │
+│ 518 +                                                                                                                                                      │
+│ 519 +     var partner = await _context.ReferralPartners                                                                                                    │
+│ 520 +         .AsNoTracking()                                                                                                                              │
+│ 521 +         .FirstOrDefaultAsync(p => p.ReferralPartnerId == referralPartnerId);                                                                         │
+│ 522 +                                                                                                                                                      │
+│ 523 +     if (partner == null) throw new KeyNotFoundException($"Referral Partner {referralPartnerId} not found.");                                         │
+│ 524 +     if (!partner.IsActive) throw new InvalidOperationException($"Referral Partner '{partner.Name}' is not active.");                                 │
+│ 525 +                                                                                                                                                      │
+│ 526 +     // Mutate & Normalize                                                                                                                            │
+│ 527 +     visit.ReferralPartnerId = referralPartnerId;                                                                                                     │
+│ 528 +     visit.IsReferred = true;                                                                                                                         │
+│ 529 +     visit.PaymentCollectionModel = partner.PaymentCollectionModel; // CRITICAL: Sync to partner model                                                │
+│ 530 +                                                                                                                                                      │
+│ 531 +     await _context.SaveChangesAsync(); // Persist structure changes before kernel runs                                                               │
+│ 532 +                                                                                                                                                      │
+│ 533 +     // Kernel Delegation                                                                                                                             │
+│ 534 +     await RecalculateFinancialsAsync(visitId, actorUserId);                                                                                          │
+│ 535 +                                                                                                                                                      │
+│ 536 +     await _operationalEventWriter.WriteEventAsync(                                                                                                   │
+│ 537 +         BranchEventType.VISIT_UPDATED,                                                                                                               │
+│ 538 +         _userContext.CurrentBranchId.ToString(),                                                                                                     │
+│ 539 +         visit.VisitId.ToString(),                                                                                                                    │
+│ 540 +         visit.Token,                                                                                                                                 │
+│ 541 +         $"Referral updated to {partner.Name}",                                                                                                       │
+│ 542 +         "User",                                                                                                                                      │
+│ 543 +         actorUserId.ToString()                                                                                                                       │
+│ 544 +     );                                                                                                                                               │
+│ 545 + }                                                                                                                                                    │
+│ 546 +                                                                                                                                                      │
+│ 547   /// <summary>                                                                                                                                        │
+│ 548   /// Centralized Revenue Kernel.                                                                                                                      │
+│ 549   /// Handles Gross, Discount, Tax, Net, Flow A Auto-Pay, and Commission Triggers.                                                                     │
+╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+✦ Now I'll modify IReceptionFlowService to expose this capability.
+╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ ✓  Edit src\...\IReceptionFlowService.cs:         Task<ReceptionStartVis... =>         Task<ReceptionStartVis...                                           │
+│                                                                                                                                                            │
+│  9       Task<ReceptionStartVisitResponse> StartVisitAsync(ReceptionStartVisitRequest request, Guid actorUserId);                                          │
+│ 10       Task<ReceptionStartVisitResponse> AddTestAsync(Guid visitId, string testCode, Guid actorUserId);                                                  │
+│ 11       Task<ReceptionStartVisitResponse> RemoveTestAsync(Guid visitId, string testCode, Guid actorUserId);                                               │
+│ 12 +     Task SetVisitReferralAsync(Guid visitId, Guid referralPartnerId, Guid actorUserId);                                                               │
+│ 13       Task<ReceptionCompletePaymentResponse> CompletePaymentAsync(ReceptionCompletePaymentRequest request, Guid userId);                                │
+│ 14       Task<ReceptionVisitSummaryResponse> GetVisitSummaryAsync(Guid visitId);                                                                           │
+│ 15   }                                                                                                                                                     │
+╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+✦ Now I'll implement SetVisitReferralAsync in ReceptionFlowService.cs (simple delegation).
+╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ ✓  Edit src\...\ReceptionFlowService.cs:         public async Task<Rece... =>         public async Task<Rece...                                            │
+│                                                                                                                                                            │
+│ 210       return await MapToStartVisitResponse(visit);                                                                                                     │
+│ 211   }                                                                                                                                                    │
+│ 212                                                                                                                                                        │
+│ 213 + public async Task SetVisitReferralAsync(Guid visitId, Guid referralPartnerId, Guid actorUserId)                                                      │
+│ 214 + {                                                                                                                                                    │
+│ 215 +     await _visitService.SetVisitReferralAsync(visitId, referralPartnerId, actorUserId);                                                              │
+│ 216 + }                                                                                                                                                    │
+│ 217 +                                                                                                                                                      │
+│ 218   private async Task<ReceptionStartVisitResponse> MapToStartVisitResponse(Visit visit)                                                                 │
+│ 219   {                                                                                                                                                    │
+│ 220       // Re-fetch with all includes to be safe for mapping (VisitService might return tracked entity w/o includes if it was attached differently)      │
+╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+✦ Finally, I'll update the IntakeVisitController to expose the endpoint.
+  Route: POST /api/v1/reception/visit/referral
+  Payload: SetReferralRequestDto.
+
+  I need to read IntakeVisitController.cs again to make sure I put it in the right place.
+╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ ✓  ReadFile src\...\IntakeVisitController.cs                                                                                                               │
+│                                                                                                                                                            │
+╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+✦ I'll add the endpoint.
+╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ ✓  Edit src\...\IntakeVisitController.cs:         [HttpDelete("test")]... =>         [HttpDelete("test")]...                                               │
+│                                                                                                                                                            │
+│ 50       }                                                                                                                                                 │
+│ 51   }                                                                                                                                                     │
+│ 52                                                                                                                                                         │
+│ 53 + [HttpPost("referral")]                                                                                                                                │
+│ 54 + public async Task<IActionResult> SetReferral([FromBody] SetReferralRequestDto request)                                                                │
+│ 55 + {                                                                                                                                                     │
+│ 56 +     if (!ModelState.IsValid) return BadRequest(ModelState);                                                                                           │
+│ 57 +                                                                                                                                                       │
+│ 58 +     try                                                                                                                                               │
+│ 59 +     {                                                                                                                                                 │
+│ 60 +         var userId = GetCurrentUserId();                                                                                                              │
+│ 61 +         await _service.SetVisitReferralAsync(request.VisitId, request.ReferralPartnerId, userId);                                                     │
+│ 62 +         return Ok(); // 200 OK                                                                                                                        │
+│ 63 +     }                                                                                                                                                 │
+│ 64 +     catch (System.Collections.Generic.KeyNotFoundException)                                                                                           │
+│ 65 +     {                                                                                                                                                 │
+│ 66 +         return NotFound();                                                                                                                            │
+│ 67 +     }                                                                                                                                                 │
+│ 68 +     catch (InvalidOperationException ex)                                                                                                              │
+│ 69 +     {                                                                                                                                                 │
+│ 70 +         return BadRequest(new { message = ex.Message }); // e.g. visit locked                                                                         │
+│ 71 +     }                                                                                                                                                 │
+│ 72 + }                                                                                                                                                     │
+│ 73 +                                                                                                                                                       │
+│ 74   private Guid GetCurrentUserId()                                                                                                                       │
+│ 75   {                                                                                                                                                     │
+│ 76       var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);                                                               │
+╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+✦ Final Build Verification
+  I will build to ensure all DTOs and interfaces are correctly wired.
   ✦ Build Succeeded.
 
-  Step 4 is complete.
+  The implementation of SetVisitReferralAsync is complete and verified syntactically.
 
-  DTO Changes:
-   * IntakeBilling now includes AppliedDiscountInfo (Id, Code, Name, Amount).
-   * IntakeBilling now includes ReferralInfo (Id, Name, FlowType).
-   * IntakeBilling financials are complete: GrossAmount, DiscountAmount, NetAmount, TaxAmount, TotalAmount.
-   * IntakeBilling explicitly exposes PaymentStatus, IsEditable, and IsLocked.
-
-  Snapshot Fields Added:
-   * AppliedDiscount: Populated from DiscountFact -> DiscountMaster.
-   * Referral: Populated from Visit -> ReferralPartner (FlowA/FlowB mapped).
-   * PaymentStatus: Explicitly mapped from invoice.Status.
-   * IsEditable: True if visit not Paid/Cancelled.
-   * IsLocked: True if visit is Paid.
-
-  Ambiguity Discovered:
-   * Cancelled State: IsLocked is false for Cancelled visits, but IsEditable is also false. The frontend will see IsEditable=false and should naturally lock  
-     the UI. IsLocked is specifically for "Paid" state as per conceptual plan.
-
-  I have finalized the contract lock. I am ready for any final instructions.
+  Summary of Changes:
+   1. DTO: Created SetReferralRequestDto for the API payload.
+   2. Logic: Implemented VisitService.SetVisitReferralAsync which:
+       * Validates visit status and partner existence.
+       * Mutates ReferralPartnerId and IsReferred.
+       * Synchronizes `PaymentCollectionModel`.
+       * Delegates financial recalculation to RecalculateFinancialsAsync (Kernel).
+       * Emits VISIT_UPDATED.
+   3. Facade: Exposed via IReceptionFlowService and implemented in ReceptionFlowService as a delegate.
+   4. API: Added POST /api/v1/reception/visit/referral to IntakeVisitController.

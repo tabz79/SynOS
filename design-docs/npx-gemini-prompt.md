@@ -1,230 +1,117 @@
-## 🔒 Phase 6.3 — Step 5: Frontend Wiring (Cockpit Mode)
+## 📌 BACKEND EXECUTION PROMPT (USE VERBATIM)
 
-**Frontend is a renderer + selector.
-Nothing else.**
+### ✦ Phase 6.3: Referral Capture Moulding (Free-Text + Partner)
 
-No math.
-No assumptions.
-No local state pretending to be business truth.
+You have full access to the SynOS backend codebase.
 
----
+### CONTEXT (LOCKED)
 
-## 🧭 FRONTEND WIRING — EXACT ORDER (DO NOT SKIP)
-
-We’ll do this in **5 sub-steps**, each independently verifiable.
+* ReferralPartnerId is the **only economic trigger**
+* Commission & flow logic already depend on ReferralPartnerId
+* We must support **free-text referrer capture** for real receptionist workflows
+* Free-text must NOT affect financial behavior
 
 ---
 
-## **Step 5.1 — Billing Panel (READ-ONLY FIRST)**
+### 🎯 OBJECTIVE
 
-### Goal
-
-Render `snapshot.billing` **exactly as-is**.
-
-### What to build
-
-A billing section that displays:
-
-* GrossAmount
-* DiscountAmount
-* NetAmount
-* TaxAmount
-* TotalAmount
-* PaymentStatus
-
-If `AppliedDiscount != null`:
-
-* Show:
-
-  * Discount name
-  * Discount amount
-* Else:
-
-  * Show “No discount applied”
-
-### Rules (non-negotiable)
-
-* ❌ No calculations
-* ❌ No formatting logic that changes meaning
-* ❌ No fallback values
-* ✅ If a field is null → show “—”
-
-👉 **Verification**
-Toggle backend states (with/without discount, paid/unpaid)
-UI must change **only** when snapshot changes.
+Extend the backend to support **free-text referrer capture** that coexists safely with the existing ReferralPartnerId-based referral system.
 
 ---
 
-## **Step 5.2 — UI Locking (FLAGS ONLY)**
+### 🔒 HARD RULES (NON-NEGOTIABLE)
 
-### Goal
+* ❌ Free-text referrer must NEVER:
 
-Wire all interaction gating **only** from snapshot flags.
-
-### Wiring rules
-
-* `billing.isEditable == false`
-  → Disable:
-
-  * Add Test
-  * Remove Test
-  * Apply Discount
-  * Apply Referral
-
-* `billing.isLocked == true`
-  → Visually lock billing panel (greyed / readonly cue)
-
-* `billing.paymentStatus == "Paid"`
-  → Hide payment actions
-  → Show “Paid” badge
-
-### Rules
-
-* ❌ Do not infer from totals
-* ❌ Do not check visit status locally
-* ✅ Flags decide everything
-
-👉 **Verification**
-Force backend to return:
-
-* Paid + Locked
-* Cancelled + Editable false
-* PendingPayment + Editable true
-
-Frontend behavior must match **without conditional hacks**.
+  * trigger commission
+  * change PaymentCollectionModel
+  * affect billing or kernel logic
+* ✅ Only ReferralPartnerId drives economics
+* ❌ No fuzzy matching
+* ❌ No auto-conversion of text → partner
+* ❌ No frontend assumptions
 
 ---
 
-## **Step 5.3 — Discount Selector (SELECT ONLY)**
+### REQUIRED CHANGES
 
-### Goal
+#### 1️⃣ Data Model
 
-Allow receptionist to **select a predefined discount**.
+* Add nullable field to `Visit`:
 
-### UI Behavior
+  ```
+  ReferrerText : string?
+  ```
+* Purpose: Store exactly what receptionist types
+* No validation beyond basic length/safety
 
-* Dropdown listing DiscountMaster entries:
+---
 
-  * code
-  * name
-* No % shown
-* No amount preview
-* No “custom discount”
+#### 2️⃣ CreateVisitAsync
 
-### On selection
+* Accept optional `referrerText`
+* Logic:
 
-Call:
+  * If ReferralPartnerId provided → normal referral behavior
+  * Else if referrerText provided → store text only
+  * Both may coexist (partner takes precedence)
 
-```
-ApplyDiscountToVisitAsync(visitId, discountMasterId)
-→ then refetch snapshot
+---
+
+#### 3️⃣ SetVisitReferralAsync
+
+* When setting ReferralPartnerId:
+
+  * DO NOT delete or overwrite ReferrerText
+  * Allow audit visibility (what was typed vs selected)
+
+---
+
+#### 4️⃣ RemoveVisitReferralAsync
+
+* Clear ReferralPartnerId
+* Reset PaymentCollectionModel (existing behavior)
+* KEEP ReferrerText intact
+
+---
+
+#### 5️⃣ Snapshot Enrichment
+
+Extend snapshot to expose:
+
+```json
+referral: {
+  partner: { id, displayName, collectionLabel } | null,
+  referrerText: string | null
+}
 ```
 
-### Removal
-
-* “Remove Discount” button
-* Calls:
-
-```
-RemoveDiscountFromVisitAsync(visitId)
-→ then refetch snapshot
-```
-
-### Rules
-
-* ❌ Do not compute discount locally
-* ❌ Do not show “you saved X%”
-* ❌ Do not cache selected discount
-
-👉 **Verification**
-
-* Apply discount → snapshot updates → UI reflects
-* Change tests → snapshot updates → discount re-applies automatically
+* No derivation
+* No fallback logic
+* Snapshot reflects stored state only
 
 ---
 
-## **Step 5.4 — Referral Selector (SELECT ONLY, READ-ONLY AFTER SET)**
+### ❌ OUT OF SCOPE
 
-### Goal
-
-Attach referral partner **once**, then lock it.
-
-### UI Behavior
-
-* Dropdown listing Referral Partners
-* Selection allowed **only if no referral set**
-* Once applied:
-
-  * Referral shown read-only
-  * No edit, no remove (V1)
-
-### On selection
-
-Call backend command (already exists or to be added next phase):
-
-```
-ApplyReferralToVisitAsync(visitId, referralPartnerId)
-→ refetch snapshot
-```
-
-(If referral command isn’t wired yet, UI stays placeholder-disabled.)
-
-### Rules
-
-* ❌ No change after payment
-* ❌ No manual commission logic
-* ✅ Pure attribution
+* UI changes
+* Matching logic
+* Analytics
+* Partner creation
+* Commission changes
 
 ---
 
-## **Step 5.5 — Payment Trigger (DISPLAY + GATE ONLY)**
+### 📦 EXPECTED OUTPUT
 
-### Goal
+1. Model changes summary
+2. DTO changes (if any)
+3. Service changes summary
+4. Snapshot changes summary
+5. Build status
 
-Trigger payment without breaking contract.
-
-### UI Behavior
-
-* If:
-
-  * `billing.paymentStatus == "PendingPayment"`
-  * AND `billing.isEditable == true`
-* Show “Accept Payment” CTA
-
-On click:
-
-* Call existing payment flow
-* On success → refetch snapshot
-
-### Rules
-
-* ❌ No payment math
-* ❌ No state mutation
-* ✅ Snapshot decides post-payment UI
+End of task.
 
 ---
 
-## 🧠 One Coach-Level Warning (Important)
-
-If you ever feel tempted to write code like:
-
-```js
-if (totalAmount === 0) markPaid()
-```
-
-That is a **bug**.
-Backend already decided. Frontend obeys.
-
----
-
-## ✅ End Condition for Phase 6.3
-
-Phase 6.3 is considered **complete** when:
-
-* Billing renders only snapshot values
-* Discount & referral are selectors only
-* All UI locks respect backend flags
-* Zero frontend math exists
-
----
 

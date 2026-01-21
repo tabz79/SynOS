@@ -10,7 +10,7 @@ namespace SynOS.Api.Controllers.Admin
 {
     [ApiController]
     [Route("api/v1/admin/discounts")]
-    [Authorize(Roles = "Admin")]
+    [Authorize] // Auth required, roles defined on methods
     public class DiscountMasterController : ControllerBase
     {
         private readonly IDiscountService _service;
@@ -23,6 +23,7 @@ namespace SynOS.Api.Controllers.Admin
         }
 
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> CreateDiscount([FromBody] CreateDiscountDto createDto)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
@@ -43,6 +44,7 @@ namespace SynOS.Api.Controllers.Admin
         }
 
         [HttpGet]
+        [Authorize(Roles = "Admin,Receptionist")]
         public async Task<IActionResult> GetDiscounts([FromQuery] bool? isActive, [FromQuery] bool? isEffective, [FromQuery] string? search)
         {
             var result = await _service.GetDiscountsAsync(isActive, isEffective, search);
@@ -50,6 +52,7 @@ namespace SynOS.Api.Controllers.Admin
         }
 
         [HttpGet("{id}")]
+        [Authorize(Roles = "Admin,Receptionist")]
         public async Task<IActionResult> GetDiscount(Guid id)
         {
             try
@@ -64,6 +67,7 @@ namespace SynOS.Api.Controllers.Admin
         }
 
         [HttpPut("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> UpdateDiscount(Guid id, [FromBody] UpdateDiscountDto updateDto)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);

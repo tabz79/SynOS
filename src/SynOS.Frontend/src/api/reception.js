@@ -142,6 +142,19 @@ export const ReceptionApi = {
     },
 
     /**
+     * Fetches the Discount Master catalog.
+     * @returns {Promise<Array>}
+     */
+    getDiscountMaster: async () => {
+        // Assuming endpoint based on test catalog pattern
+        const response = await fetch('/api/v1/admin/discounts', {
+            headers: ReceptionApi.getHeaders()
+        });
+        if (!response.ok) throw new Error("Failed to load discount catalog");
+        return response.json();
+    },
+
+    /**
      * Applies a discount code to the specified visit.
      * @param {string} visitId
      * @param {string} discountCode 
@@ -234,6 +247,64 @@ export const ReceptionApi = {
             throw new Error(error.message || "Failed to register patient");
         }
 
+
+        const json = await response.json();
+        return json.data || json;
+    },
+
+    /**
+     * Fetches the Referral Partners.
+     * @returns {Promise<Array>}
+     */
+    getReferralPartners: async () => {
+        const response = await fetch('/api/v1/admin/referral-partners', {
+            headers: ReceptionApi.getHeaders()
+        });
+        if (!response.ok) throw new Error("Failed to load referral partners");
         return response.json();
+    },
+
+    /**
+     * Applies a referral partner to the visit.
+     * @param {string} visitId
+     * @param {string} referralPartnerId
+     * @returns {Promise<void>}
+     */
+    applyReferralToVisit: async (visitId, referralPartnerId) => {
+        const response = await fetch('/api/v1/reception/visit/referral', {
+            method: 'POST',
+            headers: ReceptionApi.getHeaders(),
+            body: JSON.stringify({ visitId, referralPartnerId })
+        });
+        if (!response.ok) throw new Error('Failed to apply referral');
+    },
+
+    /**
+     * Removes the referral partner from the visit.
+     * @param {string} visitId
+     * @returns {Promise<void>}
+     */
+    removeReferralFromVisit: async (visitId) => {
+        const response = await fetch(`/api/v1/reception/visit/referral?visitId=${visitId}`, {
+            method: 'DELETE',
+            headers: ReceptionApi.getHeaders()
+        });
+        if (!response.ok) throw new Error('Failed to remove referral');
+    },
+
+    /**
+     * Collects payment for the visit.
+     * @param {string} visitId
+     * @param {number} amount
+     * @param {string} mode - 'Cash', 'Card', 'UPI'
+     * @returns {Promise<void>}
+     */
+    collectPayment: async (visitId, amount, mode = 'Cash') => {
+        const response = await fetch('/api/v1/reception/payment/collect', {
+            method: 'POST',
+            headers: ReceptionApi.getHeaders(),
+            body: JSON.stringify({ visitId, amount, mode })
+        });
+        if (!response.ok) throw new Error('Failed to collect payment');
     }
 };

@@ -39,7 +39,20 @@ namespace SynOS.Services.Reception
             }
             else if (query.PatientId.HasValue)
             {
-                await LoadPatientContextAsync(snapshot, query.PatientId.Value);
+                // Fix: Check for Active Visit first
+                var activeVisit = await _context.Visits
+                    .Where(v => v.PatientId == query.PatientId.Value && v.Status != "Paid" && v.Status != "Cancelled")
+                    .OrderByDescending(v => v.CreatedAt)
+                    .FirstOrDefaultAsync();
+
+                if (activeVisit != null)
+                {
+                    await LoadVisitContextAsync(snapshot, activeVisit.VisitId, query.PatientId);
+                }
+                else
+                {
+                    await LoadPatientContextAsync(snapshot, query.PatientId.Value);
+                }
             }
             else
             {
@@ -56,7 +69,7 @@ namespace SynOS.Services.Reception
                 .AsNoTracking()
                 .Include(v => v.Patient)
                 .Include(v => v.Orders).ThenInclude(o => o.Test)
-                .Include(v => v.Invoices).ThenInclude(i => i.Payments) // Assuming 1:1 or 1:N invoice, standard flow usually 1 active
+                .Include(v => v.Invoices).ThenInclude(i => i.Payments)
                 .FirstOrDefaultAsync(v => v.VisitId == visitId);
 
             if (visit == null) throw new KeyNotFoundException($"Visit {visitId} not found.");
@@ -76,7 +89,6 @@ namespace SynOS.Services.Reception
                            ? visit.Patient.DisplayName 
                            : $"{visit.Patient.FirstName} {visit.Patient.LastName}",
                 Gender = visit.Patient.Gender,
-                // Age is null if DOB is unknown
                 Age = visit.Patient.IsDateOfBirthKnown 
                       ? DateTime.UtcNow.Year - visit.Patient.DateOfBirth.Year 
                       : null, 
@@ -84,7 +96,7 @@ namespace SynOS.Services.Reception
             };
 
             // 1. Resolve Active Invoice and Meta-data
-            var invoice = visit.Invoices.OrderByDescending(i => i.CreatedAt).FirstOrDefault();
+            var invoice = visit.Invoices?.OrderByDescending(i => i.CreatedAt).FirstOrDefault(); // Safe check for null list
             
             AppliedDiscountInfo? appliedDiscount = null;
             if (invoice != null)
@@ -131,14 +143,32 @@ namespace SynOS.Services.Reception
                     };
                     
                     // Also update the Visit level partner info for legacy compatibility if needed
-                    snapshot.Visit.ReferralPartner = new IntakeReferralPartner
-                    {
-                        PartnerId = partner.ReferralPartnerId,
-                        Name = partner.Name,
-                        PaymentCollectionModel = partner.PaymentCollectionModel
-                    };
+                    // Ensure Visit object is instantiated if null (though LoadVisitContextAsync initializes it below)
                 }
             }
+
+            // Populate Visit
+            snapshot.Visit = new IntakeVisit
+            {
+                VisitId = visit.VisitId,
+                VisitToken = visit.Token,
+                Status = visit.Status,
+                IsReferred = visit.IsReferred,
+                ReferralPartner = referralBillingInfo != null ? new IntakeReferralPartner
+                {
+                    PartnerId = referralBillingInfo.Id,
+                    Name = referralBillingInfo.Name,
+                    PaymentCollectionModel = referralBillingInfo.FlowType == "FlowA" ? "PartnerCollects" : "LabCollects"
+                } : null,
+                Tests = visit.Orders?.Select(o => new IntakeTestItem
+                {
+                    TestId = o.TestId,
+                    TestCode = o.TestCode,
+                    TestName = o.Test?.TestName ?? o.TestCode, // Safe navigation
+                    Department = o.Department,
+                    Price = o.Price
+                }).ToList() ?? new List<IntakeTestItem>()
+            };
 
             // 2. Populate Billing Contract
             if (invoice != null)
@@ -156,7 +186,7 @@ namespace SynOS.Services.Reception
                     Referral = referralBillingInfo,
                     
                     PaymentStatus = invoice.Status, // "PendingPayment" | "Paid"
-                    PaymentMethod = invoice.Payments.FirstOrDefault()?.Method,
+                    PaymentMethod = invoice.Payments?.FirstOrDefault()?.Method, // Safe navigation
                     
                     IsEditable = visit.Status != "Paid" && visit.Status != "Cancelled",
                     IsLocked = visit.Status == "Paid"

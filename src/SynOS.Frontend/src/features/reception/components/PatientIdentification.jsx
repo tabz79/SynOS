@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Search, UserPlus, UserCheck, Loader2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { ReceptionApi } from '@/api/reception'
+import { PatientRegistrationModal } from './PatientRegistrationModal'
 
 export function PatientIdentification({ snapshot, onSelectPatient, onClearPatient }) {
     const [searchQuery, setSearchQuery] = useState("");
@@ -153,107 +154,22 @@ export function PatientIdentification({ snapshot, onSelectPatient, onClearPatien
                 </div>
             )}
 
-            {/* NEW PATIENT FORM (Inline) */}
-            {isNewPatientMode && !selectedPatient && (
-                <form
-                    onSubmit={async (e) => {
-                        e.preventDefault();
-                        // Inline Registration Logic
-                        const formData = new FormData(e.target);
-                        const payload = {
-                            name: formData.get("name"),
-                            // STRATEGY: Send ALL likely keys to hit the backend model binding
-                            mobile: formData.get("mobile"),
-                            phoneNumber: formData.get("mobile"),
-                            phone: formData.get("mobile"),
-                            mobileNumber: formData.get("mobile"),
-                            contactNumber: formData.get("mobile"),
-                            age: parseInt(formData.get("age")),
-                            gender: formData.get("gender")
-                        };
-
-                        if (!payload.name || !payload.phoneNumber || !payload.age || !payload.gender) {
-                            alert("Please fill all fields");
-                            return;
-                        }
-
-                        // Local loading state could be here, but we rely on async wait
-                        try {
-                            const btn = document.getElementById("btn-register-submit");
-                            if (btn) {
-                                btn.disabled = true;
-                                btn.innerText = "Registering...";
-                            }
-
-                            const { patientId } = await ReceptionApi.registerPatient(payload);
-
-                            // Success! Select the patient immediately.
-                            // This triggers IntentPanel -> Set patientId -> Fetch Snapshot
-                            // Fix: normalize mobile for UI (backend returns/expects phoneNumber, UI might want mobile)
-                            onSelectPatient({ ...payload, mobile: payload.phoneNumber, id: patientId });
-
-                            // Reset Mode
-                            setIsNewPatientMode(false);
-                        } catch (err) {
-                            console.error("Registration failed", err);
-                            alert("Failed to register: " + err.message);
-                            const btn = document.getElementById("btn-register-submit");
-                            if (btn) {
-                                btn.disabled = false;
-                                btn.innerText = "Create Profile";
-                            }
-                        }
-                    }}
-                    className="bg-zinc-900 border border-synos-border p-4 rounded-lg space-y-4 animate-in slide-in-from-top-2"
-                >
-                    <div className="flex items-center justify-between border-b border-zinc-800 pb-2 mb-2">
-                        <span className="text-xs font-bold text-synos-primary uppercase tracking-wider flex items-center gap-2">
-                            <UserPlus className="w-3.5 h-3.5" />
-                            New Patient Entry
-                        </span>
-                        <button
-                            type="button"
-                            onClick={() => setIsNewPatientMode(false)}
-                            className="text-xs text-zinc-500 hover:text-white"
-                        >
-                            Cancel
-                        </button>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-3">
-                        <div className="col-span-2">
-                            <label className="text-[10px] text-zinc-500 uppercase font-bold tracking-wider">Full Name</label>
-                            <input name="name" type="text" placeholder="e.g. Rahul Sharma" className="w-full bg-zinc-950 border border-zinc-800 rounded p-2 text-sm text-white focus:border-synos-primary outline-none" autoFocus required />
-                        </div>
-                        <div>
-                            <label className="text-[10px] text-zinc-500 uppercase font-bold tracking-wider">Mobile</label>
-                            <input name="mobile" type="tel" defaultValue={searchQuery} placeholder="9876543210" className="w-full bg-zinc-950 border border-zinc-800 rounded p-2 text-sm text-white focus:border-synos-primary outline-none font-mono" required />
-                        </div>
-                        <div className="flex gap-2">
-                            <div className="w-1/2">
-                                <label className="text-[10px] text-zinc-500 uppercase font-bold tracking-wider">Age</label>
-                                <input name="age" type="number" placeholder="25" className="w-full bg-zinc-950 border border-zinc-800 rounded p-2 text-sm text-white focus:border-synos-primary outline-none font-mono" required />
-                            </div>
-                            <div className="w-1/2">
-                                <label className="text-[10px] text-zinc-500 uppercase font-bold tracking-wider">Gender</label>
-                                <select name="gender" className="w-full bg-zinc-950 border border-zinc-800 rounded p-2 text-sm text-white focus:border-synos-primary outline-none" required>
-                                    <option value="M">Male</option>
-                                    <option value="F">Female</option>
-                                    <option value="O">Other</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-
-                    <button
-                        id="btn-register-submit"
-                        type="submit"
-                        className="w-full bg-white hover:bg-zinc-200 text-black font-bold py-2 rounded-md text-sm transition-colors mt-2"
-                    >
-                        Create Profile
-                    </button>
-                </form>
-            )}
+            {/* NEW PATIENT MODAL */}
+            <PatientRegistrationModal
+                isOpen={isNewPatientMode}
+                onClose={() => setIsNewPatientMode(false)}
+                onPatientRegistered={(newPatientId, formData) => {
+                    // Success! Select the patient immediately.
+                    // This triggers IntentPanel -> Set patientId -> Fetch Snapshot
+                    onSelectPatient({
+                        ...formData,
+                        id: newPatientId,
+                        // Ensure mobile mapping for UI display if needed
+                        mobile: formData.mobile
+                    });
+                    setIsNewPatientMode(false);
+                }}
+            />
         </div>
     )
 }

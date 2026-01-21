@@ -27,6 +27,9 @@ export function IntentPanel() {
     const loadSnapshot = async () => {
         setIsLoading(true);
         try {
+            // STANDARD CALL: Backend Fixes Applied (Step 1846)
+            // We pass both IDs. The backend should now handle this without crashing (500)
+            // and correctly resolve the active visit logic.
             const data = await ReceptionApi.getIntakeSnapshot(currentPatientId, currentVisitId);
             console.log("Intake Snapshot Loaded:", data);
             setSnapshot(data);
@@ -37,7 +40,7 @@ export function IntentPanel() {
             }
             if (data?.visit?.visitId && !currentVisitId) {
                 setCurrentVisitId(data.visit.visitId);
-            }
+            };
         } catch (err) {
             console.error("Failed to load intake snapshot:", err);
             setError("Failed to load session. Please try closing and reopening.");
@@ -180,7 +183,10 @@ export function IntentPanel() {
                         {/* Prompt says: "Visit present -> Show Billing". */}
                         {hasVisit && (
                             <div className="animate-in slide-in-from-bottom-5 duration-700 fade-in">
-                                <BillingSummary snapshot={snapshot} />
+                                <BillingSummary
+                                    snapshot={snapshot}
+                                    onVisitUpdated={loadSnapshot}
+                                />
                             </div>
                         )}
                     </>

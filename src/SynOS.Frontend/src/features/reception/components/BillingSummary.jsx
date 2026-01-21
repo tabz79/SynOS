@@ -1,35 +1,52 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Tag, X, Loader2, IndianRupee, Lock } from 'lucide-react'
 import { ReceptionApi } from '@/api/reception'
 import { cn } from '@/lib/utils'
 
-export function BillingSummary({ snapshot }) {
-    // Local UI State for INPUT only (Discount Code draft)
-    const [discountCode, setDiscountCode] = useState("");
+export function BillingSummary({ snapshot, onVisitUpdated }) {
+    // Local UI State
     const [isProcessing, setIsProcessing] = useState(false);
+    const [discountCatalog, setDiscountCatalog] = useState([]);
 
     // 1. PURE RENDER SOURCE: Snapshot
     const billing = snapshot?.billing;
     const uiHints = snapshot?.uiHints;
+    const visitId = snapshot?.visit?.visitId || snapshot?.visit?.id;
 
     // Strict Guard: If no billing object, render nothing (or skeleton).
     if (!billing) return null;
 
     // 2. READ-ONLY Flags (Strictly from Snapshot)
     const isReadOnly = uiHints?.isReadOnly || false;
-    const canEditDiscount = !isReadOnly; // Assuming simple inverse for now unless specific hint exists
+    const isLocked = billing.isLocked || false;
+    const canEditDiscount = !isReadOnly && !isLocked && billing.isEditable !== false;
+
+    // Load Catalog once
+    useEffect(() => {
+        const load = async () => {
+            try {
+                const data = await ReceptionApi.getDiscountMaster();
+                setDiscountCatalog(data || []);
+            } catch (err) {
+                console.warn("Failed to load discount catalog (likely permission)", err);
+                // Don't block UI; just show empty list
+                setDiscountCatalog([]);
+            }
+        };
+        load();
+    }, []);
 
     // COMMAND: Apply Discount
-    const handleApplyDiscount = async () => {
-        if (!discountCode.trim() || !canEditDiscount) return;
+    const handleApplyDiscount = async (code) => {
+        if (!code || !canEditDiscount || !visitId) return;
 
         setIsProcessing(true);
         try {
-            await ReceptionApi.applyIntakeDiscount(discountCode);
-            setDiscountCode(""); // Clear Input on success (Snapshot will show applied discount)
+            await ReceptionApi.applyDiscountToVisit(visitId, code);
+            // Snapshot update will reflect change
         } catch (err) {
             console.error("Failed to apply discount", err);
-            // Optionally show error toast
+            alert("Failed to apply discount: " + err.message);
         } finally {
             setIsProcessing(false);
         }
@@ -37,11 +54,11 @@ export function BillingSummary({ snapshot }) {
 
     // COMMAND: Remove Discount
     const handleRemoveDiscount = async () => {
-        if (!canEditDiscount) return;
+        if (!canEditDiscount || !visitId) return;
 
         setIsProcessing(true);
         try {
-            await ReceptionApi.removeIntakeDiscount();
+            await ReceptionApi.removeDiscountFromVisit(visitId);
         } catch (err) {
             console.error("Failed to remove discount", err);
         } finally {
@@ -79,33 +96,26 @@ export function BillingSummary({ snapshot }) {
                     {/* Gross */}
                     <div className="flex justify-between items-center text-zinc-400">
                         <span>Total Amount</span>
-                        <span className="font-mono">₹{billing.grossAmount?.toLocaleString() ?? 0}</span>
+                        <span className="font-mono">₹{billing.grossAmount?.toLocaleString() ?? "—"}</span>
                     </div>
 
                     {/* Discount Applied */}
-                    {billing.discountAmount > 0 && (
-                        <div className="flex justify-between items-center text-emerald-400 animate-in slide-in-from-left-2">
-                            <div className="flex items-center gap-2">
-                                <Tag className="w-3.5 h-3.5" />
-                                <span>Discount ({billing.discountCode})</span>
-                                {canEditDiscount && (
-                                    <button
-                                        onClick={handleRemoveDiscount}
-                                        disabled={isProcessing}
-                                        className="text-zinc-500 hover:text-red-400"
-                                    >
-                                        <X className="w-3 h-3" />
-                                    </button>
-                                )}
-                            </div>
-                            <span className="font-mono">- ₹{billing.discountAmount?.toLocaleString()}</span>
-                        </div>
-                    )}
+                    <div className="flex justify-between items-center text-zinc-400">
+                        <span>Discount</span>
+                        {billing.appliedDiscount ? (
+                            <span className="font-mono text-emerald-400">
+                                - ₹{billing.discountAmount?.toLocaleString()}
+                                <span className="text-xs ml-1 opacity-70">({billing.appliedDiscount.name})</span>
+                            </span>
+                        ) : (
+                            <span className="font-mono text-zinc-600">No discount applied</span>
+                        )}
+                    </div>
 
                     {/* Tax */}
                     <div className="flex justify-between items-center text-zinc-500 text-xs">
                         <span>GST / Tax</span>
-                        <span className="font-mono">₹{billing.taxAmount?.toLocaleString() ?? 0}</span>
+                        <span className="font-mono">₹{billing.taxAmount?.toLocaleString() ?? "—"}</span>
                     </div>
 
                     {/* Divider */}
@@ -116,37 +126,65 @@ export function BillingSummary({ snapshot }) {
                         <span className="font-bold text-zinc-200">Net Payable</span>
                         <span className="text-lg font-bold font-mono text-white flex items-center">
                             <IndianRupee className="w-4 h-4 mr-0.5" />
-                            {billing.netAmount?.toLocaleString() ?? 0}
+                            {billing.netAmount?.toLocaleString() ?? "—"}
                         </span>
                     </div>
                 </div>
 
-                {/* B. Discount Input (Conditional Command Trigger) */}
-                {/* Only show if NO discount applied AND editable */}
-                {!billing.discountCode && canEditDiscount && (
-                    <div className="pt-2">
-                        <div className="flex gap-2">
-                            <input
-                                type="text"
-                                placeholder="Discount Code"
-                                value={discountCode}
-                                onChange={(e) => setDiscountCode(e.target.value.toUpperCase())}
-                                disabled={isProcessing}
-                                className="flex-1 bg-zinc-900 border border-synos-border rounded-md px-3 py-1.5 text-xs text-white placeholder:text-zinc-600 focus:border-synos-primary outline-none font-mono uppercase"
-                                onKeyDown={(e) => e.key === 'Enter' && handleApplyDiscount()}
-                            />
-                            <button
-                                onClick={handleApplyDiscount}
-                                disabled={!discountCode || isProcessing}
-                                className="bg-zinc-800 hover:bg-zinc-700 text-zinc-300 px-3 py-1.5 rounded-md text-xs font-medium transition-colors disabled:opacity-50"
-                            >
-                                Apply
-                            </button>
-                        </div>
+                {/* B. Discount Selector (Step 5.3) */}
+                {!billing.appliedDiscount && canEditDiscount && (
+                    <div className="pt-2 animate-in fade-in">
+                        <select
+                            className="w-full bg-zinc-900 border border-synos-border rounded-md px-3 py-2 text-xs text-white focus:border-synos-primary outline-none transition-colors disabled:opacity-50"
+                            disabled={isProcessing}
+                            value=""
+                            onChange={(e) => {
+                                if (e.target.value) handleApplyDiscount(e.target.value);
+                            }}
+                        >
+                            <option value="" disabled>Apply a Discount...</option>
+                            {discountCatalog.map(discount => (
+                                <option key={discount.code} value={discount.code}>
+                                    {discount.name} ({discount.code})
+                                </option>
+                            ))}
+                        </select>
                     </div>
                 )}
 
-                {/* C. Payment Mode (Read Only for now, based on snapshot) */}
+                {/* C. Payment Trigger (Step 5.5) */}
+                {billing.status === 'PendingPayment' && canEditDiscount && (
+                    <div className="pt-4 mt-2 border-t border-dashed border-zinc-800 animate-in fade-in">
+                        <button
+                            onClick={async () => {
+                                if (isProcessing) return;
+                                setIsProcessing(true);
+                                try {
+                                    // Using default 'Cash' for now, or we could add a mode selector later
+                                    await ReceptionApi.collectPayment(visitId, billing.netAmount, 'Cash');
+                                    // Trigger explicit refresh
+                                    if (onVisitUpdated) onVisitUpdated();
+                                } catch (err) {
+                                    console.error("Payment failed", err);
+                                    alert("Payment failed: " + err.message);
+                                } finally {
+                                    setIsProcessing(false);
+                                }
+                            }}
+                            disabled={isProcessing}
+                            className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 rounded-md shadow-lg shadow-emerald-900/20 flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
+                        >
+                            {isProcessing ? (
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                            ) : (
+                                <IndianRupee className="w-4 h-4" />
+                            )}
+                            Accept Payment (Cash)
+                        </button>
+                    </div>
+                )}
+
+                {/* D. Payment Mode (Read Only for now, based on snapshot) */}
                 <div className="mt-2 text-[10px] text-zinc-600 text-center uppercase tracking-widest font-bold">
                     Collection: {billing.paymentModel || "Cash"}
                 </div>

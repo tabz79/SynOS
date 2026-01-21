@@ -504,6 +504,113 @@ namespace SynOS.Services
             );
         }
 
+        public async Task RemoveVisitReferralAsync(Guid visitId, Guid actorUserId)
+        {
+            var visit = await _context.Visits
+                .Include(v => v.Invoices).ThenInclude(i => i.Payments)
+                .FirstOrDefaultAsync(v => v.VisitId == visitId);
+
+            if (visit == null) throw new KeyNotFoundException($"Visit {visitId} not found.");
+            
+            // Editable check with Flow A Unwind Logic
+            if (visit.Status == "Paid" || visit.Status == "Cancelled")
+            {
+                // Unwind Logic for Flow A (PartnerCollects)
+                bool isFlowA = visit.PaymentCollectionModel == "PartnerCollects" && visit.ReferralPartnerId.HasValue;
+                bool isSystemPaidOnly = false;
+                
+                var invoice = visit.Invoices.OrderByDescending(i => i.CreatedAt).FirstOrDefault();
+                if (isFlowA && invoice != null)
+                {
+                    // Check if payments are purely system/partner account
+                    isSystemPaidOnly = invoice.Payments.All(p => p.Method == "PartnerAccount");
+                    
+                    if (isSystemPaidOnly)
+                    {
+                        // Safe to unwind
+                        _context.Payments.RemoveRange(invoice.Payments);
+                        
+                        // Also cleanup Receivables
+                        var receivables = await _context.ReceivableFacts
+                            .Where(r => r.SourceVisitId == visit.VisitId)
+                            .ToListAsync();
+                        _context.ReceivableFacts.RemoveRange(receivables);
+
+                        // Reset Status
+                        invoice.Status = "PendingPayment";
+                        visit.Status = "PendingPayment";
+                        
+                        _logger.LogInformation("Unwound Flow A payments for Visit {VisitId} to allow referral removal.", visit.VisitId);
+                    }
+                }
+
+                if (!isSystemPaidOnly && visit.Status != "PendingPayment") // Double check status in case we just reset it
+                {
+                    throw new InvalidOperationException($"Cannot remove referral from visit in status '{visit.Status}' (Payments exist).");
+                }
+            }
+
+            // Mutate
+            visit.ReferralPartnerId = null;
+            visit.IsReferred = false;
+            visit.PaymentCollectionModel = "LabCollects"; // Reset to default
+
+            await _context.SaveChangesAsync();
+
+            // Kernel Delegation
+            await RecalculateFinancialsAsync(visitId, actorUserId);
+
+            await _operationalEventWriter.WriteEventAsync(
+                BranchEventType.VISIT_UPDATED,
+                _userContext.CurrentBranchId.ToString(),
+                visit.VisitId.ToString(),
+                visit.Token,
+                "Referral removed",
+                "User",
+                actorUserId.ToString()
+            );
+        }
+
+        public async Task SetVisitReferralAsync(Guid visitId, Guid referralPartnerId, Guid actorUserId)
+        {
+            var visit = await _context.Visits
+                .Include(v => v.Invoices)
+                .FirstOrDefaultAsync(v => v.VisitId == visitId);
+
+            if (visit == null) throw new KeyNotFoundException($"Visit {visitId} not found.");
+            
+            // Editable check
+            if (visit.Status == "Paid" || visit.Status == "Cancelled")
+                throw new InvalidOperationException($"Cannot update referral on visit in status '{visit.Status}'.");
+
+            var partner = await _context.ReferralPartners
+                .AsNoTracking()
+                .FirstOrDefaultAsync(p => p.ReferralPartnerId == referralPartnerId);
+
+            if (partner == null) throw new KeyNotFoundException($"Referral Partner {referralPartnerId} not found.");
+            if (!partner.IsActive) throw new InvalidOperationException($"Referral Partner '{partner.Name}' is not active.");
+
+            // Mutate & Normalize
+            visit.ReferralPartnerId = referralPartnerId;
+            visit.IsReferred = true;
+            visit.PaymentCollectionModel = partner.PaymentCollectionModel; // CRITICAL: Sync to partner model
+
+            await _context.SaveChangesAsync(); // Persist structure changes before kernel runs
+
+            // Kernel Delegation
+            await RecalculateFinancialsAsync(visitId, actorUserId);
+
+            await _operationalEventWriter.WriteEventAsync(
+                BranchEventType.VISIT_UPDATED,
+                _userContext.CurrentBranchId.ToString(),
+                visit.VisitId.ToString(),
+                visit.Token,
+                $"Referral updated to {partner.Name}",
+                "User",
+                actorUserId.ToString()
+            );
+        }
+
         /// <summary>
         /// Centralized Revenue Kernel.
         /// Handles Gross, Discount, Tax, Net, Flow A Auto-Pay, and Commission Triggers.
