@@ -19,5 +19,7 @@ namespace SynOS.Models.Entities.Referral
         public DateTime OccurredAt { get; init; }
 
         public DateTime RecordedAt { get; init; } = DateTime.UtcNow;
+
+        public DateTimeOffset? SettledAt { get; set; } // Mutable settlement status
     }
 }

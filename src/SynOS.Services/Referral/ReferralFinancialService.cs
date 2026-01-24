@@ -84,22 +84,8 @@ namespace SynOS.Services.Referral
                     RecordedAt = DateTime.UtcNow
                 };
 
-                try
-                {
-                    _context.ReferralPayableFacts.Add(payableFact);
-                    await _context.SaveChangesAsync();
-                    _logger.LogInformation("Commission Recognition (Liability only) complete for Visit {VisitId}. Wrote ReferralPayableFact {ReferralPayableFactId}.", visit.VisitId, payableFact.ReferralPayableFactId);
-                }
-                catch (DbUpdateException ex)
-                {
-                    // IDEMPOTENCY GUARD (Layer 2: DB Constraint)
-                    // If we hit a unique constraint violation, it means another thread won the race.
-                    // We treat this as success (idempotent).
-                    _logger.LogWarning(ex, "Concurrency collision during commission recognition for Visit {VisitId}. Treated as idempotent success.", visit.VisitId);
-                    
-                    // Detach the entity to avoid context pollution in case the context is reused
-                    _context.Entry(payableFact).State = EntityState.Detached;
-                }
+                _context.ReferralPayableFacts.Add(payableFact);
+                _logger.LogInformation("Commission Recognition (Liability pending save) for Visit {VisitId}.", visit.VisitId);
             }
         }
     }

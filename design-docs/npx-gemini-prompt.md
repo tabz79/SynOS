@@ -1,117 +1,146 @@
-## 📌 BACKEND EXECUTION PROMPT (USE VERBATIM)
+## 📌 Frontend Audit Closure Prompt – Reception UI (Final UX Cleanup)
 
-### ✦ Phase 6.3: Referral Capture Moulding (Free-Text + Partner)
+**Context (DO NOT RE-INTERPRET):**
 
-You have full access to the SynOS backend codebase.
+* Backend financial gaps are now CLOSED.
+* All engines (Revenue, Spend, Cost Attribution, Ops) are wired.
+* Frontend must remain a **renderer + commander only**.
+* Receptionist must **never** see or infer backend business logic.
 
-### CONTEXT (LOCKED)
+**Absolute mental rule:**
 
-* ReferralPartnerId is the **only economic trigger**
-* Commission & flow logic already depend on ReferralPartnerId
-* We must support **free-text referrer capture** for real receptionist workflows
-* Free-text must NOT affect financial behavior
-
----
-
-### 🎯 OBJECTIVE
-
-Extend the backend to support **free-text referrer capture** that coexists safely with the existing ReferralPartnerId-based referral system.
+> Receptionist only cares about **checkout vs prepaid**.
+> They do **not** care who owes whom internally.
 
 ---
 
-### 🔒 HARD RULES (NON-NEGOTIABLE)
+## 🎯 Objective
 
-* ❌ Free-text referrer must NEVER:
+Clean up **labels and presentation only** so the Reception UI is:
 
-  * trigger commission
-  * change PaymentCollectionModel
-  * affect billing or kernel logic
-* ✅ Only ReferralPartnerId drives economics
-* ❌ No fuzzy matching
-* ❌ No auto-conversion of text → partner
-* ❌ No frontend assumptions
-
----
-
-### REQUIRED CHANGES
-
-#### 1️⃣ Data Model
-
-* Add nullable field to `Visit`:
-
-  ```
-  ReferrerText : string?
-  ```
-* Purpose: Store exactly what receptionist types
-* No validation beyond basic length/safety
+* Clear for a receptionist
+* Consistent with backend truth
+* Free from technical/business terminology
+* Zero logic changes
+* Zero API changes
+* Zero flow changes
 
 ---
 
-#### 2️⃣ CreateVisitAsync
+## ✅ Canonical Meanings (LOCK THESE)
 
-* Accept optional `referrerText`
-* Logic:
+Use these mappings everywhere in UI:
 
-  * If ReferralPartnerId provided → normal referral behavior
-  * Else if referrerText provided → store text only
-  * Both may coexist (partner takes precedence)
+* **PartnerCollects** → **Prepaid**
+* **LabCollects + Referral** → **Checkout**
+* **No Referral** → **Checkout**
 
----
-
-#### 3️⃣ SetVisitReferralAsync
-
-* When setting ReferralPartnerId:
-
-  * DO NOT delete or overwrite ReferrerText
-  * Allow audit visibility (what was typed vs selected)
+💡 Important:
+“Checkout” simply means *patient pays at lab counter*.
+It does NOT imply anything about commission, settlement, or partner payouts.
 
 ---
 
-#### 4️⃣ RemoveVisitReferralAsync
+## 🔧 Required UI Changes (STRICTLY COSMETIC)
 
-* Clear ReferralPartnerId
-* Reset PaymentCollectionModel (existing behavior)
-* KEEP ReferrerText intact
+### 1️⃣ Replace technical payment labels
 
----
+**Current (❌ wrong):**
 
-#### 5️⃣ Snapshot Enrichment
+* `PartnerCollects`
+* `LabCollects`
+* `Collection: PartnerCollects`
 
-Extend snapshot to expose:
+**Replace with (✅ correct):**
 
-```json
-referral: {
-  partner: { id, displayName, collectionLabel } | null,
-  referrerText: string | null
-}
-```
+* If snapshot.billing.paymentModel === `PartnerCollects`
+  → Show label/badge: **“Prepaid”**
 
-* No derivation
-* No fallback logic
-* Snapshot reflects stored state only
+* Else
+  → Show label/badge: **“Checkout”**
 
----
+⚠️ Do **NOT** show:
 
-### ❌ OUT OF SCOPE
-
-* UI changes
-* Matching logic
-* Analytics
-* Partner creation
-* Commission changes
+* PartnerCollects
+* LabCollects
+* Any backend terms
+* Any explanation of who owes whom
 
 ---
 
-### 📦 EXPECTED OUTPUT
+### 2️⃣ Fix “Net Payable” wording
 
-1. Model changes summary
-2. DTO changes (if any)
-3. Service changes summary
-4. Snapshot changes summary
-5. Build status
+**Problem:**
+UI shows “Net Payable” even when visit is already paid (Prepaid).
 
-End of task.
+**Correct rendering rules:**
+
+* If `snapshot.billing.status === 'Paid'`
+
+  * Replace label **“Net Payable”** with:
+    **“Total Bill Amount”**
+  * DO NOT imply money is due
+
+* Else
+
+  * Use label:
+    **“Amount to Collect”**
+
+💡 Numbers remain unchanged.
+Only the label changes.
 
 ---
 
+### 3️⃣ Financials section behavior (no change, just confirm)
 
+* Financials remain **read-only** until final confirmation.
+* No new buttons.
+* No “Mark as Paid” here.
+* No new actions.
+
+This section is **display-only**.
+
+---
+
+### 4️⃣ Referral UI (IMPORTANT: DO NOT CHANGE)
+
+⚠️ This is a confirmation, not a change.
+
+* Referral / Doctor input:
+
+  * Always visible
+  * Hybrid (dropdown + free text)
+  * Already working correctly
+
+Do **NOT**:
+
+* Hide referral
+* Rename referral
+* Add new validation
+* Add helper logic
+
+Backend already interprets it correctly.
+
+---
+
+## 🚫 What you must NOT do
+
+* ❌ Do NOT add any new logic
+* ❌ Do NOT infer commission / settlement in UI
+* ❌ Do NOT show partner balances
+* ❌ Do NOT show receivables / payables
+* ❌ Do NOT touch snapshot interpretation
+* ❌ Do NOT redesign the flow again
+
+---
+
+## 🧪 Acceptance Checklist (Must pass)
+
+* [ ] Receptionist sees **only** “Prepaid” or “Checkout”
+* [ ] No backend terms visible
+* [ ] Paid visit does NOT show “Payable”
+* [ ] Checkout visit shows “Amount to Collect”
+* [ ] All existing flows still work unchanged
+* [ ] No new API calls added
+
+---

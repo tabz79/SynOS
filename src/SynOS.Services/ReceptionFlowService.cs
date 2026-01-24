@@ -220,6 +220,16 @@ namespace SynOS.Services
             await _visitService.RemoveVisitReferralAsync(visitId, actorUserId);
         }
 
+        public async Task UpdateVisitReferrerTextAsync(Guid visitId, string? referrerText, Guid actorUserId)
+        {
+            await _visitService.UpdateVisitReferrerTextAsync(visitId, referrerText, actorUserId);
+        }
+
+        public async Task MarkVisitAsPrepaidAsync(Guid visitId, Guid actorUserId)
+        {
+            await _visitService.MarkVisitAsPrepaidAsync(visitId, actorUserId);
+        }
+
         private async Task<ReceptionStartVisitResponse> MapToStartVisitResponse(Visit visit)
         {
             // Re-fetch with all includes to be safe for mapping (VisitService might return tracked entity w/o includes if it was attached differently)

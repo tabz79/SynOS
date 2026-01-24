@@ -33,31 +33,42 @@ namespace SynOS.Services.Reception
             };
 
             // 1. Resolve State
-            if (query.VisitId.HasValue)
+            try
             {
-                await LoadVisitContextAsync(snapshot, query.VisitId.Value, query.PatientId);
-            }
-            else if (query.PatientId.HasValue)
-            {
-                // Fix: Check for Active Visit first
-                var activeVisit = await _context.Visits
-                    .Where(v => v.PatientId == query.PatientId.Value && v.Status != "Paid" && v.Status != "Cancelled")
-                    .OrderByDescending(v => v.CreatedAt)
-                    .FirstOrDefaultAsync();
-
-                if (activeVisit != null)
+                if (query.VisitId.HasValue)
                 {
-                    await LoadVisitContextAsync(snapshot, activeVisit.VisitId, query.PatientId);
+                    await LoadVisitContextAsync(snapshot, query.VisitId.Value, query.PatientId);
+                }
+                else if (query.PatientId.HasValue)
+                {
+                    // Fix: Check for Active Visit first
+                    var activeVisit = await _context.Visits
+                        .Where(v => v.PatientId == query.PatientId.Value && v.Status != "Paid" && v.Status != "Cancelled")
+                        .OrderByDescending(v => v.CreatedAt)
+                        .FirstOrDefaultAsync();
+
+                    if (activeVisit != null)
+                    {
+                        await LoadVisitContextAsync(snapshot, activeVisit.VisitId, query.PatientId);
+                    }
+                    else
+                    {
+                        await LoadPatientContextAsync(snapshot, query.PatientId.Value);
+                    }
                 }
                 else
                 {
-                    await LoadPatientContextAsync(snapshot, query.PatientId.Value);
+                    // Empty Intake
+                    snapshot.UiState.CanRegisterPatient = true; // Can start flow
                 }
             }
-            else
+            catch (Exception ex)
             {
-                // Empty Intake
-                snapshot.UiState.CanRegisterPatient = true; // Can start flow
+                // CRITICAL DEBUGGING: Expose error to UI instead of 500
+                snapshot.UiState.IsReadOnly = true;
+                snapshot.UiState.ReadOnlyReason = $"BACKEND ERROR: {ex.Message} | {ex.StackTrace}";
+                // Log strictly
+                Console.WriteLine($"[Snapshot Error] {ex}"); 
             }
 
             return snapshot;
@@ -126,7 +137,10 @@ namespace SynOS.Services.Reception
                 }
             }
 
-            ReferralInfo? referralBillingInfo = null;
+            // New Referral State Logic
+            IntakeReferralState? referralState = null;
+            ReferralPartnerInfo? partnerInfo = null;
+
             if (visit.ReferralPartnerId.HasValue)
             {
                 var partner = await _context.ReferralPartners
@@ -135,16 +149,22 @@ namespace SynOS.Services.Reception
                 
                 if (partner != null)
                 {
-                    referralBillingInfo = new ReferralInfo
+                    partnerInfo = new ReferralPartnerInfo
                     {
                         Id = partner.ReferralPartnerId,
-                        Name = partner.Name,
-                        FlowType = partner.PaymentCollectionModel == "PartnerCollects" ? "FlowA" : "FlowB"
+                        DisplayName = partner.Name,
+                        CollectionLabel = partner.PaymentCollectionModel == "PartnerCollects" ? "Prepaid (Partner)" : "Patient Pay"
                     };
-                    
-                    // Also update the Visit level partner info for legacy compatibility if needed
-                    // Ensure Visit object is instantiated if null (though LoadVisitContextAsync initializes it below)
                 }
+            }
+
+            if (partnerInfo != null || !string.IsNullOrEmpty(visit.ReferrerText))
+            {
+                referralState = new IntakeReferralState
+                {
+                    Partner = partnerInfo,
+                    ReferrerText = visit.ReferrerText
+                };
             }
 
             // Populate Visit
@@ -154,11 +174,13 @@ namespace SynOS.Services.Reception
                 VisitToken = visit.Token,
                 Status = visit.Status,
                 IsReferred = visit.IsReferred,
-                ReferralPartner = referralBillingInfo != null ? new IntakeReferralPartner
+                ReferralPartner = partnerInfo != null ? new IntakeReferralPartner
                 {
-                    PartnerId = referralBillingInfo.Id,
-                    Name = referralBillingInfo.Name,
-                    PaymentCollectionModel = referralBillingInfo.FlowType == "FlowA" ? "PartnerCollects" : "LabCollects"
+                    PartnerId = partnerInfo.Id,
+                    Name = partnerInfo.DisplayName,
+                    // PaymentCollectionModel is available via the local 'partner' variable from the block above
+                    // but since we only need ID and Name for legacy, we can fetch or assume default
+                    PaymentCollectionModel = "LabCollects" // Fallback for legacy DTO
                 } : null,
                 Tests = visit.Orders?.Select(o => new IntakeTestItem
                 {
@@ -183,7 +205,7 @@ namespace SynOS.Services.Reception
                     TotalAmount = invoice.Total,
                     
                     AppliedDiscount = appliedDiscount,
-                    Referral = referralBillingInfo,
+                    Referral = referralState, // Updated Structure
                     
                     PaymentStatus = invoice.Status, // "PendingPayment" | "Paid"
                     PaymentMethod = invoice.Payments?.FirstOrDefault()?.Method, // Safe navigation

@@ -54,5 +54,8 @@ namespace SynOS.Models.Entities
         [ForeignKey("ReferralPartnerId")]
         public virtual ReferralPartner? ReferralPartner { get; set; }
         public string? PaymentCollectionModel { get; set; }
+        
+        [StringLength(500)]
+        public string? ReferrerText { get; set; } // Free-text metadata
     }
 }

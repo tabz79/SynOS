@@ -87,7 +87,8 @@ namespace SynOS.Api.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error completing payment for visit {VisitId}", request.VisitId);
-                return StatusCode(500, new { code = "INTERNAL_SERVER_ERROR", message = "An internal error occurred while completing payment." });
+                // EXPOSE ERROR FOR DEBUGGING
+                return StatusCode(500, new { code = "INTERNAL_SERVER_ERROR", message = ex.Message, stack = ex.StackTrace, inner = ex.InnerException?.Message });
             }
         }
 

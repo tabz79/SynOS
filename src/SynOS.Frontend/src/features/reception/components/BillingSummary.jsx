@@ -17,9 +17,13 @@ export function BillingSummary({ snapshot, onVisitUpdated }) {
     if (!billing) return null;
 
     // 2. READ-ONLY Flags (Strictly from Snapshot)
-    const isReadOnly = uiHints?.isReadOnly || false;
+    // Phase 6.4.4: Governance Rule - If Locked OR ReadOnly -> UI is Dead.
     const isLocked = billing.isLocked || false;
-    const canEditDiscount = !isReadOnly && !isLocked && billing.isEditable !== false;
+    const isUiReadOnly = uiHints?.isReadOnly || false;
+    const isStrictReadOnly = isLocked || isUiReadOnly;
+
+    // Actions allowed ONLY if NOT ReadOnly
+    const canPerformActions = !isStrictReadOnly;
 
     // Load Catalog once
     useEffect(() => {
@@ -38,7 +42,7 @@ export function BillingSummary({ snapshot, onVisitUpdated }) {
 
     // COMMAND: Apply Discount
     const handleApplyDiscount = async (code) => {
-        if (!code || !canEditDiscount || !visitId) return;
+        if (!code || !canPerformActions || !visitId) return;
 
         setIsProcessing(true);
         try {
@@ -54,7 +58,7 @@ export function BillingSummary({ snapshot, onVisitUpdated }) {
 
     // COMMAND: Remove Discount
     const handleRemoveDiscount = async () => {
-        if (!canEditDiscount || !visitId) return;
+        if (!canPerformActions || !visitId) return;
 
         setIsProcessing(true);
         try {
@@ -77,19 +81,26 @@ export function BillingSummary({ snapshot, onVisitUpdated }) {
                     <h3 className="font-medium text-sm text-zinc-200 uppercase tracking-wide">Financials</h3>
                     {isProcessing && <Loader2 className="w-3 h-3 animate-spin text-synos-primary" />}
                 </div>
-                {billing.status && (
+                {billing.paymentStatus && (
                     <div className={cn(
                         "px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border",
-                        billing.status === 'Paid'
+                        billing.paymentStatus === 'Paid'
                             ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
                             : "bg-amber-500/10 text-amber-500 border-amber-500/20"
                     )}>
-                        {billing.status}
+                        {billing.paymentStatus}
                     </div>
                 )}
             </div>
 
-            <div className="bg-zinc-950 border border-synos-border rounded-lg p-4 space-y-4 shadow-inner">
+            <div className="bg-zinc-950 border border-synos-border rounded-lg p-4 space-y-4 shadow-inner relative overflow-hidden">
+
+                {/* Visual Lock Indicator */}
+                {isStrictReadOnly && (
+                    <div className="absolute top-0 right-0 p-2">
+                        <Lock className="w-12 h-12 text-zinc-900/50 -rotate-12" />
+                    </div>
+                )}
 
                 {/* A. Totals Section (DUMB RENDERER) */}
                 <div className="space-y-3 text-sm">
@@ -123,7 +134,9 @@ export function BillingSummary({ snapshot, onVisitUpdated }) {
 
                     {/* Net Payable */}
                     <div className="flex justify-between items-center">
-                        <span className="font-bold text-zinc-200">Net Payable</span>
+                        <span className="font-bold text-zinc-200">
+                            {billing.paymentStatus === 'Paid' ? "Total Bill Amount" : "Amount to Collect"}
+                        </span>
                         <span className="text-lg font-bold font-mono text-white flex items-center">
                             <IndianRupee className="w-4 h-4 mr-0.5" />
                             {billing.netAmount?.toLocaleString() ?? "—"}
@@ -132,7 +145,7 @@ export function BillingSummary({ snapshot, onVisitUpdated }) {
                 </div>
 
                 {/* B. Discount Selector (Step 5.3) */}
-                {!billing.appliedDiscount && canEditDiscount && (
+                {!billing.appliedDiscount && canPerformActions && (
                     <div className="pt-2 animate-in fade-in">
                         <select
                             className="w-full bg-zinc-900 border border-synos-border rounded-md px-3 py-2 text-xs text-white focus:border-synos-primary outline-none transition-colors disabled:opacity-50"
@@ -152,41 +165,11 @@ export function BillingSummary({ snapshot, onVisitUpdated }) {
                     </div>
                 )}
 
-                {/* C. Payment Trigger (Step 5.5) */}
-                {billing.status === 'PendingPayment' && canEditDiscount && (
-                    <div className="pt-4 mt-2 border-t border-dashed border-zinc-800 animate-in fade-in">
-                        <button
-                            onClick={async () => {
-                                if (isProcessing) return;
-                                setIsProcessing(true);
-                                try {
-                                    // Using default 'Cash' for now, or we could add a mode selector later
-                                    await ReceptionApi.collectPayment(visitId, billing.netAmount, 'Cash');
-                                    // Trigger explicit refresh
-                                    if (onVisitUpdated) onVisitUpdated();
-                                } catch (err) {
-                                    console.error("Payment failed", err);
-                                    alert("Payment failed: " + err.message);
-                                } finally {
-                                    setIsProcessing(false);
-                                }
-                            }}
-                            disabled={isProcessing}
-                            className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 rounded-md shadow-lg shadow-emerald-900/20 flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
-                        >
-                            {isProcessing ? (
-                                <Loader2 className="w-4 h-4 animate-spin" />
-                            ) : (
-                                <IndianRupee className="w-4 h-4" />
-                            )}
-                            Accept Payment (Cash)
-                        </button>
-                    </div>
-                )}
+                {/* C. Payment Trigger - MOVED TO INTENT PANEL FOOTER */}
 
                 {/* D. Payment Mode (Read Only for now, based on snapshot) */}
                 <div className="mt-2 text-[10px] text-zinc-600 text-center uppercase tracking-widest font-bold">
-                    Collection: {billing.paymentModel || "Cash"}
+                    {billing.paymentModel === 'PartnerCollects' ? "Prepaid Visit" : "Checkout at Counter"}
                 </div>
             </div>
         </div>

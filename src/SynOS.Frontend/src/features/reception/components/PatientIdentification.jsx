@@ -116,6 +116,12 @@ export function PatientIdentification({ snapshot, onSelectPatient, onClearPatien
                             {matches.map(p => {
                                 // Robust ID extraction to handle casing mismatch (id vs Id)
                                 const pId = p.id || p.Id || p.patientId;
+                                // Helper for robust property access
+                                const name = p.name || p.Name || p.fullName || p.FullName || p.displayName || p.DisplayName || `${p.firstName || p.FirstName || ''} ${p.lastName || p.LastName || ''}`.trim();
+                                const mobile = p.mobile || p.Mobile || p.phoneNumber || p.PhoneNumber || p.phone || p.Phone;
+                                const age = p.age || p.Age; // If age missing, maybe DOB?
+                                const gender = p.gender || p.Gender || p.sex || p.Sex;
+
                                 return (
                                     <div
                                         key={pId}
@@ -127,8 +133,10 @@ export function PatientIdentification({ snapshot, onSelectPatient, onClearPatien
                                                 <UserCheck className="w-4 h-4" />
                                             </div>
                                             <div>
-                                                <div className="text-sm font-bold text-zinc-200 group-hover:text-white">{p.name || p.Name}</div>
-                                                <div className="text-xs text-zinc-500 font-mono">{p.mobile || p.Mobile || p.phoneNumber || p.PhoneNumber} • {p.age || p.Age}Y / {p.gender || p.Gender}</div>
+                                                <div className="text-sm font-bold text-zinc-200 group-hover:text-white">{name}</div>
+                                                <div className="text-xs text-zinc-500 font-mono">
+                                                    {mobile} • {age ? `${age}Y` : 'Age N/A'} / {gender || '-'}
+                                                </div>
                                             </div>
                                         </div>
                                         <span className="text-xs text-zinc-500 group-hover:text-synos-primary font-mono">Select &rarr;</span>

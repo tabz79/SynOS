@@ -38,6 +38,7 @@ using SynOS.Services.Admin; // ADDED
 using SynOS.Services.Dashboard; // ADDED
 using SynOS.Services.Operations; // ADDED
 using SynOS.Api.Services; // ADDED
+using SynOS.Services.Settlements; // ADDED
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -166,6 +167,7 @@ builder.Services.AddScoped<IDashboardNotificationService, SignalRDashboardNotifi
 builder.Services.AddScoped<IPatientService, PatientService>();
 builder.Services.AddReferralServices();
 builder.Services.AddPayableServices();
+builder.Services.AddScoped<ISettlementService, SettlementService>(); // ADDED
 builder.Services.AddScoped<IVisitService, VisitService>();
 builder.Services.AddScoped<IEditLockService, EditLockService>();
 builder.Services.AddScoped<IDiscountService, DiscountService>(); // ADDED

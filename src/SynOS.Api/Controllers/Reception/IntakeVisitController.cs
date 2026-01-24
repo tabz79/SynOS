@@ -99,6 +99,56 @@ namespace SynOS.Api.Controllers.Reception
             }
         }
 
+        [HttpPatch("referrer-text")]
+        public async Task<IActionResult> UpdateReferrerText([FromBody] UpdateReferrerTextRequestDto request)
+        {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
+            try
+            {
+                var userId = GetCurrentUserId();
+                await _service.UpdateVisitReferrerTextAsync(request.VisitId, request.ReferrerText, userId);
+                return Ok();
+            }
+            catch (System.Collections.Generic.KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message, stack = ex.StackTrace });
+            }
+        }
+
+        [HttpPost("mark-prepaid")]
+        public async Task<IActionResult> MarkPrepaid([FromBody] MarkPrepaidRequestDto request)
+        {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
+            try
+            {
+                var userId = GetCurrentUserId();
+                await _service.MarkVisitAsPrepaidAsync(request.VisitId, userId);
+                return Ok();
+            }
+            catch (System.Collections.Generic.KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message, stack = ex.StackTrace });
+            }
+        }
+
         private Guid GetCurrentUserId()
         {
             var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);

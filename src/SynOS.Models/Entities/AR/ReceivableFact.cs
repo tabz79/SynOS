@@ -30,5 +30,7 @@ namespace SynOS.Models.Entities.AR
         public DateTimeOffset OccurredAt { get; init; }
 
         public DateTimeOffset RecordedAt { get; init; }
+
+        public DateTimeOffset? SettledAt { get; set; } // Mutable settlement status
     }
 }

@@ -8,13 +8,15 @@ using SynOS.Models.DTOs;
 using SynOS.Models.Entities;
 using Microsoft.Extensions.Logging;
 using SynOS.Services.Utils;
-using SynOS.Models.Enums; // Required for TubeType
-using SynOS.Services.Operational; // ADDED
-using SynOS.Services.Security; // ADDED
-using SynOS.Models.Entities.Discounts; // ADDED
-using SynOS.Models.Entities.Revenue; // ADDED
-using SynOS.Models.Entities.Referral; // ADDED
-using SynOS.Services.Referral; // ADDED
+using SynOS.Models.Enums;
+using SynOS.Services.Operational;
+using SynOS.Services.Security;
+using SynOS.Models.Entities.Discounts;
+using SynOS.Models.Entities.Revenue;
+using SynOS.Models.Entities.AR;
+using SynOS.Models.Entities.Referral;
+using SynOS.Services.Referral;
+using SynOS.Services.Revenue; // ADDED
 
 namespace SynOS.Services
 {
@@ -26,9 +28,9 @@ namespace SynOS.Services
         private readonly IAuditService _auditService;
         private readonly IOperationalEventWriter _operationalEventWriter;
         private readonly IUserContext _userContext;
-        private readonly IReferralFinancialService _referralFinancialService; // ADDED
+        private readonly IReferralFinancialService _referralFinancialService;
+        private readonly IRevenueFactWriter _revenueFactWriter; // ADDED
 
-        // TODO: Configure lab timezone in appsettings or a dedicated config service
         private static TimeZoneInfo _labTimeZone = TimeZoneInfo.Local; 
 
         public VisitService(
@@ -38,7 +40,8 @@ namespace SynOS.Services
             IAuditService auditService,
             IOperationalEventWriter operationalEventWriter,
             IUserContext userContext,
-            IReferralFinancialService referralFinancialService) // ADDED
+            IReferralFinancialService referralFinancialService,
+            IRevenueFactWriter revenueFactWriter) // ADDED
         {
             _context = context;
             _logger = logger;
@@ -47,9 +50,8 @@ namespace SynOS.Services
             _operationalEventWriter = operationalEventWriter ?? throw new ArgumentNullException(nameof(operationalEventWriter));
             _userContext = userContext ?? throw new ArgumentNullException(nameof(userContext));
             _referralFinancialService = referralFinancialService ?? throw new ArgumentNullException(nameof(referralFinancialService));
+            _revenueFactWriter = revenueFactWriter ?? throw new ArgumentNullException(nameof(revenueFactWriter)); // ADDED
         }
-
-        // ... [GetVisitTokenForPrintingAsync remains same] ...
 
         public async Task<VisitTokenPrintDto> GetVisitTokenForPrintingAsync(Guid visitId)
         {
@@ -59,10 +61,7 @@ namespace SynOS.Services
                     .ThenInclude(o => o.Test)
                 .FirstOrDefaultAsync(v => v.VisitId == visitId);
 
-            if (visit == null)
-            {
-                throw new KeyNotFoundException($"Visit with ID {visitId} not found.");
-            }
+            if (visit == null) throw new KeyNotFoundException($"Visit with ID {visitId} not found.");
 
             var payload = EscPosGenerator.GenerateTokenSlip(visit);
 
@@ -82,20 +81,6 @@ namespace SynOS.Services
 
         public async Task<Visit> CreateVisitAsync(VisitCreateDto visitDto, string? idempotencyKey = null, Guid actorUserId = default)
         {
-            // ... [Keep CreateVisitAsync logic mostly as is, effectively bootstrapping the state] ...
-            // Ideally, we'd call Recalculate here too, but to minimize risk as per instructions, 
-            // we will leave the bootstrap logic and only use Kernel for mutations.
-            // However, we MUST ensure Flow A commission logic is triggered if we auto-pay here.
-            // The prompt said "Do NOT refactor CreateVisitAsync right now". 
-            // BUT it also said "Ensure Flow A auto-adjusts... Commission recognition is required".
-            // If CreateVisit sets status to Paid, we SHOULD trigger commission.
-            // I will add the Commission Trigger call at the end of CreateVisit.
-
-            if (!string.IsNullOrEmpty(idempotencyKey))
-            {
-                _logger.LogInformation("Idempotency key received for CreateVisit: {IdempotencyKey}", idempotencyKey);
-            }
-
             var patient = await _context.Patients.FindAsync(visitDto.PatientId);
             if (patient == null || patient.IsSoftDeleted)
             {
@@ -105,7 +90,6 @@ namespace SynOS.Services
             var labLocalToday = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, _labTimeZone).Date;
             var token = await GenerateDailyTokenAsync(visitDto.Department, labLocalToday, actorUserId);
 
-            // PHASE 4.5: Validate Referral Partner
             if (visitDto.ReferralPartnerId.HasValue)
             {
                 var partner = await _context.ReferralPartners
@@ -128,7 +112,8 @@ namespace SynOS.Services
                 CreatedAt = DateTime.UtcNow,
                 IsReferred = visitDto.IsReferred ?? false,
                 ReferralPartnerId = visitDto.ReferralPartnerId,
-                PaymentCollectionModel = visitDto.PaymentCollectionModel
+                PaymentCollectionModel = visitDto.PaymentCollectionModel,
+                ReferrerText = visitDto.ReferrerText
             };
 
             _context.Visits.Add(visit);
@@ -158,7 +143,6 @@ namespace SynOS.Services
             }
             _context.Orders.AddRange(orders);
 
-            // Discount Logic (Bootstrap)
             decimal discountAmount = 0;
             DiscountMaster? appliedDiscount = null;
 
@@ -188,7 +172,6 @@ namespace SynOS.Services
                 if (discountAmount > grossAmount) discountAmount = grossAmount;
             }
 
-            // Calculate Tax (Bootstrap using Helper)
             decimal netAmount = grossAmount - discountAmount;
             decimal taxAmount = CalculateTax_TEMP(netAmount);
             decimal totalAmount = netAmount + taxAmount;
@@ -224,22 +207,8 @@ namespace SynOS.Services
                     CreatedAt = DateTime.UtcNow
                 };
                 _context.DiscountFacts.Add(discountFact);
-
-                await _operationalEventWriter.WriteEventAsync(
-                    BranchEventType.DISCOUNT_APPLIED,
-                    _userContext.CurrentBranchId.ToString(),
-                    visit.VisitId.ToString(),
-                    visit.Token,
-                    $"Discount {appliedDiscount.Code} applied: {discountAmount:F2}",
-                    "User",
-                    actorUserId.ToString(),
-                    false, 
-                    discountFact.DiscountFactId,
-                    "DiscountFact"
-                );
             }
 
-            // FLOW B: Partner Collects
             Payment? flowBPayment = null;
             if (visit.PaymentCollectionModel == "PartnerCollects" && visit.ReferralPartnerId.HasValue)
             {
@@ -251,14 +220,12 @@ namespace SynOS.Services
                     Method = "PartnerAccount",
                     ReceiptNo = $"SYS-{visit.Token}",
                     ReceivedAt = DateTime.UtcNow,
-                    ReceivedByUserId = Guid.Empty
+                    ReceivedByUserId = actorUserId
                 };
                 _context.Payments.Add(flowBPayment);
-
                 invoice.Status = "Paid";
-                visit.Status = "Paid";
 
-                var receivable = new SynOS.Models.Entities.AR.ReceivableFact
+                var receivable = new ReceivableFact
                 {
                     ReceivableFactId = Guid.NewGuid(),
                     SourceVisitId = visit.VisitId,
@@ -269,10 +236,30 @@ namespace SynOS.Services
                     RecordedAt = DateTimeOffset.UtcNow
                 };
                 _context.ReceivableFacts.Add(receivable);
+
+                // EMIT REVENUE FACT (Truth Engine) - Prepaid
+                await _revenueFactWriter.DeclareRevenueFactAsync(new SynOS.Models.DTOs.Revenue.DeclareRevenueFactCommand
+                {
+                    OccurredAt = DateTimeOffset.UtcNow,
+                    Amount = invoice.Total,
+                    Currency = invoice.Currency,
+                    Direction = RevenueDirection.Inflow,
+                    SourceType = RevenueSourceType.Other, // Partner
+                    SourceReferenceId = visit.ReferralPartnerId.Value.ToString(),
+                    PaymentMode = PaymentMode.Other, // PartnerAccount
+                    DeclaredByUserId = actorUserId,
+                    Notes = $"Prepaid Visit {visit.Token}",
+                    ExternalTransactionId = $"SYS-{visit.Token}"
+                });
             }
 
             await _context.SaveChangesAsync();
             await _auditService.LogAsync(actorUserId, "CreateVisit", "Visit", visit.VisitId, visitDto);
+
+            if (visit.PaymentCollectionModel == "PartnerCollects")
+            {
+                await MarkVisitAsPrepaidAsync(visit.VisitId, actorUserId);
+            }
 
             await _operationalEventWriter.WriteEventAsync(
                 BranchEventType.BILL_GENERATED,
@@ -299,7 +286,6 @@ namespace SynOS.Services
                     "Payment"
                 );
 
-                // FIX: Trigger commission for Flow A immediately
                 if (visit.IsReferred)
                 {
                     await _referralFinancialService.ProcessCommissionRecognitionAsync(visit);
@@ -312,14 +298,12 @@ namespace SynOS.Services
         public async Task<Visit> AddTestToVisitAsync(Guid visitId, string testCode, Guid actorUserId)
         {
             var visit = await _context.Visits
-                .Include(v => v.Invoices)
+                .Include(v => v.Invoices).ThenInclude(i => i.Payments)
                 .Include(v => v.Orders)
                 .FirstOrDefaultAsync(v => v.VisitId == visitId);
 
             if (visit == null) throw new KeyNotFoundException($"Visit {visitId} not found.");
             
-            // Allow Paid/Cancelled only for internal reconciliation via Recalculate, 
-            // but AddTest is a mutation of Orders, so we MUST block it if Paid/Cancelled.
             if (visit.Status == "Paid" || visit.Status == "Cancelled") 
                 throw new InvalidOperationException($"Cannot add test to visit in status '{visit.Status}'.");
 
@@ -342,10 +326,9 @@ namespace SynOS.Services
                 CreatedAt = DateTime.UtcNow
             };
             _context.Orders.Add(order);
-            await _context.SaveChangesAsync(); // Save Order first
+            await _context.SaveChangesAsync();
 
-            // Call Kernel
-            await RecalculateFinancialsAsync(visitId, actorUserId);
+            await RecalculateFinancialsAsync(visitId, actorUserId, visit);
 
             await _operationalEventWriter.WriteEventAsync(
                 BranchEventType.VISIT_UPDATED,
@@ -363,13 +346,12 @@ namespace SynOS.Services
         public async Task<Visit> RemoveTestFromVisitAsync(Guid visitId, string testCode, Guid actorUserId)
         {
             var visit = await _context.Visits
-                .Include(v => v.Invoices)
+                .Include(v => v.Invoices).ThenInclude(i => i.Payments)
                 .Include(v => v.Orders)
                 .FirstOrDefaultAsync(v => v.VisitId == visitId);
 
             if (visit == null) throw new KeyNotFoundException($"Visit {visitId} not found.");
             
-            // Mutating orders blocked if Paid/Cancelled
             if (visit.Status == "Paid" || visit.Status == "Cancelled")
                 throw new InvalidOperationException($"Cannot remove test from visit in status '{visit.Status}'.");
 
@@ -379,8 +361,7 @@ namespace SynOS.Services
             _context.Orders.Remove(order);
             await _context.SaveChangesAsync();
 
-            // Call Kernel
-            await RecalculateFinancialsAsync(visitId, actorUserId);
+            await RecalculateFinancialsAsync(visitId, actorUserId, visit);
 
             await _operationalEventWriter.WriteEventAsync(
                 BranchEventType.VISIT_UPDATED,
@@ -398,7 +379,8 @@ namespace SynOS.Services
         public async Task RemoveDiscountFromVisitAsync(Guid visitId, Guid actorUserId)
         {
             var visit = await _context.Visits
-                .Include(v => v.Invoices)
+                .Include(v => v.Invoices).ThenInclude(i => i.Payments)
+                .Include(v => v.Orders)
                 .FirstOrDefaultAsync(v => v.VisitId == visitId);
 
             if (visit == null) throw new KeyNotFoundException($"Visit {visitId} not found.");
@@ -420,8 +402,7 @@ namespace SynOS.Services
                 }
             }
 
-            // Call Kernel to re-apply zero discount
-            await RecalculateFinancialsAsync(visitId, actorUserId);
+            await RecalculateFinancialsAsync(visitId, actorUserId, visit);
 
             await _operationalEventWriter.WriteEventAsync(
                 BranchEventType.VISIT_UPDATED,
@@ -437,7 +418,8 @@ namespace SynOS.Services
         public async Task ApplyDiscountToVisitAsync(Guid visitId, Guid discountMasterId, Guid actorUserId)
         {
             var visit = await _context.Visits
-                .Include(v => v.Invoices)
+                .Include(v => v.Invoices).ThenInclude(i => i.Payments)
+                .Include(v => v.Orders)
                 .FirstOrDefaultAsync(v => v.VisitId == visitId);
 
             if (visit == null) throw new KeyNotFoundException($"Visit {visitId} not found.");
@@ -457,7 +439,6 @@ namespace SynOS.Services
             var invoice = visit.Invoices.OrderByDescending(i => i.CreatedAt).FirstOrDefault();
             if (invoice == null) throw new InvalidOperationException("No invoice found for this visit.");
 
-            // Exclusivity: Update existing or create new
             var existingFact = await _context.DiscountFacts
                 .Where(df => df.InvoiceId == invoice.InvoiceId)
                 .OrderByDescending(df => df.AppliedAt)
@@ -480,7 +461,6 @@ namespace SynOS.Services
                     AppliedBy = actorUserId.ToString(),
                     AppliedAt = DateTime.UtcNow,
                     CreatedAt = DateTime.UtcNow,
-                    // Totals will be set by Kernel
                     GrossAmount = 0,
                     DiscountAmount = 0,
                     NetAmountAfterDiscount = 0
@@ -490,8 +470,7 @@ namespace SynOS.Services
 
             await _context.SaveChangesAsync();
 
-            // Call Kernel
-            await RecalculateFinancialsAsync(visitId, actorUserId);
+            await RecalculateFinancialsAsync(visitId, actorUserId, visit);
 
             await _operationalEventWriter.WriteEventAsync(
                 BranchEventType.VISIT_UPDATED,
@@ -512,53 +491,43 @@ namespace SynOS.Services
 
             if (visit == null) throw new KeyNotFoundException($"Visit {visitId} not found.");
             
-            // Editable check with Flow A Unwind Logic
             if (visit.Status == "Paid" || visit.Status == "Cancelled")
             {
-                // Unwind Logic for Flow A (PartnerCollects)
                 bool isFlowA = visit.PaymentCollectionModel == "PartnerCollects" && visit.ReferralPartnerId.HasValue;
                 bool isSystemPaidOnly = false;
                 
                 var invoice = visit.Invoices.OrderByDescending(i => i.CreatedAt).FirstOrDefault();
                 if (isFlowA && invoice != null)
                 {
-                    // Check if payments are purely system/partner account
                     isSystemPaidOnly = invoice.Payments.All(p => p.Method == "PartnerAccount");
                     
                     if (isSystemPaidOnly)
                     {
-                        // Safe to unwind
                         _context.Payments.RemoveRange(invoice.Payments);
                         
-                        // Also cleanup Receivables
                         var receivables = await _context.ReceivableFacts
                             .Where(r => r.SourceVisitId == visit.VisitId)
                             .ToListAsync();
                         _context.ReceivableFacts.RemoveRange(receivables);
 
-                        // Reset Status
                         invoice.Status = "PendingPayment";
                         visit.Status = "PendingPayment";
-                        
-                        _logger.LogInformation("Unwound Flow A payments for Visit {VisitId} to allow referral removal.", visit.VisitId);
                     }
                 }
 
-                if (!isSystemPaidOnly && visit.Status != "PendingPayment") // Double check status in case we just reset it
+                if (!isSystemPaidOnly && visit.Status != "PendingPayment") 
                 {
                     throw new InvalidOperationException($"Cannot remove referral from visit in status '{visit.Status}' (Payments exist).");
                 }
             }
 
-            // Mutate
             visit.ReferralPartnerId = null;
             visit.IsReferred = false;
-            visit.PaymentCollectionModel = "LabCollects"; // Reset to default
+            visit.PaymentCollectionModel = "LabCollects";
 
             await _context.SaveChangesAsync();
 
-            // Kernel Delegation
-            await RecalculateFinancialsAsync(visitId, actorUserId);
+            await RecalculateFinancialsAsync(visitId, actorUserId, visit);
 
             await _operationalEventWriter.WriteEventAsync(
                 BranchEventType.VISIT_UPDATED,
@@ -574,12 +543,11 @@ namespace SynOS.Services
         public async Task SetVisitReferralAsync(Guid visitId, Guid referralPartnerId, Guid actorUserId)
         {
             var visit = await _context.Visits
-                .Include(v => v.Invoices)
+                .Include(v => v.Invoices).ThenInclude(i => i.Payments)
                 .FirstOrDefaultAsync(v => v.VisitId == visitId);
 
             if (visit == null) throw new KeyNotFoundException($"Visit {visitId} not found.");
             
-            // Editable check
             if (visit.Status == "Paid" || visit.Status == "Cancelled")
                 throw new InvalidOperationException($"Cannot update referral on visit in status '{visit.Status}'.");
 
@@ -590,15 +558,12 @@ namespace SynOS.Services
             if (partner == null) throw new KeyNotFoundException($"Referral Partner {referralPartnerId} not found.");
             if (!partner.IsActive) throw new InvalidOperationException($"Referral Partner '{partner.Name}' is not active.");
 
-            // Mutate & Normalize
             visit.ReferralPartnerId = referralPartnerId;
             visit.IsReferred = true;
-            visit.PaymentCollectionModel = partner.PaymentCollectionModel; // CRITICAL: Sync to partner model
 
-            await _context.SaveChangesAsync(); // Persist structure changes before kernel runs
+            await _context.SaveChangesAsync(); 
 
-            // Kernel Delegation
-            await RecalculateFinancialsAsync(visitId, actorUserId);
+            await RecalculateFinancialsAsync(visitId, actorUserId, visit);
 
             await _operationalEventWriter.WriteEventAsync(
                 BranchEventType.VISIT_UPDATED,
@@ -611,34 +576,83 @@ namespace SynOS.Services
             );
         }
 
-        /// <summary>
-        /// Centralized Revenue Kernel.
-        /// Handles Gross, Discount, Tax, Net, Flow A Auto-Pay, and Commission Triggers.
-        /// </summary>
-        private async Task RecalculateFinancialsAsync(Guid visitId, Guid actorUserId)
+        public async Task UpdateVisitReferrerTextAsync(Guid visitId, string? referrerText, Guid actorUserId)
         {
-            // 1. Load Aggregate (Full)
+            var visit = await _context.Visits.FirstOrDefaultAsync(v => v.VisitId == visitId);
+            if (visit == null) throw new KeyNotFoundException($"Visit {visitId} not found.");
+
+            if (visit.Status == "Paid" || visit.Status == "Cancelled")
+                throw new InvalidOperationException($"Cannot update referrer text on visit in status '{visit.Status}'.");
+
+            var normalizedText = referrerText?.Trim();
+            if (string.IsNullOrEmpty(normalizedText)) normalizedText = null;
+
+            if (normalizedText != null && normalizedText.Length > 500)
+                normalizedText = normalizedText.Substring(0, 500);
+
+            visit.ReferrerText = normalizedText;
+
+            await _context.SaveChangesAsync();
+
+            await _operationalEventWriter.WriteEventAsync(
+                BranchEventType.VISIT_UPDATED,
+                _userContext.CurrentBranchId.ToString(),
+                visit.VisitId.ToString(),
+                visit.Token,
+                "Referrer text updated",
+                "User",
+                actorUserId.ToString()
+            );
+        }
+
+        public async Task MarkVisitAsPrepaidAsync(Guid visitId, Guid actorUserId)
+        {
             var visit = await _context.Visits
                 .Include(v => v.Invoices).ThenInclude(i => i.Payments)
-                .Include(v => v.Orders)
-                // We might need DiscountFacts. No navigation prop on Invoice usually?
-                // Query facts separately or assuming navigation exists. 
-                // Invoice entity definition didn't show DiscountFacts nav prop in my read.
-                // I will query them.
                 .FirstOrDefaultAsync(v => v.VisitId == visitId);
 
-            if (visit == null) return; // Should not happen
+            if (visit == null) throw new KeyNotFoundException($"Visit {visitId} not found.");
+
+            if (visit.Status == "Cancelled") throw new InvalidOperationException("Cannot mark cancelled visit as prepaid.");
+            if (visit.Status == "Paid") return;
+
+            visit.PaymentCollectionModel = "PartnerCollects";
+            visit.Status = "Paid";
+
+            await _context.SaveChangesAsync();
+
+            await RecalculateFinancialsAsync(visitId, actorUserId, visit);
+
+            await _operationalEventWriter.WriteEventAsync(
+                BranchEventType.VISIT_UPDATED,
+                _userContext.CurrentBranchId.ToString(),
+                visit.VisitId.ToString(),
+                visit.Token,
+                "Visit stamped as PAID (Prepaid)",
+                "User",
+                actorUserId.ToString()
+            );
+        }
+
+        private async Task RecalculateFinancialsAsync(Guid visitId, Guid actorUserId, Visit? existingTrackedVisit = null)
+        {
+            Visit? visit = existingTrackedVisit;
+            if (visit == null)
+            {
+                visit = await _context.Visits
+                    .Include(v => v.Invoices).ThenInclude(i => i.Payments)
+                    .Include(v => v.Orders)
+                    .FirstOrDefaultAsync(v => v.VisitId == visitId);
+            }
+
+            if (visit == null) return;
 
             var invoice = visit.Invoices.OrderByDescending(i => i.CreatedAt).FirstOrDefault();
-            if (invoice == null) return; // Should not happen
+            if (invoice == null) return;
 
-            // 2. Compute Gross
             decimal grossAmount = visit.Orders.Sum(o => o.Price);
-
-            // 3. Apply Discount
             decimal discountAmount = 0;
             
-            // Find active discount fact
             var discountFact = await _context.DiscountFacts
                 .Where(df => df.InvoiceId == invoice.InvoiceId)
                 .OrderByDescending(df => df.AppliedAt)
@@ -647,26 +661,18 @@ namespace SynOS.Services
             if (discountFact != null)
             {
                 var master = await _context.DiscountMasters.FindAsync(discountFact.DiscountDefinitionId);
-                if (master != null && master.IsActive) // Re-evaluate eligibility? 
+                if (master != null && master.IsActive)
                 {
-                    // Basic re-calc based on type
                     if (master.Type == DiscountType.Percentage)
-                    {
                         discountAmount = grossAmount * (master.Value / 100m);
-                    }
                     else
-                    {
                         discountAmount = master.Value;
-                    }
 
-                    // Max Limit Check
                     if (master.MaxLimit.HasValue && discountAmount > master.MaxLimit.Value)
                         discountAmount = master.MaxLimit.Value;
 
-                    // Cap
                     if (discountAmount > grossAmount) discountAmount = grossAmount;
 
-                    // Update Fact History (Update existing or add new? Usually update current snapshot)
                     discountFact.GrossAmount = grossAmount;
                     discountFact.DiscountAmount = discountAmount;
                     discountFact.NetAmountAfterDiscount = grossAmount - discountAmount;
@@ -674,19 +680,16 @@ namespace SynOS.Services
                 }
             }
 
-            // 4. Compute Tax
             decimal netAmount = grossAmount - discountAmount;
             decimal taxAmount = CalculateTax_TEMP(netAmount);
             decimal totalAmount = netAmount + taxAmount;
 
-            // Update Invoice
             invoice.GrossAmount = grossAmount;
             invoice.DiscountAmount = discountAmount;
             invoice.NetAmount = netAmount;
             invoice.TaxAmount = taxAmount;
             invoice.Total = totalAmount;
 
-            // 5. Flow A: Partner Collects Auto-Adjustment
             if (visit.PaymentCollectionModel == "PartnerCollects" && visit.ReferralPartnerId.HasValue)
             {
                 decimal totalPaid = invoice.Payments.Sum(p => p.Amount);
@@ -694,7 +697,6 @@ namespace SynOS.Services
 
                 if (diff > 0)
                 {
-                    // Underpaid -> System Payment
                     var payment = new Payment
                     {
                         PaymentId = Guid.NewGuid(),
@@ -703,14 +705,12 @@ namespace SynOS.Services
                         Method = "PartnerAccount",
                         ReceiptNo = $"SYS-ADJ-{Guid.NewGuid().ToString().Substring(0,4)}",
                         ReceivedAt = DateTime.UtcNow,
-                        ReceivedByUserId = Guid.Empty
+                        ReceivedByUserId = actorUserId
                     };
                     _context.Payments.Add(payment);
                     invoice.Status = "Paid";
-                    // visit.Status = "Paid"; // REMOVED: Kernel must not mutate workflow authority
 
-                    // Receivable Adjustment
-                    var receivable = new SynOS.Models.Entities.AR.ReceivableFact
+                    var receivable = new ReceivableFact
                     {
                         ReceivableFactId = Guid.NewGuid(),
                         SourceVisitId = visit.VisitId,
@@ -721,34 +721,32 @@ namespace SynOS.Services
                         RecordedAt = DateTimeOffset.UtcNow
                     };
                     _context.ReceivableFacts.Add(receivable);
-                }
-                else if (diff < 0)
-                {
-                    // Overpaid -> We don't handle refunds automatically here yet, typically manual credit note.
-                    // V1: Overpayments require manual credit note. No auto-refund.
-                    _logger.LogWarning("Visit {VisitId} (PartnerCollects) has negative balance after recalculation. Manual refund needed.", visitId);
+
+                    // EMIT REVENUE FACT (Truth Engine) - Prepaid Adjustment
+                    await _revenueFactWriter.DeclareRevenueFactAsync(new SynOS.Models.DTOs.Revenue.DeclareRevenueFactCommand
+                    {
+                        OccurredAt = DateTimeOffset.UtcNow,
+                        Amount = diff,
+                        Currency = invoice.Currency,
+                        Direction = RevenueDirection.Inflow,
+                        SourceType = RevenueSourceType.Other, // Partner
+                        SourceReferenceId = visit.ReferralPartnerId.Value.ToString(),
+                        PaymentMode = PaymentMode.Other, // PartnerAccount
+                        DeclaredByUserId = actorUserId,
+                        Notes = $"Prepaid Adjustment {visit.Token}",
+                        ExternalTransactionId = payment.ReceiptNo
+                    });
                 }
             }
             else
             {
-                // Normal Flow: Update Status
                 decimal totalPaid = invoice.Payments.Sum(p => p.Amount);
                 if (totalPaid >= totalAmount && totalAmount > 0)
-                {
                     invoice.Status = "Paid";
-                    // visit.Status = "Paid"; // REMOVED
-                }
                 else
-                {
                     invoice.Status = "PendingPayment";
-                    // visit.Status = "PendingPayment"; // REMOVED
-                }
             }
 
-            await _context.SaveChangesAsync();
-
-            // 6. Commission & Referral Side Effects
-            // Calculate intention locally
             decimal finalPaid = invoice.Payments.Sum(p => p.Amount) + _context.ChangeTracker.Entries<Payment>().Where(e => e.State == EntityState.Added).Sum(e => e.Entity.Amount);
             bool isFullyPaid = finalPaid >= totalAmount && totalAmount > 0;
 
@@ -756,13 +754,12 @@ namespace SynOS.Services
             {
                 await _referralFinancialService.ProcessCommissionRecognitionAsync(visit);
             }
+            
+            await _context.SaveChangesAsync();
         }
 
         private decimal CalculateTax_TEMP(decimal netAmount)
         {
-            // ⚠️ TEMPORARY TAX LOGIC
-            // DO NOT add slabs or rules here.
-            // This will be replaced by ITaxPolicyService.
             return netAmount * 0.05m;
         }
 
@@ -778,11 +775,8 @@ namespace SynOS.Services
                     .ThenInclude(i => i.PartialPayments)
                 .FirstOrDefaultAsync(v => v.VisitId == visitId);
 
-            // Cross-Branch Security Guard
             if (visit != null && visit.BranchId.HasValue && visit.BranchId != _userContext.CurrentBranchId)
             {
-                _logger.LogWarning("Cross-branch access attempt blocked. VisitId: {VisitId}, VisitBranch: {VisitBranch}, UserBranch: {UserBranch}", 
-                    visitId, visit.BranchId, _userContext.CurrentBranchId);
                 throw new UnauthorizedAccessException("Access to this visit is restricted to its originating branch.");
             }
 
@@ -792,10 +786,10 @@ namespace SynOS.Services
         public async Task<IEnumerable<Visit>> GetVisitsAsync(string department, string status, int limit)
         {
             return await _context.Visits
-                .Include(v => v.Patient) // Include patient details for list display
+                .Include(v => v.Patient)
                 .Include(v => v.Orders)
                     .ThenInclude(o => o.Test)
-                .Include(v => v.Invoices) // Include invoices for status/amount
+                .Include(v => v.Invoices)
                 .Where(v => v.Department == department && v.Status == status)
                 .OrderByDescending(v => v.CreatedAt)
                 .Take(limit)
@@ -812,10 +806,7 @@ namespace SynOS.Services
                                       .FirstOrDefaultAsync(v => v.VisitId == visitId);
             if (visit == null) throw new KeyNotFoundException($"Visit with ID {visitId} not found.");
 
-            if (visit.Status == "Cancelled")
-            {
-                throw new InvalidOperationException("Visit is already cancelled.");
-            }
+            if (visit.Status == "Cancelled") throw new InvalidOperationException("Visit is already cancelled.");
 
             visit.Status = "Cancelled";
 
@@ -830,13 +821,10 @@ namespace SynOS.Services
             };
             _context.VisitCancellations.Add(cancellation);
 
-            // Update invoice status to Cancelled
             var invoice = visit.Invoices.FirstOrDefault();
             if (invoice != null)
             {
                 invoice.Status = "Cancelled";
-
-                // If any payments were made, create a CreditNote
                 decimal totalPaid = invoice.Payments.Sum(p => p.Amount) + invoice.PartialPayments.Sum(pp => pp.Amount);
                 if (totalPaid > 0)
                 {
@@ -849,23 +837,21 @@ namespace SynOS.Services
                         CreatedAt = DateTime.UtcNow
                     };
                     _context.CreditNotes.Add(creditNote);
-                    _logger.LogInformation("Credit note created for cancelled visit {VisitId} with total paid amount {TotalPaid}", visitId, totalPaid);
                 }
             }
 
             await _context.SaveChangesAsync();
-            await _auditService.LogAsync(cancelDto.CancelledByUserId, "CancelVisit", "Visit", visitId, cancellation); // Audit visit cancellation
+            await _auditService.LogAsync(cancelDto.CancelledByUserId, "CancelVisit", "Visit", visitId, cancellation);
             return cancellation;
         }
 
         private async Task<string> GenerateDailyTokenAsync(string department, DateTime labLocalDay, Guid actorUserId)
         {
-            // Map department name to a single letter code
             string deptLetter = department switch
             {
                 "Pathology" => "P",
                 "Radiology" => "X",
-                _ => "U" // Unknown
+                _ => "U"
             };
 
             var tokenCounter = await _context.TokenCounters
@@ -878,7 +864,7 @@ namespace SynOS.Services
                     CounterId = Guid.NewGuid(),
                     Department = department,
                     Day = labLocalDay,
-                    SeriesLetter = "A", // Start with 'A'
+                    SeriesLetter = "A",
                     LastNumber = 0,
                     MaxPerSeries = 999,
                     UpdatedAt = DateTime.UtcNow
@@ -898,11 +884,10 @@ namespace SynOS.Services
                 if (tokenCounter.SeriesLetter[0] < 'Z')
                 {
                     tokenCounter.SeriesLetter = ((char)(tokenCounter.SeriesLetter[0] + 1)).ToString();
-                    tokenCounter.LastNumber = 1; // Reset number for new series
+                    tokenCounter.LastNumber = 1;
                 }
                 else
                 {
-                    _logger.LogError("Token space exhausted for department {Department} on {Day}.", department, labLocalDay.ToShortDateString());
                     throw new InvalidOperationException($"Token space exhausted for {department} today. Please contact admin.");
                 }
             }
@@ -913,7 +898,6 @@ namespace SynOS.Services
             return $"{tokenCounter.SeriesLetter}{deptLetter}-{tokenCounter.LastNumber:D3}";
         }
         
-        // Helper DTO for resolving tests
         private class ResolvedTestDto
         {
             public Guid TestId { get; set; }
@@ -921,7 +905,7 @@ namespace SynOS.Services
             public string TestName { get; set; }
             public string Department { get; set; }
             public decimal BasePrice { get; set; }
-            public Guid? PriceConfigId { get; set; } // Nullable, as PriceConfig is optional
+            public Guid? PriceConfigId { get; set; }
         }
 
         private async Task<ResolvedTestDto?> ResolveTestForReceptionAsync(string testCode, string dept)
@@ -929,23 +913,18 @@ namespace SynOS.Services
             var normalized = testCode?.Trim().ToUpperInvariant();
             if (string.IsNullOrEmpty(normalized)) return null;
 
-            // Get tests from cache (which includes PriceConfigs)
             var allTests = await _testsCacheService.GetCachedTestsAsync();
 
-            // Look up test by code (case-insensitive) and department from cache
             var test = allTests
                 .FirstOrDefault(t => t.TestCode.ToUpper() == normalized
                             && t.IsActive
                             && (string.IsNullOrEmpty(dept) || t.Department == dept));
 
             if (test == null) return null;
-
-            // A test is valid if it has a BasePrice > 0. PriceConfig is optional.
             if (test.BasePrice <= 0) return null;
 
             var now = DateTime.UtcNow;
             
-            // Optionally find an active price config
             var priceConfig = test.PriceConfigs?
                 .Where(p => p.IsActive
                             && p.EffectiveFrom <= now
@@ -960,7 +939,7 @@ namespace SynOS.Services
                 TestName = test.TestName,
                 Department = test.Department,
                 BasePrice = test.BasePrice,
-                PriceConfigId = priceConfig?.PriceId // Can be null
+                PriceConfigId = priceConfig?.PriceId
             };
         }
     }

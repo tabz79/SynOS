@@ -66,7 +66,7 @@ namespace SynOS.Models.DTOs.Reception
         public decimal TotalAmount { get; set; } // Net + Tax
         
         public AppliedDiscountInfo? AppliedDiscount { get; set; }
-        public ReferralInfo? Referral { get; set; }
+        public IntakeReferralState? Referral { get; set; }
         
         public string PaymentStatus { get; set; } = "PendingPayment"; // PendingPayment | Paid
         public string? PaymentMethod { get; set; }
@@ -82,11 +82,17 @@ namespace SynOS.Models.DTOs.Reception
         public decimal Amount { get; set; }
     }
 
-    public class ReferralInfo
+    public class IntakeReferralState
+    {
+        public ReferralPartnerInfo? Partner { get; set; }
+        public string? ReferrerText { get; set; }
+    }
+
+    public class ReferralPartnerInfo
     {
         public Guid Id { get; set; }
-        public string Name { get; set; } = string.Empty;
-        public string FlowType { get; set; } = string.Empty; // FlowA | FlowB
+        public string DisplayName { get; set; } = string.Empty;
+        public string CollectionLabel { get; set; } = string.Empty; // e.g. "Prepaid (Partner)" or "Patient Pay"
     }
 
     public class IntakeUiHints

@@ -121,7 +121,8 @@ export const ReceptionApi = {
         const response = await fetch('/api/v1/reception/visit/test', {
             method: 'POST',
             headers: ReceptionApi.getHeaders(),
-            body: JSON.stringify({ visitId, testCode })
+            // Payload aligned with IntakeAddTestRequest
+            body: JSON.stringify({ VisitId: visitId, TestCode: testCode })
         });
         if (!response.ok) throw new Error('Failed to add test');
     },
@@ -265,18 +266,38 @@ export const ReceptionApi = {
     },
 
     /**
+     * Updates the referrer text (free text) for the visit.
+     * @param {string} visitId
+     * @param {string} referrerText
+     * @returns {Promise<void>}
+     */
+    updateReferrerText: async (visitId, referrerText) => {
+        const response = await fetch('/api/v1/reception/visit/referrer-text', {
+            method: 'PATCH',
+            headers: ReceptionApi.getHeaders(),
+            body: JSON.stringify({ visitId, referrerText })
+        });
+        if (!response.ok) throw new Error('Failed to update referrer text');
+    },
+
+    /**
      * Applies a referral partner to the visit.
      * @param {string} visitId
      * @param {string} referralPartnerId
      * @returns {Promise<void>}
      */
     applyReferralToVisit: async (visitId, referralPartnerId) => {
+        console.log("DEBUG: applyReferralToVisit Payload:", { visitId, referralPartnerId });
         const response = await fetch('/api/v1/reception/visit/referral', {
             method: 'POST',
             headers: ReceptionApi.getHeaders(),
-            body: JSON.stringify({ visitId, referralPartnerId })
+            body: JSON.stringify({ VisitId: visitId, ReferralPartnerId: referralPartnerId })
         });
-        if (!response.ok) throw new Error('Failed to apply referral');
+        if (!response.ok) {
+            const errText = await response.text();
+            console.error("DEBUG: applyReferral Error:", response.status, errText);
+            throw new Error(`Failed to apply referral (${response.status}): ${errText}`);
+        }
     },
 
     /**
@@ -293,6 +314,20 @@ export const ReceptionApi = {
     },
 
     /**
+     * Marks the visit as prepaid (Patient already paid).
+     * @param {string} visitId
+     * @returns {Promise<void>}
+     */
+    markVisitAsPrepaid: async (visitId) => {
+        const response = await fetch('/api/v1/reception/visit/mark-prepaid', {
+            method: 'POST',
+            headers: ReceptionApi.getHeaders(),
+            body: JSON.stringify({ visitId })
+        });
+        if (!response.ok) throw new Error('Failed to mark as prepaid');
+    },
+
+    /**
      * Collects payment for the visit.
      * @param {string} visitId
      * @param {number} amount
@@ -300,11 +335,29 @@ export const ReceptionApi = {
      * @returns {Promise<void>}
      */
     collectPayment: async (visitId, amount, mode = 'Cash') => {
-        const response = await fetch('/api/v1/reception/payment/collect', {
+        // PER RECEPTION CONTROLLER: POST /api/v1/reception/complete-payment
+        // DTO: ReceptionCompletePaymentRequest { VisitId, Amount, Method }
+        const response = await fetch('/api/v1/reception/complete-payment', {
             method: 'POST',
             headers: ReceptionApi.getHeaders(),
-            body: JSON.stringify({ visitId, amount, mode })
+            body: JSON.stringify({
+                VisitId: visitId,
+                Amount: amount,
+                Method: mode
+            })
         });
-        if (!response.ok) throw new Error('Failed to collect payment');
+        if (!response.ok) {
+            let errorMessage = 'Failed to collect payment';
+            try {
+                const errorData = await response.json();
+                errorMessage = errorData.message || errorMessage;
+                if (errorData.inner) {
+                    errorMessage += `\nDetails: ${errorData.inner}`;
+                }
+            } catch (e) {
+                console.error("Failed to parse error response", e);
+            }
+            throw new Error(errorMessage);
+        }
     }
 };

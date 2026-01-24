@@ -1,12 +1,12 @@
-backend terminal logs:
-[10:09:17 WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
-[10:09:19 WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
-[10:09:19 WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
-[10:09:30 WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
-[10:09:30 WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
-[10:09:39 ERR] An exception occurred in the database while saving changes for context type 'SynOS.Data.SynOSDbContext'.
+2026-01-22 10:13:30.890 +05:30 [WRN] Failed to determine the https port for redirect.
+2026-01-22 10:23:02.458 +05:30 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2026-01-22 10:23:04.594 +05:30 [WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+2026-01-22 10:23:17.620 +05:30 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2026-01-22 10:23:17.717 +05:30 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2026-01-22 10:23:17.879 +05:30 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2026-01-22 10:23:44.401 +05:30 [ERR] An exception occurred in the database while saving changes for context type 'SynOS.Data.SynOSDbContext'.
 Microsoft.EntityFrameworkCore.DbUpdateException: An error occurred while saving the entity changes. See the inner exception for details.
- ---> Microsoft.Data.SqlClient.SqlException (0x80131904): Cannot insert the value NULL into column 'ReceiptNo', table 'SynOSDb.dbo.Payments'; column does not allow nulls. INSERT fails.
+ ---> Microsoft.Data.SqlClient.SqlException (0x80131904): The INSERT statement conflicted with the FOREIGN KEY constraint "FK_Payments_Users_ReceivedByUserId". The conflict occurred in database "SynOSDb", table "dbo.Users", column 'UserId'.
    at Microsoft.Data.SqlClient.SqlConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
    at Microsoft.Data.SqlClient.SqlInternalConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
    at Microsoft.Data.SqlClient.TdsParser.ThrowExceptionAndWarning(TdsParserStateObject stateObj, Boolean callerHasConnectionLock, Boolean asyncClose)
@@ -18,8 +18,8 @@ Microsoft.EntityFrameworkCore.DbUpdateException: An error occurred while saving 
    at Microsoft.Data.SqlClient.SqlDataReader.InvokeAsyncCall[T](SqlDataReaderBaseAsyncCallContext`1 context)
 --- End of stack trace from previous location ---
    at Microsoft.EntityFrameworkCore.Update.AffectedCountModificationCommandBatch.ConsumeAsync(RelationalDataReader reader, CancellationToken cancellationToken)
-ClientConnectionId:bb2e782e-9e17-40a3-b4b0-dad096ed25be
-Error Number:515,State:2,Class:16
+ClientConnectionId:a8ef6194-9647-4726-8070-16f403e5eb14
+Error Number:547,State:0,Class:16
    --- End of inner exception stack trace ---
    at Microsoft.EntityFrameworkCore.Update.AffectedCountModificationCommandBatch.ConsumeAsync(RelationalDataReader reader, CancellationToken cancellationToken)
    at Microsoft.EntityFrameworkCore.Update.ReaderModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
@@ -33,7 +33,7 @@ Error Number:515,State:2,Class:16
    at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
    at Microsoft.EntityFrameworkCore.DbContext.SaveChangesAsync(Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
 Microsoft.EntityFrameworkCore.DbUpdateException: An error occurred while saving the entity changes. See the inner exception for details.
- ---> Microsoft.Data.SqlClient.SqlException (0x80131904): Cannot insert the value NULL into column 'ReceiptNo', table 'SynOSDb.dbo.Payments'; column does not allow nulls. INSERT fails.
+ ---> Microsoft.Data.SqlClient.SqlException (0x80131904): The INSERT statement conflicted with the FOREIGN KEY constraint "FK_Payments_Users_ReceivedByUserId". The conflict occurred in database "SynOSDb", table "dbo.Users", column 'UserId'.
    at Microsoft.Data.SqlClient.SqlConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
    at Microsoft.Data.SqlClient.SqlInternalConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
    at Microsoft.Data.SqlClient.TdsParser.ThrowExceptionAndWarning(TdsParserStateObject stateObj, Boolean callerHasConnectionLock, Boolean asyncClose)
@@ -45,8 +45,8 @@ Microsoft.EntityFrameworkCore.DbUpdateException: An error occurred while saving 
    at Microsoft.Data.SqlClient.SqlDataReader.InvokeAsyncCall[T](SqlDataReaderBaseAsyncCallContext`1 context)
 --- End of stack trace from previous location ---
    at Microsoft.EntityFrameworkCore.Update.AffectedCountModificationCommandBatch.ConsumeAsync(RelationalDataReader reader, CancellationToken cancellationToken)
-ClientConnectionId:bb2e782e-9e17-40a3-b4b0-dad096ed25be
-Error Number:515,State:2,Class:16
+ClientConnectionId:a8ef6194-9647-4726-8070-16f403e5eb14
+Error Number:547,State:0,Class:16
    --- End of inner exception stack trace ---
    at Microsoft.EntityFrameworkCore.Update.AffectedCountModificationCommandBatch.ConsumeAsync(RelationalDataReader reader, CancellationToken cancellationToken)
    at Microsoft.EntityFrameworkCore.Update.ReaderModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
@@ -59,9 +59,9 @@ Error Number:515,State:2,Class:16
    at Microsoft.EntityFrameworkCore.ChangeTracking.Internal.StateManager.SaveChangesAsync(StateManager stateManager, Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
    at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
    at Microsoft.EntityFrameworkCore.DbContext.SaveChangesAsync(Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
-[10:09:39 ERR] An exception occurred in the database while saving changes for context type 'SynOS.Data.SynOSDbContext'.
+2026-01-22 10:32:04.393 +05:30 [ERR] An exception occurred in the database while saving changes for context type 'SynOS.Data.SynOSDbContext'.
 Microsoft.EntityFrameworkCore.DbUpdateException: An error occurred while saving the entity changes. See the inner exception for details.
- ---> Microsoft.Data.SqlClient.SqlException (0x80131904): Cannot insert the value NULL into column 'ReceiptNo', table 'SynOSDb.dbo.Payments'; column does not allow nulls. INSERT fails.
+ ---> Microsoft.Data.SqlClient.SqlException (0x80131904): The INSERT statement conflicted with the FOREIGN KEY constraint "FK_Payments_Users_ReceivedByUserId". The conflict occurred in database "SynOSDb", table "dbo.Users", column 'UserId'.
    at Microsoft.Data.SqlClient.SqlConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
    at Microsoft.Data.SqlClient.SqlInternalConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
    at Microsoft.Data.SqlClient.TdsParser.ThrowExceptionAndWarning(TdsParserStateObject stateObj, Boolean callerHasConnectionLock, Boolean asyncClose)
@@ -73,8 +73,8 @@ Microsoft.EntityFrameworkCore.DbUpdateException: An error occurred while saving 
    at Microsoft.Data.SqlClient.SqlDataReader.InvokeAsyncCall[T](SqlDataReaderBaseAsyncCallContext`1 context)
 --- End of stack trace from previous location ---
    at Microsoft.EntityFrameworkCore.Update.AffectedCountModificationCommandBatch.ConsumeAsync(RelationalDataReader reader, CancellationToken cancellationToken)
-ClientConnectionId:bb2e782e-9e17-40a3-b4b0-dad096ed25be
-Error Number:515,State:2,Class:16
+ClientConnectionId:341ef1c2-26de-4ae1-9653-888c89909d0a
+Error Number:547,State:0,Class:16
    --- End of inner exception stack trace ---
    at Microsoft.EntityFrameworkCore.Update.AffectedCountModificationCommandBatch.ConsumeAsync(RelationalDataReader reader, CancellationToken cancellationToken)
    at Microsoft.EntityFrameworkCore.Update.ReaderModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
@@ -88,7 +88,7 @@ Error Number:515,State:2,Class:16
    at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
    at Microsoft.EntityFrameworkCore.DbContext.SaveChangesAsync(Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
 Microsoft.EntityFrameworkCore.DbUpdateException: An error occurred while saving the entity changes. See the inner exception for details.
- ---> Microsoft.Data.SqlClient.SqlException (0x80131904): Cannot insert the value NULL into column 'ReceiptNo', table 'SynOSDb.dbo.Payments'; column does not allow nulls. INSERT fails.
+ ---> Microsoft.Data.SqlClient.SqlException (0x80131904): The INSERT statement conflicted with the FOREIGN KEY constraint "FK_Payments_Users_ReceivedByUserId". The conflict occurred in database "SynOSDb", table "dbo.Users", column 'UserId'.
    at Microsoft.Data.SqlClient.SqlConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
    at Microsoft.Data.SqlClient.SqlInternalConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
    at Microsoft.Data.SqlClient.TdsParser.ThrowExceptionAndWarning(TdsParserStateObject stateObj, Boolean callerHasConnectionLock, Boolean asyncClose)
@@ -100,8 +100,8 @@ Microsoft.EntityFrameworkCore.DbUpdateException: An error occurred while saving 
    at Microsoft.Data.SqlClient.SqlDataReader.InvokeAsyncCall[T](SqlDataReaderBaseAsyncCallContext`1 context)
 --- End of stack trace from previous location ---
    at Microsoft.EntityFrameworkCore.Update.AffectedCountModificationCommandBatch.ConsumeAsync(RelationalDataReader reader, CancellationToken cancellationToken)
-ClientConnectionId:bb2e782e-9e17-40a3-b4b0-dad096ed25be
-Error Number:515,State:2,Class:16
+ClientConnectionId:341ef1c2-26de-4ae1-9653-888c89909d0a
+Error Number:547,State:0,Class:16
    --- End of inner exception stack trace ---
    at Microsoft.EntityFrameworkCore.Update.AffectedCountModificationCommandBatch.ConsumeAsync(RelationalDataReader reader, CancellationToken cancellationToken)
    at Microsoft.EntityFrameworkCore.Update.ReaderModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
@@ -114,9 +114,10 @@ Error Number:515,State:2,Class:16
    at Microsoft.EntityFrameworkCore.ChangeTracking.Internal.StateManager.SaveChangesAsync(StateManager stateManager, Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
    at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
    at Microsoft.EntityFrameworkCore.DbContext.SaveChangesAsync(Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
-[10:09:40 ERR] Error completing payment for visit e9043a28-c260-4c53-8ea0-9b26a760db3f
+2026-01-22 11:18:30.617 +05:30 [WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+2026-01-22 11:18:44.176 +05:30 [ERR] An exception occurred in the database while saving changes for context type 'SynOS.Data.SynOSDbContext'.
 Microsoft.EntityFrameworkCore.DbUpdateException: An error occurred while saving the entity changes. See the inner exception for details.
- ---> Microsoft.Data.SqlClient.SqlException (0x80131904): Cannot insert the value NULL into column 'ReceiptNo', table 'SynOSDb.dbo.Payments'; column does not allow nulls. INSERT fails.
+ ---> Microsoft.Data.SqlClient.SqlException (0x80131904): The INSERT statement conflicted with the FOREIGN KEY constraint "FK_Payments_Users_ReceivedByUserId". The conflict occurred in database "SynOSDb", table "dbo.Users", column 'UserId'.
    at Microsoft.Data.SqlClient.SqlConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
    at Microsoft.Data.SqlClient.SqlInternalConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
    at Microsoft.Data.SqlClient.TdsParser.ThrowExceptionAndWarning(TdsParserStateObject stateObj, Boolean callerHasConnectionLock, Boolean asyncClose)
@@ -128,8 +129,8 @@ Microsoft.EntityFrameworkCore.DbUpdateException: An error occurred while saving 
    at Microsoft.Data.SqlClient.SqlDataReader.InvokeAsyncCall[T](SqlDataReaderBaseAsyncCallContext`1 context)
 --- End of stack trace from previous location ---
    at Microsoft.EntityFrameworkCore.Update.AffectedCountModificationCommandBatch.ConsumeAsync(RelationalDataReader reader, CancellationToken cancellationToken)
-ClientConnectionId:bb2e782e-9e17-40a3-b4b0-dad096ed25be
-Error Number:515,State:2,Class:16
+ClientConnectionId:dad46938-244b-4974-83d4-43aacda82fb1
+Error Number:547,State:0,Class:16
    --- End of inner exception stack trace ---
    at Microsoft.EntityFrameworkCore.Update.AffectedCountModificationCommandBatch.ConsumeAsync(RelationalDataReader reader, CancellationToken cancellationToken)
    at Microsoft.EntityFrameworkCore.Update.ReaderModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
@@ -142,13 +143,8 @@ Error Number:515,State:2,Class:16
    at Microsoft.EntityFrameworkCore.ChangeTracking.Internal.StateManager.SaveChangesAsync(StateManager stateManager, Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
    at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
    at Microsoft.EntityFrameworkCore.DbContext.SaveChangesAsync(Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.DbContext.SaveChangesAsync(Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
-   at SynOS.Services.InvoiceService.RecordPaymentAsync(Guid invoiceId, PaymentRequestDto paymentDto) in D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\InvoiceService.cs:line 121
-   at SynOS.Services.ReceptionFlowService.CompletePaymentAsync(ReceptionCompletePaymentRequest request, Guid userId) in D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReceptionFlowService.cs:line 304
-   at SynOS.Api.Controllers.ReceptionController.CompletePayment(ReceptionCompletePaymentRequest request) in D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\ReceptionController.cs:line 72
-[10:09:40 ERR] Error completing payment for visit e9043a28-c260-4c53-8ea0-9b26a760db3f
 Microsoft.EntityFrameworkCore.DbUpdateException: An error occurred while saving the entity changes. See the inner exception for details.
- ---> Microsoft.Data.SqlClient.SqlException (0x80131904): Cannot insert the value NULL into column 'ReceiptNo', table 'SynOSDb.dbo.Payments'; column does not allow nulls. INSERT fails.
+ ---> Microsoft.Data.SqlClient.SqlException (0x80131904): The INSERT statement conflicted with the FOREIGN KEY constraint "FK_Payments_Users_ReceivedByUserId". The conflict occurred in database "SynOSDb", table "dbo.Users", column 'UserId'.
    at Microsoft.Data.SqlClient.SqlConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
    at Microsoft.Data.SqlClient.SqlInternalConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
    at Microsoft.Data.SqlClient.TdsParser.ThrowExceptionAndWarning(TdsParserStateObject stateObj, Boolean callerHasConnectionLock, Boolean asyncClose)
@@ -160,8 +156,8 @@ Microsoft.EntityFrameworkCore.DbUpdateException: An error occurred while saving 
    at Microsoft.Data.SqlClient.SqlDataReader.InvokeAsyncCall[T](SqlDataReaderBaseAsyncCallContext`1 context)
 --- End of stack trace from previous location ---
    at Microsoft.EntityFrameworkCore.Update.AffectedCountModificationCommandBatch.ConsumeAsync(RelationalDataReader reader, CancellationToken cancellationToken)
-ClientConnectionId:bb2e782e-9e17-40a3-b4b0-dad096ed25be
-Error Number:515,State:2,Class:16
+ClientConnectionId:dad46938-244b-4974-83d4-43aacda82fb1
+Error Number:547,State:0,Class:16
    --- End of inner exception stack trace ---
    at Microsoft.EntityFrameworkCore.Update.AffectedCountModificationCommandBatch.ConsumeAsync(RelationalDataReader reader, CancellationToken cancellationToken)
    at Microsoft.EntityFrameworkCore.Update.ReaderModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
@@ -174,173 +170,50 @@ Error Number:515,State:2,Class:16
    at Microsoft.EntityFrameworkCore.ChangeTracking.Internal.StateManager.SaveChangesAsync(StateManager stateManager, Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
    at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
    at Microsoft.EntityFrameworkCore.DbContext.SaveChangesAsync(Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.DbContext.SaveChangesAsync(Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
-   at SynOS.Services.InvoiceService.RecordPaymentAsync(Guid invoiceId, PaymentRequestDto paymentDto) in D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\InvoiceService.cs:line 121
-   at SynOS.Services.ReceptionFlowService.CompletePaymentAsync(ReceptionCompletePaymentRequest request, Guid userId) in D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReceptionFlowService.cs:line 304
-   at SynOS.Api.Controllers.ReceptionController.CompletePayment(ReceptionCompletePaymentRequest request) in D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\ReceptionController.cs:line 72
-   console logs:
-   react-dom_client.js?v=4bd38141:20103 Download the React DevTools for a better development experience: https://react.dev/link/react-devtools
-signalr.js:16 SignalR: Subscriber added (Total: 1)
-signalr.js:49 [2026-01-24T04:38:13.841Z] Information: Normalizing '/dashboardHub' to 'http://localhost:5173/dashboardHub'.
-signalr.js:53 SignalR: Starting connection...
-signalr.js:102 SignalR: Subscriber removed (Total: 0)
-signalr.js:16 SignalR: Subscriber added (Total: 1)
-signalr.js:22 SignalR: Aborted scheduled disconnect
-reception.js:224 DEBUG: Activity Stream Payload: []
-reception.js:224 DEBUG: Activity Stream Payload: []
-@microsoft_signalr.js?v=4bd38141:301 [2026-01-24T04:38:15.312Z] Information: WebSocket connected to ws://localhost:5173/dashboardHub?access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiJhN2ZjZjkzYy04OTg4LTRhZDgtYmU4My1iOTIyZGExNTVmNDIiLCJlbWFpbCI6InJlY2VwdGlvbkBsYWIuY29tIiwidW5pcXVlX25hbWUiOiJSZWNlcHRpb24gVXNlciIsImJyYW5jaF9pZCI6ImEwMDAwMDAwLTAwMDAtMDAwMC0wMDAwLTAwMDAwMDAwMDAwMSIsInJvbGUiOiJSZWNlcHRpb25pc3QiLCJuYmYiOjE3NjkxNzAwNjMsImV4cCI6MTc2OTI1NjQ2MywiaWF0IjoxNzY5MTcwMDYzLCJpc3MiOiJTeW5PUy5BcGkiLCJhdWQiOiJTeW5PUy5BcHAifQ.PU9pIJHt7OtzAcQEn03K9wng08uiiONYvS1-J0Wq1uk.
-@microsoft_signalr.js?v=4bd38141:301 [2026-01-24T04:38:15.340Z] Information: Using HubProtocol 'json'.
-signalr.js:56 SignalR: Connected to /dashboardHub
-reception.js:224 DEBUG: Activity Stream Payload: []
-reception.js:290 DEBUG: applyReferralToVisit Payload: {visitId: 'e9043a28-c260-4c53-8ea0-9b26a760db3f', referralPartnerId: '730599da-0832-4a97-95bf-25a6b1fd52de'}
-reception.js:340  POST http://localhost:5173/api/v1/reception/complete-payment 500 (Internal Server Error)
-collectPayment @ reception.js:340
-handleUnifiedAction @ IntentPanel.jsx:123
-executeDispatch @ react-dom_client.js?v=4bd38141:13622
-runWithFiberInDEV @ react-dom_client.js?v=4bd38141:997
-processDispatchQueue @ react-dom_client.js?v=4bd38141:13658
-(anonymous) @ react-dom_client.js?v=4bd38141:14071
-batchedUpdates$1 @ react-dom_client.js?v=4bd38141:2626
-dispatchEventForPluginEventSystem @ react-dom_client.js?v=4bd38141:13763
-dispatchEvent @ react-dom_client.js?v=4bd38141:16784
-dispatchDiscreteEvent @ react-dom_client.js?v=4bd38141:16765
-<button>
-exports.jsxDEV @ react_jsx-dev-runtime.js?v=4bd38141:247
-IntentPanel @ IntentPanel.jsx:235
-react_stack_bottom_frame @ react-dom_client.js?v=4bd38141:18509
-renderWithHooksAgain @ react-dom_client.js?v=4bd38141:5729
-renderWithHooks @ react-dom_client.js?v=4bd38141:5665
-updateFunctionComponent @ react-dom_client.js?v=4bd38141:7475
-beginWork @ react-dom_client.js?v=4bd38141:8525
-runWithFiberInDEV @ react-dom_client.js?v=4bd38141:997
-performUnitOfWork @ react-dom_client.js?v=4bd38141:12561
-workLoopSync @ react-dom_client.js?v=4bd38141:12424
-renderRootSync @ react-dom_client.js?v=4bd38141:12408
-performWorkOnRoot @ react-dom_client.js?v=4bd38141:11766
-performWorkOnRootViaSchedulerTask @ react-dom_client.js?v=4bd38141:13505
-performWorkUntilDeadline @ react-dom_client.js?v=4bd38141:36
-<IntentPanel>
-exports.jsxDEV @ react_jsx-dev-runtime.js?v=4bd38141:247
-ReceptionScreen @ ReceptionScreen.jsx:137
-react_stack_bottom_frame @ react-dom_client.js?v=4bd38141:18509
-renderWithHooksAgain @ react-dom_client.js?v=4bd38141:5729
-renderWithHooks @ react-dom_client.js?v=4bd38141:5665
-updateFunctionComponent @ react-dom_client.js?v=4bd38141:7475
-beginWork @ react-dom_client.js?v=4bd38141:8525
-runWithFiberInDEV @ react-dom_client.js?v=4bd38141:997
-performUnitOfWork @ react-dom_client.js?v=4bd38141:12561
-workLoopSync @ react-dom_client.js?v=4bd38141:12424
-renderRootSync @ react-dom_client.js?v=4bd38141:12408
-performWorkOnRoot @ react-dom_client.js?v=4bd38141:11766
-performSyncWorkOnRoot @ react-dom_client.js?v=4bd38141:13517
-flushSyncWorkAcrossRoots_impl @ react-dom_client.js?v=4bd38141:13414
-processRootScheduleInMicrotask @ react-dom_client.js?v=4bd38141:13437
-(anonymous) @ react-dom_client.js?v=4bd38141:13531
-<ReceptionScreen>
-exports.jsxDEV @ react_jsx-dev-runtime.js?v=4bd38141:247
-App @ App.jsx:29
-react_stack_bottom_frame @ react-dom_client.js?v=4bd38141:18509
-renderWithHooksAgain @ react-dom_client.js?v=4bd38141:5729
-renderWithHooks @ react-dom_client.js?v=4bd38141:5665
-updateFunctionComponent @ react-dom_client.js?v=4bd38141:7475
-beginWork @ react-dom_client.js?v=4bd38141:8525
-runWithFiberInDEV @ react-dom_client.js?v=4bd38141:997
-performUnitOfWork @ react-dom_client.js?v=4bd38141:12561
-workLoopSync @ react-dom_client.js?v=4bd38141:12424
-renderRootSync @ react-dom_client.js?v=4bd38141:12408
-performWorkOnRoot @ react-dom_client.js?v=4bd38141:11766
-performWorkOnRootViaSchedulerTask @ react-dom_client.js?v=4bd38141:13505
-performWorkUntilDeadline @ react-dom_client.js?v=4bd38141:36
-<App>
-exports.jsxDEV @ react_jsx-dev-runtime.js?v=4bd38141:247
-(anonymous) @ main.jsx:8
-@microsoft_signalr.js?v=4bd38141:301 [2026-01-24T04:45:06.031Z] Information: Close message received from server.
-@microsoft_signalr.js?v=4bd38141:295 [2026-01-24T04:45:06.035Z] Error: Connection disconnected with error 'Error: Server returned an error on close: Connection closed with an error.'.
-log @ @microsoft_signalr.js?v=4bd38141:295
-_stopConnection @ @microsoft_signalr.js?v=4bd38141:2508
-transport.onclose @ @microsoft_signalr.js?v=4bd38141:2453
-_close @ @microsoft_signalr.js?v=4bd38141:2146
-stop @ @microsoft_signalr.js?v=4bd38141:2124
-_stopInternal @ @microsoft_signalr.js?v=4bd38141:2257
-await in _stopInternal
-stop @ @microsoft_signalr.js?v=4bd38141:2246
-_processIncomingData @ @microsoft_signalr.js?v=4bd38141:1289
-connection.onreceive @ @microsoft_signalr.js?v=4bd38141:914
-webSocket.onmessage @ @microsoft_signalr.js?v=4bd38141:2092
-@microsoft_signalr.js?v=4bd38141:301 [2026-01-24T04:45:06.040Z] Information: Connection reconnecting because of error 'Error: Server returned an error on close: Connection closed with an error.'.
-@microsoft_signalr.js?v=4bd38141:301 [2026-01-24T04:45:06.041Z] Information: Reconnect attempt number 1 will start in 0 ms.
-@microsoft_signalr.js?v=4bd38141:301 [2026-01-24T04:45:06.098Z] Information: WebSocket connected to ws://localhost:5173/dashboardHub?access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiJhN2ZjZjkzYy04OTg4LTRhZDgtYmU4My1iOTIyZGExNTVmNDIiLCJlbWFpbCI6InJlY2VwdGlvbkBsYWIuY29tIiwidW5pcXVlX25hbWUiOiJSZWNlcHRpb24gVXNlciIsImJyYW5jaF9pZCI6ImEwMDAwMDAwLTAwMDAtMDAwMC0wMDAwLTAwMDAwMDAwMDAwMSIsInJvbGUiOiJSZWNlcHRpb25pc3QiLCJuYmYiOjE3NjkxNzAwNjMsImV4cCI6MTc2OTI1NjQ2MywiaWF0IjoxNzY5MTcwMDYzLCJpc3MiOiJTeW5PUy5BcGkiLCJhdWQiOiJTeW5PUy5BcHAifQ.PU9pIJHt7OtzAcQEn03K9wng08uiiONYvS1-J0Wq1uk.
-@microsoft_signalr.js?v=4bd38141:301 [2026-01-24T04:45:06.099Z] Information: Using HubProtocol 'json'.
-@microsoft_signalr.js?v=4bd38141:301 [2026-01-24T04:45:06.130Z] Information: HubConnection reconnected successfully.
-utility_all2-BV_7obfO.js:174 Uncaught (in promise) Error: Attempting to use a disconnected port object
-    at utility_all2-BV_7obfO.js:174:19286
-    at new Promise (<anonymous>)
-    at C (utility_all2-BV_7obfO.js:174:19198)
-    at Ga (utility_all2-BV_7obfO.js:174:33964)
-(anonymous) @ utility_all2-BV_7obfO.js:174
-C @ utility_all2-BV_7obfO.js:174
-Ga @ utility_all2-BV_7obfO.js:174
-setTimeout
-Ga @ utility_all2-BV_7obfO.js:174
-setTimeout
-Ga @ utility_all2-BV_7obfO.js:174
-setTimeout
-Ga @ utility_all2-BV_7obfO.js:174
-setTimeout
-Ga @ utility_all2-BV_7obfO.js:174
-setTimeout
-Ga @ utility_all2-BV_7obfO.js:174
-setTimeout
-Ga @ utility_all2-BV_7obfO.js:174
-setTimeout
-Ga @ utility_all2-BV_7obfO.js:174
-setTimeout
-Ga @ utility_all2-BV_7obfO.js:174
-setTimeout
-Ga @ utility_all2-BV_7obfO.js:174
-setTimeout
-Ga @ utility_all2-BV_7obfO.js:174
-setTimeout
-Ga @ utility_all2-BV_7obfO.js:174
-setTimeout
-Ga @ utility_all2-BV_7obfO.js:174
-setTimeout
-Ga @ utility_all2-BV_7obfO.js:174
-setTimeout
-Ga @ utility_all2-BV_7obfO.js:174
-setTimeout
-Ga @ utility_all2-BV_7obfO.js:174
-setTimeout
-Ga @ utility_all2-BV_7obfO.js:174
-setTimeout
-Ga @ utility_all2-BV_7obfO.js:174
-setTimeout
-Ga @ utility_all2-BV_7obfO.js:174
-setTimeout
-Ga @ utility_all2-BV_7obfO.js:174
-setTimeout
-Ga @ utility_all2-BV_7obfO.js:174
-setTimeout
-Ga @ utility_all2-BV_7obfO.js:174
-setTimeout
-Ga @ utility_all2-BV_7obfO.js:174
-setTimeout
-Ga @ utility_all2-BV_7obfO.js:174
-setTimeout
-Ga @ utility_all2-BV_7obfO.js:174
-setTimeout
-Ga @ utility_all2-BV_7obfO.js:174
-setTimeout
-Ga @ utility_all2-BV_7obfO.js:174
-setTimeout
-Ga @ utility_all2-BV_7obfO.js:174
-setTimeout
-Ga @ utility_all2-BV_7obfO.js:174
-setTimeout
-Ga @ utility_all2-BV_7obfO.js:174
-setTimeout
-Ga @ utility_all2-BV_7obfO.js:174
-setTimeout
-Ga @ utility_all2-BV_7obfO.js:174
-setTimeout
-Ga @ utility_all2-BV_7obfO.js:174
+2026-01-22 11:24:14.643 +05:30 [INF] Analyzer TCP Listener Service stopping...
+2026-01-22 11:24:14.653 +05:30 [INF] Analyzer TCP Listener Service stopped.
+2026-01-22 11:24:14.663 +05:30 [INF] Notification Worker Service stopping gracefully.
+2026-01-22 11:25:10.004 +05:30 [WRN] No store type was specified for the decimal property 'MaxLimit' on entity type 'DiscountMaster'. This will cause values to be silently truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.
+2026-01-22 11:25:10.086 +05:30 [WRN] No store type was specified for the decimal property 'Amount' on entity type 'PayrollAdjustment'. This will cause values to be silently truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.
+2026-01-22 11:25:10.094 +05:30 [WRN] No store type was specified for the decimal property 'Amount' on entity type 'PayrollFact'. This will cause values to be silently truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.
+2026-01-22 11:25:17.310 +05:30 [INF] Notification Worker Service running.
+2026-01-22 11:25:17.484 +05:30 [INF] ExpiredLockCleanupService is starting.
+2026-01-22 11:25:17.659 +05:30 [INF] Analyzer TCP Listener Service starting...
+2026-01-22 11:25:17.670 +05:30 [WRN] No analyzer TCP listeners configured in appsettings.json.
+2026-01-22 11:27:13.348 +05:30 [WRN] Failed to determine the https port for redirect.
+2026-01-22 11:27:41.018 +05:30 [WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+2026-01-22 11:27:41.293 +05:30 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2026-01-22 11:27:47.858 +05:30 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2026-01-22 11:27:47.933 +05:30 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2026-01-22 11:27:48.058 +05:30 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2026-01-22 12:11:13.814 +05:30 [INF] Analyzer TCP Listener Service stopping...
+2026-01-22 12:11:13.821 +05:30 [INF] Analyzer TCP Listener Service stopped.
+2026-01-22 12:11:13.835 +05:30 [INF] Notification Worker Service stopping gracefully.
+2026-01-22 12:32:45.264 +05:30 [WRN] No store type was specified for the decimal property 'MaxLimit' on entity type 'DiscountMaster'. This will cause values to be silently truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.
+2026-01-22 12:32:45.390 +05:30 [WRN] No store type was specified for the decimal property 'Amount' on entity type 'PayrollAdjustment'. This will cause values to be silently truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.
+2026-01-22 12:32:45.398 +05:30 [WRN] No store type was specified for the decimal property 'Amount' on entity type 'PayrollFact'. This will cause values to be silently truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.
+2026-01-22 12:32:57.435 +05:30 [INF] Notification Worker Service running.
+2026-01-22 12:32:57.648 +05:30 [INF] ExpiredLockCleanupService is starting.
+2026-01-22 12:32:57.827 +05:30 [INF] Analyzer TCP Listener Service starting...
+2026-01-22 12:32:57.833 +05:30 [WRN] No analyzer TCP listeners configured in appsettings.json.
+2026-01-22 12:33:48.551 +05:30 [WRN] Failed to determine the https port for redirect.
+2026-01-22 12:33:59.220 +05:30 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2026-01-22 12:34:03.411 +05:30 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2026-01-22 12:34:03.666 +05:30 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2026-01-22 16:00:30.526 +05:30 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2026-01-22 17:43:15.386 +05:30 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2026-01-22 17:43:19.817 +05:30 [INF] Analyzer TCP Listener Service stopping...
+2026-01-22 17:43:19.822 +05:30 [INF] Analyzer TCP Listener Service stopped.
+2026-01-22 17:43:19.828 +05:30 [INF] Notification Worker Service stopping gracefully.
+2026-01-22 17:55:00.665 +05:30 [WRN] No store type was specified for the decimal property 'MaxLimit' on entity type 'DiscountMaster'. This will cause values to be silently truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.
+2026-01-22 17:55:00.854 +05:30 [WRN] No store type was specified for the decimal property 'Amount' on entity type 'PayrollAdjustment'. This will cause values to be silently truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.
+2026-01-22 17:55:00.882 +05:30 [WRN] No store type was specified for the decimal property 'Amount' on entity type 'PayrollFact'. This will cause values to be silently truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.
+2026-01-22 17:55:15.092 +05:30 [INF] Notification Worker Service running.
+2026-01-22 17:55:15.339 +05:30 [INF] ExpiredLockCleanupService is starting.
+2026-01-22 17:55:15.607 +05:30 [INF] Analyzer TCP Listener Service starting...
+2026-01-22 17:55:15.617 +05:30 [WRN] No analyzer TCP listeners configured in appsettings.json.
+2026-01-22 17:55:40.992 +05:30 [WRN] Failed to determine the https port for redirect.
+2026-01-22 17:56:02.434 +05:30 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2026-01-22 17:56:16.335 +05:30 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2026-01-22 18:04:33.588 +05:30 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2026-01-22 18:05:05.757 +05:30 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.

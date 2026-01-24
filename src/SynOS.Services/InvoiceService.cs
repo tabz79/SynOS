@@ -10,6 +10,8 @@ using SynOS.Models.Entities;
 using SynOS.Services.Utils;
 using SynOS.Services.Operational; // ADDED
 using SynOS.Models.Enums; // ADDED
+using SynOS.Models.Entities.Revenue; // ADDED
+using SynOS.Services.Revenue; // ADDED
 using SynOS.Services.Security; // ADDED
 
 namespace SynOS.Services
@@ -18,15 +20,22 @@ namespace SynOS.Services
     {
         private readonly SynOSDbContext _context;
         private readonly ILogger<InvoiceService> _logger;
-        private readonly IOperationalEventWriter _operationalEventWriter; // ADDED
-        private readonly IUserContext _userContext; // ADDED
+        private readonly IOperationalEventWriter _operationalEventWriter;
+        private readonly IUserContext _userContext;
+        private readonly IRevenueFactWriter _revenueFactWriter; // ADDED
 
-        public InvoiceService(SynOSDbContext context, ILogger<InvoiceService> logger, IOperationalEventWriter operationalEventWriter, IUserContext userContext) // ADDED
+        public InvoiceService(
+            SynOSDbContext context, 
+            ILogger<InvoiceService> logger, 
+            IOperationalEventWriter operationalEventWriter, 
+            IUserContext userContext,
+            IRevenueFactWriter revenueFactWriter) // ADDED
         {
             _context = context;
             _logger = logger;
             _operationalEventWriter = operationalEventWriter ?? throw new ArgumentNullException(nameof(operationalEventWriter));
-            _userContext = userContext ?? throw new ArgumentNullException(nameof(userContext)); // ADDED
+            _userContext = userContext ?? throw new ArgumentNullException(nameof(userContext));
+            _revenueFactWriter = revenueFactWriter ?? throw new ArgumentNullException(nameof(revenueFactWriter)); // ADDED
         }
 
         public async Task<RevenueStatsDto> GetDailyRevenueStatsAsync(Guid branchId)
@@ -63,6 +72,9 @@ namespace SynOS.Services
                 .Include(i => i.Visit) // ADDED: Need Visit for operational event context
                 .FirstOrDefaultAsync(i => i.InvoiceId == invoiceId);
 
+                .Include(i => i.Visit) // ADDED: Need Visit for operational event context
+                .FirstOrDefaultAsync(i => i.InvoiceId == invoiceId);
+
             if (invoice == null) throw new KeyNotFoundException($"Invoice not found for ID {invoiceId}.");
 
             // ... (checks)
@@ -92,7 +104,9 @@ namespace SynOS.Services
                 InvoiceId = invoice.InvoiceId,
                 Amount = paymentDto.Amount,
                 Method = paymentDto.Method,
-                ReceiptNo = paymentDto.ReceiptNo,
+                ReceiptNo = !string.IsNullOrEmpty(paymentDto.ReceiptNo) 
+                    ? paymentDto.ReceiptNo 
+                    : $"RCP-{DateTime.UtcNow:yyyyMMdd}-{Guid.NewGuid().ToString().Substring(0, 8).ToUpper()}",
                 ReceivedAt = DateTime.UtcNow,
                 ReceivedByUserId = paymentDto.ReceivedByUserId
             };
@@ -125,9 +139,36 @@ namespace SynOS.Services
                 "Payment" // sourceType
             );
 
+            // EMIT REVENUE FACT (Truth Engine)
+            await _revenueFactWriter.DeclareRevenueFactAsync(new SynOS.Models.DTOs.Revenue.DeclareRevenueFactCommand
+            {
+                OccurredAt = payment.ReceivedAt,
+                Amount = payment.Amount,
+                Currency = "INR",
+                Direction = RevenueDirection.Inflow,
+                SourceType = RevenueSourceType.Patient,
+                SourceReferenceId = invoice.VisitId.ToString(),
+                PaymentMode = MapPaymentMethod(payment.Method),
+                DeclaredByUserId = payment.ReceivedByUserId,
+                Notes = $"Payment received for Invoice {invoice.InvoiceId}",
+                ExternalTransactionId = payment.ReceiptNo
+            });
+
             return payment;
         }
         
+        private PaymentMode MapPaymentMethod(string method)
+        {
+            return method?.ToLowerInvariant() switch
+            {
+                "cash" => PaymentMode.Cash,
+                "card" => PaymentMode.Card,
+                "upi" => PaymentMode.UPI,
+                "banktransfer" => PaymentMode.BankTransfer,
+                _ => PaymentMode.Other
+            };
+        }
+
         public async Task<InvoicePrintDto> GetInvoiceForPrintingAsync(Guid invoiceId)
         {
             var invoice = await _context.Invoices

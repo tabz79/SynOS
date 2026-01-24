@@ -3,7 +3,7 @@ import { Search, X, Plus, Loader2, Lock } from 'lucide-react'
 import { ReceptionApi } from '@/api/reception'
 import { cn } from '@/lib/utils'
 
-export function VisitDetails({ snapshot, visitId, onVisitUpdated }) {
+export function VisitDetails({ snapshot, visitId, onVisitUpdated, isPrepaidIntent, setIsPrepaidIntent }) {
     // Local UI State for Search Interaction ONLY
     const [filter, setFilter] = useState("");
     const [catalog, setCatalog] = useState([]); // Master list for search suggestions
@@ -14,9 +14,28 @@ export function VisitDetails({ snapshot, visitId, onVisitUpdated }) {
     // 1. PURE RENDER SOURCE: Snapshot
     const visit = snapshot?.visit;
     const tests = visit?.tests || [];
-    const isBillingEditable = snapshot?.billing?.isEditable ?? true;
-    const isReadOnly = (snapshot?.uiHints?.isReadOnly || false) || !isBillingEditable;
-    const readOnlyReason = snapshot?.uiHints?.readOnlyReason || (!isBillingEditable ? "BILLING LOCKED" : null);
+
+    // Strict Governance Rule (Phase 6.4.4):
+    // UI is ReadOnly if:
+    // 1. Billing is Locked (Paid/Prepaid)
+    // 2. UI Hint says ReadOnly (Session closed etc.)
+    const isLocked = snapshot?.billing?.isLocked || false;
+    const isUiReadOnly = snapshot?.uiHints?.isReadOnly || false;
+    const isReadOnly = isLocked || isUiReadOnly;
+
+    // Sync isPrepaidIntent with actual locked status (if locked as Paid/Prepaid)
+    useEffect(() => {
+        if (isLocked) {
+            // If locked and Paid, we can assume it was prepaid flow or just paid. 
+            // Logic: If locked, checkbox is read-only anyway.
+            // But let's check payment collection model? No, just leave as user logic.
+            // Actually, if it's already locked/paid, checkbox should probably reflect truth?
+            // Prompt says: "Reversible until final lock". After lock, it's immutable.
+            setIsPrepaidIntent(visit?.paymentCollectionModel === 'PartnerCollects');
+        }
+    }, [isLocked, visit?.paymentCollectionModel]);
+
+    const readOnlyReason = snapshot?.uiHints?.readOnlyReason || (isLocked ? "LOCKED" : null);
 
     // Load Catalogs (Test + Referral) 
     // Load independently so one failure (e.g. 403 on Referrals) doesn't block the other (Tests).
@@ -115,10 +134,12 @@ export function VisitDetails({ snapshot, visitId, onVisitUpdated }) {
         }
     };
 
+    // COMMAND: Confirm & Lock - MOVED TO INTENT PANEL FOOTER
+
     if (!visit) return null; // Safety: Should be controlled by parent, but good to have.
 
     return (
-        <div className="space-y-4">
+        <div className="space-y-6">
             {/* Header */}
             <div className="flex items-center justify-between mb-2 mt-6">
                 <div className="flex items-center gap-2 text-zinc-400">
@@ -138,8 +159,99 @@ export function VisitDetails({ snapshot, visitId, onVisitUpdated }) {
                 )}
             </div>
 
-            {/* Test Selection (Locked Only if ReadOnly) */}
-            <div className="space-y-3">
+            {/* SECTION 2: VISIT CONTEXT (Phase 8 - Reordered Top) */}
+            <div className="space-y-4 bg-zinc-950/50 p-4 border border-synos-border rounded-lg">
+                <h4 className="text-xs font-bold text-zinc-400 uppercase tracking-wider mb-2">Visit Context</h4>
+
+                {/* A. Prepaid Checkbox */}
+                <div className="flex items-start gap-3">
+                    <input
+                        type="checkbox"
+                        id="chkPrepaid"
+                        checked={isPrepaidIntent}
+                        onChange={(e) => setIsPrepaidIntent(e.target.checked)}
+                        disabled={isReadOnly}
+                        className="mt-0.5 accent-synos-primary cursor-pointer w-4 h-4"
+                    />
+                    <div className="space-y-0.5">
+                        <label htmlFor="chkPrepaid" className={cn("text-sm font-medium cursor-pointer", isPrepaidIntent ? "text-amber-400" : "text-zinc-300")}>
+                            Prepaid Bill (Patient already paid)
+                        </label>
+                        <p className="text-[10px] text-zinc-500 leading-tight">
+                            Select this ONLY if money was collected outside (e.g. by Referral Center).
+                        </p>
+                    </div>
+                </div>
+
+                {/* B. Referral Input */}
+                <div className="pt-2">
+                    <div className="text-xs text-zinc-500 mb-1 flex justify-between">
+                        <span>Referral / Doctor {isPrepaidIntent && <span className="text-red-500">*</span>}</span>
+                        {isPrepaidIntent && <span className="text-amber-500/50 text-[10px] uppercase">Who collected payment?</span>}
+                    </div>
+
+                    {/* 1. PARTNER BADGE (Highest Priority) */}
+                    {snapshot?.billing?.referral?.partner ? (
+                        <div className="flex items-center gap-2 text-zinc-300 font-medium bg-zinc-800/50 p-2 rounded border border-zinc-700/50">
+                            <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
+                            <span className="truncate flex-1">
+                                {snapshot.billing.referral.partner.displayName || "Partner"}
+                            </span>
+
+                            {/* Collection Label Badge */}
+                            {snapshot.billing.referral.partner.collectionLabel && (
+                                <span className="text-[10px] bg-zinc-900 px-1.5 py-0.5 rounded border border-zinc-700 text-zinc-500 uppercase">
+                                    {snapshot.billing.referral.partner.collectionLabel}
+                                </span>
+                            )}
+
+                            {isReadOnly ? (
+                                <Lock className="w-3 h-3 text-zinc-600 ml-auto" />
+                            ) : (
+                                <button
+                                    onClick={handleRemoveReferral}
+                                    disabled={isProcessing}
+                                    className="ml-auto text-zinc-500 hover:text-red-400 p-1 hover:bg-red-400/10 rounded transition-colors"
+                                >
+                                    <X className="w-3 h-3" />
+                                </button>
+                            )}
+                        </div>
+                    ) : (
+                        // 2. HYBRID INPUT (Text + Suggestions)
+                        <ReferralCombinedInput
+                            initialValue={snapshot?.billing?.referral?.referrerText || ""}
+                            isReadOnly={isReadOnly}
+                            isProcessing={isProcessing}
+                            partners={referralPartners}
+                            allowFreeText={!isPrepaidIntent} // Constraint based on Checkbox
+                            onApplyPartner={handleApplyReferral}
+                            onUpdateText={async (text) => {
+                                if (!visitId || isReadOnly) return;
+                                if (isPrepaidIntent) {
+                                    // Should be blocked by UI component, but defensive check
+                                    console.warn("Free text not allowed in prepaid mode");
+                                    return;
+                                }
+                                setIsProcessing(true);
+                                try {
+                                    await ReceptionApi.updateReferrerText(visitId, text);
+                                    if (onVisitUpdated) onVisitUpdated();
+                                } catch (err) {
+                                    console.error("Failed to update referrer text", err);
+                                    alert(err.message);
+                                } finally {
+                                    setIsProcessing(false);
+                                }
+                            }}
+                        />
+                    )}
+                </div>
+            </div>
+
+            {/* SECTION 3: Test Selection (Reordered Down) */}
+            <div className="space-y-3 pt-2">
+                <h4 className="text-xs font-bold text-zinc-400 uppercase tracking-wider mb-2">Test Selection</h4>
                 {!isReadOnly && (
                     <div className="relative z-10">
                         <Search className="absolute left-3 top-2.5 w-4 h-4 text-zinc-500" />
@@ -154,7 +266,7 @@ export function VisitDetails({ snapshot, visitId, onVisitUpdated }) {
 
                         {/* Search Suggestions Dropdown */}
                         {suggestions.length > 0 && (
-                            <div className="absolute top-full left-0 right-0 mt-1 bg-zinc-900 border border-synos-border rounded-lg shadow-xl max-h-60 overflow-y-auto">
+                            <div className="absolute top-full left-0 right-0 mt-1 bg-zinc-900 border border-synos-border rounded-lg shadow-xl max-h-60 overflow-y-auto z-20">
                                 {suggestions.map(test => (
                                     <button
                                         key={test.testCode || test.code}
@@ -212,47 +324,69 @@ export function VisitDetails({ snapshot, visitId, onVisitUpdated }) {
                 </div>
             </div >
 
-            {/* Referral Selector (Step 5.4) */}
-            <div className="mt-4 pt-4 border-t border-dashed border-zinc-800 animate-in fade-in">
-                <div className="text-xs text-zinc-500 mb-1">Referral Partner</div>
+            {/* SECTION 4: FINAL LOCK (Only for Prepaid) - REMOVED (Moved to Footer) */}
 
-                {visit.referralPartner?.partnerId ? (
-                    // READ ONLY MODE (Once set)
-                    <div className="flex items-center gap-2 text-zinc-300 font-medium bg-zinc-800/50 p-2 rounded border border-zinc-700/50">
-                        <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
-                        {referralPartners.find(p => p.referralPartnerId === visit.referralPartner.partnerId)?.name || visit.referralPartner.name || "Unknown Partner"}
-                        
-                        {isReadOnly ? (
-                            <Lock className="w-3 h-3 text-zinc-600 ml-auto" />
-                        ) : (
-                            <button 
-                                onClick={handleRemoveReferral}
-                                disabled={isProcessing}
-                                className="ml-auto text-zinc-500 hover:text-red-400 p-1 hover:bg-red-400/10 rounded transition-colors"
-                            >
-                                <X className="w-3 h-3" />
-                            </button>
-                        )}
-                    </div>
-                ) : (
-                    // SELECTOR MODE
-                    !isReadOnly && (
-                        <select
-                            className="w-full bg-zinc-900 border border-synos-border rounded-md px-3 py-2 text-xs text-white focus:border-synos-primary outline-none transition-colors disabled:opacity-50"
-                            disabled={isProcessing}
-                            value=""
-                            onChange={(e) => handleApplyReferral(e.target.value)}
-                        >
-                            <option value="" disabled>Select Referral Partner...</option>
-                            {referralPartners.map(p => (
-                                <option key={p.referralPartnerId} value={p.referralPartnerId}>
-                                    {p.name}
-                                </option>
-                            ))}
-                        </select>
-                    )
-                )}
-            </div>
         </div >
     )
+}
+
+function ReferralCombinedInput({ initialValue, isReadOnly, isProcessing, partners, onApplyPartner, onUpdateText }) {
+    const [value, setValue] = useState(initialValue);
+    const [showSuggestions, setShowSuggestions] = useState(false);
+
+    // Sync with Snapshot (Strict Rule)
+    useEffect(() => {
+        setValue(initialValue);
+    }, [initialValue]);
+
+    // Derived Suggestions
+    const suggestions = value.length < 2 ? [] : partners.filter(p =>
+        p.name.toLowerCase().includes(value.toLowerCase())
+    );
+
+    return (
+        <div className="relative">
+            <Search className="absolute left-3 top-2.5 w-4 h-4 text-zinc-500" />
+            <input
+                type="text"
+                value={value}
+                disabled={isReadOnly || isProcessing}
+                placeholder="Search Partner or Type Name..."
+                className="w-full bg-zinc-900 border border-synos-border rounded-lg pl-9 pr-4 py-2 text-xs text-white focus:outline-none focus:border-synos-primary transition-colors placeholder:text-zinc-600 disabled:opacity-50"
+                onChange={(e) => {
+                    setValue(e.target.value);
+                    setShowSuggestions(true);
+                }}
+                onBlur={() => {
+                    // Delay to allow click on suggestion to register
+                    setTimeout(() => {
+                        setShowSuggestions(false);
+                        // Case B: Commit text if changed, no partner selected, and value differs from snapshot
+                        if (value !== initialValue) {
+                            onUpdateText(value);
+                        }
+                    }, 200);
+                }}
+                onFocus={() => setShowSuggestions(true)}
+            />
+
+            {/* Suggestions Overlay */}
+            {showSuggestions && suggestions.length > 0 && (
+                <div className="absolute top-full left-0 right-0 mt-1 bg-zinc-900 border border-synos-border rounded-lg shadow-xl max-h-48 overflow-y-auto z-20">
+                    {suggestions.map(p => (
+                        <button
+                            key={p.referralPartnerId}
+                            onMouseDown={(e) => {
+                                e.preventDefault(); // Prevent blur
+                                onApplyPartner(p.referralPartnerId);
+                            }}
+                            className="w-full text-left px-3 py-2 hover:bg-zinc-800 text-xs text-zinc-300 hover:text-white transition-colors border-b border-zinc-800/50 last:border-0"
+                        >
+                            {p.name}
+                        </button>
+                    ))}
+                </div>
+            )}
+        </div>
+    );
 }

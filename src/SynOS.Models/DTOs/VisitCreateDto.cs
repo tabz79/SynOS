@@ -35,5 +35,6 @@ namespace SynOS.Models.DTOs
         public bool? IsReferred { get; set; }
         public Guid? ReferralPartnerId { get; set; }
         public string? PaymentCollectionModel { get; set; }
+        public string? ReferrerText { get; set; } // Free-text input
     }
 }

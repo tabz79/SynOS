@@ -19,5 +19,7 @@ namespace SynOS.Services
         Task RemoveDiscountFromVisitAsync(Guid visitId, Guid actorUserId);
         Task SetVisitReferralAsync(Guid visitId, Guid referralPartnerId, Guid actorUserId);
         Task RemoveVisitReferralAsync(Guid visitId, Guid actorUserId);
+        Task UpdateVisitReferrerTextAsync(Guid visitId, string? referrerText, Guid actorUserId);
+        Task MarkVisitAsPrepaidAsync(Guid visitId, Guid actorUserId);
     }
 }
