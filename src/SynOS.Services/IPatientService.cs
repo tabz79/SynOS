@@ -9,7 +9,7 @@ namespace SynOS.Services
     public interface IPatientService
     {
         Task<PatientDto> CreatePatientAsync(PatientCreateDto patientDto);
-        Task<IEnumerable<Patient>> SearchPatientsAsync(string query, int limit, int offset);
+        Task<IEnumerable<PatientDto>> SearchPatientsAsync(string query, int limit, int offset);
         Task<PatientDto?> GetPatientByIdAsync(Guid id);
         Task<IEnumerable<PatientPhoneHistory>> GetPatientPhoneHistoryAsync(Guid id);
         Task<Patient?> UpdatePhoneAsync(Guid patientId, string newPhone);

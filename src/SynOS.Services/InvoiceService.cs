@@ -72,9 +72,6 @@ namespace SynOS.Services
                 .Include(i => i.Visit) // ADDED: Need Visit for operational event context
                 .FirstOrDefaultAsync(i => i.InvoiceId == invoiceId);
 
-                .Include(i => i.Visit) // ADDED: Need Visit for operational event context
-                .FirstOrDefaultAsync(i => i.InvoiceId == invoiceId);
-
             if (invoice == null) throw new KeyNotFoundException($"Invoice not found for ID {invoiceId}.");
 
             // ... (checks)

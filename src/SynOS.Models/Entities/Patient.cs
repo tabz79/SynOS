@@ -49,7 +49,7 @@ namespace SynOS.Models.Entities
         public ICollection<PatientReferrerLink> ReferrerLinks { get; set; } = new List<PatientReferrerLink>();
         
         // Assuming these will be created later
-        // public ICollection<Visit> Visits { get; set; }
+        public ICollection<Visit> Visits { get; set; } = new List<Visit>();
         // public ICollection<Sample> Samples { get; set; }
     }
 }

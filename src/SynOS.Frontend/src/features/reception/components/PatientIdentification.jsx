@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Search, UserPlus, UserCheck, Loader2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { ReceptionApi } from '@/api/reception'
-import { PatientRegistrationModal } from './PatientRegistrationModal'
+
 
 export function PatientIdentification({ snapshot, onSelectPatient, onClearPatient }) {
     const [searchQuery, setSearchQuery] = useState("");
@@ -121,25 +121,61 @@ export function PatientIdentification({ snapshot, onSelectPatient, onClearPatien
                                 const mobile = p.mobile || p.Mobile || p.phoneNumber || p.PhoneNumber || p.phone || p.Phone;
                                 const age = p.age || p.Age; // If age missing, maybe DOB?
                                 const gender = p.gender || p.Gender || p.sex || p.Sex;
+                                const lastVisitDate = p.lastVisitDate || p.LastVisitDate;
+                                const lastVisitTestCodes = p.lastVisitTestCodes || p.LastVisitTestCodes;
 
                                 return (
                                     <div
                                         key={pId}
                                         onClick={() => handleSelectPatient({ ...p, id: pId })}
-                                        className="bg-zinc-800/50 hover:bg-zinc-800 border border-synos-border hover:border-synos-primary/50 p-3 rounded-lg cursor-pointer flex items-center justify-between group transition-all"
+                                        className="bg-zinc-800/50 hover:bg-zinc-800 border border-synos-border hover:border-synos-primary/50 p-3 rounded-lg cursor-pointer group transition-all"
                                     >
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-8 h-8 rounded-full bg-synos-primary/20 flex items-center justify-center text-synos-primary">
-                                                <UserCheck className="w-4 h-4" />
-                                            </div>
-                                            <div>
-                                                <div className="text-sm font-bold text-zinc-200 group-hover:text-white">{name}</div>
-                                                <div className="text-xs text-zinc-500 font-mono">
-                                                    {mobile} • {age ? `${age}Y` : 'Age N/A'} / {gender || '-'}
+                                        <div className="flex items-start justify-between">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-10 h-10 rounded-full bg-synos-primary/20 flex items-center justify-center text-synos-primary font-bold text-sm">
+                                                    {gender === 'Male' ? 'M' : gender === 'Female' ? 'F' : 'P'}
+                                                </div>
+                                                <div>
+                                                    <div className="text-sm font-bold text-zinc-200 group-hover:text-white flex items-center gap-2">
+                                                        {name}
+                                                        <span className="px-1.5 py-0.5 rounded-full bg-zinc-700 text-[10px] text-zinc-300 font-mono">{age ? `${age}Y` : 'N/A'}</span>
+                                                    </div>
+                                                    <div className="text-xs text-zinc-500 font-mono mt-0.5">
+                                                        {mobile}
+                                                    </div>
                                                 </div>
                                             </div>
+                                            <div className="text-right">
+                                                {lastVisitDate ? (
+                                                    <>
+                                                        <div className="text-[10px] uppercase text-zinc-500 font-medium">Last Visit</div>
+                                                        <div className="text-xs text-zinc-300 font-mono">
+                                                            {new Date(lastVisitDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: '2-digit' })}
+                                                        </div>
+                                                    </>
+                                                ) : (
+                                                    <div className="px-2 py-1 rounded bg-emerald-500/10 text-emerald-400 text-[10px] border border-emerald-500/20">
+                                                        New
+                                                    </div>
+                                                )}
+                                            </div>
                                         </div>
-                                        <span className="text-xs text-zinc-500 group-hover:text-synos-primary font-mono">Select &rarr;</span>
+
+                                        {/* Test History Badge Strip */}
+                                        {lastVisitTestCodes && lastVisitTestCodes.length > 0 && (
+                                            <div className="mt-3 pt-2 border-t border-white/5 flex flex-wrap gap-1">
+                                                {lastVisitTestCodes.slice(0, 3).map(code => (
+                                                    <span key={code} className="px-1.5 py-0.5 rounded bg-zinc-700/50 text-zinc-400 text-[10px] font-mono border border-white/5">
+                                                        {code}
+                                                    </span>
+                                                ))}
+                                                {lastVisitTestCodes.length > 3 && (
+                                                    <span className="px-1.5 py-0.5 text-zinc-500 text-[10px] font-mono">
+                                                        +{lastVisitTestCodes.length - 3} more
+                                                    </span>
+                                                )}
+                                            </div>
+                                        )}
                                     </div>
                                 );
                             })}
@@ -162,22 +198,123 @@ export function PatientIdentification({ snapshot, onSelectPatient, onClearPatien
                 </div>
             )}
 
-            {/* NEW PATIENT MODAL */}
-            <PatientRegistrationModal
-                isOpen={isNewPatientMode}
-                onClose={() => setIsNewPatientMode(false)}
-                onPatientRegistered={(newPatientId, formData) => {
-                    // Success! Select the patient immediately.
-                    // This triggers IntentPanel -> Set patientId -> Fetch Snapshot
-                    onSelectPatient({
-                        ...formData,
-                        id: newPatientId,
-                        // Ensure mobile mapping for UI display if needed
-                        mobile: formData.mobile
-                    });
-                    setIsNewPatientMode(false);
-                }}
-            />
+            {/* NEW PATIENT FORM (Inline) */}
+            {isNewPatientMode && (
+                <div className="bg-zinc-900 border border-synos-border rounded-lg p-4 animate-in slide-in-from-right-2">
+                    <div className="flex items-center justify-between mb-4">
+                        <h4 className="text-sm font-bold text-white flex items-center gap-2">
+                            <UserPlus className="w-4 h-4 text-emerald-500" />
+                            New Patient
+                        </h4>
+                        <button
+                            onClick={() => setIsNewPatientMode(false)}
+                            className="text-xs text-zinc-500 hover:text-white"
+                        >
+                            Cancel
+                        </button>
+                    </div>
+
+                    <RegisterFormInline
+                        onSuccess={(pid, data) => {
+                            onSelectPatient({ ...data, id: pid, mobile: data.mobile }); // Ensure mobile mapping
+                            setIsNewPatientMode(false);
+                        }}
+                    />
+                </div>
+            )}
         </div>
     )
+}
+
+function RegisterFormInline({ onSuccess }) {
+    const [formData, setFormData] = useState({ name: '', mobile: '', age: '', gender: 'Male' });
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [error, setError] = useState(null);
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        if (!formData.name || !formData.mobile || !formData.age) {
+            setError("All fields marked * are required");
+            return;
+        }
+        setIsSubmitting(true);
+        setError(null);
+        try {
+            const result = await ReceptionApi.registerPatient(formData);
+            if (result && result.patientId) {
+                onSuccess(result.patientId, formData);
+            }
+        } catch (err) {
+            setError(err.message);
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    return (
+        <form onSubmit={handleSubmit} className="space-y-3">
+            {error && <div className="text-xs text-red-400 bg-red-500/10 p-2 rounded border border-red-500/20">{error}</div>}
+
+            <div className="space-y-1">
+                <label className="text-[10px] uppercase text-zinc-500 font-bold">Full Name *</label>
+                <input
+                    className="w-full bg-black border border-zinc-800 rounded px-2 py-1.5 text-sm text-white focus:border-synos-primary outline-none"
+                    placeholder="e.g. Rahul Sharma"
+                    value={formData.name}
+                    onChange={e => setFormData({ ...formData, name: e.target.value })}
+                    autoFocus
+                />
+            </div>
+
+            <div className="grid grid-cols-2 gap-2">
+                <div className="space-y-1">
+                    <label className="text-[10px] uppercase text-zinc-500 font-bold">Mobile *</label>
+                    <input
+                        className="w-full bg-black border border-zinc-800 rounded px-2 py-1.5 text-sm text-white focus:border-synos-primary outline-none"
+                        placeholder="987..."
+                        value={formData.mobile}
+                        onChange={e => setFormData({ ...formData, mobile: e.target.value })}
+                    />
+                </div>
+                <div className="space-y-1">
+                    <label className="text-[10px] uppercase text-zinc-500 font-bold">Age *</label>
+                    <input
+                        type="number"
+                        className="w-full bg-black border border-zinc-800 rounded px-2 py-1.5 text-sm text-white focus:border-synos-primary outline-none"
+                        placeholder="25"
+                        value={formData.age}
+                        onChange={e => setFormData({ ...formData, age: e.target.value })}
+                    />
+                </div>
+            </div>
+
+            <div className="space-y-1">
+                <label className="text-[10px] uppercase text-zinc-500 font-bold">Gender *</label>
+                <div className="flex bg-black border border-zinc-800 rounded p-1">
+                    {['Male', 'Female', 'Other'].map(g => (
+                        <button
+                            key={g}
+                            type="button"
+                            onClick={() => setFormData({ ...formData, gender: g })}
+                            className={cn(
+                                "flex-1 text-xs py-1 rounded transition-colors",
+                                formData.gender === g ? "bg-zinc-800 text-white font-medium" : "text-zinc-500 hover:text-zinc-300"
+                            )}
+                        >
+                            {g}
+                        </button>
+                    ))}
+                </div>
+            </div>
+
+            <button
+                type="submit"
+                disabled={isSubmitting}
+                className="w-full mt-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold py-2 rounded transition-colors flex items-center justify-center gap-2"
+            >
+                {isSubmitting ? <Loader2 className="w-3 h-3 animate-spin" /> : <UserPlus className="w-3 h-3" />}
+                Register & Select
+            </button>
+        </form>
+    );
 }

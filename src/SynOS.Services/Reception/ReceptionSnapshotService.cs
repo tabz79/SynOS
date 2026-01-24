@@ -76,9 +76,10 @@ namespace SynOS.Services.Reception
 
         private async Task LoadVisitContextAsync(ReceptionIntakeSnapshotDto snapshot, Guid visitId, Guid? requestedPatientId)
         {
+            // 1. Fetch Main Visit Context (No History Cycle)
             var visit = await _context.Visits
                 .AsNoTracking()
-                .Include(v => v.Patient)
+                .Include(v => v.Patient) // Just Patient info
                 .Include(v => v.Orders).ThenInclude(o => o.Test)
                 .Include(v => v.Invoices).ThenInclude(i => i.Payments)
                 .FirstOrDefaultAsync(v => v.VisitId == visitId);
@@ -90,6 +91,15 @@ namespace SynOS.Services.Reception
             {
                 throw new ArgumentException("VisitId and PatientId do not match. Context corruption detected.");
             }
+
+            // 2. Fetch History Separately (Avoids EF Core No-Tracking Cycle)
+            var lastVisit = await _context.Visits
+                .AsNoTracking()
+                .Where(v => v.PatientId == visit.PatientId && v.VisitId != visit.VisitId && v.Status != "Cancelled")
+                .Include(v => v.Orders)
+                .OrderByDescending(v => v.TokenDate)
+                .Select(v => new { v.TokenDate, TestCodes = v.Orders.Select(o => o.TestCode).ToList() })
+                .FirstOrDefaultAsync();
 
             // Populate Patient
             snapshot.Patient = new IntakePatient
@@ -103,7 +113,9 @@ namespace SynOS.Services.Reception
                 Age = visit.Patient.IsDateOfBirthKnown 
                       ? DateTime.UtcNow.Year - visit.Patient.DateOfBirth.Year 
                       : null, 
-                Mobile = visit.Patient.CurrentPhoneNumber
+                Mobile = visit.Patient.CurrentPhoneNumber,
+                LastVisitDate = lastVisit?.TokenDate,
+                LastVisitTestCodes = lastVisit?.TestCodes ?? new List<string>()
             };
 
             // 1. Resolve Active Invoice and Meta-data
@@ -237,11 +249,21 @@ namespace SynOS.Services.Reception
 
         private async Task LoadPatientContextAsync(ReceptionIntakeSnapshotDto snapshot, Guid patientId)
         {
+            // 1. Fetch Patient (Avoid cycle)
             var patient = await _context.Patients
                 .AsNoTracking()
                 .FirstOrDefaultAsync(p => p.PatientId == patientId);
 
             if (patient == null) throw new KeyNotFoundException($"Patient {patientId} not found.");
+
+            // 2. Fetch History Separately
+            var lastVisit = await _context.Visits
+                .AsNoTracking()
+                .Where(v => v.PatientId == patient.PatientId && v.Status != "Cancelled")
+                .Include(v => v.Orders)
+                .OrderByDescending(v => v.TokenDate)
+                .Select(v => new { v.TokenDate, TestCodes = v.Orders.Select(o => o.TestCode).ToList() })
+                .FirstOrDefaultAsync();
 
             snapshot.Patient = new IntakePatient
             {
@@ -254,7 +276,9 @@ namespace SynOS.Services.Reception
                 Age = patient.IsDateOfBirthKnown 
                       ? DateTime.UtcNow.Year - patient.DateOfBirth.Year 
                       : null,
-                Mobile = patient.CurrentPhoneNumber
+                Mobile = patient.CurrentPhoneNumber,
+                LastVisitDate = lastVisit?.TokenDate,
+                LastVisitTestCodes = lastVisit?.TestCodes ?? new List<string>()
             };
 
             // No Visit context

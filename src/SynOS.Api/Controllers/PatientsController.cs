@@ -37,7 +37,7 @@ namespace SynOS.Api.Controllers
         public async Task<ActionResult<IEnumerable<PatientDto>>> SearchPatients([FromQuery] string q, [FromQuery] int limit = 20, [FromQuery] int offset = 0)
         {
             var patients = await _patientService.SearchPatientsAsync(q, limit, offset);
-            return Ok(_mapper.Map<IEnumerable<PatientDto>>(patients));
+            return Ok(patients);
         }
 
         [HttpGet("{id}")]

@@ -115,11 +115,12 @@ namespace SynOS.Services
             return dto;
         }
 
-        // basic search - returns entities (controller can map/list DTOs as needed)
-        public async Task<IEnumerable<Patient>> SearchPatientsAsync(string query, int limit, int offset)
+        // Enhanced search - returns DTOs directly with Last Visit info
+        public async Task<IEnumerable<PatientDto>> SearchPatientsAsync(string query, int limit, int offset)
         {
             query ??= string.Empty;
             return await _context.Patients
+                .AsNoTracking()
                 .Where(p => !p.IsSoftDeleted &&
                             (EF.Functions.Like(p.FirstName, $"%{query}%") ||
                              EF.Functions.Like(p.LastName, $"%{query}%") ||
@@ -128,6 +129,22 @@ namespace SynOS.Services
                 .OrderBy(p => p.LastName)
                 .Skip(offset)
                 .Take(limit)
+                .Select(p => new PatientDto
+                {
+                    PatientId = p.PatientId,
+                    MRN = p.MRN,
+                    FirstName = p.FirstName,
+                    LastName = p.LastName,
+                    Age = p.DateOfBirth == DateTime.MinValue ? 0 : DateTime.UtcNow.Year - p.DateOfBirth.Year, // Helper calculation
+                    DateOfBirth = p.DateOfBirth,
+                    Gender = p.Gender,
+                    CurrentPhoneNumber = p.CurrentPhoneNumber,
+                    CreatedAt = p.CreatedAt,
+                    LastVisitDate = p.Visits.OrderByDescending(v => v.TokenDate).Select(v => v.TokenDate).FirstOrDefault(),
+                    LastVisitTestCodes = p.Visits.OrderByDescending(v => v.TokenDate)
+                                                .Select(v => v.Orders.Select(o => o.TestCode).ToList())
+                                                .FirstOrDefault()
+                })
                 .ToListAsync();
         }
 

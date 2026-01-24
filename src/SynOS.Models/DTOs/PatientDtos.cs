@@ -10,11 +10,14 @@ namespace SynOS.Models.DTOs
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public DateTime DateOfBirth { get; set; }
+        public int Age { get; set; }
         public string Gender { get; set; }
         public string CurrentPhoneNumber { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
         public bool IsSoftDeleted { get; set; }
+        public DateTime? LastVisitDate { get; set; }
+        public System.Collections.Generic.List<string> LastVisitTestCodes { get; set; } = new();
     }
 
     public class PatientCreateDto

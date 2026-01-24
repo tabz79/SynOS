@@ -28,6 +28,8 @@ namespace SynOS.Models.DTOs.Reception
         public string Gender { get; set; } = string.Empty; // M/F/O
         public int? Age { get; set; }
         public string Mobile { get; set; } = string.Empty;
+        public DateTime? LastVisitDate { get; set; }
+        public List<string> LastVisitTestCodes { get; set; } = new();
     }
 
     public class IntakeVisit

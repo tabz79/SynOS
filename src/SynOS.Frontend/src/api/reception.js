@@ -237,10 +237,27 @@ export const ReceptionApi = {
      * @returns {Promise<Object>} - { patientId }
      */
     registerPatient: async (payload) => {
+        // MAP FRONTEND TO BACKEND DTO
+        // Backend expects: { Phone, Name, Dob, Gender }
+
+        let dob = null;
+        if (payload.age) {
+            const currentYear = new Date().getFullYear();
+            const birthYear = currentYear - parseInt(payload.age);
+            dob = `${birthYear}-01-01T00:00:00Z`; // Approximate
+        }
+
+        const backendPayload = {
+            Phone: payload.mobile,
+            Name: payload.name,
+            Dob: dob,
+            Gender: payload.gender
+        };
+
         const response = await fetch('/api/v1/reception/intake/register-patient', {
             method: 'POST',
             headers: ReceptionApi.getHeaders(),
-            body: JSON.stringify(payload)
+            body: JSON.stringify(backendPayload)
         });
 
         if (!response.ok) {
