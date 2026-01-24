@@ -12,6 +12,8 @@ namespace SynOS.Models.Enums
         MOVED_TO_SAMPLE_COLLECTION,
         SAMPLE_COLLECTED,
         SAMPLE_REJECTED, // ADDED
+        RESULT_DRAFT_STARTED, // ADDED: Operations Engine Wiring
+        REPORT_READY_FOR_VERIFICATION, // ADDED: Operations Engine Wiring
         REPORT_VERIFIED,
         REPORT_SIGNED, // ADDED
         REPORT_DELIVERED, // ADDED

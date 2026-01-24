@@ -93,9 +93,11 @@ namespace SynOS.Services.Reception
             }
 
             // 2. Fetch History Separately (Avoids EF Core No-Tracking Cycle)
+            // Fix: Include current visit in "Last Visit" calculation to match Search Results consistency.
+            // If the user resumes a draft, they expect to see "Last Visit: Today" rather than "New".
             var lastVisit = await _context.Visits
                 .AsNoTracking()
-                .Where(v => v.PatientId == visit.PatientId && v.VisitId != visit.VisitId && v.Status != "Cancelled")
+                .Where(v => v.PatientId == visit.PatientId && v.Status != "Cancelled")
                 .Include(v => v.Orders)
                 .OrderByDescending(v => v.TokenDate)
                 .Select(v => new { v.TokenDate, TestCodes = v.Orders.Select(o => o.TestCode).ToList() })

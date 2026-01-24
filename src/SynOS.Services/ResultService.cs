@@ -11,6 +11,8 @@ using SynOS.Data;
 using SynOS.Models.DTOs;
 using SynOS.Models.Entities;
 
+using SynOS.Services.Operations; // ADDED
+
 namespace SynOS.Services
 {
     public class ResultService : IResultService
@@ -19,17 +21,20 @@ namespace SynOS.Services
         private readonly ILogger<ResultService> _logger;
         private readonly ICriticalValueService _criticalValueService;
         private readonly IServiceProvider _serviceProvider;
+        private readonly IOperationsEngine _operationsEngine; // ADDED
 
         public ResultService(
             SynOSDbContext context,
             ILogger<ResultService> logger,
             ICriticalValueService criticalValueService,
-            IServiceProvider serviceProvider)
+            IServiceProvider serviceProvider,
+            IOperationsEngine operationsEngine) // ADDED
         {
             _context = context;
             _logger = logger;
             _criticalValueService = criticalValueService;
             _serviceProvider = serviceProvider;
+            _operationsEngine = operationsEngine ?? throw new ArgumentNullException(nameof(operationsEngine)); // ADDED
         }
 
         public async Task<IEnumerable<ResultDto>> GetResultsForOrderAsync(Guid orderId)
@@ -87,6 +92,27 @@ namespace SynOS.Services
             }
 
             await _context.SaveChangesAsync();
+
+            // Notify Operations Engine (Leak 1 Fix)
+            // We find the Visit ID from the first result (all results share same Order -> Visit)
+            // Ideally we query this once at start, but doing it safely here.
+            var firstResult = resultsToUpsert.FirstOrDefault();
+            if (firstResult != null)
+            {
+                // We need VisitId. Fetch lightly if not loaded.
+                // Note: resultsToUpsert are attached but might not have navigation loaded.
+                // Safest to query ID.
+                var visitId = await _context.Orders
+                    .Where(o => o.OrderId == request.OrderId)
+                    .Select(o => o.VisitId)
+                    .FirstOrDefaultAsync();
+
+                if (visitId != Guid.Empty)
+                {
+                    // Fire-and-forget safe (engine handles errors/logging)
+                    await _operationsEngine.RecordResultDraftStartedAsync(visitId, firstResult.ResultId, userId);
+                }
+            }
 
             // After saving, check each new/updated result for critical values
             foreach (var result in resultsToUpsert)
@@ -198,9 +224,15 @@ namespace SynOS.Services
                     CreatedAt = DateTimeOffset.UtcNow
                 };
                 await _context.Reports.AddAsync(newReport);
-            }
+                await _context.SaveChangesAsync(); // Persist Report First (Rule 2)
 
-            await _context.SaveChangesAsync();
+                // Notify Operations Engine (Leak 2 Fix)
+                await _operationsEngine.RecordReportReadyAsync(newReport.VisitId, newReport.ReportId, Guid.Empty); // Actor unknown here, using System
+            }
+            else
+            {
+                await _context.SaveChangesAsync();
+            }
 
             // --- BEGIN COST ATTRIBUTION WIRING (16.6 I-5 REFACTOR) ---
             try

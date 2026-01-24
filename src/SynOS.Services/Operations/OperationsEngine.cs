@@ -194,6 +194,74 @@ namespace SynOS.Services.Operations
             await _context.SaveChangesAsync();
         }
 
+        public async Task RecordResultDraftStartedAsync(Guid visitId, Guid resultId, Guid actorId)
+        {
+            var visit = await _context.Visits.FindAsync(visitId);
+            if (visit == null) throw new KeyNotFoundException($"Visit {visitId} not found");
+
+            // Idempotency Guard (Rule 1): Check if "Reporting" has already started for this visit.
+            // We check the last 24 hours of events for this Visit ID.
+            var alreadyStarted = await _context.BranchOperationalEvents
+                .AnyAsync(e => e.VisitId == visitId.ToString() 
+                               && e.EventType == BranchEventType.RESULT_DRAFT_STARTED.ToString()
+                               && e.OccurredAt > DateTime.UtcNow.AddHours(-24));
+
+            if (alreadyStarted)
+            {
+                // NO-OP: "Reporting" state is already active.
+                return;
+            }
+
+            // Emit Event
+            if (visit.BranchId.HasValue)
+            {
+                await EmitEventAsync(
+                    BranchEventType.RESULT_DRAFT_STARTED,
+                    visit.BranchId.Value,
+                    visitId,
+                    visit.Token,
+                    "Result drafting started",
+                    actorId,
+                    resultId,
+                    "Result"
+                );
+            }
+        }
+
+        public async Task RecordReportReadyAsync(Guid visitId, Guid reportId, Guid actorId)
+        {
+            var visit = await _context.Visits.FindAsync(visitId);
+            if (visit == null) throw new KeyNotFoundException($"Visit {visitId} not found");
+
+            // Validation: Report must exist (Rule 2 Safety)
+            var reportExists = await _context.Reports.AnyAsync(r => r.ReportId == reportId);
+            if (!reportExists)
+            {
+                throw new InvalidOperationException($"Data Consistency Error: Report {reportId} does not exist. Cannot emit Ready event.");
+            }
+
+            // Idempotency: Check if already marked ready
+            var alreadyReady = await _context.BranchOperationalEvents
+                .AnyAsync(e => e.SourceId == reportId 
+                               && e.EventType == BranchEventType.REPORT_READY_FOR_VERIFICATION.ToString());
+
+            if (alreadyReady) return;
+
+            if (visit.BranchId.HasValue)
+            {
+                await EmitEventAsync(
+                    BranchEventType.REPORT_READY_FOR_VERIFICATION,
+                    visit.BranchId.Value,
+                    visitId,
+                    visit.Token,
+                    "Report ready for verification",
+                    actorId,
+                    reportId,
+                    "Report"
+                );
+            }
+        }
+
         public async Task RecordReportSignedAsync(Guid reportId, Guid branchId, Guid actorId)
         {
             var report = await _context.Reports

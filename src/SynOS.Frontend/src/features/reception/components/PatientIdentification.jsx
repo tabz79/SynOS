@@ -65,25 +65,15 @@ export function PatientIdentification({ snapshot, onSelectPatient, onClearPatien
             </div>
 
             {/* LOCKED STATE (Patient Identified in Snapshot) */}
+            {/* LOCKED STATE (Patient Identified in Snapshot) */}
             {selectedPatient && (
-                <div className="bg-synos-primary/10 border border-synos-primary/30 p-3 rounded-lg flex items-center justify-between animate-in fade-in slide-in-from-top-2">
-                    <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-synos-primary flex items-center justify-center text-white shadow-sm">
-                            <UserCheck className="w-4 h-4" />
-                        </div>
-                        <div>
-                            <div className="text-sm font-bold text-white">{selectedPatient.name}</div>
-                            <div className="text-xs text-synos-primary/80 font-mono">
-                                {selectedPatient.mobile} • {selectedPatient.age}Y / {selectedPatient.gender}
-                            </div>
-                        </div>
-                    </div>
-                    <button
-                        onClick={onClearPatient}
-                        className="text-xs text-zinc-400 hover:text-white underline decoration-zinc-600 underline-offset-2"
-                    >
-                        Change
-                    </button>
+                <div className="animate-in fade-in slide-in-from-top-2">
+                    <RichPatientCard
+                        patient={selectedPatient}
+                        onAction={onClearPatient}
+                        actionLabel="Change"
+                        isLocked={true}
+                    />
                 </div>
             )}
 
@@ -116,67 +106,13 @@ export function PatientIdentification({ snapshot, onSelectPatient, onClearPatien
                             {matches.map(p => {
                                 // Robust ID extraction to handle casing mismatch (id vs Id)
                                 const pId = p.id || p.Id || p.patientId;
-                                // Helper for robust property access
-                                const name = p.name || p.Name || p.fullName || p.FullName || p.displayName || p.DisplayName || `${p.firstName || p.FirstName || ''} ${p.lastName || p.LastName || ''}`.trim();
-                                const mobile = p.mobile || p.Mobile || p.phoneNumber || p.PhoneNumber || p.phone || p.Phone;
-                                const age = p.age || p.Age; // If age missing, maybe DOB?
-                                const gender = p.gender || p.Gender || p.sex || p.Sex;
-                                const lastVisitDate = p.lastVisitDate || p.LastVisitDate;
-                                const lastVisitTestCodes = p.lastVisitTestCodes || p.LastVisitTestCodes;
-
                                 return (
-                                    <div
+                                    <RichPatientCard
                                         key={pId}
-                                        onClick={() => handleSelectPatient({ ...p, id: pId })}
-                                        className="bg-zinc-800/50 hover:bg-zinc-800 border border-synos-border hover:border-synos-primary/50 p-3 rounded-lg cursor-pointer group transition-all"
-                                    >
-                                        <div className="flex items-start justify-between">
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-10 h-10 rounded-full bg-synos-primary/20 flex items-center justify-center text-synos-primary font-bold text-sm">
-                                                    {gender === 'Male' ? 'M' : gender === 'Female' ? 'F' : 'P'}
-                                                </div>
-                                                <div>
-                                                    <div className="text-sm font-bold text-zinc-200 group-hover:text-white flex items-center gap-2">
-                                                        {name}
-                                                        <span className="px-1.5 py-0.5 rounded-full bg-zinc-700 text-[10px] text-zinc-300 font-mono">{age ? `${age}Y` : 'N/A'}</span>
-                                                    </div>
-                                                    <div className="text-xs text-zinc-500 font-mono mt-0.5">
-                                                        {mobile}
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div className="text-right">
-                                                {lastVisitDate ? (
-                                                    <>
-                                                        <div className="text-[10px] uppercase text-zinc-500 font-medium">Last Visit</div>
-                                                        <div className="text-xs text-zinc-300 font-mono">
-                                                            {new Date(lastVisitDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: '2-digit' })}
-                                                        </div>
-                                                    </>
-                                                ) : (
-                                                    <div className="px-2 py-1 rounded bg-emerald-500/10 text-emerald-400 text-[10px] border border-emerald-500/20">
-                                                        New
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </div>
-
-                                        {/* Test History Badge Strip */}
-                                        {lastVisitTestCodes && lastVisitTestCodes.length > 0 && (
-                                            <div className="mt-3 pt-2 border-t border-white/5 flex flex-wrap gap-1">
-                                                {lastVisitTestCodes.slice(0, 3).map(code => (
-                                                    <span key={code} className="px-1.5 py-0.5 rounded bg-zinc-700/50 text-zinc-400 text-[10px] font-mono border border-white/5">
-                                                        {code}
-                                                    </span>
-                                                ))}
-                                                {lastVisitTestCodes.length > 3 && (
-                                                    <span className="px-1.5 py-0.5 text-zinc-500 text-[10px] font-mono">
-                                                        +{lastVisitTestCodes.length - 3} more
-                                                    </span>
-                                                )}
-                                            </div>
-                                        )}
-                                    </div>
+                                        patient={p}
+                                        onAction={() => handleSelectPatient({ ...p, id: pId })}
+                                        actionLabel="Select"
+                                    />
                                 );
                             })}
                         </div>
@@ -225,6 +161,154 @@ export function PatientIdentification({ snapshot, onSelectPatient, onClearPatien
         </div>
     )
 }
+
+const RichPatientCard = ({ patient, onAction, actionLabel, isLocked }) => {
+    // Robust extraction
+    const p = patient;
+    let name = p.name || p.Name || p.fullName || p.FullName || p.displayName || p.DisplayName || `${p.firstName || p.FirstName || ''} ${p.lastName || p.LastName || ''}`.trim();
+    const mobile = p.mobile || p.Mobile || p.phoneNumber || p.PhoneNumber || p.phone || p.Phone || p.currentPhoneNumber || p.CurrentPhoneNumber;
+    const age = p.age || p.Age;
+
+    // Normalize Gender (Handle: Male, male, M, m, etc)
+    const rawGender = p.gender || p.Gender || p.sex || p.Sex || '';
+    const genderInitial = rawGender ? rawGender.charAt(0).toUpperCase() : 'P';
+    const genderLabel = rawGender ? rawGender : '-';
+
+    const lastVisitDate = p.lastVisitDate || p.LastVisitDate;
+    const lastVisitTestCodes = p.lastVisitTestCodes || p.LastVisitTestCodes || p.testCodes || p.TestCodes;
+
+    // Cleaner Name Logic: If name ends with " Patient", strip it IF cleaner look desired
+    if (name && name.endsWith(' Patient')) {
+        name = name.replace(' Patient', '');
+    }
+
+    return (
+        <div
+            onClick={onAction}
+            className={cn(
+                "p-3 rounded-lg flex flex-col gap-3 transition-all group",
+                isLocked
+                    ? "bg-synos-primary/10 border border-synos-primary/30 cursor-default"
+                    : "bg-zinc-800/50 hover:bg-zinc-800 border border-synos-border hover:border-synos-primary/50 cursor-pointer"
+            )}
+        >
+            <div className="flex items-start justify-between">
+                <div className="flex items-center gap-3">
+                    <div className={cn(
+                        "w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm",
+                        isLocked
+                            ? "bg-synos-primary text-white shadow-sm"
+                            : "bg-synos-primary/20 text-synos-primary"
+                    )}>
+                        {genderInitial}
+                    </div>
+                    <div>
+                        <div className={cn(
+                            "text-sm font-bold truncate pr-2", // Truncate long names
+                            isLocked ? "text-white" : "text-zinc-200 group-hover:text-white"
+                        )}>
+                            {name}
+                        </div>
+
+                        {/* Meta Row: Badges + Mobile */}
+                        <div className="flex items-center flex-wrap gap-2 mt-1.5">
+                            {/* Age Badge */}
+                            <span className={cn(
+                                "px-1.5 py-0.5 rounded-full text-[10px] font-mono",
+                                isLocked
+                                    ? "bg-synos-primary/20 border border-synos-primary/30 text-synos-primary"
+                                    : "bg-zinc-700 text-zinc-300"
+                            )}>
+                                {age ? `${age}Y` : 'N/A'}
+                            </span>
+
+                            {/* Gender Badge */}
+                            {rawGender && (
+                                <span className={cn(
+                                    "px-1.5 py-0.5 rounded-full text-[10px] uppercase font-mono border",
+                                    isLocked
+                                        ? "bg-synos-primary/20 border-synos-primary/30 text-synos-primary/80"
+                                        : "bg-zinc-800 border-zinc-700 text-zinc-500"
+                                )}>
+                                    {genderInitial}
+                                </span>
+                            )}
+
+                            {/* Mobile Number (with separator) */}
+                            <span className={cn(
+                                "text-xs font-mono ml-0.5 border-l pl-2",
+                                isLocked ? "text-synos-primary/80 border-synos-primary/30" : "text-zinc-500 border-zinc-700"
+                            )}>
+                                {mobile}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <div className="flex flex-col items-end gap-1">
+                    {actionLabel && (
+                        <button className={cn(
+                            "text-xs underline decoration-zinc-600 underline-offset-2 transition-colors mb-1",
+                            isLocked ? "text-zinc-400 hover:text-white" : "text-zinc-500 group-hover:text-synos-primary"
+                        )}>
+                            {actionLabel}
+                        </button>
+                    )}
+
+                    {lastVisitDate ? (
+                        <div className="text-right">
+                            <div className={cn(
+                                "text-[10px] uppercase font-medium",
+                                isLocked ? "text-synos-primary/60" : "text-zinc-500"
+                            )}>Last Visit</div>
+                            <div className={cn(
+                                "text-xs font-mono",
+                                isLocked ? "text-synos-primary/90" : "text-zinc-300"
+                            )}>
+                                {new Date(lastVisitDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: '2-digit' })}
+                            </div>
+                        </div>
+                    ) : (
+                        <div className={cn(
+                            "px-2 py-1 rounded text-[10px] border",
+                            isLocked
+                                ? "bg-synos-primary/20 text-synos-primary border-synos-primary/30"
+                                : "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+                        )}>
+                            New
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            {/* Test History Badge Strip */}
+            {lastVisitTestCodes && lastVisitTestCodes.length > 0 && (
+                <div className={cn(
+                    "pt-2 border-t flex flex-wrap gap-1",
+                    isLocked ? "border-synos-primary/20" : "border-white/5"
+                )}>
+                    {lastVisitTestCodes.slice(0, 3).map(code => (
+                        <span key={code} className={cn(
+                            "px-1.5 py-0.5 rounded text-[10px] font-mono border",
+                            isLocked
+                                ? "bg-black/40 text-synos-primary/80 border-synos-primary/20"
+                                : "bg-zinc-700/50 text-zinc-400 border-white/5"
+                        )}>
+                            {code}
+                        </span>
+                    ))}
+                    {lastVisitTestCodes.length > 3 && (
+                        <span className={cn(
+                            "px-1.5 py-0.5 text-[10px] font-mono",
+                            isLocked ? "text-synos-primary/60" : "text-zinc-500"
+                        )}>
+                            +{lastVisitTestCodes.length - 3} more
+                        </span>
+                    )}
+                </div>
+            )}
+        </div>
+    );
+};
 
 function RegisterFormInline({ onSuccess }) {
     const [formData, setFormData] = useState({ name: '', mobile: '', age: '', gender: 'Male' });

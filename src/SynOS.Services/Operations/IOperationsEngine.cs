@@ -17,6 +17,8 @@ namespace SynOS.Services.Operations
         // Task RecordSampleReceivedAsync(Guid sampleId, Guid branchId, Guid actorId); // Optional for now
 
         // Report Lifecycle Write Authority
+        Task RecordResultDraftStartedAsync(Guid visitId, Guid resultId, Guid actorId); // ADDED
+        Task RecordReportReadyAsync(Guid visitId, Guid reportId, Guid actorId); // ADDED
         Task RecordReportSignedAsync(Guid reportId, Guid branchId, Guid actorId);
         Task RecordReportDeliveredAsync(Guid reportId, Guid branchId, Guid actorId);
         Task RecordResultsVerifiedAsync(Guid orderId, Guid branchId, Guid actorId, List<FinalResultDto> results); // ADDED
