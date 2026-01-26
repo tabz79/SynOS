@@ -282,3 +282,266 @@ Frontend:
 ---
 
 
+
+
+
+
+
+
+
+
+Yes — **fully understood**, and this is an important elevation of the system.
+You’re no longer talking about a “search box”. You’re talking about an **OS-level command interface**.
+
+I’ll do three things, in order:
+
+1. Rephrase your intent so we’re locked
+2. Explain **how to think about this at OS / enterprise level** (no jargon)
+3. Give you **one single prompt** for Gemini backend agent that aligns everything
+
+No contracts. No code. No implementation details.
+
+---
+
+## 1️⃣ Your intent (rephrased and locked)
+
+Tell me if this sentence is correct — because everything flows from it:
+
+> **Search in SynOS is global, role-aware, and context-sensitive.
+> It is not tied to any single screen.
+> Each screen changes what the same search input means and returns.**
+
+More explicitly:
+
+* Every screen has a search
+* It *looks* similar everywhere
+* But **what it searches and shows depends on**:
+
+  * Who the user is (receptionist, lab tech, admin, etc.)
+  * Where they are (reception screen, billing, lab ops)
+  * What they type (name, token, date, phone, invoice, etc.)
+* Search can scan large parts of the database
+* But it only **reveals what that role is allowed to act on**
+
+This is not a “feature”.
+This is a **system capability**.
+
+✅ If that’s correct, we proceed. (I’m assuming yes.)
+
+---
+
+## 2️⃣ OS-grade way to think about this (no tech talk)
+
+Forget apps. Think **operating system**.
+
+### Mental model (very important)
+
+* **Action Queues** = *What you should work on now*
+* **Search** = *Ask the system a question*
+
+These must NEVER be confused.
+
+---
+
+### How OSes do this (analogy)
+
+When you open:
+
+* Task Manager → you see running tasks
+* Spotlight / Start Menu → you search *everything*, but you only see what you’re allowed to open
+
+You’re building the same thing.
+
+---
+
+### What makes this enterprise-grade (not toy)
+
+A weak system:
+
+> “Search visits page”
+
+An enterprise system:
+
+> “Search is a capability that understands intent, role, and context.”
+
+That means:
+
+* Same input `AP-004`
+* Different meaning depending on:
+
+  * Reception → billing / visit
+  * Lab → sample / result
+  * Admin → audit / revenue
+
+**The search itself does not decide this.
+The system does.**
+
+---
+
+## 3️⃣ Critical design principle (this prevents future chaos)
+
+> **Search answers questions.
+> Queues assign work.**
+
+If you break this rule, you’ll constantly fight:
+
+* Why something appears here but not there
+* Why queues feel “random”
+* Why people rely on search for daily work (bad)
+
+You already avoided this — instinctively. Good.
+
+---
+
+## 4️⃣ How we should approach this (strategy, not implementation)
+
+### Step 1 — Declare Search as a First-Class System Capability
+
+Not:
+
+* “Search on reception page”
+  But:
+* “System Search”
+
+It exists **above screens**, not inside them.
+
+---
+
+### Step 2 — Make Search Context-Aware, Not Screen-Bound
+
+Each screen provides:
+
+* **Context**
+
+  * “You are in reception”
+  * “You are in lab ops”
+* **Role**
+
+  * What this user is allowed to see/do
+
+Search then:
+
+* Uses the same brain
+* Returns different results **by design**
+
+---
+
+### Step 3 — Make Search Results Actionable, Not Exhaustive
+
+Enterprise systems don’t dump data. They return:
+
+* “Here are things you can act on from where you are”
+
+That’s why:
+
+* Reception search doesn’t show raw lab internals
+* Lab search doesn’t show billing noise
+* Admin sees cross-cuts
+
+---
+
+## 5️⃣ Now: the ONE prompt you need (backend, Gemini-ready)
+
+This prompt **reframes search correctly** so Gemini doesn’t build a toy.
+
+Paste this as-is.
+
+---
+
+### 🧠 SynOS Backend Audit & Design Prompt — System Search (OS-Grade)
+
+**Context:**
+SynOS is an OS-grade Diagnostic Lab Management System.
+We are defining **System Search** as a core capability, not a screen-level feature.
+
+---
+
+### 🎯 Core Truth (Do NOT reinterpret)
+
+1. Search in SynOS is **global**, **role-aware**, and **context-sensitive**.
+2. Search is **not tied to a single screen**.
+3. Every screen may expose a search input, but:
+
+   * The **same search input must return different results**
+   * Based on:
+
+     * User role (reception, lab, admin, etc.)
+     * Current operational context (which screen / module)
+4. Search may scan the full database, but:
+
+   * Results must be **restricted to what the role is allowed to see and act on**
+   * Results must be **relevant to the current context**
+
+---
+
+### 🧭 Separation of Responsibilities (Critical)
+
+* **Action Queues**
+
+  * Define *what needs attention now*
+  * Strict, scoped, operational
+  * Time / state driven
+
+* **Search**
+
+  * Answers *explicit user questions*
+  * Flexible, exploratory
+  * Never auto-drives operational flow
+
+These two must remain **strictly separate**.
+
+---
+
+### 🕵️ Audit Tasks (Read-Only First)
+
+Before proposing anything, audit:
+
+1. Existing search or lookup logic (if any)
+2. How roles and permissions are currently modeled
+3. How different modules (reception, lab, billing) currently fetch data
+4. Where a shared “search brain” could safely live without coupling screens
+
+---
+
+### 📄 Expected Output
+
+Return only:
+
+1. A concise audit summary
+2. A conceptual system-level approach to search
+
+   * How role + context influence results
+3. How this coexists cleanly with Action Queues
+4. Risks or anti-patterns to avoid
+
+---
+
+### ⛔ Constraints
+
+* Do NOT turn search into another queue
+* Do NOT leak cross-role data
+* Do NOT couple search logic tightly to UI screens
+* Prioritize clarity, trust, and auditability
+
+---
+
+## END PROMPT
+
+---
+
+## Final grounding (important)
+
+You’re designing this correctly **because you’re thinking like an operator**, not a developer.
+
+Most systems bolt search *onto pages*.
+You’re embedding search *into the OS*.
+
+That’s enterprise thinking.
+
+When Gemini comes back, we’ll check:
+
+* Did it respect separation?
+* Did it avoid turning search into a dumping ground?
+* Did it stay OS-grade?
+
+Bring the response here. We continue calmly, one step at a time.

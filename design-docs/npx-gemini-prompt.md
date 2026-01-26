@@ -1,164 +1,243 @@
-## 🔥 FRONTEND FORENSIC AUDIT — ZERO BULLSHIT PROMPT
 
-You are required to perform a **forensic audit**, not speculation, not fixes, not redesigns.
+## 🔥 BACKEND EXECUTION PROMPT — DISCOUNT + CORRECTION SYSTEM (SynOS)
 
-### Context (Facts you must accept — do NOT debate)
+### Context (Read Carefully — This Is Ground Truth)
 
-* No `Visit` rows exist in the database for **2026-01-26**.
-* Latest persisted visit is from **2026-01-25**.
-* Multiple UI interactions on **26th** appeared successful.
-* Activity Stream showed events.
-* Action Queue is empty **because no Visit exists**.
-* Backend visit creation logic **does persist correctly** when invoked.
-* Therefore: **the Visit creation path was never hit**, or was bypassed.
+You are working on **SynOS**, an OS-grade Diagnostic Lab Management System.
 
-This means the **frontend has been lying**, intentionally or unintentionally.
+Key non-negotiables:
 
----
+* Backend is the **single source of truth**
+* Frontend is a **pure renderer**
+* **Facts are never edited**
+* Corrections are **new facts**, not mutations
+* Revenue & Intelligence layers must stay mathematically correct forever
 
-## 🎯 Your Mission (Non-Negotiable)
+We already have:
 
-You must prove, with evidence, **exactly what happens when the receptionist clicks “Create / Walk-in / Add Patient”**.
+* Visit
+* Invoice
+* Orders
+* DiscountMaster (admin-owned)
+* DiscountFact (applied snapshot)
+* Action Queue is working and trusted
 
-No assumptions. Only facts.
-
----
-
-## 🔍 Audit Tasks (You MUST complete all)
-
-### 1️⃣ Network Call Audit (MANDATORY)
-
-For **each user action** related to:
-
-* New Walk-in
-* Add Patient
-* Add Tests
-* Generate Bill
-* Save / Confirm / Proceed
-
-You must list:
-
-* HTTP method
-* Full endpoint URL
-* Request payload
-* Response payload
-* Response status code
-
-⚠️ If **NO network call** is made for visit creation:
-
-* That is a **critical failure**
-* You must explicitly say so
+Now we are adding a **Correction Layer**.
 
 ---
 
-### 2️⃣ Endpoint Truth Check
+## 🎯 Objective
 
-Confirm **YES or NO** (no excuses):
+Implement a **Correction System** that allows:
 
-* Does the frontend call `POST /reception/start-visit` (or equivalent)?
-* If NO:
+* Post-finalization corrections
+* Test changes
+* Discount changes
+* Financial adjustments
 
-  * Which endpoint does it call instead?
-  * Why was this not flagged earlier?
-* If YES:
+…**without editing existing records**.
 
-  * Show the exact request payload
-  * Show the response body
-
----
-
-### 3️⃣ Mock / Fake / Optimistic UI Check (CRITICAL)
-
-You must answer:
-
-* Is **any** of the following present?
-
-  * Hardcoded mock data
-  * Local state pretending as saved data
-  * Optimistic UI without backend confirmation
-  * Feature flag for “demo / mock / preview” mode
-  * Temporary test scaffolding
-* If YES:
-
-  * List exact file(s)
-  * Line numbers
-  * Why this was not disclosed earlier
-
-Hiding this = architectural malpractice.
+The **Token ID remains the same**.
+The Visit is not duplicated.
+All changes are additive, auditable, and reversible via math.
 
 ---
 
-### 4️⃣ Activity Stream Source Audit
+## 🧠 Core Principle
 
-Answer clearly:
-
-* Does Activity Stream data come from:
-
-  * Backend API?
-  * WebSocket / SignalR?
-  * Local event emitter?
-  * Mock generator?
-* Can Activity Stream update **without a successful Visit creation call**?
-
-If YES — explain **why this violates SynOS principles**.
+> Original facts are immutable.
+> Corrections are appended and recalculated.
 
 ---
 
-### 5️⃣ Branch / Facility Context Audit
+## 1️⃣ Domain Model — REQUIRED ENTITIES
 
-Confirm with proof:
+### A. CorrectionFact (NEW)
 
-* What BranchId is the frontend sending?
-* Is it hardcoded?
-* Is it mocked?
-* Is it fetched async and possibly undefined?
-* Is it different from backend context?
+Create a new entity:
 
-Show the exact source.
+**CorrectionFact**
 
----
+* CorrectionId (Guid)
+* VisitId (Guid)
+* InvoiceId (Guid)
+* CorrectionType (Enum)
+* ReferenceId (Guid?) — e.g. old OrderId or DiscountFactId
+* Payload (JSON) — what changed
+* DeltaAmount (decimal, signed)
+* CreatedBy (UserId)
+* CreatedAt (UTC)
+* Reason (string, optional)
+* IsReversal (bool, default false)
 
-### 6️⃣ Final Verdict (No diplomacy)
+**CorrectionType ENUM**
 
-You must conclude with **one and only one** of the following:
+* AddTest
+* RemoveTest
+* ChangeDiscount
+* PriceAdjustment
+* TaxAdjustment (future-safe)
 
-* “Frontend never called visit creation API”
-* “Frontend called wrong API”
-* “Frontend used mock data”
-* “Frontend swallowed backend failure”
-* “Frontend operated in demo mode”
-* “Frontend misled user via optimistic UI”
-
-Pick ONE.
-Back it with evidence.
-
----
-
-## 🚨 Rules (Strict)
-
-* Do NOT propose fixes
-* Do NOT redesign UI
-* Do NOT blame backend
-* Do NOT speculate
-* Do NOT soften language
-
-This is a **post-mortem**, not collaboration hour.
+No business logic in entity.
 
 ---
 
-## 🧨 Why this matters
+### B. DiscountFact — CLARIFY BEHAVIOR (Do NOT delete)
 
-SynOS is OS-grade.
-That means:
+DiscountFact remains:
 
-* UI never lies
-* State only comes from backend
-* No illusion of success
-* No fake progress
+* Snapshot of **what was applied at that time**
+* Never mutated
+* Never deleted
 
-Two days were lost because that contract was violated.
-
-This audit decides whether the frontend is **salvageable or needs a hard reset**.
+If discount changes → new **CorrectionFact**, not overwrite.
 
 ---
+
+## 2️⃣ Correction Entry Points (Backend APIs)
+
+### REQUIRED APIs
+
+#### A. Enter Correction Mode
+
+*(No DB write — state concept only)*
+
+```http
+GET /api/v1/visits/{visitId}/correction-context
+```
+
+Returns:
+
+* Current Visit snapshot
+* Invoice snapshot
+* Applied DiscountFact(s)
+* Existing CorrectionFacts
+
+---
+
+#### B. Apply Correction
+
+```http
+POST /api/v1/visits/{visitId}/corrections
+```
+
+Payload (example):
+
+```json
+{
+  "correctionType": "ChangeDiscount",
+  "newDiscountMasterId": "guid",
+  "reason": "Wrong discount selected"
+}
+```
+
+Rules:
+
+* Validate visit exists
+* Visit can be Finalized or PendingPayment
+* Paid visits require explicit role check (do NOT implement role logic now; just scaffold)
+* Create CorrectionFact
+* DO NOT edit Visit, Invoice, Order, DiscountFact
+
+---
+
+## 3️⃣ Revenue Engine — CRITICAL CHANGE
+
+### Modify Revenue Calculation Pipeline
+
+Current:
+
+```
+Invoice = Orders - Discount + Tax
+```
+
+New:
+
+```
+BaseInvoice
++ Sum(CorrectionFacts.DeltaAmount)
+= EffectiveInvoice
+```
+
+Rules:
+
+* Original Invoice remains unchanged
+* Corrections are applied *on top*
+* Tax recalculated on effective net amount
+* Intelligence layer reads **EffectiveInvoice**, not raw Invoice
+
+---
+
+## 4️⃣ Discount Correction Rules (Important)
+
+* Receptionist selects from **active DiscountMaster only**
+* Discount value ALWAYS comes from DiscountMaster
+* Receptionist cannot enter numbers (except Owner special case — stub only)
+* Changing discount:
+
+  * Old DiscountFact remains
+  * New DiscountFact created
+  * CorrectionFact links old → new
+  * DeltaAmount reflects net impact difference
+
+---
+
+## 5️⃣ Audit & Traceability (MANDATORY)
+
+Every correction must:
+
+* Be linked to UserId
+* Have timestamp
+* Preserve original data
+* Be readable by:
+
+  * Revenue Engine
+  * Intelligence layer
+  * Audit reports
+
+No silent changes.
+
+---
+
+## 6️⃣ What NOT To Do (Strict)
+
+❌ Do not edit existing Invoice rows
+❌ Do not delete DiscountFact
+❌ Do not update Order price directly
+❌ Do not recompute history in place
+❌ Do not let frontend calculate totals
+
+---
+
+## 7️⃣ Deliverables (In Order)
+
+1. New entities + migrations:
+
+   * CorrectionFact
+   * Enum(s)
+
+2. Correction write API (POST)
+
+3. Correction read API (GET context)
+
+4. Revenue Engine update to include corrections
+
+5. Unit-level safeguards (not tests, just guard clauses)
+
+---
+
+## 8️⃣ Final Check Question (You Must Answer)
+
+Before finishing, explicitly confirm:
+
+> “Can the system explain *why* a number changed without erasing history?”
+
+If the answer is **NO**, you implemented it wrong.
+
+---
+
+### END OF PROMPT
+
+---
+
 
