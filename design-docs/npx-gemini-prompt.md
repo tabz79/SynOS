@@ -1,145 +1,164 @@
-## 1️⃣ Decision lock (this is now ground truth)
+## 🔥 FRONTEND FORENSIC AUDIT — ZERO BULLSHIT PROMPT
 
-**Action Queue behavior is now FINAL:**
+You are required to perform a **forensic audit**, not speculation, not fixes, not redesigns.
 
-* Default view = **Today’s tasks**
-* “Today” = lab business date
-* If today has zero visits → queue is empty (this is correct, not an error)
-* At the end of today’s list:
+### Context (Facts you must accept — do NOT debate)
 
-  * A clear, explicit control (button / trigger):
-    **“Show last 7 days”**
-* On user intent:
+* No `Visit` rows exist in the database for **2026-01-26**.
+* Latest persisted visit is from **2026-01-25**.
+* Multiple UI interactions on **26th** appeared successful.
+* Activity Stream showed events.
+* Action Queue is empty **because no Visit exists**.
+* Backend visit creation logic **does persist correctly** when invoked.
+* Therefore: **the Visit creation path was never hit**, or was bypassed.
 
-  * Load older visits (last N days, starting with 7)
-  * Keep **today visually and logically separate**
-  * Date separators are mandatory
-
-**Key principle:**
-👉 *Nothing older appears unless a human explicitly asks for it.*
-
-This stays locked.
+This means the **frontend has been lying**, intentionally or unintentionally.
 
 ---
 
-## 2️⃣ Non-obvious implications (this prevents future bugs)
+## 🎯 Your Mission (Non-Negotiable)
 
-These are not technical points — they’re **system behavior truths**.
+You must prove, with evidence, **exactly what happens when the receptionist clicks “Create / Walk-in / Add Patient”**.
 
-### A. “Empty queue” is no longer a bug signal
-
-It simply means:
-
-> “No visits today yet.”
-
-Your UI, backend, logs — all must treat this as **normal**.
+No assumptions. Only facts.
 
 ---
 
-### B. Action Queue is NOT a history tool
+## 🔍 Audit Tasks (You MUST complete all)
 
-If someone wants:
+### 1️⃣ Network Call Audit (MANDATORY)
 
-* A specific old date
-* An old invoice
-* A patient from last month
+For **each user action** related to:
 
-👉 That is **not** Action Queue’s job.
-That will be **Search’s job**, later.
+* New Walk-in
+* Add Patient
+* Add Tests
+* Generate Bill
+* Save / Confirm / Proceed
 
-This separation is what keeps the system sane.
+You must list:
 
----
+* HTTP method
+* Full endpoint URL
+* Request payload
+* Response payload
+* Response status code
 
-### C. Time expansion must be reversible and obvious
+⚠️ If **NO network call** is made for visit creation:
 
-When older days are shown:
-
-* It must be visually clear the user is *no longer only in today*
-* No silent blending
-* No hidden state
-
-This avoids:
-
-* “Why is this patient still here?”
-* “Was this today or yesterday?”
+* That is a **critical failure**
+* You must explicitly say so
 
 ---
 
-## 3️⃣ The ONE prompt for Gemini (backend only, Action Queue only)
+### 2️⃣ Endpoint Truth Check
 
-Paste this **exactly as-is** into the Gemini backend agent.
+Confirm **YES or NO** (no excuses):
 
----
+* Does the frontend call `POST /reception/start-visit` (or equivalent)?
+* If NO:
 
-### 🧠 SynOS Backend Prompt — Action Queue (Option 3, Locked)
+  * Which endpoint does it call instead?
+  * Why was this not flagged earlier?
+* If YES:
 
-**Context:**
-SynOS is an OS-grade Diagnostic Lab Management System.
-We are finalizing the behavior of the **Reception Action Queue**.
-
-This task is **Action Queue only**.
-Ignore system search for now.
-
----
-
-### 🎯 Finalized Business Behavior (Do NOT reinterpret)
-
-1. The Action Queue represents **operational work**, not history.
-
-2. **Default behavior**
-
-   * Show **only today’s business-day visits**
-   * “Today” means the lab’s operational day
-   * If there are no visits today, the queue must be empty (this is correct behavior)
-
-3. **Explicit time expansion**
-
-   * When explicitly requested by the receptionist, load **older visits**
-   * Start with **last 7 business days**
-   * Older visits must:
-
-     * Appear **after today’s list**
-     * Be **clearly grouped by date**
-     * Never mix silently with today’s rows
-
-4. Expansion must be:
-
-   * Intent-driven (no auto-load)
-   * Progressive (older data loads only when requested)
+  * Show the exact request payload
+  * Show the response body
 
 ---
 
-### 🕵️ Audit First (Read-Only)
+### 3️⃣ Mock / Fake / Optimistic UI Check (CRITICAL)
 
-Before proposing changes, audit and report:
+You must answer:
 
-1. How Action Queue data is currently filtered
-2. How business date is calculated
-3. Whether current projections already support date ranges
-4. Any edge cases when today has zero visits
+* Is **any** of the following present?
 
----
+  * Hardcoded mock data
+  * Local state pretending as saved data
+  * Optimistic UI without backend confirmation
+  * Feature flag for “demo / mock / preview” mode
+  * Temporary test scaffolding
+* If YES:
 
-### 📄 Expected Output
+  * List exact file(s)
+  * Line numbers
+  * Why this was not disclosed earlier
 
-Return only:
-
-1. Short audit summary (what exists today)
-2. Confirmation that this behavior fits cleanly
-3. High-level backend approach (conceptual, minimal)
-4. Risks or edge cases to be aware of
-
----
-
-### ⛔ Constraints
-
-* Do NOT auto-include history
-* Do NOT weaken business-day semantics
-* Do NOT redesign frontend responsibilities
-* Clarity and predictability are more important than cleverness
+Hiding this = architectural malpractice.
 
 ---
 
-## END PROMPT
+### 4️⃣ Activity Stream Source Audit
+
+Answer clearly:
+
+* Does Activity Stream data come from:
+
+  * Backend API?
+  * WebSocket / SignalR?
+  * Local event emitter?
+  * Mock generator?
+* Can Activity Stream update **without a successful Visit creation call**?
+
+If YES — explain **why this violates SynOS principles**.
+
+---
+
+### 5️⃣ Branch / Facility Context Audit
+
+Confirm with proof:
+
+* What BranchId is the frontend sending?
+* Is it hardcoded?
+* Is it mocked?
+* Is it fetched async and possibly undefined?
+* Is it different from backend context?
+
+Show the exact source.
+
+---
+
+### 6️⃣ Final Verdict (No diplomacy)
+
+You must conclude with **one and only one** of the following:
+
+* “Frontend never called visit creation API”
+* “Frontend called wrong API”
+* “Frontend used mock data”
+* “Frontend swallowed backend failure”
+* “Frontend operated in demo mode”
+* “Frontend misled user via optimistic UI”
+
+Pick ONE.
+Back it with evidence.
+
+---
+
+## 🚨 Rules (Strict)
+
+* Do NOT propose fixes
+* Do NOT redesign UI
+* Do NOT blame backend
+* Do NOT speculate
+* Do NOT soften language
+
+This is a **post-mortem**, not collaboration hour.
+
+---
+
+## 🧨 Why this matters
+
+SynOS is OS-grade.
+That means:
+
+* UI never lies
+* State only comes from backend
+* No illusion of success
+* No fake progress
+
+Two days were lost because that contract was violated.
+
+This audit decides whether the frontend is **salvageable or needs a hard reset**.
+
+---
 

@@ -39,5 +39,9 @@ namespace SynOS.Models.DTOs.Dashboard
 
         [JsonPropertyName("LastUpdatedAt")]
         public DateTime LastUpdatedAt { get; set; }
+
+        // Grouping (Backend-owned)
+        [JsonPropertyName("DateGroup")]
+        public string DateGroup { get; set; } = string.Empty; // "Today", "Yesterday", "23 Jan"
     }
 }

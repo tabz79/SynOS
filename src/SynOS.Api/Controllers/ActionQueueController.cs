@@ -24,7 +24,7 @@ namespace SynOS.Api.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<List<ActionQueueRowDto>>> GetTodayActionQueue()
+        public async Task<ActionResult<List<ActionQueueRowDto>>> GetTodayActionQueue([FromQuery] bool includeHistory = false)
         {
             var branchId = _userContext.CurrentBranchId;
             if (branchId == Guid.Empty)
@@ -35,7 +35,7 @@ namespace SynOS.Api.Controllers
             // Default to "Today" (Server Local Time handled by Engine)
             var today = DateTime.Now; 
 
-            var queue = await _operationsEngine.GetActionQueueAsync(branchId, today);
+            var queue = await _operationsEngine.GetActionQueueAsync(branchId, today, includeHistory);
             return Ok(queue);
         }
     }

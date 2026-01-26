@@ -256,43 +256,66 @@ namespace SynOS.Services
                 });
             }
 
-            await _context.SaveChangesAsync();
-            await _auditService.LogAsync(actorUserId, "CreateVisit", "Visit", visit.VisitId, visitDto);
+            // 1️⃣ Instrument Visit Persistence (MANDATORY)
+            // 4️⃣ Wrap visit + event in ONE explicit transaction
+            using var tx = await _context.Database.BeginTransactionAsync();
+            try {
+                _logger.LogCritical("VISIT_ADD_START: {VisitId} Context: {ContextId}", visit.VisitId, _context.ContextId);
+                
+                await _context.SaveChangesAsync();
+                
+                _logger.LogCritical("VISIT_ADD_SAVED: {VisitId} Timestamp: {Timestamp}", visit.VisitId, DateTime.UtcNow);
 
-            if (visit.PaymentCollectionModel == "PartnerCollects")
-            {
-                await MarkVisitAsPrepaidAsync(visit.VisitId, actorUserId);
-            }
+                // 3️⃣ Log DB-side confirmation (NO EXCUSES)
+                var count = await _context.Visits.CountAsync(v => v.VisitId == visit.VisitId);
+                _logger.LogCritical("DB_VERIFY: VisitId {VisitId} Count = {Count}", visit.VisitId, count);
 
-            await _operationalEventWriter.WriteEventAsync(
-                BranchEventType.BILL_GENERATED,
-                _userContext.CurrentBranchId.ToString(),
-                visit.VisitId.ToString(),
-                visit.Token,
-                $"Bill generated for {invoice.Total:F2}",
-                "User",
-                actorUserId.ToString()
-            );
+                await _auditService.LogAsync(actorUserId, "CreateVisit", "Visit", visit.VisitId, visitDto);
 
-            if (flowBPayment != null)
-            {
+                if (visit.PaymentCollectionModel == "PartnerCollects")
+                {
+                    await MarkVisitAsPrepaidAsync(visit.VisitId, actorUserId);
+                }
+
                 await _operationalEventWriter.WriteEventAsync(
-                    BranchEventType.PAYMENT_RECEIVED,
+                    BranchEventType.BILL_GENERATED,
                     _userContext.CurrentBranchId.ToString(),
                     visit.VisitId.ToString(),
                     visit.Token,
-                    $"Paid via Partner Account (System)",
-                    "System",
-                    "System",
-                    true,
-                    flowBPayment.PaymentId,
-                    "Payment"
+                    $"Bill generated for {invoice.Total:F2}",
+                    "User",
+                    actorUserId.ToString()
                 );
 
-                if (visit.IsReferred)
+                if (flowBPayment != null)
                 {
-                    await _referralFinancialService.ProcessCommissionRecognitionAsync(visit);
+                    await _operationalEventWriter.WriteEventAsync(
+                        BranchEventType.PAYMENT_RECEIVED,
+                        _userContext.CurrentBranchId.ToString(),
+                        visit.VisitId.ToString(),
+                        visit.Token,
+                        $"Paid via Partner Account (System)",
+                        "System",
+                        "System",
+                        true,
+                        flowBPayment.PaymentId,
+                        "Payment"
+                    );
+
+                    if (visit.IsReferred)
+                    {
+                        await _referralFinancialService.ProcessCommissionRecognitionAsync(visit);
+                    }
                 }
+
+                await tx.CommitAsync();
+                _logger.LogCritical("TX_COMMITTED: {VisitId}", visit.VisitId);
+            }
+            catch (Exception)
+            {
+                await tx.RollbackAsync();
+                _logger.LogCritical("TX_ROLLBACK: {VisitId}", visit.VisitId);
+                throw;
             }
 
             return visit;

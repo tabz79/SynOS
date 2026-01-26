@@ -76,29 +76,28 @@ namespace SynOS.Services.Operations
             };
         }
 
-        public async Task<List<ActionQueueRowDto>> GetActionQueueAsync(Guid branchId, DateTime date)
+        public async Task<List<ActionQueueRowDto>> GetActionQueueAsync(Guid branchId, DateTime date, bool includeHistory = false)
         {
             if (branchId == Guid.Empty) throw new ArgumentException("BranchId required");
 
             // Define Time Window (Local Date -> UTC Range)
-            // Assuming 'date' is Lab Local Date (midnight).
-            // We need to fetch visits where TokenDate matches.
-            
-            var queryDate = date.Date;
-            var nextDay = queryDate.AddDays(1);
+            var today = date.Date;
+            var startDate = includeHistory ? today.AddDays(-7) : today;
+            var nextDay = today.AddDays(1); // Always cap at tomorrow (future visits not in queue)
 
             // Fetch Data Graph (No Tracking for Read-Only Projection)
             var visits = await _context.Visits
                 .AsNoTracking()
                 .Where(v => v.BranchId == branchId && 
-                            v.TokenDate >= queryDate && 
+                            v.TokenDate >= startDate && 
                             v.TokenDate < nextDay && 
                             v.Status != "Cancelled")
                 .Include(v => v.Patient)
                 .Include(v => v.ReferralPartner)
                 .Include(v => v.Orders).ThenInclude(o => o.Test) // To get TestCode if denorm is missing, but Order has TestCode.
                 .Include(v => v.Invoices).ThenInclude(i => i.Payments)
-                .OrderBy(v => v.CreatedAt)
+                .OrderByDescending(v => v.TokenDate) // Group by Date (Newest Day First)
+                .ThenBy(v => v.Token) // Sequential Tokens within Day
                 .ToListAsync();
 
             // Fetch Status-Relevant Entities in Batch (Avoid N+1)
@@ -152,13 +151,22 @@ namespace SynOS.Services.Operations
                     
                     OperationalStatus = DeriveOperationalStatus(visit, visitSamples.Select(s => s.Status).ToList(), visitResults.Select(r => r.Status).ToList(), visitReport?.Status),
                     
-                    LastUpdatedAt = CalculateLastUpdatedAt(visit, visitSamples.Select(s => s.CollectedAt).ToList(), visitResults.Select(r => r.EnteredAt).ToList(), visitReport?.SignedAt)
+                    LastUpdatedAt = CalculateLastUpdatedAt(visit, visitSamples.Select(s => s.CollectedAt).ToList(), visitResults.Select(r => r.EnteredAt).ToList(), visitReport?.SignedAt),
+                    
+                    DateGroup = CalculateDateGroup(visit.TokenDate, today)
                 };
 
                 queue.Add(dto);
             }
 
             return queue;
+        }
+
+        private string CalculateDateGroup(DateTime tokenDate, DateTime today)
+        {
+            if (tokenDate.Date == today) return "Today";
+            if (tokenDate.Date == today.AddDays(-1)) return "Yesterday";
+            return tokenDate.ToString("dd MMM (ddd)");
         }
 
         // --- Helpers (Guardrail 2: Centralized Logic) ---

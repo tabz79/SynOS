@@ -32,6 +32,9 @@ namespace SynOS.Services.Operational
         {
             try
             {
+                // 2️⃣ Instrument Event Writer
+                _logger.LogCritical("EVENT_WRITE for VisitId {VisitId}, Context {ContextId}", visitId, _context.ContextId);
+
                 var evt = new BranchOperationalEvent
                 {
                     EventId = Guid.NewGuid(),
