@@ -23,19 +23,22 @@ namespace SynOS.Services
         private readonly IOperationalEventWriter _operationalEventWriter;
         private readonly IUserContext _userContext;
         private readonly IRevenueFactWriter _revenueFactWriter; // ADDED
+        private readonly IVisitService _visitService; // ADDED
 
         public InvoiceService(
             SynOSDbContext context, 
             ILogger<InvoiceService> logger, 
             IOperationalEventWriter operationalEventWriter, 
             IUserContext userContext,
-            IRevenueFactWriter revenueFactWriter) // ADDED
+            IRevenueFactWriter revenueFactWriter, // ADDED
+            IVisitService visitService) // ADDED
         {
             _context = context;
             _logger = logger;
             _operationalEventWriter = operationalEventWriter ?? throw new ArgumentNullException(nameof(operationalEventWriter));
             _userContext = userContext ?? throw new ArgumentNullException(nameof(userContext));
             _revenueFactWriter = revenueFactWriter ?? throw new ArgumentNullException(nameof(revenueFactWriter)); // ADDED
+            _visitService = visitService ?? throw new ArgumentNullException(nameof(visitService)); // ADDED
         }
 
         public async Task<RevenueStatsDto> GetDailyRevenueStatsAsync(Guid branchId)
@@ -117,7 +120,15 @@ namespace SynOS.Services
             {
                 invoice.Status = "Paid";
                 var visit = await _context.Visits.FindAsync(invoice.VisitId);
-                if (visit != null) visit.Status = "Paid";
+                if (visit != null) 
+                {
+                    visit.Status = "Paid";
+                    // Atomic Token Assignment on Completion
+                    if (visit.Token.StartsWith("DRAFT"))
+                    {
+                        await _visitService.AssignOfficialTokenAsync(visit.VisitId, paymentDto.ReceivedByUserId);
+                    }
+                }
             }
 
             await _context.SaveChangesAsync();

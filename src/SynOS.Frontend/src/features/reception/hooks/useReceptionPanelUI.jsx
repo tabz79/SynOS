@@ -11,38 +11,47 @@ const ReceptionContext = createContext(null);
  * Implemented using React Context to scope state to the Screen.
  */
 export function ReceptionProvider({ children }) {
-    const [isOpen, setIsOpen] = useState(false);
-    const [mode, setMode] = useState('idle'); // idle | active
+    // Unified Drawer State
+    const [drawerState, setDrawerState] = useState({
+        mode: 'closed', // 'closed' | 'create' | 'view'
+        visitId: null
+    });
 
-    // Draft Inputs
+    // Draft Inputs (Persist only if needed, but usually reset on close)
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedPatient, setSelectedPatient] = useState(null);
     const [isNewPatientMode, setIsNewPatientMode] = useState(false);
     const [newPatientDraft, setNewPatientDraft] = useState({
-        mobile: '',
-        firstName: '',
-        lastName: '',
-        gender: '', // male | female | other
-        age: '',
-        dob: ''
+        mobile: '', firstName: '', lastName: '', gender: '', age: '', dob: ''
     });
     const [selectedTestCodes, setSelectedTestCodes] = useState([]);
 
     // Actions
     const actions = useMemo(() => ({
+        // OLD: openPanel (Mapped to Create Mode for backward compat if needed)
         openPanel: () => {
-            setIsOpen(true);
-            setMode('active');
+            setDrawerState({ mode: 'create', visitId: null });
         },
+
+        // NEW: Explicit Modes
+        openCreateMode: () => {
+            setDrawerState({ mode: 'create', visitId: null });
+        },
+        openViewMode: (visitId) => {
+            setDrawerState({ mode: 'view', visitId });
+        },
+
         closePanel: () => {
-            setIsOpen(false);
-            setMode('idle');
+            setDrawerState({ mode: 'closed', visitId: null });
+
+            // Reset Draft State
             setSearchQuery('');
             setSelectedPatient(null);
             setIsNewPatientMode(false);
             setNewPatientDraft({ mobile: '', firstName: '', lastName: '', gender: '', age: '', dob: '' });
             setSelectedTestCodes([]);
         },
+
         setSearchQuery,
         setSelectedPatient: (patient) => {
             setSelectedPatient(patient);
@@ -65,8 +74,9 @@ export function ReceptionProvider({ children }) {
     }), []);
 
     const value = {
-        isOpen,
-        mode,
+        isOpen: drawerState.mode !== 'closed', // Compat
+        drawerState, // Exposed for logic
+        mode: drawerState.mode, // Compat (active/idle mapped to create/view?) No, just string mode.
         searchQuery,
         selectedPatient,
         isNewPatientMode,

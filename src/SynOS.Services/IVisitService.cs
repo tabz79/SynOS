@@ -21,5 +21,6 @@ namespace SynOS.Services
         Task RemoveVisitReferralAsync(Guid visitId, Guid actorUserId);
         Task UpdateVisitReferrerTextAsync(Guid visitId, string? referrerText, Guid actorUserId);
         Task MarkVisitAsPrepaidAsync(Guid visitId, Guid actorUserId);
+        Task<string> AssignOfficialTokenAsync(Guid visitId, Guid actorUserId);
     }
 }

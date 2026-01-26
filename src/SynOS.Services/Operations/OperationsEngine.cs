@@ -76,6 +76,183 @@ namespace SynOS.Services.Operations
             };
         }
 
+        public async Task<List<ActionQueueRowDto>> GetActionQueueAsync(Guid branchId, DateTime date)
+        {
+            if (branchId == Guid.Empty) throw new ArgumentException("BranchId required");
+
+            // Define Time Window (Local Date -> UTC Range)
+            // Assuming 'date' is Lab Local Date (midnight).
+            // We need to fetch visits where TokenDate matches.
+            
+            var queryDate = date.Date;
+            var nextDay = queryDate.AddDays(1);
+
+            // Fetch Data Graph (No Tracking for Read-Only Projection)
+            var visits = await _context.Visits
+                .AsNoTracking()
+                .Where(v => v.BranchId == branchId && 
+                            v.TokenDate >= queryDate && 
+                            v.TokenDate < nextDay && 
+                            v.Status != "Cancelled")
+                .Include(v => v.Patient)
+                .Include(v => v.ReferralPartner)
+                .Include(v => v.Orders).ThenInclude(o => o.Test) // To get TestCode if denorm is missing, but Order has TestCode.
+                .Include(v => v.Invoices).ThenInclude(i => i.Payments)
+                .OrderBy(v => v.CreatedAt)
+                .ToListAsync();
+
+            // Fetch Status-Relevant Entities in Batch (Avoid N+1)
+            var visitIds = visits.Select(v => v.VisitId).ToList();
+            
+            var samples = await _context.Samples
+                .AsNoTracking()
+                .Where(s => visitIds.Contains(s.Order.VisitId))
+                .Select(s => new { s.Order.VisitId, s.Status, s.CollectedAt })
+                .ToListAsync();
+
+            var results = await _context.Results
+                .AsNoTracking()
+                .Where(r => visitIds.Contains(r.Order.VisitId))
+                .Select(r => new { r.Order.VisitId, r.Status, r.EnteredAt }) // Changed UpdatedAt to EnteredAt
+                .ToListAsync();
+
+            var reports = await _context.Reports
+                .AsNoTracking()
+                .Where(r => visitIds.Contains(r.VisitId))
+                .Select(r => new { r.VisitId, r.Status, r.SignedAt }) // Changed VerifiedAt to SignedAt
+                .ToListAsync();
+
+            // Projection Loop
+            var queue = new List<ActionQueueRowDto>();
+
+            foreach (var visit in visits)
+            {
+                var invoice = visit.Invoices.FirstOrDefault(); // Assuming 1 invoice per visit for V1
+                if (invoice == null) continue; // Should not happen for valid visits
+
+                var visitSamples = samples.Where(s => s.VisitId == visit.VisitId).ToList();
+                var visitResults = results.Where(r => r.VisitId == visit.VisitId).ToList();
+                var visitReport = reports.FirstOrDefault(r => r.VisitId == visit.VisitId);
+
+                var dto = new ActionQueueRowDto
+                {
+                    VisitId = visit.VisitId,
+                    Token = visit.Token,
+                    CreatedAt = visit.CreatedAt,
+                    
+                    PatientName = visit.Patient != null 
+                        ? (!string.IsNullOrEmpty(visit.Patient.DisplayName) ? visit.Patient.DisplayName : $"{visit.Patient.FirstName} {visit.Patient.LastName}")
+                        : "Unknown",
+                    
+                    PatientAgeGender = FormatPatientAgeGender(visit.Patient),
+                    
+                    TestCodes = visit.Orders.Select(o => o.TestCode).ToList(),
+                    
+                    PaymentDisplay = DerivePaymentDisplay(visit, invoice),
+                    
+                    OperationalStatus = DeriveOperationalStatus(visit, visitSamples.Select(s => s.Status).ToList(), visitResults.Select(r => r.Status).ToList(), visitReport?.Status),
+                    
+                    LastUpdatedAt = CalculateLastUpdatedAt(visit, visitSamples.Select(s => s.CollectedAt).ToList(), visitResults.Select(r => r.EnteredAt).ToList(), visitReport?.SignedAt)
+                };
+
+                queue.Add(dto);
+            }
+
+            return queue;
+        }
+
+        // --- Helpers (Guardrail 2: Centralized Logic) ---
+
+        private string FormatPatientAgeGender(Patient? patient)
+        {
+            if (patient == null) return "N/A";
+            
+            var age = patient.IsDateOfBirthKnown 
+                ? (DateTime.UtcNow.Year - patient.DateOfBirth.Year).ToString() 
+                : "?";
+            
+            var gender = !string.IsNullOrEmpty(patient.Gender) ? patient.Gender.Substring(0, 1).ToUpper() : "?";
+            
+            return $"{age}y / {gender}";
+        }
+
+        private string DerivePaymentDisplay(Visit visit, Invoice invoice)
+        {
+            if (visit.PaymentCollectionModel == "PartnerCollects")
+            {
+                var partnerName = visit.ReferralPartner?.Name ?? "Partner";
+                return $"Prepaid ({partnerName})";
+            }
+
+            if (invoice.Status == "Paid" || invoice.Status == "FullPaid")
+            {
+                var method = invoice.Payments.FirstOrDefault()?.Method;
+                if (!string.IsNullOrEmpty(method))
+                {
+                    // Normalize Method display
+                    return method switch
+                    {
+                        "PartnerAccount" => "Prepaid (System)", // Should be caught by clause above ideally
+                        _ => method
+                    };
+                }
+                return "Paid";
+            }
+
+            return "Due";
+        }
+
+        private string DeriveOperationalStatus(Visit visit, List<SampleStatus> sampleStatuses, List<string?> resultStatuses, string? reportStatus)
+        {
+            // 5. Operational Status (SINGLE SOURCE OF TRUTH)
+            
+            // Completed
+            if (reportStatus == "Signed" || reportStatus == "Finalized")
+            {
+                return "Completed";
+            }
+
+            // Reporting (Verification Pending)
+            // If any result is "PendingVerification" or Report exists but not signed
+            if ((resultStatuses.Any(s => s == "PendingVerification" || s == "Finalized")) || (reportStatus != null && reportStatus != "Signed"))
+            {
+                return "Reporting";
+            }
+
+            // In Lab (Drafting)
+            // If any result is entered ("Draft")
+            if (resultStatuses.Any(s => s == "Draft"))
+            {
+                return "In Lab";
+            }
+
+            // Sample Collected
+            // If we have samples and they are all collected (or at least one collected and none rejected?)
+            // Usually "Sample Collected" means at least one valid sample is in.
+            if (sampleStatuses.Any(s => s == SampleStatus.Collected))
+            {
+                return "Sample Collected";
+            }
+
+            // Default: Ready for Sample (since we filtered for Paid visits)
+            return "Ready for Sample";
+        }
+
+        private DateTime CalculateLastUpdatedAt(Visit visit, List<DateTime?> sampleTimes, List<DateTime> resultTimes, DateTimeOffset? reportTime)
+        {
+            var times = new List<DateTimeOffset>();
+            
+            times.Add(visit.CreatedAt);
+
+            // Add Entity Timestamps
+            foreach (var t in sampleTimes) if (t.HasValue) times.Add(t.Value);
+            foreach (var t in resultTimes) times.Add(t);
+            if (reportTime.HasValue) times.Add(reportTime.Value);
+
+            // Return Max
+            return times.Max().UtcDateTime;
+        }
+
         // Private Helper for Event Emission (Internal Use Only)
         private async Task EmitEventAsync(BranchEventType eventType, Guid branchId, Guid entityId, string token, string description, Guid actorId, Guid? sourceId = null, string? sourceType = null)
         {

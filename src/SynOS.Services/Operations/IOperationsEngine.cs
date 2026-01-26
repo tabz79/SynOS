@@ -10,6 +10,7 @@ namespace SynOS.Services.Operations
     {
         // Read Ports (Truth)
         Task<OperationsStatsDto> GetDailyOperationsStatsAsync(Guid branchId);
+        Task<List<ActionQueueRowDto>> GetActionQueueAsync(Guid branchId, DateTime date); // ADDED: Action Queue Projection
         
         // Sample Lifecycle Write Authority
         Task RecordSampleCollectedAsync(Guid sampleId, Guid branchId, Guid actorId);

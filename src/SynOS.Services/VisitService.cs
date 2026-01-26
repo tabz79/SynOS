@@ -88,7 +88,10 @@ namespace SynOS.Services
             }
 
             var labLocalToday = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, _labTimeZone).Date;
-            var token = await GenerateDailyTokenAsync(visitDto.Department, labLocalToday, actorUserId);
+            
+            // Defer token generation until payment/finalization
+            // var token = await GenerateDailyTokenAsync(visitDto.Department, labLocalToday, actorUserId);
+            var token = $"DRAFT-{Guid.NewGuid().ToString().Substring(0, 8).ToUpper()}";
 
             if (visitDto.ReferralPartnerId.HasValue)
             {
@@ -326,8 +329,17 @@ namespace SynOS.Services
                 CreatedAt = DateTime.UtcNow
             };
             _context.Orders.Add(order);
+            
+            // Fix Race Condition: Manually add to tracked collection so Recalculate sees it immediately
+            // Defensive Check: Ensure we don't double-add if EF fixup already linked it
+            if (!visit.Orders.Contains(order))
+            {
+                visit.Orders.Add(order);
+            }
+            
             await _context.SaveChangesAsync();
 
+            // Pass the updated visit object to avoid re-fetching stale data
             await RecalculateFinancialsAsync(visitId, actorUserId, visit);
 
             await _operationalEventWriter.WriteEventAsync(
@@ -359,6 +371,13 @@ namespace SynOS.Services
             if (order == null) throw new KeyNotFoundException($"Test '{testCode}' not found.");
 
             _context.Orders.Remove(order);
+            
+            // Fix Race Condition: Manually remove from tracked collection so Recalculate sees it immediately
+            if (visit.Orders.Contains(order))
+            {
+                visit.Orders.Remove(order);
+            }
+            
             await _context.SaveChangesAsync();
 
             await RecalculateFinancialsAsync(visitId, actorUserId, visit);
@@ -619,6 +638,12 @@ namespace SynOS.Services
             visit.PaymentCollectionModel = "PartnerCollects";
             visit.Status = "Paid";
 
+            // Ensure official token is assigned for prepaid
+            if (visit.Token.StartsWith("DRAFT"))
+            {
+                await AssignOfficialTokenAsync(visit.VisitId, actorUserId);
+            }
+
             await _context.SaveChangesAsync();
 
             await RecalculateFinancialsAsync(visitId, actorUserId, visit);
@@ -632,6 +657,27 @@ namespace SynOS.Services
                 "User",
                 actorUserId.ToString()
             );
+        }
+
+        public async Task<string> AssignOfficialTokenAsync(Guid visitId, Guid actorUserId)
+        {
+            var visit = await _context.Visits.FindAsync(visitId);
+            if (visit == null) throw new KeyNotFoundException($"Visit {visitId} not found.");
+
+            // Idempotency: If already has a real token (not DRAFT), return it.
+            if (!string.IsNullOrEmpty(visit.Token) && !visit.Token.StartsWith("DRAFT"))
+            {
+                return visit.Token;
+            }
+
+            var labLocalToday = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, _labTimeZone).Date;
+            var token = await GenerateDailyTokenAsync(visit.Department, labLocalToday, actorUserId);
+            
+            visit.Token = token;
+            visit.TokenDate = labLocalToday;
+            await _context.SaveChangesAsync();
+
+            return token;
         }
 
         private async Task RecalculateFinancialsAsync(Guid visitId, Guid actorUserId, Visit? existingTrackedVisit = null)
@@ -742,9 +788,15 @@ namespace SynOS.Services
             {
                 decimal totalPaid = invoice.Payments.Sum(p => p.Amount);
                 if (totalPaid >= totalAmount && totalAmount > 0)
+                {
                     invoice.Status = "Paid";
+                    visit.Status = "Paid"; // Synchronize Visit status
+                }
                 else
+                {
                     invoice.Status = "PendingPayment";
+                    visit.Status = "PendingPayment"; // Handle revert if tests added/discount removed
+                }
             }
 
             decimal finalPaid = invoice.Payments.Sum(p => p.Amount) + _context.ChangeTracker.Entries<Payment>().Where(e => e.State == EntityState.Added).Sum(e => e.Entity.Amount);

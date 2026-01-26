@@ -1,292 +1,145 @@
-## ✅ Backend Status (Locked In)
+## 1️⃣ Decision lock (this is now ground truth)
 
-Because this matters before UI:
+**Action Queue behavior is now FINAL:**
 
-You now have:
+* Default view = **Today’s tasks**
+* “Today” = lab business date
+* If today has zero visits → queue is empty (this is correct, not an error)
+* At the end of today’s list:
 
-* Reliable **operational events** for:
+  * A clear, explicit control (button / trigger):
+    **“Show last 7 days”**
+* On user intent:
 
-  * Visit created
-  * Sample collected / rejected
-  * Result drafting started
-  * Report ready for verification
-  * Report signed / delivered
-* A consistent **Operations Engine timeline**
-* A clean **Action Queue data source**
-* No magical frontend inference needed
+  * Load older visits (last N days, starting with 7)
+  * Keep **today visually and logically separate**
+  * Date separators are mandatory
 
-So the frontend can now safely ask:
+**Key principle:**
+👉 *Nothing older appears unless a human explicitly asks for it.*
 
-> “What is the latest operational truth for this visit?”
-
-Good. Now we move.
-
----
-
-## 🧠 Reality Check: What the Action Queue IS (and is NOT)
-
-Let’s ground this hard, because earlier suggestions went off the rails.
-
-### Action Queue is:
-
-* **Post-payment only**
-* **Operational, not financial**
-* **Read-only**
-* **Logged-in branch scoped**
-* **A live conveyor belt of work**
-
-### Action Queue is NOT:
-
-* A draft state viewer
-* A validation checklist
-* A warning system
-* A billing or referral debugger
-* A decision engine
-
-Once a patient enters Action Queue:
-👉 **Money is done. Intent is done. Referral is done.**
-
-Only **operations remain**.
+This stays locked.
 
 ---
 
-## ✅ Finalized Action Queue Columns (Validated)
+## 2️⃣ Non-obvious implications (this prevents future bugs)
 
-Based on everything you said (and correcting earlier nonsense), this is **clean and correct**:
+These are not technical points — they’re **system behavior truths**.
 
-### 1️⃣ Token ID
+### A. “Empty queue” is no longer a bug signal
 
-* Primary identity
-* Clickable
-* Opens **right-side visit drawer** (read-only details)
+It simply means:
 
----
+> “No visits today yet.”
 
-### 2️⃣ Patient (Composite Column)
-
-Single column, dense but readable:
-
-**Contents:**
-
-* Patient Name
-* Badges:
-
-  * Age
-  * Sex
-  * Test Codes (ALL of them, not +2 nonsense)
-
-Example:
-
-```
-T-0345  
-Ramesh Kumar  
-[45y] [M] [CBC] [LIPID] [TSH]
-```
-
-Why this matters:
-
-* Reception instantly knows *who* and *what*
-* No need to open details for basic context
+Your UI, backend, logs — all must treat this as **normal**.
 
 ---
 
-### 3️⃣ Payment Mode
+### B. Action Queue is NOT a history tool
 
-Reception-friendly, **not business-logic-revealing**:
+If someone wants:
 
-Values:
+* A specific old date
+* An old invoice
+* A patient from last month
 
-* `Cash`
-* `UPI`
-* `Card`
-* `Prepaid (Dr. Sharma)`
+👉 That is **not** Action Queue’s job.
+That will be **Search’s job**, later.
 
-Important:
-
-* No PartnerCollects / LabCollects
-* No commission visibility
-* No backend semantics
-
-Reception already physically verified prepaid.
-This column is **confirmation**, not discovery.
+This separation is what keeps the system sane.
 
 ---
 
-### 4️⃣ Live Status (MOST IMPORTANT COLUMN)
+### C. Time expansion must be reversible and obvious
 
-This is the heart of the Action Queue.
+When older days are shown:
 
-Derived from Operations Engine events only.
+* It must be visually clear the user is *no longer only in today*
+* No silent blending
+* No hidden state
 
-Examples:
+This avoids:
 
-* `Waiting for sample`
-* `Sample collected`
-* `In lab`
-* `Result entry`
-* `Awaiting verification`
-* `Report ready`
-* `Delivered`
-
-This must:
-
-* Update in real time
-* Be driven purely by operational events
-* Never depend on polling random tables
-
-This is why sealing ResultService mattered.
+* “Why is this patient still here?”
+* “Was this today or yesterday?”
 
 ---
 
-### 5️⃣ ETA (Optional but Valuable)
+## 3️⃣ The ONE prompt for Gemini (backend only, Action Queue only)
 
-* Computed
-* Soft estimate
-* Derived from test SLA + current operational stage
-
-This is optional **now**, but future-proof.
+Paste this **exactly as-is** into the Gemini backend agent.
 
 ---
 
-### 6️⃣ Infinite Scroll Rule (History)
+### 🧠 SynOS Backend Prompt — Action Queue (Option 3, Locked)
 
-* Default: **Today only**
-* Button at end: **“Load last 7 days”**
-* That’s it. No more.
+**Context:**
+SynOS is an OS-grade Diagnostic Lab Management System.
+We are finalizing the behavior of the **Reception Action Queue**.
 
-Action Queue ≠ medical history.
-
----
-
-## 🚨 What We Explicitly Do NOT Add
-
-Just to be crystal clear:
-
-❌ Referral confirmation states
-❌ “Risk / revenue unassigned” flags
-❌ Finance reminders
-❌ Editable actions
-❌ Multi-owner views
-❌ Audit noise
-
-If it’s not **operational**, it doesn’t belong here.
+This task is **Action Queue only**.
+Ignore system search for now.
 
 ---
 
-## 🎯 Backend Verdict for Action Queue
+### 🎯 Finalized Business Behavior (Do NOT reinterpret)
 
-Backend is now capable of emitting **this exact DTO** cleanly:
+1. The Action Queue represents **operational work**, not history.
 
-```ts
-ActionQueueRow {
-  visitId
-  token
-  createdAt
+2. **Default behavior**
 
-  patientName
-  age
-  sex
-  testCodes[]
+   * Show **only today’s business-day visits**
+   * “Today” means the lab’s operational day
+   * If there are no visits today, the queue must be empty (this is correct behavior)
 
-  paymentMode
-  prepaidDoctorName?
+3. **Explicit time expansion**
 
-  operationalStatus
-  lastStatusChangeAt
-}
-```
+   * When explicitly requested by the receptionist, load **older visits**
+   * Start with **last 7 business days**
+   * Older visits must:
 
-No gaps. No hacks.
+     * Appear **after today’s list**
+     * Be **clearly grouped by date**
+     * Never mix silently with today’s rows
 
----
+4. Expansion must be:
 
-## 🧩 NOW — The Correct Frontend Prompt (Audit First)
-
-As you requested, **first audit**, not implementation.
-
-### 📌 Frontend Prompt — Action Queue Audit
-
-Copy-paste this verbatim to Gemini (frontend):
+   * Intent-driven (no auto-load)
+   * Progressive (older data loads only when requested)
 
 ---
 
-### 🔍 Frontend Audit Prompt — Action Queue Readiness (SynOS)
+### 🕵️ Audit First (Read-Only)
 
-**Objective:**
-Audit the current frontend Action Queue implementation against the finalized SynOS operational model. Do NOT implement anything yet.
+Before proposing changes, audit and report:
 
----
-
-### 1️⃣ Scope of Audit
-
-Audit the following strictly:
-
-* Action Queue list UI
-* Data consumption from backend
-* Rendering correctness
-* Missing / misaligned fields
-* Incorrect assumptions
-
-Ignore:
-
-* New Walk-In cockpit
-* Billing flows
-* Referral creation UI
+1. How Action Queue data is currently filtered
+2. How business date is calculated
+3. Whether current projections already support date ranges
+4. Any edge cases when today has zero visits
 
 ---
 
-### 2️⃣ Canonical Truth Rules
+### 📄 Expected Output
 
-Frontend MUST:
+Return only:
 
-* Treat backend operational events as single source of truth
-* Render **post-payment visits only**
-* Never infer financial or referral logic
-* Never display backend technical terms
-
----
-
-### 3️⃣ Required Columns to Audit For
-
-Confirm whether the frontend can currently render:
-
-1. Token ID (clickable)
-2. Patient name with badges:
-
-   * Age
-   * Sex
-   * ALL test codes
-3. Payment Mode:
-
-   * Cash / UPI / Card / Prepaid (Doctor Name)
-4. Live Operational Status:
-
-   * Derived from Operations Engine events
-5. Optional ETA
-6. Infinite scroll (Today → last 7 days)
+1. Short audit summary (what exists today)
+2. Confirmation that this behavior fits cleanly
+3. High-level backend approach (conceptual, minimal)
+4. Risks or edge cases to be aware of
 
 ---
 
-### 4️⃣ Audit Questions to Answer
+### ⛔ Constraints
 
-* Which of the above data points are already rendered correctly?
-* Which are missing entirely?
-* Which are incorrectly inferred client-side?
-* Are there any frontend assumptions not backed by backend data?
-* Is the operational status currently polling tables instead of subscribing to events?
-
----
-
-### 5️⃣ Output Format (MANDATORY)
-
-Return:
-
-1. ✅ What is correct
-2. ❌ What is missing
-3. ⚠️ What is risky
-4. 📌 What changes are REQUIRED (not optional)
-
-NO UI redesign suggestions yet.
+* Do NOT auto-include history
+* Do NOT weaken business-day semantics
+* Do NOT redesign frontend responsibilities
+* Clarity and predictability are more important than cleverness
 
 ---
+
+## END PROMPT
 

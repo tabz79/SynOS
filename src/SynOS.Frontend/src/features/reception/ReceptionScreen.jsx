@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Plus, Users, ClipboardList, Bed, Clock } from 'lucide-react'
+import { Plus, Users, ClipboardList, Bed, Clock, Loader2 } from 'lucide-react'
 import { SystemBar } from '@/components/layout/SystemBar'
 import { RealitySummary } from '@/components/layout/RealitySummary'
 import { ActionQueue, ActionQueueHeader } from '@/components/layout/ActionQueue'
@@ -12,17 +12,48 @@ import { SignalRService } from '@/lib/signalr'
 export function ReceptionScreen() {
     const [activeQueue, setActiveQueue] = useState("pending");
     const [summary, setSummary] = useState(null);
-    const { isOpen: isIntentPanelOpen, openPanel } = useReceptionPanelUI();
+    // Unified Drawer State + Helpers
+    const { isOpen: isIntentPanelOpen, openCreateMode, openViewMode } = useReceptionPanelUI();
+
+    const [actionQueue, setActionQueue] = useState([]); // Real Data
+    const [isLoadingQueue, setIsLoadingQueue] = useState(true);
+
+    // Helper: Normalize Backend DTO (PascalCase -> camelCase) using defensive mapping
+    const normalizeQueueData = (data) => {
+        if (!Array.isArray(data)) return [];
+        return data.map(row => ({
+            ...row, // Preserve originals
+            visitId: row.visitId || row.VisitId,
+            token: row.token || row.Token,
+            patientName: row.patientName || row.PatientName,
+            patientAgeGender: row.patientAgeGender || row.PatientAgeGender,
+            testCodes: row.testCodes || row.TestCodes || [],
+            paymentMethod: row.paymentMethod || row.PaymentMethod,
+            paymentStatus: row.paymentStatus || row.PaymentStatus,
+            prepaidDoctorName: row.prepaidDoctorName || row.PrepaidDoctorName,
+            operationalStatus: row.operationalStatus || row.OperationalStatus
+        }));
+    };
 
     // Wiring: Initial Load + SignalR Subscription
     useEffect(() => {
         // 1. Initial Snapshot
         const loadInitial = async () => {
             try {
-                const data = await ReceptionApi.getDashboardSummary();
-                if (data) setSummary(data);
+                const [summaryData, queueData] = await Promise.all([
+                    ReceptionApi.getDashboardSummary(),
+                    ReceptionApi.getActionQueue() // FIXED: Use correct endpoint
+                ]);
+
+                if (summaryData) setSummary(summaryData);
+                if (Array.isArray(queueData)) {
+                    console.log("DEBUG: Action Queue Raw:", queueData); // Verify Integrity
+                    setActionQueue(normalizeQueueData(queueData));
+                }
             } catch (e) {
-                console.error("Failed to fetch initial summary", e);
+                console.error("Failed to fetch initial dashboard data", e);
+            } finally {
+                setIsLoadingQueue(false);
             }
         };
 
@@ -34,16 +65,29 @@ export function ReceptionScreen() {
 
             // 3. Subscribe to Updates (Pure Replacement)
             SignalRService.onReceptionSummaryUpdated((payload) => {
-                // STRICT: Replace pure state. No merging.
                 setSummary(payload);
             });
         };
 
         connect();
 
+        // Failsafe Polling (every 30s)
+        const interval = setInterval(async () => {
+            try {
+                const data = await ReceptionApi.getActionQueue(); // FIXED: Use correct endpoint
+                if (Array.isArray(data)) {
+                    console.log("DEBUG: Action Queue Poll:", data);
+                    setActionQueue(normalizeQueueData(data));
+                }
+            } catch (e) {
+                console.error("Queue Poll Failed", e);
+            }
+        }, 30000);
+
         // Cleanup
         return () => {
             SignalRService.stopConnection();
+            clearInterval(interval);
         };
     }, []);
 
@@ -61,37 +105,79 @@ export function ReceptionScreen() {
         { value: "—", label: "Avg Report Time", icon: Clock, color: "default" },
     ];
 
-    // Dummy Queue Data
+    // ACTION QUEUE COLUMNS (Strict Backend Truth)
     const queueColumns = [
-        { header: "Token ID", accessor: "token", className: "font-mono text-zinc-400" },
-        { header: "Patient Name", accessor: "name", className: "font-medium text-white" },
         {
-            header: "Status",
-            accessor: "status",
+            header: "Token ID",
+            accessor: "token",
+            className: "font-mono text-zinc-400 w-32",
             render: (row) => (
-                <span className={`px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${row.status === 'Pending' ? 'bg-amber-500/10 text-amber-500' :
-                    row.status === 'Blocked' ? 'bg-red-500/10 text-red-500' :
-                        'bg-emerald-500/10 text-emerald-500'
-                    }`}>
-                    {row.status}
-                </span>
+                <button
+                    onClick={() => openViewMode(row.visitId)}
+                    className="hover:text-synos-primary hover:underline decoration-synos-primary decoration-2 underline-offset-2 transition-all font-bold tracking-tight"
+                >
+                    {row.token}
+                </button>
             )
         },
-        { header: "Waiting", accessor: "waiting", className: "font-mono text-zinc-500" },
-        { header: "Description", accessor: "description", className: "text-zinc-500" },
-    ];
-
-    // Dummy Refresh Logic could go here (Polling)
-
-    const queueData = [
-        { token: "P-2026-14592", name: "Rahul Deshmukh", status: "Pending", waiting: "12m", description: "Registration Incomplete" },
-        { token: "P-2026-14601", name: "Anjali Gupta", status: "Blocked", waiting: "45m", description: "Insurance Failed" },
-        { token: "P-2026-14588", name: "Vikram Singh", status: "Finalized", waiting: "Completed", description: "Discharge Processed" },
-        { token: "P-2026-14601", name: "Priya Sharma", status: "Blocked", waiting: "45m", description: "Insurance Failed" },
-        { token: "P-2026-14588", name: "Amit Kumar", status: "Finalized", waiting: "Completed", description: "Discharge Processed" },
-        { token: "P-2026-14592", name: "Neha Patel", status: "Pending", waiting: "45m", description: "Registration Incomplete" },
-        { token: "P-2026-14592", name: "Suresh Reddy", status: "Pending", waiting: "30m", description: "Registration Incomplete" },
-        { token: "P-2026-14601", name: "Priya Sharma", status: "Blocked", waiting: "45m", description: "Insurance Failed" },
+        {
+            header: "Patient",
+            accessor: "patientName",
+            className: "text-white min-w-[200px]",
+            render: (row) => (
+                <div className="flex flex-col gap-1">
+                    <div className="flex items-center gap-2">
+                        <span className="font-medium text-sm text-zinc-200">{row.patientName}</span>
+                        {/* Age/Sex Badge */}
+                        <span className="bg-zinc-800 text-zinc-400 text-[10px] px-1.5 py-0.5 rounded border border-zinc-700 font-mono">
+                            {row.patientAgeGender || "N/A"}
+                        </span>
+                    </div>
+                    {/* Test Code Chips (No Truncation) */}
+                    <div className="flex flex-wrap gap-1">
+                        {row.testCodes && row.testCodes.map((code, idx) => (
+                            <span key={idx} className="bg-synos-primary/10 text-synos-primary border border-synos-primary/20 text-[10px] px-1 py-0.5 rounded font-mono leading-none">
+                                {code}
+                            </span>
+                        ))}
+                    </div>
+                </div>
+            )
+        },
+        {
+            header: "Payment",
+            accessor: "paymentMethod",
+            className: "text-zinc-400 w-32",
+            render: (row) => {
+                // Payment Logic: Cash | UPI | Prepaid (Dr. Name)
+                if (row.paymentStatus === 'Prepaid' || row.paymentMethod === 'PartnerAccount') {
+                    return (
+                        <div className="text-xs font-mono text-amber-500/80">
+                            Prepaid ({row.prepaidDoctorName || 'Partner'})
+                        </div>
+                    );
+                }
+                return (
+                    <div className="text-xs font-mono">
+                        {row.paymentMethod || '—'}
+                    </div>
+                );
+            }
+        },
+        {
+            header: "Operational Status",
+            accessor: "operationalStatus",
+            className: "w-40",
+            render: (row) => (
+                <span className={`
+                    px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border
+                    bg-zinc-800 text-zinc-400 border-zinc-700
+                `}>
+                    {/* RAW BACKEND TRUTH - NO INTERPRETATION */}
+                    {row.operationalStatus}
+                </span>
+            )
+        }
     ];
 
     return (
@@ -119,16 +205,25 @@ export function ReceptionScreen() {
                         {/* Action Queues */}
                         <div className="flex-1 flex flex-col min-h-0 relative">
                             <div className="flex items-center justify-between mb-2">
-                                <ActionQueueHeader title="Action Queues" count={queueData.length} />
+                                <ActionQueueHeader title="Action Queues" count={actionQueue.length} />
                                 <button
-                                    onClick={openPanel}
+                                    onClick={openCreateMode}
                                     className="bg-zinc-100 hover:bg-white text-zinc-900 border border-zinc-200 px-4 py-1.5 rounded-md text-xs font-bold shadow-sm transition-all flex items-center gap-2 pointer-events-auto"
                                 >
                                     <Plus className="w-3.5 h-3.5" />
                                     New Walk-In
                                 </button>
                             </div>
-                            <ActionQueue columns={queueColumns} data={queueData} />
+                            {isLoadingQueue ? (
+                                <div className="flex-1 flex items-center justify-center border border-dashed border-zinc-800 rounded-xl">
+                                    <div className="flex flex-col items-center gap-2">
+                                        <Loader2 className="w-6 h-6 animate-spin text-zinc-600" />
+                                        <span className="text-xs text-zinc-600">Loading live operational stream...</span>
+                                    </div>
+                                </div>
+                            ) : (
+                                <ActionQueue columns={queueColumns} data={actionQueue} />
+                            )}
                         </div>
                     </div>
 

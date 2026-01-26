@@ -198,6 +198,24 @@ export const ReceptionApi = {
     },
 
     /**
+     * Fetches the Action Queue (Today's active visits).
+     * @returns {Promise<Array>}
+     */
+    getActionQueue: async () => {
+        const response = await fetch('/api/v1/branch/action-queue', {
+            headers: ReceptionApi.getHeaders()
+        });
+
+        if (!response.ok) {
+            console.error("Action Queue Fetch Failed:", response.status);
+            return []; // Fail safe
+        }
+
+        const data = await response.json();
+        return Array.isArray(data) ? data : [];
+    },
+
+    /**
      * Fetches the live activity stream for the branch.
      * @returns {Promise<Array>}
      */
