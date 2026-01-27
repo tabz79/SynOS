@@ -29,8 +29,7 @@ namespace SynOS.Models.Entities
         public string Department { get; set; } = string.Empty;
 
         [Required]
-        [StringLength(50)]
-        public string Status { get; set; } = string.Empty;
+        public SynOS.Models.Enums.OrderStatus Status { get; set; }
 
         // ADDED: Hardening
         public SynOS.Models.Enums.OrderCancellationReason? CancellationReason { get; set; }

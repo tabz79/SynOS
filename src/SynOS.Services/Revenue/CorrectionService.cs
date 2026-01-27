@@ -74,7 +74,7 @@ namespace SynOS.Services.Revenue
                         TestId = test.TestId,
                         TestCode = test.TestCode,
                         Department = test.Department,
-                        Status = "Pending",
+                        Status = SynOS.Models.Enums.OrderStatus.Pending,
                         Price = test.BasePrice,
                         CreatedAt = DateTime.UtcNow
                     };
@@ -90,7 +90,8 @@ namespace SynOS.Services.Revenue
                     var orderToRemove = await _context.Orders.FindAsync(command.TargetEntityId.Value);
                     if (orderToRemove == null) throw new KeyNotFoundException("Order not found");
                     
-                    orderToRemove.Status = "Cancelled";
+                    // FIX C: Strengthen Order cancellation semantics
+                    orderToRemove.Status = SynOS.Models.Enums.OrderStatus.Cancelled;
                     orderToRemove.CancellationReason = OrderCancellationReason.ReceptionCorrection;
                     orderToRemove.CancelledAt = DateTime.UtcNow;
                     orderToRemove.CancelledByUserId = actorUserId;

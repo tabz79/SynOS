@@ -48,7 +48,7 @@ namespace SynOS.Services.Revenue
 
             // 1. Base Gross from Active Orders
             decimal grossAmount = visit.Orders
-                .Where(o => o.Status != "Cancelled")
+                .Where(o => o.Status != SynOS.Models.Enums.OrderStatus.Cancelled)
                 .Sum(o => o.Price);
 
             // 2. Add Financial Corrections (PriceOverride)

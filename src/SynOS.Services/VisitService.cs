@@ -140,7 +140,7 @@ namespace SynOS.Services
                     TestId = resolvedTest.TestId,
                     TestCode = resolvedTest.TestCode,
                     Department = resolvedTest.Department,
-                    Status = "Pending",
+                    Status = SynOS.Models.Enums.OrderStatus.Pending,
                     Price = resolvedTest.BasePrice,
                     Discount = 0,
                     CreatedAt = DateTime.UtcNow
@@ -289,7 +289,7 @@ namespace SynOS.Services
                 TestId = resolvedTest.TestId,
                 TestCode = resolvedTest.TestCode,
                 Department = resolvedTest.Department,
-                Status = "Pending",
+                Status = SynOS.Models.Enums.OrderStatus.Pending,
                 Price = resolvedTest.BasePrice,
                 Discount = 0,
                 CreatedAt = DateTime.UtcNow
@@ -331,7 +331,7 @@ namespace SynOS.Services
             if (order == null) throw new KeyNotFoundException($"Test '{testCode}' not found.");
 
             // FIX: Soft Cancel ONLY. No deletes. Ever.
-            order.Status = "Cancelled";
+            order.Status = SynOS.Models.Enums.OrderStatus.Cancelled;
             order.CancellationReason = SynOS.Models.Enums.OrderCancellationReason.ReceptionCorrection;
             order.CancelledAt = DateTime.UtcNow;
             order.CancelledByUserId = actorUserId;
