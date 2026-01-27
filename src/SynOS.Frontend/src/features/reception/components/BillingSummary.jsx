@@ -47,7 +47,8 @@ export function BillingSummary({ snapshot, onVisitUpdated }) {
         setIsProcessing(true);
         try {
             await ReceptionApi.applyDiscountToVisit(visitId, code);
-            // Snapshot update will reflect change
+            // Notify parent to refresh snapshot
+            if (onVisitUpdated) onVisitUpdated();
         } catch (err) {
             console.error("Failed to apply discount", err);
             alert("Failed to apply discount: " + err.message);
@@ -63,6 +64,8 @@ export function BillingSummary({ snapshot, onVisitUpdated }) {
         setIsProcessing(true);
         try {
             await ReceptionApi.removeDiscountFromVisit(visitId);
+            // Notify parent to refresh snapshot
+            if (onVisitUpdated) onVisitUpdated();
         } catch (err) {
             console.error("Failed to remove discount", err);
         } finally {
@@ -114,10 +117,22 @@ export function BillingSummary({ snapshot, onVisitUpdated }) {
                     <div className="flex justify-between items-center text-zinc-400">
                         <span>Discount</span>
                         {billing.appliedDiscount ? (
-                            <span className="font-mono text-emerald-400">
-                                - ₹{billing.discountAmount?.toLocaleString()}
-                                <span className="text-xs ml-1 opacity-70">({billing.appliedDiscount.name})</span>
-                            </span>
+                            <div className="flex items-center gap-2">
+                                <span className="font-mono text-emerald-400 flex items-center gap-1">
+                                    - ₹{billing.discountAmount?.toLocaleString()}
+                                    <span className="text-xs opacity-70">({billing.appliedDiscount.name})</span>
+                                </span>
+                                {canPerformActions && (
+                                    <button
+                                        onClick={handleRemoveDiscount}
+                                        disabled={isProcessing}
+                                        className="p-1 hover:bg-zinc-800 rounded-full text-zinc-500 hover:text-red-400 transition-colors"
+                                        title="Remove Discount"
+                                    >
+                                        <X className="w-3 h-3" />
+                                    </button>
+                                )}
+                            </div>
                         ) : (
                             <span className="font-mono text-zinc-600">No discount applied</span>
                         )}
@@ -144,8 +159,8 @@ export function BillingSummary({ snapshot, onVisitUpdated }) {
                     </div>
                 </div>
 
-                {/* B. Discount Selector (Step 5.3) */}
-                {!billing.appliedDiscount && canPerformActions && (
+                {/* B. Discount Selector (Step 5.3) - ALWAYS VISIBLE for Replace Flow */}
+                {canPerformActions && (
                     <div className="pt-2 animate-in fade-in">
                         <select
                             className="w-full bg-zinc-900 border border-synos-border rounded-md px-3 py-2 text-xs text-white focus:border-synos-primary outline-none transition-colors disabled:opacity-50"
@@ -155,7 +170,9 @@ export function BillingSummary({ snapshot, onVisitUpdated }) {
                                 if (e.target.value) handleApplyDiscount(e.target.value);
                             }}
                         >
-                            <option value="" disabled>Apply a Discount...</option>
+                            <option value="" disabled>
+                                {billing.appliedDiscount ? "Replace Discount..." : "Apply a Discount..."}
+                            </option>
                             {discountCatalog.map(discount => (
                                 <option key={discount.code} value={discount.code}>
                                     {discount.name} ({discount.code})

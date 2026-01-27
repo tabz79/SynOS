@@ -165,7 +165,7 @@ export const ReceptionApi = {
         const response = await fetch('/api/v1/reception/visit/discount', {
             method: 'POST',
             headers: ReceptionApi.getHeaders(),
-            body: JSON.stringify({ visitId, discountCode })
+            body: JSON.stringify({ VisitId: visitId, DiscountCode: discountCode })
         });
         if (!response.ok) throw new Error('Failed to apply discount');
     },

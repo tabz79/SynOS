@@ -9,6 +9,7 @@ using System.Linq; // Add this using directive
 using SynOS.Models.DTOs.Admin;
 using SynOS.Models.Entities.Referral;
 using SynOS.Models.DTOs.Admin.Referral;
+using SynOS.Models.Entities.Discounts; // ADDED
 
 namespace SynOS.Api
 {
@@ -92,6 +93,11 @@ namespace SynOS.Api
             CreateMap<ReferralCommissionRuleCreateDto, ReferralCommissionRule>();
             CreateMap<ReferralCommissionRuleUpdateDto, ReferralCommissionRule>();
             CreateMap<ReferralCommissionRule, ReferralCommissionRuleReadDto>();
+
+            // Discount Mappings
+            CreateMap<CreateDiscountDto, DiscountMaster>();
+            CreateMap<UpdateDiscountDto, DiscountMaster>();
+            CreateMap<DiscountMaster, DiscountDto>();
         }
     }
 }

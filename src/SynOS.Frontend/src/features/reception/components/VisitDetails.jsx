@@ -15,13 +15,15 @@ export function VisitDetails({ snapshot, visitId, onVisitUpdated, isPrepaidInten
     const visit = snapshot?.visit;
     const tests = visit?.tests || [];
 
-    // Strict Governance Rule (Phase 6.4.4):
+    // Strict Governance Rule (Phase 6.4.4) + Phase 1 Alignment:
     // UI is ReadOnly if:
-    // 1. Billing is Locked (Paid/Prepaid)
-    // 2. UI Hint says ReadOnly (Session closed etc.)
+    // 1. Visit Status is Finalized (Paid/Cancelled)
+    // 2. Billing is Locked (Backend Flag)
+    // 3. UI Hint says ReadOnly (Session closed etc.)
+    const isFinalized = ["Paid", "Cancelled"].includes(visit?.status || "");
     const isLocked = snapshot?.billing?.isLocked || false;
     const isUiReadOnly = snapshot?.uiHints?.isReadOnly || false;
-    const isReadOnly = isLocked || isUiReadOnly;
+    const isReadOnly = isFinalized || isLocked || isUiReadOnly;
 
     // Sync isPrepaidIntent with actual locked status (if locked as Paid/Prepaid)
     useEffect(() => {
@@ -35,7 +37,8 @@ export function VisitDetails({ snapshot, visitId, onVisitUpdated, isPrepaidInten
         }
     }, [isLocked, visit?.paymentCollectionModel]);
 
-    const readOnlyReason = snapshot?.uiHints?.readOnlyReason || (isLocked ? "LOCKED" : null);
+    const readOnlyReason = snapshot?.uiHints?.readOnlyReason ||
+        (isFinalized ? visit.status.toUpperCase() : (isLocked ? "LOCKED" : null));
 
     // Load Catalogs (Test + Referral) 
     // Load independently so one failure (e.g. 403 on Referrals) doesn't block the other (Tests).

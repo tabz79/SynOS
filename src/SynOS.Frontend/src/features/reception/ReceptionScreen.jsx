@@ -13,7 +13,7 @@ export function ReceptionScreen() {
     const [activeQueue, setActiveQueue] = useState("pending");
     const [summary, setSummary] = useState(null);
     // Unified Drawer State + Helpers
-    const { isOpen: isIntentPanelOpen, openCreateMode, openViewMode } = useReceptionPanelUI();
+    const { isOpen: isIntentPanelOpen, openCreateMode, openViewMode, openEditMode } = useReceptionPanelUI();
 
     const [actionQueue, setActionQueue] = useState([]); // Real Data
     const [isLoadingQueue, setIsLoadingQueue] = useState(true);
@@ -28,9 +28,7 @@ export function ReceptionScreen() {
             patientName: row.patientName || row.PatientName,
             patientAgeGender: row.patientAgeGender || row.PatientAgeGender,
             testCodes: row.testCodes || row.TestCodes || [],
-            paymentMethod: row.paymentMethod || row.PaymentMethod,
-            paymentStatus: row.paymentStatus || row.PaymentStatus,
-            prepaidDoctorName: row.prepaidDoctorName || row.PrepaidDoctorName,
+            paymentDisplay: row.paymentDisplay || row.PaymentDisplay, // Phase 4 Alignment
             operationalStatus: row.operationalStatus || row.OperationalStatus
         }));
     };
@@ -113,7 +111,12 @@ export function ReceptionScreen() {
             className: "font-mono text-zinc-400 w-32",
             render: (row) => (
                 <button
-                    onClick={() => openViewMode(row.visitId)}
+                    onClick={() => {
+                        // Phase 4: Default to Edit Mode (Cockpit)
+                        // Backend DTO lacks explicit status (Draft vs Finalized). 
+                        // The Cockpit handles Read-Only state internally via Snapshot laws.
+                        openEditMode(row.visitId);
+                    }}
                     className="hover:text-synos-primary hover:underline decoration-synos-primary decoration-2 underline-offset-2 transition-all font-bold tracking-tight"
                 >
                     {row.token}
@@ -146,23 +149,13 @@ export function ReceptionScreen() {
         },
         {
             header: "Payment",
-            accessor: "paymentMethod",
+            accessor: "paymentDisplay",
             className: "text-zinc-400 w-32",
-            render: (row) => {
-                // Payment Logic: Cash | UPI | Prepaid (Dr. Name)
-                if (row.paymentStatus === 'Prepaid' || row.paymentMethod === 'PartnerAccount') {
-                    return (
-                        <div className="text-xs font-mono text-amber-500/80">
-                            Prepaid ({row.prepaidDoctorName || 'Partner'})
-                        </div>
-                    );
-                }
-                return (
-                    <div className="text-xs font-mono">
-                        {row.paymentMethod || '—'}
-                    </div>
-                );
-            }
+            render: (row) => (
+                <div className="text-xs font-mono text-zinc-300">
+                    {row.paymentDisplay || "—"}
+                </div>
+            )
         },
         {
             header: "Operational Status",

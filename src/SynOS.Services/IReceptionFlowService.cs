@@ -15,5 +15,9 @@ namespace SynOS.Services
         Task MarkVisitAsPrepaidAsync(Guid visitId, Guid actorUserId);
         Task<ReceptionCompletePaymentResponse> CompletePaymentAsync(ReceptionCompletePaymentRequest request, Guid userId);
         Task<ReceptionVisitSummaryResponse> GetVisitSummaryAsync(Guid visitId);
+        
+        // Added for Discount Wiring
+        Task ApplyDiscountAsync(Guid visitId, string discountCode, Guid actorUserId);
+        Task RemoveDiscountAsync(Guid visitId, Guid actorUserId);
     }
 }

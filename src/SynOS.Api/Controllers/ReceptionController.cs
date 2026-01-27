@@ -110,5 +110,52 @@ namespace SynOS.Api.Controllers
                 return StatusCode(500, new { code = "INTERNAL_SERVER_ERROR", message = "An internal error occurred." });
             }
         }
+        [HttpPost("visit/discount")]
+        public async Task<IActionResult> ApplyDiscount([FromBody] ReceptionApplyDiscountRequest request)
+        {
+            try
+            {
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (!Guid.TryParse(userIdClaim, out var userId)) return Unauthorized();
+
+                await _receptionFlowService.ApplyDiscountAsync(request.VisitId, request.DiscountCode, userId);
+                
+                // Return updated snapshot for UI
+                // Front-end expects void/ok currently, but updating snapshot via signalR happens anyway?
+                // ReceptionApi.applyDiscountToVisit expects void (200 OK).
+                return Ok(new { success = true });
+            }
+            catch (KeyNotFoundException ex) { return NotFound(new { message = ex.Message }); }
+            catch (InvalidOperationException ex) { return Conflict(new { message = ex.Message }); } // 409 for Rule Violation
+            catch (Exception ex) 
+            {
+                _logger.LogError(ex, "Discount Application Failed");
+                return StatusCode(500, new { message = ex.Message });
+            }
+        }
+
+        [HttpDelete("visit/discount")]
+        public async Task<IActionResult> RemoveDiscount([FromQuery] Guid visitId)
+        {
+            try
+            {
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (!Guid.TryParse(userIdClaim, out var userId)) return Unauthorized();
+
+                await _receptionFlowService.RemoveDiscountAsync(visitId, userId);
+                return Ok(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Discount Removal Failed");
+                return StatusCode(500, new { message = ex.Message });
+            }
+        }
+    }
+
+    public class ReceptionApplyDiscountRequest
+    {
+        public Guid VisitId { get; set; }
+        public string DiscountCode { get; set; }
     }
 }

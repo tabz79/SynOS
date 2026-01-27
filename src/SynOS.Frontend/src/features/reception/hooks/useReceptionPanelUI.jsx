@@ -40,6 +40,9 @@ export function ReceptionProvider({ children }) {
         openViewMode: (visitId) => {
             setDrawerState({ mode: 'view', visitId });
         },
+        openEditMode: (visitId) => {
+            setDrawerState({ mode: 'create', visitId });
+        },
 
         closePanel: () => {
             setDrawerState({ mode: 'closed', visitId: null });

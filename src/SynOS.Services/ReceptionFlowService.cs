@@ -12,6 +12,8 @@ using SynOS.Models.Enums; // Required for TubeType
 using SynOS.Services.Referral;
 using SynOS.Services.Operational; // ADDED
 using SynOS.Services.Security; // ADDED
+using SynOS.Models.Entities.Revenue; // ADDED
+
 
 namespace SynOS.Services
 {
@@ -652,5 +654,135 @@ namespace SynOS.Services
 
             return await query.FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false);
         }
+        // -------------------------
+        // Discount Wiring (Phase 6.4)
+        // -------------------------
+        
+        public async Task ApplyDiscountAsync(Guid visitId, string discountCode, Guid actorUserId)
+        {
+            if (string.IsNullOrWhiteSpace(discountCode)) throw new ArgumentException("Discount code cannot be empty");
+
+            // 1. Fetch Context (Visit + Invoice)
+            var visit = await _context.Visits
+                .Include(v => v.Invoices)
+                .FirstOrDefaultAsync(v => v.VisitId == visitId);
+
+            if (visit == null) throw new KeyNotFoundException("Visit not found");
+            
+            var invoice = visit.Invoices.OrderByDescending(i => i.CreatedAt).FirstOrDefault();
+            if (invoice == null) throw new InvalidOperationException("No active invoice found for this visit");
+            
+            if (invoice.Status == "Paid" || invoice.Status == "Cancelled") 
+                throw new InvalidOperationException("Cannot apply discount to a finalized invoice");
+
+            // 2. Fetch Discount Rule (Master)
+            var master = await _context.DiscountMasters
+                .AsNoTracking()
+                .FirstOrDefaultAsync(d => d.Code == discountCode && d.IsActive);
+                
+            if (master == null) throw new KeyNotFoundException($"Discount code '{discountCode}' is invalid or inactive");
+            
+            // 3. Calculate (Revenue Engine Delegate)
+            var today = DateTime.UtcNow.Date;
+            if (master.EffectiveFrom > today || (master.EffectiveTo.HasValue && master.EffectiveTo.Value < today))
+                throw new InvalidOperationException($"Discount code '{discountCode}' is not currently effective");
+
+            decimal discountAmount = 0;
+            if (master.Type == SynOS.Models.Enums.DiscountType.Percentage)
+            {
+                discountAmount = invoice.GrossAmount * (master.Value / 100m);
+                if (master.MaxLimit.HasValue && discountAmount > master.MaxLimit.Value)
+                {
+                    discountAmount = master.MaxLimit.Value;
+                }
+            }
+            else // Flat
+            {
+                discountAmount = master.Value;
+            }
+
+            // Cap at Gross Amount (No negative bills)
+            if (discountAmount > invoice.GrossAmount) discountAmount = invoice.GrossAmount;
+
+            // 4. Create Immutable Fact
+            var fact = new DiscountFact
+            {
+                DiscountFactId = Guid.NewGuid(),
+                InvoiceId = invoice.InvoiceId,
+                DiscountDefinitionId = master.DiscountDefinitionId,
+                // Code/Name not in Fact entity
+                Type = master.Type,
+                Value = master.Value, 
+                MaxLimit = master.MaxLimit,
+                AppliedAt = DateTime.UtcNow,
+                AppliedBy = actorUserId.ToString(), // Converted to String
+                GrossAmount = invoice.GrossAmount,
+                DiscountAmount = discountAmount,
+                NetAmountAfterDiscount = invoice.GrossAmount - discountAmount
+            };
+            
+            _context.DiscountFacts.Add(fact);
+
+            // 5. Update Invoice State
+            invoice.DiscountAmount = discountAmount;
+            invoice.NetAmount = invoice.GrossAmount - discountAmount;
+            invoice.Total = invoice.NetAmount + invoice.TaxAmount; // Re-calc total
+
+            await _context.SaveChangesAsync();
+
+            // 6. Emit Event
+            await _operationalEventWriter.WriteEventAsync(
+                BranchEventType.DISCOUNT_APPLIED, 
+                _userContext.CurrentBranchId.ToString(),
+                visit.VisitId.ToString(),
+                visit.Token,
+                $"Discount '{master.Code}' applied: -{discountAmount:F2}",
+                "User",
+                actorUserId.ToString()
+            );
+        }
+
+        public async Task RemoveDiscountAsync(Guid visitId, Guid actorUserId)
+        {
+            // 1. Fetch Context
+            var visit = await _context.Visits
+                .Include(v => v.Invoices)
+                .FirstOrDefaultAsync(v => v.VisitId == visitId);
+
+            if (visit == null) throw new KeyNotFoundException("Visit not found");
+            
+            var invoice = visit.Invoices.OrderByDescending(i => i.CreatedAt).FirstOrDefault();
+            if (invoice == null) throw new InvalidOperationException("No active invoice found");
+            
+            if (invoice.Status == "Paid" || invoice.Status == "Cancelled") 
+                throw new InvalidOperationException("Cannot modify a finalized invoice");
+
+            // 2. Logic: Reset
+            invoice.DiscountAmount = 0;
+            invoice.NetAmount = invoice.GrossAmount;
+            invoice.Total = invoice.NetAmount + invoice.TaxAmount;
+
+            // 3. Mark old facts as void? OR Create a "Removal" fact?
+            // "DiscountFact" is usually immutable application log. 
+            // We can just add a new fact with 0 amount? Or just rely on Invoice state.
+            // Prompt said "Immutable DiscountFact snapshot".
+            // Since we are REMOVING, we aren't creating a "DiscountFact".
+            // We just update the invoice. The old fact remains as history of application.
+            // UNLESS we need to mark it Void. 
+            // For now, simple state reset.
+
+            await _context.SaveChangesAsync();
+            
+             await _operationalEventWriter.WriteEventAsync(
+                BranchEventType.DISCOUNT_APPLIED, // Use same event type but different message
+                _userContext.CurrentBranchId.ToString(),
+                visit.VisitId.ToString(),
+                visit.Token,
+                "Discount removed",
+                "User",
+                actorUserId.ToString()
+            );
+        }
+
     }
 }
