@@ -13,6 +13,9 @@ namespace SynOS.Services
         /// <returns>The updated IServiceCollection.</returns>
         public static IServiceCollection AddRevenueEngine(this IServiceCollection services)
         {
+            // Register the central Revenue Engine (Authoritative financial calculator)
+            services.AddScoped<IRevenueEngine, RevenueEngine>();
+
             // Register the write-only Revenue Fact Writer.
             // This is the sole service of the Revenue Engine core.
             services.AddScoped<IRevenueFactWriter, RevenueFactWriter>();

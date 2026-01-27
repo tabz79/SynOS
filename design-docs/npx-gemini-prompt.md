@@ -1,243 +1,157 @@
 
-## 🔥 BACKEND EXECUTION PROMPT — DISCOUNT + CORRECTION SYSTEM (SynOS)
+## 🔐 Backend Prompt — Order Status Canonicalization (FINAL HARDENING)
 
-### Context (Read Carefully — This Is Ground Truth)
+**Objective:**
+Eliminate all string-based order status usage and enforce a compile-time safe, OS-grade lifecycle for Orders.
 
-You are working on **SynOS**, an OS-grade Diagnostic Lab Management System.
-
-Key non-negotiables:
-
-* Backend is the **single source of truth**
-* Frontend is a **pure renderer**
-* **Facts are never edited**
-* Corrections are **new facts**, not mutations
-* Revenue & Intelligence layers must stay mathematically correct forever
-
-We already have:
-
-* Visit
-* Invoice
-* Orders
-* DiscountMaster (admin-owned)
-* DiscountFact (applied snapshot)
-* Action Queue is working and trusted
-
-Now we are adding a **Correction Layer**.
+This is a **mandatory invariant hardening**, not a feature.
 
 ---
 
-## 🎯 Objective
+### 🔴 Problem Being Fixed
 
-Implement a **Correction System** that allows:
+`Order.Status` is currently a raw string (`"Cancelled"`, `"Active"` etc).
 
-* Post-finalization corrections
-* Test changes
-* Discount changes
-* Financial adjustments
+This violates:
 
-…**without editing existing records**.
+* Compile-time safety
+* Workflow determinism
+* Analytics integrity
+* Medical audit requirements
 
-The **Token ID remains the same**.
-The Visit is not duplicated.
-All changes are additive, auditable, and reversible via math.
+Strings must never represent state.
 
 ---
 
-## 🧠 Core Principle
+## ✅ Canonical Rule (LOCKED)
 
-> Original facts are immutable.
-> Corrections are appended and recalculated.
-
----
-
-## 1️⃣ Domain Model — REQUIRED ENTITIES
-
-### A. CorrectionFact (NEW)
-
-Create a new entity:
-
-**CorrectionFact**
-
-* CorrectionId (Guid)
-* VisitId (Guid)
-* InvoiceId (Guid)
-* CorrectionType (Enum)
-* ReferenceId (Guid?) — e.g. old OrderId or DiscountFactId
-* Payload (JSON) — what changed
-* DeltaAmount (decimal, signed)
-* CreatedBy (UserId)
-* CreatedAt (UTC)
-* Reason (string, optional)
-* IsReversal (bool, default false)
-
-**CorrectionType ENUM**
-
-* AddTest
-* RemoveTest
-* ChangeDiscount
-* PriceAdjustment
-* TaxAdjustment (future-safe)
-
-No business logic in entity.
+> **Order.Status MUST be a strongly typed enum. No string literals allowed anywhere.**
 
 ---
 
-### B. DiscountFact — CLARIFY BEHAVIOR (Do NOT delete)
+## 🛠️ Execution Plan (Step-by-step)
 
-DiscountFact remains:
+### 1. Create Enum
 
-* Snapshot of **what was applied at that time**
-* Never mutated
-* Never deleted
+Create a new enum:
 
-If discount changes → new **CorrectionFact**, not overwrite.
-
----
-
-## 2️⃣ Correction Entry Points (Backend APIs)
-
-### REQUIRED APIs
-
-#### A. Enter Correction Mode
-
-*(No DB write — state concept only)*
-
-```http
-GET /api/v1/visits/{visitId}/correction-context
-```
-
-Returns:
-
-* Current Visit snapshot
-* Invoice snapshot
-* Applied DiscountFact(s)
-* Existing CorrectionFacts
-
----
-
-#### B. Apply Correction
-
-```http
-POST /api/v1/visits/{visitId}/corrections
-```
-
-Payload (example):
-
-```json
+```csharp
+namespace SynOS.Models.Enums
 {
-  "correctionType": "ChangeDiscount",
-  "newDiscountMasterId": "guid",
-  "reason": "Wrong discount selected"
+    public enum OrderStatus
+    {
+        Active = 1,
+        Cancelled = 2,
+        Collected = 3,
+        Completed = 4
+    }
 }
 ```
 
-Rules:
-
-* Validate visit exists
-* Visit can be Finalized or PendingPayment
-* Paid visits require explicit role check (do NOT implement role logic now; just scaffold)
-* Create CorrectionFact
-* DO NOT edit Visit, Invoice, Order, DiscountFact
-
 ---
 
-## 3️⃣ Revenue Engine — CRITICAL CHANGE
+### 2. Update Order Entity
 
-### Modify Revenue Calculation Pipeline
+Modify `Order.cs`:
 
-Current:
-
-```
-Invoice = Orders - Discount + Tax
+```csharp
+public OrderStatus Status { get; set; }
 ```
 
-New:
+❌ Remove / replace any `string Status`.
 
+---
+
+### 3. Database Migration
+
+Create a migration that:
+
+* Converts `Orders.Status` from `nvarchar` → `int`
+* Maps existing values safely:
+
+  * `"Cancelled"` → `OrderStatus.Cancelled`
+  * `"Active"` → `OrderStatus.Active`
+
+Example SQL inside migration (if needed):
+
+```sql
+UPDATE Orders SET Status = 2 WHERE Status = 'Cancelled';
+UPDATE Orders SET Status = 1 WHERE Status = 'Active';
 ```
-BaseInvoice
-+ Sum(CorrectionFacts.DeltaAmount)
-= EffectiveInvoice
+
+(Then alter column type.)
+
+---
+
+### 4. Fix All Assignments
+
+Replace **every** occurrence of:
+
+```csharp
+order.Status = "Cancelled";
 ```
 
-Rules:
+with:
 
-* Original Invoice remains unchanged
-* Corrections are applied *on top*
-* Tax recalculated on effective net amount
-* Intelligence layer reads **EffectiveInvoice**, not raw Invoice
+```csharp
+order.Status = OrderStatus.Cancelled;
+```
 
----
+This includes:
 
-## 4️⃣ Discount Correction Rules (Important)
-
-* Receptionist selects from **active DiscountMaster only**
-* Discount value ALWAYS comes from DiscountMaster
-* Receptionist cannot enter numbers (except Owner special case — stub only)
-* Changing discount:
-
-  * Old DiscountFact remains
-  * New DiscountFact created
-  * CorrectionFact links old → new
-  * DeltaAmount reflects net impact difference
+* `VisitService.RemoveTestFromVisitAsync`
+* `CorrectionService`
+* Any future correction flows
 
 ---
 
-## 5️⃣ Audit & Traceability (MANDATORY)
+### 5. Fix All Queries
 
-Every correction must:
+Replace string comparisons like:
 
-* Be linked to UserId
-* Have timestamp
-* Preserve original data
-* Be readable by:
+```csharp
+o.Status != "Cancelled"
+```
 
-  * Revenue Engine
-  * Intelligence layer
-  * Audit reports
+with:
 
-No silent changes.
-
----
-
-## 6️⃣ What NOT To Do (Strict)
-
-❌ Do not edit existing Invoice rows
-❌ Do not delete DiscountFact
-❌ Do not update Order price directly
-❌ Do not recompute history in place
-❌ Do not let frontend calculate totals
+```csharp
+o.Status != OrderStatus.Cancelled
+```
 
 ---
 
-## 7️⃣ Deliverables (In Order)
+### 6. Build & Verify
 
-1. New entities + migrations:
+* `dotnet build` must pass
+* No `"Cancelled"` string literals left in services
+* Revenue engine must continue using:
 
-   * CorrectionFact
-   * Enum(s)
-
-2. Correction write API (POST)
-
-3. Correction read API (GET context)
-
-4. Revenue Engine update to include corrections
-
-5. Unit-level safeguards (not tests, just guard clauses)
+  ```csharp
+  Orders.Where(o => o.Status == OrderStatus.Active)
+  ```
 
 ---
 
-## 8️⃣ Final Check Question (You Must Answer)
+## 🚫 Explicit Prohibitions
 
-Before finishing, explicitly confirm:
+❌ Do NOT introduce new string statuses
+❌ Do NOT create conversion helpers
+❌ Do NOT tolerate mixed enum/string logic
+❌ Do NOT defer this to “later cleanup”
 
-> “Can the system explain *why* a number changed without erasing history?”
-
-If the answer is **NO**, you implemented it wrong.
-
----
-
-### END OF PROMPT
+This is **foundational**.
 
 ---
 
+## 🎯 Expected Outcome
+
+After this change:
+
+* Order lifecycle is compiler-enforced
+* Cancellation semantics are unambiguous
+* Lab + finance + analytics all agree on truth
+* Future devs **cannot** accidentally corrupt state
+
+---
 

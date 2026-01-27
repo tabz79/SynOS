@@ -207,6 +207,7 @@ builder.Services.AddOperationalServices(); // ADDED
 // builder.Services.AddScoped<ICostAttributionUsageFactWriter, CostAttributionUsageFactWriter>();
 
 builder.Services.AddScoped<IInvoiceService, InvoiceService>();
+builder.Services.AddScoped<ICorrectionService, CorrectionService>(); // ADDED
 builder.Services.AddScoped<IReceptionFlowService>(provider =>
     new ReceptionFlowService(
         provider.GetRequiredService<SynOSDbContext>(),

@@ -16,20 +16,23 @@ namespace SynOS.Models.Entities
         [ForeignKey("VisitId")]
         public Visit? Visit { get; set; }
 
-        [Column(TypeName = "decimal(12, 2)")]
-        public decimal GrossAmount { get; set; }
+        // ⚠️ FINANCIAL INVARIANT
+        // Invoice totals may ONLY be modified by IRevenueEngine
 
         [Column(TypeName = "decimal(12, 2)")]
-        public decimal DiscountAmount { get; set; }
+        public decimal GrossAmount { get; internal set; }
 
         [Column(TypeName = "decimal(12, 2)")]
-        public decimal NetAmount { get; set; }
+        public decimal DiscountAmount { get; internal set; }
 
         [Column(TypeName = "decimal(12, 2)")]
-        public decimal TaxAmount { get; set; }
+        public decimal NetAmount { get; internal set; }
 
         [Column(TypeName = "decimal(12, 2)")]
-        public decimal Total { get; set; }
+        public decimal TaxAmount { get; internal set; }
+
+        [Column(TypeName = "decimal(12, 2)")]
+        public decimal Total { get; internal set; }
 
         [Required]
         [StringLength(3)]
@@ -37,7 +40,7 @@ namespace SynOS.Models.Entities
 
         [Required]
         [StringLength(50)]
-        public string Status { get; set; } = string.Empty;
+        public string Status { get; internal set; } = string.Empty;
 
         public DateTime DueDate { get; set; }
 

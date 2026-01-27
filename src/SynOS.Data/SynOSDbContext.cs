@@ -171,6 +171,8 @@ namespace SynOS.Data
 
         // Revenue Engine DbSets
         public DbSet<RevenueFact> RevenueFacts { get; set; } = null!;
+        public DbSet<CorrectionFact> CorrectionFacts { get; set; } = null!; // ADDED: Correction System
+        public DbSet<PriceAdjustmentFact> PriceAdjustmentFacts { get; set; } = null!; // ADDED: Financial Separation
         
         // Payables DbSets
         public DbSet<PayableFact> PayableFacts { get; set; } = null!;

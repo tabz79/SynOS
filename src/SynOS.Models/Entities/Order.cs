@@ -32,7 +32,12 @@ namespace SynOS.Models.Entities
         [StringLength(50)]
         public string Status { get; set; } = string.Empty;
 
-        [Column(TypeName = "decimal(10, 2)")]
+        // ADDED: Hardening
+        public SynOS.Models.Enums.OrderCancellationReason? CancellationReason { get; set; }
+        public DateTime? CancelledAt { get; set; }
+        public Guid? CancelledByUserId { get; set; }
+
+        [Column(TypeName = "decimal(12, 2)")]
         public decimal Price { get; set; }
 
         [Column(TypeName = "decimal(10, 2)")]

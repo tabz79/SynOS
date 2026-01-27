@@ -5,7 +5,7 @@ namespace SynOS.Models.Enums
         AddTest,
         RemoveTest,
         ChangeDiscount,
-        PriceAdjustment,
+        PriceOverride, // Renamed from PriceAdjustment
         TaxAdjustment
     }
 }

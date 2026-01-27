@@ -9,6 +9,7 @@ namespace SynOS.Models.Enums
         DISCOUNT_APPLIED, // ADDED
         PAYMENT_RECEIVED,
         VISIT_FINALIZED,
+        VISIT_CORRECTED_AFTER_PAYMENT, // ADDED: Correction System
         MOVED_TO_SAMPLE_COLLECTION,
         SAMPLE_COLLECTED,
         SAMPLE_REJECTED, // ADDED

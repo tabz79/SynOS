@@ -17,8 +17,22 @@ namespace SynOS.Models.Entities.Revenue
         public Guid InvoiceId { get; set; }
 
         [Required]
-        public Guid DiscountDefinitionId { get; set; } // Links to DiscountMaster
+        public Guid DiscountDefinitionId { get; set; } // Links to DiscountMaster (Traceability)
 
+        public bool IsActive { get; set; } = true; // ADDED: Hardening
+        
+        public Guid? ReplacedDiscountFactId { get; set; } // ADDED: Explicit Supersession Trail
+
+        // Snapshot of the RULE (Immutable once applied)
+        public SynOS.Models.Enums.DiscountType Type { get; set; }
+        
+        [Column(TypeName = "decimal(18, 2)")]
+        public decimal Value { get; set; } // Percentage or Flat Amount
+
+        [Column(TypeName = "decimal(18, 2)")]
+        public decimal? MaxLimit { get; set; }
+
+        // Snapshot of the RESULT (Mutable/Recomputed by Engine)
         [Required]
         [Column(TypeName = "decimal(12, 2)")]
         public decimal GrossAmount { get; set; } // Amount before discount
