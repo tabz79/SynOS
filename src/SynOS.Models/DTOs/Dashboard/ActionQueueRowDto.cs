@@ -43,5 +43,8 @@ namespace SynOS.Models.DTOs.Dashboard
         // Grouping (Backend-owned)
         [JsonPropertyName("DateGroup")]
         public string DateGroup { get; set; } = string.Empty; // "Today", "Yesterday", "23 Jan"
+
+        [JsonPropertyName("IsFinalized")]
+        public bool IsFinalized { get; set; }
     }
 }

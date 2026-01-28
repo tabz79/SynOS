@@ -276,7 +276,7 @@ namespace SynOS.Services
             if (visit.Status == "Paid" || visit.Status == "Cancelled") 
                 throw new InvalidOperationException($"Cannot add test to visit in status '{visit.Status}'.");
 
-            if (visit.Orders.Any(o => o.TestCode.Equals(testCode, StringComparison.OrdinalIgnoreCase)))
+            if (visit.Orders.Any(o => o.TestCode.Equals(testCode, StringComparison.OrdinalIgnoreCase) && o.Status != SynOS.Models.Enums.OrderStatus.Cancelled))
                 throw new InvalidOperationException($"Test '{testCode}' is already added.");
 
             var resolvedTest = await ResolveTestForReceptionAsync(testCode, visit.Department);

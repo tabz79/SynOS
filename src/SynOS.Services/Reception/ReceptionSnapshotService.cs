@@ -196,7 +196,9 @@ namespace SynOS.Services.Reception
                     // but since we only need ID and Name for legacy, we can fetch or assume default
                     PaymentCollectionModel = "LabCollects" // Fallback for legacy DTO
                 } : null,
-                Tests = visit.Orders?.Select(o => new IntakeTestItem
+                Tests = visit.Orders?
+                    .Where(o => o.Status != SynOS.Models.Enums.OrderStatus.Cancelled) // 🔹 FIX: Exclude Cancelled Orders
+                    .Select(o => new IntakeTestItem
                 {
                     TestId = o.TestId,
                     TestCode = o.TestCode,

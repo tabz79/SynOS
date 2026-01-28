@@ -19,36 +19,7 @@ namespace SynOS.Api.Controllers.Reception
             _service = service;
         }
 
-        [HttpPost("test")]
-        public async Task<IActionResult> AddTest([FromBody] IntakeAddTestRequest request)
-        {
-            try
-            {
-                var userId = GetCurrentUserId();
-                var result = await _service.AddTestAsync(request.VisitId, request.TestCode, userId);
-                return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                // Simple error handling for prototype
-                return BadRequest(new { message = ex.Message });
-            }
-        }
 
-        [HttpDelete("test")]
-        public async Task<IActionResult> RemoveTest([FromQuery] Guid visitId, [FromQuery] string testCode)
-        {
-            try
-            {
-                var userId = GetCurrentUserId();
-                var result = await _service.RemoveTestAsync(visitId, testCode, userId);
-                return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
-        }
 
         [HttpPost("referral")]
         public async Task<IActionResult> SetReferral([FromBody] SetReferralRequestDto request)

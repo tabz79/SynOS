@@ -1,260 +1,168 @@
+# 🎯 What must be built (smallest possible change)
 
-# 🛑 FRONTEND + INTEGRATION EXECUTION PROMPT — SynOS (Reception & Billing)
+We are **NOT** redesigning SynOS.
 
-## Context (Non-Negotiable Ground Truth)
+We are adding **one missing truth signal**.
 
-SynOS is an **OS-grade Diagnostic Lab Operating System**, not a CRUD app.
+### Minimal backend contract (pick ONE, not both)
 
-Core architectural rules (LOCKED):
+**Preferred (cleaner):**
 
-* **Backend owns truth**
-* **Frontend is a renderer + intent sender**
-* **Facts are immutable**
-* **Corrections are append-only**
-* **Snapshots / Projections represent current reality**
-* **No UI inference of business logic**
-* **No silent UI patching for backend gaps**
+```ts
+VisitPhase: Draft | InProgress | Finalized
+```
 
-You must work within these constraints at all times.
+**OR (even smaller):**
 
----
+```ts
+IsFinalized: boolean
+```
 
-## Objective
+That’s it.
 
-Wire and stabilize the **Reception → Billing → Payment → Post-Payment Correction** flow in the frontend **based on real backend behavior**, while:
+No new logic.
+No new rules.
+No new calculations.
 
-1. Respecting SynOS invariants
-2. Identifying gaps where backend contracts are missing or insufficient
-3. Filling gaps **only when explicitly justified** (with audit)
-4. Never inventing UI-side logic to compensate for missing backend truth
-
-This is an **integration + discovery task**, not pure UI work.
+The backend already *knows* this truth — it’s just not exporting it.
 
 ---
 
-## IMPORTANT EXECUTION MODE
+# 🚧 Hard constraints for Antigravity (non-negotiable)
 
-You are authorized to:
+You must explicitly tell the agent **all of this**, otherwise it *will* freestyle.
 
-* Audit backend behavior against expected system truth
-* Surface mismatches and blockers explicitly
-* Propose backend contract changes **when unavoidable**
-* Implement missing backend endpoints **only when approved**
-* Stop and report when a gap violates SynOS rules
+## Antigravity MUST NOT:
 
-You are **not** authorized to:
+* ❌ Change Revenue Engine
+* ❌ Change Discount logic
+* ❌ Change Correction model
+* ❌ Introduce UI-side inference
+* ❌ Add temporary hacks
+* ❌ Add flags derived from strings
+* ❌ Rename existing concepts
+* ❌ Add “smart” UI behavior
 
-* Mock or fake backend state
-* Infer permissions
-* Locally compute totals, discounts, or eligibility
-* Invent lifecycle states without backend alignment
+## Antigravity IS allowed to:
 
----
-
-## CANONICAL SYSTEM MODEL (Use This)
-
-### Visit Lifecycle (Implicit Today, Must Be Made Explicit)
-
-A Visit progresses through **phases**, not UI screens:
-
-* `Draft` → visit started, editable, no financial commitment
-* `InProgress` → tests/discounts changing, still editable
-* `Finalized` → payment completed, billing committed
-
-**Payment is the ONLY transition to Finalized.**
-
-Token creation ≠ Finalization.
+* ✅ Add a backend projection field
+* ✅ Thread it through existing DTOs
+* ✅ Read existing invoice/visit status
+* ✅ Expose lifecycle truth explicitly
+* ✅ Update frontend to consume that flag only
 
 ---
 
-## PHASED EXECUTION PLAN (MANDATORY ORDER)
+# 🧠 The *real* rule you are enforcing
 
-### 🔹 PHASE 1 — Visit State Truth & Editability
+> **Editability must come from backend fact, not backend projection and not frontend interpretation.**
 
-**Goal:**
-Ensure UI behavior matches Visit lifecycle reality.
-
-**You must:**
-
-* Remove speculative UI labels (e.g. “cash/card”) before payment exists
-* Ensure token click:
-
-  * Reopens Draft / InProgress visits fully editable
-  * Does NOT force read-only mode prematurely
-* Align editability strictly with backend state (not UI guesses)
-
-**If backend does not expose VisitPhase:**
-
-* Stop
-* Propose the minimal backend projection needed
-* Do NOT simulate it in UI
+This keeps SynOS OS-grade.
 
 ---
 
-### 🔹 PHASE 2 — Snapshot Re-Hydration Discipline
+# 📌 EXACT PROMPT TO GIVE ANTIGRAVITY (copy–paste)
 
-**Rule (Absolute):**
-After *any* backend mutation → re-fetch snapshot.
-
-Applies to:
-
-* Add test
-* Remove / cancel test
-* Apply discount
-* Replace discount
-
-**You must NOT:**
-
-* Locally splice arrays
-* Optimistically hide cards without re-sync
-* Maintain shadow UI state
-
-This phase must eliminate:
-
-* Lingering test cards
-* Partial UI updates
-* Totals changing without structure updating
+Use this **verbatim**. Do not soften it.
 
 ---
 
-### 🔹 PHASE 3 — Discount Replace / Undo Flow
+### 🔒 EXECUTION AUTHORIZATION — STRICT MODE (SynOS)
 
-**Reality:**
-Receptionists make mistakes. Discounts must be reversible.
+You are authorized to temporarily perform **both backend + frontend work**
+to implement **Option B: Explicit Visit Finalization Truth**.
 
-**Required behavior:**
-
-* If a discount is applied:
-
-  * Render it as read-only fact
-* Provide explicit actions:
-
-  * Replace discount
-  * Remove discount
-
-**Backend expectation:**
-
-* New DiscountFact is created
-* Old DiscountFact is inactivated
-* No deletion, no mutation
-
-If backend API does not support this cleanly:
-
-* Stop
-* Report the exact missing intent endpoint
-* Do NOT hack UI toggles
+⚠️ **This is a surgical fix, NOT a redesign.**
 
 ---
 
-### 🔹 PHASE 4 — Payment Projection in Action Queue (Gap-Aware)
+## 🔍 Problem (Authoritative)
 
-**Observation:**
-Payment completion exists, but projection is missing.
+Frontend currently decides visit editability using `paymentStatus`
+from `ActionQueueRowDto`.
 
-**UI rule:**
+This is **unacceptable** because:
 
-* Do NOT invent payment badges or methods
-* Render only what backend truth provides
+* `paymentStatus` is a human-readable projection
+* It is not a lifecycle invariant
+* It can be delayed, empty, or reused later
 
-**You must:**
-
-* Identify what the Action Queue DTO is missing
-* Propose a minimal, audit-safe payment projection:
-
-  * Paid / Partial
-  * Amount
-  * Method (if backend captures it)
-
-Until backend emits this:
-
-* Show neutral “Paid”
-* No method guessing
+We require **explicit backend-owned truth**.
 
 ---
 
-### 🔹 PHASE 5 — Post-Payment Corrections (Controlled Unlock)
+## ✅ Required Change (Minimal)
 
-After `Finalized`:
+Expose ONE explicit lifecycle signal from backend:
 
-* Visit becomes read-only by default
-* **Explicit correction actions** must be available:
+### Option A (preferred)
 
-  * Change tests
-  * Change discount
-  * Change referral partner (if applicable)
+```ts
+VisitPhase: Draft | InProgress | Finalized
+```
 
-These must:
+### OR Option B (acceptable)
 
-* Trigger CorrectionFact / PriceAdjustmentFact flows
-* Never mutate original orders or facts
+```ts
+IsFinalized: boolean
+```
 
-If frontend is hard-locking everything today:
+This value must be:
 
-* Relax only via explicit intent actions
-* Never via free edit mode
+* Derived from existing backend truth (invoice/payment state)
+* Calculated in backend services
+* Included in ActionQueueRowDto (or equivalent projection)
 
----
-
-## GAP HANDLING RULES (VERY IMPORTANT)
-
-When a mismatch is found:
-
-1. **Name the gap**
-2. **Classify it**
-
-   * Missing projection
-   * Missing intent endpoint
-   * Ambiguous lifecycle state
-3. **State the impact**
-4. **Propose the smallest fix**
-5. **Wait for approval if backend change is required**
-
-Do NOT:
-
-* Quietly patch UI
-* Introduce temporary logic “just to test”
-* Proceed past a broken invariant
+⚠️ DO NOT infer this from `paymentStatus`.
 
 ---
 
-## DELIVERABLES EXPECTED
+## 🧱 HARD CONSTRAINTS (DO NOT VIOLATE)
 
-You must produce:
+You MUST NOT:
 
-1. A running UI that:
+* Modify Revenue Engine
+* Modify Discount Engine
+* Modify Correction logic
+* Change architectural layering
+* Add UI-side fallback logic
+* Add derived or guessed states
+* Introduce new lifecycle rules
 
-   * Correctly resumes unfinished visits
-   * Refreshes consistently after mutations
-   * Allows discount replace/remove
-2. A **Gap Report** documenting:
+You MAY:
 
-   * Missing VisitPhase exposure (if any)
-   * Missing payment projections
-   * Missing correction intent endpoints
-3. A list of **exact backend changes required** (if any)
-
----
-
-## DEFINITION OF DONE
-
-* Receptionist can:
-
-  * Start a visit
-  * Add/remove tests
-  * Apply/replace discount
-  * Close and resume before payment
-  * Pay and finalize
-  * Perform corrections after payment
-* UI never diverges from backend truth
-* No frontend business logic leakage
-* All gaps are explicitly identified, not hidden
+* Add a backend projection field
+* Thread it through DTOs
+* Read existing invoice/visit status
+* Update frontend to use ONLY this field
 
 ---
 
-## FINAL INSTRUCTION
+## 🧪 Success Criteria
 
-phase by phase execution needed.
-Do not skip ahead.
-Stop and report when invariants are threatened.
+1. Clicking a Token:
 
-layout your execution plan and wait for my approval.
+   * Opens Edit mode **only if** backend says not finalized
+   * Opens Read-only mode **only if** backend says finalized
+2. No usage of `paymentStatus` for editability
+3. No behavioral changes elsewhere
+4. Clear report of:
+
+   * Files touched
+   * Exact logic used to compute Finalized
+
+---
+
+## 🛑 Stop Condition
+
+If implementing this requires:
+
+* New business rules
+* Reinterpreting payment logic
+* Guessing intent
+
+→ STOP and report.
+
+---
+
+now, after reading this layout your execution plan and wait for my approval.

@@ -87,7 +87,7 @@ namespace SynOS.Services.Revenue
             }
 
             decimal netAmount = grossAmount - discountAmount;
-            decimal taxAmount = netAmount * 0.05m; // 5% Hardcoded Tax Rule
+            decimal taxAmount = 0; // netAmount * 0.05m; // DISABLED: User expects Net=Total. TaxPercent not stored in Visit entity yet.
             decimal totalAmount = netAmount + taxAmount;
 
             // MUTATE INVOICE AGGREGATE

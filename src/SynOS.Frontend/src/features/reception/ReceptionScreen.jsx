@@ -29,7 +29,8 @@ export function ReceptionScreen() {
             patientAgeGender: row.patientAgeGender || row.PatientAgeGender,
             testCodes: row.testCodes || row.TestCodes || [],
             paymentDisplay: row.paymentDisplay || row.PaymentDisplay, // Phase 4 Alignment
-            operationalStatus: row.operationalStatus || row.OperationalStatus
+            operationalStatus: row.operationalStatus || row.OperationalStatus,
+            isFinalized: row.isFinalized || row.IsFinalized // 🔹 TRUTH: Explicit Backend Flag
         }));
     };
 
@@ -112,10 +113,14 @@ export function ReceptionScreen() {
             render: (row) => (
                 <button
                     onClick={() => {
-                        // Phase 4: Default to Edit Mode (Cockpit)
-                        // Backend DTO lacks explicit status (Draft vs Finalized). 
-                        // The Cockpit handles Read-Only state internally via Snapshot laws.
-                        openEditMode(row.visitId);
+                        // 🔹 FINALIZATION TRUTH:
+                        // If Backend says it's finalized (Paid), we show Read-Only View.
+                        // Otherwise, we open the Cockpit (Edit Mode).
+                        if (row.isFinalized) {
+                            openViewMode(row.visitId); // Read Only
+                        } else {
+                            openEditMode(row.visitId); // Cockpit
+                        }
                     }}
                     className="hover:text-synos-primary hover:underline decoration-synos-primary decoration-2 underline-offset-2 transition-all font-bold tracking-tight"
                 >

@@ -151,6 +151,59 @@ namespace SynOS.Api.Controllers
                 return StatusCode(500, new { message = ex.Message });
             }
         }
+        [HttpPost("visit/test")]
+        public async Task<IActionResult> AddTest([FromBody] ReceptionAddTestRequest request)
+        {
+            try
+            {
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (!Guid.TryParse(userIdClaim, out var userId)) return Unauthorized();
+
+                var response = await _receptionFlowService.AddTestAsync(request.VisitId, request.TestCode, userId);
+                
+                // Trigger live projection
+                await _projector.ProjectPendingEventsAsync(_userContext.CurrentBranchId);
+
+                return Ok(new ApiResponse<ReceptionStartVisitResponse>(response));
+            }
+            catch (KeyNotFoundException ex) { return NotFound(new { message = ex.Message }); }
+            catch (InvalidOperationException ex) { return Conflict(new { message = ex.Message }); }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to add test {TestCode}", request.TestCode);
+                return StatusCode(500, new { message = ex.Message });
+            }
+        }
+
+        [HttpDelete("visit/test")]
+        public async Task<IActionResult> RemoveTest([FromQuery] Guid visitId, [FromQuery] string testCode)
+        {
+            try
+            {
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (!Guid.TryParse(userIdClaim, out var userId)) return Unauthorized();
+
+                var response = await _receptionFlowService.RemoveTestAsync(visitId, testCode, userId);
+                
+                // Trigger live projection
+                await _projector.ProjectPendingEventsAsync(_userContext.CurrentBranchId);
+
+                return Ok(new ApiResponse<ReceptionStartVisitResponse>(response));
+            }
+            catch (KeyNotFoundException ex) { return NotFound(new { message = ex.Message }); }
+            catch (InvalidOperationException ex) { return Conflict(new { message = ex.Message }); }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to remove test {TestCode}", testCode);
+                return StatusCode(500, new { message = ex.Message });
+            }
+        }
+    }
+
+    public class ReceptionAddTestRequest
+    {
+        public Guid VisitId { get; set; }
+        public string TestCode { get; set; }
     }
 
     public class ReceptionApplyDiscountRequest

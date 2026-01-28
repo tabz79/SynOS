@@ -85,13 +85,21 @@ namespace SynOS.Services.Operations
             var startDate = includeHistory ? today.AddDays(-7) : today;
             var nextDay = today.AddDays(1); // Always cap at tomorrow (future visits not in queue)
 
+            // DEBUG TRACING
+            Console.WriteLine($"[ActionQueue] Query: Branch={branchId}, Date={date}, Today={today}, Window=[{startDate} - {nextDay})");
+
             // Fetch Data Graph (No Tracking for Read-Only Projection)
             var visits = await _context.Visits
                 .AsNoTracking()
                 .Where(v => v.BranchId == branchId && 
-                            v.TokenDate >= startDate && 
-                            v.TokenDate < nextDay && 
-                            v.Status != "Cancelled")
+                            v.Status != "Cancelled" &&
+                            (
+                                // Rule 1: Show ALL Active (Unpaid) visits from recent window (7 days) covers clock skew/backlog
+                                (v.Status != "Paid" && v.Status != "FullPaid" && v.TokenDate >= startDate)
+                                ||
+                                // Rule 2: Show FINALIZED (Paid) visits ONLY from Today (to keep list clean)
+                                ((v.Status == "Paid" || v.Status == "FullPaid") && v.TokenDate >= today && v.TokenDate < nextDay)
+                            ))
                 .Include(v => v.Patient)
                 .Include(v => v.ReferralPartner)
                 .Include(v => v.Orders).ThenInclude(o => o.Test) // To get TestCode if denorm is missing, but Order has TestCode.
@@ -99,6 +107,8 @@ namespace SynOS.Services.Operations
                 .OrderByDescending(v => v.TokenDate) // Group by Date (Newest Day First)
                 .ThenBy(v => v.Token) // Sequential Tokens within Day
                 .ToListAsync();
+
+            Console.WriteLine($"[ActionQueue] Found {visits.Count} raw visits.");
 
             // Fetch Status-Relevant Entities in Batch (Avoid N+1)
             var visitIds = visits.Select(v => v.VisitId).ToList();
@@ -127,8 +137,14 @@ namespace SynOS.Services.Operations
             foreach (var visit in visits)
             {
                 var invoice = visit.Invoices.FirstOrDefault(); // Assuming 1 invoice per visit for V1
-                if (invoice == null) continue; // Should not happen for valid visits
+                if (invoice == null) 
+                {
+                    Console.WriteLine($"[ActionQueue] Skipping Visit {visit.Token}: No Invoice Found.");
+                    continue; 
+                }
 
+                Console.WriteLine($"[ActionQueue] Processing Visit {visit.Token}. Invoice Status: {invoice.Status}.");
+                
                 var visitSamples = samples.Where(s => s.VisitId == visit.VisitId).ToList();
                 var visitResults = results.Where(r => r.VisitId == visit.VisitId).ToList();
                 var visitReport = reports.FirstOrDefault(r => r.VisitId == visit.VisitId);
@@ -145,7 +161,9 @@ namespace SynOS.Services.Operations
                     
                     PatientAgeGender = FormatPatientAgeGender(visit.Patient),
                     
-                    TestCodes = visit.Orders.Select(o => o.TestCode).ToList(),
+                    TestCodes = visit.Orders
+                        .Where(o => o.Status != SynOS.Models.Enums.OrderStatus.Cancelled)
+                        .Select(o => o.TestCode).ToList(),
                     
                     PaymentDisplay = DerivePaymentDisplay(visit, invoice),
                     
@@ -153,7 +171,9 @@ namespace SynOS.Services.Operations
                     
                     LastUpdatedAt = CalculateLastUpdatedAt(visit, visitSamples.Select(s => s.CollectedAt).ToList(), visitResults.Select(r => r.EnteredAt).ToList(), visitReport?.SignedAt),
                     
-                    DateGroup = CalculateDateGroup(visit.TokenDate, today)
+                    DateGroup = CalculateDateGroup(visit.TokenDate, today),
+
+                    IsFinalized = (invoice.Status == "Paid" || invoice.Status == "FullPaid")
                 };
 
                 queue.Add(dto);
