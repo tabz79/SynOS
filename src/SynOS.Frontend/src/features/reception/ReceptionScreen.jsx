@@ -13,7 +13,7 @@ export function ReceptionScreen() {
     const [activeQueue, setActiveQueue] = useState("pending");
     const [summary, setSummary] = useState(null);
     // Unified Drawer State + Helpers
-    const { isOpen: isIntentPanelOpen, openCreateMode, openViewMode, openEditMode } = useReceptionPanelUI();
+    const { isOpen: isIntentPanelOpen, openCreateIntent, openResumeIntent, openCorrectionIntent } = useReceptionPanelUI();
 
     const [actionQueue, setActionQueue] = useState([]); // Real Data
     const [isLoadingQueue, setIsLoadingQueue] = useState(true);
@@ -114,12 +114,12 @@ export function ReceptionScreen() {
                 <button
                     onClick={() => {
                         // 🔹 FINALIZATION TRUTH:
-                        // If Backend says it's finalized (Paid), we show Read-Only View.
-                        // Otherwise, we open the Cockpit (Edit Mode).
+                        // If Backend says it's finalized (Paid), we show Correction Mode.
+                        // Otherwise, we open Resume Mode.
                         if (row.isFinalized) {
-                            openViewMode(row.visitId); // Read Only
+                            openCorrectionIntent(row.visitId); // EXPLICIT CORRECTION
                         } else {
-                            openEditMode(row.visitId); // Cockpit
+                            openResumeIntent(row.visitId); // EXPLICIT RESUME
                         }
                     }}
                     className="hover:text-synos-primary hover:underline decoration-synos-primary decoration-2 underline-offset-2 transition-all font-bold tracking-tight"
@@ -205,7 +205,7 @@ export function ReceptionScreen() {
                             <div className="flex items-center justify-between mb-2">
                                 <ActionQueueHeader title="Action Queues" count={actionQueue.length} />
                                 <button
-                                    onClick={openCreateMode}
+                                    onClick={openCreateIntent}
                                     className="bg-zinc-100 hover:bg-white text-zinc-900 border border-zinc-200 px-4 py-1.5 rounded-md text-xs font-bold shadow-sm transition-all flex items-center gap-2 pointer-events-auto"
                                 >
                                     <Plus className="w-3.5 h-3.5" />

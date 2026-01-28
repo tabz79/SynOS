@@ -51,7 +51,13 @@ namespace SynOS.Services.Revenue
             if (totalPaid > 0)
             {
                 var role = _userContext.CurrentRole;
-                if (role != "Admin" && role != "LabOwner") throw new UnauthorizedAccessException("Post-payment corrections require Admin or LabOwner role.");
+                // POLICY CHANGE: Receptionists allowed (Per Phase 3C Audit)
+                if (role != "Admin" && role != "LabOwner" && role != "Reception" && role != "Receptionist" && role != "User") 
+                {
+                    // Fallback log for debugging if role names mismatch
+                     _logger.LogWarning("Unauthorized Correction Attempt by Role: {Role}", role);
+                     throw new UnauthorizedAccessException("Post-payment corrections require authorized role.");
+                }
                 if (string.IsNullOrWhiteSpace(command.Reason)) throw new ArgumentException("Reason is mandatory for post-payment corrections.");
             }
 
@@ -101,11 +107,8 @@ namespace SynOS.Services.Revenue
                     break;
 
                 case CorrectionType.ChangeDiscount:
-                    if (!command.TargetEntityId.HasValue) throw new ArgumentException("New DiscountMasterId required");
+                    // Logic update: Allow null TargetEntityId to imply "Remove Discount"
                     
-                    var newMaster = await _context.DiscountMasters.FindAsync(command.TargetEntityId.Value);
-                    if (newMaster == null) throw new KeyNotFoundException("Discount Master not found");
-
                     var activeFacts = await _context.DiscountFacts
                         .Where(df => df.InvoiceId == invoice.InvoiceId && df.IsActive)
                         .ToListAsync();
@@ -115,23 +118,34 @@ namespace SynOS.Services.Revenue
 
                     foreach (var ef in activeFacts) { ef.IsActive = false; }
                     
-                    var newDiscountFact = new DiscountFact
+                    if (command.TargetEntityId.HasValue)
                     {
-                        DiscountFactId = Guid.NewGuid(),
-                        InvoiceId = invoice.InvoiceId,
-                        DiscountDefinitionId = command.TargetEntityId.Value,
-                        AppliedBy = actorUserId.ToString(),
-                        AppliedAt = DateTime.UtcNow,
-                        CreatedAt = DateTime.UtcNow,
-                        IsActive = true,
-                        ReplacedDiscountFactId = replacedFact?.DiscountFactId,
-                        Type = newMaster.Type,
-                        Value = newMaster.Value,
-                        MaxLimit = newMaster.MaxLimit,
-                        GrossAmount = 0, DiscountAmount = 0, NetAmountAfterDiscount = 0 
-                    };
-                    _context.DiscountFacts.Add(newDiscountFact);
-                    newAmount = 0; // Unknown until calc, but intention is recorded
+                        var newMaster = await _context.DiscountMasters.FindAsync(command.TargetEntityId.Value);
+                        if (newMaster == null) throw new KeyNotFoundException("Discount Master not found");
+
+                        var newDiscountFact = new DiscountFact
+                        {
+                            DiscountFactId = Guid.NewGuid(),
+                            InvoiceId = invoice.InvoiceId,
+                            DiscountDefinitionId = command.TargetEntityId.Value,
+                            AppliedBy = actorUserId.ToString(),
+                            AppliedAt = DateTime.UtcNow,
+                            CreatedAt = DateTime.UtcNow,
+                            IsActive = true,
+                            ReplacedDiscountFactId = replacedFact?.DiscountFactId,
+                            Type = newMaster.Type,
+                            Value = newMaster.Value,
+                            MaxLimit = newMaster.MaxLimit,
+                            GrossAmount = 0, DiscountAmount = 0, NetAmountAfterDiscount = 0 
+                        };
+                        _context.DiscountFacts.Add(newDiscountFact);
+                    }
+                    else
+                    {
+                        // Removal only - no new fact added
+                    }
+                    
+                    newAmount = 0; // Unknown until calc
                     break;
 
                 case CorrectionType.PriceOverride:
@@ -151,6 +165,22 @@ namespace SynOS.Services.Revenue
                     
                     previousAmount = 0;
                     newAmount = delta;
+                    break;
+
+                case CorrectionType.ChangeReferral:
+                    // Supports both PartnerId change and Free Text change
+                    var oldRef = visit.ReferralPartnerId?.ToString() ?? visit.ReferrerText ?? "None";
+                    
+                    visit.ReferralPartnerId = command.TargetEntityId;
+                    visit.ReferrerText = command.PayloadJson; // Assuming PayloadJson holds pure text for ReferrerText if applicable
+
+                    // If strictly switching to a Partner, ensure text is cleared if desired, or kept?
+                    // Logic: If TargetEntityId is set, we prioritize it.
+                    // If PayloadJson is set, we set ReferrerText.
+                    // If both, we set both.
+                    
+                    previousAmount = 0; // No direct financial impact logged here, but RevenueEngine will recalc based on Partner rates
+                    newAmount = 0;
                     break;
             }
 

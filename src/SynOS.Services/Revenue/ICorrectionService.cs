@@ -1,4 +1,5 @@
 using System;
+using System.Text.Json.Serialization; // ADDED
 using System.Threading.Tasks;
 using SynOS.Models.Enums;
 using SynOS.Models.DTOs; // ADDED
@@ -13,6 +14,7 @@ namespace SynOS.Services.Revenue
 
     public class ApplyCorrectionCommand
     {
+        [JsonConverter(typeof(JsonStringEnumConverter))]
         public CorrectionType Type { get; set; }
         public Guid? TargetEntityId { get; set; } // OrderId or DiscountMasterId
         public decimal? NewValue { get; set; } // For price adjustments

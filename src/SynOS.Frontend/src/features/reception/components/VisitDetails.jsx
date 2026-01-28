@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react'
-import { Search, X, Plus, Loader2, Lock } from 'lucide-react'
+import { Search, X, Plus, Loader2, Lock, AlertCircle } from 'lucide-react'
 import { ReceptionApi } from '@/api/reception'
 import { cn } from '@/lib/utils'
 
-export function VisitDetails({ snapshot, visitId, onVisitUpdated, isPrepaidIntent, setIsPrepaidIntent }) {
+export function VisitDetails({ snapshot, visitId, onVisitUpdated, isPrepaidIntent, setIsPrepaidIntent, isCorrectionIntent }) {
     // Local UI State for Search Interaction ONLY
     const [filter, setFilter] = useState("");
     const [catalog, setCatalog] = useState([]); // Master list for search suggestions
@@ -65,7 +65,18 @@ export function VisitDetails({ snapshot, visitId, onVisitUpdated, isPrepaidInten
 
     // COMMAND: Apply Referral (Step 5.4)
     const handleApplyReferral = async (partnerId) => {
-        if (isReadOnly || !visitId) return;
+        if ((isReadOnly && !isCorrectionIntent) || !visitId) return;
+
+        // CORRECTION INTENT
+        if (isCorrectionIntent) {
+            setCorrectionState({
+                isOpen: true,
+                type: 'ChangeReferral',
+                payload: { partnerId },
+                reason: ""
+            });
+            return;
+        }
         setIsProcessing(true);
         try {
             await ReceptionApi.applyReferralToVisit(visitId, partnerId);
@@ -80,7 +91,18 @@ export function VisitDetails({ snapshot, visitId, onVisitUpdated, isPrepaidInten
 
     // COMMAND: Remove Referral
     const handleRemoveReferral = async () => {
-        if (isReadOnly || !visitId) return;
+        if ((isReadOnly && !isCorrectionIntent) || !visitId) return;
+
+        // CORRECTION INTENT
+        if (isCorrectionIntent) {
+            setCorrectionState({
+                isOpen: true,
+                type: 'ChangeReferral',
+                payload: { partnerId: null, referrerText: null }, // Clears both
+                reason: ""
+            });
+            return;
+        }
         setIsProcessing(true);
         try {
             await ReceptionApi.removeReferralFromVisit(visitId);
@@ -101,37 +123,110 @@ export function VisitDetails({ snapshot, visitId, onVisitUpdated, isPrepaidInten
         !tests.some(existing => existing.code === (t.testCode || t.code)) // Don't suggest already added
     );
 
-    // COMMAND: Add Test
+    // State for Correction Reason Modal
+    const [correctionState, setCorrectionState] = useState({
+        isOpen: false,
+        type: null, // 'AddTest' | 'RemoveTest' | 'ChangeDiscount'
+        payload: null, // Data needed for the action
+        reason: ""
+    });
+
+    // COMMAND: Add Test (Intent Aware)
     const handleAddTest = async (test) => {
-        if (isReadOnly || !visitId) return;
+        if (!visitId) return;
+
+        // 1. CORRECTION INTENT (Paid/Finalized)
+        if (isCorrectionIntent) {
+            // Open Modal for Reason
+            setCorrectionState({
+                isOpen: true,
+                type: 'AddTest',
+                payload: test,
+                reason: ""
+            });
+            return;
+        }
+
+        // 2. STANDARD INTENT (Create/Resume)
+        if (isReadOnly) return; // Block if read-only and not correcting
+
         setIsProcessing(true);
-        setFilter(""); // Clear UI input immediately
+        setFilter("");
         try {
-            // Support both formats just in case
             const code = test.testCode || test.code;
             await ReceptionApi.addTestToVisit(visitId, code);
-            // No local mutation. Wait for snapshot.
             if (onVisitUpdated) onVisitUpdated();
         } catch (err) {
             console.error("Failed to add test", err);
-            alert("Failed to add test: " + err.message); // Simple feedback
+            alert("Failed to add test: " + err.message);
         } finally {
             setIsProcessing(false);
         }
     };
 
 
-    // COMMAND: Remove Test
-    const handleRemoveTest = async (testCode) => {
-        if (isReadOnly || !visitId) return;
+    // COMMAND: Remove Test (Intent Aware)
+    const handleRemoveTest = async (testCode, orderId) => {
+        if (!visitId) return;
+
+        // 1. CORRECTION INTENT
+        if (isCorrectionIntent) {
+            setCorrectionState({
+                isOpen: true,
+                type: 'RemoveTest',
+                payload: { testCode, orderId }, // Need OrderId for correction if possible, but backend might look it up via context? 
+                // CorrectionService RemoveTest uses TargetEntityId (OrderId). 
+                // Snapshot matches TestCode to OrderId? 
+                // We need to look up OrderID from 'test' object in the map loop.
+                reason: ""
+            });
+            return;
+        }
+
+        // 2. STANDARD INTENT
+        if (isReadOnly) return;
+
         setIsProcessing(true);
         try {
             await ReceptionApi.removeTestFromVisit(visitId, testCode);
-            // No local mutation. Wait for snapshot.
             if (onVisitUpdated) onVisitUpdated();
         } catch (err) {
             console.error("Failed to remove test", err);
             alert("Failed to remove test: " + err.message);
+        } finally {
+            setIsProcessing(false);
+        }
+    };
+
+    // EXECUTE CORRECTION (Called from Modal)
+    const confirmCorrection = async () => {
+        if (!correctionState.reason.trim()) {
+            alert("Reason is mandatory for corrections.");
+            return;
+        }
+
+        setIsProcessing(true);
+        try {
+            if (correctionState.type === 'AddTest') {
+                const code = correctionState.payload.testCode || correctionState.payload.code;
+                await ReceptionApi.applyCorrection(visitId, 'AddTest', correctionState.reason, null, code);
+            } else if (correctionState.type === 'RemoveTest') {
+                // We need OrderId. If not available, we can't strict correct. 
+                // Passed payload has { testCode, orderId }
+                if (!correctionState.payload.orderId) throw new Error("Order ID missing for correction.");
+                await ReceptionApi.applyCorrection(visitId, 'RemoveTest', correctionState.reason, correctionState.payload.orderId);
+            } else if (correctionState.type === 'ChangeReferral') {
+                // Determine Payload
+                const targetEntityId = correctionState.payload.partnerId || null;
+                const payloadJson = correctionState.payload.referrerText || null;
+                // For "Remove", both are null
+                await ReceptionApi.applyCorrection(visitId, 'ChangeReferral', correctionState.reason, targetEntityId, payloadJson);
+            }
+
+            setCorrectionState({ isOpen: false, type: null, payload: null, reason: "" });
+            if (onVisitUpdated) onVisitUpdated();
+        } catch (err) {
+            alert("Correction Failed: " + err.message);
         } finally {
             setIsProcessing(false);
         }
@@ -173,7 +268,7 @@ export function VisitDetails({ snapshot, visitId, onVisitUpdated, isPrepaidInten
                         id="chkPrepaid"
                         checked={isPrepaidIntent}
                         onChange={(e) => setIsPrepaidIntent(e.target.checked)}
-                        disabled={isReadOnly}
+                        disabled={isReadOnly && !isCorrectionIntent} // Allow in Correction
                         className="mt-0.5 accent-synos-primary cursor-pointer w-4 h-4"
                     />
                     <div className="space-y-0.5">
@@ -208,7 +303,7 @@ export function VisitDetails({ snapshot, visitId, onVisitUpdated, isPrepaidInten
                                 </span>
                             )}
 
-                            {isReadOnly ? (
+                            {isReadOnly && !isCorrectionIntent ? (
                                 <Lock className="w-3 h-3 text-zinc-600 ml-auto" />
                             ) : (
                                 <button
@@ -230,7 +325,17 @@ export function VisitDetails({ snapshot, visitId, onVisitUpdated, isPrepaidInten
                             allowFreeText={!isPrepaidIntent} // Constraint based on Checkbox
                             onApplyPartner={handleApplyReferral}
                             onUpdateText={async (text) => {
-                                if (!visitId || isReadOnly) return;
+                                if (!visitId || (isReadOnly && !isCorrectionIntent)) return;
+
+                                if (isCorrectionIntent) {
+                                    setCorrectionState({
+                                        isOpen: true,
+                                        type: 'ChangeReferral',
+                                        payload: { referrerText: text, partnerId: null },
+                                        reason: ""
+                                    });
+                                    return;
+                                }
                                 if (isPrepaidIntent) {
                                     // Should be blocked by UI component, but defensive check
                                     console.warn("Free text not allowed in prepaid mode");
@@ -312,9 +417,13 @@ export function VisitDetails({ snapshot, visitId, onVisitUpdated, isPrepaidInten
                             </div>
                             <div className="flex items-center gap-4">
                                 <div className="text-sm font-mono text-synos-emerald font-medium">₹{test.basePrice || test.price}</div>
-                                {!isReadOnly && (
+                                {/* Allow Remove if NOT ReadOnly OR if Correction Intent */}
+                                {(!isReadOnly || isCorrectionIntent) && (
                                     <button
-                                        onClick={() => handleRemoveTest(test.testCode || test.code)}
+                                        onClick={() => {
+                                            console.log("DEBUG TEST OBJ:", test); // Debugging
+                                            handleRemoveTest(test.testCode || test.code, test.orderId || test.OrderId || test.TestId || test.testId); // Fallback to TestId? No, need OrderId.
+                                        }}
                                         disabled={isProcessing}
                                         className="text-zinc-500 hover:text-red-400 p-1 hover:bg-red-400/10 rounded transition-colors"
                                     >
@@ -326,6 +435,52 @@ export function VisitDetails({ snapshot, visitId, onVisitUpdated, isPrepaidInten
                     ))}
                 </div>
             </div >
+
+            {/* CORRECTION REASON MODAL */}
+            {correctionState.isOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
+                    <div className="bg-zinc-900 border border-synos-border w-96 rounded-xl shadow-2xl p-6 space-y-4 animate-in zoom-in-95 duration-200">
+                        <div className="space-y-1">
+                            <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                                <AlertCircle className="w-5 h-5 text-amber-500" />
+                                Confirm Correction
+                            </h3>
+                            <p className="text-xs text-zinc-400">
+                                This action will be audited. Please provide a mandatory reason.
+                            </p>
+                        </div>
+
+                        <div className="space-y-2">
+                            <div className="text-xs font-mono text-zinc-500 bg-black/50 p-2 rounded border border-zinc-800">
+                                {correctionState.type}: {correctionState.payload?.testCode || correctionState.payload?.code || correctionState.payload?.testName}
+                            </div>
+                            <textarea
+                                value={correctionState.reason}
+                                onChange={(e) => setCorrectionState(prev => ({ ...prev, reason: e.target.value }))}
+                                placeholder="Reason for this change (Required)..."
+                                className="w-full bg-black border border-zinc-700 rounded-lg p-3 text-sm text-white focus:border-amber-500 outline-none min-h-[80px]"
+                                autoFocus
+                            />
+                        </div>
+
+                        <div className="flex items-center gap-2 justify-end">
+                            <button
+                                onClick={() => setCorrectionState({ ...correctionState, isOpen: false })}
+                                className="px-4 py-2 rounded-lg text-sm font-bold text-zinc-400 hover:text-white hover:bg-zinc-800"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={confirmCorrection}
+                                disabled={!correctionState.reason.trim() || isProcessing}
+                                className="px-4 py-2 rounded-lg text-sm font-bold bg-amber-600 hover:bg-amber-500 text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                {isProcessing ? <Loader2 className="w-4 h-4 animate-spin" /> : "Confirm Correction"}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* SECTION 4: FINAL LOCK (Only for Prepaid) - REMOVED (Moved to Footer) */}
 

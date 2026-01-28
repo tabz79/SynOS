@@ -51,6 +51,7 @@ namespace SynOS.Models.DTOs.Reception
 
     public class IntakeTestItem
     {
+        public Guid OrderId { get; set; } // Key for Adjustments
         public Guid TestId { get; set; }
         public string TestCode { get; set; } = string.Empty;
         public string TestName { get; set; } = string.Empty;
@@ -66,6 +67,7 @@ namespace SynOS.Models.DTOs.Reception
         public decimal NetAmount { get; set; } // Gross - Discount
         public decimal TaxAmount { get; set; }
         public decimal TotalAmount { get; set; } // Net + Tax
+        public decimal TotalPaid { get; set; } // For Settlement Calculation
         
         public AppliedDiscountInfo? AppliedDiscount { get; set; }
         public IntakeReferralState? Referral { get; set; }

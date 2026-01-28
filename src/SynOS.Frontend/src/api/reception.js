@@ -394,5 +394,37 @@ export const ReceptionApi = {
             }
             throw new Error(errorMessage);
         }
+    },
+
+    /**
+     * Applies a correction to a finalized visit.
+     * @param {string} visitId
+     * @param {string} type - 'AddTest' | 'RemoveTest' | 'ChangeDiscount' | 'PriceOverride'
+     * @param {string} reason - Mandatory reason
+     * @param {string} targetEntityId - Optional ID (e.g. OrderId, DiscountId)
+     * @param {string} payloadJson - Optional payload (e.g. TestCode)
+     * @returns {Promise<void>}
+     */
+    applyCorrection: async (visitId, type, reason, targetEntityId = null, payloadJson = null) => {
+        const response = await fetch(`/api/v1/visits/${visitId}/corrections`, {
+            method: 'POST',
+            headers: ReceptionApi.getHeaders(),
+            body: JSON.stringify({
+                Type: type,
+                Reason: reason,
+                TargetEntityId: targetEntityId,
+                PayloadJson: payloadJson
+            })
+        });
+
+        if (!response.ok) {
+            let errorMsg = "Correction failed";
+            try {
+                const err = await response.text();
+                // Try parsing if json
+                try { errorMsg = JSON.parse(err).message || err; } catch { errorMsg = err; }
+            } catch (e) { }
+            throw new Error(errorMsg);
+        }
     }
 };

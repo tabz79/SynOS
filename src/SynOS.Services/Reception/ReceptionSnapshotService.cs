@@ -200,6 +200,7 @@ namespace SynOS.Services.Reception
                     .Where(o => o.Status != SynOS.Models.Enums.OrderStatus.Cancelled) // 🔹 FIX: Exclude Cancelled Orders
                     .Select(o => new IntakeTestItem
                 {
+                    OrderId = o.OrderId,
                     TestId = o.TestId,
                     TestCode = o.TestCode,
                     TestName = o.Test?.TestName ?? o.TestCode, // Safe navigation
@@ -225,6 +226,7 @@ namespace SynOS.Services.Reception
                     
                     PaymentStatus = invoice.Status, // "PendingPayment" | "Paid"
                     PaymentMethod = invoice.Payments?.FirstOrDefault()?.Method, // Safe navigation
+                    TotalPaid = invoice.Payments?.Sum(p => p.Amount) ?? 0m,
                     
                     IsEditable = visit.Status != "Paid" && visit.Status != "Cancelled",
                     IsLocked = visit.Status == "Paid"

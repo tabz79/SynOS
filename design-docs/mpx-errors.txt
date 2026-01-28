@@ -1,251 +1,141 @@
-backend terminal logs:
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence> dotnet run --project src\SynOS.Api\SynOS.Api.csproj --urls "http://127.0.0.1:59999"
-
-[13:54:21 WRN] No store type was specified for the decimal property 'MaxLimit' on entity type 'DiscountMaster'. This will cause values to be silently truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.
-[13:54:21 WRN] No store type was specified for the decimal property 'MaxLimit' on entity type 'DiscountMaster'. This will cause values to be silently truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.
-[13:54:22 WRN] No store type was specified for the decimal property 'Amount' on entity type 'PayrollAdjustment'. This will cause values to be silently truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.
-[13:54:22 WRN] No store type was specified for the decimal property 'Amount' on entity type 'PayrollAdjustment'. This will cause values to be silently truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.
-[13:54:22 WRN] No store type was specified for the decimal property 'Amount' on entity type 'PayrollFact'. This will cause values to be silently truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.
-[13:54:22 WRN] No store type was specified for the decimal property 'Amount' on entity type 'PayrollFact'. This will cause values to be silently truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.
-[13:54:28 INF] Notification Worker Service running.
-[13:54:28 INF] Notification Worker Service running.
-[13:54:28 INF] ExpiredLockCleanupService is starting.
-[13:54:28 INF] ExpiredLockCleanupService is starting.
-[13:54:28 INF] Analyzer TCP Listener Service starting...
-[13:54:28 INF] Analyzer TCP Listener Service starting...
-[13:54:28 WRN] No analyzer TCP listeners configured in appsettings.json.
-[13:54:28 WRN] No analyzer TCP listeners configured in appsettings.json.
-[13:55:18 WRN] Failed to determine the https port for redirect.
-[13:55:18 WRN] Failed to determine the https port for redirect.
-[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=28-01-2026 13:55:18, Today=28-01-2026 00:00:00, Window=[28-01-2026 00:00:00 - 29-01-2026 00:00:00)
-[13:55:18 WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
-[13:55:18 WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
-[ActionQueue] Found 3 raw visits.
-[ActionQueue] Processing Visit DRAFT-13D22525. Invoice Status: PendingPayment.
-[ActionQueue] Processing Visit DRAFT-AC0E9DF3. Invoice Status: PendingPayment.
-[ActionQueue] Processing Visit DRAFT-F024C365. Invoice Status: PartialPayment.
-[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=28-01-2026 13:56:18, Today=28-01-2026 00:00:00, Window=[28-01-2026 00:00:00 - 29-01-2026 00:00:00)
-[ActionQueue] Found 3 raw visits.
-[ActionQueue] Processing Visit DRAFT-13D22525. Invoice Status: PendingPayment.
-[ActionQueue] Processing Visit DRAFT-AC0E9DF3. Invoice Status: PendingPayment.
-[ActionQueue] Processing Visit DRAFT-F024C365. Invoice Status: PartialPayment.
-[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=28-01-2026 13:56:37, Today=28-01-2026 00:00:00, Window=[28-01-2026 00:00:00 - 29-01-2026 00:00:00)
-[ActionQueue] Found 3 raw visits.
-[ActionQueue] Processing Visit DRAFT-13D22525. Invoice Status: PendingPayment.
-[ActionQueue] Processing Visit DRAFT-AC0E9DF3. Invoice Status: PendingPayment.
-[ActionQueue] Processing Visit DRAFT-F024C365. Invoice Status: PartialPayment.
-[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=28-01-2026 13:56:42, Today=28-01-2026 00:00:00, Window=[28-01-2026 00:00:00 - 29-01-2026 00:00:00)
-[ActionQueue] Found 3 raw visits.
-[ActionQueue] Processing Visit DRAFT-13D22525. Invoice Status: PendingPayment.
-[ActionQueue] Processing Visit DRAFT-AC0E9DF3. Invoice Status: PendingPayment.
-[ActionQueue] Processing Visit DRAFT-F024C365. Invoice Status: PartialPayment.
-[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=28-01-2026 13:56:43, Today=28-01-2026 00:00:00, Window=[28-01-2026 00:00:00 - 29-01-2026 00:00:00)
-[ActionQueue] Found 3 raw visits.
-[ActionQueue] Processing Visit DRAFT-13D22525. Invoice Status: PendingPayment.
-[ActionQueue] Processing Visit DRAFT-AC0E9DF3. Invoice Status: PendingPayment.
-[ActionQueue] Processing Visit DRAFT-F024C365. Invoice Status: PartialPayment.
-[13:57:04 WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
-[13:57:04 WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
-[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=28-01-2026 13:57:12, Today=28-01-2026 00:00:00, Window=[28-01-2026 00:00:00 - 29-01-2026 00:00:00)
-[ActionQueue] Found 3 raw visits.
-[ActionQueue] Processing Visit DRAFT-13D22525. Invoice Status: PendingPayment.
-[ActionQueue] Processing Visit DRAFT-AC0E9DF3. Invoice Status: PendingPayment.
-[ActionQueue] Processing Visit DRAFT-F024C365. Invoice Status: PartialPayment.
-[13:57:20 WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
-[13:57:20 WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
-[13:57:20 WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
-[13:57:20 WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
-[13:57:20 WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
-[13:57:20 WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
-[13:57:20 FTL] EVENT_WRITE for VisitId e0c44f73-adc8-4816-8af4-c9230c95e5c0, Context 72f3c934-a5c6-46ca-902f-d5861b1a45b4:0
-[13:57:20 FTL] EVENT_WRITE for VisitId e0c44f73-adc8-4816-8af4-c9230c95e5c0, Context 72f3c934-a5c6-46ca-902f-d5861b1a45b4:0
-[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=28-01-2026 13:57:42, Today=28-01-2026 00:00:00, Window=[28-01-2026 00:00:00 - 29-01-2026 00:00:00)
-[ActionQueue] Found 3 raw visits.
-[ActionQueue] Processing Visit DRAFT-13D22525. Invoice Status: PendingPayment.
-[ActionQueue] Processing Visit DRAFT-AC0E9DF3. Invoice Status: PendingPayment.
-[ActionQueue] Processing Visit DRAFT-F024C365. Invoice Status: PartialPayment.
-[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=28-01-2026 13:57:47, Today=28-01-2026 00:00:00, Window=[28-01-2026 00:00:00 - 29-01-2026 00:00:00)
-[ActionQueue] Found 3 raw visits.
-[ActionQueue] Processing Visit DRAFT-13D22525. Invoice Status: PendingPayment.
-[ActionQueue] Processing Visit DRAFT-AC0E9DF3. Invoice Status: PendingPayment.
-[ActionQueue] Processing Visit DRAFT-F024C365. Invoice Status: PartialPayment.
-[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=28-01-2026 13:57:48, Today=28-01-2026 00:00:00, Window=[28-01-2026 00:00:00 - 29-01-2026 00:00:00)
-[ActionQueue] Found 3 raw visits.
-[ActionQueue] Processing Visit DRAFT-13D22525. Invoice Status: PendingPayment.
-[ActionQueue] Processing Visit DRAFT-AC0E9DF3. Invoice Status: PendingPayment.
-[ActionQueue] Processing Visit DRAFT-F024C365. Invoice Status: PartialPayment.
-[13:58:07 FTL] EVENT_WRITE for VisitId 8697d451-d078-4734-89b0-ff82d8b8f499, Context 1e46723e-a234-4c33-8242-5926a529b0a3:0
-[13:58:07 FTL] EVENT_WRITE for VisitId 8697d451-d078-4734-89b0-ff82d8b8f499, Context 1e46723e-a234-4c33-8242-5926a529b0a3:0
-[13:58:07 FTL] EVENT_WRITE for VisitId 8697d451-d078-4734-89b0-ff82d8b8f499, Context 1e46723e-a234-4c33-8242-5926a529b0a3:0
-[13:58:07 FTL] EVENT_WRITE for VisitId 8697d451-d078-4734-89b0-ff82d8b8f499, Context 1e46723e-a234-4c33-8242-5926a529b0a3:0
-[13:58:07 WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
-[13:58:07 WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
-[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=28-01-2026 13:58:17, Today=28-01-2026 00:00:00, Window=[28-01-2026 00:00:00 - 29-01-2026 00:00:00)
-[ActionQueue] Found 4 raw visits.
-[ActionQueue] Processing Visit DRAFT-13D22525. Invoice Status: PendingPayment.
-[ActionQueue] Processing Visit DRAFT-AC0E9DF3. Invoice Status: PendingPayment.
-[ActionQueue] Processing Visit DRAFT-E138A4C9. Invoice Status: PendingPayment.
-[ActionQueue] Processing Visit DRAFT-F024C365. Invoice Status: PartialPayment.
-[13:58:19 FTL] EVENT_WRITE for VisitId 8697d451-d078-4734-89b0-ff82d8b8f499, Context 4eb6deed-ee43-44e6-904a-dba200e0c11f:0
-[13:58:19 FTL] EVENT_WRITE for VisitId 8697d451-d078-4734-89b0-ff82d8b8f499, Context 4eb6deed-ee43-44e6-904a-dba200e0c11f:0
-[13:58:22 FTL] EVENT_WRITE for VisitId 8697d451-d078-4734-89b0-ff82d8b8f499, Context 37e88262-aceb-4416-9e40-f1c6be790847:0
-[13:58:22 FTL] EVENT_WRITE for VisitId 8697d451-d078-4734-89b0-ff82d8b8f499, Context 37e88262-aceb-4416-9e40-f1c6be790847:0
-[13:58:32 FTL] EVENT_WRITE for VisitId 8697d451-d078-4734-89b0-ff82d8b8f499, Context 1144ec3c-f9fc-497d-83bb-aa05050b0162:0
-[13:58:32 FTL] EVENT_WRITE for VisitId 8697d451-d078-4734-89b0-ff82d8b8f499, Context 1144ec3c-f9fc-497d-83bb-aa05050b0162:0
-[13:58:36 FTL] EVENT_WRITE for VisitId 8697d451-d078-4734-89b0-ff82d8b8f499, Context 23521113-1f0a-496f-bb7d-9402be3448d5:0
-[13:58:36 FTL] EVENT_WRITE for VisitId 8697d451-d078-4734-89b0-ff82d8b8f499, Context 23521113-1f0a-496f-bb7d-9402be3448d5:0
-[13:58:37 FTL] EVENT_WRITE for VisitId 8697d451-d078-4734-89b0-ff82d8b8f499, Context b7471833-4da6-449d-b559-6daaed7ff85e:0
-[13:58:37 FTL] EVENT_WRITE for VisitId 8697d451-d078-4734-89b0-ff82d8b8f499, Context b7471833-4da6-449d-b559-6daaed7ff85e:0
-[13:58:43 FTL] EVENT_WRITE for VisitId 8697d451-d078-4734-89b0-ff82d8b8f499, Context 43e0903d-8e26-4464-92c3-bc08cc4aba80:0
-[13:58:43 FTL] EVENT_WRITE for VisitId 8697d451-d078-4734-89b0-ff82d8b8f499, Context 43e0903d-8e26-4464-92c3-bc08cc4aba80:0
-[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=28-01-2026 13:58:47, Today=28-01-2026 00:00:00, Window=[28-01-2026 00:00:00 - 29-01-2026 00:00:00)
-[ActionQueue] Found 4 raw visits.
-[ActionQueue] Processing Visit DRAFT-13D22525. Invoice Status: PendingPayment.
-[ActionQueue] Processing Visit DRAFT-AC0E9DF3. Invoice Status: PendingPayment.
-[ActionQueue] Processing Visit DRAFT-E138A4C9. Invoice Status: PendingPayment.
-[ActionQueue] Processing Visit DRAFT-F024C365. Invoice Status: PartialPayment.
-[13:58:56 FTL] EVENT_WRITE for VisitId 8697d451-d078-4734-89b0-ff82d8b8f499, Context 3486bbb6-ebd4-48de-a1ba-01baaff2c58c:0
-[13:58:56 FTL] EVENT_WRITE for VisitId 8697d451-d078-4734-89b0-ff82d8b8f499, Context 3486bbb6-ebd4-48de-a1ba-01baaff2c58c:0
-[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=28-01-2026 13:59:17, Today=28-01-2026 00:00:00, Window=[28-01-2026 00:00:00 - 29-01-2026 00:00:00)
-[ActionQueue] Found 4 raw visits.
-[ActionQueue] Processing Visit DRAFT-13D22525. Invoice Status: PendingPayment.
-[ActionQueue] Processing Visit DRAFT-AC0E9DF3. Invoice Status: PendingPayment.
-[ActionQueue] Processing Visit DRAFT-E138A4C9. Invoice Status: PendingPayment.
-[ActionQueue] Processing Visit DRAFT-F024C365. Invoice Status: PartialPayment.
-[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=28-01-2026 13:59:47, Today=28-01-2026 00:00:00, Window=[28-01-2026 00:00:00 - 29-01-2026 00:00:00)
-[ActionQueue] Found 4 raw visits.
-[ActionQueue] Processing Visit DRAFT-13D22525. Invoice Status: PendingPayment.
-[ActionQueue] Processing Visit DRAFT-AC0E9DF3. Invoice Status: PendingPayment.
-[ActionQueue] Processing Visit DRAFT-E138A4C9. Invoice Status: PendingPayment.
-[ActionQueue] Processing Visit DRAFT-F024C365. Invoice Status: PartialPayment.
-[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=28-01-2026 14:00:17, Today=28-01-2026 00:00:00, Window=[28-01-2026 00:00:00 - 29-01-2026 00:00:00)
-[ActionQueue] Found 4 raw visits.
-[ActionQueue] Processing Visit DRAFT-13D22525. Invoice Status: PendingPayment.
-[ActionQueue] Processing Visit DRAFT-AC0E9DF3. Invoice Status: PendingPayment.
-[ActionQueue] Processing Visit DRAFT-E138A4C9. Invoice Status: PendingPayment.
-[ActionQueue] Processing Visit DRAFT-F024C365. Invoice Status: PartialPayment.
-[14:00:21 WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
-[14:00:21 WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
-[14:00:21 WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
-[14:00:21 WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
-[14:00:21 FTL] EVENT_WRITE for VisitId 8697d451-d078-4734-89b0-ff82d8b8f499, Context 3e08bb84-b9d8-4daf-99b8-46fc312c9eef:0
-[14:00:21 FTL] EVENT_WRITE for VisitId 8697d451-d078-4734-89b0-ff82d8b8f499, Context 3e08bb84-b9d8-4daf-99b8-46fc312c9eef:0
-[14:00:22 INF] Auto-created Sample 435688df-dcc3-4f6b-b6b5-45da0aa6d80e for Order b16d0a06-619b-4984-acf9-27723fd9768e
-[14:00:22 INF] Auto-created Sample 435688df-dcc3-4f6b-b6b5-45da0aa6d80e for Order b16d0a06-619b-4984-acf9-27723fd9768e
-[14:00:22 INF] Auto-created Sample 5345ad2c-08b1-419e-a2a8-bd55869a2644 for Order 9aa5452e-ce8d-4dd5-855e-cfd0ab95e934
-[14:00:22 INF] Auto-created Sample 5345ad2c-08b1-419e-a2a8-bd55869a2644 for Order 9aa5452e-ce8d-4dd5-855e-cfd0ab95e934
-[14:00:22 INF] Auto-created Sample cfb77792-1071-4405-a77b-46a8bf18c675 for Order 2fe744b1-491e-406c-b407-dba43778ab95
-[14:00:22 INF] Auto-created Sample cfb77792-1071-4405-a77b-46a8bf18c675 for Order 2fe744b1-491e-406c-b407-dba43778ab95
-[14:00:22 FTL] EVENT_WRITE for VisitId 8697d451-d078-4734-89b0-ff82d8b8f499, Context 3e08bb84-b9d8-4daf-99b8-46fc312c9eef:0
-[14:00:22 FTL] EVENT_WRITE for VisitId 8697d451-d078-4734-89b0-ff82d8b8f499, Context 3e08bb84-b9d8-4daf-99b8-46fc312c9eef:0
-[14:00:22 WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
-[14:00:22 WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
-[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=28-01-2026 14:00:47, Today=28-01-2026 00:00:00, Window=[28-01-2026 00:00:00 - 29-01-2026 00:00:00)
-[ActionQueue] Found 4 raw visits.
-[ActionQueue] Processing Visit DRAFT-13D22525. Invoice Status: PendingPayment.
-[ActionQueue] Processing Visit DRAFT-AC0E9DF3. Invoice Status: PendingPayment.
-[ActionQueue] Processing Visit DRAFT-E138A4C9. Invoice Status: Paid.
-[ActionQueue] Processing Visit DRAFT-F024C365. Invoice Status: PartialPayment.
-[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=28-01-2026 14:01:17, Today=28-01-2026 00:00:00, Window=[28-01-2026 00:00:00 - 29-01-2026 00:00:00)
-[ActionQueue] Found 4 raw visits.
-[ActionQueue] Processing Visit DRAFT-13D22525. Invoice Status: PendingPayment.
-[ActionQueue] Processing Visit DRAFT-AC0E9DF3. Invoice Status: PendingPayment.
-[ActionQueue] Processing Visit DRAFT-E138A4C9. Invoice Status: Paid.
-[ActionQueue] Processing Visit DRAFT-F024C365. Invoice Status: PartialPayment.
-[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=28-01-2026 14:01:47, Today=28-01-2026 00:00:00, Window=[28-01-2026 00:00:00 - 29-01-2026 00:00:00)
-[ActionQueue] Found 4 raw visits.
-[ActionQueue] Processing Visit DRAFT-13D22525. Invoice Status: PendingPayment.
-[ActionQueue] Processing Visit DRAFT-AC0E9DF3. Invoice Status: PendingPayment.
-[ActionQueue] Processing Visit DRAFT-E138A4C9. Invoice Status: Paid.
-[ActionQueue] Processing Visit DRAFT-F024C365. Invoice Status: PartialPayment.
-[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=28-01-2026 14:02:17, Today=28-01-2026 00:00:00, Window=[28-01-2026 00:00:00 - 29-01-2026 00:00:00)
-[ActionQueue] Found 4 raw visits.
-[ActionQueue] Processing Visit DRAFT-13D22525. Invoice Status: PendingPayment.
-[ActionQueue] Processing Visit DRAFT-AC0E9DF3. Invoice Status: PendingPayment.
-[ActionQueue] Processing Visit DRAFT-E138A4C9. Invoice Status: Paid.
-[ActionQueue] Processing Visit DRAFT-F024C365. Invoice Status: PartialPayment.
-[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=28-01-2026 14:02:47, Today=28-01-2026 00:00:00, Window=[28-01-2026 00:00:00 - 29-01-2026 00:00:00)
-[ActionQueue] Found 4 raw visits.
-[ActionQueue] Processing Visit DRAFT-13D22525. Invoice Status: PendingPayment.
-[ActionQueue] Processing Visit DRAFT-AC0E9DF3. Invoice Status: PendingPayment.
-[ActionQueue] Processing Visit DRAFT-E138A4C9. Invoice Status: Paid.
-[ActionQueue] Processing Visit DRAFT-F024C365. Invoice Status: PartialPayment.
-[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=28-01-2026 14:03:17, Today=28-01-2026 00:00:00, Window=[28-01-2026 00:00:00 - 29-01-2026 00:00:00)
-[ActionQueue] Found 4 raw visits.
-[ActionQueue] Processing Visit DRAFT-13D22525. Invoice Status: PendingPayment.
-[ActionQueue] Processing Visit DRAFT-AC0E9DF3. Invoice Status: PendingPayment.
-[ActionQueue] Processing Visit DRAFT-E138A4C9. Invoice Status: Paid.
-[ActionQueue] Processing Visit DRAFT-F024C365. Invoice Status: PartialPayment.
-[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=28-01-2026 14:03:47, Today=28-01-2026 00:00:00, Window=[28-01-2026 00:00:00 - 29-01-2026 00:00:00)
-[ActionQueue] Found 4 raw visits.
-[ActionQueue] Processing Visit DRAFT-13D22525. Invoice Status: PendingPayment.
-[ActionQueue] Processing Visit DRAFT-AC0E9DF3. Invoice Status: PendingPayment.
-[ActionQueue] Processing Visit DRAFT-E138A4C9. Invoice Status: Paid.
-[ActionQueue] Processing Visit DRAFT-F024C365. Invoice Status: PartialPayment.
-[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=28-01-2026 14:04:17, Today=28-01-2026 00:00:00, Window=[28-01-2026 00:00:00 - 29-01-2026 00:00:00)
-[ActionQueue] Found 4 raw visits.
-[ActionQueue] Processing Visit DRAFT-13D22525. Invoice Status: PendingPayment.
-[ActionQueue] Processing Visit DRAFT-AC0E9DF3. Invoice Status: PendingPayment.
-[ActionQueue] Processing Visit DRAFT-E138A4C9. Invoice Status: Paid.
-[ActionQueue] Processing Visit DRAFT-F024C365. Invoice Status: PartialPayment.
-[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=28-01-2026 14:04:47, Today=28-01-2026 00:00:00, Window=[28-01-2026 00:00:00 - 29-01-2026 00:00:00)
-[ActionQueue] Found 4 raw visits.
-[ActionQueue] Processing Visit DRAFT-13D22525. Invoice Status: PendingPayment.
-[ActionQueue] Processing Visit DRAFT-AC0E9DF3. Invoice Status: PendingPayment.
-[ActionQueue] Processing Visit DRAFT-E138A4C9. Invoice Status: Paid.
-[ActionQueue] Processing Visit DRAFT-F024C365. Invoice Status: PartialPayment.
 console logs:
 react-dom_client.js?v=4bd38141:20103 Download the React DevTools for a better development experience: https://react.dev/link/react-devtools
 signalr.js:16 SignalR: Subscriber added (Total: 1)
-@microsoft_signalr.js?v=4bd38141:301 [2026-01-28T08:27:47.849Z] Information: Normalizing '/dashboardHub' to 'http://localhost:5173/dashboardHub'.
+signalr.js:49 [2026-01-28T13:30:54.914Z] Information: Normalizing '/dashboardHub' to 'http://localhost:5173/dashboardHub'.
 signalr.js:53 SignalR: Starting connection...
 signalr.js:102 SignalR: Subscriber removed (Total: 0)
 signalr.js:16 SignalR: Subscriber added (Total: 1)
 signalr.js:22 SignalR: Aborted scheduled disconnect
-@microsoft_signalr.js?v=4bd38141:301 [2026-01-28T08:27:47.919Z] Information: WebSocket connected to ws://localhost:5173/dashboardHub?access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiJhN2ZjZjkzYy04OTg4LTRhZDgtYmU4My1iOTIyZGExNTVmNDIiLCJlbWFpbCI6InJlY2VwdGlvbkBsYWIuY29tIiwidW5pcXVlX25hbWUiOiJSZWNlcHRpb24gVXNlciIsImJyYW5jaF9pZCI6ImEwMDAwMDAwLTAwMDAtMDAwMC0wMDAwLTAwMDAwMDAwMDAwMSIsInJvbGUiOiJSZWNlcHRpb25pc3QiLCJuYmYiOjE3Njk1MTkyNTgsImV4cCI6MTc2OTYwNTY1OCwiaWF0IjoxNzY5NTE5MjU4LCJpc3MiOiJTeW5PUy5BcGkiLCJhdWQiOiJTeW5PUy5BcHAifQ.M1KHGqo7TTGGuAPbwCsGgeRlHaC0ICZgC8cNfm7vNH4.
-@microsoft_signalr.js?v=4bd38141:301 [2026-01-28T08:27:47.920Z] Information: Using HubProtocol 'json'.
+@microsoft_signalr.js?v=4bd38141:301 [2026-01-28T13:30:55.311Z] Information: WebSocket connected to ws://localhost:5173/dashboardHub?access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiJhN2ZjZjkzYy04OTg4LTRhZDgtYmU4My1iOTIyZGExNTVmNDIiLCJlbWFpbCI6InJlY2VwdGlvbkBsYWIuY29tIiwidW5pcXVlX25hbWUiOiJSZWNlcHRpb24gVXNlciIsImJyYW5jaF9pZCI6ImEwMDAwMDAwLTAwMDAtMDAwMC0wMDAwLTAwMDAwMDAwMDAwMSIsInJvbGUiOiJSZWNlcHRpb25pc3QiLCJuYmYiOjE3Njk2MDYxMjksImV4cCI6MTc2OTY5MjUyOSwiaWF0IjoxNzY5NjA2MTI5LCJpc3MiOiJTeW5PUy5BcGkiLCJhdWQiOiJTeW5PUy5BcHAifQ.QPG0-HbEBmAUi_01u-7GdX-TIPphZku2jgjRazPA3K4.
+@microsoft_signalr.js?v=4bd38141:301 [2026-01-28T13:30:55.313Z] Information: Using HubProtocol 'json'.
 signalr.js:56 SignalR: Connected to /dashboardHub
-reception.js:242 DEBUG: Activity Stream Payload: Array(34)
-reception.js:242 DEBUG: Activity Stream Payload: Array(34)
-ReceptionScreen.jsx:49 DEBUG: Action Queue Raw: Array(3)
-ReceptionScreen.jsx:49 DEBUG: Action Queue Raw: Array(3)
-react-dom_client.js?v=4bd38141:4925 Encountered two children with the same key, `CBC`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.
-(anonymous) @ react-dom_client.js?v=4bd38141:4925
-react-dom_client.js?v=4bd38141:4925 Encountered two children with the same key, `CBC`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.
-(anonymous) @ react-dom_client.js?v=4bd38141:4925
-react-dom_client.js?v=4bd38141:4925 Encountered two children with the same key, `CBC`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.
-(anonymous) @ react-dom_client.js?v=4bd38141:4925
-react-dom_client.js?v=4bd38141:4925 Encountered two children with the same key, `CBC`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.
-(anonymous) @ react-dom_client.js?v=4bd38141:4925
-react-dom_client.js?v=4bd38141:4925 Encountered two children with the same key, `CBC`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.
-(anonymous) @ react-dom_client.js?v=4bd38141:4925
-signalr.js:76 SignalR: ReceptionSummaryUpdated received Object
-react-dom_client.js?v=4bd38141:4925 Encountered two children with the same key, `CBC`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.
-(anonymous) @ react-dom_client.js?v=4bd38141:4925
-react-dom_client.js?v=4bd38141:4925 Encountered two children with the same key, `CBC`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.
-(anonymous) @ react-dom_client.js?v=4bd38141:4925
-ReceptionScreen.jsx:78 DEBUG: Action Queue Poll: Array(4)
-ReceptionScreen.jsx:78 DEBUG: Action Queue Poll: Array(4)
-ReceptionScreen.jsx:78 DEBUG: Action Queue Poll: Array(4)
-ReceptionScreen.jsx:78 DEBUG: Action Queue Poll: Array(4)
-ReceptionScreen.jsx:78 DEBUG: Action Queue Poll: Array(4)
-signalr.js:76 SignalR: ReceptionSummaryUpdated received Object
-reception.js:242 DEBUG: Activity Stream Payload: Array(45)
-reception.js:242 DEBUG: Activity Stream Payload: Array(45)
-ReceptionScreen.jsx:78 DEBUG: Action Queue Poll: Array(4)
-reception.js:242 DEBUG: Activity Stream Payload: Array(45)
-ReceptionScreen.jsx:78 DEBUG: Action Queue Poll: Array(4)
-ReceptionScreen.jsx:78 DEBUG: Action Queue Poll: Array(4)
-reception.js:242 DEBUG: Activity Stream Payload: Array(45)
-ReceptionScreen.jsx:78 DEBUG: Action Queue Poll: Array(4)
-reception.js:242 DEBUG: Activity Stream Payload: Array(45)
-ReceptionScreen.jsx:78 DEBUG: Action Queue Poll: Array(4)
-ReceptionScreen.jsx:78 DEBUG: Action Queue Poll: Array(4)
-reception.js:242 DEBUG: Activity Stream Payload: Array(45)
-ReceptionScreen.jsx:78 DEBUG: Action Queue Poll: Array(4)
-reception.js:242 DEBUG: Activity Stream Payload: Array(45)
-ReceptionScreen.jsx:78 DEBUG: Action Queue Poll: Array(4)
-ReceptionScreen.jsx:78 DEBUG: Action Queue Poll: Array(4)
-reception.js:242 DEBUG: Activity Stream Payload: Array(45)
-ReceptionScreen.jsx:78 DEBUG: Action Queue Poll: Array(4)
 reception.js:242 DEBUG: Activity Stream Payload: (45) [{…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}]
+reception.js:242 DEBUG: Activity Stream Payload: (45) [{…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}]0: {eventId: '054d1f8e-8aff-4783-a566-921312c41d84', eventType: 'VISIT_FINALIZED', occurredAt: '2026-01-28T08:30:22.2898296', actorType: 'User', actorName: 'a7fcf93c-8988-4ad8-be83-b922da155f42', …}1: {eventId: '2796561a-abf8-4c66-83cd-cb7ee5769319', eventType: 'PAYMENT_RECEIVED', occurredAt: '2026-01-28T08:30:22.002213', actorType: 'User', actorName: 'a7fcf93c-8988-4ad8-be83-b922da155f42', …}2: {eventId: 'd8e09eaf-d498-4f6f-8407-4e7c01b996fd', eventType: 'DISCOUNT_APPLIED', occurredAt: '2026-01-28T08:28:56.6756563', actorType: 'User', actorName: 'a7fcf93c-8988-4ad8-be83-b922da155f42', …}3: {eventId: 'b1ed68d5-450e-4d8e-a8ef-887b08a9d8b9', eventType: 'VISIT_UPDATED', occurredAt: '2026-01-28T08:28:44.0090584', actorType: 'User', actorName: 'a7fcf93c-8988-4ad8-be83-b922da155f42', …}4: {eventId: '32249177-79c8-40dd-b48b-e2be1d594f35', eventType: 'VISIT_UPDATED', occurredAt: '2026-01-28T08:28:37.255289', actorType: 'User', actorName: 'a7fcf93c-8988-4ad8-be83-b922da155f42', …}5: {eventId: 'eebc3ea5-c864-4abc-9b94-85cf2f0f728e', eventType: 'VISIT_UPDATED', occurredAt: '2026-01-28T08:28:36.3022515', actorType: 'User', actorName: 'a7fcf93c-8988-4ad8-be83-b922da155f42', …}6: {eventId: '2e69ef85-3afa-4380-91e0-30a835d12501', eventType: 'VISIT_UPDATED', occurredAt: '2026-01-28T08:28:32.703114', actorType: 'User', actorName: 'a7fcf93c-8988-4ad8-be83-b922da155f42', …}7: {eventId: '362604d7-059f-4840-9fc7-3f9ed0a62089', eventType: 'VISIT_UPDATED', occurredAt: '2026-01-28T08:28:22.9456462', actorType: 'User', actorName: 'a7fcf93c-8988-4ad8-be83-b922da155f42', …}8: {eventId: '1e8fc314-17ed-4d71-91c7-28ab2f965abc', eventType: 'VISIT_UPDATED', occurredAt: '2026-01-28T08:28:19.457968', actorType: 'User', actorName: 'a7fcf93c-8988-4ad8-be83-b922da155f42', …}9: {eventId: 'a5006b9c-481c-41ae-80f4-c125be562eba', eventType: 'VISIT_STARTED', occurredAt: '2026-01-28T08:28:07.8507538', actorType: 'User', actorName: 'a7fcf93c-8988-4ad8-be83-b922da155f42', …}10: {eventId: '73037d75-a6a4-4a71-9bf9-b608664ec114', eventType: 'BILL_GENERATED', occurredAt: '2026-01-28T08:28:07.8053077', actorType: 'User', actorName: 'a7fcf93c-8988-4ad8-be83-b922da155f42', …}11: {eventId: 'faa87f48-c338-42c1-ad27-af85a1f6e7ee', eventType: 'VISIT_UPDATED', occurredAt: '2026-01-28T08:27:20.6808772', actorType: 'User', actorName: 'a7fcf93c-8988-4ad8-be83-b922da155f42', …}12: {eventId: '27a4e49d-0139-4f9f-97e3-627695407d67', eventType: 'VISIT_UPDATED', occurredAt: '2026-01-28T07:16:01.0281147', actorType: 'User', actorName: 'a7fcf93c-8988-4ad8-be83-b922da155f42', …}13: {eventId: 'faf6f22f-1ccd-4a93-be88-bd7a96d05026', eventType: 'VISIT_STARTED', occurredAt: '2026-01-28T07:15:41.8811022', actorType: 'User', actorName: 'a7fcf93c-8988-4ad8-be83-b922da155f42', …}14: {eventId: 'b56fd6d3-9cf4-4c1c-88fd-32c60943ebd6', eventType: 'BILL_GENERATED', occurredAt: '2026-01-28T07:15:41.8001382', actorType: 'User', actorName: 'a7fcf93c-8988-4ad8-be83-b922da155f42', …}15: {eventId: 'e6916e83-1094-4dbc-969f-cd76e13ab6d9', eventType: 'VISIT_UPDATED', occurredAt: '2026-01-28T07:00:55.3813373', actorType: 'User', actorName: 'a7fcf93c-8988-4ad8-be83-b922da155f42', …}16: {eventId: '3c4bf593-386a-4516-92b7-4398c0d899c9', eventType: 'VISIT_FINALIZED', occurredAt: '2026-01-28T06:59:21.2480889', actorType: 'User', actorName: 'a7fcf93c-8988-4ad8-be83-b922da155f42', …}17: {eventId: 'e40454a0-4d10-424d-9e3d-e694585d8815', eventType: 'PAYMENT_RECEIVED', occurredAt: '2026-01-28T06:59:21.0173161', actorType: 'User', actorName: 'a7fcf93c-8988-4ad8-be83-b922da155f42', …}18: {eventId: 'bcf18881-e89a-42d3-aad5-34d22e176cbd', eventType: 'DISCOUNT_APPLIED', occurredAt: '2026-01-28T06:59:13.2844932', actorType: 'User', actorName: 'a7fcf93c-8988-4ad8-be83-b922da155f42', …}19: {eventId: '7e26ec9d-97bc-422b-9596-55b2eedf0dad', eventType: 'DISCOUNT_APPLIED', occurredAt: '2026-01-28T06:59:09.6268689', actorType: 'User', actorName: 'a7fcf93c-8988-4ad8-be83-b922da155f42', …}20: {eventId: 'f33d5d03-b9e2-48e8-998c-4764f916c540', eventType: 'VISIT_UPDATED', occurredAt: '2026-01-28T06:59:01.3765947', actorType: 'User', actorName: 'a7fcf93c-8988-4ad8-be83-b922da155f42', …}21: {eventId: 'eb89b81d-3b41-4a2e-8af5-76c3b2061169', eventType: 'VISIT_UPDATED', occurredAt: '2026-01-28T06:58:51.121007', actorType: 'User', actorName: 'a7fcf93c-8988-4ad8-be83-b922da155f42', …}22: {eventId: '9ce02827-d042-4892-906b-50f988727ea5', eventType: 'VISIT_STARTED', occurredAt: '2026-01-28T06:57:59.0308582', actorType: 'User', actorName: 'a7fcf93c-8988-4ad8-be83-b922da155f42', …}23: {eventId: '15cb8124-d974-4de5-9166-2fcfc742b7e4', eventType: 'BILL_GENERATED', occurredAt: '2026-01-28T06:57:58.999987', actorType: 'User', actorName: 'a7fcf93c-8988-4ad8-be83-b922da155f42', …}24: {eventId: '742ffd8b-0996-4db3-8a0d-20b849eae68c', eventType: 'VISIT_UPDATED', occurredAt: '2026-01-28T06:56:46.693936', actorType: 'User', actorName: 'a7fcf93c-8988-4ad8-be83-b922da155f42', …}25: {eventId: '3e655f29-6603-40f6-a4f5-4a65989bbcfd', eventType: 'VISIT_UPDATED', occurredAt: '2026-01-28T06:56:35.2077594', actorType: 'User', actorName: 'a7fcf93c-8988-4ad8-be83-b922da155f42', …}26: {eventId: 'b9ab84da-ef0c-4c01-9220-f9610d31be89', eventType: 'PAYMENT_RECEIVED', occurredAt: '2026-01-28T06:42:40.5100671', actorType: 'User', actorName: 'a7fcf93c-8988-4ad8-be83-b922da155f42', …}27: {eventId: 'a47c50ad-1b20-47fc-9fa4-88c5dd8e5a7a', eventType: 'DISCOUNT_APPLIED', occurredAt: '2026-01-28T06:42:33.2793453', actorType: 'User', actorName: 'a7fcf93c-8988-4ad8-be83-b922da155f42', …}28: {eventId: '5765d51d-301e-4319-8c0c-4a6aeff8597c', eventType: 'DISCOUNT_APPLIED', occurredAt: '2026-01-28T06:42:31.8697057', actorType: 'User', actorName: 'a7fcf93c-8988-4ad8-be83-b922da155f42', …}29: {eventId: '4b753995-0fcc-4b8d-8109-410b358a0853', eventType: 'VISIT_UPDATED', occurredAt: '2026-01-28T06:42:27.6667964', actorType: 'User', actorName: 'a7fcf93c-8988-4ad8-be83-b922da155f42', …}30: {eventId: '298d630f-5911-45fa-bd62-52dbe38c0682', eventType: 'VISIT_UPDATED', occurredAt: '2026-01-28T06:42:22.3042894', actorType: 'User', actorName: 'a7fcf93c-8988-4ad8-be83-b922da155f42', …}31: {eventId: '18e4095f-aff3-4243-8509-1f36dc9cdbd0', eventType: 'DISCOUNT_APPLIED', occurredAt: '2026-01-28T06:42:18.9534319', actorType: 'User', actorName: 'a7fcf93c-8988-4ad8-be83-b922da155f42', …}32: {eventId: 'e7f85c9b-8c36-4738-bba5-0fcf9f5428dd', eventType: 'VISIT_UPDATED', occurredAt: '2026-01-28T06:42:03.7554649', actorType: 'User', actorName: 'a7fcf93c-8988-4ad8-be83-b922da155f42', …}33: {eventId: '746c4fe0-6676-4b0d-89f8-3ed0f7ea058e', eventType: 'VISIT_UPDATED', occurredAt: '2026-01-28T06:41:58.3401246', actorType: 'User', actorName: 'a7fcf93c-8988-4ad8-be83-b922da155f42', …}34: {eventId: 'b0f1a9aa-1f50-4b8c-a1f9-b75e9226a167', eventType: 'VISIT_STARTED', occurredAt: '2026-01-28T06:41:44.1436336', actorType: 'User', actorName: 'a7fcf93c-8988-4ad8-be83-b922da155f42', …}35: {eventId: '297d3723-daa1-4bcf-9585-d56b4a08f010', eventType: 'BILL_GENERATED', occurredAt: '2026-01-28T06:41:44.0503148', actorType: 'User', actorName: 'a7fcf93c-8988-4ad8-be83-b922da155f42', …}36: {eventId: '42f03262-5ac3-48d2-a2d5-2c01b42abab2', eventType: 'PAYMENT_RECEIVED', occurredAt: '2026-01-28T06:21:48.3133716', actorType: 'User', actorName: 'a7fcf93c-8988-4ad8-be83-b922da155f42', …}37: {eventId: '693f7112-bb31-4e0b-968d-69d35f112ce0', eventType: 'DISCOUNT_APPLIED', occurredAt: '2026-01-28T06:21:37.6172558', actorType: 'User', actorName: 'a7fcf93c-8988-4ad8-be83-b922da155f42', …}38: {eventId: 'b7e8f1ca-e67f-4b67-b653-fd434baea5b8', eventType: 'DISCOUNT_APPLIED', occurredAt: '2026-01-28T06:21:35.5561564', actorType: 'User', actorName: 'a7fcf93c-8988-4ad8-be83-b922da155f42', …}39: {eventId: '751b2844-d5cc-4ade-b2fd-f34433446ab0', eventType: 'DISCOUNT_APPLIED', occurredAt: '2026-01-28T06:21:33.0409435', actorType: 'User', actorName: 'a7fcf93c-8988-4ad8-be83-b922da155f42', …}40: {eventId: 'ec78adda-fd2a-4a95-a088-877e32315b5c', eventType: 'DISCOUNT_APPLIED', occurredAt: '2026-01-28T06:21:27.0519501', actorType: 'User', actorName: 'a7fcf93c-8988-4ad8-be83-b922da155f42', …}41: {eventId: 'f98c91a6-ac3b-4797-83bf-5b2db811059b', eventType: 'VISIT_UPDATED', occurredAt: '2026-01-28T06:21:16.0385803', actorType: 'User', actorName: 'a7fcf93c-8988-4ad8-be83-b922da155f42', …}42: {eventId: '068c72ee-4f3f-48d8-a797-c3b2de0ca03e', eventType: 'DISCOUNT_APPLIED', occurredAt: '2026-01-28T06:04:32.8707518', actorType: 'User', actorName: 'a7fcf93c-8988-4ad8-be83-b922da155f42', …}43: {eventId: 'c65844d9-a5c0-4558-9e0f-a5f528562631', eventType: 'DISCOUNT_APPLIED', occurredAt: '2026-01-28T06:04:15.2529171', actorType: 'User', actorName: 'a7fcf93c-8988-4ad8-be83-b922da155f42', …}44: {eventId: '95d9598d-9b9d-4e3f-b3bc-34a58377927a', eventType: 'VISIT_UPDATED', occurredAt: '2026-01-28T06:03:38.2405637', actorType: 'User', actorName: 'a7fcf93c-8988-4ad8-be83-b922da155f42', …}length: 45[[Prototype]]: Array(0)
+ReceptionScreen.jsx:49 DEBUG: Action Queue Raw: (4) [{…}, {…}, {…}, {…}]
+ReceptionScreen.jsx:49 DEBUG: Action Queue Raw: (4) [{…}, {…}, {…}, {…}]
+VisitDetails.jsx:386 DEBUG TEST OBJ: {orderId: '2fe744b1-491e-406c-b407-dba43778ab95', testId: 'b76a22de-21ff-4e49-ac01-b8c560b711cc', testCode: 'LFT', testName: 'Liver Function Test', department: 'Pathology', …}
+ReceptionScreen.jsx:78 DEBUG: Action Queue Poll: (4) [{…}, {…}, {…}, {…}]
+ReceptionScreen.jsx:78 DEBUG: Action Queue Poll: (4) [{…}, {…}, {…}, {…}]
+ReceptionScreen.jsx:78 DEBUG: Action Queue Poll: (4) [{…}, {…}, {…}, {…}]
+ReceptionScreen.jsx:78 DEBUG: Action Queue Poll: (4) [{…}, {…}, {…}, {…}]
+ReceptionScreen.jsx:78 DEBUG: Action Queue Poll: (4) [{…}, {…}, {…}, {…}]
+ReceptionScreen.jsx:78 DEBUG: Action Queue Poll: (4) [{…}, {…}, {…}, {…}]
+ReceptionScreen.jsx:78 DEBUG: Action Queue Poll: (4) [{…}, {…}, {…}, {…}]
+ReceptionScreen.jsx:78 DEBUG: Action Queue Poll: (4) [{…}, {…}, {…}, {…}]
+ReceptionScreen.jsx:78 DEBUG: Action Queue Poll: (4) [{…}, {…}, {…}, {…}]
+
+backend terminal logs:
+PS D:\Projects\SynOS-Synthesized-Lab-Intelligence> dotnet run --project src\SynOS.Api\SynOS.Api.csproj --urls "http://127.0.0.1:59999"
+
+[19:00:07 WRN] No store type was specified for the decimal property 'MaxLimit' on entity type 'DiscountMaster'. This will cause values to be silently truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.
+[19:00:07 WRN] No store type was specified for the decimal property 'MaxLimit' on entity type 'DiscountMaster'. This will cause values to be silently truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.
+[19:00:07 WRN] No store type was specified for the decimal property 'Amount' on entity type 'PayrollAdjustment'. This will cause values to be silently truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.
+[19:00:07 WRN] No store type was specified for the decimal property 'Amount' on entity type 'PayrollAdjustment'. This will cause values to be silently truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.
+[19:00:07 WRN] No store type was specified for the decimal property 'Amount' on entity type 'PayrollFact'. This will cause values to be silently truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.
+[19:00:07 WRN] No store type was specified for the decimal property 'Amount' on entity type 'PayrollFact'. This will cause values to be silently truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.
+[19:00:13 INF] Notification Worker Service running.
+[19:00:13 INF] Notification Worker Service running.
+[19:00:13 INF] ExpiredLockCleanupService is starting.
+[19:00:13 INF] ExpiredLockCleanupService is starting.
+[19:00:13 INF] Analyzer TCP Listener Service starting...
+[19:00:13 INF] Analyzer TCP Listener Service starting...
+[19:00:13 WRN] No analyzer TCP listeners configured in appsettings.json.
+[19:00:13 WRN] No analyzer TCP listeners configured in appsettings.json.
+[19:00:18 WRN] Failed to determine the https port for redirect.
+[19:00:18 WRN] Failed to determine the https port for redirect.
+[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=28-01-2026 19:00:18, Today=28-01-2026 00:00:00, Window=[28-01-2026 00:00:00 - 29-01-2026 00:00:00)
+[19:00:19 WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+[19:00:19 WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+[ActionQueue] Found 4 raw visits.
+[ActionQueue] Processing Visit DRAFT-13D22525. Invoice Status: PendingPayment.
+[ActionQueue] Processing Visit DRAFT-AC0E9DF3. Invoice Status: PendingPayment.
+[ActionQueue] Processing Visit DRAFT-E138A4C9. Invoice Status: Paid.
+[ActionQueue] Processing Visit DRAFT-F024C365. Invoice Status: PartialPayment.
+[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=28-01-2026 19:00:50, Today=28-01-2026 00:00:00, Window=[28-01-2026 00:00:00 - 29-01-2026 00:00:00)
+[ActionQueue] Found 4 raw visits.
+[ActionQueue] Processing Visit DRAFT-13D22525. Invoice Status: PendingPayment.
+[ActionQueue] Processing Visit DRAFT-AC0E9DF3. Invoice Status: PendingPayment.
+[ActionQueue] Processing Visit DRAFT-E138A4C9. Invoice Status: Paid.
+[ActionQueue] Processing Visit DRAFT-F024C365. Invoice Status: PartialPayment.
+[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=28-01-2026 19:00:55, Today=28-01-2026 00:00:00, Window=[28-01-2026 00:00:00 - 29-01-2026 00:00:00)
+[ActionQueue] Found 4 raw visits.
+[ActionQueue] Processing Visit DRAFT-13D22525. Invoice Status: PendingPayment.
+[ActionQueue] Processing Visit DRAFT-AC0E9DF3. Invoice Status: PendingPayment.
+[ActionQueue] Processing Visit DRAFT-E138A4C9. Invoice Status: Paid.
+[ActionQueue] Processing Visit DRAFT-F024C365. Invoice Status: PartialPayment.
+[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=28-01-2026 19:00:55, Today=28-01-2026 00:00:00, Window=[28-01-2026 00:00:00 - 29-01-2026 00:00:00)
+[ActionQueue] Found 4 raw visits.
+[ActionQueue] Processing Visit DRAFT-13D22525. Invoice Status: PendingPayment.
+[ActionQueue] Processing Visit DRAFT-AC0E9DF3. Invoice Status: PendingPayment.
+[ActionQueue] Processing Visit DRAFT-E138A4C9. Invoice Status: Paid.
+[ActionQueue] Processing Visit DRAFT-F024C365. Invoice Status: PartialPayment.
+[19:00:59 WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+[19:00:59 WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+[19:01:07 WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+[19:01:07 WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+[19:01:09 WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+[19:01:09 WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+[19:01:09 FTL] EVENT_WRITE for VisitId 8697d451-d078-4734-89b0-ff82d8b8f499, Context 1dc0872f-bb67-40a8-b022-2a1510f97636:0
+[19:01:09 FTL] EVENT_WRITE for VisitId 8697d451-d078-4734-89b0-ff82d8b8f499, Context 1dc0872f-bb67-40a8-b022-2a1510f97636:0
+[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=28-01-2026 19:01:24, Today=28-01-2026 00:00:00, Window=[28-01-2026 00:00:00 - 29-01-2026 00:00:00)
+[ActionQueue] Found 4 raw visits.
+[ActionQueue] Processing Visit DRAFT-13D22525. Invoice Status: PendingPayment.
+[ActionQueue] Processing Visit DRAFT-AC0E9DF3. Invoice Status: PendingPayment.
+[ActionQueue] Processing Visit DRAFT-E138A4C9. Invoice Status: PartialPayment.
+[ActionQueue] Processing Visit DRAFT-F024C365. Invoice Status: PartialPayment.
+[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=28-01-2026 19:01:54, Today=28-01-2026 00:00:00, Window=[28-01-2026 00:00:00 - 29-01-2026 00:00:00)
+[ActionQueue] Found 4 raw visits.
+[ActionQueue] Processing Visit DRAFT-13D22525. Invoice Status: PendingPayment.
+[ActionQueue] Processing Visit DRAFT-AC0E9DF3. Invoice Status: PendingPayment.
+[ActionQueue] Processing Visit DRAFT-E138A4C9. Invoice Status: PartialPayment.
+[ActionQueue] Processing Visit DRAFT-F024C365. Invoice Status: PartialPayment.
+[19:02:08 FTL] EVENT_WRITE for VisitId 8697d451-d078-4734-89b0-ff82d8b8f499, Context bbed7c16-b1a5-4ab4-97ea-53ff15a2cd9f:0
+[19:02:08 FTL] EVENT_WRITE for VisitId 8697d451-d078-4734-89b0-ff82d8b8f499, Context bbed7c16-b1a5-4ab4-97ea-53ff15a2cd9f:0
+[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=28-01-2026 19:02:24, Today=28-01-2026 00:00:00, Window=[28-01-2026 00:00:00 - 29-01-2026 00:00:00)
+[ActionQueue] Found 4 raw visits.
+[ActionQueue] Processing Visit DRAFT-13D22525. Invoice Status: PendingPayment.
+[ActionQueue] Processing Visit DRAFT-AC0E9DF3. Invoice Status: PendingPayment.
+[ActionQueue] Processing Visit DRAFT-E138A4C9. Invoice Status: Paid.
+[ActionQueue] Processing Visit DRAFT-F024C365. Invoice Status: PartialPayment.
+[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=28-01-2026 19:02:54, Today=28-01-2026 00:00:00, Window=[28-01-2026 00:00:00 - 29-01-2026 00:00:00)
+[ActionQueue] Found 4 raw visits.
+[ActionQueue] Processing Visit DRAFT-13D22525. Invoice Status: PendingPayment.
+[ActionQueue] Processing Visit DRAFT-AC0E9DF3. Invoice Status: PendingPayment.
+[ActionQueue] Processing Visit DRAFT-E138A4C9. Invoice Status: Paid.
+[ActionQueue] Processing Visit DRAFT-F024C365. Invoice Status: PartialPayment.
+[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=28-01-2026 19:03:24, Today=28-01-2026 00:00:00, Window=[28-01-2026 00:00:00 - 29-01-2026 00:00:00)
+[ActionQueue] Found 4 raw visits.
+[ActionQueue] Processing Visit DRAFT-13D22525. Invoice Status: PendingPayment.
+[ActionQueue] Processing Visit DRAFT-AC0E9DF3. Invoice Status: PendingPayment.
+[ActionQueue] Processing Visit DRAFT-E138A4C9. Invoice Status: Paid.
+[ActionQueue] Processing Visit DRAFT-F024C365. Invoice Status: PartialPayment.
+[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=28-01-2026 19:03:54, Today=28-01-2026 00:00:00, Window=[28-01-2026 00:00:00 - 29-01-2026 00:00:00)
+[ActionQueue] Found 4 raw visits.
+[ActionQueue] Processing Visit DRAFT-13D22525. Invoice Status: PendingPayment.
+[ActionQueue] Processing Visit DRAFT-AC0E9DF3. Invoice Status: PendingPayment.
+[ActionQueue] Processing Visit DRAFT-E138A4C9. Invoice Status: Paid.
+[ActionQueue] Processing Visit DRAFT-F024C365. Invoice Status: PartialPayment.
+[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=28-01-2026 19:04:24, Today=28-01-2026 00:00:00, Window=[28-01-2026 00:00:00 - 29-01-2026 00:00:00)
+[ActionQueue] Found 4 raw visits.
+[ActionQueue] Processing Visit DRAFT-13D22525. Invoice Status: PendingPayment.
+[ActionQueue] Processing Visit DRAFT-AC0E9DF3. Invoice Status: PendingPayment.
+[ActionQueue] Processing Visit DRAFT-E138A4C9. Invoice Status: Paid.
+[ActionQueue] Processing Visit DRAFT-F024C365. Invoice Status: PartialPayment.
+[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=28-01-2026 19:04:54, Today=28-01-2026 00:00:00, Window=[28-01-2026 00:00:00 - 29-01-2026 00:00:00)
+[ActionQueue] Found 4 raw visits.
+[ActionQueue] Processing Visit DRAFT-13D22525. Invoice Status: PendingPayment.
+[ActionQueue] Processing Visit DRAFT-AC0E9DF3. Invoice Status: PendingPayment.
+[ActionQueue] Processing Visit DRAFT-E138A4C9. Invoice Status: Paid.
+[ActionQueue] Processing Visit DRAFT-F024C365. Invoice Status: PartialPayment.
+[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=28-01-2026 19:05:24, Today=28-01-2026 00:00:00, Window=[28-01-2026 00:00:00 - 29-01-2026 00:00:00)
+[ActionQueue] Found 4 raw visits.
+[ActionQueue] Processing Visit DRAFT-13D22525. Invoice Status: PendingPayment.
+[ActionQueue] Processing Visit DRAFT-AC0E9DF3. Invoice Status: PendingPayment.
+[ActionQueue] Processing Visit DRAFT-E138A4C9. Invoice Status: Paid.
+[ActionQueue] Processing Visit DRAFT-F024C365. Invoice Status: PartialPayment.
+[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=28-01-2026 19:05:55, Today=28-01-2026 00:00:00, Window=[28-01-2026 00:00:00 - 29-01-2026 00:00:00)
+[ActionQueue] Found 4 raw visits.
+[ActionQueue] Processing Visit DRAFT-13D22525. Invoice Status: PendingPayment.
+[ActionQueue] Processing Visit DRAFT-AC0E9DF3. Invoice Status: PendingPayment.
+[ActionQueue] Processing Visit DRAFT-E138A4C9. Invoice Status: Paid.
+[ActionQueue] Processing Visit DRAFT-F024C365. Invoice Status: PartialPayment.

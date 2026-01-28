@@ -16,10 +16,16 @@ export function IntentPanel() {
     // For Phase 6, let's treat "Open/Closed" as UI, but "Content" as Snapshot.
     // We still use the UI hook ONLY for the panel visibility toggle if that's purely UI state.
     // If "User is working on intake" is backend state, this should also be driven by snapshot presence!
+    // We still use the UI hook ONLY for the panel visibility toggle if that's purely UI state.
+    // If "User is working on intake" is backend state, this should also be driven by snapshot presence!
     // For Phase 6, let's treat "Open/Closed" as UI, but "Content" as Snapshot.
     const { isOpen, closePanel, drawerState } = useReceptionPanelUI();
 
-    const isViewMode = drawerState?.mode === 'view';
+    // Intent Derivation
+    const intent = drawerState?.intent; // 'create' | 'resume' | 'correction'
+    const isCorrectionIntent = intent === 'correction';
+    const isResumeIntent = intent === 'resume';
+    const isCreateIntent = intent === 'create';
 
     // Lifted State for Prepaid Intent (Shared between VisitDetails and Footer)
     const [isPrepaidIntent, setIsPrepaidIntent] = useState(false);
@@ -44,18 +50,18 @@ export function IntentPanel() {
             return;
         }
 
-        if (isViewMode && drawerState.visitId) {
-            // VIEW MODE: Preset Visit ID, No Patient Selection needed yet (internal)
+        if ((isResumeIntent || isCorrectionIntent) && drawerState.visitId) {
+            // RESUME/CORRECT: Preset Visit ID, No Patient Selection needed yet (internal)
             setCurrentVisitId(drawerState.visitId);
             // Patient ID will be derived from snapshot
         }
-    }, [isOpen, drawerState?.mode, drawerState?.visitId]);
+    }, [isOpen, intent, drawerState?.visitId]);
 
     const loadSnapshot = async () => {
         setIsLoading(true);
         try {
-            // In View Mode, we primarily query by VisitId
-            // In Create Mode, we might query by PatientId first
+            // In Resume/Correct Mode, we primarily query by VisitId
+            // In Create Mode, we query by PatientId first (after selection)
             const data = await ReceptionApi.getIntakeSnapshot(currentPatientId, currentVisitId);
             setSnapshot(data);
 
@@ -81,19 +87,19 @@ export function IntentPanel() {
         if (!isOpen) return;
 
         // Wait for IDs to settle if they are being set by Mode effect
-        if (isViewMode && !currentVisitId) return;
+        if ((isResumeIntent || isCorrectionIntent) && !currentVisitId) return;
 
         loadSnapshot();
         const handleUpdate = (newSnapshot) => {
             // Verify relevance (Simple check)
-            // If in view mode, only update if visitId matches
-            if (isViewMode && newSnapshot?.visit?.visitId !== currentVisitId) return;
+            // If in resume/correct mode, only update if visitId matches
+            if ((isResumeIntent || isCorrectionIntent) && newSnapshot?.visit?.visitId !== currentVisitId) return;
 
             setSnapshot(newSnapshot);
             if (newSnapshot?.visit?.visitId) setCurrentVisitId(newSnapshot.visit.visitId);
         };
         SignalRService.onIntakeSnapshotUpdated(handleUpdate);
-    }, [isOpen, currentPatientId, currentVisitId, isViewMode]);
+    }, [isOpen, currentPatientId, currentVisitId, isResumeIntent, isCorrectionIntent]);
 
     // HANDLERS
     const handleSelectPatient = async (patient) => {
@@ -179,7 +185,7 @@ export function IntentPanel() {
 
         // 3. GENERATE BILL (Wait, if paid?)
         // If already paid (e.g. earlier flow), this might just be "Close"
-        if (snapshot.billing.paymentStatus === 'Paid') {
+        if (snapshot.billing.paymentStatus === 'Paid' && !isCorrectionIntent) {
             handleClearPatient();
             closePanel();
         }
@@ -203,7 +209,7 @@ export function IntentPanel() {
         mainActionLabel = "Initializing Visit...";
         isActionEnabled = false;
     } else if (hasVisit) {
-        if (isVisitFinalized) {
+        if (isVisitFinalized && !isCorrectionIntent) {
             mainActionLabel = "Visit Complete (Close)";
             isActionEnabled = true;
         } else if (canLockPrepaid) {
@@ -218,17 +224,23 @@ export function IntentPanel() {
         }
     }
 
+    // Dynamic Title based on Intent
+    let panelTitle = "New Walk-In";
+    let panelSubtitle = "Cockpit";
+    if (isResumeIntent) { panelTitle = "Resume Visit"; panelSubtitle = "Draft Mode"; }
+    if (isCorrectionIntent) { panelTitle = "Correct Visit"; panelSubtitle = "Audit Logged"; }
+
     return (
         <div className="flex flex-col h-full bg-zinc-900 border border-synos-border border-l-0 rounded-r-xl overflow-hidden animate-in slide-in-from-right-10 duration-300 shadow-2xl relative z-20">
             {/* Header */}
             <div className="h-14 border-b border-synos-border flex items-center justify-between px-4 bg-zinc-950">
                 <div>
                     <h2 className="text-lg font-bold text-white tracking-tight">
-                        {isViewMode ? 'Visit Details' : 'New Walk-In'}
-                        <span className="text-zinc-500 font-normal"> — {isViewMode ? 'Read Only' : 'Cockpit'}</span>
+                        {panelTitle}
+                        <span className="text-zinc-500 font-normal"> — {panelSubtitle}</span>
                     </h2>
                     <div className="text-xs text-zinc-500">
-                        {isLoading ? "Syncing..." : isViewMode ? "Viewing Historical Record" : "Live Operational Mode"}
+                        {isLoading ? "Syncing..." : isCorrectionIntent ? "Correction Mode (Audited)" : "Live Operational Mode"}
                     </div>
                 </div>
                 <button onClick={closePanel} className="p-2 hover:bg-zinc-800 rounded-lg text-zinc-500 hover:text-white transition-colors"><X className="w-5 h-5" /></button>
@@ -241,14 +253,12 @@ export function IntentPanel() {
 
                 {snapshot && (
                     <>
-                        {/* 1. Patient Identification (CREATE MODE ONLY) */}
-                        {!isViewMode && (
-                            <PatientIdentification
-                                snapshot={snapshot}
-                                onSelectPatient={handleSelectPatient}
-                                onClearPatient={handleClearPatient}
-                            />
-                        )}
+                        {/* 1. Patient Identification (Always Visible for Context) */}
+                        <PatientIdentification
+                            snapshot={snapshot}
+                            onSelectPatient={handleSelectPatient}
+                            onClearPatient={handleClearPatient}
+                        />
 
                         {hasVisit && (
                             <div className="animate-in slide-in-from-bottom-5 duration-500 fade-in">
@@ -258,23 +268,35 @@ export function IntentPanel() {
                                     onVisitUpdated={loadSnapshot}
                                     isPrepaidIntent={isPrepaidIntent} // PASSING DOWN
                                     setIsPrepaidIntent={setIsPrepaidIntent} // PASSING DOWN
+                                    isCorrectionIntent={isCorrectionIntent} // PHASE 3: CORRECTION INTENT
                                 />
                             </div>
                         )}
 
                         {hasVisit && (
                             <div className="animate-in slide-in-from-bottom-5 duration-700 fade-in">
-                                <BillingSummary snapshot={snapshot} onVisitUpdated={loadSnapshot} />
+                                <BillingSummary
+                                    snapshot={snapshot}
+                                    onVisitUpdated={loadSnapshot}
+                                    isCorrectionIntent={isCorrectionIntent} // Pass down Intent
+                                />
                             </div>
                         )}
                     </>
                 )}
             </div>
 
-            {/* Footer / Status Bar - UNIFIED BUTTON (CREATE MODE ONLY) */}
-            {!isViewMode && (
-                <div className="p-4 border-t border-synos-border bg-zinc-950 space-y-3">
-                    {hasVisit && (
+            {/* Footer / Status Bar - UNIFIED BUTTON */}
+            <div className="p-4 border-t border-synos-border bg-zinc-950 space-y-3">
+                {isCorrectionIntent ? (
+                    <button
+                        onClick={closePanel}
+                        className="w-full py-3 rounded-lg font-bold text-sm flex items-center justify-center gap-2 transition-all bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 border border-emerald-500/20 shadow-lg shadow-emerald-500/5"
+                    >
+                        Finish Correction <AlertCircle className="w-4 h-4" />
+                    </button>
+                ) : (
+                    hasVisit && (
                         <button
                             onClick={handleUnifiedAction}
                             disabled={!isActionEnabled || isLoading}
@@ -291,9 +313,9 @@ export function IntentPanel() {
                                 </>
                             )}
                         </button>
-                    )}
-                </div>
-            )}
+                    )
+                )}
+            </div>
         </div>
     )
 }
