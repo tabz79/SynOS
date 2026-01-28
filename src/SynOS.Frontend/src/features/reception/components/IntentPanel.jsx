@@ -96,31 +96,41 @@ export function IntentPanel() {
     }, [isOpen, currentPatientId, currentVisitId, isViewMode]);
 
     // HANDLERS
-    const handleSelectPatient = (patient) => setCurrentPatientId(patient.id);
+    const handleSelectPatient = async (patient) => {
+        if (!patient?.id) return;
+
+        setCurrentPatientId(patient.id);
+        setIsLoading(true);
+
+        try {
+            // IMMEDIATE VISIT CREATION (Enterprise Grade)
+            // Backend idempotent check ensures single draft.
+            // No payment model required at this stage.
+            const payload = {
+                patientId: patient.id,
+                dept: "Pathology",
+                testCodes: [],
+                paymentCollectionModel: null, // "Undecided" aligned with backend Option A
+                referralPartnerId: null
+            };
+
+            const { visitId } = await ReceptionApi.startVisit(payload);
+            setCurrentVisitId(visitId);
+            // Snapshot will refresh automatically via signalR or effect dependency
+        } catch (err) {
+            console.error("Immediate Visit Creation Failed", err);
+            setError("Failed to initialize visit: " + err.message);
+            // Revert selection on failure? 
+            // Better to keep patient selected but show error so user can retry or see what happened.
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     const handleClearPatient = () => {
         setCurrentPatientId(null);
         setCurrentVisitId(null);
         setIsPrepaidIntent(false); // Reset intent
-    };
-
-    const handleStartVisit = async () => {
-        if (!currentPatientId) return;
-        setIsLoading(true);
-        try {
-            const payload = {
-                patientId: currentPatientId,
-                dept: "Pathology",
-                testCodes: [],
-                paymentCollectionModel: "Direct",
-                referralPartnerId: null
-            };
-            const { visitId } = await ReceptionApi.startVisit(payload);
-            setCurrentVisitId(visitId);
-        } catch (err) {
-            console.error("Start Visit Failed", err);
-            setError("Failed to start visit: " + err.message);
-            setIsLoading(false);
-        }
     };
 
     // UNIFIED FOOTER ACTION HANDLER
@@ -189,10 +199,9 @@ export function IntentPanel() {
     let isActionEnabled = false;
 
     if (!hasVisit && hasPatient) {
-        mainActionLabel = "Start Visit & Proceed to Tests"; // But this is handled by top button? No, Footer is distinct.
-        // Actually, if !hasVisit, the footer probably shouldn't show "Start Visit" if there is a big button in content.
-        // But user said "Single button".
-        // Let's keep logic: If !hasVisit, Footer is disabled or "Start Visit".
+        // LOADING STATE HANDLED BY `isLoading`
+        mainActionLabel = "Initializing Visit...";
+        isActionEnabled = false;
     } else if (hasVisit) {
         if (isVisitFinalized) {
             mainActionLabel = "Visit Complete (Close)";
@@ -239,20 +248,6 @@ export function IntentPanel() {
                                 onSelectPatient={handleSelectPatient}
                                 onClearPatient={handleClearPatient}
                             />
-                        )}
-
-                        {/* 2. Start Visit Button (CREATE MODE ONLY) */}
-                        {!isViewMode && hasPatient && !hasVisit && !isLoading && (
-                            <div className="animate-in fade-in slide-in-from-top-4">
-                                <button
-                                    onClick={handleStartVisit}
-                                    className="w-full bg-synos-primary hover:bg-synos-primary/90 text-white font-bold py-3 px-4 rounded-lg shadow-lg shadow-synos-primary/20 flex items-center justify-center gap-2 transition-all transform hover:scale-[1.02]"
-                                >
-                                    <span>Start Visit & Proceed to Tests</span>
-                                    <ArrowRight className="w-5 h-5" />
-                                </button>
-                                <div className="text-center mt-2 text-xs text-zinc-500">Creating Direct Visit (Cash/Card)</div>
-                            </div>
                         )}
 
                         {hasVisit && (

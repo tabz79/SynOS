@@ -114,6 +114,25 @@ namespace SynOS.Services
                 await EnsureAllTestCodesExistAsync(request.TestCodes, request.Dept);
             }
 
+            // --- IDEMPOTENCY CHECK (Guardrail 2: Single Active Draft) ---
+            // If a Draft visit exists for this patient at this branch, return it instead of creating duplicate.
+            var branchId = _userContext.CurrentBranchId;
+            var existingDraft = await _context.Visits
+                .Include(v => v.Patient)
+                .Include(v => v.Orders)
+                .Include(v => v.Invoices).ThenInclude(i => i.Payments)
+                .FirstOrDefaultAsync(v => 
+                    v.PatientId == request.PatientId && 
+                    v.BranchId == branchId && 
+                    v.Status == "Draft");
+
+            if (existingDraft != null)
+            {
+               _logger.LogInformation("StartVisit Idempotency: returning existing Draft visit {VisitId}", existingDraft.VisitId);
+               return await MapToStartVisitResponse(existingDraft);
+            }
+            // ------------------------------------------------------------
+
             // Create visit DTO for VisitService (reuse your existing VisitService orchestration)
             var visitDto = new VisitCreateDto
             {
