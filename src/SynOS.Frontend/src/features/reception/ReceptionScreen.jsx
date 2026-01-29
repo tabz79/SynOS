@@ -91,15 +91,28 @@ export function ReceptionScreen() {
     }, []);
 
     // Derived strictly for display (formatting only)
+    // Derived strictly for display (formatting only)
+    // STAGE 2: 4x2 Grid Mapping (Strict DTO)
     const realityTiles = summary ? [
-        { value: summary.walkInsToday?.toString() || "0", label: "Walk-Ins Today", icon: Users, color: "amber" },
-        { value: `₹${(summary.paymentsCollected || 0).toLocaleString()}`, label: "Payments Collected", icon: ClipboardList, color: "emerald" },
-        { value: summary.pendingReports?.toString() || "0", label: "Pending Reports", icon: Bed, color: "red" }, // Semantic ID: Bed -> Pending
+        // ROW 1: Operations & Cash Flow
+        { value: summary.walkInsToday?.toString() || "0", label: "Walk-Ins (Paid/Credit)", icon: Users, color: "zinc" },
+        { value: `₹${(summary.paymentsCashTotal || 0).toLocaleString()}`, label: "Cash Collected", icon: ClipboardList, color: "emerald" },
+        { value: summary.paymentsOnlineCount?.toString() || "0", label: "Online Payments", icon: ClipboardList, color: "blue" },
+        { value: `₹${(summary.paymentsOnlineTotal || 0).toLocaleString()}`, label: "Online Total", icon: ClipboardList, color: "blue" },
+
+        // ROW 2: Receivables & Lab Performance
+        { value: summary.prepaidBillsCount?.toString() || "0", label: "Credit Bills Issued", icon: ClipboardList, color: "amber" }, // Prepaid = Credit
+        { value: `₹${(summary.prepaidBillsTotal || 0).toLocaleString()}`, label: "Credit Value (AR)", icon: ClipboardList, color: "amber" },
+        { value: summary.pendingReports?.toString() || "0", label: "Pending Reports", icon: Bed, color: "red" },
         { value: `${summary.avgReportTimeMinutes || 0}m`, label: "Avg Report Time", icon: Clock, color: "default" },
     ] : [
-        // Skeleton / Empty State while loading
-        { value: "—", label: "Walk-Ins Today", icon: Users, color: "default" },
-        { value: "—", label: "Payments Collected", icon: ClipboardList, color: "default" },
+        // Skeleton / Empty State
+        { value: "—", label: "Walk-Ins", icon: Users, color: "default" },
+        { value: "—", label: "Cash Collected", icon: ClipboardList, color: "default" },
+        { value: "—", label: "Online Payments", icon: ClipboardList, color: "default" },
+        { value: "—", label: "Online Total", icon: ClipboardList, color: "default" },
+        { value: "—", label: "Credit Bills", icon: ClipboardList, color: "default" },
+        { value: "—", label: "Credit Value", icon: ClipboardList, color: "default" },
         { value: "—", label: "Pending Reports", icon: Bed, color: "default" },
         { value: "—", label: "Avg Report Time", icon: Clock, color: "default" },
     ];

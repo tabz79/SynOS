@@ -1,168 +1,201 @@
-# 🎯 What must be built (smallest possible change)
+## 🔎 Backend Audit Prompt — SynOS Financials & Dashboard Readiness
 
-We are **NOT** redesigning SynOS.
+**Mode:** AUDIT ONLY
+**No code changes. No implementation. No refactors. No assumptions.**
 
-We are adding **one missing truth signal**.
+---
 
-### Minimal backend contract (pick ONE, not both)
+### Context
 
-**Preferred (cleaner):**
+SynOS is adding **Reception Dashboard financial tiles** and **explicit payment modeling**.
 
-```ts
-VisitPhase: Draft | InProgress | Finalized
+We already have:
+
+* Immutable facts philosophy
+* Projector-based aggregates
+* Role-scoped operational stats
+* Existing real-time tile pipeline (SignalR + Projectors)
+
+This audit is to verify **backend readiness**, **current state**, and **gaps** — nothing else.
+
+---
+
+### What to Audit (STRICT)
+
+#### 1️⃣ Payment Modeling (Ground Truth)
+
+Audit the current backend for:
+
+* How **payments** are currently represented
+  (Entities, Facts, Events — list exact classes/files)
+
+Answer explicitly:
+
+* Is there a `PaymentFact` or equivalent immutable record?
+* Does it capture:
+
+  * VisitId
+  * Amount
+  * Method (Cash / UPI / Card)
+  * UserId (who collected)
+  * Timestamp
+
+❗ If not present, **state the gap**, do not design a solution.
+
+---
+
+#### 2️⃣ Payment Method Semantics
+
+Confirm:
+
+* Whether payment method is:
+
+  * Explicitly modeled (enum/value object), OR
+  * Inferred / implicit
+
+Clarify:
+
+* Is “Online” stored as a method?
+* Or is Online expected to be a **projection (UPI + Card)**?
+
+Flag any place where **method inference** happens instead of explicit capture.
+
+---
+
+#### 3️⃣ Prepaid — Canonical Meaning (Critical)
+
+Audit how **Prepaid** is handled today:
+
+Answer clearly:
+
+* Is Prepaid modeled as:
+
+  * Visit State?
+  * Billing Model?
+  * Payment Method?
+  * Receivable?
+  * Or not modeled at all?
+
+Check for:
+
+* Any fact/event emitted when a visit is marked prepaid
+* Any way to track **money yet to be collected**
+
+❗ IMPORTANT
+Prepaid ≠ Paid.
+If backend currently treats prepaid as “assumed paid” or does nothing, **flag this as a design gap**.
+
+---
+
+#### 4️⃣ Operational Stats / Tiles Pipeline
+
+Audit the existing dashboard stats flow:
+
+* Where are **Walk-in**, **Pending Reports**, **Avg TAT** coming from?
+* Which projector computes them?
+* Which DTO serves them?
+* Are they:
+
+  * Event-driven?
+  * Role-scoped (per logged-in user)?
+  * Branch-scoped?
+
+Specifically verify:
+
+* Is **Walk-in** currently incremented on Visit creation or on Payment acceptance?
+* Is this definition aligned with real-world billing truth?
+
+---
+
+#### 5️⃣ Role Scoping (Receptionist vs Accountant)
+
+Verify whether backend stats:
+
+* Are scoped per `UserId`
+* Or aggregated globally
+
+Confirm:
+
+* Can the backend distinguish:
+
+  * Payments collected by Receptionist A vs B?
+  * Receivables later collected by Accountant?
+
+If not, **explicitly mark the limitation**.
+
+---
+
+#### 6️⃣ Real-Time Update Capability
+
+Audit:
+
+* What events currently trigger:
+
+  * Tile updates
+  * SignalR broadcasts
+* Whether the same pipeline can be reused for:
+
+  * Cash collected
+  * Online payments
+  * Prepaid counts/amounts
+
+Do **not** propose new pipelines.
+
+---
+
+### Output Format (MANDATORY)
+
+Your response must be structured as:
+
+```
+Backend Readiness Audit — SynOS
+
+1. Payment Modeling
+   - Current State:
+   - Gaps:
+
+2. Payment Methods
+   - Current State:
+   - Gaps:
+
+3. Prepaid Handling
+   - Current State:
+   - Gaps:
+
+4. Operational Stats Pipeline
+   - Current State:
+   - Gaps:
+
+5. Role Scoping
+   - Current State:
+   - Gaps:
+
+6. Real-Time Capability
+   - Current State:
+   - Gaps:
+
+Final Verdict:
+- READY / PARTIALLY READY / NOT READY
+- One paragraph justification
 ```
 
-**OR (even smaller):**
+---
 
-```ts
-IsFinalized: boolean
-```
+### Hard Rules
 
-That’s it.
+* ❌ Do NOT suggest schema changes unless a gap truly exists
+* ❌ Do NOT design new features
+* ❌ Do NOT assume frontend behavior
+* ❌ Do NOT auto-fill missing logic with guesses
 
-No new logic.
-No new rules.
-No new calculations.
-
-The backend already *knows* this truth — it’s just not exporting it.
+If something is missing → **state “Gap exists” and stop there**.
 
 ---
 
-# 🚧 Hard constraints for Antigravity (non-negotiable)
+### Objective
 
-You must explicitly tell the agent **all of this**, otherwise it *will* freestyle.
-
-## Antigravity MUST NOT:
-
-* ❌ Change Revenue Engine
-* ❌ Change Discount logic
-* ❌ Change Correction model
-* ❌ Introduce UI-side inference
-* ❌ Add temporary hacks
-* ❌ Add flags derived from strings
-* ❌ Rename existing concepts
-* ❌ Add “smart” UI behavior
-
-## Antigravity IS allowed to:
-
-* ✅ Add a backend projection field
-* ✅ Thread it through existing DTOs
-* ✅ Read existing invoice/visit status
-* ✅ Expose lifecycle truth explicitly
-* ✅ Update frontend to consume that flag only
+This audit will be **cross-checked** against an independent frontend/architecture audit.
+Consistency matters more than creativity.
 
 ---
 
-# 🧠 The *real* rule you are enforcing
-
-> **Editability must come from backend fact, not backend projection and not frontend interpretation.**
-
-This keeps SynOS OS-grade.
-
----
-
-# 📌 EXACT PROMPT TO GIVE ANTIGRAVITY (copy–paste)
-
-Use this **verbatim**. Do not soften it.
-
----
-
-### 🔒 EXECUTION AUTHORIZATION — STRICT MODE (SynOS)
-
-You are authorized to temporarily perform **both backend + frontend work**
-to implement **Option B: Explicit Visit Finalization Truth**.
-
-⚠️ **This is a surgical fix, NOT a redesign.**
-
----
-
-## 🔍 Problem (Authoritative)
-
-Frontend currently decides visit editability using `paymentStatus`
-from `ActionQueueRowDto`.
-
-This is **unacceptable** because:
-
-* `paymentStatus` is a human-readable projection
-* It is not a lifecycle invariant
-* It can be delayed, empty, or reused later
-
-We require **explicit backend-owned truth**.
-
----
-
-## ✅ Required Change (Minimal)
-
-Expose ONE explicit lifecycle signal from backend:
-
-### Option A (preferred)
-
-```ts
-VisitPhase: Draft | InProgress | Finalized
-```
-
-### OR Option B (acceptable)
-
-```ts
-IsFinalized: boolean
-```
-
-This value must be:
-
-* Derived from existing backend truth (invoice/payment state)
-* Calculated in backend services
-* Included in ActionQueueRowDto (or equivalent projection)
-
-⚠️ DO NOT infer this from `paymentStatus`.
-
----
-
-## 🧱 HARD CONSTRAINTS (DO NOT VIOLATE)
-
-You MUST NOT:
-
-* Modify Revenue Engine
-* Modify Discount Engine
-* Modify Correction logic
-* Change architectural layering
-* Add UI-side fallback logic
-* Add derived or guessed states
-* Introduce new lifecycle rules
-
-You MAY:
-
-* Add a backend projection field
-* Thread it through DTOs
-* Read existing invoice/visit status
-* Update frontend to use ONLY this field
-
----
-
-## 🧪 Success Criteria
-
-1. Clicking a Token:
-
-   * Opens Edit mode **only if** backend says not finalized
-   * Opens Read-only mode **only if** backend says finalized
-2. No usage of `paymentStatus` for editability
-3. No behavioral changes elsewhere
-4. Clear report of:
-
-   * Files touched
-   * Exact logic used to compute Finalized
-
----
-
-## 🛑 Stop Condition
-
-If implementing this requires:
-
-* New business rules
-* Reinterpreting payment logic
-* Guessing intent
-
-→ STOP and report.
-
----
-
-now, after reading this layout your execution plan and wait for my approval.

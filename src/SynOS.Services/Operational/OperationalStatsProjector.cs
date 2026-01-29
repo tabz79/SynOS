@@ -9,6 +9,8 @@ using SynOS.Models.Enums;
 using SynOS.Models.ReadModels;
 using SynOS.Services.Security;
 using SynOS.Services.Dashboard; // ADDED
+using SynOS.Models.Entities.AR; // ADDED: Stage 1 Financials
+using SynOS.Models.Entities.Payments; // ADDED: Stage 1 Financials
 
 namespace SynOS.Services.Operational
 {
@@ -61,15 +63,15 @@ namespace SynOS.Services.Operational
                 var isProcessed = await _context.ProcessedProjectionEvents
                     .AnyAsync(p => p.EventId == evt.EventId && p.ProjectionName == "OperationalStats");
 
-                if (isProcessed) return; // Already done
+                if (isProcessed) return;
 
                 // Parse standard fields
                 if (!Guid.TryParse(evt.BranchId, out var branchId)) return;
-                var date = evt.OccurredAt.Date; // UTC Date
+                var date = evt.OccurredAt.Date;
                 Guid userId = Guid.Empty;
                 if (evt.ActorType == "User" && !string.IsNullOrEmpty(evt.ActorName))
                 {
-                    Guid.TryParse(evt.ActorName, out userId); // Assuming ActorName holds UserId as per Writer logic
+                    Guid.TryParse(evt.ActorName, out userId);
                 }
 
                 // 3. Load/Create State
@@ -84,29 +86,61 @@ namespace SynOS.Services.Operational
                     switch (type)
                     {
                         case BranchEventType.VISIT_STARTED:
-                            userStats.WalkInsCount++;
-                            updated = true;
+                            // REMOVED: Walk-in logic moved to Financial Events (Strict Validation)
                             break;
 
                         case BranchEventType.PAYMENT_RECEIVED:
-                            // Rule: Load Payment by SourceId. 
+                            // STAGE 1: Strict Fact Loading
+                            if (evt.SourceId.HasValue && evt.SourceType == "PaymentConfirmedFact")
+                            {
+                                var fact = await _context.PaymentConfirmedFacts.FindAsync(evt.SourceId.Value);
+                                if (fact != null)
+                                {
+                                    // Financial Metrics
+                                    userStats.PaymentsTotal += fact.Amount; // Legacy Grand Total
+                                    
+                                    if (fact.Channel == "Cash")
+                                    {
+                                        userStats.PaymentsCashTotal += fact.Amount;
+                                    }
+                                    else if (fact.Channel == "UPI" || fact.Channel == "Card") // Online Bucket
+                                    {
+                                        userStats.PaymentsOnlineTotal += fact.Amount;
+                                        userStats.PaymentsOnlineCount++;
+                                    }
+
+                                    // Walk-in Logic (Unique Visit Validation)
+                                    // Find Visit ID via Reference
+                                    // Note: This relies on mutable Payment existence, but only for Visit ID lookup.
+                                    var payment = await _context.Payments
+                                        .Include(p => p.Invoice)
+                                        .AsNoTracking()
+                                        .FirstOrDefaultAsync(p => p.PaymentId == fact.ReferenceId);
+
+                                    if (payment?.Invoice?.VisitId != null)
+                                    {
+                                        var visitId = payment.Invoice.VisitId;
+                                        await CheckAndIncrementWalkInAsync(userStats, visitId, evt.SourceId.Value);
+                                    }
+                                    
+                                    updated = true;
+                                }
+                            }
+                            // Legacy Fallback (if SourceType missing or old event)? 
+                            // For now, strict Stage 1 implies we only care about new events.
+                            break;
+
+                        case BranchEventType.RECEIVABLE_CREATED:
                             if (evt.SourceId.HasValue)
                             {
-                                var payment = await _context.Payments.FindAsync(evt.SourceId.Value);
-                                if (payment != null)
+                                var fact = await _context.ReceivableFacts.FindAsync(evt.SourceId.Value);
+                                if (fact != null)
                                 {
-                                    // CRITICAL: Filter virtual payments (Flow B)
-                                    if (payment.Method != "PartnerAccount")
-                                    {
-                                        userStats.PaymentsTotal += payment.Amount;
-                                        updated = true;
-                                    }
-                                    else
-                                    {
-                                        // It's a valid event, but we don't count it.
-                                        // We still need to mark it processed.
-                                        updated = true; // Trigger save of idempotency record
-                                    }
+                                    userStats.PrepaidBillsCount++;
+                                    userStats.PrepaidBillsTotal += fact.Amount;
+                                    
+                                    await CheckAndIncrementWalkInAsync(userStats, fact.SourceVisitId, evt.SourceId.Value);
+                                    updated = true;
                                 }
                             }
                             break;
@@ -118,17 +152,11 @@ namespace SynOS.Services.Operational
 
                         case BranchEventType.REPORT_SIGNED:
                             branchStats.PendingReportsCount--;
-                            
-                            // TAT Calculation
-                            // TokenId holds ReportId in OperationsEngine
                             if (Guid.TryParse(evt.TokenId, out var reportId))
                             {
                                 var report = await _context.Reports.FindAsync(reportId);
                                 if (report != null && report.SignedAt.HasValue)
                                 {
-                                    // Need Sample Collected Time.
-                                    // Report -> Visit -> Orders -> Samples?
-                                    // Report.SourceId links to Order or Test.
                                     if (report.SourceType == "Order") 
                                     {
                                         var sample = await _context.Samples
@@ -148,7 +176,7 @@ namespace SynOS.Services.Operational
                                     }
                                 }
                             }
-                            updated = true; // Even if TAT fails, we decremented Pending
+                            updated = true;
                             break;
                     }
                 }
@@ -158,7 +186,6 @@ namespace SynOS.Services.Operational
                     userStats.LastUpdated = DateTime.UtcNow;
                     branchStats.LastUpdated = DateTime.UtcNow;
                     
-                    // 5. Mark Processed
                     _context.ProcessedProjectionEvents.Add(new ProcessedProjectionEvent
                     {
                         EventId = evt.EventId,
@@ -169,7 +196,6 @@ namespace SynOS.Services.Operational
                     await _context.SaveChangesAsync();
                     await transaction.CommitAsync();
 
-                    // 6. SignalR Push
                     if (userId != Guid.Empty)
                     {
                         await PushUpdateAsync(userId, branchId, date);
@@ -179,24 +205,41 @@ namespace SynOS.Services.Operational
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error projecting event {EventId}", evt.EventId);
-                // Do not rethrow, just log. Next retry might succeed.
             }
+        }
+
+        private async Task CheckAndIncrementWalkInAsync(UserOperationalStats stats, Guid visitId, Guid currentFactId)
+        {
+            // Definition: "Unique Visit where a Payment/Receivable was Accepted".
+            // We check if ANY prior financial fact exists for this visit.
+            
+            // 1. Check Receivables
+            var hasPriorReceivable = await _context.ReceivableFacts
+                .AnyAsync(r => r.SourceVisitId == visitId && r.ReceivableFactId != currentFactId);
+            
+            if (hasPriorReceivable) return; // Already counted via receivable
+
+            // 2. Check Payments
+            var paymentIds = _context.Payments
+                .Where(p => p.Invoice.VisitId == visitId)
+                .Select(p => p.PaymentId);
+
+            var hasPriorPayment = await _context.PaymentConfirmedFacts
+                .AnyAsync(f => paymentIds.Contains(f.ReferenceId.Value) && f.PaymentId != currentFactId); // ReferenceId is nullable but in this flow always set
+
+            if (hasPriorPayment) return; // Already counted via payment
+
+            // If no prior facts, this is the first (statistically unique visit validation)
+            stats.WalkInsCount++;
         }
 
         private async Task<UserOperationalStats> GetOrCreateUserStats(Guid userId, Guid branchId, DateTime date)
         {
-            // Fix: Use FindAsync which checks Local cache first, preventing identity resolution conflicts
-            // Assuming PK is Composite: UserId, BranchId, Date (in that order based on common sense, but verified in DbContext usually)
-            // If FindAsync fails due to wrong PK order, we fall back to manual query but with tracking check.
-            
-            // Best Practice Safe Pattern:
-            // 1. Check Local manually to be 100% sure what we have
             var localStats = _context.UserOperationalStats.Local
                 .FirstOrDefault(x => x.UserId == userId && x.BranchId == branchId && x.Date == date);
             
             if (localStats != null) return localStats;
 
-            // 2. Check Database
             var stats = await _context.UserOperationalStats
                 .FirstOrDefaultAsync(x => x.UserId == userId && x.BranchId == branchId && x.Date == date);
 
@@ -239,7 +282,6 @@ namespace SynOS.Services.Operational
 
         private async Task PushUpdateAsync(Guid userId, Guid branchId, DateTime date)
         {
-            // Re-fetch to ensure clean state
             var uStats = await _context.UserOperationalStats.AsNoTracking()
                 .FirstOrDefaultAsync(x => x.UserId == userId && x.BranchId == branchId && x.Date == date);
             var bStats = await _context.BranchOperationalStats.AsNoTracking()
@@ -251,6 +293,11 @@ namespace SynOS.Services.Operational
             {
                 WalkInsToday = uStats.WalkInsCount,
                 PaymentsCollected = uStats.PaymentsTotal,
+                PaymentsCashTotal = uStats.PaymentsCashTotal,
+                PaymentsOnlineTotal = uStats.PaymentsOnlineTotal,
+                PaymentsOnlineCount = uStats.PaymentsOnlineCount,
+                PrepaidBillsCount = uStats.PrepaidBillsCount,
+                PrepaidBillsTotal = uStats.PrepaidBillsTotal,
                 PendingReports = bStats.PendingReportsCount,
                 AvgReportTimeMinutes = uStats.ReportTatCount > 0 
                     ? Math.Round(uStats.ReportTatTotalMinutes / uStats.ReportTatCount, 2) 

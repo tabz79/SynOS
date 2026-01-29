@@ -1,4 +1,5 @@
 using SynOS.Models.Entities.AR;
+using SynOS.Models.Entities.Payments;
 using Microsoft.EntityFrameworkCore;
 using SynOS.Models.Entities;
 using SynOS.Models.Entities.IMS;
@@ -30,6 +31,7 @@ namespace SynOS.Data
         public DbSet<ProcessedProjectionEvent> ProcessedProjectionEvents { get; set; } = null!; // ADDED: Idempotency
 
         public DbSet<ReceivableFact> ReceivableFacts { get; set; } = null!;
+        public DbSet<PaymentConfirmedFact> PaymentConfirmedFacts { get; set; } = null!; // ADDED: Stage 1 Financials
         // DbSet for User entity
         public DbSet<User> Users { get; set; } = null!;
         public DbSet<SynOS.Models.Entities.Role> Roles { get; set; } = null!;

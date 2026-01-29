@@ -1,0 +1,232 @@
+2026-01-29 11:53:31.787 +05:30 [FTL] EVENT_WRITE for VisitId a12f203a-f09c-470d-a494-dc6157937f0b, Context 895a7648-9fcb-4162-9d03-400f8abbce80:0
+2026-01-29 11:53:31.843 +05:30 [FTL] EVENT_WRITE for VisitId a12f203a-f09c-470d-a494-dc6157937f0b, Context 895a7648-9fcb-4162-9d03-400f8abbce80:0
+2026-01-29 11:53:32.118 +05:30 [WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+2026-01-29 11:55:19.729 +05:30 [FTL] EVENT_WRITE for VisitId a12f203a-f09c-470d-a494-dc6157937f0b, Context ec794f8e-6540-4520-9e61-4b486ab8c562:0
+2026-01-29 11:59:39.063 +05:30 [FTL] EVENT_WRITE for VisitId 5a6b8b81-8ce3-4c64-b3cb-b56c22e0fae6, Context d972acbc-218b-4b30-b935-2bda175bd072:0
+2026-01-29 11:59:39.095 +05:30 [FTL] EVENT_WRITE for VisitId 5a6b8b81-8ce3-4c64-b3cb-b56c22e0fae6, Context d972acbc-218b-4b30-b935-2bda175bd072:0
+2026-01-29 11:59:39.186 +05:30 [WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+2026-01-29 11:59:50.636 +05:30 [FTL] EVENT_WRITE for VisitId 5a6b8b81-8ce3-4c64-b3cb-b56c22e0fae6, Context cea0ae32-c5d0-4f04-b93a-92a60bd6b3c1:0
+2026-01-29 11:59:59.591 +05:30 [FTL] EVENT_WRITE for VisitId 5a6b8b81-8ce3-4c64-b3cb-b56c22e0fae6, Context 566bb81d-b182-4f57-b9df-d0319c161198:0
+2026-01-29 12:11:14.772 +05:30 [FTL] EVENT_WRITE for VisitId 5a6b8b81-8ce3-4c64-b3cb-b56c22e0fae6, Context 9489e893-73bd-4349-8888-2562aaf43344:0
+2026-01-29 12:11:14.815 +05:30 [INF] Auto-created Sample "e32de2f5-1179-4544-90ee-b012a3d118bf" for Order "9dad134e-5cf0-46ad-9031-018780df7749"
+2026-01-29 12:11:14.833 +05:30 [FTL] EVENT_WRITE for VisitId 5a6b8b81-8ce3-4c64-b3cb-b56c22e0fae6, Context 9489e893-73bd-4349-8888-2562aaf43344:0
+2026-01-29 12:11:14.867 +05:30 [WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+2026-01-29 12:20:44.454 +05:30 [FTL] EVENT_WRITE for VisitId 91b021c7-c64b-49a4-9f9f-e8ffd09b770d, Context e5ee6aee-fd91-43b9-b2f9-4ac467307cc4:0
+2026-01-29 12:20:44.599 +05:30 [FTL] EVENT_WRITE for VisitId 91b021c7-c64b-49a4-9f9f-e8ffd09b770d, Context e5ee6aee-fd91-43b9-b2f9-4ac467307cc4:0
+2026-01-29 12:20:44.780 +05:30 [WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+2026-01-29 12:21:13.851 +05:30 [FTL] EVENT_WRITE for VisitId 91b021c7-c64b-49a4-9f9f-e8ffd09b770d, Context fced6ceb-dd33-47c6-b2c3-9f2d23d24458:0
+2026-01-29 12:22:24.587 +05:30 [FTL] EVENT_WRITE for VisitId 4fa10f5b-dfce-41c4-9619-d858ffb4b965, Context 3d3bb284-4638-4da3-99d7-62c7bbc41420:0
+2026-01-29 12:22:24.624 +05:30 [FTL] EVENT_WRITE for VisitId 4fa10f5b-dfce-41c4-9619-d858ffb4b965, Context 3d3bb284-4638-4da3-99d7-62c7bbc41420:0
+2026-01-29 12:22:24.806 +05:30 [WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+2026-01-29 12:22:34.298 +05:30 [FTL] EVENT_WRITE for VisitId 4fa10f5b-dfce-41c4-9619-d858ffb4b965, Context 8c76c78e-9257-42f3-861c-f42091f477e0:0
+2026-01-29 12:22:49.377 +05:30 [FTL] EVENT_WRITE for VisitId 4fa10f5b-dfce-41c4-9619-d858ffb4b965, Context 03acbb42-5bc8-4c9d-b4e0-81cdd68005aa:0
+2026-01-29 12:23:00.833 +05:30 [FTL] EVENT_WRITE for VisitId 4fa10f5b-dfce-41c4-9619-d858ffb4b965, Context e270dd41-5232-486b-967d-f5ed9f0184aa:0
+2026-01-29 12:23:04.717 +05:30 [FTL] EVENT_WRITE for VisitId 4fa10f5b-dfce-41c4-9619-d858ffb4b965, Context 046a2353-259f-409e-ba65-9fa7a8bd50b2:0
+2026-01-29 12:23:04.747 +05:30 [INF] Auto-created Sample "54007715-cab4-4a0e-bcc8-5fcd60f0a3f0" for Order "1bfcc21d-7bde-4e39-a2c0-fc00efd8f474"
+2026-01-29 12:23:04.760 +05:30 [FTL] EVENT_WRITE for VisitId 4fa10f5b-dfce-41c4-9619-d858ffb4b965, Context 046a2353-259f-409e-ba65-9fa7a8bd50b2:0
+2026-01-29 12:23:04.802 +05:30 [WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+2026-01-29 12:25:55.472 +05:30 [FTL] EVENT_WRITE for VisitId 769f7e47-9f0c-48a7-bd31-ebb594c1ab1f, Context 59e098d7-928f-4b54-9ee5-906c7ad4bf07:0
+2026-01-29 12:25:55.509 +05:30 [FTL] EVENT_WRITE for VisitId 769f7e47-9f0c-48a7-bd31-ebb594c1ab1f, Context 59e098d7-928f-4b54-9ee5-906c7ad4bf07:0
+2026-01-29 12:25:55.575 +05:30 [WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+2026-01-29 12:26:33.358 +05:30 [FTL] EVENT_WRITE for VisitId 769f7e47-9f0c-48a7-bd31-ebb594c1ab1f, Context fbca78af-364a-4cc6-b0fc-a3572ae0d835:0
+2026-01-29 12:27:24.227 +05:30 [FTL] EVENT_WRITE for VisitId 769f7e47-9f0c-48a7-bd31-ebb594c1ab1f, Context 013426dc-c5bf-478f-a897-1c78481e547d:0
+2026-01-29 12:27:24.277 +05:30 [INF] Auto-created Sample "3a990aa0-2b25-4a85-ba91-4ca06af58ffb" for Order "02029ede-a9a7-4398-8395-64bded509694"
+2026-01-29 12:27:24.348 +05:30 [FTL] EVENT_WRITE for VisitId 769f7e47-9f0c-48a7-bd31-ebb594c1ab1f, Context 013426dc-c5bf-478f-a897-1c78481e547d:0
+2026-01-29 12:27:24.399 +05:30 [WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+2026-01-29 12:38:37.430 +05:30 [FTL] EVENT_WRITE for VisitId 0ff5eab7-fbbd-4ffd-8a8e-7d57e33d5825, Context 15d60568-965b-4659-85f7-fe427da56603:0
+2026-01-29 12:38:37.566 +05:30 [FTL] EVENT_WRITE for VisitId 0ff5eab7-fbbd-4ffd-8a8e-7d57e33d5825, Context 15d60568-965b-4659-85f7-fe427da56603:0
+2026-01-29 12:38:38.061 +05:30 [WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+2026-01-29 12:39:21.010 +05:30 [FTL] EVENT_WRITE for VisitId 0ff5eab7-fbbd-4ffd-8a8e-7d57e33d5825, Context a9dca576-3fa7-4ebb-bf9d-d2506b277a84:0
+2026-01-29 12:46:36.031 +05:30 [FTL] EVENT_WRITE for VisitId ff2baaff-8f23-4b2a-b449-c129826a70b5, Context e1e592ca-6bd8-422c-896c-4ef6f162a1be:0
+2026-01-29 12:46:36.373 +05:30 [FTL] EVENT_WRITE for VisitId ff2baaff-8f23-4b2a-b449-c129826a70b5, Context e1e592ca-6bd8-422c-896c-4ef6f162a1be:0
+2026-01-29 12:46:36.695 +05:30 [WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+2026-01-29 12:49:27.814 +05:30 [FTL] EVENT_WRITE for VisitId ff2baaff-8f23-4b2a-b449-c129826a70b5, Context 18be1548-cd22-48d5-8cf3-c7ffdc17ebd9:0
+2026-01-29 12:52:06.048 +05:30 [FTL] EVENT_WRITE for VisitId ff2baaff-8f23-4b2a-b449-c129826a70b5, Context e8d332d0-af67-44ce-b376-8825247c8a7a:0
+2026-01-29 12:52:53.366 +05:30 [FTL] EVENT_WRITE for VisitId ff2baaff-8f23-4b2a-b449-c129826a70b5, Context c407bb12-704d-4782-a47f-8b2baedad229:0
+2026-01-29 12:53:45.943 +05:30 [FTL] EVENT_WRITE for VisitId ff2baaff-8f23-4b2a-b449-c129826a70b5, Context 85105a9d-1916-45cc-b2c8-c27d5fc619e8:0
+2026-01-29 12:53:45.995 +05:30 [INF] Auto-created Sample "2ab457a6-431a-4c9a-8296-7ec8d77a8f61" for Order "0af9b827-8868-4e16-973d-c122cd6fb36e"
+2026-01-29 12:53:46.014 +05:30 [FTL] EVENT_WRITE for VisitId ff2baaff-8f23-4b2a-b449-c129826a70b5, Context 85105a9d-1916-45cc-b2c8-c27d5fc619e8:0
+2026-01-29 12:53:46.078 +05:30 [WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+2026-01-29 12:56:33.730 +05:30 [FTL] EVENT_WRITE for VisitId ff2baaff-8f23-4b2a-b449-c129826a70b5, Context c83f4d34-4ec1-4b2f-8892-65ecd486aeab:0
+2026-01-29 12:57:03.552 +05:30 [FTL] EVENT_WRITE for VisitId ff2baaff-8f23-4b2a-b449-c129826a70b5, Context f3ec2609-a146-432d-bf07-e1ac259d1aab:0
+2026-01-29 13:00:51.378 +05:30 [FTL] EVENT_WRITE for VisitId ce0200d9-2812-487c-836b-1a7a70a08c53, Context a2f4208e-d1ba-40f2-af4d-51dbc99de87d:0
+2026-01-29 13:00:51.635 +05:30 [FTL] EVENT_WRITE for VisitId ce0200d9-2812-487c-836b-1a7a70a08c53, Context a2f4208e-d1ba-40f2-af4d-51dbc99de87d:0
+2026-01-29 13:00:52.067 +05:30 [WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+2026-01-29 13:07:59.063 +05:30 [FTL] EVENT_WRITE for VisitId f382aff7-14c1-42d0-ac8c-c8eaf24b9eb9, Context 2eb5730b-aa33-4f1a-a35d-bace09f17e50:0
+2026-01-29 13:07:59.921 +05:30 [FTL] EVENT_WRITE for VisitId f382aff7-14c1-42d0-ac8c-c8eaf24b9eb9, Context 2eb5730b-aa33-4f1a-a35d-bace09f17e50:0
+2026-01-29 13:07:59.981 +05:30 [WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+2026-01-29 15:41:21.427 +05:30 [FTL] EVENT_WRITE for VisitId 9685e6ca-9f68-4ad5-8292-589c1daf32b6, Context 05c8e598-0351-48a6-aa0f-2f0433f34303:0
+2026-01-29 15:41:21.618 +05:30 [FTL] EVENT_WRITE for VisitId 9685e6ca-9f68-4ad5-8292-589c1daf32b6, Context 05c8e598-0351-48a6-aa0f-2f0433f34303:0
+2026-01-29 15:41:21.728 +05:30 [WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+2026-01-29 15:41:41.634 +05:30 [FTL] EVENT_WRITE for VisitId 9685e6ca-9f68-4ad5-8292-589c1daf32b6, Context 18191e1f-36a6-4144-aa66-3d4ae248f6c9:0
+2026-01-29 17:38:04.213 +05:30 [INF] Analyzer TCP Listener Service stopping...
+2026-01-29 17:38:04.219 +05:30 [INF] Analyzer TCP Listener Service stopped.
+2026-01-29 17:38:04.229 +05:30 [INF] Notification Worker Service stopping gracefully.
+2026-01-29 18:32:43.635 +05:30 [WRN] No store type was specified for the decimal property 'MaxLimit' on entity type 'DiscountMaster'. This will cause values to be silently truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.
+2026-01-29 18:32:43.713 +05:30 [WRN] No store type was specified for the decimal property 'Amount' on entity type 'PayrollAdjustment'. This will cause values to be silently truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.
+2026-01-29 18:32:43.724 +05:30 [WRN] No store type was specified for the decimal property 'Amount' on entity type 'PayrollFact'. This will cause values to be silently truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.
+2026-01-29 18:32:50.226 +05:30 [INF] Notification Worker Service running.
+2026-01-29 18:32:50.375 +05:30 [INF] ExpiredLockCleanupService is starting.
+2026-01-29 18:32:50.509 +05:30 [INF] Analyzer TCP Listener Service starting...
+2026-01-29 18:32:50.515 +05:30 [WRN] No analyzer TCP listeners configured in appsettings.json.
+2026-01-29 18:33:26.522 +05:30 [WRN] Failed to determine the https port for redirect.
+2026-01-29 18:33:29.021 +05:30 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2026-01-29 18:36:49.762 +05:30 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2026-01-29 18:36:49.842 +05:30 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2026-01-29 18:36:50.439 +05:30 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2026-01-29 18:36:50.596 +05:30 [FTL] EVENT_WRITE for VisitId 6287861e-d733-4bd3-8f7c-34ee8fbc1d33, Context a8631205-fbff-453c-b1ef-8b783f970e71:0
+2026-01-29 18:36:50.693 +05:30 [FTL] EVENT_WRITE for VisitId 6287861e-d733-4bd3-8f7c-34ee8fbc1d33, Context a8631205-fbff-453c-b1ef-8b783f970e71:0
+2026-01-29 18:36:50.874 +05:30 [WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+2026-01-29 18:39:03.078 +05:30 [FTL] EVENT_WRITE for VisitId 7909eca0-9054-4d3b-9909-268d928ac6e3, Context 830ce9aa-26a0-4430-9614-c8641784127d:0
+2026-01-29 18:39:03.121 +05:30 [FTL] EVENT_WRITE for VisitId 7909eca0-9054-4d3b-9909-268d928ac6e3, Context 830ce9aa-26a0-4430-9614-c8641784127d:0
+2026-01-29 18:39:03.174 +05:30 [WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+2026-01-29 18:50:25.012 +05:30 [INF] Analyzer TCP Listener Service stopping...
+2026-01-29 18:50:25.019 +05:30 [INF] Analyzer TCP Listener Service stopped.
+2026-01-29 18:50:25.027 +05:30 [INF] Notification Worker Service stopping gracefully.
+2026-01-29 18:55:47.996 +05:30 [WRN] No store type was specified for the decimal property 'MaxLimit' on entity type 'DiscountMaster'. This will cause values to be silently truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.
+2026-01-29 18:55:48.111 +05:30 [WRN] No store type was specified for the decimal property 'Amount' on entity type 'PayrollAdjustment'. This will cause values to be silently truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.
+2026-01-29 18:55:48.119 +05:30 [WRN] No store type was specified for the decimal property 'Amount' on entity type 'PayrollFact'. This will cause values to be silently truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.
+2026-01-29 18:55:54.083 +05:30 [INF] Notification Worker Service running.
+2026-01-29 18:55:54.235 +05:30 [INF] ExpiredLockCleanupService is starting.
+2026-01-29 18:55:54.367 +05:30 [INF] Analyzer TCP Listener Service starting...
+2026-01-29 18:55:54.371 +05:30 [WRN] No analyzer TCP listeners configured in appsettings.json.
+2026-01-29 18:56:18.484 +05:30 [WRN] Failed to determine the https port for redirect.
+2026-01-29 18:56:51.629 +05:30 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2026-01-29 18:58:13.347 +05:30 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2026-01-29 18:58:13.638 +05:30 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2026-01-29 18:58:13.708 +05:30 [FTL] EVENT_WRITE for VisitId 6a0750a2-0621-4bc8-b4e6-047b4c935be7, Context 795a2496-080c-4cd9-a272-994a67d098cf:0
+2026-01-29 18:58:13.794 +05:30 [FTL] EVENT_WRITE for VisitId 6a0750a2-0621-4bc8-b4e6-047b4c935be7, Context 795a2496-080c-4cd9-a272-994a67d098cf:0
+2026-01-29 18:58:13.947 +05:30 [WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+2026-01-29 18:58:14.114 +05:30 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2026-01-29 21:47:28.295 +05:30 [INF] Analyzer TCP Listener Service stopping...
+2026-01-29 21:47:28.304 +05:30 [INF] Analyzer TCP Listener Service stopped.
+2026-01-29 21:47:28.314 +05:30 [INF] Notification Worker Service stopping gracefully.
+2026-01-29 21:55:27.751 +05:30 [ERR] An error occurred while seeding the database.
+System.InvalidOperationException: The entity type 'PaymentConfirmedFact' requires a primary key to be defined. If you intended to use a keyless entity type, call 'HasNoKey' in 'OnModelCreating'. For more information on keyless entity types, see https://go.microsoft.com/fwlink/?linkid=2141943.
+   at Microsoft.EntityFrameworkCore.Infrastructure.ModelValidator.ValidateNonNullPrimaryKeys(IModel model, IDiagnosticsLogger`1 logger)
+   at Microsoft.EntityFrameworkCore.Infrastructure.ModelValidator.Validate(IModel model, IDiagnosticsLogger`1 logger)
+   at Microsoft.EntityFrameworkCore.Infrastructure.RelationalModelValidator.Validate(IModel model, IDiagnosticsLogger`1 logger)
+   at Microsoft.EntityFrameworkCore.SqlServer.Infrastructure.Internal.SqlServerModelValidator.Validate(IModel model, IDiagnosticsLogger`1 logger)
+   at Microsoft.EntityFrameworkCore.Infrastructure.ModelRuntimeInitializer.Initialize(IModel model, Boolean designTime, IDiagnosticsLogger`1 validationLogger)
+   at Microsoft.EntityFrameworkCore.Infrastructure.ModelSource.GetModel(DbContext context, ModelCreationDependencies modelCreationDependencies, Boolean designTime)
+   at Microsoft.EntityFrameworkCore.Internal.DbContextServices.CreateModel(Boolean designTime)
+   at Microsoft.EntityFrameworkCore.Internal.DbContextServices.get_Model()
+   at Microsoft.EntityFrameworkCore.Infrastructure.EntityFrameworkServicesBuilder.<>c.<TryAddCoreServices>b__8_4(IServiceProvider p)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteVisitor`2.VisitCallSiteMain(ServiceCallSite callSite, TArgument argument)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteRuntimeResolver.VisitCache(ServiceCallSite callSite, RuntimeResolverContext context, ServiceProviderEngineScope serviceProviderEngine, RuntimeResolverLock lockType)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteRuntimeResolver.VisitScopeCache(ServiceCallSite callSite, RuntimeResolverContext context)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteVisitor`2.VisitCallSite(ServiceCallSite callSite, TArgument argument)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteRuntimeResolver.VisitConstructor(ConstructorCallSite constructorCallSite, RuntimeResolverContext context)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteVisitor`2.VisitCallSiteMain(ServiceCallSite callSite, TArgument argument)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteRuntimeResolver.VisitCache(ServiceCallSite callSite, RuntimeResolverContext context, ServiceProviderEngineScope serviceProviderEngine, RuntimeResolverLock lockType)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteRuntimeResolver.VisitScopeCache(ServiceCallSite callSite, RuntimeResolverContext context)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteVisitor`2.VisitCallSite(ServiceCallSite callSite, TArgument argument)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteRuntimeResolver.VisitConstructor(ConstructorCallSite constructorCallSite, RuntimeResolverContext context)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteVisitor`2.VisitCallSiteMain(ServiceCallSite callSite, TArgument argument)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteRuntimeResolver.VisitCache(ServiceCallSite callSite, RuntimeResolverContext context, ServiceProviderEngineScope serviceProviderEngine, RuntimeResolverLock lockType)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteRuntimeResolver.VisitScopeCache(ServiceCallSite callSite, RuntimeResolverContext context)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteVisitor`2.VisitCallSite(ServiceCallSite callSite, TArgument argument)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteRuntimeResolver.VisitConstructor(ConstructorCallSite constructorCallSite, RuntimeResolverContext context)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteVisitor`2.VisitCallSiteMain(ServiceCallSite callSite, TArgument argument)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteRuntimeResolver.VisitCache(ServiceCallSite callSite, RuntimeResolverContext context, ServiceProviderEngineScope serviceProviderEngine, RuntimeResolverLock lockType)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteRuntimeResolver.VisitScopeCache(ServiceCallSite callSite, RuntimeResolverContext context)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteVisitor`2.VisitCallSite(ServiceCallSite callSite, TArgument argument)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteRuntimeResolver.VisitConstructor(ConstructorCallSite constructorCallSite, RuntimeResolverContext context)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteVisitor`2.VisitCallSiteMain(ServiceCallSite callSite, TArgument argument)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteRuntimeResolver.VisitCache(ServiceCallSite callSite, RuntimeResolverContext context, ServiceProviderEngineScope serviceProviderEngine, RuntimeResolverLock lockType)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteRuntimeResolver.VisitScopeCache(ServiceCallSite callSite, RuntimeResolverContext context)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteVisitor`2.VisitCallSite(ServiceCallSite callSite, TArgument argument)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteRuntimeResolver.VisitConstructor(ConstructorCallSite constructorCallSite, RuntimeResolverContext context)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteVisitor`2.VisitCallSiteMain(ServiceCallSite callSite, TArgument argument)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteRuntimeResolver.VisitCache(ServiceCallSite callSite, RuntimeResolverContext context, ServiceProviderEngineScope serviceProviderEngine, RuntimeResolverLock lockType)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteRuntimeResolver.VisitScopeCache(ServiceCallSite callSite, RuntimeResolverContext context)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteVisitor`2.VisitCallSite(ServiceCallSite callSite, TArgument argument)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteRuntimeResolver.Resolve(ServiceCallSite callSite, ServiceProviderEngineScope scope)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.DynamicServiceProviderEngine.<>c__DisplayClass2_0.<RealizeService>b__0(ServiceProviderEngineScope scope)
+   at Microsoft.Extensions.DependencyInjection.ServiceProvider.GetService(ServiceIdentifier serviceIdentifier, ServiceProviderEngineScope serviceProviderEngineScope)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetRequiredService(IServiceProvider provider, Type serviceType)
+   at Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetRequiredService[T](IServiceProvider provider)
+   at Microsoft.EntityFrameworkCore.DbContext.get_DbContextDependencies()
+   at Microsoft.EntityFrameworkCore.DbContext.get_ContextServices()
+   at Microsoft.EntityFrameworkCore.DbContext.get_Model()
+   at Microsoft.EntityFrameworkCore.Internal.InternalDbSet`1.get_EntityType()
+   at Microsoft.EntityFrameworkCore.Internal.InternalDbSet`1.CheckState()
+   at Microsoft.EntityFrameworkCore.Internal.InternalDbSet`1.get_EntityQueryable()
+   at Microsoft.EntityFrameworkCore.Internal.InternalDbSet`1.System.Linq.IQueryable.get_Provider()
+   at System.Linq.Queryable.Any[TSource](IQueryable`1 source)
+   at SynOS.Data.DbInitializer.SeedBranches(SynOSDbContext context) in D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Data\DbInitializer.cs:line 36
+   at SynOS.Data.DbInitializer.Initialize(SynOSDbContext context) in D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Data\DbInitializer.cs:line 20
+   at Program.<Main>$(String[] args) in D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Program.cs:line 310
+2026-01-29 21:55:28.293 +05:30 [INF] Notification Worker Service running.
+2026-01-29 21:55:29.366 +05:30 [ERR] Hosting failed to start
+System.InvalidOperationException: The entity type 'PaymentConfirmedFact' requires a primary key to be defined. If you intended to use a keyless entity type, call 'HasNoKey' in 'OnModelCreating'. For more information on keyless entity types, see https://go.microsoft.com/fwlink/?linkid=2141943.
+   at Microsoft.EntityFrameworkCore.Infrastructure.ModelValidator.ValidateNonNullPrimaryKeys(IModel model, IDiagnosticsLogger`1 logger)
+   at Microsoft.EntityFrameworkCore.Infrastructure.ModelValidator.Validate(IModel model, IDiagnosticsLogger`1 logger)
+   at Microsoft.EntityFrameworkCore.Infrastructure.RelationalModelValidator.Validate(IModel model, IDiagnosticsLogger`1 logger)
+   at Microsoft.EntityFrameworkCore.SqlServer.Infrastructure.Internal.SqlServerModelValidator.Validate(IModel model, IDiagnosticsLogger`1 logger)
+   at Microsoft.EntityFrameworkCore.Infrastructure.ModelRuntimeInitializer.Initialize(IModel model, Boolean designTime, IDiagnosticsLogger`1 validationLogger)
+   at Microsoft.EntityFrameworkCore.Infrastructure.ModelSource.GetModel(DbContext context, ModelCreationDependencies modelCreationDependencies, Boolean designTime)
+   at Microsoft.EntityFrameworkCore.Internal.DbContextServices.CreateModel(Boolean designTime)
+   at Microsoft.EntityFrameworkCore.Internal.DbContextServices.get_Model()
+   at Microsoft.EntityFrameworkCore.Infrastructure.EntityFrameworkServicesBuilder.<>c.<TryAddCoreServices>b__8_4(IServiceProvider p)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteVisitor`2.VisitCallSiteMain(ServiceCallSite callSite, TArgument argument)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteRuntimeResolver.VisitCache(ServiceCallSite callSite, RuntimeResolverContext context, ServiceProviderEngineScope serviceProviderEngine, RuntimeResolverLock lockType)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteRuntimeResolver.VisitScopeCache(ServiceCallSite callSite, RuntimeResolverContext context)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteVisitor`2.VisitCallSite(ServiceCallSite callSite, TArgument argument)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteRuntimeResolver.VisitConstructor(ConstructorCallSite constructorCallSite, RuntimeResolverContext context)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteVisitor`2.VisitCallSiteMain(ServiceCallSite callSite, TArgument argument)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteRuntimeResolver.VisitCache(ServiceCallSite callSite, RuntimeResolverContext context, ServiceProviderEngineScope serviceProviderEngine, RuntimeResolverLock lockType)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteRuntimeResolver.VisitScopeCache(ServiceCallSite callSite, RuntimeResolverContext context)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteVisitor`2.VisitCallSite(ServiceCallSite callSite, TArgument argument)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteRuntimeResolver.VisitConstructor(ConstructorCallSite constructorCallSite, RuntimeResolverContext context)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteVisitor`2.VisitCallSiteMain(ServiceCallSite callSite, TArgument argument)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteRuntimeResolver.VisitCache(ServiceCallSite callSite, RuntimeResolverContext context, ServiceProviderEngineScope serviceProviderEngine, RuntimeResolverLock lockType)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteRuntimeResolver.VisitScopeCache(ServiceCallSite callSite, RuntimeResolverContext context)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteVisitor`2.VisitCallSite(ServiceCallSite callSite, TArgument argument)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteRuntimeResolver.VisitConstructor(ConstructorCallSite constructorCallSite, RuntimeResolverContext context)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteVisitor`2.VisitCallSiteMain(ServiceCallSite callSite, TArgument argument)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteRuntimeResolver.VisitCache(ServiceCallSite callSite, RuntimeResolverContext context, ServiceProviderEngineScope serviceProviderEngine, RuntimeResolverLock lockType)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteRuntimeResolver.VisitScopeCache(ServiceCallSite callSite, RuntimeResolverContext context)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteVisitor`2.VisitCallSite(ServiceCallSite callSite, TArgument argument)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteRuntimeResolver.VisitConstructor(ConstructorCallSite constructorCallSite, RuntimeResolverContext context)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteVisitor`2.VisitCallSiteMain(ServiceCallSite callSite, TArgument argument)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteRuntimeResolver.VisitCache(ServiceCallSite callSite, RuntimeResolverContext context, ServiceProviderEngineScope serviceProviderEngine, RuntimeResolverLock lockType)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteRuntimeResolver.VisitScopeCache(ServiceCallSite callSite, RuntimeResolverContext context)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteVisitor`2.VisitCallSite(ServiceCallSite callSite, TArgument argument)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteRuntimeResolver.VisitConstructor(ConstructorCallSite constructorCallSite, RuntimeResolverContext context)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteVisitor`2.VisitCallSiteMain(ServiceCallSite callSite, TArgument argument)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteRuntimeResolver.VisitCache(ServiceCallSite callSite, RuntimeResolverContext context, ServiceProviderEngineScope serviceProviderEngine, RuntimeResolverLock lockType)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteRuntimeResolver.VisitScopeCache(ServiceCallSite callSite, RuntimeResolverContext context)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteVisitor`2.VisitCallSite(ServiceCallSite callSite, TArgument argument)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteRuntimeResolver.Resolve(ServiceCallSite callSite, ServiceProviderEngineScope scope)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.DynamicServiceProviderEngine.<>c__DisplayClass2_0.<RealizeService>b__0(ServiceProviderEngineScope scope)
+   at Microsoft.Extensions.DependencyInjection.ServiceProvider.GetService(ServiceIdentifier serviceIdentifier, ServiceProviderEngineScope serviceProviderEngineScope)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetRequiredService(IServiceProvider provider, Type serviceType)
+   at Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetRequiredService[T](IServiceProvider provider)
+   at Microsoft.EntityFrameworkCore.DbContext.get_DbContextDependencies()
+   at Microsoft.EntityFrameworkCore.DbContext.get_ContextServices()
+   at Microsoft.EntityFrameworkCore.DbContext.get_Model()
+   at Microsoft.EntityFrameworkCore.Internal.InternalDbSet`1.get_EntityType()
+   at Microsoft.EntityFrameworkCore.Internal.InternalDbSet`1.CheckState()
+   at Microsoft.EntityFrameworkCore.Internal.InternalDbSet`1.get_EntityQueryable()
+   at Microsoft.EntityFrameworkCore.Internal.InternalDbSet`1.System.Linq.IQueryable.get_Provider()
+   at System.Linq.Queryable.Where[TSource](IQueryable`1 source, Expression`1 predicate)
+   at SynOS.Api.BackgroundServices.NotificationWorkerService.ProcessNotificationQueue(CancellationToken stoppingToken) in D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\BackgroundServices\NotificationWorkerService.cs:line 53
+   at SynOS.Api.BackgroundServices.NotificationWorkerService.ExecuteAsync(CancellationToken stoppingToken) in D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\BackgroundServices\NotificationWorkerService.cs:line 30
+   at Microsoft.Extensions.Hosting.Internal.Host.<StartAsync>b__15_1(IHostedService service, CancellationToken token)
+   at Microsoft.Extensions.Hosting.Internal.Host.ForeachService[T](IEnumerable`1 services, CancellationToken token, Boolean concurrent, Boolean abortOnFirstException, List`1 exceptions, Func`3 operation)
+2026-01-29 21:58:32.821 +05:30 [WRN] No store type was specified for the decimal property 'MaxLimit' on entity type 'DiscountMaster'. This will cause values to be silently truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.
+2026-01-29 21:58:32.960 +05:30 [WRN] No store type was specified for the decimal property 'Amount' on entity type 'PaymentConfirmedFact'. This will cause values to be silently truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.
+2026-01-29 21:58:32.974 +05:30 [WRN] No store type was specified for the decimal property 'Amount' on entity type 'PayrollAdjustment'. This will cause values to be silently truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.
+2026-01-29 21:58:32.980 +05:30 [WRN] No store type was specified for the decimal property 'Amount' on entity type 'PayrollFact'. This will cause values to be silently truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.
+2026-01-29 21:58:40.211 +05:30 [INF] Notification Worker Service running.
+2026-01-29 21:58:40.493 +05:30 [INF] ExpiredLockCleanupService is starting.
+2026-01-29 21:58:40.723 +05:30 [INF] Analyzer TCP Listener Service starting...
+2026-01-29 21:58:40.746 +05:30 [WRN] No analyzer TCP listeners configured in appsettings.json.
+2026-01-29 21:58:53.500 +05:30 [WRN] Failed to determine the https port for redirect.
+2026-01-29 21:58:57.771 +05:30 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2026-01-29 22:01:10.740 +05:30 [INF] Analyzer TCP Listener Service stopping...
+2026-01-29 22:01:10.754 +05:30 [INF] Analyzer TCP Listener Service stopped.
+2026-01-29 22:01:10.759 +05:30 [INF] Notification Worker Service stopping gracefully.

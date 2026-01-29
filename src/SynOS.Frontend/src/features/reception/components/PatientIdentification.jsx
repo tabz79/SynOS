@@ -118,16 +118,33 @@ export function PatientIdentification({ snapshot, onSelectPatient, onClearPatien
                         </div>
                     )}
 
-                    {/* Empty / Create New */}
-                    {searchQuery.length > 3 && matches.length === 0 && !isSearching && (
-                        <div className="bg-zinc-800/30 border border-dashed border-zinc-700 rounded-lg p-3 flex flex-col items-center gap-2">
-                            <span className="text-zinc-400 text-sm">No match found.</span>
+                    {/* Always Show Create Option (Enterprise Family Use Case) */}
+                    {searchQuery.length > 3 && !isSearching && (
+                        <div className={cn(
+                            "rounded-lg p-3 flex flex-col items-center gap-2 transition-all",
+                            matches.length > 0
+                                ? "mt-4 border-t border-zinc-800 pt-4" // Subtle separator if matches exist
+                                : "bg-zinc-800/30 border border-dashed border-zinc-700" // Prominent box if no matches
+                        )}>
+                            {matches.length === 0 ? (
+                                <span className="text-zinc-400 text-sm">No match found.</span>
+                            ) : (
+                                <span className="text-zinc-500 text-xs text-center px-4">
+                                    Family member sharing this number?
+                                </span>
+                            )}
+
                             <button
                                 onClick={() => setIsNewPatientMode(true)}
-                                className="flex items-center gap-2 bg-zinc-100 hover:bg-white text-zinc-900 px-4 py-1.5 rounded-md text-xs font-bold shadow-sm transition-colors"
+                                className={cn(
+                                    "flex items-center gap-2 px-4 py-1.5 rounded-md text-xs font-bold shadow-sm transition-colors",
+                                    matches.length > 0
+                                        ? "bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white border border-zinc-700"
+                                        : "bg-zinc-100 hover:bg-white text-zinc-900"
+                                )}
                             >
                                 <UserPlus className="w-3.5 h-3.5" />
-                                Create New Patient
+                                {matches.length > 0 ? "Add Family Member" : "Create New Patient"}
                             </button>
                         </div>
                     )}
@@ -167,6 +184,7 @@ const RichPatientCard = ({ patient, onAction, actionLabel, isLocked }) => {
     const p = patient;
     let name = p.name || p.Name || p.fullName || p.FullName || p.displayName || p.DisplayName || `${p.firstName || p.FirstName || ''} ${p.lastName || p.LastName || ''}`.trim();
     const mobile = p.mobile || p.Mobile || p.phoneNumber || p.PhoneNumber || p.phone || p.Phone || p.currentPhoneNumber || p.CurrentPhoneNumber;
+    const mrn = p.mrn || p.MRN || "—";
     const age = p.age || p.Age;
 
     // Normalize Gender (Handle: Male, male, M, m, etc)
@@ -240,6 +258,14 @@ const RichPatientCard = ({ patient, onAction, actionLabel, isLocked }) => {
                                 isLocked ? "text-synos-primary/80 border-synos-primary/30" : "text-zinc-500 border-zinc-700"
                             )}>
                                 {mobile}
+                            </span>
+
+                            {/* MRN Badge (Enterprise Identity) */}
+                            <span className={cn(
+                                "text-[10px] font-mono ml-1.5 px-1.5 py-0.5 rounded border tracking-wide",
+                                isLocked ? "bg-black/30 text-synos-primary/60 border-synos-primary/20" : "bg-zinc-900 text-zinc-600 border-zinc-800"
+                            )}>
+                                MRN: {mrn}
                             </span>
                         </div>
                     </div>

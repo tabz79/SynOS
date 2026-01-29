@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react'
-import { Tag, X, Loader2, IndianRupee, Lock, AlertCircle } from 'lucide-react'
+import { Tag, X, Loader2, IndianRupee, Lock, AlertCircle, Smartphone, CreditCard } from 'lucide-react'
 import { ReceptionApi } from '@/api/reception'
 import { cn } from '@/lib/utils'
 
-export function BillingSummary({ snapshot, onVisitUpdated, isCorrectionIntent }) {
+export function BillingSummary({ snapshot, onVisitUpdated, isCorrectionIntent, isPrepaidIntent, paymentMethod, setPaymentMethod }) {
     // Local UI State
     const [isProcessing, setIsProcessing] = useState(false);
     const [discountCatalog, setDiscountCatalog] = useState([]);
@@ -143,6 +143,10 @@ export function BillingSummary({ snapshot, onVisitUpdated, isCorrectionIntent })
     const settlementDiff = totalPaid - netAmount; // Positive = Refund, Negative = Due
     const isSettlementNeeded = isCorrectionIntent && totalPaid > 0 && Math.abs(settlementDiff) > 0.01;
 
+    // PREPAID DISPLAY LOGIC
+    // If Prepaid Intent is active, Reception collects ZERO.
+    const displayAmountToCollect = isPrepaidIntent ? 0 : billing.netAmount;
+
     return (
         <div className="space-y-4">
             {/* Header */}
@@ -242,11 +246,11 @@ export function BillingSummary({ snapshot, onVisitUpdated, isCorrectionIntent })
                     {/* Net Payable */}
                     <div className="flex justify-between items-center">
                         <span className="font-bold text-zinc-200">
-                            {billing.paymentStatus === 'Paid' ? "Total Bill Amount" : "Amount to Collect"}
+                            {isPrepaidIntent ? "Amount to Collect (Prepaid)" : (billing.paymentStatus === 'Paid' ? "Total Bill Amount" : "Amount to Collect")}
                         </span>
                         <span className="text-lg font-bold font-mono text-white flex items-center">
                             <IndianRupee className="w-4 h-4 mr-0.5" />
-                            {billing.netAmount?.toLocaleString() ?? "—"}
+                            {displayAmountToCollect?.toLocaleString() ?? "—"}
                         </span>
                     </div>
                 </div>
@@ -271,6 +275,32 @@ export function BillingSummary({ snapshot, onVisitUpdated, isCorrectionIntent })
                                 </option>
                             ))}
                         </select>
+                    </div>
+                )}
+
+                {/* E. Payment Method (STAGE 2) */}
+                {!isPrepaidIntent && billing.paymentStatus === 'PendingPayment' && (
+                    <div className="pt-2 animate-in fade-in space-y-2">
+                        <label className="text-[10px] uppercase font-bold text-zinc-500 tracking-wider">Payment Method</label>
+                        <div className="grid grid-cols-3 gap-2">
+                            {['Cash', 'UPI', 'Card'].map(method => (
+                                <button
+                                    key={method}
+                                    onClick={() => setPaymentMethod && setPaymentMethod(method)}
+                                    className={cn(
+                                        "flex flex-col items-center justify-center py-2 rounded-md border text-xs transition-all",
+                                        paymentMethod === method
+                                            ? "bg-zinc-100 text-black border-white font-bold shadow-md"
+                                            : "bg-zinc-900 text-zinc-500 border-zinc-800 hover:bg-zinc-800 hover:text-zinc-300"
+                                    )}
+                                >
+                                    {method === 'Cash' && <IndianRupee className="w-4 h-4 mb-1" />}
+                                    {method === 'UPI' && <Smartphone className="w-4 h-4 mb-1" />}
+                                    {method === 'Card' && <CreditCard className="w-4 h-4 mb-1" />}
+                                    {method}
+                                </button>
+                            ))}
+                        </div>
                     </div>
                 )}
 

@@ -8,6 +8,7 @@ namespace SynOS.Models.Enums
         BILL_GENERATED,
         DISCOUNT_APPLIED, // ADDED
         PAYMENT_RECEIVED,
+        RECEIVABLE_CREATED, // ADDED: Stage 1 Financials
         VISIT_FINALIZED,
         VISIT_CORRECTED_AFTER_PAYMENT, // ADDED: Correction System
         MOVED_TO_SAMPLE_COLLECTION,

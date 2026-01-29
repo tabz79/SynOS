@@ -29,6 +29,8 @@ export function IntentPanel() {
 
     // Lifted State for Prepaid Intent (Shared between VisitDetails and Footer)
     const [isPrepaidIntent, setIsPrepaidIntent] = useState(false);
+    // STAGE 2: Payment Method State (Lifted for Footer Access)
+    const [paymentMethod, setPaymentMethod] = useState('Cash');
 
     // RESTORED: Core Internal State
     const [snapshot, setSnapshot] = useState(null);
@@ -46,7 +48,9 @@ export function IntentPanel() {
             setSnapshot(null);
             setCurrentPatientId(null);
             setCurrentVisitId(null);
+            setCurrentVisitId(null);
             setIsPrepaidIntent(false);
+            setPaymentMethod('Cash'); // Reset to default
             return;
         }
 
@@ -136,7 +140,9 @@ export function IntentPanel() {
     const handleClearPatient = () => {
         setCurrentPatientId(null);
         setCurrentVisitId(null);
+        setCurrentVisitId(null);
         setIsPrepaidIntent(false); // Reset intent
+        setPaymentMethod('Cash');
     };
 
     // UNIFIED FOOTER ACTION HANDLER
@@ -149,8 +155,8 @@ export function IntentPanel() {
                 alert("For Prepaid visits, you MUST select a Referral Partner.");
                 return;
             }
-            if (!confirm("CONFIRM PREPAID VISIT?\n\nThis will mark the visit as PAID and LOCK editing.")) return;
 
+            // REMOVED: Extra Dialog as per User Request (Enterprise Speed)
             setIsLoading(true);
             try {
                 await ReceptionApi.markVisitAsPrepaid(snapshot.visit.visitId);
@@ -159,7 +165,7 @@ export function IntentPanel() {
                 // Let's reset!
                 handleClearPatient(); // Clears panel state
                 closePanel(); // Closes panel
-                alert("Visit Finalized (Prepaid).");
+                // REMOVED: Alert "Visit Finalized"
             } catch (err) {
                 alert(err.message);
                 setIsLoading(false);
@@ -171,11 +177,11 @@ export function IntentPanel() {
         if (snapshot.billing.paymentStatus === 'PendingPayment' && !snapshot.billing.isLocked) {
             setIsLoading(true);
             try {
-                // Default Cash for now as per previous UI
-                await ReceptionApi.collectPayment(snapshot.visit.visitId, snapshot.billing.netAmount, 'Cash');
+                // Default Cash for now as per previous UI -> STAGE 2: Dynamic Method
+                await ReceptionApi.collectPayment(snapshot.visit.visitId, snapshot.billing.netAmount, paymentMethod);
                 handleClearPatient();
                 closePanel();
-                alert("Payment Collected & Visit Finalized.");
+                // REMOVED: Alert "Payment Collected"
             } catch (err) {
                 alert(err.message);
                 setIsLoading(false);
@@ -213,7 +219,7 @@ export function IntentPanel() {
             mainActionLabel = "Visit Complete (Close)";
             isActionEnabled = true;
         } else if (canLockPrepaid) {
-            mainActionLabel = "Confirm & Lock (Prepaid)";
+            mainActionLabel = "Prepaid Checkout";
             isActionEnabled = Boolean(snapshot?.billing?.referral?.partner);
         } else if (canCheckout) {
             mainActionLabel = `Accept Payment (₹${snapshot.billing.netAmount})`;
@@ -279,6 +285,9 @@ export function IntentPanel() {
                                     snapshot={snapshot}
                                     onVisitUpdated={loadSnapshot}
                                     isCorrectionIntent={isCorrectionIntent} // Pass down Intent
+                                    isPrepaidIntent={isPrepaidIntent} // Pass down Prepaid Status
+                                    paymentMethod={paymentMethod}
+                                    setPaymentMethod={setPaymentMethod}
                                 />
                             </div>
                         )}

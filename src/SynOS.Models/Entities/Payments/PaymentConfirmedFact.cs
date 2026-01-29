@@ -1,4 +1,4 @@
-using System;
+using System.ComponentModel.DataAnnotations; // ADDED
 
 namespace SynOS.Models.Entities.Payments
 {
@@ -17,6 +17,7 @@ namespace SynOS.Models.Entities.Payments
     /// </remarks>
     public sealed class PaymentConfirmedFact
     {
+        [Key] // ADDED: Fix EF Core Keyless Entity Error
         public Guid PaymentId { get; init; }
         public PaymentDirection Direction { get; init; }
         public decimal Amount { get; init; }

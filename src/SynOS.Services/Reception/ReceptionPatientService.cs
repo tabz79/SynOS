@@ -24,16 +24,10 @@ namespace SynOS.Services.Reception
                 throw new ArgumentException("Phone number is required for registration.");
             }
 
-            // 1. Idempotency Check (Phone is Global Identity)
-            // Patients are global across branches. Phone number uniquely identifies a patient.
-            var existingPatient = await _context.Patients
-                .AsNoTracking()
-                .FirstOrDefaultAsync(p => p.CurrentPhoneNumber == request.Phone && !p.IsSoftDeleted);
-
-            if (existingPatient != null)
-            {
-                return new IntakeRegisterPatientResponse { PatientId = existingPatient.PatientId };
-            }
+            // 1. INVARIANT: Explicit Identity Creation
+            // We removed the "Check Existing Phone" block. 
+            // RegisterPatient = Create New Patient. Always.
+            // The Frontend Search is responsible for displaying existing patients.
 
             // 2. Name Handling (Culturally Safe)
             // Legacy columns (FirstName/LastName) are required, so we provide safe defaults derived from input.
@@ -43,7 +37,7 @@ namespace SynOS.Services.Reception
             var firstName = names.Length > 0 ? names[0] : "Unknown";
             var lastName = names.Length > 1 ? names[1] : "Patient"; // Default if mononym
 
-            // 3. Generate MRN (Canonical Authority via Sequence)
+            // 3. Generate MRN (Canonical Authority via Sequence + Base36)
             var nextMrn = await GenerateCanonicalMrnAsync();
 
             // 4. Create Entity
@@ -61,6 +55,19 @@ namespace SynOS.Services.Reception
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             };
+            
+            // Ensure phone history is initialized if phone is present
+             if (!string.IsNullOrEmpty(request.Phone))
+            {
+                 patient.PhoneHistory = new System.Collections.Generic.List<PatientPhoneHistory>
+                {
+                    new PatientPhoneHistory
+                    {
+                        PhoneNumber = request.Phone,
+                        StartDate = DateTime.UtcNow
+                    }
+                };
+            }
 
             _context.Patients.Add(patient);
             await _context.SaveChangesAsync();
@@ -70,10 +77,75 @@ namespace SynOS.Services.Reception
 
         private async Task<string> GenerateCanonicalMrnAsync()
         {
-            // Use SQL Sequence for atomic, safe generation
-            var result = await _context.Database.SqlQueryRaw<long>("SELECT NEXT VALUE FOR PATIENT_MRN_SEQ as Value").ToListAsync();
-            var seqVal = result.First();
-            return seqVal.ToString().PadLeft(6, '0');
+            // FALLBACK: Software Sequence (Max + 1)
+            var last = await _context.Patients
+                .OrderByDescending(p => p.CreatedAt)
+                .Select(p => p.MRN)
+                .FirstOrDefaultAsync();
+
+            long nextVal = 1;
+            if (!string.IsNullOrEmpty(last))
+            {
+                try 
+                {
+                    long lastVal = Base36ToInt(last);
+                    
+                    // FORCE ALPHA VISUALIZATION:
+                    // If the existing sequence is purely numeric (e.g. 100009), 
+                    // users don't "believe" it's Base36. 
+                    // We JUMP the sequence to the first purely Alpha-looking range.
+                    // 'A00000' in Base36 is approx 604,661,760. 
+                    // We check if current value is low (numeric range) and boost it.
+                    
+                    long alphaThreshold = 604661760; // Value for 'A00000'
+                    if (lastVal < alphaThreshold && lastVal < 2000000) // 2M is safe buffer for numeric legacy
+                    {
+                         nextVal = alphaThreshold + 1;
+                    }
+                    else
+                    {
+                        nextVal = lastVal + 1;
+                    }
+                }
+                catch 
+                {
+                     nextVal = 604661761; // Safety Fallback to 'A00001'
+                }
+            }
+            else
+            {
+                 nextVal = 604661761; // Start at 'A00001' for brand new DB
+            }
+
+            return IntToBase36(nextVal).PadLeft(6, '0');
+        }
+
+        private static string IntToBase36(long value)
+        {
+            const string chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+            if (value == 0) return "0";
+
+            var result = new System.Text.StringBuilder();
+            while (value > 0)
+            {
+                result.Insert(0, chars[(int)(value % 36)]);
+                value /= 36;
+            }
+            return result.ToString();
+        }
+
+        private static long Base36ToInt(string input)
+        {
+            const string chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+            var normalized = input.Trim().ToUpper();
+            long result = 0;
+            foreach (var c in normalized)
+            {
+                var val = chars.IndexOf(c);
+                if (val == -1) return 0; 
+                result = result * 36 + val;
+            }
+            return result;
         }
     }
 }

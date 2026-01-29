@@ -140,10 +140,16 @@ namespace SynOS.Services
                     Gender = p.Gender,
                     CurrentPhoneNumber = p.CurrentPhoneNumber,
                     CreatedAt = p.CreatedAt,
-                    LastVisitDate = p.Visits.OrderByDescending(v => v.TokenDate).Select(v => v.TokenDate).FirstOrDefault(),
-                    LastVisitTestCodes = p.Visits.OrderByDescending(v => v.TokenDate)
-                                                .Select(v => v.Orders.Select(o => o.TestCode).ToList())
-                                                .FirstOrDefault()
+                    LastVisitDate = p.Visits
+                        .Where(v => v.Invoices.Any(i => i.Status == "Paid"))
+                        .OrderByDescending(v => v.TokenDate)
+                        .Select(v => v.TokenDate)
+                        .FirstOrDefault(),
+                    LastVisitTestCodes = p.Visits
+                        .Where(v => v.Invoices.Any(i => i.Status == "Paid"))
+                        .OrderByDescending(v => v.TokenDate)
+                        .Select(v => v.Orders.Select(o => o.TestCode).ToList())
+                        .FirstOrDefault()
                 })
                 .ToListAsync();
         }

@@ -13,6 +13,8 @@ using SynOS.Services.Referral;
 using SynOS.Services.Operational; // ADDED
 using SynOS.Services.Security; // ADDED
 using SynOS.Models.Entities.Revenue; // ADDED
+using SynOS.Models.Entities.AR; // ADDED: Stage 1 Financials
+using SynOS.Models.Entities.Payments; // ADDED: Stage 1 Financials
 
 
 namespace SynOS.Services
@@ -249,6 +251,55 @@ namespace SynOS.Services
         public async Task MarkVisitAsPrepaidAsync(Guid visitId, Guid actorUserId)
         {
             await _visitService.MarkVisitAsPrepaidAsync(visitId, actorUserId);
+            
+            // --- STAGE 1: RECEIVABLE FACT CREATION ---
+            var visit = await _context.Visits
+                .Include(v => v.Invoices)
+                .AsNoTracking()
+                .FirstOrDefaultAsync(v => v.VisitId == visitId);
+
+            if (visit == null) throw new InvalidOperationException("Visit not found for Receivable creation");
+            if (!visit.ReferralPartnerId.HasValue) throw new InvalidOperationException("Prepaid visit must have a Referral Partner");
+
+            var invoice = visit.Invoices.OrderByDescending(i => i.CreatedAt).FirstOrDefault();
+            if (invoice == null) throw new InvalidOperationException("No invoice found for Receivable creation");
+
+            // IDEMPOTENCY GUARD: One Receivable per Visit
+            if (await _context.ReceivableFacts.AnyAsync(r => r.SourceVisitId == visitId)) 
+            {
+                 _logger.LogWarning("Idempotency: ReceivableFact already exists for Visit {VisitId}", visitId);
+                 return;
+            }
+
+            var factId = Guid.NewGuid();
+            var fact = new ReceivableFact
+            {
+                ReceivableFactId = factId,
+                SourceVisitId = visit.VisitId,
+                ReferralPartnerId = visit.ReferralPartnerId.Value,
+                Amount = invoice.Total, // Total Amount Owed
+                Currency = "INR",
+                OccurredAt = DateTimeOffset.UtcNow,
+                RecordedAt = DateTimeOffset.UtcNow
+            };
+            
+            _context.ReceivableFacts.Add(fact);
+            await _context.SaveChangesAsync();
+            
+            // Emit RECEIVABLE_CREATED
+            await _operationalEventWriter.WriteEventAsync(
+                BranchEventType.RECEIVABLE_CREATED,
+                _userContext.CurrentBranchId.ToString(),
+                visit.VisitId.ToString(),
+                visit.Token,
+                $"Prepaid Credit Issued: {fact.Amount:C} (Fact: {fact.ReceivableFactId})",
+                "User",
+                actorUserId.ToString(),
+                true, // saveChanges
+                fact.ReceivableFactId, // SourceId = FactId
+                "ReceivableFact"
+            );
+            // ----------------------------------------
         }
 
         private async Task<ReceptionStartVisitResponse> MapToStartVisitResponse(Visit visit)
@@ -327,6 +378,41 @@ namespace SynOS.Services
             var updatedInvoice = await _context.Invoices
                 .Include(i => i.Payments)
                 .FirstAsync(i => i.InvoiceId == invoiceId);
+
+            // --- STAGE 1: IMMUTABLE FACT CREATION (Before Event Emission) ---
+            var factId = Guid.NewGuid();
+            var fact = new PaymentConfirmedFact(
+                factId,
+                PaymentDirection.In, // Was Inbound
+                payment.Amount,
+                userId, // Counterparty (User collecting it) - strictly acceptable for now? Or Patient?
+                // Definition says "CounterpartyId". In reception context, Payer is Patient.
+                // But typically counterparty is the entity dealing with us.
+                // Let's use PatientId if available, or just fallback to User (as Receiver).
+                // Actually, let's look at the constructor again. CounterpartyId.
+                // For Inbound, Counterparty is Payer. So visit.PatientId.
+                DateTimeOffset.UtcNow,
+                DateTimeOffset.UtcNow,
+                payment.PaymentId,
+                payment.Method
+            );
+            // We need to set Counterparty to PatientId.
+            // But we can't change the constructor here easily.
+            // Re-instantiate with PatientId.
+             var factFinal = new PaymentConfirmedFact(
+                factId,
+                PaymentDirection.In, // Was Inbound
+                payment.Amount,
+                visit.PatientId, // Payer
+                DateTimeOffset.UtcNow,
+                DateTimeOffset.UtcNow,
+                payment.PaymentId,
+                payment.Method
+            );
+            
+            _context.PaymentConfirmedFacts.Add(factFinal);
+            await _context.SaveChangesAsync();
+            // ------------------------------------------------------------
 
             // If payment is complete, trigger creation of lab work items
             if (string.Equals(updatedInvoice.Status, "Paid", StringComparison.OrdinalIgnoreCase))
@@ -469,6 +555,21 @@ namespace SynOS.Services
                     userId.ToString()
                 );
             }
+            
+            // --- EMIT FINANCIAL EVENT (STAGE 1) ---
+            // SourceId MUST be the FactId, NOT the PaymentId.
+            await _operationalEventWriter.WriteEventAsync(
+                BranchEventType.PAYMENT_RECEIVED,
+                _userContext.CurrentBranchId.ToString(),
+                visit.VisitId.ToString(),
+                visit.Token,
+                $"Payment received: {payment.Amount:C} via {payment.Method} (Fact: {factFinal.PaymentId})",
+                "User",
+                userId.ToString(),
+                true, // saveChanges
+                factFinal.PaymentId, // SourceId = FactId
+                "PaymentConfirmedFact" // SourceType
+            );
 
             var updatedVisit = await _context.Visits.FindAsync(visit.VisitId);
 
