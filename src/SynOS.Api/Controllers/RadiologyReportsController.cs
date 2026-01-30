@@ -55,7 +55,7 @@ namespace SynOS.Api.Controllers
             var reportDto = await _radiologyService.SignReportAsync(request.StudyId, userId);
             
             // Trigger live projection
-            await _projector.ProjectPendingEventsAsync(_userContext.CurrentBranchId);
+            await _projector.ProjectPendingEventsAsync();
 
             return Ok(reportDto);
         }

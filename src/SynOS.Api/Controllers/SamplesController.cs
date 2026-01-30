@@ -42,7 +42,7 @@ namespace SynOS.Api.Controllers
             var sample = await _sampleService.CollectSampleAsync(id, request.CollectedByUserId);
             
             // Trigger live projection
-            await _projector.ProjectPendingEventsAsync(_userContext.CurrentBranchId);
+            await _projector.ProjectPendingEventsAsync();
 
             return Ok(sample);
         }

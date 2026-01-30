@@ -45,25 +45,59 @@ namespace SynOS.Services
         {
             if (branchId == Guid.Empty) throw new ArgumentException("BranchId required");
 
-            DateTime localStart = DateTime.Today;
-            DateTime localEnd = DateTime.Now;
-            DateTime utcStart = localStart.ToUniversalTime();
-            DateTime utcEnd = localEnd.ToUniversalTime();
+            // CRITICAL FIX: Read from Projected Stats (Source of Truth for Dashboard)
+            // Do NOT use DateTime.Today (Local) on raw tables, as it causes 0 results until push.
+            // The Projector maintains UserOperationalStats based on Events.
+            
+            var today = DateTime.UtcNow.Date; // Projector uses UTC Date
+            
+            // We aggregate for the whole branch (all users)
+            var stats = await _context.UserOperationalStats
+                .Where(s => s.BranchId == branchId && s.Date == today)
+                .GroupBy(s => s.BranchId)
+                .Select(g => new 
+                {
+                    WalkIns = g.Sum(x => x.WalkInsCount),
+                    Payments = g.Sum(x => x.PaymentsTotal),
+                    Cash = g.Sum(x => x.PaymentsCashTotal),
+                    Online = g.Sum(x => x.PaymentsOnlineTotal),
+                    // EXTENDED PROJECTION
+                    OnlineCount = g.Sum(x => x.PaymentsOnlineCount),
+                    PrepaidCount = g.Sum(x => x.PrepaidBillsCount),
+                    PrepaidTotal = g.Sum(x => x.PrepaidBillsTotal)
+                })
+                .FirstOrDefaultAsync();
 
-            // 1. Walk-Ins (Visit Created - Revenue Opportunity)
-            var walkIns = await _context.Visits
-                .CountAsync(v => v.BranchId == branchId && v.CreatedAt >= utcStart && v.CreatedAt <= utcEnd);
-
-            // 2. Payments (Actual Revenue)
-            var payments = await _context.Payments
-                .Include(p => p.Invoice).ThenInclude(i => i.Visit)
-                .Where(p => p.Invoice.Visit.BranchId == branchId && p.ReceivedAt >= utcStart && p.ReceivedAt <= utcEnd)
-                .SumAsync(p => p.Amount);
+            if (stats == null)
+            {
+                return new RevenueStatsDto
+                {
+                    WalkInsToday = 0,
+                    PaymentsCollected = 0,
+                    PaymentsCashTotal = 0,
+                    PaymentsOnlineTotal = 0,
+                    PaymentsOnlineCount = 0,
+                    PrepaidBillsCount = 0,
+                    PrepaidBillsTotal = 0
+                };
+            }
 
             return new RevenueStatsDto
             {
-                WalkInsToday = walkIns,
-                PaymentsCollected = payments
+                WalkInsToday = stats.WalkIns,
+                PaymentsCollected = stats.Payments,
+                
+                // CRITICAL FIX: Populate Splits so Dashboard Tiles work
+                PaymentsCashTotal = stats.Cash,
+                PaymentsOnlineTotal = stats.Online,
+                
+                // Populate other stats from projection
+                PaymentsOnlineCount = stats.OnlineCount,
+                PrepaidBillsCount = stats.PrepaidCount,
+                PrepaidBillsTotal = stats.PrepaidTotal,
+                
+                PendingReports = 0,
+                AvgReportTimeMinutes = 0
             };
         }
 
@@ -133,22 +167,8 @@ namespace SynOS.Services
 
             await _context.SaveChangesAsync();
 
-            // Emit Operational Event: PAYMENT_RECEIVED
-            await _operationalEventWriter.WriteEventAsync(
-                BranchEventType.PAYMENT_RECEIVED,
-                _userContext.CurrentBranchId.ToString(), // FIX: Use context
-                invoice.VisitId.ToString(),
-                invoice.Visit?.Token ?? "Unknown",
-                $"Payment received {payment.Amount:F2} ({payment.Method})",
-                "User",
-                payment.ReceivedByUserId.ToString(),
-                true, // saveChanges
-                payment.PaymentId, // sourceId
-                "Payment" // sourceType
-            );
-
-            // EMIT REVENUE FACT (Truth Engine)
-            await _revenueFactWriter.DeclareRevenueFactAsync(new SynOS.Models.DTOs.Revenue.DeclareRevenueFactCommand
+            // 1. EMIT REVENUE FACT (Truth Engine) - FIRST
+            var revenueFactId = await _revenueFactWriter.DeclareRevenueFactAsync(new SynOS.Models.DTOs.Revenue.DeclareRevenueFactCommand
             {
                 OccurredAt = payment.ReceivedAt,
                 Amount = payment.Amount,
@@ -162,18 +182,40 @@ namespace SynOS.Services
                 ExternalTransactionId = payment.ReceiptNo
             });
 
+            // 2. Emit Operational Event: PAYMENT_RECEIVED (Linked to Fact)
+            await _operationalEventWriter.WriteEventAsync(
+                BranchEventType.PAYMENT_RECEIVED,
+                _userContext.CurrentBranchId.ToString(), 
+                invoice.VisitId.ToString(),
+                invoice.Visit?.Token ?? "Unknown",
+                $"Payment received {payment.Amount:F2} ({payment.Method})",
+                "User",
+                payment.ReceivedByUserId.ToString(),
+                true, // saveChanges
+                revenueFactId, // sourceId (Points to Truth)
+                "RevenueFact" // sourceType (Explicit)
+            );
+
             return payment;
         }
         
         private PaymentMode MapPaymentMethod(string method)
         {
-            return method?.ToLowerInvariant() switch
+            return method?.Trim().ToLowerInvariant() switch
             {
                 "cash" => PaymentMode.Cash,
+                "0" => PaymentMode.Cash, // Legacy Fallback
+                
                 "card" => PaymentMode.Card,
+                "2" => PaymentMode.Card, // Legacy Fallback
+                
                 "upi" => PaymentMode.UPI,
+                "1" => PaymentMode.UPI, // Legacy Fallback
+
                 "banktransfer" => PaymentMode.BankTransfer,
-                _ => PaymentMode.Other
+                "3" => PaymentMode.BankTransfer, // Legacy Fallback
+                
+                _ => PaymentMode.Other // Will result in 0 Splits but correct Grand Total
             };
         }
 

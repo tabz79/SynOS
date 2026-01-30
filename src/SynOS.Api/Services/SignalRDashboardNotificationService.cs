@@ -19,5 +19,10 @@ namespace SynOS.Api.Services
         {
             await _hubContext.Clients.User(userId).SendAsync("ReceptionSummaryUpdated", summary);
         }
+
+        public async Task NotifyActionQueueUpdatedAsync(string userId)
+        {
+            await _hubContext.Clients.User(userId).SendAsync("ActionQueueUpdated");
+        }
     }
 }

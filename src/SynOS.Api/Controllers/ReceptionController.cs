@@ -43,7 +43,7 @@ namespace SynOS.Api.Controllers
                 var responseDto = await _receptionFlowService.StartVisitAsync(request, actorUserId);
                 
                 // Trigger live projection
-                await _projector.ProjectPendingEventsAsync(_userContext.CurrentBranchId);
+                await _projector.ProjectPendingEventsAsync();
 
                 return CreatedAtAction(nameof(GetVisitSummary), new { visitId = responseDto.VisitId }, new ApiResponse<ReceptionStartVisitResponse>(responseDto));
             }
@@ -72,7 +72,7 @@ namespace SynOS.Api.Controllers
                 var responseDto = await _receptionFlowService.CompletePaymentAsync(request, userId);
                 
                 // Trigger live projection
-                await _projector.ProjectPendingEventsAsync(_userContext.CurrentBranchId);
+                await _projector.ProjectPendingEventsAsync();
 
                 return Ok(new ApiResponse<ReceptionCompletePaymentResponse>(responseDto));
             }
@@ -162,7 +162,7 @@ namespace SynOS.Api.Controllers
                 var response = await _receptionFlowService.AddTestAsync(request.VisitId, request.TestCode, userId);
                 
                 // Trigger live projection
-                await _projector.ProjectPendingEventsAsync(_userContext.CurrentBranchId);
+                await _projector.ProjectPendingEventsAsync();
 
                 return Ok(new ApiResponse<ReceptionStartVisitResponse>(response));
             }
@@ -186,7 +186,7 @@ namespace SynOS.Api.Controllers
                 var response = await _receptionFlowService.RemoveTestAsync(visitId, testCode, userId);
                 
                 // Trigger live projection
-                await _projector.ProjectPendingEventsAsync(_userContext.CurrentBranchId);
+                await _projector.ProjectPendingEventsAsync();
 
                 return Ok(new ApiResponse<ReceptionStartVisitResponse>(response));
             }

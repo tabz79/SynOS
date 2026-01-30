@@ -112,10 +112,7 @@ namespace SynOS.Api.Controllers
                 var payment = await _invoiceService.RecordPaymentAsync(invoiceId, paymentDto);
                 
                 // Trigger live projection
-                if (visit.BranchId.HasValue)
-                {
-                    await _projector.ProjectPendingEventsAsync(visit.BranchId.Value);
-                }
+                await _projector.ProjectPendingEventsAsync();
 
                 return Ok(new ApiResponse<Payment>(payment));
             }

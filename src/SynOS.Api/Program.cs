@@ -278,6 +278,7 @@ builder.Services.AddScoped<IPrintService, StubPrintService>();
 builder.Services.AddHostedService<NotificationWorkerService>();
 builder.Services.AddHostedService<ExpiredLockCleanupService>();
 builder.Services.AddHostedService<AnalyzerTcpListenerService>();
+builder.Services.AddHostedService<OperationalStatsProjectionWorker>();
 
 // Add SignalR
 builder.Services.AddSignalR();

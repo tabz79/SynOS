@@ -167,6 +167,11 @@ namespace SynOS.Services.Operations
                     
                     PaymentDisplay = DerivePaymentDisplay(visit, invoice),
                     
+                    // Phase 6: Granular Payment Fields
+                    TotalAmount = invoice.Total,
+                    PaymentMethod = DerivePaymentMethod(visit, invoice),
+                    ReferrerName = visit.ReferralPartner?.Name ?? "Self",
+
                     OperationalStatus = DeriveOperationalStatus(visit, visitSamples.Select(s => s.Status).ToList(), visitResults.Select(r => r.Status).ToList(), visitReport?.Status),
                     
                     LastUpdatedAt = CalculateLastUpdatedAt(visit, visitSamples.Select(s => s.CollectedAt).ToList(), visitResults.Select(r => r.EnteredAt).ToList(), visitReport?.SignedAt),
@@ -227,6 +232,18 @@ namespace SynOS.Services.Operations
                 return "Paid";
             }
 
+            return "Due";
+        }
+
+        private string DerivePaymentMethod(Visit visit, Invoice invoice)
+        {
+            if (visit.PaymentCollectionModel == "PartnerCollects") return "Prepaid";
+
+            if (invoice.Status == "Paid" || invoice.Status == "FullPaid")
+            {
+                var method = invoice.Payments.FirstOrDefault()?.Method;
+                return method ?? "Paid"; // Fallback
+            }
             return "Due";
         }
 

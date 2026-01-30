@@ -32,6 +32,15 @@ namespace SynOS.Models.DTOs.Dashboard
         public string PaymentDisplay { get; set; } = string.Empty;
         // Examples: "Cash", "UPI", "Prepaid (Dr. Rao)"
 
+        [JsonPropertyName("TotalAmount")]
+        public decimal TotalAmount { get; set; }
+
+        [JsonPropertyName("PaymentMethod")]
+        public string PaymentMethod { get; set; } = string.Empty; // "Cash", "UPI", "Card", "Prepaid"
+
+        [JsonPropertyName("ReferrerName")]
+        public string ReferrerName { get; set; } = string.Empty;
+
         // Live Operations
         [JsonPropertyName("OperationalStatus")]
         public string OperationalStatus { get; set; } = string.Empty;

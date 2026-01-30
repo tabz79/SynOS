@@ -29,6 +29,9 @@ export function ReceptionScreen() {
             patientAgeGender: row.patientAgeGender || row.PatientAgeGender,
             testCodes: row.testCodes || row.TestCodes || [],
             paymentDisplay: row.paymentDisplay || row.PaymentDisplay, // Phase 4 Alignment
+            totalAmount: row.totalAmount || row.TotalAmount,
+            paymentMethod: row.paymentMethod || row.PaymentMethod,
+            referrerName: row.referrerName || row.ReferrerName,
             operationalStatus: row.operationalStatus || row.OperationalStatus,
             isFinalized: row.isFinalized || row.IsFinalized // 🔹 TRUTH: Explicit Backend Flag
         }));
@@ -66,6 +69,16 @@ export function ReceptionScreen() {
             SignalRService.onReceptionSummaryUpdated((payload) => {
                 setSummary(payload);
             });
+
+            // 4. Real-time Action Queue Refresh
+            SignalRService.onActionQueueUpdated(() => {
+                ReceptionApi.getActionQueue().then(data => {
+                    if (Array.isArray(data)) {
+                        console.log("SignalR: Action Queue Refreshed");
+                        setActionQueue(normalizeQueueData(data));
+                    }
+                });
+            });
         };
 
         connect();
@@ -101,8 +114,8 @@ export function ReceptionScreen() {
         { value: `₹${(summary.paymentsOnlineTotal || 0).toLocaleString()}`, label: "Online Total", icon: ClipboardList, color: "blue" },
 
         // ROW 2: Receivables & Lab Performance
-        { value: summary.prepaidBillsCount?.toString() || "0", label: "Credit Bills Issued", icon: ClipboardList, color: "amber" }, // Prepaid = Credit
-        { value: `₹${(summary.prepaidBillsTotal || 0).toLocaleString()}`, label: "Credit Value (AR)", icon: ClipboardList, color: "amber" },
+        { value: summary.prepaidBillsCount?.toString() || "0", label: "Prepaid Bills Issued", icon: ClipboardList, color: "amber" }, // Prepaid = Credit
+        { value: `₹${(summary.prepaidBillsTotal || 0).toLocaleString()}`, label: "Prepaid Total", icon: ClipboardList, color: "amber" },
         { value: summary.pendingReports?.toString() || "0", label: "Pending Reports", icon: Bed, color: "red" },
         { value: `${summary.avgReportTimeMinutes || 0}m`, label: "Avg Report Time", icon: Clock, color: "default" },
     ] : [
@@ -168,12 +181,42 @@ export function ReceptionScreen() {
         {
             header: "Payment",
             accessor: "paymentDisplay",
-            className: "text-zinc-400 w-32",
-            render: (row) => (
-                <div className="text-xs font-mono text-zinc-300">
-                    {row.paymentDisplay || "—"}
-                </div>
-            )
+            className: "text-zinc-400 w-40",
+            render: (row) => {
+                // Determine Badge Logic
+                const isPrepaid = row.paymentMethod === "Prepaid";
+                // Match Test Code Dimensions/Font exactly
+                const badgeBase = "text-[10px] px-1 py-0.5 rounded font-mono leading-none border uppercase tracking-wide";
+                const badgeColor = isPrepaid
+                    ? "bg-red-500/10 text-red-400 border-red-500/20"
+                    : "bg-emerald-500/10 text-emerald-400 border-emerald-500/20";
+
+                const amount = row.totalAmount
+                    ? `₹${row.totalAmount.toLocaleString()}`
+                    : "₹0";
+
+                return (
+                    <div className="flex flex-col gap-1 items-start">
+                        {/* Row 1: Price + Referrer Badge */}
+                        <div className="flex items-center gap-2">
+                            {/* Match Patient Name Style */}
+                            <span className="font-medium text-sm text-zinc-200">{amount}</span>
+
+                            {/* Match Age/Gender Badge Style */}
+                            {isPrepaid && (
+                                <span className="bg-zinc-800 text-zinc-400 text-[10px] px-1.5 py-0.5 rounded border border-zinc-700 font-mono" title={row.referrerName}>
+                                    {row.referrerName}
+                                </span>
+                            )}
+                        </div>
+
+                        {/* Row 2: Payment Method Badge (Matches Test Code Style) */}
+                        <span className={`${badgeBase} ${badgeColor}`}>
+                            {row.paymentMethod || "DUE"}
+                        </span>
+                    </div>
+                )
+            }
         },
         {
             header: "Operational Status",

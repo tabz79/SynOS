@@ -94,6 +94,19 @@ export const SignalRService = {
     },
 
     /**
+     * Subscribes to Action Queue updates.
+     * @param {Function} callback - () => void
+     */
+    onActionQueueUpdated: (callback) => {
+        if (!connection) return;
+        connection.off("ActionQueueUpdated");
+        connection.on("ActionQueueUpdated", () => {
+            console.log("SignalR: ActionQueueUpdated received");
+            callback();
+        });
+    },
+
+    /**
      * Stops the connection with a grace period.
      * Only actually disconnects if no subscribers remain after delay.
      */

@@ -7,5 +7,6 @@ namespace SynOS.Services.Dashboard
     public interface IDashboardNotificationService
     {
         Task NotifyReceptionSummaryUpdateAsync(string userId, TodaysSummaryDto summary);
+        Task NotifyActionQueueUpdatedAsync(string userId);
     }
 }

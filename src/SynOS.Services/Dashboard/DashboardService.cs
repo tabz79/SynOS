@@ -35,6 +35,15 @@ namespace SynOS.Services.Dashboard
             {
                 WalkInsToday = revStats.WalkInsToday,
                 PaymentsCollected = revStats.PaymentsCollected,
+                
+                // Mapped from Revenue Service (Projector)
+                PaymentsCashTotal = revStats.PaymentsCashTotal,
+                PaymentsOnlineTotal = revStats.PaymentsOnlineTotal,
+                PaymentsOnlineCount = revStats.PaymentsOnlineCount,
+                PrepaidBillsCount = revStats.PrepaidBillsCount,
+                PrepaidBillsTotal = revStats.PrepaidBillsTotal,
+                
+                // Mapped from Operations Engine
                 PendingReports = opsStats.PendingReports,
                 AvgReportTimeMinutes = opsStats.AvgReportTimeMinutes
             };
