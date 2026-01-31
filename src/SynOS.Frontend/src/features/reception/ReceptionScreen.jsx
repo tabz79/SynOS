@@ -308,7 +308,7 @@ export function ReceptionScreen() {
                             ${isIntentPanelOpen ? 'w-[40%]' : 'w-[25%]'}
                         `}
                     >
-                        {isIntentPanelOpen ? <IntentPanel /> : <ActivityStream />}
+                        {isIntentPanelOpen ? <IntentPanel /> : <ActivityStream serverTime={serverTimeAnchor} />}
                     </div>
 
                 </div>

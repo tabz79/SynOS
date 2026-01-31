@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/context/AuthContext';
+import { ChevronDown, Globe, Shield, Wifi, WifiOff, Clock } from 'lucide-react'; // Added Icons
 
 export function SystemBar({ serverTime, syncStatus = "Not Synced" }) {
     const { user, logout } = useAuth();
@@ -24,23 +25,18 @@ export function SystemBar({ serverTime, syncStatus = "Not Synced" }) {
         return () => clearInterval(timer);
     }, []);
 
-    // Close dropdowns on outside click (simple implementation via background overlay if needed, or just relying on selection)
-    // For now, simple toggles.
-
     const handleLogout = () => {
         logout();
-        window.location.href = '/login'; // Force full reload/redirect
+        window.location.href = '/login';
     };
 
     const handleSwitchBranch = (branchId) => {
-        // TODO: Implement actual Backend Switch (POST /auth/switch)
-        // For Phase 1, we just log it. The List is Mock.
         console.log("Switching to branch:", branchId);
         alert(`Switching to branch ${branchId} is not yet implemented on backend.`);
         setActiveDropdown(null);
     };
 
-    // MOCK Branch List (Until API provided)
+    // MOCK Branch List
     const availableBranches = [
         { id: 'b1', name: 'Main Branch (HQ)' },
         { id: 'b2', name: 'City Center Hub' },
@@ -58,104 +54,127 @@ export function SystemBar({ serverTime, syncStatus = "Not Synced" }) {
     const isConnected = syncStatus === "Synced";
 
     return (
-        <div className="h-10 bg-synos-background border-b border-synos-border flex items-center justify-between px-4 text-xs font-mono text-synos-secondary select-none relative z-50">
+        <div className="h-14 flex items-center justify-between px-6 select-none relative z-50 bg-zinc-950/80 backdrop-blur-xl border-b border-white/5 shadow-2xl">
             {/* Overlay to close dropdowns */}
             {activeDropdown && (
                 <div className="fixed inset-0 z-40 bg-transparent" onClick={() => setActiveDropdown(null)} />
             )}
 
             {/* Left: Product Identity */}
-            <div className="flex items-center gap-6">
-                <span className="text-white font-bold tracking-tight text-sm font-sans">
-                    SynOS <span className="text-synos-secondary font-normal opacity-70">– Synthesized Lab Operating System</span>
-                </span>
+            <div className="flex items-center gap-4">
+                {/* Logo Mark or Icon could go here */}
+                <div className="flex flex-col leading-none">
+                    <span className="text-white font-bold tracking-tight text-base font-sans bg-clip-text text-transparent bg-gradient-to-r from-white to-zinc-400">
+                        SynOS
+                    </span>
+                    <span className="text-zinc-500 font-medium text-[10px] tracking-wider uppercase opacity-80 pt-0.5">
+                        Synthesized Lab Intelligence
+                    </span>
+                </div>
             </div>
 
-            {/* Right: Operational Context */}
-            <div className="flex items-center gap-6">
+            {/* Right: Operational Context (Glass Pills) */}
+            <div className="flex items-center gap-3">
 
-                {/* 1. Branch Context (Dropdown) */}
+                {/* 1. Branch Context (Dropdown Pill) */}
                 <div className="relative">
-                    <div
-                        className="flex items-center gap-2 cursor-pointer hover:bg-zinc-800/50 px-2 py-1 rounded transition-colors"
+                    <button
+                        className={cn(
+                            "flex items-center gap-2 px-3 py-1.5 rounded-full border transition-all duration-200 group outline-none",
+                            activeDropdown === 'facility'
+                                ? "bg-white/10 border-white/10 text-white"
+                                : "bg-black/20 border-white/5 text-zinc-400 hover:bg-white/5 hover:border-white/10 hover:text-zinc-200"
+                        )}
                         onClick={() => setActiveDropdown(activeDropdown === 'facility' ? null : 'facility')}
                     >
-                        <span className="text-synos-secondary">Facility:</span>
-                        <span className="text-white font-medium">{user?.branchName || "Unknown"}</span>
-                    </div>
+                        <Globe className="w-3.5 h-3.5 opacity-70" />
+                        <span className="text-xs font-medium">{user?.branchName || "Unknown"}</span>
+                        <ChevronDown className={cn("w-3 h-3 opacity-50 transition-transform", activeDropdown === 'facility' && "rotate-180")} />
+                    </button>
 
-                    {/* Sliding Modal for Facility */}
+                    {/* Menu */}
                     {activeDropdown === 'facility' && (
-                        <div className="absolute top-full left-0 mt-1 w-64 bg-zinc-900 border border-zinc-800/50 rounded-lg shadow-2xl overflow-hidden animate-in slide-in-from-top-2 fade-in duration-200 z-50">
-                            <div className="p-2 border-b border-zinc-800 bg-zinc-950/50">
-                                <span className="text-zinc-500 font-bold uppercase tracking-wider text-[10px] pl-2">Switch Facility</span>
+                        <div className="absolute top-full right-0 mt-2 w-64 bg-zinc-900/95 backdrop-blur-md border border-white/10 rounded-xl shadow-2xl overflow-hidden animate-in slide-in-from-top-2 fade-in duration-200 z-50 p-1">
+                            <div className="px-3 py-2 border-b border-white/5 mb-1">
+                                <span className="text-zinc-500 font-bold uppercase tracking-wider text-[10px]">Active Facility</span>
                             </div>
-                            <div className="max-h-[300px] overflow-y-auto p-1">
-                                {availableBranches.map(branch => (
-                                    <button
-                                        key={branch.id}
-                                        onClick={() => handleSwitchBranch(branch.id)}
-                                        className="w-full text-left px-3 py-2 text-zinc-300 hover:bg-zinc-800 hover:text-white rounded text-xs transition-colors flex items-center justify-between group"
-                                    >
-                                        <span>{branch.name}</span>
-                                        {user?.branchName?.includes(branch.name.split(' ')[0]) && (
-                                            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
-                                        )}
-                                    </button>
-                                ))}
-                            </div>
+                            {availableBranches.map(branch => (
+                                <button
+                                    key={branch.id}
+                                    onClick={() => handleSwitchBranch(branch.id)}
+                                    className="w-full text-left px-3 py-2 text-zinc-300 hover:bg-white/5 hover:text-white rounded-lg text-xs transition-all flex items-center justify-between group"
+                                >
+                                    <span>{branch.name}</span>
+                                    {user?.branchName?.includes(branch.name.split(' ')[0]) && (
+                                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
+                                    )}
+                                </button>
+                            ))}
                         </div>
                     )}
                 </div>
 
-                {/* 2. User Identity (Dropdown) */}
+                {/* 2. User Identity (Dropdown Pill) */}
                 <div className="relative">
-                    <div
-                        className="flex items-center gap-2 cursor-pointer hover:bg-zinc-800/50 px-2 py-1 rounded transition-colors"
+                    <button
+                        className={cn(
+                            "flex items-center gap-2 px-3 py-1.5 rounded-full border transition-all duration-200 group outline-none",
+                            activeDropdown === 'role'
+                                ? "bg-white/10 border-white/10 text-white"
+                                : "bg-black/20 border-white/5 text-zinc-400 hover:bg-white/5 hover:border-white/10 hover:text-zinc-200"
+                        )}
                         onClick={() => setActiveDropdown(activeDropdown === 'role' ? null : 'role')}
                     >
-                        <span className="text-synos-secondary">Role:</span>
-                        <span className="text-synos-primary">
-                            {user?.name || "User"} - {user?.role || "Role"}
+                        <Shield className="w-3.5 h-3.5 opacity-70" />
+                        <span className="text-xs font-medium">{user?.name || "User"}</span>
+                        <ChevronDown className={cn("w-3 h-3 opacity-50 transition-transform", activeDropdown === 'role' && "rotate-180")} />
+                    </button>
+
+                    {/* Menu */}
+                    {activeDropdown === 'role' && (
+                        <div className="absolute top-full right-0 mt-2 w-48 bg-zinc-900/95 backdrop-blur-md border border-white/10 rounded-xl shadow-2xl overflow-hidden animate-in slide-in-from-top-2 fade-in duration-200 z-50 p-1">
+                            <div className="px-3 py-2 border-b border-white/5 mb-1">
+                                <span className="text-zinc-500 font-bold uppercase tracking-wider text-[10px]">{user?.role || "Operator"}</span>
+                            </div>
+                            <button
+                                onClick={handleLogout}
+                                className="w-full text-left px-3 py-2 text-red-400 hover:bg-red-500/10 hover:text-red-300 rounded-lg text-xs transition-colors font-medium flex items-center gap-2"
+                            >
+                                Sign Out
+                            </button>
+                        </div>
+                    )}
+                </div>
+
+                {/* Divider */}
+                <div className="h-6 w-[1px] bg-white/5 mx-2" />
+
+                {/* 3. Operational Time & Sync */}
+                <div className="flex items-center gap-4 bg-black/20 border border-white/5 rounded-full px-4 py-1.5">
+                    <div className="flex items-center gap-2">
+                        <Clock className="w-3.5 h-3.5 text-zinc-600" />
+                        <span className="text-zinc-400 text-xs font-mono tracking-tight">
+                            {dateDisplay} <span className="text-zinc-200">{timeDisplay}</span>
                         </span>
                     </div>
 
-                    {/* Sliding Modal for Role */}
-                    {activeDropdown === 'role' && (
-                        <div className="absolute top-full right-0 mt-1 w-48 bg-zinc-900 border border-zinc-800/50 rounded-lg shadow-2xl overflow-hidden animate-in slide-in-from-top-2 fade-in duration-200 z-50">
-                            <div className="p-2 border-b border-zinc-800 bg-zinc-950/50">
-                                <span className="text-zinc-500 font-bold uppercase tracking-wider text-[10px] pl-2">Session Control</span>
-                            </div>
-                            <div className="p-1">
-                                <button
-                                    onClick={handleLogout}
-                                    className="w-full text-left px-3 py-2 text-red-400 hover:bg-red-500/10 hover:text-red-300 rounded text-xs transition-colors font-medium flex items-center gap-2"
-                                >
-                                    Logout
-                                </button>
-                            </div>
-                        </div>
-                    )}
+                    <div className="w-[1px] h-3 bg-white/10" />
+
+                    <div className="flex items-center gap-1.5">
+                        {isConnected ? (
+                            <Wifi className="w-3.5 h-3.5 text-emerald-500/80" />
+                        ) : (
+                            <WifiOff className="w-3.5 h-3.5 text-red-500/80 animate-pulse" />
+                        )}
+                        <span className={cn(
+                            "text-[10px] font-bold uppercase tracking-wider",
+                            isConnected ? "text-emerald-500" : "text-red-500"
+                        )}>
+                            {isConnected ? "Live" : "Offline"}
+                        </span>
+                    </div>
                 </div>
 
-                {/* 3. Operational Time */}
-                <div className="flex items-center gap-2 border-l border-synos-border pl-6">
-                    <span>Server Time:</span>
-                    <span className="text-white tabular-nums">
-                        {dateDisplay} {timeDisplay}
-                    </span>
-                </div>
-
-                {/* 4. Connectivity */}
-                <div className="flex items-center gap-2">
-                    <span>Sync:</span>
-                    <span className={cn(
-                        "font-bold transition-colors duration-300",
-                        isConnected ? "text-synos-emerald" : "text-synos-red animate-pulse"
-                    )}>
-                        {isConnected ? "Synced" : "Not Synced"}
-                    </span>
-                </div>
             </div>
         </div>
     );
