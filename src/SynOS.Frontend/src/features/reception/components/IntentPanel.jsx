@@ -231,25 +231,31 @@ export function IntentPanel() {
     }
 
     // Dynamic Title based on Intent
-    let panelTitle = "New Walk-In";
+    let panelTitle = "Registration";
     let panelSubtitle = "Cockpit";
     if (isResumeIntent) { panelTitle = "Resume Visit"; panelSubtitle = "Draft Mode"; }
     if (isCorrectionIntent) { panelTitle = "Correct Visit"; panelSubtitle = "Audit Logged"; }
 
     return (
-        <div className="flex flex-col h-full bg-zinc-900 border border-synos-border border-l-0 rounded-r-xl overflow-hidden animate-in slide-in-from-right-10 duration-300 shadow-2xl relative z-20">
+        <div className="flex flex-col h-full bg-zinc-900/95 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden animate-in slide-in-from-right-5 duration-500 shadow-2xl shadow-black/50 relative z-20 ring-1 ring-white/5">
             {/* Header */}
-            <div className="h-14 border-b border-synos-border flex items-center justify-between px-4 bg-zinc-950">
+            <div className="h-16 border-b border-white/5 flex items-center justify-between px-6 bg-white/5 backdrop-blur-md">
                 <div>
-                    <h2 className="text-lg font-bold text-white tracking-tight">
+                    <h2 className="text-xl font-bold text-white tracking-tight flex items-baseline gap-2">
                         {panelTitle}
-                        <span className="text-zinc-500 font-normal"> — {panelSubtitle}</span>
+                        <span className="text-synos-muted text-sm font-normal uppercase tracking-widest opacity-60">— {panelSubtitle}</span>
                     </h2>
-                    <div className="text-xs text-zinc-500">
-                        {isLoading ? "Syncing..." : isCorrectionIntent ? "Correction Mode (Audited)" : "Live Operational Mode"}
+                    <div className="text-[10px] font-mono text-emerald-400/80 uppercase tracking-wider mt-0.5 flex items-center gap-1.5">
+                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                        {isLoading ? "Syncing..." : isCorrectionIntent ? "Audit Mode Active" : "Live Operational Mode"}
                     </div>
                 </div>
-                <button onClick={closePanel} className="p-2 hover:bg-zinc-800 rounded-lg text-zinc-500 hover:text-white transition-colors"><X className="w-5 h-5" /></button>
+                <button
+                    onClick={closePanel}
+                    className="p-2 -mr-2 hover:bg-white/10 rounded-full text-zinc-400 hover:text-white transition-all duration-200 active:scale-95"
+                >
+                    <X className="w-5 h-5" />
+                </button>
             </div>
 
             {/* Scrollable Content */}

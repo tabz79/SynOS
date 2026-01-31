@@ -258,49 +258,56 @@ export function ReceptionScreen() {
             <SystemBar serverTime={serverTimeAnchor} syncStatus={connectionStatus} />
 
             <div className="flex-1 p-4 overflow-hidden">
-                <div
-                    className={`
-                        grid gap-4 h-full transition-all duration-500 ease-in-out
-                        ${isIntentPanelOpen ? 'grid-cols-synos-focus' : 'grid-cols-synos-default'}
-                    `}
-                >
+                <div className="flex h-full gap-4 transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]">
 
                     {/* Left Column: Reality + Work */}
-                    <div className={`flex flex-col min-h-0 transition-opacity duration-300 ${isIntentPanelOpen ? 'opacity-50 pointer-events-none' : 'opacity-100'}`}>
+                    <div
+                        className={`
+                            flex flex-col min-h-0 transition-[width] duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]
+                            ${isIntentPanelOpen ? 'w-[60%]' : 'w-[75%]'}
+                        `}
+                    >
+                        <div className={`flex flex-col h-full transition-opacity duration-300 ${isIntentPanelOpen ? 'opacity-50 pointer-events-none' : 'opacity-100'}`}>
 
-                        {/* Header for Reality Summary */}
-                        <div className="mb-4">
-                            <h2 className="text-lg font-medium text-zinc-200 mb-2 px-1">Reality Summary</h2>
-                            <RealitySummary tiles={realityTiles} />
-                        </div>
-
-                        {/* Action Queues */}
-                        <div className="flex-1 flex flex-col min-h-0 relative">
-                            <div className="flex items-center justify-between mb-2">
-                                <ActionQueueHeader title="Action Queues" count={actionQueue.length} />
-                                <button
-                                    onClick={openCreateIntent}
-                                    className="bg-zinc-100 hover:bg-white text-zinc-900 border border-zinc-200 px-4 py-1.5 rounded-md text-xs font-bold shadow-sm transition-all flex items-center gap-2 pointer-events-auto"
-                                >
-                                    <Plus className="w-3.5 h-3.5" />
-                                    New Walk-In
-                                </button>
+                            {/* Header for Reality Summary */}
+                            <div className="mb-4">
+                                <h2 className="text-lg font-medium text-zinc-200 mb-2 px-1">Reality Summary</h2>
+                                <RealitySummary tiles={realityTiles} />
                             </div>
-                            {isLoadingQueue ? (
-                                <div className="flex-1 flex items-center justify-center border border-dashed border-zinc-800 rounded-xl">
-                                    <div className="flex flex-col items-center gap-2">
-                                        <Loader2 className="w-6 h-6 animate-spin text-zinc-600" />
-                                        <span className="text-xs text-zinc-600">Loading live operational stream...</span>
-                                    </div>
+
+                            {/* Action Queues */}
+                            <div className="flex-1 flex flex-col min-h-0 relative">
+                                <div className="flex items-center justify-between mb-2">
+                                    <ActionQueueHeader title="Action Queues" count={actionQueue.length} />
+                                    <button
+                                        onClick={openCreateIntent}
+                                        className="bg-zinc-100 hover:bg-white text-zinc-900 border border-zinc-200 px-4 py-1.5 rounded-md text-xs font-bold shadow-sm transition-all flex items-center gap-2 pointer-events-auto"
+                                    >
+                                        <Plus className="w-3.5 h-3.5" />
+                                        Registration
+                                    </button>
                                 </div>
-                            ) : (
-                                <ActionQueue columns={queueColumns} data={actionQueue} />
-                            )}
+                                {isLoadingQueue ? (
+                                    <div className="flex-1 flex items-center justify-center border border-dashed border-zinc-800 rounded-xl">
+                                        <div className="flex flex-col items-center gap-2">
+                                            <Loader2 className="w-6 h-6 animate-spin text-zinc-600" />
+                                            <span className="text-xs text-zinc-600">Loading live operational stream...</span>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <ActionQueue columns={queueColumns} data={actionQueue} />
+                                )}
+                            </div>
                         </div>
                     </div>
 
                     {/* Right Column: Audit Panel OR Intent Panel */}
-                    <div className="min-h-0 relative">
+                    <div
+                        className={`
+                            min-h-0 relative transition-[width] duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]
+                            ${isIntentPanelOpen ? 'w-[40%]' : 'w-[25%]'}
+                        `}
+                    >
                         {isIntentPanelOpen ? <IntentPanel /> : <ActivityStream />}
                     </div>
 
