@@ -16,8 +16,9 @@ export function AuthProvider({ children }) {
                 // Adjust claim keys based on actual JWT structure from backend audit if needed
                 setUser({
                     role: decoded.role || decoded["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"],
-                    branchId: decoded.branchId || "Main", // Fallback or strict?
-                    name: decoded.sub || decoded.unique_name,
+                    branchId: decoded.branch_id || decoded.branchId || "Main",
+                    branchName: decoded.branch_name || "Unknown Branch", // Bind Truth
+                    name: decoded.unique_name || decoded.sub,
                 });
             } catch (error) {
                 console.error("Invalid Token:", error);
@@ -59,8 +60,9 @@ export function AuthProvider({ children }) {
             const decoded = jwtDecode(tokenValue);
             const userObj = {
                 role: decoded.role || decoded["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"],
-                branchId: decoded.branchId || "Main",
-                name: decoded.sub || decoded.unique_name,
+                branchId: decoded.branch_id || decoded.branchId || "Main",
+                branchName: decoded.branch_name || "Unknown Branch",
+                name: decoded.unique_name || decoded.sub,
             };
             setUser(userObj);
             setToken(tokenValue);

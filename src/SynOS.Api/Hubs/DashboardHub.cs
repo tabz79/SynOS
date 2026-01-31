@@ -6,6 +6,10 @@ namespace SynOS.Api.Hubs
     [Authorize]
     public class DashboardHub : Hub
     {
-        // Hub methods can be added here if client-to-server comms needed
+        public override async Task OnConnectedAsync()
+        {
+            await Clients.Caller.SendAsync("ReceiveServerTime", System.DateTime.UtcNow);
+            await base.OnConnectedAsync();
+        }
     }
 }

@@ -556,20 +556,11 @@ namespace SynOS.Services
                 );
             }
             
-            // --- EMIT FINANCIAL EVENT (STAGE 1) ---
-            // SourceId MUST be the FactId, NOT the PaymentId.
-            await _operationalEventWriter.WriteEventAsync(
-                BranchEventType.PAYMENT_RECEIVED,
-                _userContext.CurrentBranchId.ToString(),
-                visit.VisitId.ToString(),
-                visit.Token,
-                $"Payment received: {payment.Amount:C} via {payment.Method} (Fact: {factFinal.PaymentId})",
-                "User",
-                userId.ToString(),
-                true, // saveChanges
-                factFinal.PaymentId, // SourceId = FactId
-                "PaymentConfirmedFact" // SourceType
-            );
+            // --- FINANCIAL EVENT EMISSION ---
+            // NOTE: We do NOT emit PAYMENT_RECEIVED here. 
+            // The Revenue Engine (InvoiceService) owns this financial fact and emits the event.
+            // Emitting it here causes Double Counting.
+            // --------------------------------
 
             var updatedVisit = await _context.Visits.FindAsync(visit.VisitId);
 

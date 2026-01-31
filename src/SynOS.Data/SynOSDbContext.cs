@@ -206,6 +206,12 @@ namespace SynOS.Data
                 entity.HasOne(e => e.Role).WithMany().HasForeignKey(e => e.RoleId).OnDelete(DeleteBehavior.Restrict);
             });
             
+            // Financial Facts (Precision Fixes)
+            modelBuilder.Entity<PaymentConfirmedFact>(entity =>
+            {
+                entity.Property(e => e.Amount).HasColumnType("decimal(18, 4)");
+            });
+
             // AuditLog
             modelBuilder.Entity<AuditLog>(entity =>
             {
@@ -828,6 +834,26 @@ namespace SynOS.Data
                 entity.Property(e => e.SourceEventType).HasConversion<string>().HasMaxLength(50);
             });
 
+            // Discount Configuration
+            modelBuilder.Entity<DiscountMaster>(entity =>
+            {
+                entity.ToTable("DiscountMasters");
+                entity.Property(e => e.MaxLimit).HasColumnType("decimal(18, 4)");
+            });
+
+            // Payroll Engine Configuration
+            modelBuilder.Entity<PayrollAdjustment>(entity =>
+            {
+                entity.ToTable("PayrollAdjustments");
+                entity.Property(e => e.Amount).HasColumnType("decimal(18, 4)");
+            });
+
+            modelBuilder.Entity<PayrollFact>(entity =>
+            {
+                entity.ToTable("PayrollFacts");
+                entity.Property(e => e.Amount).HasColumnType("decimal(18, 4)");
+            });
+
             // Spend Engine Configuration
             modelBuilder.Entity<SpendFact>(entity =>
             {
@@ -851,6 +877,9 @@ namespace SynOS.Data
 
                 // Optional unique index for idempotency on external transaction IDs
                 entity.HasIndex(e => e.ExternalTransactionId).IsUnique().HasFilter("[ExternalTransactionId] IS NOT NULL");
+
+                // INVARIANT: SourceReferenceId (PaymentId) must be unique per type.
+                entity.HasIndex(e => new { e.SourceType, e.SourceReferenceId }).IsUnique();
 
                 entity.Property(e => e.Amount).HasColumnType("decimal(18, 4)").IsRequired();
                 entity.Property(e => e.Currency).HasMaxLength(10).IsRequired();
@@ -916,6 +945,20 @@ modelBuilder.Entity<ReceivableFact>(entity =>
     entity.Property(e => e.RecordedAt)
           .IsRequired();
 });
+
+            // Payment Confirmed Fact (Stage 1 Financials) // ADDED PHASE 5
+            modelBuilder.Entity<PaymentConfirmedFact>(entity =>
+            {
+                entity.ToTable("PaymentConfirmedFacts");
+                entity.HasKey(e => e.PaymentId);
+                
+                entity.Property(e => e.Amount).HasColumnType("decimal(18, 4)").IsRequired();
+                entity.Property(e => e.Direction).HasConversion<string>().HasMaxLength(20).IsRequired(); // FIX: Enum to String
+                entity.Property(e => e.Channel).HasMaxLength(50);
+                
+                entity.HasIndex(e => e.ReferenceId); // Lookup by Visit/Invoice
+                entity.HasIndex(e => e.OccurredAt);
+            });
 
             // Compliance Engine Configuration // ADDED
             modelBuilder.Entity<StatutoryObligationFact>(entity =>

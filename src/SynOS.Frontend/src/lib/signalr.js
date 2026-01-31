@@ -107,6 +107,19 @@ export const SignalRService = {
     },
 
     /**
+     * Subscribes to Server Time updates (Anchor).
+     * @param {Function} callback - (serverTime) => void
+     */
+    onReceiveServerTime: (callback) => {
+        if (!connection) return;
+        connection.off("ReceiveServerTime");
+        connection.on("ReceiveServerTime", (serverTime) => {
+            console.log("SignalR: ReceiveServerTime received", serverTime);
+            callback(serverTime);
+        });
+    },
+
+    /**
      * Stops the connection with a grace period.
      * Only actually disconnects if no subscribers remain after delay.
      */

@@ -175,7 +175,9 @@ namespace SynOS.Services
                 Currency = "INR",
                 Direction = RevenueDirection.Inflow,
                 SourceType = RevenueSourceType.Patient,
-                SourceReferenceId = invoice.VisitId.ToString(),
+                // SEMANTIC CORRECTION: The Financial Identity is the PAYMENT, not the Visit.
+                // This allows multiple payments per visit without ID collision.
+                SourceReferenceId = payment.PaymentId.ToString(), 
                 PaymentMode = MapPaymentMethod(payment.Method),
                 DeclaredByUserId = payment.ReceivedByUserId,
                 Notes = $"Payment received for Invoice {invoice.InvoiceId}",

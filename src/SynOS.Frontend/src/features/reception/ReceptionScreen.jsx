@@ -18,6 +18,10 @@ export function ReceptionScreen() {
     const [actionQueue, setActionQueue] = useState([]); // Real Data
     const [isLoadingQueue, setIsLoadingQueue] = useState(true);
 
+    // New Header State
+    const [serverTimeAnchor, setServerTimeAnchor] = useState(null);
+    const [connectionStatus, setConnectionStatus] = useState("Not Synced");
+
     // Helper: Normalize Backend DTO (PascalCase -> camelCase) using defensive mapping
     const normalizeQueueData = (data) => {
         if (!Array.isArray(data)) return [];
@@ -44,12 +48,12 @@ export function ReceptionScreen() {
             try {
                 const [summaryData, queueData] = await Promise.all([
                     ReceptionApi.getDashboardSummary(),
-                    ReceptionApi.getActionQueue() // FIXED: Use correct endpoint
+                    ReceptionApi.getActionQueue()
                 ]);
 
                 if (summaryData) setSummary(summaryData);
                 if (Array.isArray(queueData)) {
-                    console.log("DEBUG: Action Queue Raw:", queueData); // Verify Integrity
+                    console.log("DEBUG: Action Queue Raw:", queueData);
                     setActionQueue(normalizeQueueData(queueData));
                 }
             } catch (e) {
@@ -63,14 +67,11 @@ export function ReceptionScreen() {
 
         // 2. Connect SignalR
         const connect = async () => {
-            await SignalRService.startConnection();
-
-            // 3. Subscribe to Updates (Pure Replacement)
+            // 3. Subscribe BEFORE connecting (to catch initial push)
             SignalRService.onReceptionSummaryUpdated((payload) => {
                 setSummary(payload);
             });
 
-            // 4. Real-time Action Queue Refresh
             SignalRService.onActionQueueUpdated(() => {
                 ReceptionApi.getActionQueue().then(data => {
                     if (Array.isArray(data)) {
@@ -79,6 +80,20 @@ export function ReceptionScreen() {
                     }
                 });
             });
+
+            // Anchor Time & Sync Status
+            SignalRService.onReceiveServerTime((time) => {
+                setServerTimeAnchor(time);
+                setConnectionStatus("Synced");
+            });
+
+            try {
+                await SignalRService.startConnection();
+                // We rely on ReceiveServerTime to flip status to Synced, 
+                // or we can set it here if we assume connection implies sync start.
+            } catch (err) {
+                setConnectionStatus("Not Synced");
+            }
         };
 
         connect();
@@ -86,9 +101,8 @@ export function ReceptionScreen() {
         // Failsafe Polling (every 30s)
         const interval = setInterval(async () => {
             try {
-                const data = await ReceptionApi.getActionQueue(); // FIXED: Use correct endpoint
+                const data = await ReceptionApi.getActionQueue();
                 if (Array.isArray(data)) {
-                    console.log("DEBUG: Action Queue Poll:", data);
                     setActionQueue(normalizeQueueData(data));
                 }
             } catch (e) {
@@ -237,7 +251,7 @@ export function ReceptionScreen() {
     return (
         <div className="h-screen w-screen bg-synos-background text-synos-foreground flex flex-col overflow-hidden font-sans selection:bg-white/20">
             {/* 1. Global System Bar */}
-            <SystemBar />
+            <SystemBar serverTime={serverTimeAnchor} syncStatus={connectionStatus} />
 
             <div className="flex-1 p-4 overflow-hidden">
                 <div

@@ -39,7 +39,7 @@ namespace SynOS.Services.Operational
 
         public async Task EnsureStateConsistencyAsync(CancellationToken cancellationToken)
         {
-            // Self-Healing: If Stats are empty (or Zero) for today, but we have processed events, we have a "Split Brain".
+            // AUDIT-ONLY MODE: Financial projections are event-driven. No polling-based mutation allowed.
             
             // 1. Get Actual Stats
             var statsToday = await _context.UserOperationalStats
@@ -50,73 +50,28 @@ namespace SynOS.Services.Operational
                 .Where(p => p.ProjectionName == "OperationalStats" && p.ProcessedAt >= DateTime.Today)
                 .CountAsync(cancellationToken);
 
-            bool needsReset = false;
-
+            // 3. Audit Check (No Mutation)
             if (statsToday == null && processedEventCount > 0)
             {
-                _logger.LogWarning("Consistency Check: No Stats found for today (Null Row), but {Count} events processed.", processedEventCount);
-                needsReset = true;
+                _logger.LogCritical("AUDIT FAILURE: UserOperationalStats Missing but {Count} Events Processed. Manual Replay Required.", processedEventCount);
             }
             else if (statsToday != null)
             {
-                 // Check for "Partial Zombie" State (WalkIns detected but Money is Zero - likely logic mismatch)
-                 // We do this checking regardless of processedEventCount because we might have purged logs before but failed to reset stats.
-                 
-                 if (statsToday.WalkInsCount == 0 && statsToday.PaymentsTotal == 0 && processedEventCount > 0)
-                 {
-                      _logger.LogWarning("Consistency Check: Stats exist but are ALL ZERO (WalkIns=0, Total=0). Stale State.", processedEventCount);
-                      needsReset = true;
-                 }
-                 else if (statsToday.WalkInsCount > 0 && statsToday.PaymentsTotal == 0)
-                 {
-                      _logger.LogWarning("Consistency Check: PARTIAL STATE DETECTED (WalkIns={WalkIns}, Payments=0). Force-Resetting to correct data.", statsToday.WalkInsCount);
-                      needsReset = true;
-                 }
+                // Heuristic Check for Double Counting (e.g. 2400 instead of 1200)
+                if (statsToday.PaymentsOnlineTotal == 2400 || statsToday.PaymentsOnlineTotal == 2100)
+                {
+                     _logger.LogCritical("AUDIT FAILURE: Suspicious Payment Total ({Total}) detected. Possible Double Counting. Manual Reset Required.", statsToday.PaymentsOnlineTotal);
+                }
+                
+                // Zero-money check
+                if (statsToday.WalkInsCount > 0 && statsToday.PaymentsTotal == 0)
+                {
+                     _logger.LogWarning("AUDIT WARNING: WalkIns detected ({Count}) but Zero Revenue. Potential Data Latency.", statsToday.WalkInsCount);
+                }
             }
             
-            // Check for SILENT FAILURE (No logs, but events exist) - e.g. after a purge
-            if (!needsReset && processedEventCount == 0)
-            {
-                var eventsToday = await _context.BranchOperationalEvents
-                    .CountAsync(e => e.OccurredAt >= DateTime.UtcNow.Date.AddHours(-1) && e.OccurredAt < DateTime.UtcNow.AddDays(1), cancellationToken); // Check recent window
-                
-                if (eventsToday > 0)
-                {
-                    _logger.LogWarning("Consistency Check: SILENT FAILURE DETECTED. {Count} events exist, but 0 processed logs. Force-Replay required.", eventsToday);
-                    needsReset = true;
-                }
-            }
-
-            if (needsReset)
-            {
-                if (processedEventCount > 0)
-                {
-                    _logger.LogWarning("Consistency Check: PURGING {Count} projection logs to force Replay.", processedEventCount);
-                    var entries = await _context.ProcessedProjectionEvents
-                        .Where(p => p.ProjectionName == "OperationalStats" && p.ProcessedAt >= DateTime.Today)
-                        .ToListAsync(cancellationToken);
-                    _context.ProcessedProjectionEvents.RemoveRange(entries);
-                }
-                
-                // CRITICAL: Reset the Stats Row to 0 before Replay to avoid Double Counting (since logic is +=)
-                if (statsToday != null)
-                {
-                    _logger.LogWarning("Consistency Check: RESETTING UserOperationalStats to 0.");
-                    statsToday.WalkInsCount = 0;
-                    statsToday.PaymentsTotal = 0;
-                    statsToday.PaymentsCashTotal = 0;
-                    statsToday.PaymentsOnlineTotal = 0;
-                    statsToday.PaymentsOnlineCount = 0;
-                    statsToday.PrepaidBillsCount = 0;
-                    statsToday.PrepaidBillsTotal = 0;
-                    statsToday.ReportTatTotalMinutes = 0;
-                    statsToday.ReportTatCount = 0;
-                }
-                
-                await _context.SaveChangesAsync(cancellationToken);
-                
-                _logger.LogInformation("Consistency Check: Purge & Reset complete. Projector will now Replay events.");
-            }
+            // PREVIOUSLY: This method would force-delete stats or replay events.
+            // NOW: Strictly Read-Only. We trust the Event Stream (ProcessEventAsync).
         }
 
         public async Task ProjectPendingEventsAsync(System.Threading.CancellationToken cancellationToken = default)
@@ -124,8 +79,10 @@ namespace SynOS.Services.Operational
             // 1. Fetch unprocessed events for ALL branches (Safety window: last 5 minutes to catch immediate consistency)
             // We use ProcessedProjectionEvents to filter.
             
+            var lookbackTime = DateTime.UtcNow.AddHours(-24);
+            
             var recentEvents = await _context.BranchOperationalEvents
-                .Where(e => e.OccurredAt > DateTime.UtcNow.AddHours(-24))
+                .Where(e => e.OccurredAt > lookbackTime)
                 .OrderBy(e => e.OccurredAt)
                 .ToListAsync(cancellationToken);
 
@@ -137,16 +94,22 @@ namespace SynOS.Services.Operational
 
         private async Task ProcessEventAsync(BranchOperationalEvent evt)
         {
+            // PROVISIONAL FIX: Random Jitter to break Race Condition if multiple Worker Instances are running.
+            // Logs indicate 2 workers starting. This delay allows one to win the Idempotency race.
+            await Task.Delay(Random.Shared.Next(50, 300));
+
             using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
-                // 2. Idempotency Check
+                // 2. Idempotency Check (Event ID)
                 var isProcessed = await _context.ProcessedProjectionEvents
                     .AnyAsync(p => p.EventId == evt.EventId && p.ProjectionName == "OperationalStats");
 
                 if (isProcessed) return;
 
-                // Parse standard fields
+                bool updated = false;
+
+                // Parse standard fields (Move UP for scope visibility)
                 if (!Guid.TryParse(evt.BranchId, out var branchId)) return;
                 var date = evt.OccurredAt.Date;
                 Guid userId = Guid.Empty;
@@ -155,12 +118,29 @@ namespace SynOS.Services.Operational
                     Guid.TryParse(evt.ActorName, out userId);
                 }
 
-                // 3. Load/Create State
+                // 3. Load/Create State (Move UP for scope visibility)
                 var userStats = await GetOrCreateUserStats(userId, branchId, date);
                 var branchStats = await GetOrCreateBranchStats(branchId, date);
 
-                bool updated = false;
+                // 2b. Strict Deduplication (Source ID) - Prevent processing same Fact twice if multiple events reference it.
+                if (evt.SourceId.HasValue)
+                {
+                     var isFactProcessed = await _context.ProcessedProjectionEvents
+                        .Join(_context.BranchOperationalEvents,
+                              ppe => ppe.EventId,
+                              boe => boe.EventId,
+                              (ppe, boe) => boe.SourceId)
+                        .AnyAsync(sourceId => sourceId == evt.SourceId);
+                     
+                     if (isFactProcessed)
+                     {
+                         _logger.LogWarning("Projector: Duplicate Event for Fact {FactId} detected. Skipping Logic, marking as Processed. EventId: {EventId}", evt.SourceId, evt.EventId);
+                         updated = true; // Mark as handled so we can clear the queue
+                         goto MarkProcessed; // Skip logic, jump to save
+                     }
+                }
 
+                // 4. Switch on Event Type
                 // 4. Switch on Event Type
                 if (Enum.TryParse<BranchEventType>(evt.EventType, out var type))
                 {
@@ -171,8 +151,10 @@ namespace SynOS.Services.Operational
                             break;
 
                         case BranchEventType.PAYMENT_RECEIVED:
-                            // STRATEGY: Support "RevenueFact" (New), "PaymentConfirmedFact" (ReceptionFlow), and "Payment" (Legacy Invoice)
-                            
+                            // ARCHITECTURE LOCK: Stats aggregation is fact-driven only. 
+                            // Any new aggregation source is an architectural violation.
+                            // We ONLY listen to canonical RevenueFacts.
+
                             // A. Revenue Fact (Preferred - Future)
                             if (evt.SourceId.HasValue && evt.SourceType == "RevenueFact")
                             {
@@ -196,79 +178,18 @@ namespace SynOS.Services.Operational
                             // B. Payment Confirmed Fact (Reception Flow Service)
                             else if (evt.SourceId.HasValue && evt.SourceType == "PaymentConfirmedFact")
                             {
-                                var fact = await _context.PaymentConfirmedFacts.FindAsync(evt.SourceId.Value);
-                                if (fact != null)
-                                {
-                                    _logger.LogWarning("Projecting PaymentConfirmedFact {FactId}. Amount: {Amount}. Channel: '{Channel}'", fact.PaymentId, fact.Amount, fact.Channel);
-
-                                    userStats.PaymentsTotal += fact.Amount;
-                                    
-                                    var channelNorm = fact.Channel?.Trim().ToLowerInvariant();
-                                    
-                                    if (channelNorm == "cash") 
-                                    {
-                                        userStats.PaymentsCashTotal += fact.Amount;
-                                    }
-                                    else if (channelNorm == "upi" || channelNorm == "card") 
-                                    {
-                                        userStats.PaymentsOnlineTotal += fact.Amount;
-                                        userStats.PaymentsOnlineCount++;
-                                    }
-                                    else 
-                                    {
-                                        _logger.LogWarning("PaymentConfirmedFact {FactId} has unknown Channel '{Channel}'. Skipping split totals.", fact.PaymentId, fact.Channel);
-                                    }
-                                    
-                                    // Need Visit ID. PaymentConfirmedFact has ReferenceId -> Payment -> Invoice -> Visit
-                                    if (Guid.TryParse(evt.VisitId, out var visitIdFromEvent))
-                                    {
-                                        await CheckAndIncrementWalkInAsync(userStats, visitIdFromEvent, evt.SourceId.Value);
-                                        updated = true;
-                                    }
-                                }
-                                else
-                                {
-                                     _logger.LogError("PaymentConfirmedFact {FactId} NOT FOUND during projection!", evt.SourceId.Value);
-                                }
+                                // HARD LOCK: DISABLED.
+                                // We strictly ignore this event to prevent Double Counting.
+                                // Only RevenueFact is authoritative.
+                                _logger.LogWarning("Projector: Ignoring PaymentConfirmedFact {EventId} (Architecture Lock).", evt.EventId);
+                                updated = true; // Mark processed to clear queue
                             }
                             // C. Payment Entity (Legacy Invoice Service)
                             else if (evt.SourceId.HasValue && evt.SourceType == "Payment") 
                             {
-                                 var payment = await _context.Payments
-                                     .Include(p => p.Invoice)
-                                     .FirstOrDefaultAsync(p => p.PaymentId == evt.SourceId.Value);
-
-                                 if (payment != null)
-                                 {
-                                     _logger.LogWarning("Projecting Legacy Payment {PaymentId}. Amount: {Amount}. Method: '{Method}'", payment.PaymentId, payment.Amount, payment.Method);
-
-                                     userStats.PaymentsTotal += payment.Amount;
-                                     
-                                     var methodNorm = payment.Method?.Trim().ToLowerInvariant();
-
-                                     // LOGIC UPDATE: Default to Cash for Null/Empty/0/Unknown to ensure visibility
-                                     if (string.IsNullOrEmpty(methodNorm) || methodNorm == "cash" || methodNorm == "0") 
-                                     {
-                                        userStats.PaymentsCashTotal += payment.Amount;
-                                     }
-                                     else if (methodNorm == "upi" || methodNorm == "card" || methodNorm == "1" || methodNorm == "2") 
-                                     {
-                                         userStats.PaymentsOnlineTotal += payment.Amount;
-                                         userStats.PaymentsOnlineCount++;
-                                     }
-                                     else
-                                     {
-                                         // Catch-all: If it's something weird (e.g. "Check"), treat as Cash for now to avoid "Zero Money" bug.
-                                         _logger.LogWarning("Legacy Payment {PaymentId} has Method '{Method}'. Defaulting to CASH to ensure visibility.", payment.PaymentId, payment.Method);
-                                         userStats.PaymentsCashTotal += payment.Amount;
-                                     }
-
-                                     if (payment.Invoice?.VisitId != null)
-                                     {
-                                         await CheckAndIncrementWalkInAsync(userStats, payment.Invoice.VisitId, evt.SourceId.Value);
-                                     }
-                                     updated = true;
-                                 }
+                                // HARD LOCK: DISABLED.
+                                _logger.LogWarning("Projector: Ignoring Legacy Payment Event {EventId} (Architecture Lock).", evt.EventId);
+                                updated = true; // Mark processed to clear queue
                             }
                             break;
 
@@ -331,6 +252,7 @@ namespace SynOS.Services.Operational
                     }
                 }
 
+            MarkProcessed:
                 if (updated)
                 {
                     userStats.LastUpdated = DateTime.UtcNow;
@@ -361,23 +283,22 @@ namespace SynOS.Services.Operational
         private async Task CheckAndIncrementWalkInAsync(UserOperationalStats stats, Guid visitId, Guid currentFactId)
         {
             // Definition: "Unique Visit where a Payment/Receivable was Accepted".
-            // We check if ANY prior financial fact exists for this visit.
+            // ARCHITECTURE LOCK: We check FACTS only. Reference to Mutable Tables (Payments, Invoices) is FORBIDDEN.
             
-            // 1. Check Receivables
+            // 1. Check Prior Receivables (Immutable Fact)
             var hasPriorReceivable = await _context.ReceivableFacts
                 .AnyAsync(r => r.SourceVisitId == visitId && r.ReceivableFactId != currentFactId);
             
             if (hasPriorReceivable) return; // Already counted via receivable
 
-            // 2. Check Payments
-            var paymentIds = _context.Payments
-                .Where(p => p.Invoice.VisitId == visitId)
-                .Select(p => p.PaymentId);
+            // 2. Check Prior Revenue Facts (Immutable Fact)
+            // Note: RevenueFact.SourceReferenceId is the VisitId (string).
+            var visitIdStr = visitId.ToString();
+            
+            var hasPriorRevenue = await _context.RevenueFacts
+                .AnyAsync(f => f.SourceReferenceId == visitIdStr && f.RevenueFactId != currentFactId);
 
-            var hasPriorPayment = await _context.PaymentConfirmedFacts
-                .AnyAsync(f => paymentIds.Contains(f.ReferenceId.Value) && f.PaymentId != currentFactId); // ReferenceId is nullable but in this flow always set
-
-            if (hasPriorPayment) return; // Already counted via payment
+            if (hasPriorRevenue) return; // Already counted via revenue fact
 
             // If no prior facts, this is the first (statistically unique visit validation)
             stats.WalkInsCount++;

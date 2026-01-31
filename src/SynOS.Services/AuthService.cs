@@ -65,16 +65,19 @@ namespace SynOS.Services
             // Context Selection Logic (Phase 1: Auto-select single branch)
             var userBranchRoles = await _context.UserBranchRoles
                 .Include(ubr => ubr.Role)
+                .Include(ubr => ubr.Branch) // ADDED: Fetch Branch for Name
                 .Where(ubr => ubr.UserId == user.UserId)
                 .ToListAsync();
 
             Guid selectedBranchId;
             string selectedRoleName;
+            string selectedBranchName; // ADDED
 
             if (userBranchRoles.Count == 1)
             {
                 var context = userBranchRoles.First();
                 selectedBranchId = context.BranchId;
+                selectedBranchName = context.Branch.Name; // ADDED
                 selectedRoleName = context.Role.Name;
             }
             else if (userBranchRoles.Count > 1)
@@ -88,7 +91,7 @@ namespace SynOS.Services
                 throw new UnauthorizedAccessException("No active branch assignment found for this user.");
             }
 
-            var jwtToken = GenerateJwtToken(user, selectedBranchId, selectedRoleName);
+            var jwtToken = GenerateJwtToken(user, selectedBranchId, selectedBranchName, selectedRoleName);
             var refreshToken = GenerateRefreshToken(ipAddress);
             user.RefreshTokens.Add(refreshToken);
 
@@ -139,16 +142,19 @@ namespace SynOS.Services
             // Re-resolve branch context
              var userBranchRoles = await _context.UserBranchRoles
                 .Include(ubr => ubr.Role)
+                .Include(ubr => ubr.Branch) // ADDED: Fetch Branch for Name
                 .Where(ubr => ubr.UserId == user.UserId)
                 .ToListAsync();
 
             Guid selectedBranchId;
             string selectedRoleName;
+            string selectedBranchName; // ADDED
 
             if (userBranchRoles.Count == 1)
             {
                 var context = userBranchRoles.First();
                 selectedBranchId = context.BranchId;
+                selectedBranchName = context.Branch.Name; // ADDED
                 selectedRoleName = context.Role.Name;
             }
             else
@@ -159,7 +165,7 @@ namespace SynOS.Services
                  throw new UnauthorizedAccessException("No branch assignment.");
             }
 
-            var jwtToken = GenerateJwtToken(user, selectedBranchId, selectedRoleName);
+            var jwtToken = GenerateJwtToken(user, selectedBranchId, selectedBranchName, selectedRoleName);
             
             await _auditService.LogAsync(user.UserId, "RefreshToken", "User", user.UserId, new { IpAddress = ipAddress });
             await _context.SaveChangesAsync();
@@ -192,7 +198,7 @@ namespace SynOS.Services
             return true;
         }
 
-        private string GenerateJwtToken(User user, Guid branchId, string roleName)
+        private string GenerateJwtToken(User user, Guid branchId, string branchName, string roleName)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
             var jwtSecret = _configuration["Jwt:Secret"] ?? throw new InvalidOperationException("Jwt:Secret not configured");
@@ -202,8 +208,9 @@ namespace SynOS.Services
                 new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
                 new Claim(ClaimTypes.Email, user.Email),
                 new Claim(ClaimTypes.Name, user.Name),
-                new Claim("branch_id", branchId.ToString()), // ADDED: Branch Claim
-                new Claim(ClaimTypes.Role, roleName) // Scoped Role
+                new Claim("branch_id", branchId.ToString()),
+                new Claim("branch_name", branchName), // ADDED: Branch Name Claim (Truth)
+                new Claim(ClaimTypes.Role, roleName)
             });
 
             var jwtExpiryMinutes = _configuration.GetValue<int>("Jwt:ExpiryMinutes", 60); // Default to 60 minutes
