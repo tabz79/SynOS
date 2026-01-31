@@ -3230,3 +3230,64 @@ System.Threading.Tasks.TaskCanceledException: A task was canceled.
 2026-01-31 17:59:33.989 +05:30 [WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
 2026-01-31 17:59:34.707 +05:30 [WRN] Projector: Ignoring PaymentConfirmedFact "32334ce6-7604-4c86-8dc3-75f13de3856c" (Architecture Lock).
 2026-01-31 17:59:34.714 +05:30 [WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+2026-01-31 18:13:28.427 +05:30 [INF] Notification Worker Service running.
+2026-01-31 18:13:28.626 +05:30 [INF] ExpiredLockCleanupService is starting.
+2026-01-31 18:13:28.775 +05:30 [INF] Analyzer TCP Listener Service starting...
+2026-01-31 18:13:28.783 +05:30 [WRN] No analyzer TCP listeners configured in appsettings.json.
+2026-01-31 18:13:28.790 +05:30 [INF] OperationalStatsProjectionWorker is starting. Interval: 5s
+2026-01-31 18:13:28.813 +05:30 [INF] Worker: Running Consistency Check...
+2026-01-31 18:14:03.604 +05:30 [WRN] Failed to determine the https port for redirect.
+2026-01-31 18:14:04.550 +05:30 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2026-01-31 18:24:59.008 +05:30 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2026-01-31 18:24:59.076 +05:30 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2026-01-31 18:24:59.633 +05:30 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2026-01-31 18:24:59.758 +05:30 [FTL] EVENT_WRITE for VisitId 23046b20-6c4e-4484-87a6-6154b5696202, Context 4856eb19-0013-4af1-b880-b384998c720f:0
+2026-01-31 18:24:59.810 +05:30 [FTL] EVENT_WRITE for VisitId 23046b20-6c4e-4484-87a6-6154b5696202, Context 4856eb19-0013-4af1-b880-b384998c720f:0
+2026-01-31 18:25:19.082 +05:30 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2026-01-31 18:25:19.147 +05:30 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2026-01-31 18:25:19.305 +05:30 [FTL] EVENT_WRITE for VisitId 23046b20-6c4e-4484-87a6-6154b5696202, Context 15770737-36a7-4fd2-8b85-2a3eee98a107:0
+2026-01-31 18:25:22.566 +05:30 [FTL] EVENT_WRITE for VisitId 23046b20-6c4e-4484-87a6-6154b5696202, Context 8a6257c0-278c-4dd3-a9e1-6572068f7ec6:0
+2026-01-31 18:25:25.157 +05:30 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2026-01-31 18:25:25.257 +05:30 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2026-01-31 18:25:25.483 +05:30 [FTL] EVENT_WRITE for VisitId 23046b20-6c4e-4484-87a6-6154b5696202, Context bb41e779-70ae-43b6-a795-84c217b25a93:0
+2026-01-31 18:25:25.604 +05:30 [INF] Auto-created Sample "7f0c5c69-da3c-4b0e-a90c-6a417bec12f5" for Order "669386c6-9682-43b3-929b-c2cd2851e47b"
+2026-01-31 18:25:25.667 +05:30 [FTL] EVENT_WRITE for VisitId 23046b20-6c4e-4484-87a6-6154b5696202, Context bb41e779-70ae-43b6-a795-84c217b25a93:0
+2026-01-31 18:25:38.253 +05:30 [WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+2026-01-31 18:39:41.664 +05:30 [INF] Analyzer TCP Listener Service stopping...
+2026-01-31 18:39:41.671 +05:30 [INF] Analyzer TCP Listener Service stopped.
+2026-01-31 18:39:41.681 +05:30 [INF] Notification Worker Service stopping gracefully.
+2026-01-31 18:42:29.147 +05:30 [INF] Notification Worker Service running.
+2026-01-31 18:42:29.778 +05:30 [INF] ExpiredLockCleanupService is starting.
+2026-01-31 18:42:30.164 +05:30 [INF] Analyzer TCP Listener Service starting...
+2026-01-31 18:42:30.165 +05:30 [WRN] No analyzer TCP listeners configured in appsettings.json.
+2026-01-31 18:42:30.185 +05:30 [INF] OperationalStatsProjectionWorker is starting. Interval: 5s
+2026-01-31 18:42:30.225 +05:30 [INF] Worker: Running Consistency Check...
+2026-01-31 18:46:48.527 +05:30 [INF] Notification Worker Service running.
+2026-01-31 18:46:49.326 +05:30 [INF] ExpiredLockCleanupService is starting.
+2026-01-31 18:46:49.833 +05:30 [INF] Analyzer TCP Listener Service starting...
+2026-01-31 18:46:49.833 +05:30 [WRN] No analyzer TCP listeners configured in appsettings.json.
+2026-01-31 18:46:49.839 +05:30 [INF] OperationalStatsProjectionWorker is starting. Interval: 5s
+2026-01-31 18:46:49.879 +05:30 [INF] Worker: Running Consistency Check...
+2026-01-31 18:50:08.531 +05:30 [INF] Notification Worker Service running.
+2026-01-31 18:50:09.365 +05:30 [INF] ExpiredLockCleanupService is starting.
+2026-01-31 18:50:09.776 +05:30 [INF] Analyzer TCP Listener Service starting...
+2026-01-31 18:50:09.776 +05:30 [WRN] No analyzer TCP listeners configured in appsettings.json.
+2026-01-31 18:50:09.781 +05:30 [INF] OperationalStatsProjectionWorker is starting. Interval: 5s
+2026-01-31 18:50:09.826 +05:30 [INF] Worker: Running Consistency Check...
+2026-01-31 18:54:54.254 +05:30 [INF] Notification Worker Service running.
+2026-01-31 18:54:55.030 +05:30 [INF] ExpiredLockCleanupService is starting.
+2026-01-31 18:54:55.520 +05:30 [INF] Analyzer TCP Listener Service starting...
+2026-01-31 18:54:55.520 +05:30 [WRN] No analyzer TCP listeners configured in appsettings.json.
+2026-01-31 18:54:55.524 +05:30 [INF] OperationalStatsProjectionWorker is starting. Interval: 5s
+2026-01-31 18:54:55.563 +05:30 [INF] Worker: Running Consistency Check...
+2026-01-31 19:01:54.559 +05:30 [INF] Notification Worker Service running.
+2026-01-31 19:01:54.749 +05:30 [INF] ExpiredLockCleanupService is starting.
+2026-01-31 19:01:54.860 +05:30 [INF] Analyzer TCP Listener Service starting...
+2026-01-31 19:01:54.865 +05:30 [WRN] No analyzer TCP listeners configured in appsettings.json.
+2026-01-31 19:01:54.875 +05:30 [INF] OperationalStatsProjectionWorker is starting. Interval: 5s
+2026-01-31 19:01:54.892 +05:30 [INF] Worker: Running Consistency Check...
+2026-01-31 19:02:06.387 +05:30 [WRN] Failed to determine the https port for redirect.
+2026-01-31 19:02:09.443 +05:30 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2026-01-31 19:02:59.486 +05:30 [INF] Analyzer TCP Listener Service stopping...
+2026-01-31 19:02:59.492 +05:30 [INF] Analyzer TCP Listener Service stopped.
+2026-01-31 19:02:59.498 +05:30 [INF] Notification Worker Service stopping gracefully.

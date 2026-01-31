@@ -73,17 +73,14 @@ namespace SynOS.Services
             string selectedRoleName;
             string selectedBranchName; // ADDED
 
-            if (userBranchRoles.Count == 1)
+            if (userBranchRoles.Count >= 1)
             {
+                // Default to the first branch (Primary Context)
+                // In Phase 2, we will allow selecting this via a separate endpoint or login param.
                 var context = userBranchRoles.First();
                 selectedBranchId = context.BranchId;
-                selectedBranchName = context.Branch.Name; // ADDED
+                selectedBranchName = context.Branch.Name;
                 selectedRoleName = context.Role.Name;
-            }
-            else if (userBranchRoles.Count > 1)
-            {
-                // Phase 1: Reject multi-branch users until UI supports selection
-                throw new UnauthorizedAccessException("Multiple branch assignments detected. Branch selection is not yet supported.");
             }
             else
             {

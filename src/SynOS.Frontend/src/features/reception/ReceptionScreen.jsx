@@ -84,13 +84,16 @@ export function ReceptionScreen() {
             // Anchor Time & Sync Status
             SignalRService.onReceiveServerTime((time) => {
                 setServerTimeAnchor(time);
-                setConnectionStatus("Synced");
+                // setConnectionStatus("Synced"); -> Handled by Status Listener now
+            });
+
+            // Status Listener (Handles Disconnects/Reconnects)
+            SignalRService.onConnectionStatusChanged((status) => {
+                setConnectionStatus(status);
             });
 
             try {
                 await SignalRService.startConnection();
-                // We rely on ReceiveServerTime to flip status to Synced, 
-                // or we can set it here if we assume connection implies sync start.
             } catch (err) {
                 setConnectionStatus("Not Synced");
             }
@@ -113,6 +116,7 @@ export function ReceptionScreen() {
         // Cleanup
         return () => {
             SignalRService.stopConnection();
+            if (window._signalrStatusSubscribers) window._signalrStatusSubscribers = []; // Reset subs
             clearInterval(interval);
         };
     }, []);

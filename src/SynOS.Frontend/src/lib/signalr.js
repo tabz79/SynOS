@@ -54,10 +54,28 @@ export const SignalRService = {
         connectionPromise = connection.start()
             .then(() => {
                 console.log("SignalR: Connected to /dashboardHub");
+                SignalRService._notifyStatusChange("Synced");
                 connectionPromise = null;
+
+                // Wire up lifecycle events
+                connection.onclose(() => {
+                    console.log("SignalR: Connection Closed");
+                    SignalRService._notifyStatusChange("Not Synced");
+                });
+
+                connection.onreconnecting(() => {
+                    console.log("SignalR: Reconnecting...");
+                    SignalRService._notifyStatusChange("Reconnecting");
+                });
+
+                connection.onreconnected(() => {
+                    console.log("SignalR: Reconnected");
+                    SignalRService._notifyStatusChange("Synced");
+                });
             })
             .catch(err => {
                 console.error("SignalR: Connection Failed:", err);
+                SignalRService._notifyStatusChange("Not Synced");
                 connectionPromise = null;
                 // Don't nullify connection object here, allow retry
             });
@@ -117,6 +135,28 @@ export const SignalRService = {
             console.log("SignalR: ReceiveServerTime received", serverTime);
             callback(serverTime);
         });
+    },
+
+    /**
+     * Subscribes to Connection Status changes.
+     * @param {Function} callback - (status) => void ("Synced" | "Reconnecting" | "Not Synced")
+     */
+    onConnectionStatusChanged: (callback) => {
+        // Store callback globally or handled via internal eventing? 
+        // Simplest: just assign to a property we call internally.
+        // For multiple subscribers, we need an array.
+        if (!window._signalrStatusSubscribers) window._signalrStatusSubscribers = [];
+        window._signalrStatusSubscribers.push(callback);
+
+        // Emit current state immediately
+        const state = connection?.state === HubConnectionState.Connected ? "Synced" : "Not Synced";
+        callback(state);
+    },
+
+    _notifyStatusChange: (status) => {
+        if (window._signalrStatusSubscribers) {
+            window._signalrStatusSubscribers.forEach(cb => cb(status));
+        }
     },
 
     /**
