@@ -103,7 +103,7 @@ namespace SynOS.Api.Controllers
                     {
                         displayName = resolvedName;
                     }
-                    else if (guidId == _userContext.UserId)
+                    else if (guidId == _userContext.CurrentUserId)
                     {
                         displayName = "You"; // Contextual nicety
                     }

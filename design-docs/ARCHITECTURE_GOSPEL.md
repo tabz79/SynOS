@@ -297,3 +297,309 @@ If any answer is unclear → STOP.
 ---
 
 
+
+Perfect. This is the **right moment** to write this down, because once a system grows, motion debt becomes impossible to clean up.
+
+Below is a **clear, enforceable, OS-grade canon** — not vibes, not guidelines, but *law*. This is the document that future contributors either follow or don’t ship.
+
+---
+
+# 🧭 SynOS Motion Canon
+
+**Version:** 1.0
+**Status:** Non-Negotiable
+**Applies To:** All UI, Panels, Overlays, Queues, Tiles, Chrome
+
+---
+
+## 0. Core Philosophy (Read This First)
+
+> **Motion is not decoration. Motion is physics.**
+
+SynOS is an **operating system**, not a SaaS dashboard.
+Therefore, motion must:
+
+* Obey consistent physical laws
+* Convey mass, hierarchy, and intent
+* Never feel passive, dragged, or accidental
+
+If something moves, it **must know why**.
+
+---
+
+## 1. Single Physics Engine Rule
+
+> **The entire system runs on one motion engine.**
+
+SynOS SHALL NOT mix:
+
+* CSS layout transitions for structure
+* JS transform animations for content
+* Different curves/durations for similar interactions
+
+### ✅ Allowed
+
+* Transform-based animation (`translate`, `scale`, `opacity`)
+* FLIP (First–Last–Invert–Play) as the primary mechanism
+
+### ❌ Forbidden
+
+* Animating `height`, `width`, `top`, `left`, `grid-gap`, `flex`
+* `transition: all`
+* Letting layout reflow be the animation
+
+If layout changes → **motion must be simulated**, not reflowed.
+
+---
+
+## 2. Motion Constants (Global Lock)
+
+These values are **system-wide**.
+
+### ⏱ Duration
+
+```
+STANDARD_MOTION_DURATION = 260ms
+```
+
+Acceptable range (only if justified):
+
+* 240–280ms
+
+Anything slower feels floaty.
+Anything faster feels twitchy.
+
+---
+
+### 📈 Easing Curve (Primary)
+
+```
+STANDARD_EASING = cubic-bezier(0.22, 1, 0.36, 1)
+```
+
+**Meaning:**
+
+* Fast acceleration (confident intent)
+* Strong deceleration (physical stop)
+* “Apple-like snap”, OS-grade
+
+### ❌ Disallowed Curves
+
+* `ease`
+* `ease-in-out`
+* Any custom bezier not matching the above family
+
+---
+
+## 3. Motion Ownership Law
+
+> **Only one layer owns motion at a time.**
+
+The system is divided into **three motion layers**.
+
+---
+
+### 3.1 Primary Mass (Structural Objects)
+
+**Examples:**
+
+* Reality Summary block
+* Action Queue container
+* Cockpit / Right-side panels
+* Major screen regions
+
+**Rules:**
+
+* MUST animate as **rigid bodies**
+* MUST use FLIP when their position changes
+* MUST move intentionally, never passively
+
+❌ They must NOT be “pushed” by other elements’ CSS transitions
+❌ They must NOT animate layout properties
+
+✅ When one Primary Mass moves, adjacent Primary Masses MUST be included in the same FLIP pass
+
+---
+
+### 3.2 Secondary Mass (Contained Objects)
+
+**Examples:**
+
+* Tiles
+* Rows
+* Cards
+* Lists
+
+**Rules:**
+
+* MAY FLIP relative to their container
+* MUST inherit duration & easing from the system
+* MUST NOT cause parent movement via layout transitions
+
+Secondary Mass moves **inside** a moving shell, never independently against it.
+
+---
+
+### 3.3 Micro Interactions (Local Feedback)
+
+**Examples:**
+
+* Button press
+* Hover states
+* Focus rings
+* Small icon nudges
+
+**Rules:**
+
+* Shorter duration allowed (120–180ms)
+* Same easing family (accelerated snap)
+* Must never conflict with Primary/Secondary motion
+
+Micro motion never competes with structural motion.
+
+---
+
+## 4. FLIP as the Default Mechanism
+
+### When to Use FLIP
+
+FLIP MUST be used when:
+
+* An element changes position due to layout change
+* An element is added/removed from a group
+* Space is reclaimed or redistributed
+
+**This includes:**
+
+* Summary expand/collapse
+* Action Queue repositioning
+* Panel entry/exit
+* Tile grid morphing
+
+---
+
+### FLIP Contract
+
+Every FLIP animation must follow:
+
+1. **First** – Measure current bounding rect
+2. **Last** – Apply new layout instantly (no transition)
+3. **Invert** – Apply transform to negate delta
+4. **Play** – Animate transform → identity
+
+No exceptions.
+
+---
+
+## 5. Layout Change Rule (Critical)
+
+> **Layout changes are instant. Motion is simulated.**
+
+* DOM structure updates immediately
+* CSS layout recalculates immediately
+* User NEVER sees the layout jump
+* Motion exists only in transforms
+
+If you see:
+
+* Jitter
+* Rubber-band movement
+* Elements “dragging” others
+
+👉 You violated this rule.
+
+---
+
+## 6. Vertical Motion Doctrine (Work Surfaces)
+
+### Action Queues & Work Surfaces
+
+* MUST feel **active**, not passive
+* MUST glide into new positions
+* MUST never be “pushed” by collapsing content above
+
+If the Action Queue moves:
+
+* It must FLIP
+* It must respect the same duration & curve
+* It must feel intentional
+
+---
+
+## 7. Text & Typography During Motion
+
+### Rule
+
+> **Text should not be scaled as text.**
+
+* Typography class changes may snap
+* Container transforms may mask the snap
+* Avoid animating font-size directly
+
+Blurred or stretched text during motion is acceptable **only if**:
+
+* It is masked by container scale
+* It resolves cleanly at rest
+
+---
+
+## 8. Panels & Overlays
+
+* Panels are **Primary Mass**
+* Entry/Exit must:
+
+  * Translate (or FLIP)
+  * Fade subtly
+  * Use STANDARD duration & easing
+
+❌ Animating `width` or `height` is forbidden
+❌ Panels must not have independent easing laws
+
+Panels must feel like **heavy OS objects**, not drawers.
+
+---
+
+## 9. Prohibited Patterns (Red Flags)
+
+If you see any of the following, stop:
+
+* `transition-all`
+* Mixed durations for related elements
+* One element finishing before another starts
+* Layout reflow visible to the eye
+* “Floating” or “dragging” artifacts
+
+These indicate **fractured physics**.
+
+---
+
+## 10. Enforcement Principle
+
+> **If motion feels wrong, assume the canon was violated.**
+
+Debug order:
+
+1. Check duration
+2. Check easing
+3. Check ownership
+4. Check layout vs transform
+5. Check synchronization
+
+Do NOT “tweak until it feels right”.
+**Fix the physics.**
+
+---
+
+### Final Statement
+
+SynOS motion should feel:
+
+* Confident
+* Heavy
+* Predictable
+* Alive but never nervous
+
+When motion disappears, the system should feel **stable**.
+When motion appears, it should feel **inevitable**.
+
+This is the standard.

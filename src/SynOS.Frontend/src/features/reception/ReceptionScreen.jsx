@@ -1,5 +1,7 @@
-import { useState, useEffect } from 'react'
-import { Plus, Users, ClipboardList, Bed, Clock, Loader2 } from 'lucide-react'
+import { useState, useEffect, useRef } from 'react'
+import { cn } from "@/lib/utils"
+import { useFlipGroup } from "@/hooks/useSynOSMotion"
+import { Plus, Users, ClipboardList, Bed, Clock, Loader2, ChevronDown } from 'lucide-react'
 import { SystemBar } from '@/components/layout/SystemBar'
 import { RealitySummary } from '@/components/layout/RealitySummary'
 import { ActionQueue, ActionQueueHeader } from '@/components/layout/ActionQueue'
@@ -121,12 +123,25 @@ export function ReceptionScreen() {
         };
     }, []);
 
-    // Derived strictly for display (formatting only)
-    // Derived strictly for display (formatting only)
-    // STAGE 2: 4x2 Grid Mapping (Strict DTO)
+    // STAGE 7: FLIP ANIMATION STATE
+    const [isSummaryCollapsed, setIsSummaryCollapsed] = useState(false);
+
+    // MOTION CANON: Vertical FLIP Group
+    // We bind the RealitySummary container (height change) and ActionQueue container (position change)
+    // into a single physics group. When summary collapses, queue FLIPs.
+    const summaryRef = useRef(null);
+    const queueRef = useRef(null);
+
+    // FLIP ENGINE: 260ms OS-Bezier
+    // When isSummaryCollapsed changes, measures Start, DOM updates (Height Reflow), measures End, Inverts, Plays.
+    useFlipGroup([summaryRef, queueRef], [isSummaryCollapsed]);
+
+    // We'll use the refs in the JSX below.
+
+    // STAGE 1: Data Fetching (SignalR + Polling) (Strict DTO)
     const realityTiles = summary ? [
         // ROW 1: Operations & Cash Flow
-        { value: summary.walkInsToday?.toString() || "0", label: "Walk-Ins (Paid/Credit)", icon: Users, color: "zinc" },
+        { value: summary.walkInsToday?.toString() || "0", label: "Walk-Ins", qualifier: "Paid/Credit", icon: Users, color: "zinc" },
         { value: `₹${(summary.paymentsCashTotal || 0).toLocaleString()}`, label: "Cash Collected", icon: ClipboardList, color: "emerald" },
         { value: summary.paymentsOnlineCount?.toString() || "0", label: "Online Payments", icon: ClipboardList, color: "blue" },
         { value: `₹${(summary.paymentsOnlineTotal || 0).toLocaleString()}`, label: "Online Total", icon: ClipboardList, color: "blue" },
@@ -138,7 +153,7 @@ export function ReceptionScreen() {
         { value: `${summary.avgReportTimeMinutes || 0}m`, label: "Avg Report Time", icon: Clock, color: "default" },
     ] : [
         // Skeleton / Empty State
-        { value: "—", label: "Walk-Ins", icon: Users, color: "default" },
+        { value: "—", label: "Walk-Ins", qualifier: "(Paid/Credit)", icon: Users, color: "default" },
         { value: "—", label: "Cash Collected", icon: ClipboardList, color: "default" },
         { value: "—", label: "Online Payments", icon: ClipboardList, color: "default" },
         { value: "—", label: "Online Total", icon: ClipboardList, color: "default" },
@@ -263,22 +278,42 @@ export function ReceptionScreen() {
                     {/* Left Column: Reality + Work */}
                     <div
                         className={`
-                            flex flex-col min-h-0 transition-[width] duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]
+                            flex flex-col min-h-0
                             ${isIntentPanelOpen ? 'w-[60%]' : 'w-[75%]'}
                         `}
                     >
                         <div className={`flex flex-col h-full transition-opacity duration-300 ${isIntentPanelOpen ? 'opacity-50 pointer-events-none' : 'opacity-100'}`}>
 
-                            {/* Header for Reality Summary */}
-                            <div className="mb-4">
-                                <h2 className="text-lg font-medium text-zinc-200 mb-2 px-1">Reality Summary</h2>
-                                <RealitySummary tiles={realityTiles} />
+                            {/* 
+                                VERTICAL OWNERSHIP CONTRACT: BOUNDED CONTEXT
+                                Motion Canon: NO CSS TRANSITION on height/layout. Snaps instantly.
+                                FLIP engine handles the visual slide.
+                            */}
+                            <div
+                                ref={summaryRef}
+                                className="mb-4 shrink-0" // Removed transition-all duration-300
+                            >
+                                <div className="flex items-center justify-between mb-2 px-1 sticky top-0 bg-synos-background z-10 py-1">
+                                    <h2 className="text-lg font-medium text-zinc-200">Reality Summary</h2>
+                                    <button
+                                        onClick={() => setIsSummaryCollapsed(!isSummaryCollapsed)}
+                                        className="text-zinc-500 hover:text-zinc-300 transition-colors p-1 rounded-md hover:bg-white/5"
+                                        title={isSummaryCollapsed ? "Expand View" : "Collapse View"}
+                                    >
+                                        <ChevronDown className={cn("w-4 h-4 transition-transform duration-300", isSummaryCollapsed && "-rotate-90")} />
+                                    </button>
+                                </div>
+                                <RealitySummary tiles={realityTiles} isCollapsed={isSummaryCollapsed} />
                             </div>
 
-                            {/* Action Queues */}
-                            <div className="flex-1 flex flex-col min-h-0 relative">
+                            {/* Action Queues - FLIP Target (Primary Mass) */}
+                            <div
+                                ref={queueRef}
+                                className="flex-1 flex flex-col min-h-0 relative"
+                            >
                                 <div className="flex items-center justify-between mb-2">
                                     <ActionQueueHeader title="Action Queues" count={actionQueue.length} />
+
                                     <button
                                         onClick={openCreateIntent}
                                         className="bg-zinc-100 hover:bg-white text-zinc-900 border border-zinc-200 px-4 py-2 rounded-lg text-sm font-semibold shadow-lg shadow-black/20 hover:shadow-xl hover:shadow-black/30 transition-all duration-200 flex items-center gap-2 pointer-events-auto active:scale-95 active:shadow-inner"
@@ -304,7 +339,7 @@ export function ReceptionScreen() {
                     {/* Right Column: Audit Panel OR Intent Panel */}
                     <div
                         className={`
-                            min-h-0 relative transition-[width] duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]
+                            min-h-0 relative
                             ${isIntentPanelOpen ? 'w-[40%]' : 'w-[25%]'}
                         `}
                     >

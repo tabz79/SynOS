@@ -1,161 +1,478 @@
-[17:36:35 INF] Notification Worker Service running.
-[17:36:35 INF] Notification Worker Service running.
-[17:36:35 INF] ExpiredLockCleanupService is starting.
-[17:36:35 INF] ExpiredLockCleanupService is starting.
-[17:36:35 INF] Analyzer TCP Listener Service starting...
-[17:36:35 INF] Analyzer TCP Listener Service starting...
-[17:36:35 WRN] No analyzer TCP listeners configured in appsettings.json.
-[17:36:35 WRN] No analyzer TCP listeners configured in appsettings.json.
-[17:36:35 INF] OperationalStatsProjectionWorker is starting. Interval: 5s
-[17:36:35 INF] OperationalStatsProjectionWorker is starting. Interval: 5s
-[17:36:35 INF] Worker: Running Consistency Check...
-[17:36:35 INF] Worker: Running Consistency Check...
-[17:42:11 WRN] Failed to determine the https port for redirect.
-[17:42:11 WRN] Failed to determine the https port for redirect.
-[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=31-01-2026 17:42:11, Today=31-01-2026 00:00:00, Window=[31-01-2026 00:00:00 - 01-02-2026 00:00:00)
-[17:42:11 WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
-[17:42:11 WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
-[ActionQueue] Found 4 raw visits.
-[ActionQueue] Processing Visit DRAFT-10EC3B7E. Invoice Status: Paid.
-[ActionQueue] Processing Visit DRAFT-349E90F2. Invoice Status: Paid.
-[ActionQueue] Processing Visit DRAFT-397F14AB. Invoice Status: Paid.
-[ActionQueue] Processing Visit DRAFT-4A738880. Invoice Status: Paid.
-[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=31-01-2026 17:42:12, Today=31-01-2026 00:00:00, Window=[31-01-2026 00:00:00 - 01-02-2026 00:00:00)
-[ActionQueue] Found 4 raw visits.
-[ActionQueue] Processing Visit DRAFT-10EC3B7E. Invoice Status: Paid.
-[ActionQueue] Processing Visit DRAFT-349E90F2. Invoice Status: Paid.
-[ActionQueue] Processing Visit DRAFT-397F14AB. Invoice Status: Paid.
-[ActionQueue] Processing Visit DRAFT-4A738880. Invoice Status: Paid.
-[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=31-01-2026 17:42:40, Today=31-01-2026 00:00:00, Window=[31-01-2026 00:00:00 - 01-02-2026 00:00:00)
-[ActionQueue] Found 4 raw visits.
-[ActionQueue] Processing Visit DRAFT-10EC3B7E. Invoice Status: Paid.
-[ActionQueue] Processing Visit DRAFT-349E90F2. Invoice Status: Paid.
-[ActionQueue] Processing Visit DRAFT-397F14AB. Invoice Status: Paid.
-[ActionQueue] Processing Visit DRAFT-4A738880. Invoice Status: Paid.
-[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=31-01-2026 17:43:02, Today=31-01-2026 00:00:00, Window=[31-01-2026 00:00:00 - 01-02-2026 00:00:00)
-[ActionQueue] Found 4 raw visits.
-[ActionQueue] Processing Visit DRAFT-10EC3B7E. Invoice Status: Paid.
-[ActionQueue] Processing Visit DRAFT-349E90F2. Invoice Status: Paid.
-[ActionQueue] Processing Visit DRAFT-397F14AB. Invoice Status: Paid.
-[ActionQueue] Processing Visit DRAFT-4A738880. Invoice Status: Paid.
-[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=31-01-2026 17:43:02, Today=31-01-2026 00:00:00, Window=[31-01-2026 00:00:00 - 01-02-2026 00:00:00)
-[ActionQueue] Found 4 raw visits.
-[ActionQueue] Processing Visit DRAFT-10EC3B7E. Invoice Status: Paid.
-[ActionQueue] Processing Visit DRAFT-349E90F2. Invoice Status: Paid.
-[ActionQueue] Processing Visit DRAFT-397F14AB. Invoice Status: Paid.
-[ActionQueue] Processing Visit DRAFT-4A738880. Invoice Status: Paid.
-[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=31-01-2026 17:43:13, Today=31-01-2026 00:00:00, Window=[31-01-2026 00:00:00 - 01-02-2026 00:00:00)
-[ActionQueue] Found 4 raw visits.
-[ActionQueue] Processing Visit DRAFT-10EC3B7E. Invoice Status: Paid.
-[ActionQueue] Processing Visit DRAFT-349E90F2. Invoice Status: Paid.
-[ActionQueue] Processing Visit DRAFT-397F14AB. Invoice Status: Paid.
-[ActionQueue] Processing Visit DRAFT-4A738880. Invoice Status: Paid.
-[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=31-01-2026 17:43:13, Today=31-01-2026 00:00:00, Window=[31-01-2026 00:00:00 - 01-02-2026 00:00:00)
-[ActionQueue] Found 4 raw visits.
-[ActionQueue] Processing Visit DRAFT-10EC3B7E. Invoice Status: Paid.
-[ActionQueue] Processing Visit DRAFT-349E90F2. Invoice Status: Paid.
-[ActionQueue] Processing Visit DRAFT-397F14AB. Invoice Status: Paid.
-[ActionQueue] Processing Visit DRAFT-4A738880. Invoice Status: Paid.
-[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=31-01-2026 17:43:43, Today=31-01-2026 00:00:00, Window=[31-01-2026 00:00:00 - 01-02-2026 00:00:00)
-[ActionQueue] Found 4 raw visits.
-[ActionQueue] Processing Visit DRAFT-10EC3B7E. Invoice Status: Paid.
-[ActionQueue] Processing Visit DRAFT-349E90F2. Invoice Status: Paid.
-[ActionQueue] Processing Visit DRAFT-397F14AB. Invoice Status: Paid.
-[ActionQueue] Processing Visit DRAFT-4A738880. Invoice Status: Paid.
-[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=31-01-2026 17:44:13, Today=31-01-2026 00:00:00, Window=[31-01-2026 00:00:00 - 01-02-2026 00:00:00)
-[ActionQueue] Found 4 raw visits.
-[ActionQueue] Processing Visit DRAFT-10EC3B7E. Invoice Status: Paid.
-[ActionQueue] Processing Visit DRAFT-349E90F2. Invoice Status: Paid.
-[ActionQueue] Processing Visit DRAFT-397F14AB. Invoice Status: Paid.
-[ActionQueue] Processing Visit DRAFT-4A738880. Invoice Status: Paid.
-
-
 react-dom_client.js?v=4bd38141:20103 Download the React DevTools for a better development experience: https://react.dev/link/react-devtools
 signalr.js:16 SignalR: Subscriber added (Total: 1)
-@microsoft_signalr.js?v=4bd38141:301 [2026-01-31T12:13:13.066Z] Information: Normalizing '/dashboardHub' to 'http://localhost:5173/dashboardHub'.
+signalr.js:49 [2026-02-01T12:09:36.012Z] Information: Normalizing '/dashboardHub' to 'http://localhost:5173/dashboardHub'.
 signalr.js:53 SignalR: Starting connection...
-signalr.js:128 SignalR: Subscriber removed (Total: 0)
+signalr.js:168 SignalR: Subscriber removed (Total: 0)
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
+Invalid keyframe value for property opacity: undefined
 signalr.js:16 SignalR: Subscriber added (Total: 1)
 signalr.js:22 SignalR: Aborted scheduled disconnect
-@microsoft_signalr.js?v=4bd38141:301 [2026-01-31T12:13:13.151Z] Information: WebSocket connected to ws://localhost:5173/dashboardHub?access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiJhN2ZjZjkzYy04OTg4LTRhZDgtYmU4My1iOTIyZGExNTVmNDIiLCJlbWFpbCI6InJlY2VwdGlvbkBsYWIuY29tIiwidW5pcXVlX25hbWUiOiJSZWNlcHRpb24gVXNlciIsImJyYW5jaF9pZCI6ImEwMDAwMDAwLTAwMDAtMDAwMC0wMDAwLTAwMDAwMDAwMDAwMSIsInJvbGUiOiJSZWNlcHRpb25pc3QiLCJuYmYiOjE3Njk3ODAwNDYsImV4cCI6MTc2OTg2NjQ0NiwiaWF0IjoxNzY5NzgwMDQ2LCJpc3MiOiJTeW5PUy5BcGkiLCJhdWQiOiJTeW5PUy5BcHAifQ.cYiaj05jVMp5WHLKy3qO8FSEXFTJMzMNAoGJ0kZuM_8.
-@microsoft_signalr.js?v=4bd38141:301 [2026-01-31T12:13:13.151Z] Information: Using HubProtocol 'json'.
-signalr.js:117 SignalR: ReceiveServerTime received 2026-01-31T12:13:13.166749Z
+@microsoft_signalr.js?v=4bd38141:301 [2026-02-01T12:09:36.552Z] Information: WebSocket connected to ws://localhost:5173/dashboardHub?access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiJhN2ZjZjkzYy04OTg4LTRhZDgtYmU4My1iOTIyZGExNTVmNDIiLCJlbWFpbCI6InJlY2VwdGlvbkBsYWIuY29tIiwidW5pcXVlX25hbWUiOiJSZWNlcHRpb24gVXNlciIsImJyYW5jaF9pZCI6ImEwMDAwMDAwLTAwMDAtMDAwMC0wMDAwLTAwMDAwMDAwMDAwMSIsImJyYW5jaF9uYW1lIjoiTWFpbiBMYWJvcmF0b3J5Iiwicm9sZSI6IlJlY2VwdGlvbmlzdCIsIm5iZiI6MTc2OTg2NjM2MSwiZXhwIjoxNzY5OTUyNzYxLCJpYXQiOjE3Njk4NjYzNjEsImlzcyI6IlN5bk9TLkFwaSIsImF1ZCI6IlN5bk9TLkFwcCJ9.hHSUqeZpx2S-FAiJcyIMacQ0BbRboCgtfWHX-o9VkRw.
+@microsoft_signalr.js?v=4bd38141:301 [2026-02-01T12:09:36.560Z] Information: Using HubProtocol 'json'.
+signalr.js:135 SignalR: ReceiveServerTime received 2026-02-01T12:09:36.6248478Z
 signalr.js:56 SignalR: Connected to /dashboardHub
-reception.js:242 DEBUG: Activity Stream Payload: Array(28)
-reception.js:242 DEBUG: Activity Stream Payload: Array(28)
-ReceptionScreen.jsx:56 DEBUG: Action Queue Raw: Array(4)
-ReceptionScreen.jsx:56 DEBUG: Action Queue Raw: Array(4)
-reception.js:242 DEBUG: Activity Stream Payload: Array(28)
-reception.js:242 DEBUG: Activity Stream Payload: Array(28)
-
-
-http://localhost:5173/reception
-http://localhost:5173/@vite/client
-http://localhost:5173/src/main.jsx
-chrome-extension://ojplmecpdpgccookcobabopnaifgidhf/assets/autoCouponUI.js-D5BbTwL1.js
-http://localhost:5173/@react-refresh
-http://localhost:5173/node_modules/vite/dist/client/env.mjs
-http://localhost:5173/node_modules/.vite/deps/react_jsx-dev-runtime.js?v=4bd38141
-http://localhost:5173/node_modules/.vite/deps/react.js?v=4bd38141
-http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=4bd38141
-http://localhost:5173/src/index.css
-http://localhost:5173/src/App.jsx
-chrome-extension://ojplmecpdpgccookcobabopnaifgidhf/assets/autoCouponUI-Dza--CZx.js
-chrome-extension://ojplmecpdpgccookcobabopnaifgidhf/assets/utility_all2-BSunEl-L.js
-http://localhost:5173/node_modules/.vite/deps/chunk-APAI5QCZ.js?v=4bd38141
-http://localhost:5173/node_modules/.vite/deps/chunk-PR4QN5HX.js?v=4bd38141
-http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=4bd38141
-http://localhost:5173/src/context/AuthContext.jsx
-http://localhost:5173/src/features/reception/hooks/useReceptionPanelUI.jsx
-http://localhost:5173/src/features/reception/ReceptionScreen.jsx
-http://localhost:5173/src/pages/LoginPage.jsx
-http://localhost:5173/src/components/auth/ProtectedRoute.jsx
-http://localhost:5173/node_modules/.vite/deps/chunk-F554S2KQ.js?v=4bd38141
-ws://localhost:5173/?token=91waC4xDwzhv
-http://localhost:5173/node_modules/.vite/deps/jwt-decode.js?v=4bd38141
-http://localhost:5173/node_modules/.vite/deps/lucide-react.js?v=4bd38141
-http://localhost:5173/src/components/layout/SystemBar.jsx
-http://localhost:5173/src/components/layout/RealitySummary.jsx
-http://localhost:5173/src/components/layout/ActionQueue.jsx
-http://localhost:5173/src/components/layout/ActivityStream.jsx
-http://localhost:5173/src/features/reception/components/IntentPanel.jsx
-http://localhost:5173/src/api/reception.js
-http://localhost:5173/src/lib/signalr.js
-http://localhost:5173/src/lib/utils.js
-http://localhost:5173/src/features/reception/components/PatientIdentification.jsx
-http://localhost:5173/src/features/reception/components/VisitDetails.jsx
-http://localhost:5173/src/features/reception/components/BillingSummary.jsx
-http://localhost:5173/node_modules/.vite/deps/@microsoft_signalr.js?v=4bd38141
-http://localhost:5173/node_modules/.vite/deps/clsx.js?v=4bd38141
-http://localhost:5173/node_modules/.vite/deps/tailwind-merge.js?v=4bd38141
-chrome-extension://ojplmecpdpgccookcobabopnaifgidhf/assets/utility_all2.js-CyYDbSFB.js
-chrome-extension://ojplmecpdpgccookcobabopnaifgidhf/assets/zeptoContentScript.js-7p6uDDH1.js
-chrome-extension://ojplmecpdpgccookcobabopnaifgidhf/assets/jiomartContentScript.js-DuvfALSk.js
-chrome-extension://ojplmecpdpgccookcobabopnaifgidhf/assets/commonScrapper.js-BHUj-86q.js
-chrome-extension://ojplmecpdpgccookcobabopnaifgidhf/assets/searchHTMLscrapper.js-Be8zCVFm.js
-chrome-extension://ojplmecpdpgccookcobabopnaifgidhf/assets/categoryScrapper.js-CvX9EYmp.js
-chrome-extension://ojplmecpdpgccookcobabopnaifgidhf/assets/filterScrapper.js-BGseRMTq.js
-chrome-extension://ojplmecpdpgccookcobabopnaifgidhf/assets/spendCalculate.js-t_b2yVT-.js
-chrome-extension://ojplmecpdpgccookcobabopnaifgidhf/assets/monitor.js-C0PXjyga.js
-chrome-extension://ojplmecpdpgccookcobabopnaifgidhf/assets/monitorGrafana.js-vKqpClHK.js
-chrome-extension://ojplmecpdpgccookcobabopnaifgidhf/assets/wishlistScrapper.js-ciekm-sz.js
-chrome-extension://ojplmecpdpgccookcobabopnaifgidhf/assets/couponCollection.js-pEC3vw1q.js
-chrome-extension://ojplmecpdpgccookcobabopnaifgidhf/assets/untrustedPriceComparison.js-Detok6kN.js
-chrome-extension://ojplmecpdpgccookcobabopnaifgidhf/assets/untrustedAC.js-V2m9KWEq.js
-chrome-extension://ojplmecpdpgccookcobabopnaifgidhf/assets/checkoutScrapper.js-BkiVn9Nt.js
-chrome-extension://ojplmecpdpgccookcobabopnaifgidhf/assets/savedPricePopUp.js-CMN-s8NC.js
-chrome-extension://ojplmecpdpgccookcobabopnaifgidhf/assets/ctUtils.js-Ckq6OIDe.js
-chrome-extension://ojplmecpdpgccookcobabopnaifgidhf/assets/counter.js-Bi0JTcWE.js
-chrome-extension://ojplmecpdpgccookcobabopnaifgidhf/assets/index.ts-D0n_elYi.js
-chrome-extension://ojplmecpdpgccookcobabopnaifgidhf/assets/content.ts-DtJoCqIt.js
-http://localhost:5173/vite.svg
-http://localhost:5173/api/v1/branch/activity?branchId=A0000000-0000-0000-0000-000000000001
-http://localhost:5173/api/v1/dashboard/reception/summary
-http://localhost:5173/api/v1/branch/action-queue
-http://localhost:5173/api/v1/branch/activity?branchId=A0000000-0000-0000-0000-000000000001
-http://localhost:5173/api/v1/dashboard/reception/summary
-http://localhost:5173/api/v1/branch/action-queue
-ws://localhost:5173/dashboardHub?access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiJhN2ZjZjkzYy04OTg4LTRhZDgtYmU4My1iOTIyZGExNTVmNDIiLCJlbWFpbCI6InJlY2VwdGlvbkBsYWIuY29tIiwidW5pcXVlX25hbWUiOiJSZWNlcHRpb24gVXNlciIsImJyYW5jaF9pZCI6ImEwMDAwMDAwLTAwMDAtMDAwMC0wMDAwLTAwMDAwMDAwMDAwMSIsInJvbGUiOiJSZWNlcHRpb25pc3QiLCJuYmYiOjE3Njk3ODAwNDYsImV4cCI6MTc2OTg2NjQ0NiwiaWF0IjoxNzY5NzgwMDQ2LCJpc3MiOiJTeW5PUy5BcGkiLCJhdWQiOiJTeW5PUy5BcHAifQ.cYiaj05jVMp5WHLKy3qO8FSEXFTJMzMNAoGJ0kZuM_8
-chrome-extension://ojplmecpdpgccookcobabopnaifgidhf/assets/applyThems-uSWMJtz_.js
-chrome-extension://ojplmecpdpgccookcobabopnaifgidhf/assets/sentry-CAPRURNX.js
-chrome-extension://ojplmecpdpgccookcobabopnaifgidhf/assets/en-CXHi8RO1.js
+reception.js:242 DEBUG: Activity Stream Payload: Array(25)
+reception.js:242 DEBUG: Activity Stream Payload: Array(25)
+ReceptionScreen.jsx:58 DEBUG: Action Queue Raw: Array(5)
+ReceptionScreen.jsx:58 DEBUG: Action Queue Raw: Array(5)
+RealitySummary.jsx:108 Invalid keyframe value for property transform: translate(341.75px, 59px) scale(1.1030491876251947, Infinity)
+(anonymous) @ RealitySummary.jsx:108
+RealitySummary.jsx:108 Invalid keyframe value for property transform: translate(356.21875px, 59px) scale(1.1029264493156783, Infinity)
+(anonymous) @ RealitySummary.jsx:108
+Invalid keyframe value for property transform: translate(469.25px, 59px) scale(1.5570888048074782, Infinity)
+Invalid keyframe value for property transform: translate(469.25px, 59px) scale(1.5570888048074782, Infinity)
+Invalid keyframe value for property transform: translate(469.25px, 59px) scale(1.5570888048074782, Infinity)
+Invalid keyframe value for property transform: translate(469.25px, 59px) scale(1.5570888048074782, Infinity)
+Invalid keyframe value for property transform: translate(469.25px, 59px) scale(1.5570888048074782, Infinity)
+Invalid keyframe value for property transform: translate(469.25px, 59px) scale(1.5570888048074782, Infinity)
+Invalid keyframe value for property transform: translate(469.25px, 59px) scale(1.5570888048074782, Infinity)
+Invalid keyframe value for property transform: translate(469.25px, 59px) scale(1.5570888048074782, Infinity)
+Invalid keyframe value for property transform: translate(469.25px, 59px) scale(1.5570888048074782, Infinity)
+Invalid keyframe value for property transform: translate(469.25px, 59px) scale(1.5570888048074782, Infinity)
+Invalid keyframe value for property transform: translate(469.25px, 59px) scale(1.5570888048074782, Infinity)
+Invalid keyframe value for property transform: translate(547.46875px, 59px) scale(1.5569155446756426, Infinity)
+Invalid keyframe value for property transform: translate(547.46875px, 59px) scale(1.5569155446756426, Infinity)
+Invalid keyframe value for property transform: translate(547.46875px, 59px) scale(1.5569155446756426, Infinity)
+Invalid keyframe value for property transform: translate(547.46875px, 59px) scale(1.5569155446756426, Infinity)
+Invalid keyframe value for property transform: translate(547.46875px, 59px) scale(1.5569155446756426, Infinity)
+Invalid keyframe value for property transform: translate(547.46875px, 59px) scale(1.5569155446756426, Infinity)
+Invalid keyframe value for property transform: translate(547.46875px, 59px) scale(1.5569155446756426, Infinity)
+Invalid keyframe value for property transform: translate(547.46875px, 59px) scale(1.5569155446756426, Infinity)
+Invalid keyframe value for property transform: translate(547.46875px, 59px) scale(1.5569155446756426, Infinity)
+Invalid keyframe value for property transform: translate(547.46875px, 59px) scale(1.5569155446756426, Infinity)
+Invalid keyframe value for property transform: translate(547.46875px, 59px) scale(1.5569155446756426, Infinity)
+reception.js:242 DEBUG: Activity Stream Payload: Array(25)
+Invalid keyframe value for property transform: translate(0px, 0px) scale(1.2619014183401207, NaN)
+Invalid keyframe value for property transform: translate(0px, 0px) scale(1.2619014183401207, NaN)
+Invalid keyframe value for property transform: translate(0px, 0px) scale(1.2619014183401207, NaN)
+Invalid keyframe value for property transform: translate(0px, 0px) scale(1.2619014183401207, NaN)
+Invalid keyframe value for property transform: translate(0px, 0px) scale(1.2619014183401207, NaN)
+Invalid keyframe value for property transform: translate(0px, 0px) scale(1.2619014183401207, NaN)
+Invalid keyframe value for property transform: translate(29.140625px, 0px) scale(1.2620418480550484, NaN)
+Invalid keyframe value for property transform: translate(29.140625px, 0px) scale(1.2620418480550484, NaN)
+Invalid keyframe value for property transform: translate(29.140625px, 0px) scale(1.2620418480550484, NaN)
+Invalid keyframe value for property transform: translate(29.140625px, 0px) scale(1.2620418480550484, NaN)
+Invalid keyframe value for property transform: translate(29.140625px, 0px) scale(1.2620418480550484, NaN)
+Invalid keyframe value for property transform: translate(29.140625px, 0px) scale(1.2620418480550484, NaN)
+Invalid keyframe value for property transform: translate(0px, 0px) scale(0.7924549298909415, NaN)
+Invalid keyframe value for property transform: translate(0px, 0px) scale(0.7924549298909415, NaN)
+Invalid keyframe value for property transform: translate(0px, 0px) scale(0.7924549298909415, NaN)
+Invalid keyframe value for property transform: translate(0px, 0px) scale(0.7924549298909415, NaN)
+Invalid keyframe value for property transform: translate(0px, 0px) scale(0.7924549298909415, NaN)
+Invalid keyframe value for property transform: translate(0px, 0px) scale(0.7924549298909415, NaN)
+Invalid keyframe value for property transform: translate(-29.140625px, 0px) scale(0.7923667519750751, NaN)
+Invalid keyframe value for property transform: translate(-29.140625px, 0px) scale(0.7923667519750751, NaN)
+Invalid keyframe value for property transform: translate(-29.140625px, 0px) scale(0.7923667519750751, NaN)
+Invalid keyframe value for property transform: translate(-29.140625px, 0px) scale(0.7923667519750751, NaN)
+Invalid keyframe value for property transform: translate(-29.140625px, 0px) scale(0.7923667519750751, NaN)
+Invalid keyframe value for property transform: translate(-29.140625px, 0px) scale(0.7923667519750751, NaN)
+reception.js:242 DEBUG: Activity Stream Payload: Array(25)
+reception.js:242 DEBUG: Activity Stream Payload: Array(25)
+reception.js:242 DEBUG: Activity Stream Payload: Array(25)
+reception.js:242 DEBUG: Activity Stream Payload: Array(25)
+reception.js:242 DEBUG: Activity Stream Payload: Array(25)
+reception.js:242 DEBUG: Activity Stream Payload: Array(25)
+Invalid keyframe value for property transform: translate(0px, 0px) scale(1, NaN)
+Invalid keyframe value for property transform: translate(0px, 0px) scale(1, NaN)
+Invalid keyframe value for property transform: translate(0px, 0px) scale(1, NaN)
+Invalid keyframe value for property transform: translate(0px, 0px) scale(1, NaN)
+Invalid keyframe value for property transform: translate(0px, 0px) scale(1, NaN)
+Invalid keyframe value for property transform: translate(0px, 0px) scale(1, NaN)
+Invalid keyframe value for property transform: translate(0px, 0px) scale(1, NaN)
+Invalid keyframe value for property transform: translate(0px, 0px) scale(1, NaN)
+Invalid keyframe value for property transform: translate(0px, 0px) scale(1, NaN)
+Invalid keyframe value for property transform: translate(0px, 0px) scale(1, NaN)
+Invalid keyframe value for property transform: translate(0px, 0px) scale(1, NaN)
+Invalid keyframe value for property transform: translate(0px, 0px) scale(1, NaN)
+reception.js:242 DEBUG: Activity Stream Payload: Array(25)
+reception.js:242 DEBUG: Activity Stream Payload: Array(25)
+reception.js:242 DEBUG: Activity Stream Payload: Array(25)
+reception.js:242 DEBUG: Activity Stream Payload: Array(25)
+reception.js:325 DEBUG: applyReferralToVisit Payload: Object
+reception.js:242 DEBUG: Activity Stream Payload: Array(29)
+reception.js:242 DEBUG: Activity Stream Payload: Array(29)
+signalr.js:94 SignalR: ReceptionSummaryUpdated received Object
+signalr.js:122 SignalR: ActionQueueUpdated received
+ReceptionScreen.jsx:80 SignalR: Action Queue Refreshed
+reception.js:242 DEBUG: Activity Stream Payload: Array(29)
+reception.js:242 DEBUG: Activity Stream Payload: Array(29)
+reception.js:242 DEBUG: Activity Stream Payload: Array(29)
+reception.js:242 DEBUG: Activity Stream Payload: Array(29)
+reception.js:242 DEBUG: Activity Stream Payload: Array(29)
+reception.js:242 DEBUG: Activity Stream Payload: Array(29)
+reception.js:242 DEBUG: Activity Stream Payload: Array(29)
+reception.js:242 DEBUG: Activity Stream Payload: Array(29)
+reception.js:242 DEBUG: Activity Stream Payload: Array(29)
+reception.js:242 DEBUG: Activity Stream Payload: Array(29)
+reception.js:242 DEBUG: Activity Stream Payload: (29) [{…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}]
+reception.js:242 DEBUG: Activity Stream Payload: (29) [{…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}]

@@ -5,21 +5,21 @@ import { PatientIdentification } from './PatientIdentification'
 import { VisitDetails } from './VisitDetails'
 import { BillingSummary } from './BillingSummary'
 import { cn } from '@/lib/utils'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { ReceptionApi } from '@/api/reception'
 import { SignalRService } from '@/lib/signalr'
+import { usePanelEntry } from '@/hooks/useSynOSMotion'
 
 export function IntentPanel() {
     // Keep closing logic local/UI-only for now, or move to snapshot if "open/closed" is backend state (unlikely)
     // We still use the UI hook ONLY for the panel visibility toggle if that's purely UI state.
     // If "User is working on intake" is backend state, this should also be driven by snapshot presence!
     // For Phase 6, let's treat "Open/Closed" as UI, but "Content" as Snapshot.
-    // We still use the UI hook ONLY for the panel visibility toggle if that's purely UI state.
-    // If "User is working on intake" is backend state, this should also be driven by snapshot presence!
-    // We still use the UI hook ONLY for the panel visibility toggle if that's purely UI state.
-    // If "User is working on intake" is backend state, this should also be driven by snapshot presence!
-    // For Phase 6, let's treat "Open/Closed" as UI, but "Content" as Snapshot.
     const { isOpen, closePanel, drawerState } = useReceptionPanelUI();
+
+    // MOTION CANON: Rigid Body Entry
+    const panelRef = useRef(null);
+    usePanelEntry(panelRef, isOpen);
 
     // Intent Derivation
     const intent = drawerState?.intent; // 'create' | 'resume' | 'correction'
@@ -237,7 +237,7 @@ export function IntentPanel() {
     if (isCorrectionIntent) { panelTitle = "Correct Visit"; panelSubtitle = "Audit Logged"; }
 
     return (
-        <div className="flex flex-col h-full bg-zinc-900/80 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden animate-in slide-in-from-right-5 duration-500 shadow-2xl relative z-20 ring-1 ring-white/5">
+        <div ref={panelRef} className="flex flex-col h-full bg-zinc-900/80 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden shadow-2xl relative z-20 ring-1 ring-white/5">
             {/* Header */}
             <div className="h-16 border-b border-white/5 flex items-center justify-between px-6 bg-white/5 backdrop-blur-md">
                 <div>

@@ -94,7 +94,7 @@ export function SystemBar({ serverTime, syncStatus = "Not Synced" }) {
 
                     {/* Menu */}
                     {activeDropdown === 'facility' && (
-                        <div className="absolute top-full right-0 mt-2 w-64 bg-zinc-900/95 backdrop-blur-md border border-white/10 rounded-2xl shadow-2xl overflow-hidden animate-in slide-in-from-top-2 fade-in duration-200 z-[60] p-1 ring-1 ring-white/10">
+                        <div className="absolute top-full right-0 mt-2 w-64 bg-zinc-900/95 backdrop-blur-md border border-white/10 rounded-2xl shadow-2xl overflow-hidden animate-in slide-in-from-top-2 fade-in duration-260 ease-synos z-[60] p-1 ring-1 ring-white/10">
                             <div className="px-3 py-2 border-b border-white/5 mb-1">
                                 <span className="text-zinc-500 font-bold uppercase tracking-wider text-[10px]">Active Facility</span>
                             </div>
@@ -132,7 +132,7 @@ export function SystemBar({ serverTime, syncStatus = "Not Synced" }) {
 
                     {/* Menu */}
                     {activeDropdown === 'role' && (
-                        <div className="absolute top-full right-0 mt-2 w-48 bg-zinc-900/95 backdrop-blur-md border border-white/10 rounded-2xl shadow-2xl overflow-hidden animate-in slide-in-from-top-2 fade-in duration-200 z-[60] p-1 ring-1 ring-white/10">
+                        <div className="absolute top-full right-0 mt-2 w-48 bg-zinc-900/95 backdrop-blur-md border border-white/10 rounded-2xl shadow-2xl overflow-hidden animate-in slide-in-from-top-2 fade-in duration-260 ease-synos z-[60] p-1 ring-1 ring-white/10">
                             <div className="px-3 py-2 border-b border-white/5 mb-1">
                                 <span className="text-zinc-500 font-bold uppercase tracking-wider text-[10px]">{user?.role || "Operator"}</span>
                             </div>

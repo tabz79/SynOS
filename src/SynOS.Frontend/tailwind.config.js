@@ -57,6 +57,12 @@ module.exports = {
             borderRadius: {
                 'xl': '0.75rem',
                 '2xl': '1rem',
+            },
+            transitionDuration: {
+                '260': '260ms', // SynOS Motion Canon (Rigid Body Snap)
+            },
+            transitionTimingFunction: {
+                'synos': 'cubic-bezier(0.22, 1, 0.36, 1)', // SynOS Motion Canon (Inverse-In, Rapid-Out)
             }
         },
     },
