@@ -281,9 +281,9 @@ export function ReceptionScreen() {
                                     <ActionQueueHeader title="Action Queues" count={actionQueue.length} />
                                     <button
                                         onClick={openCreateIntent}
-                                        className="bg-zinc-100 hover:bg-white text-zinc-900 border border-zinc-200 px-4 py-1.5 rounded-md text-xs font-bold shadow-sm transition-all flex items-center gap-2 pointer-events-auto"
+                                        className="bg-zinc-100 hover:bg-white text-zinc-900 border border-zinc-200 px-4 py-2 rounded-lg text-sm font-semibold shadow-lg shadow-black/20 hover:shadow-xl hover:shadow-black/30 transition-all duration-200 flex items-center gap-2 pointer-events-auto active:scale-95 active:shadow-inner"
                                     >
-                                        <Plus className="w-3.5 h-3.5" />
+                                        <Plus className="w-4 h-4" />
                                         Registration
                                     </button>
                                 </div>

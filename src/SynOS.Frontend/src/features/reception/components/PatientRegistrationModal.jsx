@@ -49,8 +49,8 @@ export function PatientRegistrationModal({ isOpen, onClose, onPatientRegistered 
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="relative w-full max-w-md bg-zinc-950 border border-synos-border rounded-xl shadow-2xl animate-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-xl animate-in fade-in duration-200">
+            <div className="relative w-full max-w-md bg-zinc-900 border border-synos-border rounded-2xl shadow-2xl animate-in zoom-in-95 duration-200">
 
                 {/* Header */}
                 <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-800">

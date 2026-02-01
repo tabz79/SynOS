@@ -258,7 +258,7 @@ export function VisitDetails({ snapshot, visitId, onVisitUpdated, isPrepaidInten
             </div>
 
             {/* SECTION 2: VISIT CONTEXT (Phase 8 - Reordered Top) */}
-            <div className="space-y-4 bg-zinc-950/50 p-4 border border-synos-border rounded-lg">
+            <div className="space-y-4 bg-zinc-950/30 p-4 border border-synos-border rounded-lg">
                 <h4 className="text-xs font-bold text-zinc-400 uppercase tracking-wider mb-2">Visit Context</h4>
 
                 {/* A. Prepaid Checkbox */}
@@ -405,7 +405,7 @@ export function VisitDetails({ snapshot, visitId, onVisitUpdated, isPrepaidInten
                     )}
 
                     {tests.map(test => (
-                        <div key={test.testCode || test.code} className="bg-synos-surface border border-synos-border rounded-lg p-3 flex items-center justify-between group animate-in zoom-in-95 duration-200">
+                        <div key={test.testCode || test.code} className="bg-zinc-950/30 border border-synos-border rounded-lg p-3 flex items-center justify-between group animate-in zoom-in-95 duration-200">
                             <div className="flex items-center gap-3">
                                 <div className="w-8 h-8 rounded bg-zinc-800 flex items-center justify-center text-[10px] font-bold text-zinc-500 font-mono border border-zinc-700/50">
                                     {test.testCode || test.code}

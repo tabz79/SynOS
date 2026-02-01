@@ -54,7 +54,7 @@ export function SystemBar({ serverTime, syncStatus = "Not Synced" }) {
     const isConnected = syncStatus === "Synced";
 
     return (
-        <div className="h-14 flex items-center justify-between px-6 select-none relative z-50 bg-zinc-950/80 backdrop-blur-xl border-b border-white/5 shadow-2xl">
+        <div className="h-14 flex items-center justify-between px-6 select-none relative z-50 bg-zinc-900/80 backdrop-blur-xl border-b border-white/5 shadow-2xl">
             {/* Overlay to close dropdowns */}
             {activeDropdown && (
                 <div className="fixed inset-0 z-40 bg-transparent" onClick={() => setActiveDropdown(null)} />
@@ -94,7 +94,7 @@ export function SystemBar({ serverTime, syncStatus = "Not Synced" }) {
 
                     {/* Menu */}
                     {activeDropdown === 'facility' && (
-                        <div className="absolute top-full right-0 mt-2 w-64 bg-zinc-900/95 backdrop-blur-md border border-white/10 rounded-xl shadow-2xl overflow-hidden animate-in slide-in-from-top-2 fade-in duration-200 z-50 p-1">
+                        <div className="absolute top-full right-0 mt-2 w-64 bg-zinc-900/95 backdrop-blur-md border border-white/10 rounded-2xl shadow-2xl overflow-hidden animate-in slide-in-from-top-2 fade-in duration-200 z-[60] p-1 ring-1 ring-white/10">
                             <div className="px-3 py-2 border-b border-white/5 mb-1">
                                 <span className="text-zinc-500 font-bold uppercase tracking-wider text-[10px]">Active Facility</span>
                             </div>
@@ -102,7 +102,7 @@ export function SystemBar({ serverTime, syncStatus = "Not Synced" }) {
                                 <button
                                     key={branch.id}
                                     onClick={() => handleSwitchBranch(branch.id)}
-                                    className="w-full text-left px-3 py-2 text-zinc-300 hover:bg-white/5 hover:text-white rounded-lg text-xs transition-all flex items-center justify-between group"
+                                    className="w-full text-left px-3 py-2 text-zinc-300 hover:bg-white/5 hover:text-synos-primary hover:underline decoration-synos-primary decoration-2 underline-offset-2 rounded-lg text-xs transition-all flex items-center justify-between group active:scale-95"
                                 >
                                     <span>{branch.name}</span>
                                     {user?.branchName?.includes(branch.name.split(' ')[0]) && (
@@ -132,13 +132,13 @@ export function SystemBar({ serverTime, syncStatus = "Not Synced" }) {
 
                     {/* Menu */}
                     {activeDropdown === 'role' && (
-                        <div className="absolute top-full right-0 mt-2 w-48 bg-zinc-900/95 backdrop-blur-md border border-white/10 rounded-xl shadow-2xl overflow-hidden animate-in slide-in-from-top-2 fade-in duration-200 z-50 p-1">
+                        <div className="absolute top-full right-0 mt-2 w-48 bg-zinc-900/95 backdrop-blur-md border border-white/10 rounded-2xl shadow-2xl overflow-hidden animate-in slide-in-from-top-2 fade-in duration-200 z-[60] p-1 ring-1 ring-white/10">
                             <div className="px-3 py-2 border-b border-white/5 mb-1">
                                 <span className="text-zinc-500 font-bold uppercase tracking-wider text-[10px]">{user?.role || "Operator"}</span>
                             </div>
                             <button
                                 onClick={handleLogout}
-                                className="w-full text-left px-3 py-2 text-red-400 hover:bg-red-500/10 hover:text-red-300 rounded-lg text-xs transition-colors font-medium flex items-center gap-2"
+                                className="w-full text-left px-3 py-2 text-red-400 hover:bg-red-500/10 hover:text-red-300 rounded-lg text-xs transition-all font-medium flex items-center gap-2 active:scale-95"
                             >
                                 Sign Out
                             </button>

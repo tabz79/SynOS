@@ -192,7 +192,7 @@ export function BillingSummary({ snapshot, onVisitUpdated, isCorrectionIntent, i
                 </div>
             )}
 
-            <div className="bg-zinc-950 border border-synos-border rounded-lg p-4 space-y-4 shadow-inner relative overflow-hidden">
+            <div className="bg-zinc-950/25 border border-synos-border rounded-lg p-4 space-y-4 relative overflow-hidden">
 
                 {/* Visual Lock Indicator */}
                 {isStrictReadOnly && (

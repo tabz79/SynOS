@@ -237,7 +237,7 @@ export function IntentPanel() {
     if (isCorrectionIntent) { panelTitle = "Correct Visit"; panelSubtitle = "Audit Logged"; }
 
     return (
-        <div className="flex flex-col h-full bg-zinc-900/95 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden animate-in slide-in-from-right-5 duration-500 shadow-2xl shadow-black/50 relative z-20 ring-1 ring-white/5">
+        <div className="flex flex-col h-full bg-zinc-900/80 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden animate-in slide-in-from-right-5 duration-500 shadow-2xl relative z-20 ring-1 ring-white/5">
             {/* Header */}
             <div className="h-16 border-b border-white/5 flex items-center justify-between px-6 bg-white/5 backdrop-blur-md">
                 <div>
@@ -273,7 +273,7 @@ export function IntentPanel() {
                         />
 
                         {hasVisit && (
-                            <div className="animate-in slide-in-from-bottom-5 duration-500 fade-in">
+                            <div className="animate-in fade-in duration-500">
                                 <VisitDetails
                                     snapshot={snapshot}
                                     visitId={snapshot.visit.visitId || snapshot.visit.id}
@@ -286,7 +286,7 @@ export function IntentPanel() {
                         )}
 
                         {hasVisit && (
-                            <div className="animate-in slide-in-from-bottom-5 duration-700 fade-in">
+                            <div className="animate-in fade-in duration-700">
                                 <BillingSummary
                                     snapshot={snapshot}
                                     onVisitUpdated={loadSnapshot}
@@ -302,7 +302,7 @@ export function IntentPanel() {
             </div>
 
             {/* Footer / Status Bar - UNIFIED BUTTON */}
-            <div className="p-4 border-t border-synos-border bg-zinc-950 space-y-3">
+            <div className="p-4 border-t border-synos-border bg-white/5 space-y-3">
                 {isCorrectionIntent ? (
                     <button
                         onClick={closePanel}
