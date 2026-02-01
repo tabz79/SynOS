@@ -316,7 +316,7 @@ export function IntentPanel() {
                             onClick={handleUnifiedAction}
                             disabled={!isActionEnabled || isLoading}
                             className={cn(
-                                "w-full py-3 rounded-lg font-bold text-sm flex items-center justify-center gap-2 transition-all",
+                                "w-full py-3 rounded-lg font-bold text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.98]",
                                 isActionEnabled
                                     ? "bg-white text-black hover:bg-zinc-200 shadow-lg shadow-white/10"
                                     : "bg-zinc-800 text-zinc-500 cursor-not-allowed"

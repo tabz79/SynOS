@@ -80,7 +80,7 @@ export function SystemBar({ serverTime, syncStatus = "Not Synced" }) {
                 <div className="relative">
                     <button
                         className={cn(
-                            "flex items-center gap-2 px-3 py-1.5 rounded-full border transition-all duration-200 group outline-none",
+                            "flex items-center gap-2 px-3 py-1.5 rounded-full border transition-all duration-200 group outline-none active:scale-95",
                             activeDropdown === 'facility'
                                 ? "bg-white/10 border-white/10 text-white"
                                 : "bg-black/20 border-white/5 text-zinc-400 hover:bg-white/5 hover:border-white/10 hover:text-zinc-200"
@@ -118,7 +118,7 @@ export function SystemBar({ serverTime, syncStatus = "Not Synced" }) {
                 <div className="relative">
                     <button
                         className={cn(
-                            "flex items-center gap-2 px-3 py-1.5 rounded-full border transition-all duration-200 group outline-none",
+                            "flex items-center gap-2 px-3 py-1.5 rounded-full border transition-all duration-200 group outline-none active:scale-95",
                             activeDropdown === 'role'
                                 ? "bg-white/10 border-white/10 text-white"
                                 : "bg-black/20 border-white/5 text-zinc-400 hover:bg-white/5 hover:border-white/10 hover:text-zinc-200"

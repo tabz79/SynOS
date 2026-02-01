@@ -139,7 +139,7 @@ export function ActivityStream({ serverTime }) {
     };
 
     return (
-        <div className="bg-zinc-900/95 backdrop-blur border border-white/5 rounded-2xl h-full flex flex-col overflow-hidden shadow-xl ring-1 ring-white/5">
+        <div className="bg-zinc-900/80 backdrop-blur-xl border border-white/5 rounded-2xl h-full flex flex-col overflow-hidden shadow-2xl ring-1 ring-white/5">
             {/* Header */}
             <div className="h-10 border-b border-white/5 flex items-center justify-between px-4 bg-white/5 backdrop-blur-md z-10">
                 <div className="flex items-center gap-2">
