@@ -27,9 +27,14 @@ export function RealityTile({ value, label, qualifier, icon: Icon, color = "defa
             <div className="flex justify-between items-start">
                 <span className={cn(
                     "font-bold font-sans tracking-tight text-zinc-900 group-hover:scale-[1.02] transition-transform duration-300 origin-left",
-                    // TYPOGRAPHY MORPH: State A (5xl) -> State C (3xl)
-                    // FLIP will handle the scale transition visually.
-                    isCollapsed ? "text-3xl leading-none" : "text-5xl"
+                    // TYPOGRAPHY MORPH & SCALING:
+                    // State C (Collapsed): Always 3xl
+                    // State A (Expanded): Scale based on length to fit 1M+ (7+ chars)
+                    isCollapsed
+                        ? "text-3xl leading-none"
+                        : value && value.toString().length > 9 ? "text-3xl" // 1 Crore+
+                            : value && value.toString().length > 6 ? "text-4xl" // 10 Lakhs+
+                                : "text-5xl" // Default
                 )}>
                     {value}
                 </span>

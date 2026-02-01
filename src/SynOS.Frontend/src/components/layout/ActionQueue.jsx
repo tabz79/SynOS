@@ -1,3 +1,4 @@
+import { useRef, useState, useEffect } from 'react'; // Added Hooks
 import { cn } from "@/lib/utils";
 
 export function ActionQueueHeader({ title, count }) {
@@ -9,6 +10,37 @@ export function ActionQueueHeader({ title, count }) {
 }
 
 export function ActionQueue({ columns, data, onAction }) {
+    // ROVING TAB INDEX STATE
+    const [focusedIndex, setFocusedIndex] = useState(0);
+    const rowRefs = useRef([]);
+
+    // Update refs array when data changes
+    useEffect(() => {
+        rowRefs.current = rowRefs.current.slice(0, data.length);
+    }, [data]);
+
+    // Keyboard Handler
+    const handleKeyDown = (e, index) => {
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            const nextIndex = Math.min(index + 1, data.length - 1);
+            setFocusedIndex(nextIndex);
+            rowRefs.current[nextIndex]?.focus();
+            rowRefs.current[nextIndex]?.scrollIntoView({ block: 'nearest' });
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            const prevIndex = Math.max(index - 1, 0);
+            setFocusedIndex(prevIndex);
+            rowRefs.current[prevIndex]?.focus();
+            rowRefs.current[prevIndex]?.scrollIntoView({ block: 'nearest' });
+        } else if (e.key === 'Enter') {
+            e.preventDefault();
+            // Trigger Primary Action (Find the button we marked earlier)
+            const trigger = rowRefs.current[index]?.querySelector('.action-trigger');
+            if (trigger) trigger.click();
+        }
+    };
+
     return (
         <div className="bg-zinc-900/80 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden flex-1 flex flex-col min-h-0 shadow-xl">
             {/* Header Row - Light Grey/Glassy */}
@@ -23,7 +55,22 @@ export function ActionQueue({ columns, data, onAction }) {
             {/* Body */}
             <div className="overflow-auto flex-1 p-2 space-y-1 scrollbar-thin scrollbar-thumb-zinc-800/50 hover:scrollbar-thumb-zinc-700">
                 {data.map((row, rowIdx) => (
-                    <div key={rowIdx} className="bg-zinc-950/30 hover:bg-white/[0.02] rounded-lg p-3 grid grid-cols-[1fr_2fr_1fr_1fr_minmax(100px,auto)] gap-4 items-center transition-colors duration-150 group border border-white/5 shadow-sm cursor-default">
+                    <div
+                        key={rowIdx}
+                        ref={el => rowRefs.current[rowIdx] = el}
+                        tabIndex={focusedIndex === rowIdx ? 0 : -1}
+                        onKeyDown={(e) => handleKeyDown(e, rowIdx)}
+                        onClick={() => {
+                            setFocusedIndex(rowIdx);
+                            // Optional: Click on row also triggers primary action? 
+                            // Canon says "Enter" triggers. Mouse click on button triggers naturally.
+                            // Mouse click on ROW usually selects it. Let's strictly follow button click for action.
+                        }}
+                        className={cn(
+                            "bg-zinc-950/30 hover:bg-white/[0.02] rounded-lg p-3 grid grid-cols-[1fr_2fr_1fr_1fr_minmax(100px,auto)] gap-4 items-center transition-colors duration-150 group border border-white/5 shadow-sm cursor-default",
+                            "focus-synos" // CANONICAL FOCUS RING ON ROW
+                        )}
+                    >
                         {/* Cell Rendering */}
                         {columns.map((col, colIdx) => (
                             <div key={colIdx} className={cn("text-sm text-zinc-300", col.className)}>

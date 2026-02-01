@@ -181,7 +181,8 @@ export function ReceptionScreen() {
                             openResumeIntent(row.visitId); // EXPLICIT RESUME
                         }
                     }}
-                    className="hover:text-synos-primary hover:underline decoration-synos-primary decoration-2 underline-offset-2 transition-all font-bold tracking-tight"
+                    tabIndex={-1}
+                    className="action-trigger hover:text-synos-primary hover:underline decoration-synos-primary decoration-2 underline-offset-2 transition-all font-bold tracking-tight rounded-md px-1 -mx-1"
                 >
                     {row.token}
                 </button>

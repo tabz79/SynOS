@@ -1,7 +1,8 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react' // Added useRef
 import { X, Loader2, UserPlus, Save } from 'lucide-react'
 import { ReceptionApi } from '@/api/reception'
 import { cn } from '@/lib/utils'
+import { useFocusTrap } from '@/hooks/useFocusTrap' // Added
 
 export function PatientRegistrationModal({ isOpen, onClose, onPatientRegistered }) {
     const [formData, setFormData] = useState({
@@ -13,6 +14,10 @@ export function PatientRegistrationModal({ isOpen, onClose, onPatientRegistered 
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState(null);
+
+    // FOCUS CANON: Trap
+    const modalRef = useRef(null);
+    useFocusTrap(modalRef, isOpen, onClose);
 
     if (!isOpen) return null;
 
@@ -50,7 +55,7 @@ export function PatientRegistrationModal({ isOpen, onClose, onPatientRegistered 
 
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-xl animate-in fade-in duration-200">
-            <div className="relative w-full max-w-md bg-zinc-900 border border-synos-border rounded-2xl shadow-2xl animate-in zoom-in-95 duration-200">
+            <div ref={modalRef} className="relative w-full max-w-md bg-zinc-900 border border-synos-border rounded-2xl shadow-2xl animate-in zoom-in-95 duration-200">
 
                 {/* Header */}
                 <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-800">

@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react'; // Added useRef
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/context/AuthContext';
-import { ChevronDown, Globe, Shield, Wifi, WifiOff, Clock } from 'lucide-react'; // Added Icons
+import { ChevronDown, Globe, Shield, Wifi, WifiOff, Clock } from 'lucide-react';
+import { useFocusTrap } from '@/hooks/useFocusTrap'; // Added
 
 export function SystemBar({ serverTime, syncStatus = "Not Synced" }) {
     const { user, logout } = useAuth();
@@ -9,6 +10,13 @@ export function SystemBar({ serverTime, syncStatus = "Not Synced" }) {
 
     // Dropdown State: 'role' | 'facility' | null
     const [activeDropdown, setActiveDropdown] = useState(null);
+
+    // FOCUS CANON: Dropdown Traps
+    const facilityRef = useRef(null);
+    const roleRef = useRef(null);
+
+    useFocusTrap(facilityRef, activeDropdown === 'facility', () => setActiveDropdown(null));
+    useFocusTrap(roleRef, activeDropdown === 'role', () => setActiveDropdown(null));
 
     // Time Anchor Logic
     useEffect(() => {
@@ -80,7 +88,7 @@ export function SystemBar({ serverTime, syncStatus = "Not Synced" }) {
                 <div className="relative">
                     <button
                         className={cn(
-                            "flex items-center gap-2 px-3 py-1.5 rounded-full border transition-all duration-200 group outline-none active:scale-95",
+                            "flex items-center gap-2 px-3 py-1.5 rounded-full border transition-all duration-200 group focus-synos active:scale-95",
                             activeDropdown === 'facility'
                                 ? "bg-white/10 border-white/10 text-white"
                                 : "bg-black/20 border-white/5 text-zinc-400 hover:bg-white/5 hover:border-white/10 hover:text-zinc-200"
@@ -94,7 +102,7 @@ export function SystemBar({ serverTime, syncStatus = "Not Synced" }) {
 
                     {/* Menu */}
                     {activeDropdown === 'facility' && (
-                        <div className="absolute top-full right-0 mt-2 w-64 bg-zinc-900/95 backdrop-blur-md border border-white/10 rounded-2xl shadow-2xl overflow-hidden animate-in slide-in-from-top-2 fade-in duration-260 ease-synos z-[60] p-1 ring-1 ring-white/10">
+                        <div ref={facilityRef} className="absolute top-full right-0 mt-2 w-64 bg-zinc-900/95 backdrop-blur-md border border-white/10 rounded-2xl shadow-2xl overflow-hidden animate-in slide-in-from-top-2 fade-in duration-260 ease-synos z-[60] p-1 ring-1 ring-white/10">
                             <div className="px-3 py-2 border-b border-white/5 mb-1">
                                 <span className="text-zinc-500 font-bold uppercase tracking-wider text-[10px]">Active Facility</span>
                             </div>
@@ -102,7 +110,7 @@ export function SystemBar({ serverTime, syncStatus = "Not Synced" }) {
                                 <button
                                     key={branch.id}
                                     onClick={() => handleSwitchBranch(branch.id)}
-                                    className="w-full text-left px-3 py-2 text-zinc-300 hover:bg-white/5 hover:text-synos-primary hover:underline decoration-synos-primary decoration-2 underline-offset-2 rounded-lg text-xs transition-all flex items-center justify-between group active:scale-95"
+                                    className="w-full text-left px-3 py-2 text-zinc-300 hover:bg-white/5 hover:text-synos-primary hover:underline decoration-synos-primary decoration-2 underline-offset-2 rounded-lg text-xs transition-all flex items-center justify-between group focus-synos active:scale-95"
                                 >
                                     <span>{branch.name}</span>
                                     {user?.branchName?.includes(branch.name.split(' ')[0]) && (
@@ -118,7 +126,7 @@ export function SystemBar({ serverTime, syncStatus = "Not Synced" }) {
                 <div className="relative">
                     <button
                         className={cn(
-                            "flex items-center gap-2 px-3 py-1.5 rounded-full border transition-all duration-200 group outline-none active:scale-95",
+                            "flex items-center gap-2 px-3 py-1.5 rounded-full border transition-all duration-200 group focus-synos active:scale-95",
                             activeDropdown === 'role'
                                 ? "bg-white/10 border-white/10 text-white"
                                 : "bg-black/20 border-white/5 text-zinc-400 hover:bg-white/5 hover:border-white/10 hover:text-zinc-200"
@@ -132,13 +140,13 @@ export function SystemBar({ serverTime, syncStatus = "Not Synced" }) {
 
                     {/* Menu */}
                     {activeDropdown === 'role' && (
-                        <div className="absolute top-full right-0 mt-2 w-48 bg-zinc-900/95 backdrop-blur-md border border-white/10 rounded-2xl shadow-2xl overflow-hidden animate-in slide-in-from-top-2 fade-in duration-260 ease-synos z-[60] p-1 ring-1 ring-white/10">
+                        <div ref={roleRef} className="absolute top-full right-0 mt-2 w-48 bg-zinc-900/95 backdrop-blur-md border border-white/10 rounded-2xl shadow-2xl overflow-hidden animate-in slide-in-from-top-2 fade-in duration-260 ease-synos z-[60] p-1 ring-1 ring-white/10">
                             <div className="px-3 py-2 border-b border-white/5 mb-1">
                                 <span className="text-zinc-500 font-bold uppercase tracking-wider text-[10px]">{user?.role || "Operator"}</span>
                             </div>
                             <button
                                 onClick={handleLogout}
-                                className="w-full text-left px-3 py-2 text-red-400 hover:bg-red-500/10 hover:text-red-300 rounded-lg text-xs transition-all font-medium flex items-center gap-2 active:scale-95"
+                                className="w-full text-left px-3 py-2 text-red-400 hover:bg-red-500/10 hover:text-red-300 rounded-lg text-xs transition-all font-medium flex items-center gap-2 focus-synos active:scale-95"
                             >
                                 Sign Out
                             </button>

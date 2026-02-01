@@ -222,7 +222,7 @@ export function BillingSummary({ snapshot, onVisitUpdated, isCorrectionIntent, i
                                     <button
                                         onClick={handleRemoveDiscount}
                                         disabled={isProcessing}
-                                        className="p-1 hover:bg-zinc-800 rounded-full text-zinc-500 hover:text-red-400 transition-colors"
+                                        className="p-1 hover:bg-zinc-800 rounded-full text-zinc-500 hover:text-red-400 transition-colors focus-synos"
                                         title="Remove Discount"
                                     >
                                         <X className="w-3 h-3" />
@@ -259,7 +259,7 @@ export function BillingSummary({ snapshot, onVisitUpdated, isCorrectionIntent, i
                 {canPerformActions && (
                     <div className="pt-2 animate-in fade-in">
                         <select
-                            className="w-full bg-zinc-900 border border-synos-border rounded-md px-3 py-2 text-xs text-white focus:border-synos-primary outline-none transition-colors disabled:opacity-50"
+                            className="w-full bg-zinc-900 border border-synos-border rounded-md px-3 py-2 text-xs text-white focus:border-synos-primary outline-none transition-colors disabled:opacity-50 focus-synos"
                             disabled={isProcessing}
                             value=""
                             onChange={(e) => {
@@ -288,7 +288,7 @@ export function BillingSummary({ snapshot, onVisitUpdated, isCorrectionIntent, i
                                     key={method}
                                     onClick={() => setPaymentMethod && setPaymentMethod(method)}
                                     className={cn(
-                                        "flex flex-col items-center justify-center py-2 rounded-md border text-xs transition-all",
+                                        "flex flex-col items-center justify-center py-2 rounded-md border text-xs transition-all focus-synos", // Added focus-synos
                                         paymentMethod === method
                                             ? "bg-zinc-100 text-black border-white font-bold shadow-md"
                                             : "bg-zinc-900 text-zinc-500 border-zinc-800 hover:bg-zinc-800 hover:text-zinc-300"

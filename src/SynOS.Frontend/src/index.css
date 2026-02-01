@@ -63,3 +63,11 @@
     background: transparent;
   }
 }
+
+@layer components {
+
+  /* SynOS Focus Canon v1.0 - The Emerald Lock */
+  .focus-synos {
+    @apply outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 focus-visible:ring-offset-synos-background;
+  }
+}

@@ -8,7 +8,8 @@ import { cn } from '@/lib/utils'
 import { useState, useEffect, useRef } from 'react'
 import { ReceptionApi } from '@/api/reception'
 import { SignalRService } from '@/lib/signalr'
-import { usePanelEntry } from '@/hooks/useSynOSMotion'
+import { usePanelEntry, useFlipGroup } from '@/hooks/useSynOSMotion' // Ensure imports are correct if splitting lines or adding new ones
+import { useFocusTrap } from '@/hooks/useFocusTrap' // NEW
 
 export function IntentPanel() {
     // Keep closing logic local/UI-only for now, or move to snapshot if "open/closed" is backend state (unlikely)
@@ -20,6 +21,9 @@ export function IntentPanel() {
     // MOTION CANON: Rigid Body Entry
     const panelRef = useRef(null);
     usePanelEntry(panelRef, isOpen);
+
+    // FOCUS CANON: Iron Dome Trap
+    useFocusTrap(panelRef, isOpen, closePanel);
 
     // Intent Derivation
     const intent = drawerState?.intent; // 'create' | 'resume' | 'correction'
