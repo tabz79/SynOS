@@ -15,6 +15,7 @@ using SynOS.Models.Entities.Discounts;
 using SynOS.Models.Entities.Revenue;
 using SynOS.Models.Entities.AR;
 using SynOS.Models.Entities.Referral;
+using SynOS.Models.Entities.Operations; // ADDED
 using SynOS.Services.Referral;
 using SynOS.Services.Revenue; // ADDED
 
@@ -66,7 +67,16 @@ namespace SynOS.Services
 
             if (visit == null) throw new KeyNotFoundException($"Visit with ID {visitId} not found.");
 
-            var payload = EscPosGenerator.GenerateTokenSlip(visit);
+            // Fetch the current assignment
+            WorkAssignment? assignment = null;
+            if (visit.CurrentAssignmentId.HasValue)
+            {
+                assignment = await _context.WorkAssignments
+                    .Include(a => a.AssignedResource)
+                    .FirstOrDefaultAsync(a => a.AssignmentId == visit.CurrentAssignmentId.Value);
+            }
+
+            var payload = EscPosGenerator.GenerateTokenSlip(visit, assignment);
 
             return new VisitTokenPrintDto
             {
@@ -268,13 +278,13 @@ namespace SynOS.Services
             // ... (Load Visit)
             var visit = await _context.Visits
                 .Include(v => v.Invoices).ThenInclude(i => i.Payments)
-                .Include(v => v.Orders)
+                .Include(v => v.Orders).ThenInclude(o => o.Samples) // FIXED
                 .FirstOrDefaultAsync(v => v.VisitId == visitId);
 
             if (visit == null) throw new KeyNotFoundException($"Visit {visitId} not found.");
             
-            if (visit.Status == "Paid" || visit.Status == "Cancelled") 
-                throw new InvalidOperationException($"Cannot add test to visit in status '{visit.Status}'.");
+            if (IsPhysicallyLocked(visit)) 
+                throw new InvalidOperationException("Cannot add test. Sample collection has already started.");
 
             if (visit.Orders.Any(o => o.TestCode.Equals(testCode, StringComparison.OrdinalIgnoreCase) && o.Status != SynOS.Models.Enums.OrderStatus.Cancelled))
                 throw new InvalidOperationException($"Test '{testCode}' is already added.");
@@ -319,16 +329,27 @@ namespace SynOS.Services
         {
             var visit = await _context.Visits
                 .Include(v => v.Invoices).ThenInclude(i => i.Payments)
-                .Include(v => v.Orders)
+                .Include(v => v.Orders).ThenInclude(o => o.Samples) // FIXED
                 .FirstOrDefaultAsync(v => v.VisitId == visitId);
 
             if (visit == null) throw new KeyNotFoundException($"Visit {visitId} not found.");
             
-            if (visit.Status == "Paid" || visit.Status == "Cancelled")
-                throw new InvalidOperationException($"Cannot remove test from visit in status '{visit.Status}'.");
+            if (IsPhysicallyLocked(visit))
+                throw new InvalidOperationException("Cannot remove test. Sample collection has already started.");
+
+            if (visit.Status == "Cancelled")
+                throw new InvalidOperationException($"Cannot modify a cancelled visit.");
 
             var order = visit.Orders.FirstOrDefault(o => o.TestCode.Equals(testCode, StringComparison.OrdinalIgnoreCase));
             if (order == null) throw new KeyNotFoundException($"Test '{testCode}' not found.");
+
+            // --- OPERATIONAL GUARDRAIL ---
+            // Block removal if sample is already collected, rejected, or being processed.
+            var hasCollectedSample = await _context.Samples.AnyAsync(s => s.OrderId == order.OrderId && s.Status != SampleStatus.Pending);
+            if (hasCollectedSample)
+            {
+                throw new InvalidOperationException($"Cannot remove test '{testCode}' because the sample has already been collected or processed. Use a proper clinical cancellation flow instead.");
+            }
 
             // FIX: Soft Cancel ONLY. No deletes. Ever.
             order.Status = SynOS.Models.Enums.OrderStatus.Cancelled;
@@ -360,10 +381,14 @@ namespace SynOS.Services
         public async Task RemoveDiscountFromVisitAsync(Guid visitId, Guid actorUserId)
         {
             var visit = await _context.Visits
+                .Include(v => v.Orders).ThenInclude(o => o.Samples) // FIXED
                 .Include(v => v.Invoices)
                 .FirstOrDefaultAsync(v => v.VisitId == visitId);
 
             if (visit == null) throw new KeyNotFoundException($"Visit {visitId} not found.");
+
+            if (IsPhysicallyLocked(visit))
+                throw new InvalidOperationException("Cannot modify discount. Sample collection has already started.");
             
             var invoice = visit.Invoices.OrderByDescending(i => i.CreatedAt).FirstOrDefault();
             if (invoice != null)
@@ -382,8 +407,15 @@ namespace SynOS.Services
 
         public async Task ApplyDiscountToVisitAsync(Guid visitId, Guid discountMasterId, Guid actorUserId)
         {
-            var visit = await _context.Visits.Include(v => v.Invoices).FirstOrDefaultAsync(v => v.VisitId == visitId);
+            var visit = await _context.Visits
+                .Include(v => v.Orders).ThenInclude(o => o.Samples) // FIXED
+                .Include(v => v.Invoices)
+                .FirstOrDefaultAsync(v => v.VisitId == visitId);
+
             if (visit == null) throw new KeyNotFoundException($"Visit {visitId} not found.");
+
+            if (IsPhysicallyLocked(visit))
+                throw new InvalidOperationException("Cannot apply discount. Sample collection has already started.");
             
             var invoice = visit.Invoices.OrderByDescending(i => i.CreatedAt).FirstOrDefault();
             if (invoice == null) throw new InvalidOperationException("No invoice.");
@@ -423,24 +455,65 @@ namespace SynOS.Services
         
         public async Task SetVisitReferralAsync(Guid visitId, Guid referralPartnerId, Guid actorUserId)
         {
-             var visit = await _context.Visits.FindAsync(visitId);
-             if (visit == null) throw new KeyNotFoundException();
-             visit.ReferralPartnerId = referralPartnerId;
-             visit.IsReferred = true;
-             await _context.SaveChangesAsync();
-             await _revenueEngine.ApplySnapshotAsync(visitId, actorUserId);
-             // ... Event
+            var visit = await _context.Visits
+                .Include(v => v.Orders).ThenInclude(o => o.Samples) // FIXED
+                .FirstOrDefaultAsync(v => v.VisitId == visitId);
+
+            if (visit == null) throw new KeyNotFoundException($"Visit {visitId} not found.");
+
+            if (IsPhysicallyLocked(visit)) 
+            {
+                // EXCEPTION: Late Referral Attribution
+                // Allowed ONLY if ReferralPartner was NOT previously set (null).
+                if (visit.ReferralPartnerId != null) 
+                    throw new InvalidOperationException("Cannot change referral partner after sample collection. This visit is physically locked.");
+                
+                _logger.LogInformation("LATE ATTRIBUTION: Referral Partner {PartnerId} set for locked visit {VisitId}", referralPartnerId, visitId);
+            }
+
+            visit.ReferralPartnerId = referralPartnerId;
+            visit.IsReferred = true;
+            await _context.SaveChangesAsync();
+
+            await _revenueEngine.ApplySnapshotAsync(visitId, actorUserId);
+
+            // Audit Event
+            await _operationalEventWriter.WriteEventAsync(
+                BranchEventType.REFERRAL_CORRECTED, // NEW EVENT TYPE (Assumed defined or use generic with note)
+                _userContext.CurrentBranchId.ToString(),
+                visitId.ToString(),
+                visit.Token,
+                $"Referral Partner updated to {referralPartnerId}",
+                "User",
+                actorUserId.ToString()
+            );
         }
         
         public async Task RemoveVisitReferralAsync(Guid visitId, Guid actorUserId)
         {
-             var visit = await _context.Visits.FindAsync(visitId);
-             if (visit == null) throw new KeyNotFoundException();
-             visit.ReferralPartnerId = null;
-             visit.IsReferred = false;
-             await _context.SaveChangesAsync();
-             await _revenueEngine.ApplySnapshotAsync(visitId, actorUserId);
-             // ... Event
+            var visit = await _context.Visits
+                .Include(v => v.Orders).ThenInclude(o => o.Samples) // FIXED
+                .FirstOrDefaultAsync(v => v.VisitId == visitId);
+
+            if (visit == null) throw new KeyNotFoundException($"Visit {visitId} not found.");
+
+            if (IsPhysicallyLocked(visit))
+                throw new InvalidOperationException("Cannot remove referral partner after sample collection.");
+
+            visit.ReferralPartnerId = null;
+            visit.IsReferred = false;
+            await _context.SaveChangesAsync();
+            await _revenueEngine.ApplySnapshotAsync(visitId, actorUserId);
+
+            await _operationalEventWriter.WriteEventAsync(
+                BranchEventType.VISIT_UPDATED,
+                _userContext.CurrentBranchId.ToString(),
+                visitId.ToString(),
+                visit.Token,
+                "Referral Partner removed",
+                "User",
+                actorUserId.ToString()
+            );
         }
 
         public async Task UpdateVisitReferrerTextAsync(Guid visitId, string? referrerText, Guid actorUserId)
@@ -515,8 +588,12 @@ namespace SynOS.Services
                                       .ThenInclude(i => i.Payments)
                                       .Include(v => v.Invoices)
                                       .ThenInclude(i => i.PartialPayments)
+                                      .Include(v => v.Orders).ThenInclude(o => o.Samples) // FIXED
                                       .FirstOrDefaultAsync(v => v.VisitId == visitId);
             if (visit == null) throw new KeyNotFoundException($"Visit with ID {visitId} not found.");
+
+            if (IsPhysicallyLocked(visit))
+                throw new InvalidOperationException("Cannot cancel visit. Sample collection has already started. Contact medical supervisor for discard flow.");
 
             if (visit.Status == "Cancelled") throw new InvalidOperationException("Visit is already cancelled.");
 
@@ -653,6 +730,14 @@ namespace SynOS.Services
                 BasePrice = test.BasePrice,
                 PriceConfigId = priceConfig?.PriceId
             };
+        }
+
+        public bool IsPhysicallyLocked(Visit visit)
+        {
+            if (visit == null) return false;
+            // The system locks on physical reality. 
+            // Lock flips when Barcode is generated -> Sample Status != Pending.
+            return visit.Orders != null && visit.Orders.Any(o => o.Samples != null && o.Samples.Any(s => s.Status != SampleStatus.Pending));
         }
     }
 }

@@ -15,6 +15,7 @@ using SynOS.Models.Entities.Time;
 using SynOS.Models.Entities.Leave;
 using SynOS.Models.Entities.Compliance;
 using SynOS.Models.Entities.Governance;
+using SynOS.Models.Entities.Operations;
 using SynOS.Models.ReadModels; // ADDED
 
 namespace SynOS.Data
@@ -65,6 +66,10 @@ namespace SynOS.Data
         public DbSet<Sample> Samples { get; set; } = null!;
         public DbSet<SampleRejection> SampleRejections { get; set; } = null!;
         public DbSet<AccessionCounter> AccessionCounters { get; set; } = null!;
+
+        // DbSets for Operational Assignments
+        public DbSet<OperationalResource> OperationalResources { get; set; } = null!;
+        public DbSet<WorkAssignment> WorkAssignments { get; set; } = null!;
 
         // DbSets for Results module
         public DbSet<Result> Results { get; set; } = null!;
@@ -346,6 +351,10 @@ namespace SynOS.Data
                 entity.Property(e => e.TubeType).HasConversion<string>().HasMaxLength(20);
                 entity.Property(e => e.Status).HasConversion<string>().HasMaxLength(20);
                 entity.HasIndex(e => e.Barcode).IsUnique();
+                entity.HasOne(e => e.Order)
+                      .WithMany(o => o.Samples)
+                      .HasForeignKey(e => e.OrderId)
+                      .OnDelete(DeleteBehavior.Cascade);
             });
 
             modelBuilder.Entity<SampleRejection>(entity =>
@@ -364,6 +373,24 @@ namespace SynOS.Data
                       .WithMany()
                       .HasForeignKey(sr => sr.RejectedByUserId)
                       .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            // Operational Assignments
+            modelBuilder.Entity<OperationalResource>(entity =>
+            {
+                entity.HasIndex(e => e.UserId).IsUnique();
+                entity.HasOne(e => e.User).WithMany().HasForeignKey(e => e.UserId).OnDelete(DeleteBehavior.Cascade);
+            });
+
+            modelBuilder.Entity<WorkAssignment>(entity =>
+            {
+                entity.HasIndex(e => e.SourceReferenceId);
+                entity.Property(e => e.WorkType).HasConversion<string>().HasMaxLength(50);
+                entity.Property(e => e.Status).HasConversion<string>().HasMaxLength(50);
+                entity.HasOne(e => e.AssignedResource)
+                      .WithMany()
+                      .HasForeignKey(e => e.AssignedResourceId)
+                      .OnDelete(DeleteBehavior.SetNull);
             });
 
             // Results Module

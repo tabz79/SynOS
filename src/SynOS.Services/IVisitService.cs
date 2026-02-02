@@ -23,5 +23,6 @@ namespace SynOS.Services
         Task MarkVisitAsPrepaidAsync(Guid visitId, Guid actorUserId);
         Task<string> AssignOfficialTokenAsync(Guid visitId, Guid actorUserId);
         Task RecalculateFinancialsAsync(Guid visitId, Guid actorUserId);
+        bool IsPhysicallyLocked(Visit visit);
     }
 }

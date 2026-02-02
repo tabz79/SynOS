@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 using SynOS.Models.Entities;
+using SynOS.Models.Entities.Operations;
 
 namespace SynOS.Data
 {
@@ -27,6 +28,8 @@ namespace SynOS.Data
             if (!context.CriticalRules.Any()) SeedCriticalRules(context);
             if (!context.Patients.Any()) SeedPatients(context);
             if (!context.Appointments.Any()) SeedAppointments(context);
+
+            if (!context.OperationalResources.Any()) SeedOperationalResources(context);
 
             if (!context.ReportTemplates.Any()) SeedReportTemplates(context);
         }
@@ -315,6 +318,44 @@ namespace SynOS.Data
             };
 
             context.Appointments.AddRange(appointments);
+            context.SaveChanges();
+        }
+
+        private static void SeedOperationalResources(SynOSDbContext context)
+        {
+            var phleboUser = context.Users.FirstOrDefault(u => u.Email == "phlebo@lab.com");
+            var xrayUser = context.Users.FirstOrDefault(u => u.Email == "xray@lab.com");
+
+            if (phleboUser != null)
+            {
+                context.OperationalResources.Add(new OperationalResource
+                {
+                    OperationalResourceId = Guid.NewGuid(),
+                    UserId = phleboUser.UserId,
+                    Role = "Phlebotomist",
+                    Department = "Pathology",
+                    IsOnline = true,
+                    IsActive = true,
+                    PhysicalStation = "Desk 1",
+                    LastHeartbeat = DateTime.UtcNow
+                });
+            }
+
+            if (xrayUser != null)
+            {
+                context.OperationalResources.Add(new OperationalResource
+                {
+                    OperationalResourceId = Guid.NewGuid(),
+                    UserId = xrayUser.UserId,
+                    Role = "XRayTech",
+                    Department = "Radiology",
+                    IsOnline = true,
+                    IsActive = true,
+                    PhysicalStation = "Room 302",
+                    LastHeartbeat = DateTime.UtcNow
+                });
+            }
+
             context.SaveChanges();
         }
     }

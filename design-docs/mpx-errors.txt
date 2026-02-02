@@ -1,478 +1,80 @@
-react-dom_client.js?v=4bd38141:20103 Download the React DevTools for a better development experience: https://react.dev/link/react-devtools
-signalr.js:16 SignalR: Subscriber added (Total: 1)
-signalr.js:49 [2026-02-01T12:09:36.012Z] Information: Normalizing '/dashboardHub' to 'http://localhost:5173/dashboardHub'.
-signalr.js:53 SignalR: Starting connection...
-signalr.js:168 SignalR: Subscriber removed (Total: 0)
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-Invalid keyframe value for property opacity: undefined
-signalr.js:16 SignalR: Subscriber added (Total: 1)
-signalr.js:22 SignalR: Aborted scheduled disconnect
-@microsoft_signalr.js?v=4bd38141:301 [2026-02-01T12:09:36.552Z] Information: WebSocket connected to ws://localhost:5173/dashboardHub?access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiJhN2ZjZjkzYy04OTg4LTRhZDgtYmU4My1iOTIyZGExNTVmNDIiLCJlbWFpbCI6InJlY2VwdGlvbkBsYWIuY29tIiwidW5pcXVlX25hbWUiOiJSZWNlcHRpb24gVXNlciIsImJyYW5jaF9pZCI6ImEwMDAwMDAwLTAwMDAtMDAwMC0wMDAwLTAwMDAwMDAwMDAwMSIsImJyYW5jaF9uYW1lIjoiTWFpbiBMYWJvcmF0b3J5Iiwicm9sZSI6IlJlY2VwdGlvbmlzdCIsIm5iZiI6MTc2OTg2NjM2MSwiZXhwIjoxNzY5OTUyNzYxLCJpYXQiOjE3Njk4NjYzNjEsImlzcyI6IlN5bk9TLkFwaSIsImF1ZCI6IlN5bk9TLkFwcCJ9.hHSUqeZpx2S-FAiJcyIMacQ0BbRboCgtfWHX-o9VkRw.
-@microsoft_signalr.js?v=4bd38141:301 [2026-02-01T12:09:36.560Z] Information: Using HubProtocol 'json'.
-signalr.js:135 SignalR: ReceiveServerTime received 2026-02-01T12:09:36.6248478Z
-signalr.js:56 SignalR: Connected to /dashboardHub
-reception.js:242 DEBUG: Activity Stream Payload: Array(25)
-reception.js:242 DEBUG: Activity Stream Payload: Array(25)
-ReceptionScreen.jsx:58 DEBUG: Action Queue Raw: Array(5)
-ReceptionScreen.jsx:58 DEBUG: Action Queue Raw: Array(5)
-RealitySummary.jsx:108 Invalid keyframe value for property transform: translate(341.75px, 59px) scale(1.1030491876251947, Infinity)
-(anonymous) @ RealitySummary.jsx:108
-RealitySummary.jsx:108 Invalid keyframe value for property transform: translate(356.21875px, 59px) scale(1.1029264493156783, Infinity)
-(anonymous) @ RealitySummary.jsx:108
-Invalid keyframe value for property transform: translate(469.25px, 59px) scale(1.5570888048074782, Infinity)
-Invalid keyframe value for property transform: translate(469.25px, 59px) scale(1.5570888048074782, Infinity)
-Invalid keyframe value for property transform: translate(469.25px, 59px) scale(1.5570888048074782, Infinity)
-Invalid keyframe value for property transform: translate(469.25px, 59px) scale(1.5570888048074782, Infinity)
-Invalid keyframe value for property transform: translate(469.25px, 59px) scale(1.5570888048074782, Infinity)
-Invalid keyframe value for property transform: translate(469.25px, 59px) scale(1.5570888048074782, Infinity)
-Invalid keyframe value for property transform: translate(469.25px, 59px) scale(1.5570888048074782, Infinity)
-Invalid keyframe value for property transform: translate(469.25px, 59px) scale(1.5570888048074782, Infinity)
-Invalid keyframe value for property transform: translate(469.25px, 59px) scale(1.5570888048074782, Infinity)
-Invalid keyframe value for property transform: translate(469.25px, 59px) scale(1.5570888048074782, Infinity)
-Invalid keyframe value for property transform: translate(469.25px, 59px) scale(1.5570888048074782, Infinity)
-Invalid keyframe value for property transform: translate(547.46875px, 59px) scale(1.5569155446756426, Infinity)
-Invalid keyframe value for property transform: translate(547.46875px, 59px) scale(1.5569155446756426, Infinity)
-Invalid keyframe value for property transform: translate(547.46875px, 59px) scale(1.5569155446756426, Infinity)
-Invalid keyframe value for property transform: translate(547.46875px, 59px) scale(1.5569155446756426, Infinity)
-Invalid keyframe value for property transform: translate(547.46875px, 59px) scale(1.5569155446756426, Infinity)
-Invalid keyframe value for property transform: translate(547.46875px, 59px) scale(1.5569155446756426, Infinity)
-Invalid keyframe value for property transform: translate(547.46875px, 59px) scale(1.5569155446756426, Infinity)
-Invalid keyframe value for property transform: translate(547.46875px, 59px) scale(1.5569155446756426, Infinity)
-Invalid keyframe value for property transform: translate(547.46875px, 59px) scale(1.5569155446756426, Infinity)
-Invalid keyframe value for property transform: translate(547.46875px, 59px) scale(1.5569155446756426, Infinity)
-Invalid keyframe value for property transform: translate(547.46875px, 59px) scale(1.5569155446756426, Infinity)
-reception.js:242 DEBUG: Activity Stream Payload: Array(25)
-Invalid keyframe value for property transform: translate(0px, 0px) scale(1.2619014183401207, NaN)
-Invalid keyframe value for property transform: translate(0px, 0px) scale(1.2619014183401207, NaN)
-Invalid keyframe value for property transform: translate(0px, 0px) scale(1.2619014183401207, NaN)
-Invalid keyframe value for property transform: translate(0px, 0px) scale(1.2619014183401207, NaN)
-Invalid keyframe value for property transform: translate(0px, 0px) scale(1.2619014183401207, NaN)
-Invalid keyframe value for property transform: translate(0px, 0px) scale(1.2619014183401207, NaN)
-Invalid keyframe value for property transform: translate(29.140625px, 0px) scale(1.2620418480550484, NaN)
-Invalid keyframe value for property transform: translate(29.140625px, 0px) scale(1.2620418480550484, NaN)
-Invalid keyframe value for property transform: translate(29.140625px, 0px) scale(1.2620418480550484, NaN)
-Invalid keyframe value for property transform: translate(29.140625px, 0px) scale(1.2620418480550484, NaN)
-Invalid keyframe value for property transform: translate(29.140625px, 0px) scale(1.2620418480550484, NaN)
-Invalid keyframe value for property transform: translate(29.140625px, 0px) scale(1.2620418480550484, NaN)
-Invalid keyframe value for property transform: translate(0px, 0px) scale(0.7924549298909415, NaN)
-Invalid keyframe value for property transform: translate(0px, 0px) scale(0.7924549298909415, NaN)
-Invalid keyframe value for property transform: translate(0px, 0px) scale(0.7924549298909415, NaN)
-Invalid keyframe value for property transform: translate(0px, 0px) scale(0.7924549298909415, NaN)
-Invalid keyframe value for property transform: translate(0px, 0px) scale(0.7924549298909415, NaN)
-Invalid keyframe value for property transform: translate(0px, 0px) scale(0.7924549298909415, NaN)
-Invalid keyframe value for property transform: translate(-29.140625px, 0px) scale(0.7923667519750751, NaN)
-Invalid keyframe value for property transform: translate(-29.140625px, 0px) scale(0.7923667519750751, NaN)
-Invalid keyframe value for property transform: translate(-29.140625px, 0px) scale(0.7923667519750751, NaN)
-Invalid keyframe value for property transform: translate(-29.140625px, 0px) scale(0.7923667519750751, NaN)
-Invalid keyframe value for property transform: translate(-29.140625px, 0px) scale(0.7923667519750751, NaN)
-Invalid keyframe value for property transform: translate(-29.140625px, 0px) scale(0.7923667519750751, NaN)
-reception.js:242 DEBUG: Activity Stream Payload: Array(25)
-reception.js:242 DEBUG: Activity Stream Payload: Array(25)
-reception.js:242 DEBUG: Activity Stream Payload: Array(25)
-reception.js:242 DEBUG: Activity Stream Payload: Array(25)
-reception.js:242 DEBUG: Activity Stream Payload: Array(25)
-reception.js:242 DEBUG: Activity Stream Payload: Array(25)
-Invalid keyframe value for property transform: translate(0px, 0px) scale(1, NaN)
-Invalid keyframe value for property transform: translate(0px, 0px) scale(1, NaN)
-Invalid keyframe value for property transform: translate(0px, 0px) scale(1, NaN)
-Invalid keyframe value for property transform: translate(0px, 0px) scale(1, NaN)
-Invalid keyframe value for property transform: translate(0px, 0px) scale(1, NaN)
-Invalid keyframe value for property transform: translate(0px, 0px) scale(1, NaN)
-Invalid keyframe value for property transform: translate(0px, 0px) scale(1, NaN)
-Invalid keyframe value for property transform: translate(0px, 0px) scale(1, NaN)
-Invalid keyframe value for property transform: translate(0px, 0px) scale(1, NaN)
-Invalid keyframe value for property transform: translate(0px, 0px) scale(1, NaN)
-Invalid keyframe value for property transform: translate(0px, 0px) scale(1, NaN)
-Invalid keyframe value for property transform: translate(0px, 0px) scale(1, NaN)
-reception.js:242 DEBUG: Activity Stream Payload: Array(25)
-reception.js:242 DEBUG: Activity Stream Payload: Array(25)
-reception.js:242 DEBUG: Activity Stream Payload: Array(25)
-reception.js:242 DEBUG: Activity Stream Payload: Array(25)
-reception.js:325 DEBUG: applyReferralToVisit Payload: Object
-reception.js:242 DEBUG: Activity Stream Payload: Array(29)
-reception.js:242 DEBUG: Activity Stream Payload: Array(29)
-signalr.js:94 SignalR: ReceptionSummaryUpdated received Object
-signalr.js:122 SignalR: ActionQueueUpdated received
-ReceptionScreen.jsx:80 SignalR: Action Queue Refreshed
-reception.js:242 DEBUG: Activity Stream Payload: Array(29)
-reception.js:242 DEBUG: Activity Stream Payload: Array(29)
-reception.js:242 DEBUG: Activity Stream Payload: Array(29)
-reception.js:242 DEBUG: Activity Stream Payload: Array(29)
-reception.js:242 DEBUG: Activity Stream Payload: Array(29)
-reception.js:242 DEBUG: Activity Stream Payload: Array(29)
-reception.js:242 DEBUG: Activity Stream Payload: Array(29)
-reception.js:242 DEBUG: Activity Stream Payload: Array(29)
-reception.js:242 DEBUG: Activity Stream Payload: Array(29)
-reception.js:242 DEBUG: Activity Stream Payload: Array(29)
-reception.js:242 DEBUG: Activity Stream Payload: (29) [{…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}]
-reception.js:242 DEBUG: Activity Stream Payload: (29) [{…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}]
+backend logs:
+PS D:\Projects\SynOS-Synthesized-Lab-Intelligence> dotnet run --project src\SynOS.Api\SynOS.Api.csproj --urls "http://127.0.0.1:59999"
+
+[16:34:13 INF] Notification Worker Service running.
+[16:34:13 INF] Notification Worker Service running.
+[16:34:14 INF] ExpiredLockCleanupService is starting.
+[16:34:14 INF] ExpiredLockCleanupService is starting.
+[16:34:14 INF] Analyzer TCP Listener Service starting...
+[16:34:14 INF] Analyzer TCP Listener Service starting...
+[16:34:14 WRN] No analyzer TCP listeners configured in appsettings.json.
+[16:34:14 WRN] No analyzer TCP listeners configured in appsettings.json.
+[16:34:14 INF] OperationalStatsProjectionWorker is starting. Interval: 5s
+[16:34:14 INF] OperationalStatsProjectionWorker is starting. Interval: 5s
+[16:34:14 INF] Worker: Running Consistency Check...
+[16:34:14 INF] Worker: Running Consistency Check...
+[16:35:08 WRN] Failed to determine the https port for redirect.
+[16:35:08 WRN] Failed to determine the https port for redirect.
+[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=02-02-2026 16:35:08, Today=02-02-2026 00:00:00, Window=[02-02-2026 00:00:00 - 03-02-2026 00:00:00)
+[16:35:08 WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+[16:35:08 WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+[ActionQueue] Found 0 raw visits.
+[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=02-02-2026 16:35:57, Today=02-02-2026 00:00:00, Window=[02-02-2026 00:00:00 - 03-02-2026 00:00:00)
+[ActionQueue] Found 0 raw visits.
+[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=02-02-2026 16:36:00, Today=02-02-2026 00:00:00, Window=[02-02-2026 00:00:00 - 03-02-2026 00:00:00)
+[ActionQueue] Found 0 raw visits.
+[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=02-02-2026 16:36:00, Today=02-02-2026 00:00:00, Window=[02-02-2026 00:00:00 - 03-02-2026 00:00:00)
+[ActionQueue] Found 0 raw visits.
+[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=02-02-2026 16:36:30, Today=02-02-2026 00:00:00, Window=[02-02-2026 00:00:00 - 03-02-2026 00:00:00)
+[ActionQueue] Found 0 raw visits.
+[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=02-02-2026 16:37:00, Today=02-02-2026 00:00:00, Window=[02-02-2026 00:00:00 - 03-02-2026 00:00:00)
+[ActionQueue] Found 0 raw visits.
+[16:37:14 WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+[16:37:14 WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+[16:37:14 WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+[16:37:14 WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+[16:37:15 WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+[16:37:15 WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+[16:37:16 FTL] EVENT_WRITE for VisitId 23ec7c6f-bbe4-4401-874f-e11e34bcd2c6, Context d667f354-df2b-426b-9140-22297f4e1340:0
+[16:37:16 FTL] EVENT_WRITE for VisitId 23ec7c6f-bbe4-4401-874f-e11e34bcd2c6, Context d667f354-df2b-426b-9140-22297f4e1340:0
+[16:37:16 FTL] EVENT_WRITE for VisitId 23ec7c6f-bbe4-4401-874f-e11e34bcd2c6, Context d667f354-df2b-426b-9140-22297f4e1340:0
+[16:37:16 FTL] EVENT_WRITE for VisitId 23ec7c6f-bbe4-4401-874f-e11e34bcd2c6, Context d667f354-df2b-426b-9140-22297f4e1340:0
+[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=02-02-2026 16:37:30, Today=02-02-2026 00:00:00, Window=[02-02-2026 00:00:00 - 03-02-2026 00:00:00)
+[ActionQueue] Found 1 raw visits.
+[ActionQueue] Processing Visit DRAFT-CCBEB1C6. Invoice Status: PendingPayment.
+[16:37:48 WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+[16:37:48 WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+[16:37:48 FTL] EVENT_WRITE for VisitId 23ec7c6f-bbe4-4401-874f-e11e34bcd2c6, Context 2118fb86-67fa-4056-a69e-4bba7105beb7:0
+[16:37:48 FTL] EVENT_WRITE for VisitId 23ec7c6f-bbe4-4401-874f-e11e34bcd2c6, Context 2118fb86-67fa-4056-a69e-4bba7105beb7:0
+[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=02-02-2026 16:38:00, Today=02-02-2026 00:00:00, Window=[02-02-2026 00:00:00 - 03-02-2026 00:00:00)
+[ActionQueue] Found 1 raw visits.
+[ActionQueue] Processing Visit DRAFT-CCBEB1C6. Invoice Status: PendingPayment.
+[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=02-02-2026 16:38:30, Today=02-02-2026 00:00:00, Window=[02-02-2026 00:00:00 - 03-02-2026 00:00:00)
+[ActionQueue] Found 1 raw visits.
+[ActionQueue] Processing Visit DRAFT-CCBEB1C6. Invoice Status: PendingPayment.
+[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=02-02-2026 16:39:00, Today=02-02-2026 00:00:00, Window=[02-02-2026 00:00:00 - 03-02-2026 00:00:00)
+[ActionQueue] Found 1 raw visits.
+[ActionQueue] Processing Visit DRAFT-CCBEB1C6. Invoice Status: PendingPayment.
+[16:39:12 WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+[16:39:12 WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+[16:39:12 WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+[16:39:12 WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+[16:39:12 FTL] EVENT_WRITE for VisitId 23ec7c6f-bbe4-4401-874f-e11e34bcd2c6, Context 887b6fa8-63ff-421f-96a8-097b29eba485:0
+[16:39:12 FTL] EVENT_WRITE for VisitId 23ec7c6f-bbe4-4401-874f-e11e34bcd2c6, Context 887b6fa8-63ff-421f-96a8-097b29eba485:0
+[16:39:19 FTL] EVENT_WRITE for VisitId 23ec7c6f-bbe4-4401-874f-e11e34bcd2c6, Context 86b6ee8d-d7a4-4537-b4d2-94497095443d:0
+[16:39:19 FTL] EVENT_WRITE for VisitId 23ec7c6f-bbe4-4401-874f-e11e34bcd2c6, Context 86b6ee8d-d7a4-4537-b4d2-94497095443d:0
+[16:39:22 WRN] Projecting Receivable bc1e8e71-a063-45dc-a85d-e9d0b20c960c. Amount: 300.0000. Current Total: 0
+[16:39:22 WRN] Projecting Receivable bc1e8e71-a063-45dc-a85d-e9d0b20c960c. Amount: 300.0000. Current Total: 0
+[16:39:22 WRN] New Total: 300.0000. WalkIns: 1
+[16:39:22 WRN] New Total: 300.0000. WalkIns: 1
+[16:39:22 WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+[16:39:22 WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=02-02-2026 16:39:22, Today=02-02-2026 00:00:00, Window=[02-02-2026 00:00:00 - 03-02-2026 00:00:00)
+[ActionQueue] Found 1 raw visits.
+[ActionQueue] Processing Visit DRAFT-CCBEB1C6. Invoice Status: PendingPayment.
+[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=02-02-2026 16:39:30, Today=02-02-2026 00:00:00, Window=[02-02-2026 00:00:00 - 03-02-2026 00:00:00)
+[ActionQueue] Found 1 raw visits.
+[ActionQueue] Processing Visit DRAFT-CCBEB1C6. Invoice Status: PendingPayment.
+[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=02-02-2026 16:40:00, Today=02-02-2026 00:00:00, Window=[02-02-2026 00:00:00 - 03-02-2026 00:00:00)
+[ActionQueue] Found 1 raw visits.
+[ActionQueue] Processing Visit DRAFT-CCBEB1C6. Invoice Status: PendingPayment.

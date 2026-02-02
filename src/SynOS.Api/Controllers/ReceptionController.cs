@@ -198,6 +198,46 @@ namespace SynOS.Api.Controllers
                 return StatusCode(500, new { message = ex.Message });
             }
         }
+
+        [HttpPut("visit/referral")]
+        public async Task<IActionResult> SetReferral([FromBody] ReceptionUpdateReferralRequest request)
+        {
+            try
+            {
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (!Guid.TryParse(userIdClaim, out var userId)) return Unauthorized();
+
+                await _receptionFlowService.SetVisitReferralAsync(request.VisitId, request.ReferralPartnerId, userId);
+                return Ok(new { success = true });
+            }
+            catch (KeyNotFoundException ex) { return NotFound(new { message = ex.Message }); }
+            catch (InvalidOperationException ex) { return Conflict(new { message = ex.Message }); }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to update referral for visit {VisitId}", request.VisitId);
+                return StatusCode(500, new { message = ex.Message });
+            }
+        }
+
+        [HttpDelete("visit/referral")]
+        public async Task<IActionResult> RemoveReferral([FromQuery] Guid visitId)
+        {
+            try
+            {
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (!Guid.TryParse(userIdClaim, out var userId)) return Unauthorized();
+
+                await _receptionFlowService.RemoveVisitReferralAsync(visitId, userId);
+                return Ok(new { success = true });
+            }
+            catch (KeyNotFoundException ex) { return NotFound(new { message = ex.Message }); }
+            catch (InvalidOperationException ex) { return Conflict(new { message = ex.Message }); }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to remove referral for visit {VisitId}", visitId);
+                return StatusCode(500, new { message = ex.Message });
+            }
+        }
     }
 
     public class ReceptionAddTestRequest
@@ -210,5 +250,11 @@ namespace SynOS.Api.Controllers
     {
         public Guid VisitId { get; set; }
         public string DiscountCode { get; set; }
+    }
+
+    public class ReceptionUpdateReferralRequest
+    {
+        public Guid VisitId { get; set; }
+        public Guid ReferralPartnerId { get; set; }
     }
 }

@@ -34,6 +34,7 @@ using SynOS.Services.Compliance; // ADDED
 using SynOS.Services.HRMS.Interpretation; // ADDED
 using SynOS.Services.HRMS.IntelligenceWiring; // ADDED
 using SynOS.Services.Operational; // ADDED
+using SynOS.Services.Assignment; // ADDED
 using SynOS.Services.Admin; // ADDED
 using SynOS.Services.Dashboard; // ADDED
 using SynOS.Services.Operations; // ADDED
@@ -198,6 +199,7 @@ builder.Services.AddGovernanceServices(); // ADDED
 builder.Services.AddHrmsInterpretation(); // ADDED
 builder.Services.AddHrmsIntelligenceWiring(); // ADDED
 builder.Services.AddOperationalServices(); // ADDED
+builder.Services.AddAssignmentServices(); // ADDED
 
 // Register Economics Intelligence services (OPT-IN)
 // builder.Services.AddEconomicsIntelligence();
@@ -219,7 +221,8 @@ builder.Services.AddScoped<IReceptionFlowService>(provider =>
         provider.GetRequiredService<IConfiguration>(),
         provider.GetRequiredService<IReferralFinancialService>(),
         provider.GetRequiredService<IOperationalEventWriter>(),
-        provider.GetRequiredService<IUserContext>() // ADDED
+        provider.GetRequiredService<IUserContext>(), // ADDED
+        provider.GetRequiredService<IWorkRoutingEngine>() // ADDED
     ));
 builder.Services.AddScoped<IResultService, ResultService>();
 builder.Services.AddScoped<SynOS.Services.Reception.IReceptionSnapshotService, SynOS.Services.Reception.ReceptionSnapshotService>();

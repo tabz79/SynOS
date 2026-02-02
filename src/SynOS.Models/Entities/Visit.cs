@@ -48,6 +48,8 @@ namespace SynOS.Models.Entities
         public ICollection<Order> Orders { get; set; } = new List<Order>();
         public ICollection<Invoice> Invoices { get; set; } = new List<Invoice>();
 
+        public Guid? CurrentAssignmentId { get; set; } // Link to active WorkAssignment
+
         // Referral Fields
         public bool IsReferred { get; set; } = false;
         public Guid? ReferralPartnerId { get; set; }

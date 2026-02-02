@@ -43,5 +43,7 @@ namespace SynOS.Models.Entities
         public decimal Discount { get; set; }
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+        public virtual System.Collections.Generic.ICollection<Sample> Samples { get; set; } = new System.Collections.Generic.List<Sample>();
     }
 }

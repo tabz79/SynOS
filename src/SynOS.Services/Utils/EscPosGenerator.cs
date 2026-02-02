@@ -2,6 +2,8 @@ using System.Text;
 using System.Collections.Generic;
 using System.Linq;
 using SynOS.Models.Entities;
+using SynOS.Models.Entities.Operations;
+using SynOS.Models.Enums;
 
 namespace SynOS.Services.Utils
 {
@@ -11,7 +13,7 @@ namespace SynOS.Services.Utils
         private const string GS = "\x1D";
         private const string LF = "\x0A";
 
-        public static string GenerateTokenSlip(Visit visit, string labName = "SynOS Lab")
+        public static string GenerateTokenSlip(Visit visit, WorkAssignment? assignment = null, string labName = "SynOS Lab")
         {
             var sb = new StringBuilder();
 
@@ -40,9 +42,29 @@ namespace SynOS.Services.Utils
             sb.Append("Tests: " + FormatTests(string.Join(", ", testNames)));
             sb.Append(LF);
 
+            // Routing Info (NEW)
+            if (assignment != null)
+            {
+                if (assignment.Status == WorkAssignmentStatus.PendingAssignment)
+                {
+                    sb.Append(Center("--------------------------------"));
+                    sb.Append(Center(Bold("PLEASE WAIT")));
+                    sb.Append(Center("You will be called shortly"));
+                    sb.Append(Center("--------------------------------"));
+                }
+                else if (assignment.AssignedResource != null)
+                {
+                    var desk = assignment.AssignedResource.PhysicalStation ?? "Standard Queue";
+                    sb.Append(LF);
+                    sb.Append(Center("Proceed To:"));
+                    sb.Append(Center(Bold(desk.ToUpper())));
+                    sb.Append(LF);
+                }
+            }
+
             // Footer
             sb.Append(Center("================================"));
-            sb.Append(Center("Please wait for your token call"));
+            sb.Append(Center("Powered by SynOS Core"));
             sb.Append(Center("================================"));
 
             // Cut paper

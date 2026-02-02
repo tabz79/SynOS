@@ -19,6 +19,7 @@ namespace SynOS.Models.Enums
         REPORT_VERIFIED,
         REPORT_SIGNED, // ADDED
         REPORT_DELIVERED, // ADDED
-        REPORT_READY
+        REPORT_READY,
+        REFERRAL_CORRECTED // ADDED: Correction flow
     }
 }
