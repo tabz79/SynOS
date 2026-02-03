@@ -194,12 +194,22 @@ export function BillingSummary({ snapshot, onVisitUpdated, isCorrectionIntent, i
 
             <div className="bg-zinc-950/25 border border-synos-border rounded-lg p-4 space-y-4 relative overflow-hidden">
 
-                {/* Visual Lock Indicator */}
-                {isStrictReadOnly && (
-                    <div className="absolute top-0 right-0 p-2">
-                        <Lock className="w-12 h-12 text-zinc-900/50 -rotate-12" />
+                {/* Visual Lock Indicator - REMOVED for Silent Enforcement */}
+
+                {/* REFERRAL SOURCE (Read-Only Visualization) */}
+                <div className="space-y-1">
+                    <label className="text-[10px] uppercase font-bold text-zinc-500 tracking-wider">Referral Source</label>
+                    <div className="text-xs text-zinc-300 font-medium bg-zinc-900/50 p-2 rounded border border-zinc-800 flex items-center justify-between">
+                        {snapshot?.billing?.referral?.partner ? (
+                            <span className="flex items-center gap-2">
+                                <div className="w-1.5 h-1.5 rounded-full bg-indigo-500"></div>
+                                {snapshot.billing.referral.partner.displayName}
+                            </span>
+                        ) : (
+                            <span className="text-zinc-500 italic">No Referral Partner</span>
+                        )}
                     </div>
-                )}
+                </div>
 
                 {/* A. Totals Section (DUMB RENDERER) */}
                 <div className="space-y-3 text-sm">

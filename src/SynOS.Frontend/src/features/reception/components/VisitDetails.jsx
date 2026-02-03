@@ -23,7 +23,21 @@ export function VisitDetails({ snapshot, visitId, onVisitUpdated, isPrepaidInten
     const isFinalized = ["Paid", "Cancelled"].includes(visit?.status || "");
     const isLocked = snapshot?.billing?.isLocked || false;
     const isUiReadOnly = snapshot?.uiHints?.isReadOnly || false;
+
+    // Strict Governance Rule (Phase 6.4.4):
     const isReadOnly = isFinalized || isLocked || isUiReadOnly;
+
+    // 4. PHYSICAL LOCK (Strict Truth from Reality)
+    // Rule: Locked if ANY sample is collected/processed (Status != Pending).
+    // Silent enforcement.
+    const isPhysicallyLocked = (visit?.samples || []).some(s => s.status !== 'Pending');
+
+    // 5. REFERRAL EDITABILITY (Late Attribution Rule)
+    // - Always allowed if strictly open.
+    // - If Locked: Allowed ONLY if current partner is NULL (Late Attribution).
+    // - Once set & locked -> Immutable.
+    const hasReferralPartner = !!snapshot?.billing?.referral?.partner;
+    const canEditReferral = !isReadOnly && (!isPhysicallyLocked || !hasReferralPartner);
 
     // Sync isPrepaidIntent with actual locked status (if locked as Paid/Prepaid)
     useEffect(() => {
@@ -65,7 +79,7 @@ export function VisitDetails({ snapshot, visitId, onVisitUpdated, isPrepaidInten
 
     // COMMAND: Apply Referral (Step 5.4)
     const handleApplyReferral = async (partnerId) => {
-        if ((isReadOnly && !isCorrectionIntent) || !visitId) return;
+        if (!canEditReferral || !visitId) return;
 
         // CORRECTION INTENT
         if (isCorrectionIntent) {
@@ -91,7 +105,7 @@ export function VisitDetails({ snapshot, visitId, onVisitUpdated, isPrepaidInten
 
     // COMMAND: Remove Referral
     const handleRemoveReferral = async () => {
-        if ((isReadOnly && !isCorrectionIntent) || !visitId) return;
+        if (!canEditReferral || !visitId) return;
 
         // CORRECTION INTENT
         if (isCorrectionIntent) {
@@ -303,9 +317,8 @@ export function VisitDetails({ snapshot, visitId, onVisitUpdated, isPrepaidInten
                                 </span>
                             )}
 
-                            {isReadOnly && !isCorrectionIntent ? (
-                                <Lock className="w-3 h-3 text-zinc-600 ml-auto" />
-                            ) : (
+                            {/* Silent Lock: If not editable, show nothing. If editable, show Remove. */}
+                            {canEditReferral && (
                                 <button
                                     onClick={handleRemoveReferral}
                                     disabled={isProcessing}
@@ -319,13 +332,13 @@ export function VisitDetails({ snapshot, visitId, onVisitUpdated, isPrepaidInten
                         // 2. HYBRID INPUT (Text + Suggestions)
                         <ReferralCombinedInput
                             initialValue={snapshot?.billing?.referral?.referrerText || ""}
-                            isReadOnly={isReadOnly}
+                            isReadOnly={!canEditReferral}
                             isProcessing={isProcessing}
                             partners={referralPartners}
                             allowFreeText={!isPrepaidIntent} // Constraint based on Checkbox
                             onApplyPartner={handleApplyReferral}
                             onUpdateText={async (text) => {
-                                if (!visitId || (isReadOnly && !isCorrectionIntent)) return;
+                                if (!visitId || !canEditReferral) return;
 
                                 if (isCorrectionIntent) {
                                     setCorrectionState({

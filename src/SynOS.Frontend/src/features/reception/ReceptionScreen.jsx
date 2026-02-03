@@ -39,7 +39,9 @@ export function ReceptionScreen() {
             paymentMethod: row.paymentMethod || row.PaymentMethod,
             referrerName: row.referrerName || row.ReferrerName,
             operationalStatus: row.operationalStatus || row.OperationalStatus,
-            isFinalized: row.isFinalized || row.IsFinalized // 🔹 TRUTH: Explicit Backend Flag
+            isFinalized: row.isFinalized || row.IsFinalized, // 🔹 TRUTH: Explicit Backend Flag
+            assignedResource: row.assignedResource || row.AssignedResource,
+            isTokenPrinted: row.isTokenPrinted ?? row.IsTokenPrinted
         }));
     };
 
@@ -170,22 +172,38 @@ export function ReceptionScreen() {
             accessor: "token",
             className: "font-mono text-zinc-400 w-32",
             render: (row) => (
-                <button
-                    onClick={() => {
-                        // 🔹 FINALIZATION TRUTH:
-                        // If Backend says it's finalized (Paid), we show Correction Mode.
-                        // Otherwise, we open Resume Mode.
-                        if (row.isFinalized) {
-                            openCorrectionIntent(row.visitId); // EXPLICIT CORRECTION
-                        } else {
-                            openResumeIntent(row.visitId); // EXPLICIT RESUME
-                        }
-                    }}
-                    tabIndex={-1}
-                    className="action-trigger hover:text-synos-primary hover:underline decoration-synos-primary decoration-2 underline-offset-2 transition-all font-bold tracking-tight rounded-md px-1 -mx-1"
-                >
-                    {row.token}
-                </button>
+                <div className="flex flex-col gap-1 items-start">
+                    <div className="flex items-center gap-2">
+                        <button
+                            onClick={() => {
+                                // 🔹 FINALIZATION TRUTH:
+                                // If Backend says it's finalized (Paid), we show Correction Mode.
+                                // Otherwise, we open Resume Mode.
+                                if (row.isFinalized) {
+                                    openCorrectionIntent(row.visitId); // EXPLICIT CORRECTION
+                                } else {
+                                    openResumeIntent(row.visitId); // EXPLICIT RESUME
+                                }
+                            }}
+                            tabIndex={-1}
+                            className="action-trigger hover:text-synos-primary hover:underline decoration-synos-primary decoration-2 underline-offset-2 transition-all font-bold tracking-tight rounded-md px-1 -mx-1"
+                        >
+                            {row.token}
+                        </button>
+
+                        {/* TOKEN PRINT STATUS (Non-Blocking) */}
+                        {row.isTokenPrinted === false && ( // Explicit false check
+                            <span className="text-amber-500 text-[10px] uppercase font-bold tracking-tighter" title="Printer Communication Failed">
+                                ⚠️ Print Fail
+                            </span>
+                        )}
+                        {row.isTokenPrinted === true && (
+                            <span className="text-emerald-500/50 text-[10px]" title="Token Printed">
+                                ✅
+                            </span>
+                        )}
+                    </div>
+                </div>
             )
         },
         {
@@ -253,18 +271,27 @@ export function ReceptionScreen() {
             }
         },
         {
-            header: "Operational Status",
+            header: "Operational Assignment",
             accessor: "operationalStatus",
             className: "w-40",
-            render: (row) => (
-                <span className={`
-                    px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border
-                    bg-zinc-800 text-zinc-400 border-zinc-700
-                `}>
-                    {/* RAW BACKEND TRUTH - NO INTERPRETATION */}
-                    {row.operationalStatus}
-                </span>
-            )
+            render: (row) => {
+                if (row.assignedResource) {
+                    return (
+                        <span className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-1 rounded text-xs font-medium flex items-center gap-1.5">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                            Assigned: {row.assignedResource}
+                        </span>
+                    );
+                }
+                return (
+                    <span className={`
+                        px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border
+                        bg-zinc-800 text-zinc-400 border-zinc-700
+                    `}>
+                        {row.operationalStatus || "Processing"}
+                    </span>
+                );
+            }
         }
     ];
 
