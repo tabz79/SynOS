@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Search, X, Plus, Loader2, Lock, AlertCircle } from 'lucide-react'
 import { ReceptionApi } from '@/api/reception'
 import { cn } from '@/lib/utils'
+import ReferralDraftForm from './ReferralDraftForm'
 
 export function VisitDetails({ snapshot, visitId, onVisitUpdated, isPrepaidIntent, setIsPrepaidIntent, isCorrectionIntent }) {
     // Local UI State for Search Interaction ONLY
@@ -37,7 +38,9 @@ export function VisitDetails({ snapshot, visitId, onVisitUpdated, isPrepaidInten
     // - If Locked: Allowed ONLY if current partner is NULL (Late Attribution).
     // - Once set & locked -> Immutable.
     const hasReferralPartner = !!snapshot?.billing?.referral?.partner;
+    const referralDraft = snapshot?.billing?.referral?.draft;
     const canEditReferral = !isReadOnly && (!isPhysicallyLocked || !hasReferralPartner);
+    const canAddDraft = !hasReferralPartner && !referralDraft && !isReadOnly;
 
     // Sync isPrepaidIntent with actual locked status (if locked as Paid/Prepaid)
     useEffect(() => {
@@ -144,6 +147,9 @@ export function VisitDetails({ snapshot, visitId, onVisitUpdated, isPrepaidInten
         payload: null, // Data needed for the action
         reason: ""
     });
+
+    // Referral Draft UI State
+    const [isDraftFormVisible, setIsDraftFormVisible] = useState(false);
 
     // COMMAND: Add Test (Intent Aware)
     const handleAddTest = async (test) => {
@@ -368,6 +374,63 @@ export function VisitDetails({ snapshot, visitId, onVisitUpdated, isPrepaidInten
                         />
                     )}
                 </div>
+            </div>
+
+            {/* SECTION 2b: REFERRAL DRAFT (Provisional) */}
+            <div className="py-2">
+                {/* 1. Read Only Summary */}
+                {referralDraft && (
+                    <div className="bg-zinc-900/50 border border-zinc-700/50 rounded p-3 mb-2 flex items-center justify-between">
+                        <div>
+                            <div className="text-[10px] uppercase text-zinc-500 font-bold tracking-wider mb-0.5">Provisional Referral Draft</div>
+                            <div className="text-sm font-medium text-zinc-200">{referralDraft.providerName}</div>
+                            {(referralDraft.clinicName || referralDraft.location) && (
+                                <div className="text-xs text-zinc-500">
+                                    {[referralDraft.clinicName, referralDraft.location].filter(Boolean).join(" • ")}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                )}
+
+                {/* 2. Inline Form */}
+                {isDraftFormVisible && !referralDraft && (
+                    <ReferralDraftForm
+                        visitId={visitId}
+                        onSuccess={() => {
+                            setIsDraftFormVisible(false);
+                            if (onVisitUpdated) onVisitUpdated();
+                        }}
+                        onCancel={() => setIsDraftFormVisible(false)}
+                    />
+                )}
+
+                {/* 3. Trigger Button */}
+                {!isDraftFormVisible && !referralDraft && (
+                    <button
+                        onClick={() => setIsDraftFormVisible(true)}
+                        disabled={!canAddDraft}
+                        className="flex items-center gap-2 text-xs font-medium text-zinc-500 hover:text-zinc-300 disabled:opacity-30 disabled:cursor-not-allowed transition-colors px-1"
+                    >
+                        <Plus className="w-3 h-3" />
+                        Add Referral Partner
+                    </button>
+                )}
+
+                {/* 4. Disabled State Reminder (If Draft Exists or Partner Exists) - explicit disabled button if Partner exists? 
+                    User said "Button becomes disabled (grayed out)". 
+                    The above button handles disabled state via !canAddDraft. 
+                    But if Draft exists, it's hidden by !referralDraft check above. 
+                    So we need a separate disabled button for "Draft Exists" state if we want to show it.
+                    User: "Replace with read-only summary text. Button becomes disabled".
+                    My code shows Summary. I will also show DISABLED button below it.
+                */}
+                {referralDraft && (
+                    <button disabled className="flex items-center gap-2 text-xs font-medium text-zinc-700 cursor-not-allowed px-1 mt-1">
+                        <Plus className="w-3 h-3" />
+                        Add Referral Partner
+                    </button>
+                )}
             </div>
 
             {/* SECTION 3: Test Selection (Reordered Down) */}

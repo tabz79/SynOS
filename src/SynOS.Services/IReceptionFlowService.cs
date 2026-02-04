@@ -19,5 +19,10 @@ namespace SynOS.Services
         // Added for Discount Wiring
         Task ApplyDiscountAsync(Guid visitId, string discountCode, Guid actorUserId);
         Task RemoveDiscountAsync(Guid visitId, Guid actorUserId);
+
+        // Added for Referral Draft
+        Task AddReferralDraftAsync(Guid visitId, string providerName, string? clinicName, string? location, Guid actorUserId);
+
+        Task ResolveReferralDraftAsync(Guid draftId, Guid targetPartnerId, Guid actorUserId);
     }
 }

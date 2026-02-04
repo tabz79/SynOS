@@ -17,6 +17,7 @@ using SynOS.Models.Entities.AR; // ADDED: Stage 1 Financials
 using SynOS.Models.Entities.Payments; // ADDED: Stage 1 Financials
 using SynOS.Services.Assignment; // ADDED
 using SynOS.Models.Entities.Operations; // ADDED
+using SynOS.Models.Entities.Referral; // ADDED
 
 
 namespace SynOS.Services
@@ -128,6 +129,7 @@ namespace SynOS.Services
                 .Include(v => v.Patient)
                 .Include(v => v.Orders)
                 .Include(v => v.Invoices).ThenInclude(i => i.Payments)
+                .Include(v => v.ReferralDraft)
                 .FirstOrDefaultAsync(v => 
                     v.PatientId == request.PatientId && 
                     v.BranchId == branchId && 
@@ -253,6 +255,51 @@ namespace SynOS.Services
             await _visitService.UpdateVisitReferrerTextAsync(visitId, referrerText, actorUserId);
         }
 
+        public async Task AddReferralDraftAsync(Guid visitId, string providerName, string? clinicName, string? location, Guid actorUserId)
+        {
+            var visit = await _context.Visits
+                .Include(v => v.ReferralDraft)
+                .FirstOrDefaultAsync(v => v.VisitId == visitId);
+
+            if (visit == null) throw new KeyNotFoundException($"Visit {visitId} not found");
+            
+            // Check status - ensure not finalized (though read-only in UI handles this, backend should guard)
+            if (new[] { "Paid", "Cancelled" }.Contains(visit.Status))
+            {
+                throw new InvalidOperationException($"Cannot add draft to solidified visit status: {visit.Status}");
+            }
+
+            // Exclusivity Rule: No Partner, No Existing Draft
+            if (visit.ReferralPartnerId.HasValue)
+            {
+                 throw new InvalidOperationException("Cannot add draft: Visit already has a verified Referral Partner.");
+            }
+            if (visit.ReferralDraft != null)
+            {
+                 throw new InvalidOperationException("Cannot add draft: Visit already has a Referral Draft.");
+            }
+
+            var draft = new ReferralDraft
+            {
+                ReferralDraftId = Guid.NewGuid(),
+                VisitId = visit.VisitId,
+                ProviderName = providerName,
+                ClinicName = clinicName,
+                Location = location,
+                CreatedAt = DateTime.UtcNow,
+                CreatedByUserId = actorUserId
+            };
+
+            _context.ReferralDrafts.Add(draft);
+            
+            // Note: ReferrerText is PRESERVED for audit/legacy compatibility.
+            // We do not clear it, adhering to strict data safety rules.
+            
+            await _context.SaveChangesAsync();
+            
+            _logger.LogInformation("Added Referral Draft {DraftId} to Visit {VisitId}", draft.ReferralDraftId, visitId);
+        }
+
         public async Task MarkVisitAsPrepaidAsync(Guid visitId, Guid actorUserId)
         {
             await _visitService.MarkVisitAsPrepaidAsync(visitId, actorUserId);
@@ -260,14 +307,27 @@ namespace SynOS.Services
             // --- STAGE 1: RECEIVABLE FACT CREATION ---
             var visit = await _context.Visits
                 .Include(v => v.Invoices)
+                .Include(v => v.ReferralDraft)
                 .AsNoTracking()
                 .FirstOrDefaultAsync(v => v.VisitId == visitId);
 
             if (visit == null) throw new InvalidOperationException("Visit not found for Receivable creation");
-            if (!visit.ReferralPartnerId.HasValue) throw new InvalidOperationException("Prepaid visit must have a Referral Partner");
+            
+            // RELAXED RULE: Must have Partner OR Draft
+            if (!visit.ReferralPartnerId.HasValue && visit.ReferralDraft == null) 
+                 throw new InvalidOperationException("Prepaid visit must have a Referral Partner or Provisional Draft");
 
             var invoice = visit.Invoices.OrderByDescending(i => i.CreatedAt).FirstOrDefault();
             if (invoice == null) throw new InvalidOperationException("No invoice found for Receivable creation");
+
+            // DEFERRAL LOGIC: If Draft, SKIP ReceivableFact (Ledger Deferral)
+            if (visit.ReferralDraft != null)
+            {
+                // In Phase 3 (Admin Resolution) -> The ReceivableFact WILL be back-dated and created.
+                // For now, we strictly defer it.
+                _logger.LogInformation("MarkAsPrepaid: Deferring ReceivableFact creation for Draft Visit {VisitId}. Ledgers pending Phase 3 resolution.", visitId);
+                return;
+            }
 
             // IDEMPOTENCY GUARD: One Receivable per Visit
             if (await _context.ReceivableFacts.AnyAsync(r => r.SourceVisitId == visitId)) 
@@ -314,6 +374,12 @@ namespace SynOS.Services
             var invoice = visit.Invoices.FirstOrDefault();
             var patient = await _context.Patients.FindAsync(visit.PatientId); // simple lookup
 
+            // Ensure Draft is loaded
+            if (visit.ReferralDraft == null)
+            {
+                await _context.Entry(visit).Reference(v => v.ReferralDraft).LoadAsync();
+            }
+
             return new ReceptionStartVisitResponse
             {
                 VisitId = visit.VisitId,
@@ -321,6 +387,13 @@ namespace SynOS.Services
                 TokenDate = visit.TokenDate,
                 Dept = visit.Department,
                 Status = visit.Status,
+                ReferralDraft = visit.ReferralDraft == null ? null : new ReferralDraftDto
+                {
+                    ReferralDraftId = visit.ReferralDraft.ReferralDraftId,
+                    ProviderName = visit.ReferralDraft.ProviderName,
+                    ClinicName = visit.ReferralDraft.ClinicName,
+                    Location = visit.ReferralDraft.Location
+                },
                 PatientSummary = patient == null ? null : new PatientSummaryDto
                 {
                     PatientId = patient.PatientId,
@@ -620,6 +693,9 @@ namespace SynOS.Services
                 throw new KeyNotFoundException($"Visit with ID {visitId} not found.");
             }
             var invoice = visit.Invoices.First();
+            
+            // Fetch Draft manually since _visitService might not include it
+            var draft = await _context.ReferralDrafts.AsNoTracking().FirstOrDefaultAsync(d => d.VisitId == visitId);
 
             return new ReceptionVisitSummaryResponse
             {
@@ -628,6 +704,13 @@ namespace SynOS.Services
                 TokenDate = visit.TokenDate,
                 Dept = visit.Department,
                 VisitStatus = visit.Status,
+                ReferralDraft = draft == null ? null : new ReferralDraftDto
+                {
+                   ReferralDraftId = draft.ReferralDraftId,
+                   ProviderName = draft.ProviderName,
+                   ClinicName = draft.ClinicName,
+                   Location = draft.Location
+                },
                 Patient = new PatientSummaryDto
                 {
                     PatientId = visit.Patient.PatientId,
@@ -817,5 +900,82 @@ namespace SynOS.Services
             await _visitService.RemoveDiscountFromVisitAsync(visitId, actorUserId);
         }
 
+        public async Task ResolveReferralDraftAsync(Guid draftId, Guid targetPartnerId, Guid actorUserId)
+        {
+            // 1. Validate Draft
+            var draft = await _context.ReferralDrafts
+                .Include(d => d.Visit).ThenInclude(v => v.Invoices)
+                .FirstOrDefaultAsync(d => d.ReferralDraftId == draftId);
+
+            if (draft == null) throw new KeyNotFoundException($"Referral Draft {draftId} not found");
+            if (draft.IsResolved) throw new InvalidOperationException($"Draft {draftId} is already resolved to {draft.ResolvedToPartnerId}");
+            
+            // 2. Validate Target Partner
+            var partner = await _context.ReferralPartners.FindAsync(targetPartnerId);
+            if (partner == null) throw new KeyNotFoundException($"Target Partner {targetPartnerId} not found");
+            if (!partner.IsActive) throw new InvalidOperationException($"Partner {partner.Name} is inactive");
+
+            // 3. Update Draft State (Audit Trail)
+            draft.IsResolved = true;
+            draft.ResolvedToPartnerId = targetPartnerId.ToString(); // Store ID string for link
+            draft.ResolvedByUserId = actorUserId;
+            draft.ResolvedAt = DateTime.UtcNow;
+
+            // 4. Update Visit Link (The Reality)
+            await _visitService.SetVisitReferralAsync(draft.VisitId, targetPartnerId, actorUserId);
+            
+            // 5. FINANCIAL CATCH-UP (Deferred Receivable Creation)
+            // Logic: Is this a Prepaid Visit? Did we skip the Receivable earlier?
+            var visit = draft.Visit;
+
+            bool isPrepaid = visit.PaymentCollectionModel == "PartnerCollects" && visit.Status != "Cancelled";
+            
+            if (isPrepaid)
+            {
+                 // Check if Receivable exists (Idempotency)
+                 bool receivableExists = await _context.ReceivableFacts.AnyAsync(r => r.SourceVisitId == visit.VisitId);
+                 
+                 if (!receivableExists)
+                 {
+                     var invoice = visit.Invoices.OrderByDescending(i => i.CreatedAt).FirstOrDefault();
+                     if (invoice != null)
+                     {
+                         var factId = Guid.NewGuid();
+                         var fact = new ReceivableFact
+                         {
+                             ReceivableFactId = factId,
+                             SourceVisitId = visit.VisitId,
+                             ReferralPartnerId = targetPartnerId,
+                             Amount = invoice.Total,
+                             Currency = "INR",
+                             OccurredAt = invoice.CreatedAt, // BACK DATE to Invoice Time
+                             RecordedAt = DateTimeOffset.UtcNow // Actual Resolution Time
+                         };
+                         
+                         _context.ReceivableFacts.Add(fact);
+                         
+                         _logger.LogInformation("ResolveReferralDraft: Materialized DEFERRED ReceivableFact {FactId} for Visit {VisitId} (Backdated to {OccurredAt})", 
+                             factId, visit.VisitId, fact.OccurredAt);
+                         
+                         // Emit Event
+                         await _operationalEventWriter.WriteEventAsync(
+                            BranchEventType.RECEIVABLE_CREATED,
+                            _userContext.CurrentBranchId.ToString(),
+                            visit.VisitId.ToString(),
+                            visit.Token,
+                            $"Deferred Credit Issued via Draft Resolution: {fact.Amount:C}",
+                            "User",
+                            actorUserId.ToString(),
+                            false, // SaveChanges will happen at end of method
+                            fact.ReceivableFactId,
+                            "ReceivableFact"
+                        );
+                     }
+                 }
+            }
+            
+            await _context.SaveChangesAsync();
+            _logger.LogInformation("Resolved Draft {DraftId} to Partner {PartnerId}", draftId, targetPartnerId);
+        }
     }
 }

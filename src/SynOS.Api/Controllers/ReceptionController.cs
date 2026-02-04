@@ -238,12 +238,59 @@ namespace SynOS.Api.Controllers
                 return StatusCode(500, new { message = ex.Message });
             }
         }
+
+        [HttpPost("visit/referral-draft")]
+        public async Task<IActionResult> AddReferralDraft([FromBody] ReceptionAddReferralDraftRequest request)
+        {
+            try
+            {
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (!Guid.TryParse(userIdClaim, out var userId)) return Unauthorized();
+
+                await _receptionFlowService.AddReferralDraftAsync(request.VisitId, request.ProviderName, request.ClinicName, request.Location, userId);
+                return Ok(new { success = true });
+            }
+            catch (KeyNotFoundException ex) { return NotFound(new { message = ex.Message }); }
+            catch (InvalidOperationException ex) { return Conflict(new { message = ex.Message }); } // 409 for Rule Violation
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to add referral draft for visit {VisitId}", request.VisitId);
+                return StatusCode(500, new { message = ex.Message });
+            }
+        }
+        [HttpPost("referral-draft/resolve")]
+        public async Task<IActionResult> ResolveReferralDraft([FromBody] ReceptionResolveReferralDraftRequest request)
+        {
+            try
+            {
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (!Guid.TryParse(userIdClaim, out var userId)) return Unauthorized();
+
+                await _receptionFlowService.ResolveReferralDraftAsync(request.DraftId, request.TargetPartnerId, userId);
+                return Ok(new { success = true });
+            }
+            catch (KeyNotFoundException ex) { return NotFound(new { message = ex.Message }); }
+            catch (InvalidOperationException ex) { return Conflict(new { message = ex.Message }); }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to resolve referral draft {DraftId}", request.DraftId);
+                return StatusCode(500, new { message = ex.Message });
+            }
+        }
     }
 
     public class ReceptionAddTestRequest
     {
         public Guid VisitId { get; set; }
         public string TestCode { get; set; }
+    }
+    
+    public class ReceptionAddReferralDraftRequest
+    {
+        public Guid VisitId { get; set; }
+        public string ProviderName { get; set; } = string.Empty;
+        public string? ClinicName { get; set; }
+        public string? Location { get; set; }
     }
 
     public class ReceptionApplyDiscountRequest
@@ -256,5 +303,11 @@ namespace SynOS.Api.Controllers
     {
         public Guid VisitId { get; set; }
         public Guid ReferralPartnerId { get; set; }
+    }
+
+    public class ReceptionResolveReferralDraftRequest
+    {
+        public Guid DraftId { get; set; }
+        public Guid TargetPartnerId { get; set; }
     }
 }

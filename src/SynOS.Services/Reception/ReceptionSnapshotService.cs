@@ -82,6 +82,7 @@ namespace SynOS.Services.Reception
                 .Include(v => v.Patient) // Just Patient info
                 .Include(v => v.Orders).ThenInclude(o => o.Test)
                 .Include(v => v.Invoices).ThenInclude(i => i.Payments)
+                .Include(v => v.ReferralDraft)
                 .FirstOrDefaultAsync(v => v.VisitId == visitId);
 
             if (visit == null) throw new KeyNotFoundException($"Visit {visitId} not found.");
@@ -172,12 +173,19 @@ namespace SynOS.Services.Reception
                 }
             }
 
-            if (partnerInfo != null || !string.IsNullOrEmpty(visit.ReferrerText))
+            if (partnerInfo != null || !string.IsNullOrEmpty(visit.ReferrerText) || visit.ReferralDraft != null)
             {
                 referralState = new IntakeReferralState
                 {
                     Partner = partnerInfo,
-                    ReferrerText = visit.ReferrerText
+                    ReferrerText = visit.ReferrerText,
+                    Draft = visit.ReferralDraft == null ? null : new ReferralDraftInfo
+                    {
+                        ReferralDraftId = visit.ReferralDraft.ReferralDraftId,
+                        ProviderName = visit.ReferralDraft.ProviderName,
+                        ClinicName = visit.ReferralDraft.ClinicName,
+                        Location = visit.ReferralDraft.Location
+                    }
                 };
             }
 

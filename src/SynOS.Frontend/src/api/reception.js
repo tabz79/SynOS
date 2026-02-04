@@ -397,6 +397,38 @@ export const ReceptionApi = {
     },
 
     /**
+     * Adds a provisional referral draft to the visit.
+     * @param {string} visitId
+     * @param {string} providerName
+     * @param {string} clinicName
+     * @param {string} location
+     * @returns {Promise<void>}
+     */
+    addReferralDraft: async (visitId, providerName, clinicName, location) => {
+        const response = await fetch('/api/v1/reception/visit/referral-draft', {
+            method: 'POST',
+            headers: ReceptionApi.getHeaders(),
+            body: JSON.stringify({
+                VisitId: visitId,
+                ProviderName: providerName,
+                ClinicName: clinicName,
+                Location: location
+            })
+        });
+
+        if (!response.ok) {
+            let errorMessage = 'Failed to add referral draft';
+            try {
+                const errorData = await response.json();
+                errorMessage = errorData.message || errorMessage;
+            } catch (e) {
+                console.error("Failed to parse error response", e);
+            }
+            throw new Error(errorMessage);
+        }
+    },
+
+    /**
      * Applies a correction to a finalized visit.
      * @param {string} visitId
      * @param {string} type - 'AddTest' | 'RemoveTest' | 'ChangeDiscount' | 'PriceOverride'

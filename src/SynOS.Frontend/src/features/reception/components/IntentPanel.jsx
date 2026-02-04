@@ -155,8 +155,11 @@ export function IntentPanel() {
 
         // 1. CONFIRM & LOCK PREPAID
         if (isPrepaidIntent && !snapshot.billing.isLocked) {
-            if (!snapshot.billing.referral?.partner) {
-                alert("For Prepaid visits, you MUST select a Referral Partner.");
+            // RELAXED RULE: Partner OR Draft
+            const hasReferralIdentity = snapshot.billing.referral?.partner || snapshot.billing?.referral?.draft;
+
+            if (!hasReferralIdentity) {
+                alert("For Prepaid visits, you MUST select a Referral Partner or add a Draft.");
                 return;
             }
 
@@ -224,7 +227,8 @@ export function IntentPanel() {
             isActionEnabled = true;
         } else if (canLockPrepaid) {
             mainActionLabel = "Prepaid Checkout";
-            isActionEnabled = Boolean(snapshot?.billing?.referral?.partner);
+            // RELAXED RULE: Partner OR Draft
+            isActionEnabled = Boolean(snapshot?.billing?.referral?.partner || snapshot?.billing?.referral?.draft);
         } else if (canCheckout) {
             mainActionLabel = `Accept Payment (₹${snapshot.billing.netAmount})`;
             isActionEnabled = true;

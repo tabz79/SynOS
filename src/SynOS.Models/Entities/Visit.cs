@@ -59,5 +59,7 @@ namespace SynOS.Models.Entities
         
         [StringLength(500)]
         public string? ReferrerText { get; set; } // Free-text metadata
+
+        public virtual ReferralDraft? ReferralDraft { get; set; }
     }
 }

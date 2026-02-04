@@ -1,0 +1,6 @@
+2026-02-04 11:37:43.088 +05:30 [INF] Notification Worker Service running.
+2026-02-04 11:37:43.723 +05:30 [INF] ExpiredLockCleanupService is starting.
+2026-02-04 11:37:44.100 +05:30 [INF] Analyzer TCP Listener Service starting...
+2026-02-04 11:37:44.113 +05:30 [WRN] No analyzer TCP listeners configured in appsettings.json.
+2026-02-04 11:37:44.134 +05:30 [INF] OperationalStatsProjectionWorker is starting. Interval: 5s
+2026-02-04 11:37:44.184 +05:30 [INF] Worker: Running Consistency Check...

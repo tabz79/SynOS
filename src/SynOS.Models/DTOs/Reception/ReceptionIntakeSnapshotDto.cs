@@ -89,7 +89,16 @@ namespace SynOS.Models.DTOs.Reception
     public class IntakeReferralState
     {
         public ReferralPartnerInfo? Partner { get; set; }
+        public ReferralDraftInfo? Draft { get; set; } // Added
         public string? ReferrerText { get; set; }
+    }
+
+    public class ReferralDraftInfo
+    {
+        public Guid ReferralDraftId { get; set; }
+        public string ProviderName { get; set; } = string.Empty;
+        public string? ClinicName { get; set; }
+        public string? Location { get; set; }
     }
 
     public class ReferralPartnerInfo

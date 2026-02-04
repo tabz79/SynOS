@@ -124,6 +124,7 @@ namespace SynOS.Data
         public DbSet<ReferralPartner> ReferralPartners { get; set; } = null!;
         public DbSet<ReferralCommissionRule> ReferralCommissionRules { get; set; } = null!;
         public DbSet<ReferralPayableFact> ReferralPayableFacts { get; set; } = null!;
+        public DbSet<ReferralDraft> ReferralDrafts { get; set; } = null!; // ADDED: Provisional Referral
 
         public DbSet<ImsTubeMaster> ImsTubeMasters { get; set; } = null!;
         public DbSet<ImsTubeLot> ImsTubeLots { get; set; } = null!;
@@ -250,6 +251,19 @@ namespace SynOS.Data
                 entity.HasKey(e => e.ReferralPayableFactId);
                 entity.HasIndex(e => e.SourceVisitId).IsUnique(); // ADDED: Idempotency enforcement
                 entity.Property(e => e.Amount).HasColumnType("decimal(18, 4)");
+            });
+
+            modelBuilder.Entity<ReferralDraft>(entity =>
+            {
+                entity.ToTable("ReferralDrafts");
+                entity.HasKey(e => e.ReferralDraftId);
+                entity.Property(e => e.ProviderName).HasMaxLength(200).IsRequired();
+                
+                // One-to-One (0..1)
+                entity.HasOne(e => e.Visit)
+                      .WithOne(v => v.ReferralDraft)
+                      .HasForeignKey<ReferralDraft>(e => e.VisitId)
+                      .OnDelete(DeleteBehavior.Restrict);
             });
 
             // Test Master

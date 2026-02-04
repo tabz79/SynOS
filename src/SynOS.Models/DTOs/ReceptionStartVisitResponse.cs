@@ -14,6 +14,7 @@ namespace SynOS.Models.DTOs
         public List<OrderSummaryDto> Orders { get; set; } = new();
         public InvoiceSummaryDto Invoice { get; set; } = new();
         public VisitFlagsDto Flags { get; set; } = new();
+        public ReferralDraftDto? ReferralDraft { get; set; }
     }
 
     public class PatientSummaryDto
@@ -23,6 +24,14 @@ namespace SynOS.Models.DTOs
         public string Name { get; set; } = string.Empty;
         public string Sex { get; set; } = string.Empty;
         public int Age { get; set; }
+    }
+
+    public class ReferralDraftDto
+    {
+        public Guid ReferralDraftId { get; set; }
+        public string ProviderName { get; set; } = string.Empty;
+        public string? ClinicName { get; set; }
+        public string? Location { get; set; }
     }
 
     public class OrderSummaryDto
