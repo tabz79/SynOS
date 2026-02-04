@@ -20,6 +20,14 @@ export function ReceptionScreen() {
     const [actionQueue, setActionQueue] = useState([]); // Real Data
     const [isLoadingQueue, setIsLoadingQueue] = useState(true);
 
+    // History State (Phase 5)
+    // We use a Ref for SignalR callback access, and State for Render.
+    const [showHistory, setShowHistory] = useState(false);
+    const showHistoryRef = useRef(false);
+
+    // Sync Ref
+    useEffect(() => { showHistoryRef.current = showHistory; }, [showHistory]);
+
     // New Header State
     const [serverTimeAnchor, setServerTimeAnchor] = useState(null);
     const [connectionStatus, setConnectionStatus] = useState("Not Synced");
@@ -41,7 +49,8 @@ export function ReceptionScreen() {
             operationalStatus: row.operationalStatus || row.OperationalStatus,
             isFinalized: row.isFinalized || row.IsFinalized, // 🔹 TRUTH: Explicit Backend Flag
             assignedResource: row.assignedResource || row.AssignedResource,
-            isTokenPrinted: row.isTokenPrinted ?? row.IsTokenPrinted
+            isTokenPrinted: row.isTokenPrinted ?? row.IsTokenPrinted,
+            dateGroup: row.dateGroup || row.DateGroup || "Today" // Phase 5: History Grouping
         }));
     };
 
@@ -52,7 +61,7 @@ export function ReceptionScreen() {
             try {
                 const [summaryData, queueData] = await Promise.all([
                     ReceptionApi.getDashboardSummary(),
-                    ReceptionApi.getActionQueue()
+                    ReceptionApi.getActionQueue(showHistoryRef.current) // Initial load
                 ]);
 
                 if (summaryData) setSummary(summaryData);
@@ -77,7 +86,8 @@ export function ReceptionScreen() {
             });
 
             SignalRService.onActionQueueUpdated(() => {
-                ReceptionApi.getActionQueue().then(data => {
+                // SignalR triggers refresh - must respect current filter
+                ReceptionApi.getActionQueue(showHistoryRef.current).then(data => {
                     if (Array.isArray(data)) {
                         console.log("SignalR: Action Queue Refreshed");
                         setActionQueue(normalizeQueueData(data));
@@ -108,7 +118,7 @@ export function ReceptionScreen() {
         // Failsafe Polling (every 30s)
         const interval = setInterval(async () => {
             try {
-                const data = await ReceptionApi.getActionQueue();
+                const data = await ReceptionApi.getActionQueue(showHistoryRef.current);
                 if (Array.isArray(data)) {
                     setActionQueue(normalizeQueueData(data));
                 }
@@ -139,6 +149,18 @@ export function ReceptionScreen() {
     useFlipGroup([summaryRef, queueRef], [isSummaryCollapsed]);
 
     // We'll use the refs in the JSX below.
+
+    // EFFECT: Reload Queue when Toggle Changes
+    useEffect(() => {
+        setIsLoadingQueue(true);
+        ReceptionApi.getActionQueue(showHistory).then(data => {
+            if (Array.isArray(data)) setActionQueue(normalizeQueueData(data));
+            setIsLoadingQueue(false);
+        }).catch(e => {
+            console.error("History Toggle Failed", e);
+            setIsLoadingQueue(false);
+        });
+    }, [showHistory]);
 
     // STAGE 1: Data Fetching (SignalR + Polling) (Strict DTO)
     const realityTiles = summary ? [
@@ -340,7 +362,31 @@ export function ReceptionScreen() {
                                 className="flex-1 flex flex-col min-h-0 relative"
                             >
                                 <div className="flex items-center justify-between mb-2">
-                                    <ActionQueueHeader title="Action Queues" count={actionQueue.length} />
+                                    <div className="flex items-center gap-4">
+                                        <ActionQueueHeader title="Action Queues" count={actionQueue.length} />
+
+                                        {/* HISTORY TOGGLE (UI ONLY) */}
+                                        <div className="flex items-center gap-2 bg-zinc-900/50 rounded-lg p-1 border border-white/5">
+                                            <button
+                                                onClick={() => setShowHistory(false)}
+                                                className={cn(
+                                                    "text-[10px] uppercase font-bold px-2 py-0.5 rounded transition-all",
+                                                    !showHistory ? "bg-zinc-700 text-white shadow-sm" : "text-zinc-500 hover:text-zinc-300"
+                                                )}
+                                            >
+                                                Live
+                                            </button>
+                                            <button
+                                                onClick={() => setShowHistory(true)}
+                                                className={cn(
+                                                    "text-[10px] uppercase font-bold px-2 py-0.5 rounded transition-all",
+                                                    showHistory ? "bg-amber-900/40 text-amber-200 border border-amber-500/20 shadow-sm" : "text-zinc-500 hover:text-zinc-300"
+                                                )}
+                                            >
+                                                History (7d)
+                                            </button>
+                                        </div>
+                                    </div>
 
                                     <button
                                         onClick={openCreateIntent}

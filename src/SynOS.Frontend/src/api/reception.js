@@ -201,8 +201,12 @@ export const ReceptionApi = {
      * Fetches the Action Queue (Today's active visits).
      * @returns {Promise<Array>}
      */
-    getActionQueue: async () => {
-        const response = await fetch('/api/v1/branch/action-queue', {
+    getActionQueue: async (includeHistory = false) => {
+        const url = includeHistory
+            ? '/api/v1/branch/action-queue?includeHistory=true'
+            : '/api/v1/branch/action-queue';
+
+        const response = await fetch(url, {
             headers: ReceptionApi.getHeaders()
         });
 

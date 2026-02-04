@@ -54,31 +54,55 @@ export function ActionQueue({ columns, data, onAction }) {
 
             {/* Body */}
             <div className="overflow-auto flex-1 p-2 space-y-1 scrollbar-thin scrollbar-thumb-zinc-800/50 hover:scrollbar-thumb-zinc-700">
-                {data.map((row, rowIdx) => (
-                    <div
-                        key={rowIdx}
-                        ref={el => rowRefs.current[rowIdx] = el}
-                        tabIndex={focusedIndex === rowIdx ? 0 : -1}
-                        onKeyDown={(e) => handleKeyDown(e, rowIdx)}
-                        onClick={() => {
-                            setFocusedIndex(rowIdx);
-                            // Optional: Click on row also triggers primary action? 
-                            // Canon says "Enter" triggers. Mouse click on button triggers naturally.
-                            // Mouse click on ROW usually selects it. Let's strictly follow button click for action.
-                        }}
-                        className={cn(
-                            "bg-zinc-950/30 hover:bg-white/[0.02] rounded-lg p-3 grid grid-cols-[1fr_2fr_1fr_1fr_minmax(100px,auto)] gap-4 items-center transition-colors duration-150 group border border-white/5 shadow-sm cursor-default",
-                            "focus-synos" // CANONICAL FOCUS RING ON ROW
-                        )}
-                    >
-                        {/* Cell Rendering */}
-                        {columns.map((col, colIdx) => (
-                            <div key={colIdx} className={cn("text-sm text-zinc-300", col.className)}>
-                                {col.render ? col.render(row) : row[col.accessor]}
+                {data.map((row, rowIdx) => {
+                    // GROUPING LOGIC
+                    const isHistory = row.dateGroup && row.dateGroup !== "Today";
+                    // HIDE HEADER FOR "Today" (Implicit)
+                    const showHeader = row.dateGroup !== "Today" && (rowIdx === 0 || (row.dateGroup && data[rowIdx - 1].dateGroup !== row.dateGroup));
+
+                    return (
+                        <div key={rowIdx}>
+                            {/* DATE GROUP HEADER */}
+                            {showHeader && (
+                                <div className={cn(
+                                    "px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-zinc-600 mt-4 mb-2 flex items-center gap-3",
+                                    rowIdx === 0 && "mt-0"
+                                )}>
+                                    <div className="h-px bg-zinc-800/50 flex-1"></div>
+                                    <span>{row.dateGroup || "Today"}</span>
+                                    <div className="h-px bg-zinc-800/50 flex-1"></div>
+                                </div>
+                            )}
+
+                            <div
+                                ref={el => rowRefs.current[rowIdx] = el}
+                                tabIndex={focusedIndex === rowIdx ? 0 : -1}
+                                onKeyDown={(e) => handleKeyDown(e, rowIdx)}
+                                onClick={() => {
+                                    setFocusedIndex(rowIdx);
+                                    // Optional: Click on row also triggers primary action? 
+                                    // Canon says "Enter" triggers. Mouse click on button triggers naturally.
+                                    // Mouse click on ROW usually selects it. Let's strictly follow button click for action.
+                                }}
+                                className={cn(
+                                    "rounded-lg p-3 grid grid-cols-[1fr_2fr_1fr_1fr_minmax(100px,auto)] gap-4 items-center transition-all duration-150 group border border-white/5 shadow-sm cursor-default",
+                                    "focus-synos", // CANONICAL FOCUS RING ON ROW
+                                    // HISTORY VISUAL HIERARCHY: Secondary, muted, but interactive on hover
+                                    isHistory
+                                        ? "bg-zinc-900/10 opacity-50 grayscale hover:grayscale-0 hover:opacity-100 hover:bg-zinc-900/40"
+                                        : "bg-zinc-950/30 hover:bg-white/[0.02]"
+                                )}
+                            >
+                                {/* Cell Rendering */}
+                                {columns.map((col, colIdx) => (
+                                    <div key={colIdx} className={cn("text-sm text-zinc-300", col.className)}>
+                                        {col.render ? col.render(row) : row[col.accessor]}
+                                    </div>
+                                ))}
                             </div>
-                        ))}
-                    </div>
-                ))}
+                        </div>
+                    );
+                })}
             </div>
         </div>
     );
