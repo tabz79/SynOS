@@ -370,14 +370,17 @@ namespace SynOS.Services
         private async Task<ReceptionStartVisitResponse> MapToStartVisitResponse(Visit visit)
         {
             // Re-fetch with all includes to be safe for mapping (VisitService might return tracked entity w/o includes if it was attached differently)
-            // But AddTestToVisitAsync includes everything.
+            // Re-fetch with all includes to be safe for mapping
             var invoice = visit.Invoices.FirstOrDefault();
-            var patient = await _context.Patients.FindAsync(visit.PatientId); // simple lookup
+            var patient = await _context.Patients.FindAsync(visit.PatientId);
 
-            // Ensure Draft is loaded
-            if (visit.ReferralDraft == null)
+            // Ensure Draft is loaded (SAFE FETCH)
+            // Fixes Identity Resolution Conflict 500 Error
+            var draft = visit.ReferralDraft;
+            if (draft == null)
             {
-                await _context.Entry(visit).Reference(v => v.ReferralDraft).LoadAsync();
+                 draft = await _context.ReferralDrafts.AsNoTracking()
+                    .FirstOrDefaultAsync(d => d.VisitId == visit.VisitId);
             }
 
             return new ReceptionStartVisitResponse
@@ -387,12 +390,12 @@ namespace SynOS.Services
                 TokenDate = visit.TokenDate,
                 Dept = visit.Department,
                 Status = visit.Status,
-                ReferralDraft = visit.ReferralDraft == null ? null : new ReferralDraftDto
+                ReferralDraft = draft == null ? null : new ReferralDraftDto
                 {
-                    ReferralDraftId = visit.ReferralDraft.ReferralDraftId,
-                    ProviderName = visit.ReferralDraft.ProviderName,
-                    ClinicName = visit.ReferralDraft.ClinicName,
-                    Location = visit.ReferralDraft.Location
+                    ReferralDraftId = draft.ReferralDraftId,
+                    ProviderName = draft.ProviderName,
+                    ClinicName = draft.ClinicName,
+                    Location = draft.Location
                 },
                 PatientSummary = patient == null ? null : new PatientSummaryDto
                 {

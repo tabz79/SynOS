@@ -1,80 +1,293 @@
-backend logs:
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence> dotnet run --project src\SynOS.Api\SynOS.Api.csproj --urls "http://127.0.0.1:59999"
-
-[16:34:13 INF] Notification Worker Service running.
-[16:34:13 INF] Notification Worker Service running.
-[16:34:14 INF] ExpiredLockCleanupService is starting.
-[16:34:14 INF] ExpiredLockCleanupService is starting.
-[16:34:14 INF] Analyzer TCP Listener Service starting...
-[16:34:14 INF] Analyzer TCP Listener Service starting...
-[16:34:14 WRN] No analyzer TCP listeners configured in appsettings.json.
-[16:34:14 WRN] No analyzer TCP listeners configured in appsettings.json.
-[16:34:14 INF] OperationalStatsProjectionWorker is starting. Interval: 5s
-[16:34:14 INF] OperationalStatsProjectionWorker is starting. Interval: 5s
-[16:34:14 INF] Worker: Running Consistency Check...
-[16:34:14 INF] Worker: Running Consistency Check...
-[16:35:08 WRN] Failed to determine the https port for redirect.
-[16:35:08 WRN] Failed to determine the https port for redirect.
-[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=02-02-2026 16:35:08, Today=02-02-2026 00:00:00, Window=[02-02-2026 00:00:00 - 03-02-2026 00:00:00)
-[16:35:08 WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
-[16:35:08 WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+[12:34:22 INF] Notification Worker Service running.
+[12:34:22 INF] Notification Worker Service running.
+[12:34:22 INF] ExpiredLockCleanupService is starting.
+[12:34:22 INF] ExpiredLockCleanupService is starting.
+[12:34:22 INF] Analyzer TCP Listener Service starting...
+[12:34:22 INF] Analyzer TCP Listener Service starting...
+[12:34:22 WRN] No analyzer TCP listeners configured in appsettings.json.
+[12:34:22 WRN] No analyzer TCP listeners configured in appsettings.json.
+[12:34:22 INF] OperationalStatsProjectionWorker is starting. Interval: 5s
+[12:34:22 INF] OperationalStatsProjectionWorker is starting. Interval: 5s
+[12:34:22 INF] Worker: Running Consistency Check...
+[12:34:22 INF] Worker: Running Consistency Check...
+[12:34:37 WRN] Failed to determine the https port for redirect.
+[12:34:37 WRN] Failed to determine the https port for redirect.
+[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=04-02-2026 12:34:41, Today=04-02-2026 00:00:00, Window=[04-02-2026 00:00:00 - 05-02-2026 00:00:00)
+[12:34:41 WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+[12:34:41 WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
 [ActionQueue] Found 0 raw visits.
-[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=02-02-2026 16:35:57, Today=02-02-2026 00:00:00, Window=[02-02-2026 00:00:00 - 03-02-2026 00:00:00)
+[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=04-02-2026 12:34:56, Today=04-02-2026 00:00:00, Window=[04-02-2026 00:00:00 - 05-02-2026 00:00:00)
 [ActionQueue] Found 0 raw visits.
-[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=02-02-2026 16:36:00, Today=02-02-2026 00:00:00, Window=[02-02-2026 00:00:00 - 03-02-2026 00:00:00)
+[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=04-02-2026 12:34:56, Today=04-02-2026 00:00:00, Window=[04-02-2026 00:00:00 - 05-02-2026 00:00:00)
 [ActionQueue] Found 0 raw visits.
-[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=02-02-2026 16:36:00, Today=02-02-2026 00:00:00, Window=[02-02-2026 00:00:00 - 03-02-2026 00:00:00)
-[ActionQueue] Found 0 raw visits.
-[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=02-02-2026 16:36:30, Today=02-02-2026 00:00:00, Window=[02-02-2026 00:00:00 - 03-02-2026 00:00:00)
-[ActionQueue] Found 0 raw visits.
-[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=02-02-2026 16:37:00, Today=02-02-2026 00:00:00, Window=[02-02-2026 00:00:00 - 03-02-2026 00:00:00)
-[ActionQueue] Found 0 raw visits.
-[16:37:14 WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
-[16:37:14 WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
-[16:37:14 WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
-[16:37:14 WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
-[16:37:15 WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
-[16:37:15 WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
-[16:37:16 FTL] EVENT_WRITE for VisitId 23ec7c6f-bbe4-4401-874f-e11e34bcd2c6, Context d667f354-df2b-426b-9140-22297f4e1340:0
-[16:37:16 FTL] EVENT_WRITE for VisitId 23ec7c6f-bbe4-4401-874f-e11e34bcd2c6, Context d667f354-df2b-426b-9140-22297f4e1340:0
-[16:37:16 FTL] EVENT_WRITE for VisitId 23ec7c6f-bbe4-4401-874f-e11e34bcd2c6, Context d667f354-df2b-426b-9140-22297f4e1340:0
-[16:37:16 FTL] EVENT_WRITE for VisitId 23ec7c6f-bbe4-4401-874f-e11e34bcd2c6, Context d667f354-df2b-426b-9140-22297f4e1340:0
-[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=02-02-2026 16:37:30, Today=02-02-2026 00:00:00, Window=[02-02-2026 00:00:00 - 03-02-2026 00:00:00)
-[ActionQueue] Found 1 raw visits.
-[ActionQueue] Processing Visit DRAFT-CCBEB1C6. Invoice Status: PendingPayment.
-[16:37:48 WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
-[16:37:48 WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
-[16:37:48 FTL] EVENT_WRITE for VisitId 23ec7c6f-bbe4-4401-874f-e11e34bcd2c6, Context 2118fb86-67fa-4056-a69e-4bba7105beb7:0
-[16:37:48 FTL] EVENT_WRITE for VisitId 23ec7c6f-bbe4-4401-874f-e11e34bcd2c6, Context 2118fb86-67fa-4056-a69e-4bba7105beb7:0
-[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=02-02-2026 16:38:00, Today=02-02-2026 00:00:00, Window=[02-02-2026 00:00:00 - 03-02-2026 00:00:00)
-[ActionQueue] Found 1 raw visits.
-[ActionQueue] Processing Visit DRAFT-CCBEB1C6. Invoice Status: PendingPayment.
-[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=02-02-2026 16:38:30, Today=02-02-2026 00:00:00, Window=[02-02-2026 00:00:00 - 03-02-2026 00:00:00)
-[ActionQueue] Found 1 raw visits.
-[ActionQueue] Processing Visit DRAFT-CCBEB1C6. Invoice Status: PendingPayment.
-[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=02-02-2026 16:39:00, Today=02-02-2026 00:00:00, Window=[02-02-2026 00:00:00 - 03-02-2026 00:00:00)
-[ActionQueue] Found 1 raw visits.
-[ActionQueue] Processing Visit DRAFT-CCBEB1C6. Invoice Status: PendingPayment.
-[16:39:12 WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
-[16:39:12 WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
-[16:39:12 WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
-[16:39:12 WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
-[16:39:12 FTL] EVENT_WRITE for VisitId 23ec7c6f-bbe4-4401-874f-e11e34bcd2c6, Context 887b6fa8-63ff-421f-96a8-097b29eba485:0
-[16:39:12 FTL] EVENT_WRITE for VisitId 23ec7c6f-bbe4-4401-874f-e11e34bcd2c6, Context 887b6fa8-63ff-421f-96a8-097b29eba485:0
-[16:39:19 FTL] EVENT_WRITE for VisitId 23ec7c6f-bbe4-4401-874f-e11e34bcd2c6, Context 86b6ee8d-d7a4-4537-b4d2-94497095443d:0
-[16:39:19 FTL] EVENT_WRITE for VisitId 23ec7c6f-bbe4-4401-874f-e11e34bcd2c6, Context 86b6ee8d-d7a4-4537-b4d2-94497095443d:0
-[16:39:22 WRN] Projecting Receivable bc1e8e71-a063-45dc-a85d-e9d0b20c960c. Amount: 300.0000. Current Total: 0
-[16:39:22 WRN] Projecting Receivable bc1e8e71-a063-45dc-a85d-e9d0b20c960c. Amount: 300.0000. Current Total: 0
-[16:39:22 WRN] New Total: 300.0000. WalkIns: 1
-[16:39:22 WRN] New Total: 300.0000. WalkIns: 1
-[16:39:22 WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
-[16:39:22 WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
-[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=02-02-2026 16:39:22, Today=02-02-2026 00:00:00, Window=[02-02-2026 00:00:00 - 03-02-2026 00:00:00)
-[ActionQueue] Found 1 raw visits.
-[ActionQueue] Processing Visit DRAFT-CCBEB1C6. Invoice Status: PendingPayment.
-[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=02-02-2026 16:39:30, Today=02-02-2026 00:00:00, Window=[02-02-2026 00:00:00 - 03-02-2026 00:00:00)
-[ActionQueue] Found 1 raw visits.
-[ActionQueue] Processing Visit DRAFT-CCBEB1C6. Invoice Status: PendingPayment.
-[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=02-02-2026 16:40:00, Today=02-02-2026 00:00:00, Window=[02-02-2026 00:00:00 - 03-02-2026 00:00:00)
-[ActionQueue] Found 1 raw visits.
-[ActionQueue] Processing Visit DRAFT-CCBEB1C6. Invoice Status: PendingPayment.
+[12:35:17 WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+[12:35:17 WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+[12:35:17 ERR] Failed executing DbCommand (15ms) [Parameters=[@__request_PatientId_0='?' (DbType = Guid), @__branchId_1='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+SELECT [t].[VisitId], [t].[BranchId], [t].[CreatedAt], [t].[CurrentAssignmentId], [t].[Department], [t].[IsReferred], [t].[PatientId], [t].[PaymentCollectionModel], [t].[ReferralPartnerId], [t].[ReferrerId], [t].[ReferrerText], [t].[RowVersion], [t].[Status], [t].[Token], [t].[TokenDate], [t].[PatientId0], [t].[CreatedAt0], [t].[CurrentPhoneNumber], [t].[DateOfBirth], [t].[DisplayName], [t].[FirstName], [t].[Gender], [t].[IsDateOfBirthKnown], [t].[IsSoftDeleted], [t].[LastName], [t].[MRN], [t].[RowVersion0], [t].[UpdatedAt], [t].[ReferralDraftId], [o].[OrderId], [o].[CancellationReason], [o].[CancelledAt], [o].[CancelledByUserId], [o].[CreatedAt], [o].[Department], [o].[Discount], [o].[Price], [o].[Status], [o].[TestCode], [o].[TestId], [o].[VisitId], [t0].[InvoiceId], [t0].[CreatedAt], [t0].[Currency], [t0].[DiscountAmount], [t0].[DueDate], [t0].[GrossAmount], [t0].[NetAmount], [t0].[Status], [t0].[TaxAmount], [t0].[Total], [t0].[VisitId], [t0].[PaymentId], [t0].[Amount], [t0].[InvoiceId0], [t0].[Method], [t0].[ReceiptNo], [t0].[ReceivedAt], [t0].[ReceivedByUserId], [t].[ClinicName], [t].[CreatedAt1], [t].[CreatedByUserId], [t].[IsResolved], [t].[Location], [t].[ProviderName], [t].[ResolvedAt], [t].[ResolvedByUserId], [t].[ResolvedToPartnerId], [t].[VisitId0]
+FROM (
+    SELECT TOP(1) [v].[VisitId], [v].[BranchId], [v].[CreatedAt], [v].[CurrentAssignmentId], [v].[Department], [v].[IsReferred], [v].[PatientId], [v].[PaymentCollectionModel], [v].[ReferralPartnerId], [v].[ReferrerId], [v].[ReferrerText], [v].[RowVersion], [v].[Status], [v].[Token], [v].[TokenDate], [p].[PatientId] AS [PatientId0], [p].[CreatedAt] AS [CreatedAt0], [p].[CurrentPhoneNumber], [p].[DateOfBirth], [p].[DisplayName], [p].[FirstName], [p].[Gender], [p].[IsDateOfBirthKnown], [p].[IsSoftDeleted], [p].[LastName], [p].[MRN], [p].[RowVersion] AS [RowVersion0], [p].[UpdatedAt], [r].[ReferralDraftId], [r].[ClinicName], [r].[CreatedAt] AS [CreatedAt1], [r].[CreatedByUserId], [r].[IsResolved], [r].[Location], [r].[ProviderName], [r].[ResolvedAt], [r].[ResolvedByUserId], [r].[ResolvedToPartnerId], [r].[VisitId] AS [VisitId0]
+    FROM [Visits] AS [v]
+    INNER JOIN [Patients] AS [p] ON [v].[PatientId] = [p].[PatientId]
+    LEFT JOIN [ReferralDrafts] AS [r] ON [v].[VisitId] = [r].[VisitId]
+    WHERE [v].[PatientId] = @__request_PatientId_0 AND [v].[BranchId] = @__branchId_1 AND [v].[Status] = N'Draft'
+) AS [t]
+LEFT JOIN [Orders] AS [o] ON [t].[VisitId] = [o].[VisitId]
+LEFT JOIN (
+    SELECT [i].[InvoiceId], [i].[CreatedAt], [i].[Currency], [i].[DiscountAmount], [i].[DueDate], [i].[GrossAmount], [i].[NetAmount], [i].[Status], [i].[TaxAmount], [i].[Total], [i].[VisitId], [p0].[PaymentId], [p0].[Amount], [p0].[InvoiceId] AS [InvoiceId0], [p0].[Method], [p0].[ReceiptNo], [p0].[ReceivedAt], [p0].[ReceivedByUserId]
+    FROM [Invoices] AS [i]
+    LEFT JOIN [Payments] AS [p0] ON [i].[InvoiceId] = [p0].[InvoiceId]
+) AS [t0] ON [t].[VisitId] = [t0].[VisitId]
+ORDER BY [t].[VisitId], [t].[PatientId0], [t].[ReferralDraftId], [o].[OrderId], [t0].[InvoiceId]
+[12:35:17 ERR] Failed executing DbCommand (15ms) [Parameters=[@__request_PatientId_0='?' (DbType = Guid), @__branchId_1='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+SELECT [t].[VisitId], [t].[BranchId], [t].[CreatedAt], [t].[CurrentAssignmentId], [t].[Department], [t].[IsReferred], [t].[PatientId], [t].[PaymentCollectionModel], [t].[ReferralPartnerId], [t].[ReferrerId], [t].[ReferrerText], [t].[RowVersion], [t].[Status], [t].[Token], [t].[TokenDate], [t].[PatientId0], [t].[CreatedAt0], [t].[CurrentPhoneNumber], [t].[DateOfBirth], [t].[DisplayName], [t].[FirstName], [t].[Gender], [t].[IsDateOfBirthKnown], [t].[IsSoftDeleted], [t].[LastName], [t].[MRN], [t].[RowVersion0], [t].[UpdatedAt], [t].[ReferralDraftId], [o].[OrderId], [o].[CancellationReason], [o].[CancelledAt], [o].[CancelledByUserId], [o].[CreatedAt], [o].[Department], [o].[Discount], [o].[Price], [o].[Status], [o].[TestCode], [o].[TestId], [o].[VisitId], [t0].[InvoiceId], [t0].[CreatedAt], [t0].[Currency], [t0].[DiscountAmount], [t0].[DueDate], [t0].[GrossAmount], [t0].[NetAmount], [t0].[Status], [t0].[TaxAmount], [t0].[Total], [t0].[VisitId], [t0].[PaymentId], [t0].[Amount], [t0].[InvoiceId0], [t0].[Method], [t0].[ReceiptNo], [t0].[ReceivedAt], [t0].[ReceivedByUserId], [t].[ClinicName], [t].[CreatedAt1], [t].[CreatedByUserId], [t].[IsResolved], [t].[Location], [t].[ProviderName], [t].[ResolvedAt], [t].[ResolvedByUserId], [t].[ResolvedToPartnerId], [t].[VisitId0]
+FROM (
+    SELECT TOP(1) [v].[VisitId], [v].[BranchId], [v].[CreatedAt], [v].[CurrentAssignmentId], [v].[Department], [v].[IsReferred], [v].[PatientId], [v].[PaymentCollectionModel], [v].[ReferralPartnerId], [v].[ReferrerId], [v].[ReferrerText], [v].[RowVersion], [v].[Status], [v].[Token], [v].[TokenDate], [p].[PatientId] AS [PatientId0], [p].[CreatedAt] AS [CreatedAt0], [p].[CurrentPhoneNumber], [p].[DateOfBirth], [p].[DisplayName], [p].[FirstName], [p].[Gender], [p].[IsDateOfBirthKnown], [p].[IsSoftDeleted], [p].[LastName], [p].[MRN], [p].[RowVersion] AS [RowVersion0], [p].[UpdatedAt], [r].[ReferralDraftId], [r].[ClinicName], [r].[CreatedAt] AS [CreatedAt1], [r].[CreatedByUserId], [r].[IsResolved], [r].[Location], [r].[ProviderName], [r].[ResolvedAt], [r].[ResolvedByUserId], [r].[ResolvedToPartnerId], [r].[VisitId] AS [VisitId0]
+    FROM [Visits] AS [v]
+    INNER JOIN [Patients] AS [p] ON [v].[PatientId] = [p].[PatientId]
+    LEFT JOIN [ReferralDrafts] AS [r] ON [v].[VisitId] = [r].[VisitId]
+    WHERE [v].[PatientId] = @__request_PatientId_0 AND [v].[BranchId] = @__branchId_1 AND [v].[Status] = N'Draft'
+) AS [t]
+LEFT JOIN [Orders] AS [o] ON [t].[VisitId] = [o].[VisitId]
+LEFT JOIN (
+    SELECT [i].[InvoiceId], [i].[CreatedAt], [i].[Currency], [i].[DiscountAmount], [i].[DueDate], [i].[GrossAmount], [i].[NetAmount], [i].[Status], [i].[TaxAmount], [i].[Total], [i].[VisitId], [p0].[PaymentId], [p0].[Amount], [p0].[InvoiceId] AS [InvoiceId0], [p0].[Method], [p0].[ReceiptNo], [p0].[ReceivedAt], [p0].[ReceivedByUserId]
+    FROM [Invoices] AS [i]
+    LEFT JOIN [Payments] AS [p0] ON [i].[InvoiceId] = [p0].[InvoiceId]
+) AS [t0] ON [t].[VisitId] = [t0].[VisitId]
+ORDER BY [t].[VisitId], [t].[PatientId0], [t].[ReferralDraftId], [o].[OrderId], [t0].[InvoiceId]
+[12:35:17 WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+[12:35:17 WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+[12:35:17 ERR] An exception occurred while iterating over the results of a query for context type 'SynOS.Data.SynOSDbContext'.
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'CreatedByUserId'.
+Invalid column name 'ResolvedAt'.
+Invalid column name 'ResolvedByUserId'.
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:a24d8a6a-fbd7-4cae-b8b0-0064d249e757
+Error Number:207,State:1,Class:16
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'CreatedByUserId'.
+Invalid column name 'ResolvedAt'.
+Invalid column name 'ResolvedByUserId'.
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:a24d8a6a-fbd7-4cae-b8b0-0064d249e757
+Error Number:207,State:1,Class:16
+[12:35:17 ERR] An exception occurred while iterating over the results of a query for context type 'SynOS.Data.SynOSDbContext'.
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'CreatedByUserId'.
+Invalid column name 'ResolvedAt'.
+Invalid column name 'ResolvedByUserId'.
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:a24d8a6a-fbd7-4cae-b8b0-0064d249e757
+Error Number:207,State:1,Class:16
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'CreatedByUserId'.
+Invalid column name 'ResolvedAt'.
+Invalid column name 'ResolvedByUserId'.
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:a24d8a6a-fbd7-4cae-b8b0-0064d249e757
+Error Number:207,State:1,Class:16
+[12:35:17 ERR] Failed executing DbCommand (14ms) [Parameters=[@__visitId_0='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+SELECT [t].[VisitId], [t].[BranchId], [t].[CreatedAt], [t].[CurrentAssignmentId], [t].[Department], [t].[IsReferred], [t].[PatientId], [t].[PaymentCollectionModel], [t].[ReferralPartnerId], [t].[ReferrerId], [t].[ReferrerText], [t].[RowVersion], [t].[Status], [t].[Token], [t].[TokenDate], [t].[PatientId0], [t].[CreatedAt0], [t].[CurrentPhoneNumber], [t].[DateOfBirth], [t].[DisplayName], [t].[FirstName], [t].[Gender], [t].[IsDateOfBirthKnown], [t].[IsSoftDeleted], [t].[LastName], [t].[MRN], [t].[RowVersion0], [t].[UpdatedAt], [t].[ReferralDraftId], [t0].[OrderId], [t0].[CancellationReason], [t0].[CancelledAt], [t0].[CancelledByUserId], [t0].[CreatedAt], [t0].[Department], [t0].[Discount], [t0].[Price], [t0].[Status], [t0].[TestCode], [t0].[TestId], [t0].[VisitId], [t0].[TestId0], [t0].[BasePrice], [t0].[Category], [t0].[CreatedAt0], [t0].[DefaultTubeType], [t0].[Department0], [t0].[IsActive], [t0].[TAT_Hours], [t0].[TestCode0], [t0].[TestName], [t0].[UpdatedAt], [t2].[InvoiceId], [t2].[CreatedAt], [t2].[Currency], [t2].[DiscountAmount], [t2].[DueDate], [t2].[GrossAmount], [t2].[NetAmount], [t2].[Status], [t2].[TaxAmount], [t2].[Total], [t2].[VisitId], [t2].[PaymentId], [t2].[Amount], [t2].[InvoiceId0], [t2].[Method], [t2].[ReceiptNo], [t2].[ReceivedAt], [t2].[ReceivedByUserId], [t].[ClinicName], [t].[CreatedAt1], [t].[CreatedByUserId], [t].[IsResolved], [t].[Location], [t].[ProviderName], [t].[ResolvedAt], [t].[ResolvedByUserId], [t].[ResolvedToPartnerId], [t].[VisitId0]
+FROM (
+    SELECT TOP(1) [v].[VisitId], [v].[BranchId], [v].[CreatedAt], [v].[CurrentAssignmentId], [v].[Department], [v].[IsReferred], [v].[PatientId], [v].[PaymentCollectionModel], [v].[ReferralPartnerId], [v].[ReferrerId], [v].[ReferrerText], [v].[RowVersion], [v].[Status], [v].[Token], [v].[TokenDate], [p].[PatientId] AS [PatientId0], [p].[CreatedAt] AS [CreatedAt0], [p].[CurrentPhoneNumber], [p].[DateOfBirth], [p].[DisplayName], [p].[FirstName], [p].[Gender], [p].[IsDateOfBirthKnown], [p].[IsSoftDeleted], [p].[LastName], [p].[MRN], [p].[RowVersion] AS [RowVersion0], [p].[UpdatedAt], [r].[ReferralDraftId], [r].[ClinicName], [r].[CreatedAt] AS [CreatedAt1], [r].[CreatedByUserId], [r].[IsResolved], [r].[Location], [r].[ProviderName], [r].[ResolvedAt], [r].[ResolvedByUserId], [r].[ResolvedToPartnerId], [r].[VisitId] AS [VisitId0]
+    FROM [Visits] AS [v]
+    INNER JOIN [Patients] AS [p] ON [v].[PatientId] = [p].[PatientId]
+    LEFT JOIN [ReferralDrafts] AS [r] ON [v].[VisitId] = [r].[VisitId]
+    WHERE [v].[VisitId] = @__visitId_0
+) AS [t]
+LEFT JOIN (
+    SELECT [o].[OrderId], [o].[CancellationReason], [o].[CancelledAt], [o].[CancelledByUserId], [o].[CreatedAt], [o].[Department], [o].[Discount], [o].[Price], [o].[Status], [o].[TestCode], [o].[TestId], [o].[VisitId], [t1].[TestId] AS [TestId0], [t1].[BasePrice], [t1].[Category], [t1].[CreatedAt] AS [CreatedAt0], [t1].[DefaultTubeType], [t1].[Department] AS [Department0], [t1].[IsActive], [t1].[TAT_Hours], [t1].[TestCode] AS [TestCode0], [t1].[TestName], [t1].[UpdatedAt]
+    FROM [Orders] AS [o]
+    INNER JOIN [Tests] AS [t1] ON [o].[TestId] = [t1].[TestId]
+) AS [t0] ON [t].[VisitId] = [t0].[VisitId]
+LEFT JOIN (
+    SELECT [i].[InvoiceId], [i].[CreatedAt], [i].[Currency], [i].[DiscountAmount], [i].[DueDate], [i].[GrossAmount], [i].[NetAmount], [i].[Status], [i].[TaxAmount], [i].[Total], [i].[VisitId], [p0].[PaymentId], [p0].[Amount], [p0].[InvoiceId] AS [InvoiceId0], [p0].[Method], [p0].[ReceiptNo], [p0].[ReceivedAt], [p0].[ReceivedByUserId]
+    FROM [Invoices] AS [i]
+    LEFT JOIN [Payments] AS [p0] ON [i].[InvoiceId] = [p0].[InvoiceId]
+) AS [t2] ON [t].[VisitId] = [t2].[VisitId]
+ORDER BY [t].[VisitId], [t].[PatientId0], [t].[ReferralDraftId], [t0].[OrderId], [t0].[TestId0], [t2].[InvoiceId]
+[12:35:17 ERR] Failed executing DbCommand (14ms) [Parameters=[@__visitId_0='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+SELECT [t].[VisitId], [t].[BranchId], [t].[CreatedAt], [t].[CurrentAssignmentId], [t].[Department], [t].[IsReferred], [t].[PatientId], [t].[PaymentCollectionModel], [t].[ReferralPartnerId], [t].[ReferrerId], [t].[ReferrerText], [t].[RowVersion], [t].[Status], [t].[Token], [t].[TokenDate], [t].[PatientId0], [t].[CreatedAt0], [t].[CurrentPhoneNumber], [t].[DateOfBirth], [t].[DisplayName], [t].[FirstName], [t].[Gender], [t].[IsDateOfBirthKnown], [t].[IsSoftDeleted], [t].[LastName], [t].[MRN], [t].[RowVersion0], [t].[UpdatedAt], [t].[ReferralDraftId], [t0].[OrderId], [t0].[CancellationReason], [t0].[CancelledAt], [t0].[CancelledByUserId], [t0].[CreatedAt], [t0].[Department], [t0].[Discount], [t0].[Price], [t0].[Status], [t0].[TestCode], [t0].[TestId], [t0].[VisitId], [t0].[TestId0], [t0].[BasePrice], [t0].[Category], [t0].[CreatedAt0], [t0].[DefaultTubeType], [t0].[Department0], [t0].[IsActive], [t0].[TAT_Hours], [t0].[TestCode0], [t0].[TestName], [t0].[UpdatedAt], [t2].[InvoiceId], [t2].[CreatedAt], [t2].[Currency], [t2].[DiscountAmount], [t2].[DueDate], [t2].[GrossAmount], [t2].[NetAmount], [t2].[Status], [t2].[TaxAmount], [t2].[Total], [t2].[VisitId], [t2].[PaymentId], [t2].[Amount], [t2].[InvoiceId0], [t2].[Method], [t2].[ReceiptNo], [t2].[ReceivedAt], [t2].[ReceivedByUserId], [t].[ClinicName], [t].[CreatedAt1], [t].[CreatedByUserId], [t].[IsResolved], [t].[Location], [t].[ProviderName], [t].[ResolvedAt], [t].[ResolvedByUserId], [t].[ResolvedToPartnerId], [t].[VisitId0]
+FROM (
+    SELECT TOP(1) [v].[VisitId], [v].[BranchId], [v].[CreatedAt], [v].[CurrentAssignmentId], [v].[Department], [v].[IsReferred], [v].[PatientId], [v].[PaymentCollectionModel], [v].[ReferralPartnerId], [v].[ReferrerId], [v].[ReferrerText], [v].[RowVersion], [v].[Status], [v].[Token], [v].[TokenDate], [p].[PatientId] AS [PatientId0], [p].[CreatedAt] AS [CreatedAt0], [p].[CurrentPhoneNumber], [p].[DateOfBirth], [p].[DisplayName], [p].[FirstName], [p].[Gender], [p].[IsDateOfBirthKnown], [p].[IsSoftDeleted], [p].[LastName], [p].[MRN], [p].[RowVersion] AS [RowVersion0], [p].[UpdatedAt], [r].[ReferralDraftId], [r].[ClinicName], [r].[CreatedAt] AS [CreatedAt1], [r].[CreatedByUserId], [r].[IsResolved], [r].[Location], [r].[ProviderName], [r].[ResolvedAt], [r].[ResolvedByUserId], [r].[ResolvedToPartnerId], [r].[VisitId] AS [VisitId0]
+    FROM [Visits] AS [v]
+    INNER JOIN [Patients] AS [p] ON [v].[PatientId] = [p].[PatientId]
+    LEFT JOIN [ReferralDrafts] AS [r] ON [v].[VisitId] = [r].[VisitId]
+    WHERE [v].[VisitId] = @__visitId_0
+) AS [t]
+LEFT JOIN (
+    SELECT [o].[OrderId], [o].[CancellationReason], [o].[CancelledAt], [o].[CancelledByUserId], [o].[CreatedAt], [o].[Department], [o].[Discount], [o].[Price], [o].[Status], [o].[TestCode], [o].[TestId], [o].[VisitId], [t1].[TestId] AS [TestId0], [t1].[BasePrice], [t1].[Category], [t1].[CreatedAt] AS [CreatedAt0], [t1].[DefaultTubeType], [t1].[Department] AS [Department0], [t1].[IsActive], [t1].[TAT_Hours], [t1].[TestCode] AS [TestCode0], [t1].[TestName], [t1].[UpdatedAt]
+    FROM [Orders] AS [o]
+    INNER JOIN [Tests] AS [t1] ON [o].[TestId] = [t1].[TestId]
+) AS [t0] ON [t].[VisitId] = [t0].[VisitId]
+LEFT JOIN (
+    SELECT [i].[InvoiceId], [i].[CreatedAt], [i].[Currency], [i].[DiscountAmount], [i].[DueDate], [i].[GrossAmount], [i].[NetAmount], [i].[Status], [i].[TaxAmount], [i].[Total], [i].[VisitId], [p0].[PaymentId], [p0].[Amount], [p0].[InvoiceId] AS [InvoiceId0], [p0].[Method], [p0].[ReceiptNo], [p0].[ReceivedAt], [p0].[ReceivedByUserId]
+    FROM [Invoices] AS [i]
+    LEFT JOIN [Payments] AS [p0] ON [i].[InvoiceId] = [p0].[InvoiceId]
+) AS [t2] ON [t].[VisitId] = [t2].[VisitId]
+ORDER BY [t].[VisitId], [t].[PatientId0], [t].[ReferralDraftId], [t0].[OrderId], [t0].[TestId0], [t2].[InvoiceId]
+[12:35:17 ERR] Error starting visit for patient 18aea5b8-6056-4ef9-a204-871e06dc4f6f
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'CreatedByUserId'.
+Invalid column name 'ResolvedAt'.
+Invalid column name 'ResolvedByUserId'.
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+   at Microsoft.EntityFrameworkCore.Query.ShapedQueryCompilingExpressionVisitor.SingleOrDefaultAsync[TSource](IAsyncEnumerable`1 asyncEnumerable, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.ShapedQueryCompilingExpressionVisitor.SingleOrDefaultAsync[TSource](IAsyncEnumerable`1 asyncEnumerable, CancellationToken cancellationToken)
+   at SynOS.Services.ReceptionFlowService.StartVisitAsync(ReceptionStartVisitRequest request, Guid actorUserId) in D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReceptionFlowService.cs:line 128
+   at SynOS.Api.Controllers.ReceptionController.StartVisit(ReceptionStartVisitRequest request) in D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\ReceptionController.cs:line 43
+ClientConnectionId:a24d8a6a-fbd7-4cae-b8b0-0064d249e757
+Error Number:207,State:1,Class:16
+[12:35:17 ERR] An exception occurred while iterating over the results of a query for context type 'SynOS.Data.SynOSDbContext'.
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'CreatedByUserId'.
+Invalid column name 'ResolvedAt'.
+Invalid column name 'ResolvedByUserId'.
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:a24d8a6a-fbd7-4cae-b8b0-0064d249e757
+Error Number:207,State:1,Class:16
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'CreatedByUserId'.
+Invalid column name 'ResolvedAt'.
+Invalid column name 'ResolvedByUserId'.
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:a24d8a6a-fbd7-4cae-b8b0-0064d249e757
+Error Number:207,State:1,Class:16
+[12:35:17 ERR] An exception occurred while iterating over the results of a query for context type 'SynOS.Data.SynOSDbContext'.
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'CreatedByUserId'.
+Invalid column name 'ResolvedAt'.
+Invalid column name 'ResolvedByUserId'.
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:a24d8a6a-fbd7-4cae-b8b0-0064d249e757
+Error Number:207,State:1,Class:16
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'CreatedByUserId'.
+Invalid column name 'ResolvedAt'.
+Invalid column name 'ResolvedByUserId'.
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:a24d8a6a-fbd7-4cae-b8b0-0064d249e757
+Error Number:207,State:1,Class:16
+[12:35:17 ERR] Error starting visit for patient 18aea5b8-6056-4ef9-a204-871e06dc4f6f
+[Snapshot Error] Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'CreatedByUserId'.
+Invalid column name 'ResolvedAt'.
+Invalid column name 'ResolvedByUserId'.
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+   at Microsoft.EntityFrameworkCore.Query.ShapedQueryCompilingExpressionVisitor.SingleOrDefaultAsync[TSource](IAsyncEnumerable`1 asyncEnumerable, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.ShapedQueryCompilingExpressionVisitor.SingleOrDefaultAsync[TSource](IAsyncEnumerable`1 asyncEnumerable, CancellationToken cancellationToken)
+   at SynOS.Services.Reception.ReceptionSnapshotService.LoadVisitContextAsync(ReceptionIntakeSnapshotDto snapshot, Guid visitId, Nullable`1 requestedPatientId) in D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\Reception\ReceptionSnapshotService.cs:line 80
+   at SynOS.Services.Reception.ReceptionSnapshotService.GetSnapshotAsync(ReceptionSnapshotQuery query) in D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\Reception\ReceptionSnapshotService.cs:line 52
+ClientConnectionId:a24d8a6a-fbd7-4cae-b8b0-0064d249e757
+Error Number:207,State:1,Class:16
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'CreatedByUserId'.
+Invalid column name 'ResolvedAt'.
+Invalid column name 'ResolvedByUserId'.
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+   at Microsoft.EntityFrameworkCore.Query.ShapedQueryCompilingExpressionVisitor.SingleOrDefaultAsync[TSource](IAsyncEnumerable`1 asyncEnumerable, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.ShapedQueryCompilingExpressionVisitor.SingleOrDefaultAsync[TSource](IAsyncEnumerable`1 asyncEnumerable, CancellationToken cancellationToken)
+   at SynOS.Services.ReceptionFlowService.StartVisitAsync(ReceptionStartVisitRequest request, Guid actorUserId) in D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReceptionFlowService.cs:line 128
+   at SynOS.Api.Controllers.ReceptionController.StartVisit(ReceptionStartVisitRequest request) in D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\ReceptionController.cs:line 43
+ClientConnectionId:a24d8a6a-fbd7-4cae-b8b0-0064d249e757
+Error Number:207,State:1,Class:16
+[ActionQueue
