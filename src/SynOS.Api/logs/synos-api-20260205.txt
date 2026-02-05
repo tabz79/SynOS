@@ -1,0 +1,26 @@
+2026-02-05 13:04:15.026 +05:30 [ERR] Error occurred while executing OperationalStatsProjectionWorker.
+System.InvalidOperationException: An exception has been raised that is likely due to a transient failure. Consider enabling transient error resiliency by adding 'EnableRetryOnFailure' to the 'UseSqlServer' call.
+ ---> Microsoft.Data.SqlClient.SqlException (0x80131904): The request failed to run because the batch is aborted, this can be caused by abort signal sent from client, or another request is running in the same session, which makes the session busy.
+Operation cancelled by user.
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+ClientConnectionId:da3e7230-9fd3-4770-85ca-e978761088f4
+Error Number:3980,State:1,Class:16
+   --- End of inner exception stack trace ---
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+   at Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToListAsync[TSource](IQueryable`1 source, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToListAsync[TSource](IQueryable`1 source, CancellationToken cancellationToken)
+   at SynOS.Services.Operational.OperationalStatsProjector.ProjectPendingEventsAsync(CancellationToken cancellationToken) in D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\Operational\OperationalStatsProjector.cs:line 84
+   at SynOS.Api.BackgroundServices.OperationalStatsProjectionWorker.ExecuteAsync(CancellationToken stoppingToken) in D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\BackgroundServices\OperationalStatsProjectionWorker.cs:line 47
+2026-02-05 13:04:16.452 +05:30 [INF] Analyzer TCP Listener Service stopping...
+2026-02-05 13:04:16.980 +05:30 [INF] Analyzer TCP Listener Service stopped.
+2026-02-05 13:04:17.067 +05:30 [INF] Notification Worker Service stopping gracefully.

@@ -63,20 +63,28 @@ export function SystemBar({ serverTime, syncStatus = "Not Synced" }) {
 
   const isConnected = syncStatus === "Synced";
 
+  /**
+   * ANTI-GRAVITY PERFORMANCE ARCHITECTURE:
+   * 1. Removal of 'backdrop-filter: blur' as it triggers a GPU convolution death-loop when combined with background animations.
+   * 2. Replacement with 'Fake Frost' model: Layered static gradients + High-density alpha (0.95+) mimics the frosted look.
+   * 3. Micro-Grain Texture: Injected SVG noise simulates the organic surface refraction seen in frosted glass.
+   * 4. Stacking Isolation: 'isolation: isolate' and 'will-change' ensures the browser promotes this bar to its own hardware-accelerated compositor layer.
+   */
   return (
     <div
-      className="
-        sticky top-0 z-50 h-14 w-full px-6
-        flex items-center justify-between select-none
-        backdrop-blur-xl backdrop-saturate-[2.0] transition-all duration-300
-        shadow-[0_4px_12px_rgba(0,0,0,0.06),inset_0_1px_0_rgba(255,255,255,0.3)]
-        border-b border-black/[0.15]
-        dark:bg-zinc-900/80 dark:shadow-none dark:border-white/10
-      "
+      className={cn(
+        "sticky top-0 z-50 h-14 w-full px-6 flex items-center justify-between select-none transition-all duration-300",
+        "shadow-[0_4px_12px_rgba(0,0,0,0.05),inset_0_1px_0_rgba(255,255,255,0.3)]",
+        "border-b border-black/[0.15] isolation-auto",
+        "dark:bg-zinc-900/80 dark:shadow-none dark:border-white/10 dark:backdrop-blur-xl dark:backdrop-saturate-[2.0]"
+      )}
       style={{
+        willChange: 'transform',
+        isolation: 'isolate',
         background: theme === 'dark'
           ? undefined
-          : 'linear-gradient(to bottom, rgba(245, 252, 255, 0.85) 0%, rgba(230, 242, 245, 0.90) 50%, rgba(215, 225, 228, 0.94) 100%)'
+          : `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.6' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.015'/%3E%3C/svg%3E"), 
+             linear-gradient(to bottom, rgba(245, 252, 255, 0.96) 0%, rgba(230, 242, 245, 0.98) 50%, rgba(215, 225, 228, 0.98) 100%)`
       }}
     >
 
@@ -97,16 +105,15 @@ export function SystemBar({ serverTime, syncStatus = "Not Synced" }) {
       {/* RIGHT — Controls */}
       <div className="flex items-center gap-3">
 
-        {/* Branch */}
+        {/* Branch (Fake Frost Pill) */}
         <div className="relative">
           <button
             onClick={() => setActiveDropdown(activeDropdown === 'facility' ? null : 'facility')}
             className="
               flex items-center gap-2 px-3 py-1.5 rounded-xl
-              bg-white/40 backdrop-blur-sm backdrop-saturate-[1.6]
-              shadow-[inset_0_1px_0_rgba(255,255,255,0.7),inset_0_-1px_1px_rgba(0,0,0,0.05)]
+              bg-white/95 shadow-[inset_0_1px_0_rgba(255,255,255,0.8),inset_0_-1px_1px_rgba(0,0,0,0.05)]
               text-zinc-800 text-xs font-medium
-              hover:bg-white/50 transition
+              hover:bg-white transition-all
             "
           >
             <Globe className="w-3.5 h-3.5 opacity-70" />
@@ -119,7 +126,7 @@ export function SystemBar({ serverTime, syncStatus = "Not Synced" }) {
               ref={facilityRef}
               className="
                 absolute right-0 mt-2 w-64 z-50
-                bg-white/70 backdrop-blur-xl rounded-2xl p-1
+                bg-white/95 backdrop-blur-xl rounded-2xl p-1
                 border border-black/5
                 shadow-xl
               "
@@ -137,16 +144,15 @@ export function SystemBar({ serverTime, syncStatus = "Not Synced" }) {
           )}
         </div>
 
-        {/* User */}
+        {/* User (Fake Frost Pill) */}
         <div className="relative">
           <button
             onClick={() => setActiveDropdown(activeDropdown === 'role' ? null : 'role')}
             className="
               flex items-center gap-2 px-3 py-1.5 rounded-xl
-              bg-white/40 backdrop-blur-sm backdrop-saturate-[1.6]
-              shadow-[inset_0_1px_0_rgba(255,255,255,0.7),inset_0_-1px_1px_rgba(0,0,0,0.05)]
+              bg-white/95 shadow-[inset_0_1px_0_rgba(255,255,255,0.8),inset_0_-1px_1px_rgba(0,0,0,0.05)]
               text-zinc-800 text-xs font-medium
-              hover:bg-white/50 transition
+              hover:bg-white transition-all
             "
           >
             <Shield className="w-3.5 h-3.5 opacity-70" />
@@ -159,7 +165,7 @@ export function SystemBar({ serverTime, syncStatus = "Not Synced" }) {
               ref={roleRef}
               className="
                 absolute right-0 mt-2 w-48 z-50
-                bg-white/70 backdrop-blur-xl rounded-2xl p-1
+                bg-white/95 backdrop-blur-xl rounded-2xl p-1
                 border border-black/5 shadow-xl
               "
             >
@@ -181,11 +187,10 @@ export function SystemBar({ serverTime, syncStatus = "Not Synced" }) {
           )}
         </div>
 
-        {/* Time + Status */}
+        {/* Time + Status (Fake Frost Pill) */}
         <div className="
           flex items-center gap-4 px-4 py-1.5 rounded-xl
-          bg-white/40 backdrop-blur-sm backdrop-saturate-[1.6]
-          shadow-[inset_0_1px_0_rgba(255,255,255,0.7),inset_0_-1px_1px_rgba(0,0,0,0.05)]
+          bg-white/90 shadow-[inset_0_1px_0_rgba(255,255,255,0.8),inset_0_-1px_1px_rgba(0,0,0,0.05)]
         ">
           <span className="font-mono text-xs text-zinc-700">
             {dateDisplay} <span className="text-zinc-900">{timeDisplay}</span>
