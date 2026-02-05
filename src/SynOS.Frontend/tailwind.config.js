@@ -33,14 +33,14 @@ module.exports = {
                 foreground: "hsl(var(--foreground))",
                 synos: {
                     // Foundation - Zinc/Neutral based (No Blue Tint)
-                    background: "#18181b", // Zinc 950 - Deep OS background
-                    surface: "#27272a",    // Zinc 800 - Panel background
-                    border: "#3f3f46",     // Zinc 700 - Subtle borders
-                    muted: "#a1a1aa",      // Zinc 400 - Muted text
+                    background: "var(--synos-background)", // Dynamic Theme
+                    surface: "var(--synos-surface)",       // Dynamic Theme
+                    border: "var(--synos-border)",         // Dynamic Theme
+                    muted: "var(--synos-muted)",           // Dynamic Theme
 
                     // Card specific (Reference uses White cards on Dark BG)
-                    card: "#ffffff",
-                    cardText: "#18181b",
+                    card: "var(--synos-card)",
+                    cardText: "var(--synos-card-text)",
 
                     // Functional
                     primary: "#2563eb",    // Blue 600 - Primary actions (Buttons only)

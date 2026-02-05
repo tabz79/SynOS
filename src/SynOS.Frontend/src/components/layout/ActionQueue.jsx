@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 export function ActionQueueHeader({ title, count }) {
     return (
         <div className="flex items-center gap-3 mb-3 px-1">
-            <h2 className="text-lg font-medium text-zinc-200">{title}</h2>
+            <h2 className="text-lg font-medium dark:text-zinc-200 text-zinc-800">{title}</h2>
         </div>
     );
 }
@@ -42,11 +42,11 @@ export function ActionQueue({ columns, data, onAction }) {
     };
 
     return (
-        <div className="bg-zinc-900/80 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden flex-1 flex flex-col min-h-0 shadow-xl">
+        <div className="dark:bg-zinc-900/80 glass-elevated-light dark:backdrop-filter-none dark:shadow-xl dark:border-white/10 rounded-2xl overflow-hidden flex-1 flex flex-col min-h-0">
             {/* Header Row - Light Grey/Glassy */}
-            <div className="bg-white/5 border-b border-white/5 px-4 py-3 grid grid-cols-[1fr_2fr_1fr_1fr_minmax(100px,auto)] gap-4">
+            <div className="dark:bg-white/5 glass-surface-light dark:backdrop-filter-none dark:border-white/5 px-4 py-3 grid grid-cols-[1fr_2fr_1fr_1fr_minmax(100px,auto)] gap-4">
                 {columns.map((col, idx) => (
-                    <div key={idx} className={cn("text-xs font-semibold text-zinc-400 uppercase tracking-wider", col.className)}>
+                    <div key={idx} className={cn("text-xs font-semibold dark:text-zinc-400 text-zinc-500 uppercase tracking-wider", col.className)}>
                         {col.header}
                     </div>
                 ))}
@@ -68,9 +68,9 @@ export function ActionQueue({ columns, data, onAction }) {
                                     "px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-zinc-600 mt-4 mb-2 flex items-center gap-3",
                                     rowIdx === 0 && "mt-0"
                                 )}>
-                                    <div className="h-px bg-zinc-800/50 flex-1"></div>
+                                    <div className="h-px dark:bg-zinc-800/50 bg-zinc-300/50 flex-1"></div>
                                     <span>{row.dateGroup || "Today"}</span>
-                                    <div className="h-px bg-zinc-800/50 flex-1"></div>
+                                    <div className="h-px dark:bg-zinc-800/50 bg-zinc-300/50 flex-1"></div>
                                 </div>
                             )}
 
@@ -85,17 +85,17 @@ export function ActionQueue({ columns, data, onAction }) {
                                     // Mouse click on ROW usually selects it. Let's strictly follow button click for action.
                                 }}
                                 className={cn(
-                                    "rounded-lg p-3 grid grid-cols-[1fr_2fr_1fr_1fr_minmax(100px,auto)] gap-4 items-center transition-all duration-150 group border border-white/5 shadow-sm cursor-default",
+                                    "rounded-lg p-3 grid grid-cols-[1fr_2fr_1fr_1fr_minmax(100px,auto)] gap-4 items-center transition-all duration-150 group border dark:border-white/5 border-white/20 shadow-sm cursor-default",
                                     "focus-synos", // CANONICAL FOCUS RING ON ROW
                                     // HISTORY VISUAL HIERARCHY: Secondary, muted, but interactive on hover
                                     isHistory
-                                        ? "bg-zinc-900/10 opacity-50 grayscale hover:grayscale-0 hover:opacity-100 hover:bg-zinc-900/40"
-                                        : "bg-zinc-950/30 hover:bg-white/[0.02]"
+                                        ? "dark:bg-zinc-900/10 bg-zinc-50/30 dark:opacity-50 opacity-60 grayscale hover:grayscale-0 hover:opacity-100 dark:hover:bg-zinc-900/40 hover:bg-white/60"
+                                        : "dark:bg-zinc-950/30 glass-surface-light dark:backdrop-filter-none hover:bg-white/60 dark:hover:bg-white/[0.02]"
                                 )}
                             >
                                 {/* Cell Rendering */}
                                 {columns.map((col, colIdx) => (
-                                    <div key={colIdx} className={cn("text-sm text-zinc-300", col.className)}>
+                                    <div key={colIdx} className={cn("text-sm dark:text-zinc-300 text-zinc-700", col.className)}>
                                         {col.render ? col.render(row) : row[col.accessor]}
                                     </div>
                                 ))}

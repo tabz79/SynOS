@@ -235,9 +235,9 @@ export function ReceptionScreen() {
             render: (row) => (
                 <div className="flex flex-col gap-1">
                     <div className="flex items-center gap-2">
-                        <span className="font-medium text-sm text-zinc-200">{row.patientName}</span>
+                        <span className="font-medium text-sm dark:text-zinc-200 text-zinc-900">{row.patientName}</span>
                         {/* Age/Sex Badge */}
-                        <span className="bg-zinc-800 text-zinc-400 text-[10px] px-1.5 py-0.5 rounded border border-zinc-700 font-mono">
+                        <span className="dark:bg-zinc-800 bg-zinc-100 dark:text-zinc-400 text-zinc-600 text-[10px] px-1.5 py-0.5 rounded border dark:border-zinc-700 border-zinc-200 font-mono">
                             {row.patientAgeGender || "N/A"}
                         </span>
                     </div>
@@ -262,8 +262,8 @@ export function ReceptionScreen() {
                 // Match Test Code Dimensions/Font exactly
                 const badgeBase = "text-[10px] px-1 py-0.5 rounded font-mono leading-none border uppercase tracking-wide";
                 const badgeColor = isPrepaid
-                    ? "bg-red-500/10 text-red-400 border-red-500/20"
-                    : "bg-emerald-500/10 text-emerald-400 border-emerald-500/20";
+                    ? "bg-red-500/10 dark:text-red-400 text-red-600 border-red-500/20"
+                    : "bg-emerald-500/10 dark:text-emerald-400 text-emerald-600 border-emerald-500/20";
 
                 const amount = row.totalAmount
                     ? `₹${row.totalAmount.toLocaleString()}`
@@ -274,11 +274,11 @@ export function ReceptionScreen() {
                         {/* Row 1: Price + Referrer Badge */}
                         <div className="flex items-center gap-2">
                             {/* Match Patient Name Style */}
-                            <span className="font-medium text-sm text-zinc-200">{amount}</span>
+                            <span className="font-medium text-sm dark:text-zinc-200 text-zinc-900">{amount}</span>
 
                             {/* Match Age/Gender Badge Style */}
                             {isPrepaid && (
-                                <span className="bg-zinc-800 text-zinc-400 text-[10px] px-1.5 py-0.5 rounded border border-zinc-700 font-mono" title={row.referrerName}>
+                                <span className="dark:bg-zinc-800 bg-zinc-100 dark:text-zinc-400 text-zinc-600 text-[10px] px-1.5 py-0.5 rounded border dark:border-zinc-700 border-zinc-200 font-mono" title={row.referrerName}>
                                     {row.referrerName}
                                 </span>
                             )}
@@ -299,7 +299,7 @@ export function ReceptionScreen() {
             render: (row) => {
                 if (row.assignedResource) {
                     return (
-                        <span className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-1 rounded text-xs font-medium flex items-center gap-1.5">
+                        <span className="bg-emerald-500/10 dark:text-emerald-400 text-emerald-700 border border-emerald-500/20 px-2 py-1 rounded text-xs font-medium flex items-center gap-1.5">
                             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
                             Assigned: {row.assignedResource}
                         </span>
@@ -308,7 +308,7 @@ export function ReceptionScreen() {
                 return (
                     <span className={`
                         px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border
-                        bg-zinc-800 text-zinc-400 border-zinc-700
+                        dark:bg-zinc-800 bg-emerald-100 dark:text-zinc-400 text-emerald-700 dark:border-zinc-700 border-emerald-200
                     `}>
                         {row.operationalStatus || "Processing"}
                     </span>
@@ -318,7 +318,20 @@ export function ReceptionScreen() {
     ];
 
     return (
-        <div className="h-screen w-screen bg-synos-background text-synos-foreground flex flex-col overflow-hidden font-sans selection:bg-white/20">
+        <div className="h-screen w-screen dark:bg-synos-background bg-transparent text-foreground flex flex-col overflow-hidden font-sans selection:bg-white/20 relative">
+            {/* High-Complexity Atmospheric Accents (Drivers for Frosted Glass) */}
+            <div className="fixed inset-0 pointer-events-none overflow-hidden z-0 dark:hidden">
+                {/* 1. Grain/Noise Base */}
+                <div className="absolute inset-0 opacity-[0.03] mix-blend-overlay" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")` }} />
+
+                {/* 2. High-Contrast Chromatic 'Objects' */}
+                <div className="absolute top-[-10%] left-[5%] w-[35%] h-[40%] bg-cyan-400/20 rounded-full blur-[80px] animate-pulse" style={{ animationDuration: '8s' }} />
+                <div className="absolute top-[-5%] right-[15%] w-[30%] h-[35%] bg-blue-600/10 rounded-full blur-[60px]" />
+                <div className="absolute top-[2%] left-[40%] w-[15%] h-[15%] bg-zinc-800/10 rounded-full blur-[40px]" /> {/* Dark 'Anchor' Object */}
+                <div className="absolute top-[-20%] right-[-5%] w-[50%] h-[50%] bg-emerald-300/10 rounded-full blur-[100px]" />
+                <div className="absolute top-[5%] left-[20%] w-[20%] h-[20%] bg-amber-200/5 rounded-full blur-[50px]" />
+            </div>
+
             {/* 1. Global System Bar */}
             <SystemBar serverTime={serverTimeAnchor} syncStatus={connectionStatus} />
 
@@ -343,8 +356,8 @@ export function ReceptionScreen() {
                                 ref={summaryRef}
                                 className="mb-4 shrink-0" // Removed transition-all duration-300
                             >
-                                <div className="flex items-center justify-between mb-2 px-1 sticky top-0 bg-synos-background z-10 py-1">
-                                    <h2 className="text-lg font-medium text-zinc-200">Reality Summary</h2>
+                                <div className="flex items-center justify-between mb-2 px-1 sticky top-0 dark:bg-synos-background bg-transparent z-10 py-1">
+                                    <h2 className="text-lg font-medium dark:text-zinc-200 text-zinc-800">Reality Summary</h2>
                                     <button
                                         onClick={() => setIsSummaryCollapsed(!isSummaryCollapsed)}
                                         className="text-zinc-500 hover:text-zinc-300 transition-colors p-1 rounded-md hover:bg-white/5"
@@ -366,7 +379,7 @@ export function ReceptionScreen() {
                                         <ActionQueueHeader title="Action Queues" count={actionQueue.length} />
 
                                         {/* HISTORY TOGGLE (UI ONLY) */}
-                                        <div className="flex items-center gap-2 bg-zinc-900/50 rounded-lg p-1 border border-white/5">
+                                        <div className="flex items-center gap-2 dark:bg-zinc-900/50 bg-white rounded-lg p-1 border dark:border-white/5 border-zinc-200 shadow-sm">
                                             <button
                                                 onClick={() => setShowHistory(false)}
                                                 className={cn(
@@ -390,17 +403,17 @@ export function ReceptionScreen() {
 
                                     <button
                                         onClick={openCreateIntent}
-                                        className="bg-zinc-100 hover:bg-white text-zinc-900 border border-zinc-200 px-4 py-2 rounded-lg text-sm font-semibold shadow-lg shadow-black/20 hover:shadow-xl hover:shadow-black/30 transition-all duration-200 flex items-center gap-2 pointer-events-auto active:scale-95 active:shadow-inner"
+                                        className="dark:bg-zinc-100 hover:bg-white dark:text-zinc-900 bg-zinc-900 text-white border border-zinc-200 px-4 py-2 rounded-lg text-sm font-semibold shadow-lg shadow-black/20 hover:shadow-xl hover:shadow-black/30 transition-all duration-200 flex items-center gap-2 pointer-events-auto active:scale-95 active:shadow-inner"
                                     >
                                         <Plus className="w-4 h-4" />
                                         Registration
                                     </button>
                                 </div>
                                 {isLoadingQueue ? (
-                                    <div className="flex-1 flex items-center justify-center border border-dashed border-zinc-800 rounded-xl">
+                                    <div className="flex-1 flex items-center justify-center border border-dashed dark:border-zinc-800 border-zinc-300 rounded-xl">
                                         <div className="flex flex-col items-center gap-2">
-                                            <Loader2 className="w-6 h-6 animate-spin text-zinc-600" />
-                                            <span className="text-xs text-zinc-600">Loading live operational stream...</span>
+                                            <Loader2 className="w-6 h-6 animate-spin dark:text-zinc-600 text-zinc-400" />
+                                            <span className="text-xs dark:text-zinc-600 text-zinc-400">Loading live operational stream...</span>
                                         </div>
                                     </div>
                                 ) : (

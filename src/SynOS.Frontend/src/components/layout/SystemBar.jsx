@@ -1,189 +1,210 @@
-import { useState, useEffect, useRef } from 'react'; // Added useRef
+import { useState, useEffect, useRef } from 'react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/context/AuthContext';
-import { ChevronDown, Globe, Shield, Wifi, WifiOff, Clock } from 'lucide-react';
-import { useFocusTrap } from '@/hooks/useFocusTrap'; // Added
+import {
+  ChevronDown,
+  Globe,
+  Shield,
+  Wifi,
+  WifiOff,
+  Clock,
+  Moon,
+  Sun
+} from 'lucide-react';
+import { useFocusTrap } from '@/hooks/useFocusTrap';
+import { useTheme } from '@/context/ThemeContext';
 
 export function SystemBar({ serverTime, syncStatus = "Not Synced" }) {
-    const { user, logout } = useAuth();
-    const [currentTime, setCurrentTime] = useState(new Date());
+  const { user, logout } = useAuth();
+  const { theme, setTheme } = useTheme();
+  const [currentTime, setCurrentTime] = useState(new Date());
+  const [activeDropdown, setActiveDropdown] = useState(null);
 
-    // Dropdown State: 'role' | 'facility' | null
-    const [activeDropdown, setActiveDropdown] = useState(null);
+  const facilityRef = useRef(null);
+  const roleRef = useRef(null);
 
-    // FOCUS CANON: Dropdown Traps
-    const facilityRef = useRef(null);
-    const roleRef = useRef(null);
+  useFocusTrap(facilityRef, activeDropdown === 'facility', () => setActiveDropdown(null));
+  useFocusTrap(roleRef, activeDropdown === 'role', () => setActiveDropdown(null));
 
-    useFocusTrap(facilityRef, activeDropdown === 'facility', () => setActiveDropdown(null));
-    useFocusTrap(roleRef, activeDropdown === 'role', () => setActiveDropdown(null));
+  useEffect(() => {
+    if (serverTime) setCurrentTime(new Date(serverTime));
+  }, [serverTime]);
 
-    // Time Anchor Logic
-    useEffect(() => {
-        if (serverTime) {
-            setCurrentTime(new Date(serverTime));
-        }
-    }, [serverTime]);
+  useEffect(() => {
+    const t = setInterval(() => {
+      setCurrentTime(p => new Date(p.getTime() + 1000));
+    }, 1000);
+    return () => clearInterval(t);
+  }, []);
 
-    // Ticking Logic
-    useEffect(() => {
-        const timer = setInterval(() => {
-            setCurrentTime(prev => new Date(prev.getTime() + 1000));
-        }, 1000);
-        return () => clearInterval(timer);
-    }, []);
+  const handleLogout = () => {
+    logout();
+    window.location.href = '/login';
+  };
 
-    const handleLogout = () => {
-        logout();
-        window.location.href = '/login';
-    };
+  const availableBranches = [
+    { id: 'b1', name: 'Main Branch (HQ)' },
+    { id: 'b2', name: 'City Center Hub' },
+    { id: 'b3', name: 'Westside Satellite' }
+  ];
 
-    const handleSwitchBranch = (branchId) => {
-        console.log("Switching to branch:", branchId);
-        alert(`Switching to branch ${branchId} is not yet implemented on backend.`);
-        setActiveDropdown(null);
-    };
+  const timeDisplay = currentTime.toLocaleTimeString('en-US', {
+    hour12: false,
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit'
+  });
 
-    // MOCK Branch List
-    const availableBranches = [
-        { id: 'b1', name: 'Main Branch (HQ)' },
-        { id: 'b2', name: 'City Center Hub' },
-        { id: 'b3', name: 'Westside Satellite' }
-    ];
+  const dateDisplay = currentTime
+    .toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' })
+    .split('/')
+    .reverse()
+    .join('-');
 
-    // Formatters
-    const timeDisplay = currentTime.toLocaleTimeString('en-US', {
-        hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit'
-    });
-    const dateDisplay = currentTime.toLocaleDateString('en-GB', {
-        day: '2-digit', month: '2-digit', year: 'numeric'
-    }).split('/').reverse().join('-');
+  const isConnected = syncStatus === "Synced";
 
-    const isConnected = syncStatus === "Synced";
+  return (
+    <div
+      className="
+        sticky top-0 z-50 h-14 w-full px-6
+        flex items-center justify-between select-none
+        backdrop-blur-xl backdrop-saturate-[2.0] transition-all duration-300
+        shadow-[0_4px_12px_rgba(0,0,0,0.06),inset_0_1px_0_rgba(255,255,255,0.3)]
+        border-b border-black/[0.15]
+        dark:bg-zinc-900/80 dark:shadow-none dark:border-white/10
+      "
+      style={{
+        background: theme === 'dark'
+          ? undefined
+          : 'linear-gradient(to bottom, rgba(245, 252, 255, 0.85) 0%, rgba(230, 242, 245, 0.90) 50%, rgba(215, 225, 228, 0.94) 100%)'
+      }}
+    >
 
-    return (
-        <div className="h-14 flex items-center justify-between px-6 select-none relative z-50 bg-zinc-900/80 backdrop-blur-xl border-b border-white/5 shadow-2xl">
-            {/* Overlay to close dropdowns */}
-            {activeDropdown && (
-                <div className="fixed inset-0 z-40 bg-transparent" onClick={() => setActiveDropdown(null)} />
-            )}
+      {activeDropdown && (
+        <div className="fixed inset-0 z-40" onClick={() => setActiveDropdown(null)} />
+      )}
 
-            {/* Left: Product Identity */}
-            <div className="flex items-center gap-4">
-                {/* Logo Mark or Icon could go here */}
-                <div className="flex flex-col leading-none">
-                    <span className="text-white font-bold tracking-tight text-base font-sans bg-clip-text text-transparent bg-gradient-to-r from-white to-zinc-400">
-                        SynOS
-                    </span>
-                    <span className="text-zinc-500 font-medium text-[10px] tracking-wider uppercase opacity-80 pt-0.5">
-                        Synthesized Lab Intelligence
-                    </span>
-                </div>
+      {/* LEFT — Identity */}
+      <div className="flex flex-col leading-none">
+        <span className="text-zinc-900 dark:text-white font-bold tracking-tight text-base">
+          SynOS
+        </span>
+        <span className="text-zinc-500 text-[10px] tracking-wider uppercase">
+          Synthesized Lab Intelligence
+        </span>
+      </div>
+
+      {/* RIGHT — Controls */}
+      <div className="flex items-center gap-3">
+
+        {/* Branch */}
+        <div className="relative">
+          <button
+            onClick={() => setActiveDropdown(activeDropdown === 'facility' ? null : 'facility')}
+            className="
+              flex items-center gap-2 px-3 py-1.5 rounded-xl
+              bg-white/40 backdrop-blur-sm backdrop-saturate-[1.6]
+              shadow-[inset_0_1px_0_rgba(255,255,255,0.7),inset_0_-1px_1px_rgba(0,0,0,0.05)]
+              text-zinc-800 text-xs font-medium
+              hover:bg-white/50 transition
+            "
+          >
+            <Globe className="w-3.5 h-3.5 opacity-70" />
+            {user?.branchName || "Unknown"}
+            <ChevronDown className="w-3 h-3 opacity-50" />
+          </button>
+
+          {activeDropdown === 'facility' && (
+            <div
+              ref={facilityRef}
+              className="
+                absolute right-0 mt-2 w-64 z-50
+                bg-white/70 backdrop-blur-xl rounded-2xl p-1
+                border border-black/5
+                shadow-xl
+              "
+            >
+              {availableBranches.map(b => (
+                <button
+                  key={b.id}
+                  className="w-full px-3 py-2 text-left text-xs rounded-lg hover:bg-black/5"
+                  onClick={() => setActiveDropdown(null)}
+                >
+                  {b.name}
+                </button>
+              ))}
             </div>
-
-            {/* Right: Operational Context (Glass Pills) */}
-            <div className="flex items-center gap-3">
-
-                {/* 1. Branch Context (Dropdown Pill) */}
-                <div className="relative">
-                    <button
-                        className={cn(
-                            "flex items-center gap-2 px-3 py-1.5 rounded-full border transition-all duration-200 group focus-synos active:scale-95",
-                            activeDropdown === 'facility'
-                                ? "bg-white/10 border-white/10 text-white"
-                                : "bg-black/20 border-white/5 text-zinc-400 hover:bg-white/5 hover:border-white/10 hover:text-zinc-200"
-                        )}
-                        onClick={() => setActiveDropdown(activeDropdown === 'facility' ? null : 'facility')}
-                    >
-                        <Globe className="w-3.5 h-3.5 opacity-70" />
-                        <span className="text-xs font-medium">{user?.branchName || "Unknown"}</span>
-                        <ChevronDown className={cn("w-3 h-3 opacity-50 transition-transform", activeDropdown === 'facility' && "rotate-180")} />
-                    </button>
-
-                    {/* Menu */}
-                    {activeDropdown === 'facility' && (
-                        <div ref={facilityRef} className="absolute top-full right-0 mt-2 w-64 bg-zinc-900/95 backdrop-blur-md border border-white/10 rounded-2xl shadow-2xl overflow-hidden animate-in slide-in-from-top-2 fade-in duration-260 ease-synos z-[60] p-1 ring-1 ring-white/10">
-                            <div className="px-3 py-2 border-b border-white/5 mb-1">
-                                <span className="text-zinc-500 font-bold uppercase tracking-wider text-[10px]">Active Facility</span>
-                            </div>
-                            {availableBranches.map(branch => (
-                                <button
-                                    key={branch.id}
-                                    onClick={() => handleSwitchBranch(branch.id)}
-                                    className="w-full text-left px-3 py-2 text-zinc-300 hover:bg-white/5 hover:text-synos-primary hover:underline decoration-synos-primary decoration-2 underline-offset-2 rounded-lg text-xs transition-all flex items-center justify-between group focus-synos active:scale-95"
-                                >
-                                    <span>{branch.name}</span>
-                                    {user?.branchName?.includes(branch.name.split(' ')[0]) && (
-                                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
-                                    )}
-                                </button>
-                            ))}
-                        </div>
-                    )}
-                </div>
-
-                {/* 2. User Identity (Dropdown Pill) */}
-                <div className="relative">
-                    <button
-                        className={cn(
-                            "flex items-center gap-2 px-3 py-1.5 rounded-full border transition-all duration-200 group focus-synos active:scale-95",
-                            activeDropdown === 'role'
-                                ? "bg-white/10 border-white/10 text-white"
-                                : "bg-black/20 border-white/5 text-zinc-400 hover:bg-white/5 hover:border-white/10 hover:text-zinc-200"
-                        )}
-                        onClick={() => setActiveDropdown(activeDropdown === 'role' ? null : 'role')}
-                    >
-                        <Shield className="w-3.5 h-3.5 opacity-70" />
-                        <span className="text-xs font-medium">{user?.name || "User"}</span>
-                        <ChevronDown className={cn("w-3 h-3 opacity-50 transition-transform", activeDropdown === 'role' && "rotate-180")} />
-                    </button>
-
-                    {/* Menu */}
-                    {activeDropdown === 'role' && (
-                        <div ref={roleRef} className="absolute top-full right-0 mt-2 w-48 bg-zinc-900/95 backdrop-blur-md border border-white/10 rounded-2xl shadow-2xl overflow-hidden animate-in slide-in-from-top-2 fade-in duration-260 ease-synos z-[60] p-1 ring-1 ring-white/10">
-                            <div className="px-3 py-2 border-b border-white/5 mb-1">
-                                <span className="text-zinc-500 font-bold uppercase tracking-wider text-[10px]">{user?.role || "Operator"}</span>
-                            </div>
-                            <button
-                                onClick={handleLogout}
-                                className="w-full text-left px-3 py-2 text-red-400 hover:bg-red-500/10 hover:text-red-300 rounded-lg text-xs transition-all font-medium flex items-center gap-2 focus-synos active:scale-95"
-                            >
-                                Sign Out
-                            </button>
-                        </div>
-                    )}
-                </div>
-
-                {/* Divider */}
-                <div className="h-6 w-[1px] bg-white/5 mx-2" />
-
-                {/* 3. Operational Time & Sync */}
-                <div className="flex items-center gap-4 bg-black/20 border border-white/5 rounded-full px-4 py-1.5">
-                    <div className="flex items-center gap-2">
-                        <Clock className="w-3.5 h-3.5 text-zinc-600" />
-                        <span className="text-zinc-400 text-xs font-mono tracking-tight">
-                            {dateDisplay} <span className="text-zinc-200">{timeDisplay}</span>
-                        </span>
-                    </div>
-
-                    <div className="w-[1px] h-3 bg-white/10" />
-
-                    <div className="flex items-center gap-1.5">
-                        {isConnected ? (
-                            <Wifi className="w-3.5 h-3.5 text-emerald-500/80" />
-                        ) : (
-                            <WifiOff className="w-3.5 h-3.5 text-red-500/80 animate-pulse" />
-                        )}
-                        <span className={cn(
-                            "text-[10px] font-bold uppercase tracking-wider",
-                            isConnected ? "text-emerald-500" : "text-red-500"
-                        )}>
-                            {isConnected ? "Live" : "Offline"}
-                        </span>
-                    </div>
-                </div>
-
-            </div>
+          )}
         </div>
-    );
+
+        {/* User */}
+        <div className="relative">
+          <button
+            onClick={() => setActiveDropdown(activeDropdown === 'role' ? null : 'role')}
+            className="
+              flex items-center gap-2 px-3 py-1.5 rounded-xl
+              bg-white/40 backdrop-blur-sm backdrop-saturate-[1.6]
+              shadow-[inset_0_1px_0_rgba(255,255,255,0.7),inset_0_-1px_1px_rgba(0,0,0,0.05)]
+              text-zinc-800 text-xs font-medium
+              hover:bg-white/50 transition
+            "
+          >
+            <Shield className="w-3.5 h-3.5 opacity-70" />
+            {user?.name || "User"}
+            <ChevronDown className="w-3 h-3 opacity-50" />
+          </button>
+
+          {activeDropdown === 'role' && (
+            <div
+              ref={roleRef}
+              className="
+                absolute right-0 mt-2 w-48 z-50
+                bg-white/70 backdrop-blur-xl rounded-2xl p-1
+                border border-black/5 shadow-xl
+              "
+            >
+              <button
+                className="w-full px-3 py-2 text-xs rounded-lg hover:bg-black/5 flex items-center gap-2"
+                onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+              >
+                {theme === 'dark' ? <Moon className="w-3.5 h-3.5" /> : <Sun className="w-3.5 h-3.5" />}
+                Theme: {theme}
+              </button>
+
+              <button
+                className="w-full px-3 py-2 text-xs rounded-lg text-red-500 hover:bg-red-500/10"
+                onClick={handleLogout}
+              >
+                Sign Out
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Time + Status */}
+        <div className="
+          flex items-center gap-4 px-4 py-1.5 rounded-xl
+          bg-white/40 backdrop-blur-sm backdrop-saturate-[1.6]
+          shadow-[inset_0_1px_0_rgba(255,255,255,0.7),inset_0_-1px_1px_rgba(0,0,0,0.05)]
+        ">
+          <span className="font-mono text-xs text-zinc-700">
+            {dateDisplay} <span className="text-zinc-900">{timeDisplay}</span>
+          </span>
+
+          <div className="w-px h-3 bg-black/10" />
+
+          {isConnected ? (
+            <span className="flex items-center gap-1 text-emerald-600 text-[10px] font-bold">
+              <Wifi className="w-3.5 h-3.5" /> LIVE
+            </span>
+          ) : (
+            <span className="flex items-center gap-1 text-red-500 text-[10px] font-bold">
+              <WifiOff className="w-3.5 h-3.5 animate-pulse" /> OFFLINE
+            </span>
+          )}
+        </div>
+
+      </div>
+    </div>
+  );
 }

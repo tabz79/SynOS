@@ -16,7 +16,7 @@ export function RealityTile({ value, label, qualifier, icon: Icon, color = "defa
             id={id}
             style={style}
             className={cn(
-                "bg-zinc-200 text-synos-cardText rounded-xl shadow-sm border border-transparent hover:border-zinc-300/50 hover:bg-zinc-50 transition-colors duration-300 group cursor-default flex flex-col justify-between",
+                "dark:bg-zinc-200 glass-elevated-light dark:backdrop-filter-none dark:shadow-sm text-zinc-900 rounded-xl border dark:border-transparent hover:bg-white/80 transition-all duration-300 group cursor-default flex flex-col justify-between",
                 // FLIP: Opacity handled via props/style during animation, but base state here
                 isHidden && "opacity-0 pointer-events-none",
                 // STATE A (Expanded): h-32, p-5
@@ -66,7 +66,7 @@ export function RealityTile({ value, label, qualifier, icon: Icon, color = "defa
 
                 {/* Progress/indicator line */}
                 <div className={cn(
-                    "w-full bg-zinc-100 rounded-full overflow-hidden",
+                    "w-full dark:bg-white bg-zinc-100 rounded-full overflow-hidden",
                     isCollapsed ? "h-1" : "h-1.5"
                 )}>
                     <div className={cn("h-full rounded-full w-1/3 transition-all duration-500", colorClasses[color] || "bg-zinc-400")} />

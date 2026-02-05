@@ -139,9 +139,9 @@ export function ActivityStream({ serverTime }) {
     };
 
     return (
-        <div className="bg-zinc-900/80 backdrop-blur-xl border border-white/5 rounded-2xl h-full flex flex-col overflow-hidden shadow-xl ring-1 ring-white/5">
+        <div className="dark:bg-zinc-900/80 glass-elevated-light dark:backdrop-filter-none dark:border-white/5 dark:shadow-xl dark:ring-white/5 rounded-2xl h-full flex flex-col overflow-hidden">
             {/* Header */}
-            <div className="h-10 border-b border-white/5 flex items-center justify-between px-4 bg-white/5 backdrop-blur-md z-10">
+            <div className="h-10 border-b dark:border-white/5 glass-surface-light dark:backdrop-filter-none dark:bg-white/5 flex items-center justify-between px-4 z-10">
                 <div className="flex items-center gap-2">
                     <Activity className="w-3.5 h-3.5 text-synos-emerald" />
                     <h3 className="font-bold text-[10px] uppercase tracking-widest text-zinc-400">Live Stream</h3>
@@ -177,23 +177,23 @@ export function ActivityStream({ serverTime }) {
                             <div key={gIndex} className="relative pl-6 pb-2 mb-6 last:mb-0">
                                 {/* Group Connector Line */}
                                 {gIndex !== groupedEvents.length - 1 && (
-                                    <div className="absolute left-[5px] top-3 bottom-[-24px] w-[1px] bg-zinc-800/50" />
+                                    <div className="absolute left-[5px] top-3 bottom-[-24px] w-[1px] dark:bg-zinc-800/50 bg-white/40" />
                                 )}
 
                                 {/* Group Head (Token) */}
-                                <div className="absolute -left-[3px] top-0.5 w-4 h-4 rounded-full bg-zinc-900 border-2 border-zinc-700 z-10 box-content" />
+                                <div className="absolute -left-[3px] top-0.5 w-4 h-4 rounded-full dark:bg-zinc-900 bg-white border-2 dark:border-zinc-700 border-white/60 z-10 box-content shadow-sm" />
 
                                 <div className="flex items-center justify-between mb-2">
                                     <div className="flex items-center gap-2">
                                         <span className={cn(
                                             "text-xs font-bold font-mono tracking-tight",
-                                            isSystem ? "text-zinc-500" : "text-white"
+                                            isSystem ? "text-zinc-500" : "dark:text-white text-zinc-900"
                                         )}>
                                             {group.token || "System Event"}
                                         </span>
                                         {/* Actor Badge in Header */}
                                         {group.actorName && (
-                                            <span className="text-[10px] text-zinc-500 bg-zinc-800/50 px-1.5 py-0.5 rounded border border-zinc-700/50">
+                                            <span className="text-[10px] dark:text-zinc-500 text-zinc-500 dark:bg-zinc-800/50 bg-zinc-200/50 px-1.5 py-0.5 rounded border dark:border-zinc-700/50 border-zinc-300/50">
                                                 {group.actorName}
                                             </span>
                                         )}
@@ -216,7 +216,7 @@ export function ActivityStream({ serverTime }) {
                                                     />
                                                 </div>
                                                 <div className="flex-1">
-                                                    <p className="text-xs text-zinc-400 group-hover/item:text-zinc-300 transition-colors leading-relaxed">
+                                                    <p className="text-xs dark:text-zinc-400 text-zinc-600 dark:group-hover/item:text-zinc-300 group-hover/item:text-zinc-900 transition-colors leading-relaxed">
                                                         {cleanMessage(event.message || event.summaryText)}
                                                     </p>
                                                     {/* Actor removed from individual item */}
