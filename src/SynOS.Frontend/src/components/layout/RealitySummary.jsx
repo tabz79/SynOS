@@ -14,9 +14,14 @@ export function RealityTile({ value, label, qualifier, icon: Icon, color = "defa
     return (
         <div
             id={id}
-            style={style}
+            style={{
+                ...style,
+                background: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.6' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.015'/%3E%3C/svg%3E"), 
+                             linear-gradient(to bottom, #ffffff 0%, #f9fafb 100%)`
+            }}
             className={cn(
-                "dark:bg-zinc-200 glass-elevated-light dark:backdrop-filter-none dark:shadow-sm text-zinc-900 rounded-xl border dark:border-transparent hover:bg-white/80 transition-all duration-300 group cursor-default flex flex-col justify-between",
+                "dark:bg-zinc-900 shadow-[0_4px_12px_rgba(0,0,0,0.04),inset_0_1px_0_rgba(255,255,255,1)] text-zinc-900 rounded-xl border border-black/[0.1] hover:bg-white transition-all duration-300 group cursor-default flex flex-col justify-between",
+                "isolation-auto relative z-10",
                 // FLIP: Opacity handled via props/style during animation, but base state here
                 isHidden && "opacity-0 pointer-events-none",
                 // STATE A (Expanded): h-32, p-5
@@ -158,10 +163,10 @@ export function RealitySummary({ tiles = [], isCollapsed }) {
         <div
             ref={containerRef}
             className={cn(
-                "grid transition-none will-change-transform overflow-hidden", // overflow-hidden crops row 2 in collapsed
+                "grid transition-none will-change-transform", // Removed overflow-hidden to prevent shadow/edge clipping
                 isCollapsed
-                    ? "grid-cols-6 grid-rows-[auto_0px] gap-x-4 gap-y-0 pb-0" // Force Row 2 to zero height + remove gap
-                    : "grid-cols-4 gap-4"
+                    ? "grid-cols-6 grid-rows-[auto_0px] gap-x-4 gap-y-0 pb-0 overflow-hidden" // Only clip when collapsed (hiding row 2)
+                    : "grid-cols-4 gap-4 p-1" // Added p-1 to breathe and show shadows
             )}
         >
             {tiles.map((tile, idx) => (

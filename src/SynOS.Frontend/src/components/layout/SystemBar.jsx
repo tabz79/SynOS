@@ -111,7 +111,8 @@ export function SystemBar({ serverTime, syncStatus = "Not Synced" }) {
             onClick={() => setActiveDropdown(activeDropdown === 'facility' ? null : 'facility')}
             className="
               flex items-center gap-2 px-3 py-1.5 rounded-xl
-              bg-white/95 shadow-[inset_0_1px_0_rgba(255,255,255,0.8),inset_0_-1px_1px_rgba(0,0,0,0.05)]
+              bg-white/95 border border-black/[0.1]
+              shadow-[0_1px_2px_rgba(0,0,0,0.04),inset_0_1px_0_rgba(255,255,255,0.8)]
               text-zinc-800 text-xs font-medium
               hover:bg-white transition-all
             "
@@ -150,7 +151,8 @@ export function SystemBar({ serverTime, syncStatus = "Not Synced" }) {
             onClick={() => setActiveDropdown(activeDropdown === 'role' ? null : 'role')}
             className="
               flex items-center gap-2 px-3 py-1.5 rounded-xl
-              bg-white/95 shadow-[inset_0_1px_0_rgba(255,255,255,0.8),inset_0_-1px_1px_rgba(0,0,0,0.05)]
+              bg-white/95 border border-black/[0.1]
+              shadow-[0_1px_2px_rgba(0,0,0,0.04),inset_0_1px_0_rgba(255,255,255,0.8)]
               text-zinc-800 text-xs font-medium
               hover:bg-white transition-all
             "
@@ -190,7 +192,8 @@ export function SystemBar({ serverTime, syncStatus = "Not Synced" }) {
         {/* Time + Status (Fake Frost Pill) */}
         <div className="
           flex items-center gap-4 px-4 py-1.5 rounded-xl
-          bg-white/90 shadow-[inset_0_1px_0_rgba(255,255,255,0.8),inset_0_-1px_1px_rgba(0,0,0,0.05)]
+          bg-white/90 border border-black/[0.1]
+          shadow-[0_1px_2px_rgba(0,0,0,0.04),inset_0_1px_0_rgba(255,255,255,0.8)]
         ">
           <span className="font-mono text-xs text-zinc-700">
             {dateDisplay} <span className="text-zinc-900">{timeDisplay}</span>
