@@ -1,4 +1,5 @@
 import { useEffect, useState, useMemo } from 'react'
+import { useTheme } from '@/context/ThemeContext'
 import { ReceptionApi } from '@/api/reception'
 import { cn } from '@/lib/utils'
 import {
@@ -19,6 +20,7 @@ const IconMap = {
 };
 
 export function ActivityStream({ serverTime }) {
+    const { theme } = useTheme();
     const [events, setEvents] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -138,19 +140,50 @@ export function ActivityStream({ serverTime }) {
         return msg.replace(/\(Fact:.*?\)/g, "").trim();
     };
 
+    const isDark = theme === 'dark';
+
+    const ui = {
+        container: isDark
+            ? "bg-zinc-900 border-white/5 shadow-xl ring-white/5"
+            : "bg-white border-black/[0.1] shadow-[0_4px_20px_rgba(0,0,0,0.05)]",
+        header: isDark
+            ? "bg-zinc-800 border-b border-white/5"
+            : "border-black/[0.05] bg-black/[0.02]"
+    };
+
     return (
-        <div className="dark:bg-zinc-900/80 glass-elevated-light dark:backdrop-filter-none dark:border-white/5 dark:shadow-xl dark:ring-white/5 rounded-2xl h-full flex flex-col overflow-hidden">
+        <div
+            className={cn(
+                "flex flex-col min-h-0 rounded-2xl overflow-hidden h-full transition-all duration-300 border",
+                ui.container
+            )}
+            style={{
+                background: isDark
+                    ? `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.6' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.005'/%3E%3C/svg%3E"), 
+                         #18181b`
+                    : `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.6' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.01'/%3E%3C/svg%3E"), 
+                         linear-gradient(to bottom, rgba(252, 254, 255, 0.99) 0%, rgba(248, 252, 255, 0.99) 50%, rgba(245, 250, 255, 0.99) 100%)`
+            }}
+        >
             {/* Header */}
-            <div className="h-10 border-b dark:border-white/5 glass-surface-light dark:backdrop-filter-none dark:bg-white/5 flex items-center justify-between px-4 z-10">
+            <div
+                className={cn("h-10 flex items-center justify-between px-4 z-10", ui.header)}
+                style={!isDark ? {
+                    background: `linear-gradient(to bottom, rgba(248, 253, 255, 0.98) 0%, rgba(238, 245, 248, 0.98) 50%, rgba(228, 235, 238, 0.98) 100%)`
+                } : {}}
+            >
                 <div className="flex items-center gap-2">
                     <Activity className="w-3.5 h-3.5 text-synos-emerald" />
-                    <h3 className="font-bold text-[10px] uppercase tracking-widest text-zinc-400">Live Stream</h3>
+                    <h3 className="font-bold text-[11px] uppercase tracking-widest text-zinc-800">Live Stream</h3>
                 </div>
                 {loading && <Loader2 className="w-3 h-3 text-zinc-500 animate-spin" />}
             </div>
 
             {/* Stream Content */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-6 relative scrollbar-thin scrollbar-thumb-zinc-800/50 hover:scrollbar-thumb-zinc-700">
+            <div className={cn(
+                "flex-1 overflow-y-auto p-4 space-y-6 relative scrollbar-thin hover:scrollbar-thumb-zinc-400",
+                isDark ? "scrollbar-thumb-zinc-800/50" : "scrollbar-thumb-zinc-300"
+            )}>
                 {error && (
                     <div className="flex items-center gap-2 text-red-300 text-xs p-3 bg-red-500/10 border border-red-500/20 rounded-lg">
                         <AlertCircle className="w-3.5 h-3.5" />
@@ -177,11 +210,11 @@ export function ActivityStream({ serverTime }) {
                             <div key={gIndex} className="relative pl-6 pb-2 mb-6 last:mb-0">
                                 {/* Group Connector Line */}
                                 {gIndex !== groupedEvents.length - 1 && (
-                                    <div className="absolute left-[5px] top-3 bottom-[-24px] w-[1px] dark:bg-zinc-800/50 bg-white/40" />
+                                    <div className="absolute left-[5px] top-3 bottom-[-24px] w-[1px] dark:bg-zinc-800/50 bg-zinc-200" />
                                 )}
 
                                 {/* Group Head (Token) */}
-                                <div className="absolute -left-[3px] top-0.5 w-4 h-4 rounded-full dark:bg-zinc-900 bg-white border-2 dark:border-zinc-700 border-white/60 z-10 box-content shadow-sm" />
+                                <div className="absolute -left-[3px] top-0.5 w-4 h-4 rounded-full dark:bg-zinc-900 bg-white border-2 dark:border-zinc-700 border-zinc-200 z-10 box-content shadow-sm" />
 
                                 <div className="flex items-center justify-between mb-2">
                                     <div className="flex items-center gap-2">

@@ -10,8 +10,10 @@ import { IntentPanel } from '@/features/reception/components/IntentPanel'
 import { useReceptionPanelUI } from '@/features/reception/hooks/useReceptionPanelUI'
 import { ReceptionApi } from '@/api/reception'
 import { SignalRService } from '@/lib/signalr'
+import { useTheme } from '@/context/ThemeContext'
 
 export function ReceptionScreen() {
+    const { theme } = useTheme();
     const [activeQueue, setActiveQueue] = useState("pending");
     const [summary, setSummary] = useState(null);
     // Unified Drawer State + Helpers
@@ -192,23 +194,27 @@ export function ReceptionScreen() {
         {
             header: "Token ID",
             accessor: "token",
-            className: "font-mono text-zinc-400 w-32",
+            className: "font-mono w-32",
             render: (row) => (
                 <div className="flex flex-col gap-1 items-start">
                     <div className="flex items-center gap-2">
                         <button
-                            onClick={() => {
+                            onClick={(e) => {
+                                e.stopPropagation();
                                 // 🔹 FINALIZATION TRUTH:
-                                // If Backend says it's finalized (Paid), we show Correction Mode.
-                                // Otherwise, we open Resume Mode.
                                 if (row.isFinalized) {
-                                    openCorrectionIntent(row.visitId); // EXPLICIT CORRECTION
+                                    openCorrectionIntent(row.visitId);
                                 } else {
-                                    openResumeIntent(row.visitId); // EXPLICIT RESUME
+                                    openResumeIntent(row.visitId);
                                 }
                             }}
                             tabIndex={-1}
-                            className="action-trigger hover:text-synos-primary hover:underline decoration-synos-primary decoration-2 underline-offset-2 transition-all font-bold tracking-tight rounded-md px-1 -mx-1"
+                            className={cn(
+                                "action-trigger transition-all font-bold tracking-tight rounded-md px-1.5 py-0.5 -mx-1.5 cursor-pointer underline-offset-4",
+                                theme === 'dark'
+                                    ? "text-white hover:text-zinc-300 hover:bg-white/5"
+                                    : "text-zinc-900 hover:text-zinc-700 hover:bg-zinc-50 hover:underline decoration-zinc-500/50 decoration-2"
+                            )}
                         >
                             {row.token}
                         </button>
@@ -231,11 +237,11 @@ export function ReceptionScreen() {
         {
             header: "Patient",
             accessor: "patientName",
-            className: "text-white min-w-[200px]",
+            className: "min-w-[200px]",
             render: (row) => (
                 <div className="flex flex-col gap-1">
                     <div className="flex items-center gap-2">
-                        <span className="font-medium text-sm dark:text-zinc-200 text-zinc-900">{row.patientName}</span>
+                        <span className="font-bold text-sm dark:text-zinc-200 text-zinc-900">{row.patientName}</span>
                         {/* Age/Sex Badge */}
                         <span className="dark:bg-zinc-800 bg-zinc-100 dark:text-zinc-400 text-zinc-600 text-[10px] px-1.5 py-0.5 rounded border dark:border-zinc-700 border-zinc-200 font-mono">
                             {row.patientAgeGender || "N/A"}
@@ -255,7 +261,7 @@ export function ReceptionScreen() {
         {
             header: "Payment",
             accessor: "paymentDisplay",
-            className: "text-zinc-400 w-40",
+            className: "w-40",
             render: (row) => {
                 // Determine Badge Logic
                 const isPrepaid = row.paymentMethod === "Prepaid";
@@ -274,7 +280,7 @@ export function ReceptionScreen() {
                         {/* Row 1: Price + Referrer Badge */}
                         <div className="flex items-center gap-2">
                             {/* Match Patient Name Style */}
-                            <span className="font-medium text-sm dark:text-zinc-200 text-zinc-900">{amount}</span>
+                            <span className="font-bold text-sm dark:text-zinc-200 text-zinc-900">{amount}</span>
 
                             {/* Match Age/Gender Badge Style */}
                             {isPrepaid && (
@@ -357,7 +363,7 @@ export function ReceptionScreen() {
                                 className="mb-4 shrink-0" // Removed transition-all duration-300
                             >
                                 <div className="flex items-center justify-between mb-2 px-1 sticky top-0 dark:bg-synos-background bg-transparent z-10 py-1">
-                                    <h2 className="text-lg font-medium dark:text-zinc-200 text-zinc-800">Reality Summary</h2>
+                                    <h2 className="text-lg font-bold dark:text-zinc-200 text-zinc-800">Reality Summary</h2>
                                     <button
                                         onClick={() => setIsSummaryCollapsed(!isSummaryCollapsed)}
                                         className="text-zinc-500 hover:text-zinc-300 transition-colors p-1 rounded-md hover:bg-white/5"
@@ -384,7 +390,9 @@ export function ReceptionScreen() {
                                                 onClick={() => setShowHistory(false)}
                                                 className={cn(
                                                     "text-[10px] uppercase font-bold px-2 py-0.5 rounded transition-all",
-                                                    !showHistory ? "bg-zinc-700 text-white shadow-sm" : "text-zinc-500 hover:text-zinc-300"
+                                                    !showHistory
+                                                        ? "bg-zinc-800 text-white shadow-sm"
+                                                        : (theme === 'dark' ? "text-zinc-500 hover:text-zinc-300" : "text-zinc-500 hover:text-zinc-900")
                                                 )}
                                             >
                                                 Live
@@ -393,7 +401,9 @@ export function ReceptionScreen() {
                                                 onClick={() => setShowHistory(true)}
                                                 className={cn(
                                                     "text-[10px] uppercase font-bold px-2 py-0.5 rounded transition-all",
-                                                    showHistory ? "bg-amber-900/40 text-amber-200 border border-amber-500/20 shadow-sm" : "text-zinc-500 hover:text-zinc-300"
+                                                    showHistory
+                                                        ? "bg-zinc-800 text-white shadow-sm"
+                                                        : (theme === 'dark' ? "text-zinc-500 hover:text-zinc-300" : "text-zinc-500 hover:text-zinc-900")
                                                 )}
                                             >
                                                 History (7d)
@@ -403,7 +413,12 @@ export function ReceptionScreen() {
 
                                     <button
                                         onClick={openCreateIntent}
-                                        className="dark:bg-zinc-100 hover:bg-white dark:text-zinc-900 bg-zinc-900 text-white border border-zinc-200 px-4 py-2 rounded-lg text-sm font-semibold shadow-lg shadow-black/20 hover:shadow-xl hover:shadow-black/30 transition-all duration-200 flex items-center gap-2 pointer-events-auto active:scale-95 active:shadow-inner"
+                                        className={cn(
+                                            "px-4 py-2 rounded-lg text-sm font-bold shadow-lg transition-all duration-200 flex items-center gap-2 pointer-events-auto active:scale-95",
+                                            theme === 'dark'
+                                                ? "bg-zinc-100 text-zinc-900 hover:bg-white shadow-black/40"
+                                                : "bg-zinc-800 text-white hover:bg-zinc-700 shadow-black/20"
+                                        )}
                                     >
                                         <Plus className="w-4 h-4" />
                                         Registration

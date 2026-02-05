@@ -1,17 +1,19 @@
-import { useRef, useState, useEffect } from 'react'; // Added Hooks
+import { useRef, useState, useEffect } from 'react';
 import { cn } from "@/lib/utils";
+import { useTheme } from "@/context/ThemeContext";
 
 export function ActionQueueHeader({ title, count }) {
     return (
         <div className="flex items-center gap-3 mb-3 px-1">
-            <h2 className="text-lg font-medium dark:text-zinc-200 text-zinc-800">{title}</h2>
+            <h2 className="text-lg font-bold dark:text-zinc-200 text-zinc-800">{title}</h2>
         </div>
     );
 }
 
 export function ActionQueue({ columns, data, onAction }) {
+    const { theme } = useTheme();
     // ROVING TAB INDEX STATE
-    const [focusedIndex, setFocusedIndex] = useState(0);
+    const [focusedIndex, setFocusedIndex] = useState(null);
     const rowRefs = useRef([]);
 
     // Update refs array when data changes
@@ -40,16 +42,62 @@ export function ActionQueue({ columns, data, onAction }) {
             if (trigger) trigger.click();
         }
     };
+    // MODE ISOLATION CONTRACT: High-fidelity Style Mapping
+    const isDark = theme === 'dark';
+
+    const ui = {
+        container: isDark
+            ? "bg-zinc-900 border-white/5 shadow-2xl"
+            : "bg-white border-black/[0.1] shadow-[0_4px_20px_rgba(0,0,0,0.05)]",
+        headerRow: isDark
+            ? "bg-zinc-800 border-b border-white/5"
+            : "border-b border-black/[0.08]",
+        headerText: isDark
+            ? "text-[11px] font-semibold text-zinc-400 tracking-wider"
+            : "text-[11px] font-bold text-zinc-800 tracking-widest",
+        row: (isHistory, isFocused) => isDark
+            ? cn(
+                "transition-all duration-200 outline-none border border-transparent",
+                "focus:bg-zinc-800 hover:bg-zinc-800",
+                isHistory ? "bg-black/10 opacity-40 grayscale" : "bg-zinc-950/40"
+            )
+            : cn(
+                "border border-black/[0.1] transition-all duration-200 outline-none",
+                "focus:bg-blue-100/30 hover:bg-zinc-100/80",
+                isHistory
+                    ? "bg-zinc-100/30 opacity-60 grayscale"
+                    : "bg-white shadow-[0_4px_12px_rgba(0,0,0,0.06),inset_0_1px_0_rgba(255,255,255,1)]"
+            )
+    };
 
     return (
-        <div className="dark:bg-zinc-900/80 glass-elevated-light dark:backdrop-filter-none dark:shadow-xl dark:border-white/10 rounded-2xl overflow-hidden flex-1 flex flex-col min-h-0">
-            {/* Header Row - Light Grey/Glassy */}
-            <div className="dark:bg-white/5 glass-surface-light dark:backdrop-filter-none dark:border-white/5 px-4 py-3 grid grid-cols-[1fr_2fr_1fr_1fr_minmax(100px,auto)] gap-4">
-                {columns.map((col, idx) => (
-                    <div key={idx} className={cn("text-xs font-semibold dark:text-zinc-400 text-zinc-500 uppercase tracking-wider", col.className)}>
-                        {col.header}
-                    </div>
-                ))}
+        <div
+            className={cn(
+                "flex-1 flex flex-col rounded-xl border overflow-hidden transition-all duration-300",
+                ui.container
+            )}
+            style={{
+                background: isDark ?
+                    `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.6' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.005'/%3E%3C/svg%3E"), 
+                 #18181b` :
+                    `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.6' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.01'/%3E%3C/svg%3E"), 
+                 linear-gradient(to bottom, rgba(252, 254, 255, 0.99) 0%, rgba(248, 252, 255, 0.99) 50%, rgba(245, 250, 255, 0.99) 100%)`
+            }}
+        >
+            {/* Header Row */}
+            <div
+                className={cn("h-12 flex items-center px-4 shrink-0", ui.headerRow)}
+                style={!isDark ? {
+                    background: `linear-gradient(to bottom, rgba(248, 253, 255, 0.98) 0%, rgba(238, 245, 248, 0.98) 50%, rgba(228, 235, 238, 0.98) 100%)`
+                } : {}}
+            >
+                <div className="grid flex-1 grid-cols-[1fr_2fr_1fr_1fr_minmax(100px,auto)] gap-4">
+                    {columns.map((col, idx) => (
+                        <div key={idx} className={cn("uppercase", ui.headerText, col.className)}>
+                            {col.header}
+                        </div>
+                    ))}
+                </div>
             </div>
 
             {/* Body */}
@@ -78,19 +126,10 @@ export function ActionQueue({ columns, data, onAction }) {
                                 ref={el => rowRefs.current[rowIdx] = el}
                                 tabIndex={focusedIndex === rowIdx ? 0 : -1}
                                 onKeyDown={(e) => handleKeyDown(e, rowIdx)}
-                                onClick={() => {
-                                    setFocusedIndex(rowIdx);
-                                    // Optional: Click on row also triggers primary action? 
-                                    // Canon says "Enter" triggers. Mouse click on button triggers naturally.
-                                    // Mouse click on ROW usually selects it. Let's strictly follow button click for action.
-                                }}
+                                onClick={() => setFocusedIndex(rowIdx)}
                                 className={cn(
-                                    "rounded-lg p-3 grid grid-cols-[1fr_2fr_1fr_1fr_minmax(100px,auto)] gap-4 items-center transition-all duration-150 group border dark:border-white/5 border-white/20 shadow-sm cursor-default",
-                                    "focus-synos", // CANONICAL FOCUS RING ON ROW
-                                    // HISTORY VISUAL HIERARCHY: Secondary, muted, but interactive on hover
-                                    isHistory
-                                        ? "dark:bg-zinc-900/10 bg-zinc-50/30 dark:opacity-50 opacity-60 grayscale hover:grayscale-0 hover:opacity-100 dark:hover:bg-zinc-900/40 hover:bg-white/60"
-                                        : "dark:bg-zinc-950/30 glass-surface-light dark:backdrop-filter-none hover:bg-white/60 dark:hover:bg-white/[0.02]"
+                                    "rounded-lg p-3 grid grid-cols-[1fr_2fr_1fr_1fr_minmax(100px,auto)] gap-4 items-center group cursor-default",
+                                    ui.row(isHistory, focusedIndex === rowIdx)
                                 )}
                             >
                                 {/* Cell Rendering */}

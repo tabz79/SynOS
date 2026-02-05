@@ -1,5 +1,6 @@
 import { useLayoutEffect, useRef } from 'react';
 import { cn } from "@/lib/utils";
+import { useTheme } from "@/context/ThemeContext";
 
 export function RealityTile({ value, label, qualifier, icon: Icon, color = "default", id, style, isHidden, isCollapsed }) {
     const colorClasses = {
@@ -11,17 +12,31 @@ export function RealityTile({ value, label, qualifier, icon: Icon, color = "defa
         zinc: "bg-zinc-300"
     };
 
+    const { theme } = useTheme();
+    const isDark = theme === 'dark';
+
+    const ui = {
+        card: isDark
+            ? "bg-white/95 border-white/10 shadow-lg"
+            : "bg-white shadow-[0_4px_12px_rgba(0,0,0,0.04),inset_0_1px_0_rgba(255,255,255,1)] border border-black/[0.1] hover:bg-white",
+        text: "text-zinc-900"
+    };
+
     return (
         <div
             id={id}
             style={{
                 ...style,
-                background: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.6' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.015'/%3E%3C/svg%3E"), 
-                             linear-gradient(to bottom, #ffffff 0%, #f9fafb 100%)`
+                background: isDark
+                    ? `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.6' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.005'/%3E%3C/svg%3E"), 
+                         #ffffff`
+                    : `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.6' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.015'/%3E%3C/svg%3E"), 
+                         linear-gradient(to bottom, #ffffff 0%, #f9fafb 100%)`
             }}
             className={cn(
-                "dark:bg-zinc-900 shadow-[0_4px_12px_rgba(0,0,0,0.04),inset_0_1px_0_rgba(255,255,255,1)] text-zinc-900 rounded-xl border border-black/[0.1] hover:bg-white transition-all duration-300 group cursor-default flex flex-col justify-between",
+                "rounded-xl transition-all duration-300 group cursor-default flex flex-col justify-between",
                 "isolation-auto relative z-10",
+                ui.card,
                 // FLIP: Opacity handled via props/style during animation, but base state here
                 isHidden && "opacity-0 pointer-events-none",
                 // STATE A (Expanded): h-32, p-5
@@ -31,7 +46,8 @@ export function RealityTile({ value, label, qualifier, icon: Icon, color = "defa
         >
             <div className="flex justify-between items-start">
                 <span className={cn(
-                    "font-bold font-sans tracking-tight text-zinc-900 group-hover:scale-[1.02] transition-transform duration-300 origin-left",
+                    "font-bold font-sans tracking-tight group-hover:scale-[1.02] transition-transform duration-300 origin-left",
+                    ui.text,
                     // TYPOGRAPHY MORPH & SCALING:
                     // State C (Collapsed): Always 3xl
                     // State A (Expanded): Scale based on length to fit 1M+ (7+ chars)
@@ -71,7 +87,7 @@ export function RealityTile({ value, label, qualifier, icon: Icon, color = "defa
 
                 {/* Progress/indicator line */}
                 <div className={cn(
-                    "w-full dark:bg-white bg-zinc-100 rounded-full overflow-hidden",
+                    "w-full bg-zinc-100 rounded-full overflow-hidden",
                     isCollapsed ? "h-1" : "h-1.5"
                 )}>
                     <div className={cn("h-full rounded-full w-1/3 transition-all duration-500", colorClasses[color] || "bg-zinc-400")} />

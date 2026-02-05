@@ -125,10 +125,16 @@
     background: transparent;
   }
 
+  /* Light Mode Scrollbar (Default) */
   ::-webkit-scrollbar-thumb {
-    @apply bg-zinc-800 rounded-full hover:bg-zinc-700 transition-colors;
-    border: 1px solid transparent;
-    background-clip: content-box;
+    @apply bg-zinc-300/80 rounded-full hover:bg-zinc-400 transition-colors;
+    border: 1.5px solid transparent;
+    background-clip: padding-box;
+  }
+
+  /* Dark Mode Scrollbar Override */
+  .dark ::-webkit-scrollbar-thumb {
+    @apply bg-zinc-800/80 hover:bg-zinc-700;
   }
 
   ::-webkit-scrollbar-corner {
