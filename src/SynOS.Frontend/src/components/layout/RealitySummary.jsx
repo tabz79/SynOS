@@ -52,10 +52,10 @@ export function RealityTile({ value, label, qualifier, icon: Icon, color = "defa
                     // State C (Collapsed): Always 3xl
                     // State A (Expanded): Scale based on length to fit 1M+ (7+ chars)
                     isCollapsed
-                        ? "text-3xl leading-none"
-                        : value && value.toString().length > 9 ? "text-3xl" // 1 Crore+
-                            : value && value.toString().length > 6 ? "text-4xl" // 10 Lakhs+
-                                : "text-5xl" // Default
+                        ? "text-3xl leading-tight pb-0.5" // Fixed: leading-none caused clipping. Added pb-0.5 buffer.
+                        : value && value.toString().length > 9 ? "text-3xl leading-snug" // 1 Crore+
+                            : value && value.toString().length > 6 ? "text-4xl leading-snug" // 10 Lakhs+
+                                : "text-5xl leading-tight pb-1" // Default (Added pb-1 and relaxed leading)
                 )}>
                     {value}
                 </span>
@@ -185,7 +185,7 @@ export function RealitySummary({ tiles = [], isCollapsed }) {
         <div
             ref={containerRef}
             className={cn(
-                "grid transition-none will-change-transform", // Removed overflow-hidden to prevent shadow/edge clipping
+                "grid transition-none", // Removed will-change-transform (Fixes Pixelated Text)
                 isCollapsed
                     ? "grid-cols-6 grid-rows-[auto_0px] gap-x-4 gap-y-0 pb-0 overflow-hidden" // Only clip when collapsed (hiding row 2)
                     : "grid-cols-4 gap-4 p-1" // Added p-1 to breathe and show shadows
