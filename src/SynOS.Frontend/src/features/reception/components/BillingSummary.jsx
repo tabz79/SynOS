@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Tag, X, Loader2, IndianRupee, Lock, AlertCircle, Smartphone, CreditCard } from 'lucide-react'
 import { ReceptionApi } from '@/api/reception'
 import { cn } from '@/lib/utils'
+import { useTheme } from '@/context/ThemeContext'
 
 export function BillingSummary({ snapshot, onVisitUpdated, isCorrectionIntent, isPrepaidIntent, paymentMethod, setPaymentMethod }) {
     // Local UI State
@@ -20,6 +21,37 @@ export function BillingSummary({ snapshot, onVisitUpdated, isCorrectionIntent, i
     const billing = snapshot?.billing;
     const uiHints = snapshot?.uiHints;
     const visitId = snapshot?.visit?.visitId || snapshot?.visit?.id;
+
+    const { theme } = useTheme();
+    const isDark = theme === 'dark';
+
+    const ui = isDark ? {
+        indicator: "bg-zinc-800 border-synos-border text-zinc-400",
+        headerText: "text-zinc-200",
+        container: "bg-zinc-950/25 border-synos-border",
+        rowLabel: "text-zinc-400",
+        rowValue: "text-zinc-400 font-mono",
+        netLabel: "text-zinc-200",
+        netValue: "text-white",
+        input: "bg-zinc-900 border-synos-border text-white focus:border-synos-primary",
+        method: {
+            active: "bg-zinc-100 text-black border-white font-bold shadow-md",
+            inactive: "bg-zinc-900 text-zinc-500 border-zinc-800 hover:bg-zinc-800 hover:text-zinc-300"
+        }
+    } : {
+        indicator: "bg-zinc-100 border-zinc-200 text-zinc-400",
+        headerText: "text-zinc-900",
+        container: "bg-zinc-50 border-zinc-200 shadow-sm",
+        rowLabel: "text-zinc-500",
+        rowValue: "text-zinc-700 font-mono font-bold",
+        netLabel: "text-zinc-900",
+        netValue: "text-black",
+        input: "bg-white border-zinc-200 text-zinc-900 focus:border-zinc-900 shadow-sm",
+        method: {
+            active: "bg-zinc-900 text-white border-zinc-900 font-bold shadow-md",
+            inactive: "bg-white text-zinc-500 border-zinc-200 hover:bg-zinc-50 hover:text-zinc-900 shadow-sm"
+        }
+    };
 
     // Strict Guard: If no billing object, render nothing (or skeleton).
     if (!billing) return null;
@@ -151,19 +183,19 @@ export function BillingSummary({ snapshot, onVisitUpdated, isCorrectionIntent, i
         <div className="space-y-4">
             {/* Header */}
             <div className="flex items-center justify-between mb-2 mt-6">
-                <div className="flex items-center gap-2 text-zinc-400">
-                    <div className="w-6 h-6 rounded-full bg-zinc-800 flex items-center justify-center text-xs font-bold border border-synos-border">
+                <div className="flex items-center gap-2">
+                    <div className={cn("w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold border", ui.indicator)}>
                         3
                     </div>
-                    <h3 className="font-medium text-sm text-zinc-200 uppercase tracking-wide">Financials</h3>
+                    <h3 className={cn("font-bold text-sm uppercase tracking-wide", ui.headerText)}>Financials</h3>
                     {isProcessing && <Loader2 className="w-3 h-3 animate-spin text-synos-primary" />}
                 </div>
                 {billing.paymentStatus && (
                     <div className={cn(
                         "px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border",
                         billing.paymentStatus === 'Paid'
-                            ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
-                            : "bg-amber-500/10 text-amber-500 border-amber-500/20"
+                            ? (isDark ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20" : "bg-emerald-100 text-emerald-700 border-emerald-200")
+                            : (isDark ? "bg-amber-500/10 text-amber-500 border-amber-500/20" : "bg-amber-100 text-amber-700 border-amber-200")
                     )}>
                         {billing.paymentStatus}
                     </div>
@@ -175,15 +207,15 @@ export function BillingSummary({ snapshot, onVisitUpdated, isCorrectionIntent, i
                 <div className={cn(
                     "p-3 rounded-lg border flex items-center justify-between shadow-lg animate-in slide-in-from-top-2 duration-300",
                     settlementDiff > 0
-                        ? "bg-emerald-950/40 border-emerald-500/50 text-emerald-100" // Refund
-                        : "bg-red-950/40 border-red-500/50 text-red-100" // Due
+                        ? (isDark ? "bg-emerald-950/40 border-emerald-500/50 text-emerald-100" : "bg-emerald-50 border-emerald-200 text-emerald-800") // Refund
+                        : (isDark ? "bg-red-950/40 border-red-500/50 text-red-100" : "bg-red-50 border-red-200 text-red-800") // Due
                 )}>
                     <div className="flex flex-col">
                         <span className="text-[10px] font-bold uppercase tracking-wider opacity-80">
                             {settlementDiff > 0 ? "Refund Due to Patient" : "Additional Payment Due"}
                         </span>
                         <span className="text-sm opacity-70">
-                            audit-trail-pending...
+                            {settlementDiff > 0 ? "Credit balance found after changes" : "Amount due after audit changes"}
                         </span>
                     </div>
                     <div className="text-xl font-mono font-bold">
@@ -192,21 +224,22 @@ export function BillingSummary({ snapshot, onVisitUpdated, isCorrectionIntent, i
                 </div>
             )}
 
-            <div className="bg-zinc-950/25 border border-synos-border rounded-lg p-4 space-y-4 relative overflow-hidden">
+            <div className={cn("rounded-lg p-4 space-y-4 relative overflow-hidden border", ui.container)}>
 
                 {/* Visual Lock Indicator - REMOVED for Silent Enforcement */}
 
                 {/* REFERRAL SOURCE (Read-Only Visualization) */}
                 <div className="space-y-1">
                     <label className="text-[10px] uppercase font-bold text-zinc-500 tracking-wider">Referral Source</label>
-                    <div className="text-xs text-zinc-300 font-medium bg-zinc-900/50 p-2 rounded border border-zinc-800 flex items-center justify-between">
+                    <div className={cn("text-xs font-bold p-2 rounded border flex items-center justify-between",
+                        isDark ? "text-zinc-300 bg-zinc-900/50 border-zinc-800" : "text-zinc-900 bg-white border-black/[0.05] shadow-sm")}>
                         {snapshot?.billing?.referral?.partner ? (
                             <span className="flex items-center gap-2">
-                                <div className="w-1.5 h-1.5 rounded-full bg-indigo-500"></div>
+                                <div className="w-1.5 h-1.5 rounded-full bg-indigo-500 shadow-[0_0_8px_indigo]"></div>
                                 {snapshot.billing.referral.partner.displayName}
                             </span>
                         ) : (
-                            <span className="text-zinc-500 italic">No Referral Partner</span>
+                            <span className="text-zinc-400 italic font-medium">No Referral Partner</span>
                         )}
                     </div>
                 </div>
@@ -214,17 +247,17 @@ export function BillingSummary({ snapshot, onVisitUpdated, isCorrectionIntent, i
                 {/* A. Totals Section (DUMB RENDERER) */}
                 <div className="space-y-3 text-sm">
                     {/* Gross */}
-                    <div className="flex justify-between items-center text-zinc-400">
-                        <span>Total Amount</span>
-                        <span className="font-mono">₹{billing.grossAmount?.toLocaleString() ?? "—"}</span>
+                    <div className="flex justify-between items-center">
+                        <span className={ui.rowLabel}>Total Amount</span>
+                        <span className={ui.rowValue}>₹{billing.grossAmount?.toLocaleString() ?? "—"}</span>
                     </div>
 
                     {/* Discount Applied */}
-                    <div className="flex justify-between items-center text-zinc-400">
-                        <span>Discount</span>
+                    <div className="flex justify-between items-center">
+                        <span className={ui.rowLabel}>Discount</span>
                         {billing.appliedDiscount ? (
                             <div className="flex items-center gap-2">
-                                <span className="font-mono text-emerald-400 flex items-center gap-1">
+                                <span className={cn("font-mono font-bold flex items-center gap-1", isDark ? "text-emerald-400" : "text-emerald-600")}>
                                     - ₹{billing.discountAmount?.toLocaleString()}
                                     <span className="text-xs opacity-70">({billing.appliedDiscount.name})</span>
                                 </span>
@@ -232,7 +265,8 @@ export function BillingSummary({ snapshot, onVisitUpdated, isCorrectionIntent, i
                                     <button
                                         onClick={handleRemoveDiscount}
                                         disabled={isProcessing}
-                                        className="p-1 hover:bg-zinc-800 rounded-full text-zinc-500 hover:text-red-400 transition-colors focus-synos"
+                                        className={cn("p-1 rounded-full transition-colors",
+                                            isDark ? "hover:bg-zinc-800 text-zinc-500 hover:text-red-400" : "hover:bg-red-50 text-zinc-400 hover:text-red-600")}
                                         title="Remove Discount"
                                     >
                                         <X className="w-3 h-3" />
@@ -240,25 +274,25 @@ export function BillingSummary({ snapshot, onVisitUpdated, isCorrectionIntent, i
                                 )}
                             </div>
                         ) : (
-                            <span className="font-mono text-zinc-600">No discount applied</span>
+                            <span className="font-mono text-zinc-500 opacity-50">No discount applied</span>
                         )}
                     </div>
 
                     {/* Tax */}
-                    <div className="flex justify-between items-center text-zinc-500 text-xs">
-                        <span>GST / Tax</span>
-                        <span className="font-mono">₹{billing.taxAmount?.toLocaleString() ?? "—"}</span>
+                    <div className="flex justify-between items-center text-xs">
+                        <span className={ui.rowLabel}>GST / Tax</span>
+                        <span className={ui.rowValue}>₹{billing.taxAmount?.toLocaleString() ?? "—"}</span>
                     </div>
 
                     {/* Divider */}
-                    <div className="border-t border-dashed border-zinc-800 my-2"></div>
+                    <div className={cn("border-t border-dashed my-2", isDark ? "border-zinc-800" : "border-zinc-200")}></div>
 
                     {/* Net Payable */}
                     <div className="flex justify-between items-center">
-                        <span className="font-bold text-zinc-200">
+                        <span className={cn("font-bold text-sm", ui.netLabel)}>
                             {isPrepaidIntent ? "Amount to Collect (Prepaid)" : (billing.paymentStatus === 'Paid' ? "Total Bill Amount" : "Amount to Collect")}
                         </span>
-                        <span className="text-lg font-bold font-mono text-white flex items-center">
+                        <span className={cn("text-xl font-bold font-mono flex items-center", ui.netValue)}>
                             <IndianRupee className="w-4 h-4 mr-0.5" />
                             {displayAmountToCollect?.toLocaleString() ?? "—"}
                         </span>
@@ -269,18 +303,18 @@ export function BillingSummary({ snapshot, onVisitUpdated, isCorrectionIntent, i
                 {canPerformActions && (
                     <div className="pt-2 animate-in fade-in">
                         <select
-                            className="w-full bg-zinc-900 border border-synos-border rounded-md px-3 py-2 text-xs text-white focus:border-synos-primary outline-none transition-colors disabled:opacity-50 focus-synos"
+                            className={cn("w-full rounded-md px-3 py-2 text-xs outline-none transition-colors disabled:opacity-50 font-bold", ui.input)}
                             disabled={isProcessing}
                             value=""
                             onChange={(e) => {
                                 if (e.target.value) handleApplyDiscount(e.target.value);
                             }}
                         >
-                            <option value="" disabled>
+                            <option value="" disabled className="text-zinc-500">
                                 {billing.appliedDiscount ? "Replace Discount..." : "Apply a Discount..."}
                             </option>
                             {discountCatalog.map(discount => (
-                                <option key={discount.code} value={discount.code}>
+                                <option key={discount.code} value={discount.code} className={isDark ? "bg-zinc-900" : "bg-white"}>
                                     {discount.name} ({discount.code})
                                 </option>
                             ))}
@@ -298,15 +332,15 @@ export function BillingSummary({ snapshot, onVisitUpdated, isCorrectionIntent, i
                                     key={method}
                                     onClick={() => setPaymentMethod && setPaymentMethod(method)}
                                     className={cn(
-                                        "flex flex-col items-center justify-center py-2 rounded-md border text-xs transition-all focus-synos", // Added focus-synos
+                                        "flex flex-col items-center justify-center py-2 rounded-md border text-[10px] uppercase font-bold tracking-widest transition-all active:scale-95",
                                         paymentMethod === method
-                                            ? "bg-zinc-100 text-black border-white font-bold shadow-md"
-                                            : "bg-zinc-900 text-zinc-500 border-zinc-800 hover:bg-zinc-800 hover:text-zinc-300"
+                                            ? ui.method.active
+                                            : ui.method.inactive
                                     )}
                                 >
-                                    {method === 'Cash' && <IndianRupee className="w-4 h-4 mb-1" />}
-                                    {method === 'UPI' && <Smartphone className="w-4 h-4 mb-1" />}
-                                    {method === 'Card' && <CreditCard className="w-4 h-4 mb-1" />}
+                                    {method === 'Cash' && <IndianRupee className="w-3 h-3 mb-1" />}
+                                    {method === 'UPI' && <Smartphone className="w-3 h-3 mb-1" />}
+                                    {method === 'Card' && <CreditCard className="w-3 h-3 mb-1" />}
                                     {method}
                                 </button>
                             ))}
@@ -323,26 +357,29 @@ export function BillingSummary({ snapshot, onVisitUpdated, isCorrectionIntent, i
             {/* CORRECTION REASON MODAL */}
             {correctionState.isOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
-                    <div className="bg-zinc-900 border border-synos-border w-96 rounded-xl shadow-2xl p-6 space-y-4 animate-in zoom-in-95 duration-200">
+                    <div className={cn("w-96 rounded-xl shadow-2xl p-6 space-y-4 animate-in zoom-in-95 duration-200 border",
+                        isDark ? "bg-zinc-900 border-white/10 text-white" : "bg-white border-zinc-200 text-zinc-900")}>
                         <div className="space-y-1">
-                            <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                            <h3 className="text-lg font-bold flex items-center gap-2">
                                 <AlertCircle className="w-5 h-5 text-amber-500" />
                                 Confirm Financial Change
                             </h3>
-                            <p className="text-xs text-zinc-400">
-                                This action will be audited.
+                            <p className="text-xs text-zinc-500 font-medium">
+                                {isDark ? "This action will be audited." : "Mandatory audit reason required for financial override."}
                             </p>
                         </div>
 
                         <div className="space-y-2">
-                            <div className="text-xs font-mono text-zinc-500 bg-black/50 p-2 rounded border border-zinc-800">
+                            <div className={cn("text-xs font-mono p-2 rounded border",
+                                isDark ? "bg-black/50 border-zinc-800 text-zinc-400" : "bg-zinc-50 border-zinc-200 text-zinc-600")}>
                                 {correctionState.type}: {correctionState.payload?.code}
                             </div>
                             <textarea
                                 value={correctionState.reason}
                                 onChange={(e) => setCorrectionState(prev => ({ ...prev, reason: e.target.value }))}
                                 placeholder="Reason for this change (Required)..."
-                                className="w-full bg-black border border-zinc-700 rounded-lg p-3 text-sm text-white focus:border-amber-500 outline-none min-h-[80px]"
+                                className={cn("w-full rounded-lg p-3 text-sm outline-none min-h-[80px] transition-all",
+                                    isDark ? "bg-black border-zinc-700 text-white focus:border-amber-500" : "bg-zinc-50 border-zinc-200 text-zinc-900 focus:border-zinc-900")}
                                 autoFocus
                             />
                         </div>

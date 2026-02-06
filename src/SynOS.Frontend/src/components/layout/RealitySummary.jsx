@@ -34,7 +34,7 @@ export function RealityTile({ value, label, qualifier, icon: Icon, color = "defa
                          linear-gradient(to bottom, #ffffff 0%, #f9fafb 100%)`
             }}
             className={cn(
-                "rounded-xl transition-all duration-300 group cursor-default flex flex-col justify-between",
+                "rounded-xl transition-[transform,opacity] duration-300 group cursor-default flex flex-col justify-between",
                 "isolation-auto relative z-10",
                 ui.card,
                 // FLIP: Opacity handled via props/style during animation, but base state here

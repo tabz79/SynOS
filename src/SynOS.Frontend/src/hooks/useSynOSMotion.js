@@ -45,11 +45,24 @@ export function useFlipGroup(refs, triggers = [], options = {}) {
                 const dy = first.top - last.top;
                 const dx = first.left - last.left;
 
-                // Only animate if there is actual movement
-                if (dy !== 0 || dx !== 0) {
+                // SCALE CORRECTION (HEIGHT ONLY)
+                // If the height changed, we must scale the element to look like the old size 
+                // at the start of the animation to prevent "content jump".
+                const sh = first.height / last.height;
+                const sw = first.width / last.width;
+                const needsScale = options.scaleCompensation && (sh !== 1 || sw !== 1);
+
+                // Only animate if there is actual movement or resizing
+                if (dy !== 0 || dx !== 0 || needsScale) {
                     domNode.animate([
-                        { transform: `translate(${dx}px, ${dy}px)` },
-                        { transform: 'none' }
+                        {
+                            transformOrigin: 'top left',
+                            transform: `translate(${dx}px, ${dy}px) ${needsScale ? `scale(${sw}, ${sh})` : ''}`
+                        },
+                        {
+                            transformOrigin: 'top left',
+                            transform: 'none'
+                        }
                     ], {
                         duration: SYNOS_MOTION.DURATION,
                         easing: SYNOS_MOTION.EASING,

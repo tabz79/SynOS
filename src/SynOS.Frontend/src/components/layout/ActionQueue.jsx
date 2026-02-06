@@ -73,7 +73,7 @@ export function ActionQueue({ columns, data, onAction }) {
     return (
         <div
             className={cn(
-                "flex-1 flex flex-col rounded-xl border overflow-hidden transition-all duration-300",
+                "flex-1 flex flex-col rounded-xl border overflow-hidden transition-[background-color,border-color,box-shadow] duration-300",
                 ui.container
             )}
             style={{
@@ -102,46 +102,56 @@ export function ActionQueue({ columns, data, onAction }) {
 
             {/* Body */}
             <div className="overflow-auto flex-1 p-2 space-y-1 scrollbar-thin scrollbar-thumb-zinc-800/50 hover:scrollbar-thumb-zinc-700">
-                {data.map((row, rowIdx) => {
-                    // GROUPING LOGIC
-                    const isHistory = row.dateGroup && row.dateGroup !== "Today";
-                    // HIDE HEADER FOR "Today" (Implicit)
-                    const showHeader = row.dateGroup !== "Today" && (rowIdx === 0 || (row.dateGroup && data[rowIdx - 1].dateGroup !== row.dateGroup));
-
-                    return (
-                        <div key={rowIdx}>
-                            {/* DATE GROUP HEADER */}
-                            {showHeader && (
-                                <div className={cn(
-                                    "px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-zinc-600 mt-4 mb-2 flex items-center gap-3",
-                                    rowIdx === 0 && "mt-0"
-                                )}>
-                                    <div className="h-px dark:bg-zinc-800/50 bg-zinc-300/50 flex-1"></div>
-                                    <span>{row.dateGroup || "Today"}</span>
-                                    <div className="h-px dark:bg-zinc-800/50 bg-zinc-300/50 flex-1"></div>
-                                </div>
-                            )}
-
-                            <div
-                                ref={el => rowRefs.current[rowIdx] = el}
-                                tabIndex={focusedIndex === rowIdx ? 0 : -1}
-                                onKeyDown={(e) => handleKeyDown(e, rowIdx)}
-                                onClick={() => setFocusedIndex(rowIdx)}
-                                className={cn(
-                                    "rounded-lg p-3 grid grid-cols-[1fr_2fr_1fr_1fr_minmax(100px,auto)] gap-4 items-center group cursor-default",
-                                    ui.row(isHistory, focusedIndex === rowIdx)
-                                )}
-                            >
-                                {/* Cell Rendering */}
-                                {columns.map((col, colIdx) => (
-                                    <div key={colIdx} className={cn("text-sm dark:text-zinc-300 text-zinc-700", col.className)}>
-                                        {col.render ? col.render(row) : row[col.accessor]}
-                                    </div>
-                                ))}
-                            </div>
+                {data.length === 0 ? (
+                    <div className="h-full flex flex-col items-center justify-center text-zinc-500/40 space-y-3">
+                        <div className="p-6 rounded-full dark:bg-zinc-800/20 bg-black/[0.02] shadow-inner">
+                            <div className="w-12 h-px bg-current opacity-20" />
+                            <div className="w-8 h-px bg-current opacity-10 mt-1 mx-auto" />
                         </div>
-                    );
-                })}
+                        <span className="text-xs font-medium uppercase tracking-widest italic">Operational Silence</span>
+                    </div>
+                ) : (
+                    data.map((row, rowIdx) => {
+                        // GROUPING LOGIC
+                        const isHistory = row.dateGroup && row.dateGroup !== "Today";
+                        // HIDE HEADER FOR "Today" (Implicit)
+                        const showHeader = row.dateGroup !== "Today" && (rowIdx === 0 || (row.dateGroup && data[rowIdx - 1].dateGroup !== row.dateGroup));
+
+                        return (
+                            <div key={rowIdx}>
+                                {/* DATE GROUP HEADER */}
+                                {showHeader && (
+                                    <div className={cn(
+                                        "px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-zinc-600 mt-4 mb-2 flex items-center gap-3",
+                                        rowIdx === 0 && "mt-0"
+                                    )}>
+                                        <div className="h-px dark:bg-zinc-800/50 bg-zinc-300/50 flex-1"></div>
+                                        <span>{row.dateGroup || "Today"}</span>
+                                        <div className="h-px dark:bg-zinc-800/50 bg-zinc-300/50 flex-1"></div>
+                                    </div>
+                                )}
+
+                                <div
+                                    ref={el => rowRefs.current[rowIdx] = el}
+                                    tabIndex={focusedIndex === rowIdx ? 0 : -1}
+                                    onKeyDown={(e) => handleKeyDown(e, rowIdx)}
+                                    onClick={() => setFocusedIndex(rowIdx)}
+                                    className={cn(
+                                        "rounded-lg p-3 grid grid-cols-[1fr_2fr_1fr_1fr_minmax(100px,auto)] gap-4 items-center group cursor-default",
+                                        ui.row(isHistory, focusedIndex === rowIdx)
+                                    )}
+                                >
+                                    {/* Cell Rendering */}
+                                    {columns.map((col, colIdx) => (
+                                        <div key={colIdx} className={cn("text-sm dark:text-zinc-300 text-zinc-700", col.className)}>
+                                            {col.render ? col.render(row) : row[col.accessor]}
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        );
+                    })
+                )}
             </div>
         </div>
     );

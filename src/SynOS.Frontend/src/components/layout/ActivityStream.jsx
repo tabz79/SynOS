@@ -193,9 +193,11 @@ export function ActivityStream({ serverTime }) {
 
                 {/* Empty State */}
                 {!loading && !error && events.length === 0 && (
-                    <div className="flex flex-col items-center justify-center h-full text-zinc-600 opacity-50 space-y-2">
-                        <Activity className="w-8 h-8 opacity-20" />
-                        <span className="text-xs italic">Silence on the deck...</span>
+                    <div className="flex flex-col items-center justify-center h-full text-zinc-600 space-y-3">
+                        <div className="p-4 rounded-3xl dark:bg-zinc-800/20 bg-black/[0.03] shadow-inner">
+                            <Activity className="w-10 h-10 opacity-20" />
+                        </div>
+                        <span className="text-xs italic opacity-50">Silence on the deck...</span>
                     </div>
                 )}
 

@@ -148,7 +148,8 @@ export function ReceptionScreen() {
 
     // FLIP ENGINE: 260ms OS-Bezier
     // When isSummaryCollapsed changes, measures Start, DOM updates (Height Reflow), measures End, Inverts, Plays.
-    useFlipGroup([summaryRef, queueRef], [isSummaryCollapsed]);
+    // We enable scaleCompensation to prevent ActionQueue content jumping during height change.
+    useFlipGroup([summaryRef, queueRef], [isSummaryCollapsed], { scaleCompensation: true });
 
     // We'll use the refs in the JSX below.
 
@@ -342,7 +343,7 @@ export function ReceptionScreen() {
             <SystemBar serverTime={serverTimeAnchor} syncStatus={connectionStatus} />
 
             <div className="flex-1 p-4 overflow-hidden">
-                <div className="flex h-full gap-4 transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]">
+                <div className="flex h-full gap-4">
 
                     {/* Left Column: Reality + Work */}
                     <div

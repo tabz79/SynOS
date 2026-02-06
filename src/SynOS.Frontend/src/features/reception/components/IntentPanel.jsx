@@ -9,7 +9,8 @@ import { useState, useEffect, useRef } from 'react'
 import { ReceptionApi } from '@/api/reception'
 import { SignalRService } from '@/lib/signalr'
 import { usePanelEntry, useFlipGroup } from '@/hooks/useSynOSMotion' // Ensure imports are correct if splitting lines or adding new ones
-import { useFocusTrap } from '@/hooks/useFocusTrap' // NEW
+import { useFocusTrap } from '@/hooks/useFocusTrap'
+import { useTheme } from '@/context/ThemeContext'
 
 export function IntentPanel() {
     // Keep closing logic local/UI-only for now, or move to snapshot if "open/closed" is backend state (unlikely)
@@ -44,6 +45,32 @@ export function IntentPanel() {
     // State for Patient ID & Visit ID
     const [currentPatientId, setCurrentPatientId] = useState(null);
     const [currentVisitId, setCurrentVisitId] = useState(null);
+
+    const { theme } = useTheme();
+    const isDark = theme === 'dark';
+
+    // THEME ISOLATION CONTRACT: Style Branching
+    const ui = isDark ? {
+        panel: "bg-zinc-900/80 backdrop-blur-xl border border-white/10 shadow-2xl relative z-20 ring-1 ring-white/5",
+        header: "bg-white/5 backdrop-blur-md border-b border-white/5",
+        footer: "bg-white/5 border-t border-synos-border",
+        title: "text-white",
+        subtitle: "text-synos-muted opacity-60",
+        actionBtn: {
+            enabled: "bg-white text-black hover:bg-zinc-200 shadow-lg shadow-white/10",
+            disabled: "bg-zinc-800 text-zinc-500"
+        }
+    } : {
+        panel: "bg-white border border-black/[0.08] shadow-2xl relative z-20",
+        header: "bg-white/80 backdrop-blur-md border-b border-black/[0.05]",
+        footer: "bg-zinc-50/80 backdrop-blur-sm border-t border-black/[0.05]",
+        title: "text-zinc-900",
+        subtitle: "text-zinc-500",
+        actionBtn: {
+            enabled: "bg-zinc-900 text-zinc-100 hover:bg-black shadow-lg shadow-black/10",
+            disabled: "bg-zinc-100 text-zinc-400 border border-black/[0.05]"
+        }
+    };
 
     // Effect: Handle Drawer Mode Changes (Reset or Preset ID)
     useEffect(() => {
@@ -245,13 +272,13 @@ export function IntentPanel() {
     if (isCorrectionIntent) { panelTitle = "Correct Visit"; panelSubtitle = "Audit Logged"; }
 
     return (
-        <div ref={panelRef} className="flex flex-col h-full bg-zinc-900/80 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden shadow-2xl relative z-20 ring-1 ring-white/5">
+        <div ref={panelRef} className={cn("flex flex-col h-full overflow-hidden rounded-2xl", ui.panel)}>
             {/* Header */}
-            <div className="h-16 border-b border-white/5 flex items-center justify-between px-6 bg-white/5 backdrop-blur-md">
+            <div className={cn("h-16 flex items-center justify-between px-6 shrink-0", ui.header)}>
                 <div>
-                    <h2 className="text-xl font-bold text-white tracking-tight flex items-baseline gap-2">
+                    <h2 className={cn("text-xl font-bold tracking-tight flex items-baseline gap-2", ui.title)}>
                         {panelTitle}
-                        <span className="text-synos-muted text-sm font-normal uppercase tracking-widest opacity-60">— {panelSubtitle}</span>
+                        <span className={cn("text-sm font-normal uppercase tracking-widest", ui.subtitle)}>— {panelSubtitle}</span>
                     </h2>
                     <div className="text-[10px] font-mono text-emerald-400/80 uppercase tracking-wider mt-0.5 flex items-center gap-1.5">
                         <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
@@ -260,7 +287,10 @@ export function IntentPanel() {
                 </div>
                 <button
                     onClick={closePanel}
-                    className="p-2 -mr-2 hover:bg-white/10 rounded-full text-zinc-400 hover:text-white transition-all duration-200 active:scale-95"
+                    className={cn(
+                        "p-2 -mr-2 rounded-full transition-all duration-200 active:scale-95",
+                        isDark ? "hover:bg-white/10 text-zinc-400 hover:text-white" : "hover:bg-black/5 text-zinc-500 hover:text-zinc-900"
+                    )}
                 >
                     <X className="w-5 h-5" />
                 </button>
@@ -310,11 +340,16 @@ export function IntentPanel() {
             </div>
 
             {/* Footer / Status Bar - UNIFIED BUTTON */}
-            <div className="p-4 border-t border-synos-border bg-white/5 space-y-3">
+            <div className={cn("p-4 space-y-3", ui.footer)}>
                 {isCorrectionIntent ? (
                     <button
                         onClick={closePanel}
-                        className="w-full py-3 rounded-lg font-bold text-sm flex items-center justify-center gap-2 transition-all bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 border border-emerald-500/20 shadow-lg shadow-emerald-500/5"
+                        className={cn(
+                            "w-full py-3 rounded-lg font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-lg active:scale-95",
+                            isDark
+                                ? "bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 border border-emerald-500/20 shadow-emerald-500/5"
+                                : "bg-emerald-600 text-white hover:bg-emerald-700 shadow-emerald-500/10"
+                        )}
                     >
                         Finish Correction <AlertCircle className="w-4 h-4" />
                     </button>
@@ -326,8 +361,8 @@ export function IntentPanel() {
                             className={cn(
                                 "w-full py-3 rounded-lg font-bold text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.98]",
                                 isActionEnabled
-                                    ? "bg-white text-black hover:bg-zinc-200 shadow-lg shadow-white/10"
-                                    : "bg-zinc-800 text-zinc-500 cursor-not-allowed"
+                                    ? ui.actionBtn.enabled
+                                    : ui.actionBtn.disabled
                             )}
                         >
                             {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : (

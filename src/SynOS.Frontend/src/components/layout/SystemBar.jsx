@@ -91,13 +91,11 @@ export function SystemBar({ serverTime, syncStatus = "Not Synced" }) {
         ui.bar
       )}
       style={{
-        willChange: 'transform',
-        isolation: 'isolate',
         background: isDark
           ? `url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyBAMAAADsEZWCAAAAGFBMVEUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAt66YlAAAAB3RSTlMAo7S066u0v76zAAABJklEQVQ4jXWSwW7DIAyGvRNoV9HeIdp7B2nvHaK9d7D27lX836VpY6t0p8oHicDHP4Z99qGf96HvX+h7NfSmX8U8z9M0z6+P/m8X6fB6L78XpX4X5X4O6fc8l7e8n+T9KO87ed+m77pP33Wfvuu6T991nb7rum/ed5+87z55333yvvvkfffJ++6T990n77pP33Wfvus6fdd13rrvu67rvXXfd13ne+u+77rO99Z933Wdt67rtnXdt67rtnWdt67rtjW999Y9ve9997mPu8997uPus9fZZ6+zz15nn73OPnudvU9f0+v0Nb1OX9Pr9DW9Tm9O9vTmaE5vjua09f7o/db7rff7f9H3v6XvP9TzL/X+U8+/1fMv9fw7fQ=="), 
              #18181b`
           : `url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyBAMAAADsEZWCAAAAGFBMVEUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAt66YlAAAAB3RSTlMAo7S066u0v76zAAABJklEQVQ4jXWSwW7DIAyGvRNoV9HeIdp7B2nvHaK9d7D27lX836VpY6t0p8oHicDHP4Z99qGf96HvX+h7NfSmX8U8z9M0z6+P/m8X6fB6L78XpX4X5X4O6fc8l7e8n+T9KO87ed+m77pP33Wfvuu6T991nb7rum/ed5+87z55333yvvvkfffJ++6T990n77pP33Wfvus6fdd13rrvu67rvXXfd13ne+u+77rO99Z933Wdt67rtnXdt67rtnWdt67rtjW999Y9ve9997mPu8997uPus9fZZ6+zz15nn73OPnudvU9f0+v0Nb1OX9Pr9DW9Tm9O9vTmaE5vjua09f7o/db7rff7f9H3v6XvP9TzL/X+U8+/1fMv9fw7fQ=="), 
-             linear-gradient(to bottom, rgba(245, 252, 255, 0.96) 0%, rgba(230, 242, 245, 0.98) 50%, rgba(215, 225, 228, 0.98) 100%)`
+             linear-gradient(to bottom, #F5FCFF 0%, #E6F2F5 50%, #D7E1E4 100%)`
       }}
     >
 
@@ -137,7 +135,7 @@ export function SystemBar({ serverTime, syncStatus = "Not Synced" }) {
               ref={facilityRef}
               className={cn(
                 "absolute right-0 mt-2 w-64 z-50 rounded-2xl p-1 shadow-xl border",
-                isDark ? "dark:bg-zinc-800 dark:border-white/10" : "bg-white/95 backdrop-blur-xl border-black/5"
+                isDark ? "dark:bg-zinc-800 dark:border-white/10" : "bg-white border-black/5"
               )}
             >
               {availableBranches.map(b => (
@@ -172,7 +170,7 @@ export function SystemBar({ serverTime, syncStatus = "Not Synced" }) {
               ref={roleRef}
               className={cn(
                 "absolute right-0 mt-2 w-48 z-50 rounded-2xl p-1 shadow-xl border",
-                isDark ? "dark:bg-zinc-800 dark:border-white/10" : "bg-white/95 backdrop-blur-xl border-black/5"
+                isDark ? "dark:bg-zinc-800 dark:border-white/10" : "bg-white border-black/5"
               )}
             >
               <button

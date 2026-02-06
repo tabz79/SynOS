@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react'
-import { Search, UserPlus, UserCheck, Loader2 } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { Search, X, Loader2, UserPlus, Phone, Fingerprint, ArrowRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { ReceptionApi } from '@/api/reception'
+import { useTheme } from '@/context/ThemeContext'
 
 
 export function PatientIdentification({ snapshot, onSelectPatient, onClearPatient }) {
@@ -14,6 +15,39 @@ export function PatientIdentification({ snapshot, onSelectPatient, onClearPatien
 
     // Derived from Snapshot
     const selectedPatient = snapshot?.patient;
+
+    const { theme } = useTheme();
+    const isDark = theme === 'dark';
+
+    const ui = isDark ? {
+        indicator: {
+            active: "bg-synos-primary text-white border-synos-primary",
+            inactive: "bg-zinc-800 border-synos-border text-zinc-400"
+        },
+        headerText: {
+            active: "text-synos-primary",
+            inactive: "text-zinc-200"
+        },
+        input: "bg-zinc-900 border-synos-border text-white placeholder:text-zinc-600 focus:border-synos-primary",
+        emptyBox: "bg-zinc-800/30 border-zinc-700 text-zinc-400",
+        form: "bg-zinc-900 border-synos-border",
+        formLabel: "text-zinc-500",
+        formInput: "bg-black border-zinc-800 text-white focus:border-synos-primary"
+    } : {
+        indicator: {
+            active: "bg-zinc-900 text-white border-zinc-900",
+            inactive: "bg-zinc-100 border-zinc-200 text-zinc-400"
+        },
+        headerText: {
+            active: "text-zinc-900",
+            inactive: "text-zinc-500"
+        },
+        input: "bg-zinc-50 border-zinc-200 text-zinc-900 placeholder:text-zinc-400 focus:border-zinc-900",
+        emptyBox: "bg-zinc-50 border-zinc-200 text-zinc-500",
+        form: "bg-white border-zinc-200 shadow-sm",
+        formLabel: "text-zinc-600",
+        formInput: "bg-white border-zinc-200 text-zinc-900 focus:border-zinc-900"
+    };
 
     // Search Effect (Debounced)
     useEffect(() => {
@@ -47,18 +81,18 @@ export function PatientIdentification({ snapshot, onSelectPatient, onClearPatien
     return (
         <div className="space-y-4">
             {/* Header */}
-            <div className="flex items-center gap-2 text-zinc-400 mb-2">
+            <div className="flex items-center gap-2 mb-2">
                 <div className={cn(
                     "w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold border transition-colors",
                     selectedPatient
-                        ? "bg-synos-primary text-white border-synos-primary"
-                        : "bg-zinc-800 border-synos-border"
+                        ? ui.indicator.active
+                        : ui.indicator.inactive
                 )}>
                     1
                 </div>
                 <h3 className={cn(
-                    "font-medium text-sm uppercase tracking-wide transition-colors",
-                    selectedPatient ? "text-synos-primary" : "text-zinc-200"
+                    "font-bold text-sm uppercase tracking-wide transition-colors",
+                    selectedPatient ? ui.headerText.active : ui.headerText.inactive
                 )}>
                     Patient Identification
                 </h3>
@@ -81,21 +115,22 @@ export function PatientIdentification({ snapshot, onSelectPatient, onClearPatien
             {!selectedPatient && !isNewPatientMode && (
                 <div className="space-y-4 animate-in fade-in">
                     <div>
-                        <label className="block text-xs font-medium text-zinc-500 mb-1.5 ml-1">
+                        <label className={cn("block text-xs font-bold uppercase mb-1.5 ml-1", ui.formLabel)}>
                             Mobile Number / MRN
                         </label>
                         <div className="relative group">
-                            <Search className="absolute left-3 top-2.5 w-4 h-4 text-zinc-500 group-focus-within:text-synos-primary transition-colors" />
+                            <Search className="absolute left-3 top-2.5 w-4 h-4 text-zinc-400 group-focus-within:text-zinc-900 transition-colors" />
                             <input
                                 type="text"
+                                shadow-sm
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 placeholder="Search by Mobile..."
-                                className="w-full bg-zinc-900 border border-synos-border rounded-lg pl-9 pr-4 py-2 text-sm text-white focus:outline-none focus:border-synos-primary focus:ring-1 focus:ring-synos-primary transition-all placeholder:text-zinc-600 font-mono"
+                                className={cn("w-full rounded-lg pl-9 pr-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-zinc-900 transition-all font-mono", ui.input)}
                                 autoFocus
                             />
                             {isSearching && (
-                                <Loader2 className="absolute right-3 top-2.5 w-4 h-4 text-synos-primary animate-spin" />
+                                <Loader2 className="absolute right-3 top-2.5 w-4 h-4 text-zinc-500 animate-spin" />
                             )}
                         </div>
                     </div>
@@ -123,13 +158,13 @@ export function PatientIdentification({ snapshot, onSelectPatient, onClearPatien
                         <div className={cn(
                             "rounded-lg p-3 flex flex-col items-center gap-2 transition-all",
                             matches.length > 0
-                                ? "mt-4 border-t border-zinc-800 pt-4" // Subtle separator if matches exist
-                                : "bg-zinc-800/30 border border-dashed border-zinc-700" // Prominent box if no matches
+                                ? (isDark ? "mt-4 border-t border-zinc-800 pt-4" : "mt-4 border-t border-zinc-100 pt-4")
+                                : cn("border border-dashed", ui.emptyBox)
                         )}>
                             {matches.length === 0 ? (
-                                <span className="text-zinc-400 text-sm">No match found.</span>
+                                <span className="text-sm">No match found.</span>
                             ) : (
-                                <span className="text-zinc-500 text-xs text-center px-4">
+                                <span className="text-xs text-center px-4 opacity-70">
                                     Family member sharing this number?
                                 </span>
                             )}
@@ -139,8 +174,8 @@ export function PatientIdentification({ snapshot, onSelectPatient, onClearPatien
                                 className={cn(
                                     "flex items-center gap-2 px-4 py-1.5 rounded-md text-xs font-bold shadow-sm transition-colors",
                                     matches.length > 0
-                                        ? "bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white border border-zinc-700"
-                                        : "bg-zinc-100 hover:bg-white text-zinc-900"
+                                        ? (isDark ? "bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border-zinc-700" : "bg-zinc-100 hover:bg-zinc-200 text-zinc-600 border-zinc-200 border")
+                                        : (isDark ? "bg-zinc-100 hover:bg-white text-zinc-900" : "bg-zinc-900 hover:bg-black text-white")
                                 )}
                             >
                                 <UserPlus className="w-3.5 h-3.5" />
@@ -153,15 +188,15 @@ export function PatientIdentification({ snapshot, onSelectPatient, onClearPatien
 
             {/* NEW PATIENT FORM (Inline) */}
             {isNewPatientMode && (
-                <div className="bg-zinc-900 border border-synos-border rounded-lg p-4 animate-in slide-in-from-right-2">
+                <div className={cn("rounded-lg p-4 animate-in slide-in-from-right-2 border", ui.form)}>
                     <div className="flex items-center justify-between mb-4">
-                        <h4 className="text-sm font-bold text-white flex items-center gap-2">
+                        <h4 className={cn("text-sm font-bold flex items-center gap-2", isDark ? "text-white" : "text-zinc-900")}>
                             <UserPlus className="w-4 h-4 text-emerald-500" />
                             New Patient
                         </h4>
                         <button
                             onClick={() => setIsNewPatientMode(false)}
-                            className="text-xs text-zinc-500 hover:text-white"
+                            className="text-xs text-zinc-500 hover:text-zinc-900 transition-colors"
                         >
                             Cancel
                         </button>
@@ -200,14 +235,29 @@ const RichPatientCard = ({ patient, onAction, actionLabel, isLocked }) => {
         name = name.replace(' Patient', '');
     }
 
+    const { theme } = useTheme();
+    const isDark = theme === 'dark';
+
+    const cardUi = isDark ? {
+        locked: "bg-synos-primary/10 border border-synos-primary/30 cursor-default",
+        inactive: "bg-zinc-800/50 hover:bg-zinc-800 border border-synos-border hover:border-synos-primary/50 cursor-pointer",
+        name: isLocked ? "text-white" : "text-zinc-200 group-hover:text-white",
+        badge: isLocked ? "bg-synos-primary/20 border-synos-primary/30 text-synos-primary" : "bg-zinc-700 text-zinc-300",
+        mrn: "bg-zinc-900 border-zinc-800 text-zinc-600"
+    } : {
+        locked: "bg-zinc-900 text-white border-zinc-900 shadow-md cursor-default",
+        inactive: "bg-white hover:bg-zinc-50 border border-zinc-200 hover:border-zinc-300 shadow-sm cursor-pointer",
+        name: isLocked ? "text-white" : "text-zinc-900 group-hover:text-black",
+        badge: isLocked ? "bg-white/20 text-white" : "bg-zinc-100 text-zinc-600 border border-black/[0.05]",
+        mrn: "bg-zinc-50 border-zinc-200 text-zinc-500"
+    };
+
     return (
         <div
             onClick={onAction}
             className={cn(
                 "p-3 rounded-lg flex flex-col gap-3 transition-all group",
-                isLocked
-                    ? "bg-synos-primary/10 border border-synos-primary/30 cursor-default"
-                    : "bg-zinc-800/50 hover:bg-zinc-800 border border-synos-border hover:border-synos-primary/50 cursor-pointer"
+                isLocked ? cardUi.locked : cardUi.inactive
             )}
         >
             <div className="flex items-start justify-between">
@@ -223,7 +273,7 @@ const RichPatientCard = ({ patient, onAction, actionLabel, isLocked }) => {
                     <div>
                         <div className={cn(
                             "text-sm font-bold truncate pr-2", // Truncate long names
-                            isLocked ? "text-white" : "text-zinc-200 group-hover:text-white"
+                            cardUi.name
                         )}>
                             {name}
                         </div>
@@ -233,9 +283,7 @@ const RichPatientCard = ({ patient, onAction, actionLabel, isLocked }) => {
                             {/* Age Badge */}
                             <span className={cn(
                                 "px-1.5 py-0.5 rounded-full text-[10px] font-mono",
-                                isLocked
-                                    ? "bg-synos-primary/20 border border-synos-primary/30 text-synos-primary"
-                                    : "bg-zinc-700 text-zinc-300"
+                                cardUi.badge
                             )}>
                                 {age ? `${age}Y` : 'N/A'}
                             </span>
@@ -246,7 +294,7 @@ const RichPatientCard = ({ patient, onAction, actionLabel, isLocked }) => {
                                     "px-1.5 py-0.5 rounded-full text-[10px] uppercase font-mono border",
                                     isLocked
                                         ? "bg-synos-primary/20 border-synos-primary/30 text-synos-primary/80"
-                                        : "bg-zinc-800 border-zinc-700 text-zinc-500"
+                                        : (isDark ? "bg-zinc-800 border-zinc-700 text-zinc-500" : "bg-zinc-50 border-zinc-200 text-zinc-400")
                                 )}>
                                     {genderInitial}
                                 </span>
@@ -255,7 +303,9 @@ const RichPatientCard = ({ patient, onAction, actionLabel, isLocked }) => {
                             {/* Mobile Number (with separator) */}
                             <span className={cn(
                                 "text-xs font-mono ml-0.5 border-l pl-2",
-                                isLocked ? "text-synos-primary/80 border-synos-primary/30" : "text-zinc-500 border-zinc-700"
+                                isLocked
+                                    ? (isDark ? "text-synos-primary/80 border-synos-primary/30" : "text-white/70 border-white/20")
+                                    : (isDark ? "text-zinc-500 border-zinc-700" : "text-zinc-400 border-zinc-100")
                             )}>
                                 {mobile}
                             </span>
@@ -263,7 +313,9 @@ const RichPatientCard = ({ patient, onAction, actionLabel, isLocked }) => {
                             {/* MRN Badge (Enterprise Identity) */}
                             <span className={cn(
                                 "text-[10px] font-mono ml-1.5 px-1.5 py-0.5 rounded border tracking-wide",
-                                isLocked ? "bg-black/30 text-synos-primary/60 border-synos-primary/20" : "bg-zinc-900 text-zinc-600 border-zinc-800"
+                                isLocked
+                                    ? (isDark ? "bg-black/30 text-synos-primary/60 border-synos-primary/20" : "bg-white/10 text-white/50 border-white/20")
+                                    : cardUi.mrn
                             )}>
                                 MRN: {mrn}
                             </span>
@@ -338,8 +390,26 @@ const RichPatientCard = ({ patient, onAction, actionLabel, isLocked }) => {
 
 function RegisterFormInline({ onSuccess }) {
     const [formData, setFormData] = useState({ name: '', mobile: '', age: '', gender: 'Male' });
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const [error, setError] = useState(null);
+    const { theme } = useTheme();
+    const isDark = theme === 'dark';
+
+    const ui = isDark ? {
+        label: "text-zinc-500",
+        input: "bg-black border-zinc-800 text-white focus:border-synos-primary",
+        genderBox: "bg-black border-zinc-800",
+        genderBtn: {
+            active: "bg-zinc-800 text-white font-medium",
+            inactive: "text-zinc-500 hover:text-zinc-300"
+        }
+    } : {
+        label: "text-zinc-600",
+        input: "bg-zinc-50 border-zinc-200 text-zinc-900 focus:border-zinc-900",
+        genderBox: "bg-zinc-100 border-zinc-200",
+        genderBtn: {
+            active: "bg-white text-zinc-900 font-bold shadow-sm",
+            inactive: "text-zinc-500 hover:text-zinc-900"
+        }
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -363,12 +433,12 @@ function RegisterFormInline({ onSuccess }) {
 
     return (
         <form onSubmit={handleSubmit} className="space-y-3">
-            {error && <div className="text-xs text-red-400 bg-red-500/10 p-2 rounded border border-red-500/20">{error}</div>}
+            {error && <div className="text-xs text-red-500 bg-red-500/10 p-2 rounded border border-red-500/20 font-medium">{error}</div>}
 
             <div className="space-y-1">
-                <label className="text-[10px] uppercase text-zinc-500 font-bold">Full Name *</label>
+                <label className={cn("text-[10px] uppercase font-bold", ui.label)}>Full Name *</label>
                 <input
-                    className="w-full bg-black border border-zinc-800 rounded px-2 py-1.5 text-sm text-white focus:border-synos-primary outline-none"
+                    className={cn("w-full rounded px-2 py-1.5 text-sm outline-none transition-all", ui.input)}
                     placeholder="e.g. Rahul Sharma"
                     value={formData.name}
                     onChange={e => setFormData({ ...formData, name: e.target.value })}
@@ -378,19 +448,19 @@ function RegisterFormInline({ onSuccess }) {
 
             <div className="grid grid-cols-2 gap-2">
                 <div className="space-y-1">
-                    <label className="text-[10px] uppercase text-zinc-500 font-bold">Mobile *</label>
+                    <label className={cn("text-[10px] uppercase font-bold", ui.label)}>Mobile *</label>
                     <input
-                        className="w-full bg-black border border-zinc-800 rounded px-2 py-1.5 text-sm text-white focus:border-synos-primary outline-none"
+                        className={cn("w-full rounded px-2 py-1.5 text-sm outline-none transition-all", ui.input)}
                         placeholder="987..."
                         value={formData.mobile}
                         onChange={e => setFormData({ ...formData, mobile: e.target.value })}
                     />
                 </div>
                 <div className="space-y-1">
-                    <label className="text-[10px] uppercase text-zinc-500 font-bold">Age *</label>
+                    <label className={cn("text-[10px] uppercase font-bold", ui.label)}>Age *</label>
                     <input
                         type="number"
-                        className="w-full bg-black border border-zinc-800 rounded px-2 py-1.5 text-sm text-white focus:border-synos-primary outline-none"
+                        className={cn("w-full rounded px-2 py-1.5 text-sm outline-none transition-all", ui.input)}
                         placeholder="25"
                         value={formData.age}
                         onChange={e => setFormData({ ...formData, age: e.target.value })}
@@ -399,16 +469,16 @@ function RegisterFormInline({ onSuccess }) {
             </div>
 
             <div className="space-y-1">
-                <label className="text-[10px] uppercase text-zinc-500 font-bold">Gender *</label>
-                <div className="flex bg-black border border-zinc-800 rounded p-1">
+                <label className={cn("text-[10px] uppercase font-bold", ui.label)}>Gender *</label>
+                <div className={cn("flex rounded p-1 border", ui.genderBox)}>
                     {['Male', 'Female', 'Other'].map(g => (
                         <button
                             key={g}
                             type="button"
                             onClick={() => setFormData({ ...formData, gender: g })}
                             className={cn(
-                                "flex-1 text-xs py-1 rounded transition-colors",
-                                formData.gender === g ? "bg-zinc-800 text-white font-medium" : "text-zinc-500 hover:text-zinc-300"
+                                "flex-1 text-[10px] uppercase tracking-wider py-1 rounded transition-all",
+                                formData.gender === g ? ui.genderBtn.active : ui.genderBtn.inactive
                             )}
                         >
                             {g}
@@ -420,7 +490,10 @@ function RegisterFormInline({ onSuccess }) {
             <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full mt-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold py-2 rounded transition-colors flex items-center justify-center gap-2"
+                className={cn(
+                    "w-full mt-2 text-white text-xs font-bold py-2 rounded transition-all flex items-center justify-center gap-2 shadow-lg active:scale-95",
+                    isDark ? "bg-emerald-600 hover:bg-emerald-500" : "bg-zinc-900 hover:bg-black"
+                )}
             >
                 {isSubmitting ? <Loader2 className="w-3 h-3 animate-spin" /> : <UserPlus className="w-3 h-3" />}
                 Register & Select
