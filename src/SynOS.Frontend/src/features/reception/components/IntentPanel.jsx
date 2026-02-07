@@ -50,24 +50,31 @@ export function IntentPanel() {
     const isDark = theme === 'dark';
 
     // THEME ISOLATION CONTRACT: Style Branching
+    // THEME ISOLATION CONTRACT: Style Branching
     const ui = isDark ? {
-        panel: "bg-zinc-900/80 backdrop-blur-xl border border-white/10 shadow-2xl relative z-20 ring-1 ring-white/5",
-        header: "bg-white/5 backdrop-blur-md border-b border-white/5",
-        footer: "bg-white/5 border-t border-synos-border",
+        // DARK MODE: Solid Zinc, No Blur (Performance)
+        panel: "bg-zinc-900 border-l border-white/10 shadow-2xl relative z-20",
+        header: "bg-zinc-900 border-b border-white/5",
+        footer: "bg-zinc-900 border-t border-white/5",
         title: "text-white",
-        subtitle: "text-synos-muted opacity-60",
+        subtitle: "text-zinc-500",
         actionBtn: {
-            enabled: "bg-white text-black hover:bg-zinc-200 shadow-lg shadow-white/10",
+            enabled: "bg-white text-black hover:bg-zinc-200 shadow-lg shadow-white/5",
             disabled: "bg-zinc-800 text-zinc-500"
         }
     } : {
-        panel: "bg-white border border-black/[0.08] shadow-2xl relative z-20",
-        header: "bg-white/80 backdrop-blur-md border-b border-black/[0.05]",
-        footer: "bg-zinc-50/80 backdrop-blur-sm border-t border-black/[0.05]",
+        // LIGHT MODE: REAL FAKE FROST (System Bar Match)
+        // No Blur = No Performance Hit.
+        // Gradient simulates glass refraction.
+        panel: "bg-[linear-gradient(to_bottom,#F5FCFF_0%,#E6F2F5_50%,#D7E1E4_100%)] border-l border-white/50 shadow-[calc(0px_0px_50px_-12px_rgba(0,0,0,0.25))] relative z-20",
+        // Header: EXACT MATCH with ActivityStream.jsx (Line 172)
+        header: "bg-[linear-gradient(to_bottom,rgba(248,253,255,0.98)_0%,rgba(238,245,248,0.98)_50%,rgba(228,235,238,0.98)_100%)] border-b border-black/[0.06]",
+        // Footer: Matches bottom of panel gradient for anchor
+        footer: "bg-[#D7E1E4] border-t border-black/[0.06] shadow-[0_-4px_20px_-10px_rgba(0,0,0,0.05)]",
         title: "text-zinc-900",
         subtitle: "text-zinc-500",
         actionBtn: {
-            enabled: "bg-zinc-900 text-zinc-100 hover:bg-black shadow-lg shadow-black/10",
+            enabled: "bg-zinc-900 text-white hover:bg-black shadow-lg shadow-black/20 transition-transform active:scale-95",
             disabled: "bg-zinc-100 text-zinc-400 border border-black/[0.05]"
         }
     };
@@ -296,22 +303,23 @@ export function IntentPanel() {
                 </button>
             </div>
 
-            {/* Scrollable Content */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-8 scrollbar-thin scrollbar-thumb-zinc-700">
+            {/* Scrollable Content - ZERO PADDING CONTAINER */}
+            <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-zinc-700">
                 {isLoading && !snapshot && <div className="flex items-center justify-center h-40"><Loader2 className="w-8 h-8 text-synos-primary animate-spin" /></div>}
-                {error && <div className="bg-red-500/10 border border-red-500/50 rounded-lg p-3 text-red-200 text-sm flex gap-3"><X className="w-4 h-4 mt-0.5" />{error}</div>}
+                {error && <div className="m-4 bg-red-500/10 border border-red-500/50 rounded-lg p-3 text-red-200 text-sm flex gap-3"><X className="w-4 h-4 mt-0.5" />{error}</div>}
 
                 {snapshot && (
                     <>
-                        {/* 1. Patient Identification (Always Visible for Context) */}
+                        {/* 1. Patient Identification (Internal Padding Managed) */}
                         <PatientIdentification
                             snapshot={snapshot}
                             onSelectPatient={handleSelectPatient}
                             onClearPatient={handleClearPatient}
                         />
 
+                        {/* OTHER PANELS (Wrapped in Padding) */}
                         {hasVisit && (
-                            <div className="animate-in fade-in duration-500">
+                            <div className="p-4 space-y-4 animate-in fade-in duration-500">
                                 <VisitDetails
                                     snapshot={snapshot}
                                     visitId={snapshot.visit.visitId || snapshot.visit.id}
@@ -320,19 +328,17 @@ export function IntentPanel() {
                                     setIsPrepaidIntent={setIsPrepaidIntent} // PASSING DOWN
                                     isCorrectionIntent={isCorrectionIntent} // PHASE 3: CORRECTION INTENT
                                 />
-                            </div>
-                        )}
 
-                        {hasVisit && (
-                            <div className="animate-in fade-in duration-700">
-                                <BillingSummary
-                                    snapshot={snapshot}
-                                    onVisitUpdated={loadSnapshot}
-                                    isCorrectionIntent={isCorrectionIntent} // Pass down Intent
-                                    isPrepaidIntent={isPrepaidIntent} // Pass down Prepaid Status
-                                    paymentMethod={paymentMethod}
-                                    setPaymentMethod={setPaymentMethod}
-                                />
+                                <div className="animate-in fade-in duration-700">
+                                    <BillingSummary
+                                        snapshot={snapshot}
+                                        onVisitUpdated={loadSnapshot}
+                                        isCorrectionIntent={isCorrectionIntent} // Pass down Intent
+                                        isPrepaidIntent={isPrepaidIntent} // Pass down Prepaid Status
+                                        paymentMethod={paymentMethod}
+                                        setPaymentMethod={setPaymentMethod}
+                                    />
+                                </div>
                             </div>
                         )}
                     </>

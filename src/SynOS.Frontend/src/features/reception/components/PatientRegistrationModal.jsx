@@ -1,10 +1,10 @@
-import { useState, useRef } from 'react' // Added useRef
-import { X, Loader2, UserPlus, Save } from 'lucide-react'
-import { ReceptionApi } from '@/api/reception'
-import { cn } from '@/lib/utils'
-import { useFocusTrap } from '@/hooks/useFocusTrap' // Added
+import { useTheme } from '@/context/ThemeContext' // Added
+import { useFocusTrap } from '@/hooks/useFocusTrap'
 
 export function PatientRegistrationModal({ isOpen, onClose, onPatientRegistered }) {
+    const { theme } = useTheme();
+    const isDark = theme === 'dark';
+
     const [formData, setFormData] = useState({
         name: '',
         mobile: '',
@@ -54,12 +54,15 @@ export function PatientRegistrationModal({ isOpen, onClose, onPatientRegistered 
     };
 
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-xl animate-in fade-in duration-200">
-            <div ref={modalRef} className="relative w-full max-w-md bg-zinc-900 border border-synos-border rounded-2xl shadow-2xl animate-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 animate-in fade-in duration-200">
+            <div ref={modalRef} className={cn(
+                "relative w-full max-w-md border rounded-2xl shadow-2xl animate-in zoom-in-95 duration-200",
+                isDark ? "bg-zinc-900 border-zinc-800" : "bg-white border-zinc-200"
+            )}>
 
                 {/* Header */}
-                <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-800">
-                    <div className="flex items-center gap-2 text-zinc-100">
+                <div className={cn("flex items-center justify-between px-6 py-4 border-b", isDark ? "border-zinc-800" : "border-zinc-100")}>
+                    <div className={cn("flex items-center gap-2", isDark ? "text-zinc-100" : "text-zinc-900")}>
                         <div className="p-2 bg-emerald-500/10 rounded-lg">
                             <UserPlus className="w-5 h-5 text-emerald-500" />
                         </div>
@@ -70,7 +73,7 @@ export function PatientRegistrationModal({ isOpen, onClose, onPatientRegistered 
                     </div>
                     <button
                         onClick={onClose}
-                        className="p-2 hover:bg-zinc-800 rounded-full transition-colors text-zinc-400 hover:text-white"
+                        className={cn("p-2 rounded-full transition-colors", isDark ? "hover:bg-zinc-800 text-zinc-400 hover:text-white" : "hover:bg-zinc-100 text-zinc-500 hover:text-zinc-900")}
                     >
                         <X className="w-5 h-5" />
                     </button>
@@ -79,7 +82,7 @@ export function PatientRegistrationModal({ isOpen, onClose, onPatientRegistered 
                 {/* Body */}
                 <form onSubmit={handleSubmit} className="p-6 space-y-4">
                     {error && (
-                        <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-md text-red-400 text-sm">
+                        <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-md text-red-500 text-sm">
                             {error}
                         </div>
                     )}
@@ -87,10 +90,13 @@ export function PatientRegistrationModal({ isOpen, onClose, onPatientRegistered 
                     <div className="space-y-4">
                         {/* Name */}
                         <div className="space-y-1.5">
-                            <label className="text-xs font-medium text-zinc-400">Full Name *</label>
+                            <label className="text-xs font-medium text-zinc-500">Full Name *</label>
                             <input
                                 type="text"
-                                className="w-full bg-zinc-900 border border-zinc-800 rounded-md px-3 py-2 text-sm text-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition-all placeholder:text-zinc-600"
+                                className={cn(
+                                    "w-full rounded-md px-3 py-2 text-sm focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition-all placeholder:text-zinc-400",
+                                    isDark ? "bg-zinc-900 border-zinc-800 text-white" : "bg-white border-zinc-200 text-zinc-900 shadow-sm"
+                                )}
                                 placeholder="e.g. Rahul Sharma"
                                 value={formData.name}
                                 onChange={e => setFormData({ ...formData, name: e.target.value })}
@@ -101,20 +107,26 @@ export function PatientRegistrationModal({ isOpen, onClose, onPatientRegistered 
                         {/* Mobile & Age Row */}
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-1.5">
-                                <label className="text-xs font-medium text-zinc-400">Mobile Number *</label>
+                                <label className="text-xs font-medium text-zinc-500">Mobile Number *</label>
                                 <input
                                     type="tel"
-                                    className="w-full bg-zinc-900 border border-zinc-800 rounded-md px-3 py-2 text-sm text-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition-all placeholder:text-zinc-600"
+                                    className={cn(
+                                        "w-full rounded-md px-3 py-2 text-sm focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition-all placeholder:text-zinc-400",
+                                        isDark ? "bg-zinc-900 border-zinc-800 text-white" : "bg-white border-zinc-200 text-zinc-900 shadow-sm"
+                                    )}
                                     placeholder="9876543210"
                                     value={formData.mobile}
                                     onChange={e => setFormData({ ...formData, mobile: e.target.value })}
                                 />
                             </div>
                             <div className="space-y-1.5">
-                                <label className="text-xs font-medium text-zinc-400">Age *</label>
+                                <label className="text-xs font-medium text-zinc-500">Age *</label>
                                 <input
                                     type="number"
-                                    className="w-full bg-zinc-900 border border-zinc-800 rounded-md px-3 py-2 text-sm text-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition-all placeholder:text-zinc-600"
+                                    className={cn(
+                                        "w-full rounded-md px-3 py-2 text-sm focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition-all placeholder:text-zinc-400",
+                                        isDark ? "bg-zinc-900 border-zinc-800 text-white" : "bg-white border-zinc-200 text-zinc-900 shadow-sm"
+                                    )}
                                     placeholder="25"
                                     value={formData.age}
                                     onChange={e => setFormData({ ...formData, age: e.target.value })}
@@ -125,9 +137,12 @@ export function PatientRegistrationModal({ isOpen, onClose, onPatientRegistered 
                         {/* Gender & Email Row */}
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-1.5">
-                                <label className="text-xs font-medium text-zinc-400">Gender *</label>
+                                <label className="text-xs font-medium text-zinc-500">Gender *</label>
                                 <select
-                                    className="w-full bg-zinc-900 border border-zinc-800 rounded-md px-3 py-2 text-sm text-white focus:border-emerald-500 outline-none transition-all"
+                                    className={cn(
+                                        "w-full rounded-md px-3 py-2 text-sm focus:border-emerald-500 outline-none transition-all",
+                                        isDark ? "bg-zinc-900 border-zinc-800 text-white" : "bg-white border-zinc-200 text-zinc-900 shadow-sm"
+                                    )}
                                     value={formData.gender}
                                     onChange={e => setFormData({ ...formData, gender: e.target.value })}
                                 >
@@ -137,10 +152,13 @@ export function PatientRegistrationModal({ isOpen, onClose, onPatientRegistered 
                                 </select>
                             </div>
                             <div className="space-y-1.5">
-                                <label className="text-xs font-medium text-zinc-400">Email (Optional)</label>
+                                <label className="text-xs font-medium text-zinc-500">Email (Optional)</label>
                                 <input
                                     type="email"
-                                    className="w-full bg-zinc-900 border border-zinc-800 rounded-md px-3 py-2 text-sm text-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition-all placeholder:text-zinc-600"
+                                    className={cn(
+                                        "w-full rounded-md px-3 py-2 text-sm focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition-all placeholder:text-zinc-400",
+                                        isDark ? "bg-zinc-900 border-zinc-800 text-white" : "bg-white border-zinc-200 text-zinc-900 shadow-sm"
+                                    )}
                                     placeholder="rahul@example.com"
                                     value={formData.email}
                                     onChange={e => setFormData({ ...formData, email: e.target.value })}

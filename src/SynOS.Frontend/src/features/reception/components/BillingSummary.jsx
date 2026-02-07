@@ -39,17 +39,18 @@ export function BillingSummary({ snapshot, onVisitUpdated, isCorrectionIntent, i
             inactive: "bg-zinc-900 text-zinc-500 border-zinc-800 hover:bg-zinc-800 hover:text-zinc-300"
         }
     } : {
-        indicator: "bg-zinc-100 border-zinc-200 text-zinc-400",
-        headerText: "text-zinc-900",
-        container: "bg-zinc-50 border-zinc-200 shadow-sm",
-        rowLabel: "text-zinc-500",
-        rowValue: "text-zinc-700 font-mono font-bold",
-        netLabel: "text-zinc-900",
-        netValue: "text-black",
-        input: "bg-white border-zinc-200 text-zinc-900 focus:border-zinc-900 shadow-sm",
+        indicator: "bg-white border-zinc-200 text-zinc-500 shadow-sm font-bold",
+        headerText: "text-zinc-800 font-bold",
+        // SIMULATION GLASS: White/60 + Deep Shadow + Solid Inputs
+        container: "bg-white/60 backdrop-blur-none border border-white/40 shadow-[0_8px_32px_rgba(0,0,0,0.12)] ring-1 ring-black/5",
+        rowLabel: "text-zinc-700",
+        rowValue: "text-black font-mono font-bold",
+        netLabel: "text-black font-bold",
+        netValue: "text-black font-black",
+        input: "bg-white border-zinc-200 text-black focus:border-black focus:ring-1 focus:ring-black transition-all shadow-sm", // Solid White Input
         method: {
-            active: "bg-zinc-900 text-white border-zinc-900 font-bold shadow-md",
-            inactive: "bg-white text-zinc-500 border-zinc-200 hover:bg-zinc-50 hover:text-zinc-900 shadow-sm"
+            active: "bg-black text-white border-zinc-900 font-bold shadow-md ring-1 ring-black/10", // Crisp Black Active
+            inactive: "bg-white text-zinc-800 border-zinc-300 hover:bg-zinc-50 hover:text-black shadow-sm" // High contrast inactive
         }
     };
 
@@ -356,7 +357,7 @@ export function BillingSummary({ snapshot, onVisitUpdated, isCorrectionIntent, i
 
             {/* CORRECTION REASON MODAL */}
             {correctionState.isOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 animate-in fade-in duration-200">
                     <div className={cn("w-96 rounded-xl shadow-2xl p-6 space-y-4 animate-in zoom-in-95 duration-200 border",
                         isDark ? "bg-zinc-900 border-white/10 text-white" : "bg-white border-zinc-200 text-zinc-900")}>
                         <div className="space-y-1">

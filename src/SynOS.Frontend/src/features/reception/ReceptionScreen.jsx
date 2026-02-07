@@ -352,7 +352,7 @@ export function ReceptionScreen() {
                             ${isIntentPanelOpen ? 'w-[60%]' : 'w-[75%]'}
                         `}
                     >
-                        <div className={`flex flex-col h-full transition-opacity duration-300 ${isIntentPanelOpen ? 'opacity-50 pointer-events-none' : 'opacity-100'}`}>
+                        <div className={`flex flex-col h-full transition-all duration-500 ease-out ${isIntentPanelOpen ? 'opacity-40 pointer-events-none scale-[0.99]' : 'opacity-100 scale-100'}`}>
 
                             {/* 
                                 VERTICAL OWNERSHIP CONTRACT: BOUNDED CONTEXT

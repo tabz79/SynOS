@@ -24,3 +24,28 @@
 2026-02-06 11:14:18.007 +05:30 [INF] Attempting to assign work "SampleCollection" for source "710f6c07-ecf0-4872-84f2-8294f4fb9ed6" in Pathology
 2026-02-06 11:14:18.412 +05:30 [INF] Work "SampleCollection" assigned to "0e34b739-d97f-445d-b488-2e5fd6b9918c" (Desk 1)
 2026-02-06 11:14:27.217 +05:30 [WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+2026-02-06 15:29:04.177 +05:30 [FTL] EVENT_WRITE for VisitId b8443b28-264c-4237-b5d7-999af727443f, Context 96e93282-de41-490e-9bb7-3168de8b3d29:0
+2026-02-06 15:29:04.614 +05:30 [FTL] EVENT_WRITE for VisitId b8443b28-264c-4237-b5d7-999af727443f, Context 96e93282-de41-490e-9bb7-3168de8b3d29:0
+2026-02-06 15:54:08.998 +05:30 [FTL] EVENT_WRITE for VisitId b8443b28-264c-4237-b5d7-999af727443f, Context 08cc488d-da80-41f3-85ee-2259f3f116d0:0
+2026-02-06 15:54:22.768 +05:30 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2026-02-06 17:14:19.443 +05:30 [FTL] EVENT_WRITE for VisitId b8443b28-264c-4237-b5d7-999af727443f, Context ff8069a8-de6c-4d9f-bb06-cda05ca0ba23:0
+2026-02-06 17:15:10.001 +05:30 [FTL] EVENT_WRITE for VisitId b8443b28-264c-4237-b5d7-999af727443f, Context 396d4083-809d-4a98-8972-dbf3f044b077:0
+2026-02-06 17:23:35.881 +05:30 [FTL] EVENT_WRITE for VisitId b8443b28-264c-4237-b5d7-999af727443f, Context 0714220f-2f9e-48f5-98dc-5633b9b16355:0
+2026-02-06 17:23:57.794 +05:30 [FTL] EVENT_WRITE for VisitId b8443b28-264c-4237-b5d7-999af727443f, Context 3b0a9d06-33e3-4537-8d67-9635eb75b310:0
+2026-02-06 17:24:24.738 +05:30 [FTL] EVENT_WRITE for VisitId b8443b28-264c-4237-b5d7-999af727443f, Context cc22f527-edb1-4334-8371-137b3e90fff7:0
+2026-02-06 17:25:58.961 +05:30 [FTL] EVENT_WRITE for VisitId b8443b28-264c-4237-b5d7-999af727443f, Context 3ecd94b6-1dc2-450d-934f-ff65035d5981:0
+2026-02-06 17:25:59.007 +05:30 [INF] Auto-created Sample "7ca7bf87-c20a-4b1d-80d6-698a6280881b" for Order "9570c839-3695-483e-a5a4-1f64de06b5f0"
+2026-02-06 17:25:59.014 +05:30 [INF] Auto-created Sample "a230372b-194b-4ab4-acc5-f7c6bb1179bc" for Order "6ebd1c4e-05dc-4d46-a4b6-21d72d0062c1"
+2026-02-06 17:25:59.029 +05:30 [INF] Auto-created Sample "c54371c2-c3e4-407f-80e8-c520fd0c9381" for Order "4ad2d74c-69f0-447a-9585-6e15d16f6320"
+2026-02-06 17:25:59.042 +05:30 [INF] Auto-created Sample "7bfefd94-1324-4e07-be38-bf777511b54b" for Order "8dc232f1-6314-44fb-86e8-d5f3ad0cef34"
+2026-02-06 17:25:59.054 +05:30 [INF] Auto-created Sample "02917ed4-4dcb-4277-bd25-2874918e3896" for Order "e40e7005-fd39-48df-b8fb-d90b5d4b2f4f"
+2026-02-06 17:25:59.113 +05:30 [FTL] EVENT_WRITE for VisitId b8443b28-264c-4237-b5d7-999af727443f, Context 3ecd94b6-1dc2-450d-934f-ff65035d5981:0
+2026-02-06 17:25:59.131 +05:30 [INF] Attempting to assign work "SampleCollection" for source "b8443b28-264c-4237-b5d7-999af727443f" in Pathology
+2026-02-06 17:25:59.248 +05:30 [INF] Work "SampleCollection" assigned to "0e34b739-d97f-445d-b488-2e5fd6b9918c" (Desk 1)
+2026-02-06 17:26:07.628 +05:30 [WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+2026-02-06 17:53:55.522 +05:30 [FTL] EVENT_WRITE for VisitId f4e7e403-1adf-4e5d-a949-a0e79dc1fdf5, Context 777c4900-9872-48da-8deb-3ff7c9be0feb:0
+2026-02-06 17:53:57.392 +05:30 [FTL] EVENT_WRITE for VisitId f4e7e403-1adf-4e5d-a949-a0e79dc1fdf5, Context 777c4900-9872-48da-8deb-3ff7c9be0feb:0
+2026-02-06 18:27:39.614 +05:30 [FTL] EVENT_WRITE for VisitId 0f4fe2ca-70b6-4939-8a4e-e15917fb1022, Context 03316409-21e8-4645-aede-475f416b17e4:0
+2026-02-06 18:27:39.664 +05:30 [FTL] EVENT_WRITE for VisitId 0f4fe2ca-70b6-4939-8a4e-e15917fb1022, Context 03316409-21e8-4645-aede-475f416b17e4:0
+2026-02-06 19:02:30.246 +05:30 [FTL] EVENT_WRITE for VisitId 7948429a-406f-4317-8fc6-d3e4fbd15551, Context 2f8eae7e-fed2-457a-85e2-d1287f7b248b:0
+2026-02-06 19:02:30.310 +05:30 [FTL] EVENT_WRITE for VisitId 7948429a-406f-4317-8fc6-d3e4fbd15551, Context 2f8eae7e-fed2-457a-85e2-d1287f7b248b:0

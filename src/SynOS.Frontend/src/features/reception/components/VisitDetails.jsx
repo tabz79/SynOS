@@ -70,16 +70,19 @@ export function VisitDetails({ snapshot, visitId, onVisitUpdated, isPrepaidInten
         modal: "bg-zinc-900 border-synos-border text-white",
         modalInput: "bg-black border-zinc-700 text-white focus:border-amber-500"
     } : {
-        indicator: "bg-zinc-100 border-zinc-200 text-zinc-400",
-        headerText: "text-zinc-900",
-        section: "bg-zinc-50 border-zinc-200 shadow-sm",
-        sectionTitle: "text-zinc-500",
-        input: "bg-white border-zinc-200 text-zinc-900 placeholder:text-zinc-400 focus:border-zinc-900",
+        indicator: "bg-white border-zinc-200 text-zinc-500 shadow-sm font-bold",
+        headerText: "text-zinc-800 font-bold",
+        // SIMULATION GLASS: High Translucency (White/60) + Deep Shadow
+        // The "Glass" effect relies on the background gradient showing through.
+        section: "bg-white/60 backdrop-blur-none border border-white/40 shadow-[0_8px_32px_rgba(0,0,0,0.12)] ring-1 ring-black/5",
+        sectionTitle: "text-black font-bold tracking-widest opacity-90",
+        // Input: SOLID WHITE to pop against translucent glass
+        input: "bg-white border-zinc-200 text-black placeholder:text-zinc-400 focus:border-zinc-800 focus:ring-1 focus:ring-zinc-800 transition-all shadow-sm",
         suggestionBox: "bg-white border-zinc-300 shadow-xl",
-        testCard: "bg-white border-black/[0.05] shadow-sm",
-        testCode: "bg-zinc-100 text-zinc-600 border-black/[0.03]",
-        modal: "bg-white border-zinc-200 text-zinc-900",
-        modalInput: "bg-zinc-50 border-zinc-200 text-zinc-900 focus:border-zinc-900"
+        testCard: "bg-white border-zinc-200 shadow-sm hover:border-zinc-400 transition-colors", // SOLID WHITE for Pop
+        testCode: "bg-zinc-100 text-black font-bold border-zinc-300",
+        modal: "bg-white border-zinc-200 text-black",
+        modalInput: "bg-zinc-50 border-zinc-300 text-black focus:border-black"
     };
 
     const readOnlyReason = snapshot?.uiHints?.readOnlyReason ||
@@ -322,8 +325,8 @@ export function VisitDetails({ snapshot, visitId, onVisitUpdated, isPrepaidInten
                     <div className="space-y-0.5">
                         <label htmlFor="chkPrepaid" className={cn("text-sm font-bold cursor-pointer transition-colors",
                             isPrepaidIntent
-                                ? (isDark ? "text-amber-400" : "text-amber-600")
-                                : (isDark ? "text-zinc-300" : "text-zinc-700")
+                                ? (isDark ? "text-amber-400" : "text-amber-700")
+                                : (isDark ? "text-zinc-300" : "text-black") // Crisp Black
                         )}>
                             Prepaid Bill (Patient already paid)
                         </label>
@@ -335,7 +338,7 @@ export function VisitDetails({ snapshot, visitId, onVisitUpdated, isPrepaidInten
 
                 {/* B. Referral Input */}
                 <div className="pt-2">
-                    <div className="text-xs text-zinc-500 mb-1 flex justify-between">
+                    <div className="text-xs text-zinc-800 font-bold mb-1 flex justify-between">
                         <span>Referral / Doctor {isPrepaidIntent && <span className="text-red-500">*</span>}</span>
                         {isPrepaidIntent && <span className="text-amber-500/50 text-[10px] uppercase">Who collected payment?</span>}
                     </div>
@@ -444,10 +447,12 @@ export function VisitDetails({ snapshot, visitId, onVisitUpdated, isPrepaidInten
                     <button
                         onClick={() => setIsDraftFormVisible(true)}
                         disabled={!canAddDraft}
-                        className={cn("flex items-center gap-2 text-xs font-bold uppercase tracking-wider transition-colors px-1",
-                            isDark ? "text-zinc-500 hover:text-zinc-300" : "text-zinc-500 hover:text-zinc-900")}
+                        className={cn("flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest transition-all px-3 py-2 rounded-lg border group",
+                            isDark
+                                ? "text-zinc-400 border-zinc-800 hover:text-white hover:bg-zinc-800/50"
+                                : "text-black bg-white border-zinc-300 shadow-sm hover:border-zinc-400 hover:shadow-md")}
                     >
-                        <Plus className="w-3 h-3" />
+                        <Plus className="w-3 h-3 transition-transform group-hover:rotate-90" />
                         Add Referral Partner
                     </button>
                 )}
@@ -463,7 +468,7 @@ export function VisitDetails({ snapshot, visitId, onVisitUpdated, isPrepaidInten
             </div>
 
             {/* SECTION 3: Test Selection (Reordered Down) */}
-            <div className="space-y-3 pt-2">
+            <div className={cn("p-4 rounded-xl space-y-3", ui.section)}>
                 <h4 className={cn("text-xs font-bold uppercase tracking-wider mb-2", ui.sectionTitle)}>Test Selection</h4>
                 {!isReadOnly && (
                     <div className="relative z-10">
@@ -544,7 +549,7 @@ export function VisitDetails({ snapshot, visitId, onVisitUpdated, isPrepaidInten
 
             {/* CORRECTION REASON MODAL */}
             {correctionState.isOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 animate-in fade-in duration-200">
                     <div className={cn("w-96 rounded-xl shadow-2xl p-6 space-y-4 animate-in zoom-in-95 duration-200 border", ui.modal)}>
                         <div className="space-y-1">
                             <h3 className={cn("text-lg font-bold flex items-center gap-2", isDark ? "text-white" : "text-zinc-900")}>
@@ -616,7 +621,7 @@ function ReferralCombinedInput({ initialValue, isReadOnly, isProcessing, partner
         suggestionBox: "bg-zinc-900 border-synos-border shadow-xl",
         hover: "hover:bg-zinc-800 text-zinc-300 hover:text-white"
     } : {
-        input: "bg-white border-zinc-200 text-zinc-900 placeholder:text-zinc-400 focus:border-zinc-900 shadow-sm",
+        input: "bg-zinc-50 border-zinc-200 text-zinc-900 placeholder:text-zinc-400 focus:border-zinc-900 focus:bg-white transition-all shadow-sm",
         suggestionBox: "bg-white border-zinc-300 shadow-xl",
         hover: "hover:bg-zinc-50 text-zinc-600 hover:text-black"
     };
