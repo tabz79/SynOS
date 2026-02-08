@@ -88,7 +88,9 @@ namespace SynOS.Services
                 },
                 Dept = visit.Department,
                 Time = visit.CreatedAt,
-                PrintPayload = payload
+                PrintPayload = payload,
+                AssignedResource = assignment?.AssignedResource?.Name,
+                Station = assignment?.AssignedResource?.PhysicalStation
             };
         }
 

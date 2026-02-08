@@ -59,30 +59,30 @@ export function VisitDetails({ snapshot, visitId, onVisitUpdated, isPrepaidInten
     const isDark = theme === 'dark';
 
     const ui = isDark ? {
-        indicator: "bg-zinc-800 border-synos-border text-zinc-400",
-        headerText: "text-zinc-200",
+        indicator: "bg-zinc-800 border-synos-border type-label",
+        headerText: "type-value",
         section: "bg-zinc-950/30 border-synos-border",
-        sectionTitle: "text-zinc-400",
-        input: "bg-zinc-900 border-synos-border text-white placeholder:text-zinc-600 focus:border-synos-primary",
+        sectionTitle: "type-section-header",
+        input: "bg-zinc-900 border-synos-border type-body focus:border-synos-primary",
         suggestionBox: "bg-zinc-900 border-synos-border shadow-xl",
         testCard: "bg-zinc-950/30 border-synos-border",
-        testCode: "bg-zinc-800 text-zinc-500 border-zinc-700/50",
-        modal: "bg-zinc-900 border-synos-border text-white",
-        modalInput: "bg-black border-zinc-700 text-white focus:border-amber-500"
+        testCode: "bg-zinc-800 border-zinc-700/50 type-code",
+        modal: "bg-zinc-900 border-synos-border type-body",
+        modalInput: "bg-black border-zinc-700 type-body focus:border-amber-500"
     } : {
-        indicator: "bg-white border-zinc-200 text-zinc-500 shadow-sm font-bold",
-        headerText: "text-zinc-800 font-bold",
+        indicator: "bg-white border-zinc-200 shadow-sm type-label",
+        headerText: "type-value",
         // SIMULATION GLASS: High Translucency (White/60) + Deep Shadow
         // The "Glass" effect relies on the background gradient showing through.
-        section: "bg-white/60 backdrop-blur-none border border-white/40 shadow-[0_8px_32px_rgba(0,0,0,0.12)] ring-1 ring-black/5",
-        sectionTitle: "text-black font-bold tracking-widest opacity-90",
+        section: "bg-white/60 backdrop-blur-none border border-white/40 shadow-sm ring-1 ring-black/5",
+        sectionTitle: "type-section-header",
         // Input: SOLID WHITE to pop against translucent glass
-        input: "bg-white border-zinc-200 text-black placeholder:text-zinc-400 focus:border-zinc-800 focus:ring-1 focus:ring-zinc-800 transition-all shadow-sm",
+        input: "bg-white border-zinc-200 type-body focus:border-zinc-800 focus:ring-1 focus:ring-zinc-800 transition-all shadow-sm",
         suggestionBox: "bg-white border-zinc-300 shadow-xl",
         testCard: "bg-white border-zinc-200 shadow-sm hover:border-zinc-400 transition-colors", // SOLID WHITE for Pop
-        testCode: "bg-zinc-100 text-black font-bold border-zinc-300",
-        modal: "bg-white border-zinc-200 text-black",
-        modalInput: "bg-zinc-50 border-zinc-300 text-black focus:border-black"
+        testCode: "bg-zinc-100 border-zinc-300 type-code",
+        modal: "bg-white border-zinc-200 type-body",
+        modalInput: "bg-zinc-50 border-zinc-300 type-body focus:border-black"
     };
 
     const readOnlyReason = snapshot?.uiHints?.readOnlyReason ||
@@ -290,18 +290,18 @@ export function VisitDetails({ snapshot, visitId, onVisitUpdated, isPrepaidInten
     return (
         <div className="space-y-6">
             {/* Header */}
-            <div className="flex items-center justify-between mb-2 mt-6">
+            <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                     <div className={cn("w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold border", ui.indicator)}>
                         2
                     </div>
-                    <h3 className={cn("font-bold text-sm tracking-tight", ui.headerText)}>Visit Details</h3>
+                    <h3 className={cn("tracking-tight", ui.headerText)}>Visit Details</h3>
                     {isProcessing && <Loader2 className="w-3 h-3 animate-spin text-synos-primary" />}
                 </div>
                 {isReadOnly && (
                     <div className={cn("flex items-center gap-1.5 px-2 py-0.5 rounded border", isDark ? "bg-zinc-800/50 border-zinc-700" : "bg-zinc-100 border-zinc-200")}>
                         <Lock className="w-3 h-3 text-zinc-500" />
-                        <span className="text-[10px] text-zinc-500 uppercase font-bold tracking-wider">
+                        <span className="type-section-header">
                             {readOnlyReason || "LOCKED"}
                         </span>
                     </div>
@@ -309,8 +309,8 @@ export function VisitDetails({ snapshot, visitId, onVisitUpdated, isPrepaidInten
             </div>
 
             {/* SECTION 2: VISIT CONTEXT (Phase 8 - Reordered Top) */}
-            <div className={cn("space-y-4 p-4 rounded-lg border", ui.section)}>
-                <h4 className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 mb-2">Visit Context</h4>
+            <div className={cn("space-y-2 p-4 rounded-lg border", ui.section)}>
+                <h4 className="type-section-header">Visit Context</h4>
 
                 {/* A. Prepaid Checkbox */}
                 <div className="flex items-start gap-3">
@@ -323,14 +323,14 @@ export function VisitDetails({ snapshot, visitId, onVisitUpdated, isPrepaidInten
                         className="mt-0.5 accent-synos-primary cursor-pointer w-4 h-4"
                     />
                     <div className="space-y-0.5">
-                        <label htmlFor="chkPrepaid" className={cn("text-sm font-medium cursor-pointer transition-colors",
+                        <label htmlFor="chkPrepaid" className={cn("cursor-pointer transition-colors type-body",
                             isPrepaidIntent
                                 ? (isDark ? "text-amber-400" : "text-amber-700")
-                                : (isDark ? "text-zinc-300" : "text-zinc-700") // Crisp Zinc-700
+                                : "" // Inherits type-body default
                         )}>
                             Prepaid Bill (Patient already paid)
                         </label>
-                        <p className="text-[10px] text-zinc-500 leading-tight">
+                        <p className="type-meta leading-tight">
                             Select this ONLY if money was collected outside (e.g. by Referral Center).
                         </p>
                     </div>
@@ -338,9 +338,9 @@ export function VisitDetails({ snapshot, visitId, onVisitUpdated, isPrepaidInten
 
                 {/* B. Referral Input */}
                 <div className="pt-2">
-                    <div className="text-xs text-zinc-600 font-medium mb-1 flex justify-between">
+                    <div className="type-label mb-1 flex justify-between">
                         <span>Referral / Doctor {isPrepaidIntent && <span className="text-red-500">*</span>}</span>
-                        {isPrepaidIntent && <span className="text-amber-500/50 text-[10px] uppercase font-bold tracking-wide">Who collected payment?</span>}
+                        {isPrepaidIntent && <span className="text-amber-500/50 type-section-header">Who collected payment?</span>}
                     </div>
 
                     {/* 1. PARTNER BADGE (Highest Priority) */}
@@ -348,13 +348,13 @@ export function VisitDetails({ snapshot, visitId, onVisitUpdated, isPrepaidInten
                         <div className={cn("flex items-center gap-2 font-bold p-2 rounded border",
                             isDark ? "text-zinc-300 bg-zinc-800/50 border-zinc-700/50" : "text-zinc-900 bg-white border-zinc-200 shadow-sm")}>
                             <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.3)]"></div>
-                            <span className="truncate flex-1 text-sm tracking-tight text-zinc-800">
+                            <span className="truncate flex-1 tracking-tight type-value">
                                 {snapshot.billing.referral.partner.displayName || "Partner"}
                             </span>
 
                             {/* Collection Label Badge */}
                             {snapshot.billing.referral.partner.collectionLabel && (
-                                <span className={cn("text-[10px] px-1.5 py-0.5 rounded border uppercase font-mono font-bold",
+                                <span className={cn("type-code px-1.5 py-0.5 rounded border uppercase",
                                     isDark ? "bg-zinc-900 border-zinc-700 text-zinc-500" : "bg-zinc-100 border-zinc-200 text-zinc-600")}>
                                     {snapshot.billing.referral.partner.collectionLabel}
                                 </span>
@@ -419,10 +419,10 @@ export function VisitDetails({ snapshot, visitId, onVisitUpdated, isPrepaidInten
                 {referralDraft && (
                     <div className={cn("border rounded p-3 mb-2 flex items-center justify-between", isDark ? "bg-zinc-900/50 border-zinc-700/50" : "bg-white border-zinc-200 shadow-sm")}>
                         <div>
-                            <div className="text-[10px] uppercase text-zinc-500 font-bold tracking-wider mb-0.5">Provisional Referral Draft</div>
-                            <div className={cn("text-sm font-bold", isDark ? "text-zinc-200" : "text-zinc-900")}>{referralDraft.providerName}</div>
+                            <div className="type-section-header mb-0.5">Provisional Referral Draft</div>
+                            <div className="type-value">{referralDraft.providerName}</div>
                             {(referralDraft.clinicName || referralDraft.location) && (
-                                <div className="text-xs text-zinc-500">
+                                <div className="type-label">
                                     {[referralDraft.clinicName, referralDraft.location].filter(Boolean).join(" • ")}
                                 </div>
                             )}
@@ -447,10 +447,10 @@ export function VisitDetails({ snapshot, visitId, onVisitUpdated, isPrepaidInten
                     <button
                         onClick={() => setIsDraftFormVisible(true)}
                         disabled={!canAddDraft}
-                        className={cn("flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest transition-all px-3 py-2 rounded-lg border group",
+                        className={cn("flex items-center gap-2 type-section-header transition-all px-3 py-2 rounded-lg border group",
                             isDark
-                                ? "text-zinc-400 border-zinc-800 hover:text-white hover:bg-zinc-800/50"
-                                : "text-black bg-white border-zinc-300 shadow-sm hover:border-zinc-400 hover:shadow-md")}
+                                ? "border-zinc-800 hover:text-white hover:bg-zinc-800/50"
+                                : "bg-white border-zinc-300 shadow-sm hover:border-zinc-400 hover:shadow-md")}
                     >
                         <Plus className="w-3 h-3 transition-transform group-hover:rotate-90" />
                         Add Referral Partner
@@ -468,8 +468,8 @@ export function VisitDetails({ snapshot, visitId, onVisitUpdated, isPrepaidInten
             </div>
 
             {/* SECTION 3: Test Selection (Reordered Down) */}
-            <div className={cn("p-4 rounded-xl space-y-3", ui.section)}>
-                <h4 className={cn("text-xs font-bold uppercase tracking-wider mb-2", ui.sectionTitle)}>Test Selection</h4>
+            <div className={cn("p-4 rounded-xl space-y-2", ui.section)}>
+                <h4 className={ui.sectionTitle}>Test Selection</h4>
                 {!isReadOnly && (
                     <div className="relative z-10">
                         <Search className="absolute left-3 top-2.5 w-4 h-4 text-zinc-400" />
@@ -479,7 +479,7 @@ export function VisitDetails({ snapshot, visitId, onVisitUpdated, isPrepaidInten
                             value={filter}
                             onChange={(e) => setFilter(e.target.value)}
                             disabled={isProcessing}
-                            className={cn("w-full rounded-lg pl-9 pr-4 py-2 text-sm focus:outline-none transition-colors font-mono disabled:opacity-50", ui.input)}
+                            className={cn("w-full h-10 rounded-lg pl-9 pr-4 py-2 focus:outline-none transition-colors disabled:opacity-50 type-code", ui.input)}
                         />
 
                         {/* Search Suggestions Dropdown */}
@@ -493,11 +493,11 @@ export function VisitDetails({ snapshot, visitId, onVisitUpdated, isPrepaidInten
                                             isDark ? "hover:bg-zinc-800" : "hover:bg-zinc-50")}
                                     >
                                         <div>
-                                            <div className={cn("text-sm font-bold", isDark ? "text-zinc-200" : "text-zinc-900")}>{test.testName || test.name}</div>
-                                            <div className="text-xs text-zinc-500 font-mono">{test.testCode || test.code}</div>
+                                            <div className="type-value">{test.testName || test.name}</div>
+                                            <div className="type-code">{test.testCode || test.code}</div>
                                         </div>
                                         <div className="flex items-center gap-2">
-                                            <span className="text-xs font-mono text-synos-emerald">₹{test.basePrice || test.price}</span>
+                                            <span className="type-code">₹{test.basePrice || test.price}</span>
                                             <Plus className="w-4 h-4 text-zinc-500 group-hover:text-synos-primary" />
                                         </div>
                                     </button>
@@ -510,7 +510,7 @@ export function VisitDetails({ snapshot, visitId, onVisitUpdated, isPrepaidInten
                 {/* Selected Tests List (Pure Render from Snapshot) */}
                 <div className="space-y-2">
                     {tests.length === 0 && !isReadOnly && (
-                        <div className="text-center py-4 border border-dashed border-zinc-800 rounded-lg text-xs text-zinc-600">
+                        <div className="text-center py-4 border border-dashed border-zinc-800 rounded-lg type-label">
                             No tests added yet
                         </div>
                     )}
@@ -518,16 +518,16 @@ export function VisitDetails({ snapshot, visitId, onVisitUpdated, isPrepaidInten
                     {tests.map(test => (
                         <div key={test.testCode || test.code} className={cn("rounded-lg p-3 flex items-center justify-between group animate-in zoom-in-95 duration-200 border", ui.testCard)}>
                             <div className="flex items-center gap-3">
-                                <div className={cn("w-8 h-8 rounded flex items-center justify-center text-[10px] font-bold font-mono border", ui.testCode)}>
+                                <div className={cn("w-8 h-8 rounded flex items-center justify-center type-code border", ui.testCode)}>
                                     {test.testCode || test.code}
                                 </div>
                                 <div>
-                                    <div className={cn("text-sm font-bold leading-tight", isDark ? "text-white" : "text-zinc-900")}>{test.testName || test.name}</div>
-                                    <div className="text-[10px] text-zinc-500 uppercase tracking-widest mt-0.5">{test.dept || test.category}</div>
+                                    <div className="type-value leading-tight">{test.testName || test.name}</div>
+                                    <div className="type-section-header mt-0.5">{test.dept || test.category}</div>
                                 </div>
                             </div>
                             <div className="flex items-center gap-4">
-                                <div className="text-sm font-mono text-synos-emerald font-medium">₹{test.basePrice || test.price}</div>
+                                <div className="type-code">₹{test.basePrice || test.price}</div>
                                 {/* Allow Remove if NOT ReadOnly OR if Correction Intent */}
                                 {(!isReadOnly || isCorrectionIntent) && (
                                     <button
@@ -552,24 +552,24 @@ export function VisitDetails({ snapshot, visitId, onVisitUpdated, isPrepaidInten
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 animate-in fade-in duration-200">
                     <div className={cn("w-96 rounded-xl shadow-2xl p-6 space-y-4 animate-in zoom-in-95 duration-200 border", ui.modal)}>
                         <div className="space-y-1">
-                            <h3 className={cn("text-lg font-bold flex items-center gap-2", isDark ? "text-white" : "text-zinc-900")}>
+                            <h3 className="type-page-title flex items-center gap-2">
                                 <AlertCircle className="w-5 h-5 text-amber-500" />
                                 Confirm Correction
                             </h3>
-                            <p className="text-xs text-zinc-500 font-medium">
+                            <p className="type-label">
                                 This action will be audited. Please provide a mandatory reason.
                             </p>
                         </div>
 
                         <div className="space-y-2">
-                            <div className={cn("text-xs font-mono p-2 rounded border", isDark ? "bg-black/50 border-zinc-800 text-zinc-400" : "bg-zinc-50 border-zinc-200 text-zinc-600")}>
+                            <div className={cn("type-code p-2 rounded border", isDark ? "bg-black/50 border-zinc-800 text-zinc-400" : "bg-zinc-50 border-zinc-200 text-zinc-600")}>
                                 {correctionState.type}: {correctionState.payload?.testCode || correctionState.payload?.code || correctionState.payload?.testName}
                             </div>
                             <textarea
                                 value={correctionState.reason}
                                 onChange={(e) => setCorrectionState(prev => ({ ...prev, reason: e.target.value }))}
                                 placeholder="Reason for this change (Required)..."
-                                className={cn("w-full rounded-lg p-3 text-sm outline-none min-h-[80px] transition-all", ui.modalInput)}
+                                className={cn("w-full rounded-lg p-3 outline-none min-h-[80px] transition-all", ui.modalInput)}
                                 autoFocus
                             />
                         </div>
@@ -577,14 +577,14 @@ export function VisitDetails({ snapshot, visitId, onVisitUpdated, isPrepaidInten
                         <div className="flex items-center gap-2 justify-end">
                             <button
                                 onClick={() => setCorrectionState({ ...correctionState, isOpen: false })}
-                                className="px-4 py-2 rounded-lg text-sm font-bold text-zinc-400 hover:text-white hover:bg-zinc-800"
+                                className="px-4 py-2 rounded-lg type-label text-zinc-400 hover:text-white hover:bg-zinc-800"
                             >
                                 Cancel
                             </button>
                             <button
                                 onClick={confirmCorrection}
                                 disabled={!correctionState.reason.trim() || isProcessing}
-                                className="px-4 py-2 rounded-lg text-sm font-bold bg-amber-600 hover:bg-amber-500 text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="px-4 py-2 rounded-lg type-value bg-amber-600 hover:bg-amber-500 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 {isProcessing ? <Loader2 className="w-4 h-4 animate-spin" /> : "Confirm Correction"}
                             </button>
@@ -617,11 +617,11 @@ function ReferralCombinedInput({ initialValue, isReadOnly, isProcessing, partner
     const isDark = theme === 'dark';
 
     const ui = isDark ? {
-        input: "bg-zinc-900 border-synos-border text-white placeholder:text-zinc-600 focus:border-synos-primary",
+        input: "bg-zinc-900 border-synos-border type-body focus:border-synos-primary",
         suggestionBox: "bg-zinc-900 border-synos-border shadow-xl",
         hover: "hover:bg-zinc-800 text-zinc-300 hover:text-white"
     } : {
-        input: "bg-zinc-50 border-zinc-200 text-zinc-900 placeholder:text-zinc-400 focus:border-zinc-900 focus:bg-white transition-all shadow-sm",
+        input: "bg-white border-zinc-200 type-body focus:border-zinc-800 focus:ring-1 focus:ring-zinc-800 transition-all shadow-sm",
         suggestionBox: "bg-white border-zinc-300 shadow-xl",
         hover: "hover:bg-zinc-50 text-zinc-600 hover:text-black"
     };
@@ -634,7 +634,7 @@ function ReferralCombinedInput({ initialValue, isReadOnly, isProcessing, partner
                 value={value}
                 disabled={isReadOnly || isProcessing}
                 placeholder="Search Partner or Type Name..."
-                className={cn("w-full rounded-lg pl-9 pr-4 py-2 text-xs outline-none transition-colors disabled:opacity-50", ui.input)}
+                className={cn("w-full rounded-lg pl-9 pr-4 py-2 outline-none transition-colors disabled:opacity-50 type-label", ui.input)}
                 onChange={(e) => {
                     setValue(e.target.value);
                     setShowSuggestions(true);
@@ -662,7 +662,7 @@ function ReferralCombinedInput({ initialValue, isReadOnly, isProcessing, partner
                                 e.preventDefault(); // Prevent blur
                                 onApplyPartner(p.referralPartnerId);
                             }}
-                            className={cn("w-full text-left px-3 py-2 text-xs transition-colors border-b last:border-0",
+                            className={cn("w-full text-left px-3 py-2 transition-colors border-b last:border-0 type-label",
                                 ui.hover, isDark ? "border-zinc-800/50" : "border-zinc-100")}
                         >
                             {p.name}

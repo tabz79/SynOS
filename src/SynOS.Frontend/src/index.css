@@ -173,4 +173,45 @@
   .glass-surface-light {
     @apply bg-white/30 backdrop-blur-md border border-white/20;
   }
+
+  /* TYPOGRAPHY SYSTEM v2.0 (THE LAW) */
+  /* Role: Pricing Totals, Hero Stats */
+  .type-display {
+    @apply text-3xl font-bold tracking-tight text-zinc-900 dark:text-white;
+  }
+
+  /* Role: Panel Headers */
+  .type-page-title {
+    @apply text-xl font-bold tracking-tight text-zinc-900 dark:text-white;
+  }
+
+  /* Role: Section Dividers (THE STANDARD) */
+  .type-section-header {
+    @apply text-[10px] uppercase font-bold tracking-widest text-zinc-500;
+  }
+
+  /* Role: Form Labels, Input Hints */
+  .type-label {
+    @apply text-xs font-medium text-zinc-500;
+  }
+
+  /* Role: Instructions, Long text */
+  .type-body {
+    @apply text-sm font-normal text-zinc-900 dark:text-zinc-300;
+  }
+
+  /* Role: Data Content (Names, Choices) */
+  .type-value {
+    @apply text-sm font-bold text-zinc-900 dark:text-white;
+  }
+
+  /* Role: Badges, Timestamps, Secondary info */
+  .type-meta {
+    @apply text-[10px] font-medium text-zinc-500;
+  }
+
+  /* Role: MRNs, Test Codes, Search Inputs */
+  .type-code {
+    @apply text-xs font-mono font-bold text-zinc-900 dark:text-zinc-100;
+  }
 }

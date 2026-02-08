@@ -26,31 +26,31 @@ export function BillingSummary({ snapshot, onVisitUpdated, isCorrectionIntent, i
     const isDark = theme === 'dark';
 
     const ui = isDark ? {
-        indicator: "bg-zinc-800 border-synos-border text-zinc-400",
-        headerText: "text-zinc-200",
+        indicator: "bg-zinc-800 border-synos-border type-label",
+        headerText: "type-value",
         container: "bg-zinc-950/25 border-synos-border",
-        rowLabel: "text-zinc-400 font-medium",
-        rowValue: "text-zinc-400 font-mono font-bold",
-        netLabel: "text-zinc-200 font-bold",
-        netValue: "text-white font-black",
-        input: "bg-zinc-900 border-synos-border text-white focus:border-synos-primary",
+        rowLabel: "type-label",
+        rowValue: "type-code", // Financials = Mono
+        netLabel: "type-value",
+        netValue: "type-page-title", // 20px Bold
+        input: "bg-zinc-900 border-synos-border type-body focus:border-synos-primary",
         method: {
-            active: "bg-zinc-100 text-black border-white font-bold shadow-md",
-            inactive: "bg-zinc-900 text-zinc-500 border-zinc-800 hover:bg-zinc-800 hover:text-zinc-300"
+            active: "bg-zinc-100 border-white shadow-md",
+            inactive: "bg-zinc-900 border-zinc-800 hover:bg-zinc-800"
         }
     } : {
-        indicator: "bg-white border-zinc-200 text-zinc-500 shadow-sm font-bold",
-        headerText: "text-zinc-800 font-bold",
+        indicator: "bg-white border-zinc-200 shadow-sm type-label",
+        headerText: "type-value",
         // SIMULATION GLASS: White/60 + Deep Shadow + Solid Inputs
-        container: "bg-white/60 backdrop-blur-none border border-white/40 shadow-[0_8px_32px_rgba(0,0,0,0.12)] ring-1 ring-black/5",
-        rowLabel: "text-zinc-600 font-medium",
-        rowValue: "text-black font-mono font-bold",
-        netLabel: "text-black font-bold",
-        netValue: "text-black font-black",
-        input: "bg-white border-zinc-200 text-black focus:border-black focus:ring-1 focus:ring-black transition-all shadow-sm", // Solid White Input
+        container: "bg-white/60 backdrop-blur-none border border-white/40 shadow-sm ring-1 ring-black/5",
+        rowLabel: "type-label",
+        rowValue: "type-code", // Financials = Mono
+        netLabel: "type-value",
+        netValue: "type-page-title", // 20px Bold
+        input: "bg-white border-zinc-200 type-body focus:border-black focus:ring-1 focus:ring-black transition-all shadow-sm", // Solid White Input
         method: {
-            active: "bg-black text-white border-zinc-900 font-bold shadow-md ring-1 ring-black/10", // Crisp Black Active
-            inactive: "bg-white text-zinc-800 border-zinc-300 hover:bg-zinc-50 hover:text-black shadow-sm" // High contrast inactive
+            active: "bg-black text-white border-zinc-900 shadow-md ring-1 ring-black/10", // Crisp Black Active
+            inactive: "bg-white border-zinc-300 hover:bg-zinc-50 hover:text-black shadow-sm" // High contrast inactive
         }
     };
 
@@ -183,17 +183,17 @@ export function BillingSummary({ snapshot, onVisitUpdated, isCorrectionIntent, i
     return (
         <div className="space-y-4">
             {/* Header */}
-            <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                     <div className={cn("w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold border", ui.indicator)}>
                         3
                     </div>
-                    <h3 className={cn("font-bold text-sm tracking-tight", ui.headerText)}>Financials</h3>
+                    <h3 className={cn("tracking-tight", ui.headerText)}>Financials</h3>
                     {isProcessing && <Loader2 className="w-3 h-3 animate-spin text-synos-primary" />}
                 </div>
                 {billing.paymentStatus && (
                     <div className={cn(
-                        "px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border",
+                        "px-2 py-0.5 rounded type-section-header tracking-wider border",
                         billing.paymentStatus === 'Paid'
                             ? (isDark ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20" : "bg-emerald-100 text-emerald-700 border-emerald-200")
                             : (isDark ? "bg-amber-500/10 text-amber-500 border-amber-500/20" : "bg-amber-100 text-amber-700 border-amber-200")
@@ -212,14 +212,14 @@ export function BillingSummary({ snapshot, onVisitUpdated, isCorrectionIntent, i
                         : (isDark ? "bg-red-950/40 border-red-500/50 text-red-100" : "bg-red-50 border-red-200 text-red-800") // Due
                 )}>
                     <div className="flex flex-col">
-                        <span className="text-[10px] font-bold uppercase tracking-wider opacity-80">
+                        <span className="type-section-header opacity-80">
                             {settlementDiff > 0 ? "Refund Due to Patient" : "Additional Payment Due"}
                         </span>
-                        <span className="text-sm opacity-70">
+                        <span className="type-body opacity-70">
                             {settlementDiff > 0 ? "Credit balance found after changes" : "Amount due after audit changes"}
                         </span>
                     </div>
-                    <div className="text-xl font-mono font-bold">
+                    <div className="type-page-title">
                         {settlementDiff > 0 ? "+" : ""}{settlementDiff > 0 ? settlementDiff.toLocaleString() : Math.abs(settlementDiff).toLocaleString()}
                     </div>
                 </div>
@@ -230,9 +230,9 @@ export function BillingSummary({ snapshot, onVisitUpdated, isCorrectionIntent, i
                 {/* Visual Lock Indicator - REMOVED for Silent Enforcement */}
 
                 {/* REFERRAL SOURCE (Read-Only Visualization) */}
-                <div className="space-y-1">
-                    <label className="text-[10px] uppercase font-bold tracking-widest text-zinc-500">Referral Source</label>
-                    <div className={cn("text-xs font-bold p-2 rounded border flex items-center justify-between",
+                <div className="space-y-2">
+                    <label className="type-section-header">Referral Source</label>
+                    <div className={cn("type-label font-bold p-2 rounded border flex items-center justify-between",
                         isDark ? "text-zinc-300 bg-zinc-900/50 border-zinc-800" : "text-zinc-900 bg-white border-black/[0.05] shadow-sm")}>
                         {snapshot?.billing?.referral?.partner ? (
                             <span className="flex items-center gap-2">
@@ -240,7 +240,7 @@ export function BillingSummary({ snapshot, onVisitUpdated, isCorrectionIntent, i
                                 {snapshot.billing.referral.partner.displayName}
                             </span>
                         ) : (
-                            <span className="text-zinc-400 italic font-medium">No Referral Partner</span>
+                            <span className="type-label italic">No Referral Partner</span>
                         )}
                     </div>
                 </div>
@@ -275,7 +275,7 @@ export function BillingSummary({ snapshot, onVisitUpdated, isCorrectionIntent, i
                                 )}
                             </div>
                         ) : (
-                            <span className="font-mono text-zinc-500 opacity-50">No discount applied</span>
+                            <span className="type-code opacity-50">No discount applied</span>
                         )}
                     </div>
 
@@ -286,14 +286,14 @@ export function BillingSummary({ snapshot, onVisitUpdated, isCorrectionIntent, i
                     </div>
 
                     {/* Divider */}
-                    <div className={cn("border-t border-dashed my-2", isDark ? "border-zinc-800" : "border-zinc-200")}></div>
+                    <div className={cn("border-t border-dashed", isDark ? "border-zinc-800" : "border-zinc-200")}></div>
 
                     {/* Net Payable */}
                     <div className="flex justify-between items-center">
-                        <span className={cn("font-bold text-sm", ui.netLabel)}>
+                        <span className={ui.netLabel}>
                             {isPrepaidIntent ? "Amount to Collect (Prepaid)" : (billing.paymentStatus === 'Paid' ? "Total Bill Amount" : "Amount to Collect")}
                         </span>
-                        <span className={cn("text-xl font-black font-mono flex items-center", ui.netValue)}>
+                        <span className={cn("flex items-center", ui.netValue)}>
                             <IndianRupee className="w-4 h-4 mr-0.5" />
                             {displayAmountToCollect?.toLocaleString() ?? "—"}
                         </span>
@@ -304,7 +304,7 @@ export function BillingSummary({ snapshot, onVisitUpdated, isCorrectionIntent, i
                 {canPerformActions && (
                     <div className="pt-2 animate-in fade-in">
                         <select
-                            className={cn("w-full rounded-md px-3 py-2 text-xs outline-none transition-colors disabled:opacity-50 font-bold", ui.input)}
+                            className={cn("w-full h-10 rounded-md px-3 py-2 outline-none transition-colors disabled:opacity-50 type-body", ui.input)}
                             disabled={isProcessing}
                             value=""
                             onChange={(e) => {
@@ -326,14 +326,14 @@ export function BillingSummary({ snapshot, onVisitUpdated, isCorrectionIntent, i
                 {/* E. Payment Method (STAGE 2) */}
                 {!isPrepaidIntent && billing.paymentStatus === 'PendingPayment' && (
                     <div className="pt-2 animate-in fade-in space-y-2">
-                        <label className="text-[10px] uppercase font-bold text-zinc-500 tracking-wider">Payment Method</label>
+                        <label className="type-section-header">Payment Method</label>
                         <div className="grid grid-cols-3 gap-2">
                             {['Cash', 'UPI', 'Card'].map(method => (
                                 <button
                                     key={method}
                                     onClick={() => setPaymentMethod && setPaymentMethod(method)}
                                     className={cn(
-                                        "flex flex-col items-center justify-center py-2 rounded-md border text-[10px] uppercase font-bold tracking-widest transition-all active:scale-95",
+                                        "flex flex-col items-center justify-center py-2 rounded-md border type-section-header transition-all active:scale-95",
                                         paymentMethod === method
                                             ? ui.method.active
                                             : ui.method.inactive
@@ -350,7 +350,7 @@ export function BillingSummary({ snapshot, onVisitUpdated, isCorrectionIntent, i
                 )}
 
                 {/* D. Payment Mode (Read Only for now, based on snapshot) */}
-                <div className="mt-2 text-[10px] text-zinc-600 text-center uppercase tracking-widest font-bold">
+                <div className="type-section-header text-center">
                     {billing.paymentModel === 'PartnerCollects' ? "Prepaid Visit" : "Checkout at Counter"}
                 </div>
             </div>
@@ -361,17 +361,17 @@ export function BillingSummary({ snapshot, onVisitUpdated, isCorrectionIntent, i
                     <div className={cn("w-96 rounded-xl shadow-2xl p-6 space-y-4 animate-in zoom-in-95 duration-200 border",
                         isDark ? "bg-zinc-900 border-white/10 text-white" : "bg-white border-zinc-200 text-zinc-900")}>
                         <div className="space-y-1">
-                            <h3 className="text-lg font-bold flex items-center gap-2">
+                            <h3 className="type-page-title flex items-center gap-2">
                                 <AlertCircle className="w-5 h-5 text-amber-500" />
                                 Confirm Financial Change
                             </h3>
-                            <p className="text-xs text-zinc-500 font-medium">
+                            <p className="type-label">
                                 {isDark ? "This action will be audited." : "Mandatory audit reason required for financial override."}
                             </p>
                         </div>
 
                         <div className="space-y-2">
-                            <div className={cn("text-xs font-mono p-2 rounded border",
+                            <div className={cn("type-code p-2 rounded border",
                                 isDark ? "bg-black/50 border-zinc-800 text-zinc-400" : "bg-zinc-50 border-zinc-200 text-zinc-600")}>
                                 {correctionState.type}: {correctionState.payload?.code}
                             </div>
@@ -379,7 +379,7 @@ export function BillingSummary({ snapshot, onVisitUpdated, isCorrectionIntent, i
                                 value={correctionState.reason}
                                 onChange={(e) => setCorrectionState(prev => ({ ...prev, reason: e.target.value }))}
                                 placeholder="Reason for this change (Required)..."
-                                className={cn("w-full rounded-lg p-3 text-sm outline-none min-h-[80px] transition-all",
+                                className={cn("w-full rounded-lg p-3 outline-none min-h-[80px] transition-all type-body",
                                     isDark ? "bg-black border-zinc-700 text-white focus:border-amber-500" : "bg-zinc-50 border-zinc-200 text-zinc-900 focus:border-zinc-900")}
                                 autoFocus
                             />
@@ -388,14 +388,14 @@ export function BillingSummary({ snapshot, onVisitUpdated, isCorrectionIntent, i
                         <div className="flex items-center gap-2 justify-end">
                             <button
                                 onClick={() => setCorrectionState({ ...correctionState, isOpen: false })}
-                                className="px-4 py-2 rounded-lg text-sm font-bold text-zinc-400 hover:text-white hover:bg-zinc-800"
+                                className="px-4 py-2 rounded-lg type-value text-zinc-400 hover:text-white hover:bg-zinc-800"
                             >
                                 Cancel
                             </button>
                             <button
                                 onClick={confirmCorrection}
                                 disabled={!correctionState.reason.trim() || isProcessing}
-                                className="px-4 py-2 rounded-lg text-sm font-bold bg-amber-600 hover:bg-amber-500 text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="px-4 py-2 rounded-lg type-value bg-amber-600 hover:bg-amber-500 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 {isProcessing ? <Loader2 className="w-4 h-4 animate-spin" /> : "Confirm Change"}
                             </button>

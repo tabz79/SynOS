@@ -30,7 +30,7 @@ const ReferralDraftForm = ({ visitId, onSuccess, onCancel }) => {
     };
 
     return (
-        <div className="bg-zinc-950/30 border border-synos-border rounded-lg p-4 mb-4 animate-in fade-in zoom-in-95 duration-200">
+        <div className="bg-zinc-950/30 border border-synos-border rounded-lg p-4 animate-in fade-in zoom-in-95 duration-200">
             <h4 className="text-xs font-bold text-zinc-400 uppercase tracking-wider mb-3">
                 Referral Draft (Provisional)
             </h4>
@@ -50,7 +50,7 @@ const ReferralDraftForm = ({ visitId, onSuccess, onCancel }) => {
                         type="text"
                         value={providerName}
                         onChange={(e) => setProviderName(e.target.value)}
-                        className="w-full bg-zinc-900 border border-synos-border rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-synos-primary transition-colors placeholder:text-zinc-600 disabled:opacity-50"
+                        className="w-full h-10 bg-zinc-900 border border-synos-border rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-synos-primary transition-colors placeholder:text-zinc-600 disabled:opacity-50"
                         placeholder="e.g. Dr. Rajesh Kumar"
                         disabled={isSubmitting}
                         autoFocus
@@ -66,7 +66,7 @@ const ReferralDraftForm = ({ visitId, onSuccess, onCancel }) => {
                             type="text"
                             value={clinicName}
                             onChange={(e) => setClinicName(e.target.value)}
-                            className="w-full bg-zinc-900 border border-synos-border rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-synos-primary transition-colors placeholder:text-zinc-600 disabled:opacity-50"
+                            className="w-full h-10 bg-zinc-900 border border-synos-border rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-synos-primary transition-colors placeholder:text-zinc-600 disabled:opacity-50"
                             placeholder="e.g. Sunshine Clinic"
                             disabled={isSubmitting}
                         />
@@ -79,7 +79,7 @@ const ReferralDraftForm = ({ visitId, onSuccess, onCancel }) => {
                             type="text"
                             value={location}
                             onChange={(e) => setLocation(e.target.value)}
-                            className="w-full bg-zinc-900 border border-synos-border rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-synos-primary transition-colors placeholder:text-zinc-600 disabled:opacity-50"
+                            className="w-full h-10 bg-zinc-900 border border-synos-border rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-synos-primary transition-colors placeholder:text-zinc-600 disabled:opacity-50"
                             placeholder="e.g. Indiranagar"
                             disabled={isSubmitting}
                         />

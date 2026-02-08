@@ -298,7 +298,7 @@ export function IntentPanel() {
             </div>
 
             {/* Scrollable Content - ZERO PADDING CONTAINER */}
-            <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-zinc-700">
+            <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-zinc-700 flex flex-col gap-4">
                 {isLoading && !snapshot && <div className="flex items-center justify-center h-40"><Loader2 className="w-8 h-8 text-synos-primary animate-spin" /></div>}
                 {error && <div className="m-4 bg-red-500/10 border border-red-500/50 rounded-lg p-3 text-red-200 text-sm flex gap-3"><X className="w-4 h-4 mt-0.5" />{error}</div>}
 
@@ -313,7 +313,7 @@ export function IntentPanel() {
 
                         {/* OTHER PANELS (Wrapped in Padding) */}
                         {hasVisit && (
-                            <div className="p-4 space-y-4 animate-in fade-in duration-500">
+                            <div className="px-4 pb-4 flex flex-col gap-4 animate-in fade-in duration-500">
                                 <VisitDetails
                                     snapshot={snapshot}
                                     visitId={snapshot.visit.visitId || snapshot.visit.id}

@@ -10,5 +10,7 @@ namespace SynOS.Models.DTOs
         public DateTime Time { get; set; }
         public string PrintFormat { get; set; } = "ESC/POS";
         public string PrintPayload { get; set; } = string.Empty;
+        public string? AssignedResource { get; set; }
+        public string? Station { get; set; }
     }
 }
