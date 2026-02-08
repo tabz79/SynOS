@@ -100,7 +100,15 @@
   }
 
   body {
-    @apply text-foreground font-sans antialiased;
+    /* GLOBAL FONT LOCKDOWN */
+    font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    @apply text-foreground antialiased;
+
+    /* Variable Font Optimizations */
+    font-feature-settings: "cv11", "ss01";
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+
     /* Light Mode: Cyan Daylight (Cyan-50 -> Zinc-100 -> Zinc-200) */
     /* "Felt not seen" - low chroma atmosphere */
     background: radial-gradient(circle at 50% 0%, #ecfeff 0%, #f4f4f5 60%, #e4e4e7 100%) fixed;

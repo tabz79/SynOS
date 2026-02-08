@@ -53,8 +53,8 @@ export function ActionQueue({ columns, data, onAction }) {
             ? "bg-zinc-800 border-b border-white/5"
             : "border-b border-black/[0.08]",
         headerText: isDark
-            ? "text-[11px] font-semibold text-zinc-400 tracking-wider"
-            : "text-[11px] font-bold text-zinc-800 tracking-widest",
+            ? "text-[10px] uppercase font-semibold text-zinc-400 tracking-wider"
+            : "text-[10px] uppercase font-bold text-zinc-800 tracking-widest",
         row: (isHistory, isFocused) => isDark
             ? cn(
                 "transition-all duration-200 outline-none border border-transparent",
@@ -101,7 +101,7 @@ export function ActionQueue({ columns, data, onAction }) {
             </div>
 
             {/* Body */}
-            <div className="overflow-auto flex-1 p-2 space-y-1 scrollbar-thin scrollbar-thumb-zinc-800/50 hover:scrollbar-thumb-zinc-700">
+            <div className="overflow-auto flex-1 p-0 space-y-0 scrollbar-thin scrollbar-thumb-zinc-800/50 hover:scrollbar-thumb-zinc-700">
                 {data.length === 0 ? (
                     <div className="h-full flex flex-col items-center justify-center text-zinc-500/40 space-y-3">
                         <div className="p-6 rounded-full dark:bg-zinc-800/20 bg-black/[0.02] shadow-inner">

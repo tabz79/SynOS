@@ -174,7 +174,7 @@ export function ActivityStream({ serverTime }) {
             >
                 <div className="flex items-center gap-2">
                     <Activity className="w-3.5 h-3.5 text-synos-emerald" />
-                    <h3 className="font-bold text-[11px] uppercase tracking-widest text-zinc-800">Live Stream</h3>
+                    <h3 className="font-bold text-[10px] uppercase tracking-widest text-zinc-800">Live Stream</h3>
                 </div>
                 {loading && <Loader2 className="w-3 h-3 text-zinc-500 animate-spin" />}
             </div>

@@ -195,7 +195,7 @@ export function ReceptionScreen() {
         {
             header: "Token ID",
             accessor: "token",
-            className: "font-mono w-32",
+            className: "w-32", // Removed font-mono to prevent Header from inheriting it
             render: (row) => (
                 <div className="flex flex-col gap-1 items-start">
                     <div className="flex items-center gap-2">
@@ -211,7 +211,7 @@ export function ReceptionScreen() {
                             }}
                             tabIndex={-1}
                             className={cn(
-                                "action-trigger transition-all font-bold tracking-tight rounded-md px-1.5 py-0.5 -mx-1.5 cursor-pointer underline-offset-4",
+                                "action-trigger transition-all font-mono font-bold tracking-tight rounded-md px-1.5 py-0.5 -mx-1.5 cursor-pointer underline-offset-4",
                                 theme === 'dark'
                                     ? "text-white hover:text-zinc-300 hover:bg-white/5"
                                     : "text-zinc-900 hover:text-zinc-700 hover:bg-zinc-50 hover:underline decoration-zinc-500/50 decoration-2"
@@ -363,7 +363,7 @@ export function ReceptionScreen() {
                                 ref={summaryRef}
                                 className="mb-4 shrink-0" // Removed transition-all duration-300
                             >
-                                <div className="flex items-center justify-between mb-2 px-1 sticky top-0 dark:bg-synos-background bg-transparent z-10 py-1">
+                                <div className="flex items-center justify-between mb-2 px-3 sticky top-0 dark:bg-synos-background bg-transparent z-10 py-1">
                                     <h2 className="text-lg font-bold dark:text-zinc-200 text-zinc-800">Reality Summary</h2>
                                     <button
                                         onClick={() => setIsSummaryCollapsed(!isSummaryCollapsed)}

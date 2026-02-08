@@ -274,23 +274,17 @@ export function IntentPanel() {
 
     // Dynamic Title based on Intent
     let panelTitle = "Registration";
-    let panelSubtitle = "Cockpit";
-    if (isResumeIntent) { panelTitle = "Resume Visit"; panelSubtitle = "Draft Mode"; }
-    if (isCorrectionIntent) { panelTitle = "Correct Visit"; panelSubtitle = "Audit Logged"; }
+    if (isResumeIntent) { panelTitle = "Resume Visit"; } // Keep Resume? Maybe "Resume Registration"?
+    if (isCorrectionIntent) { panelTitle = "Visit Correction"; }
 
     return (
         <div ref={panelRef} className={cn("flex flex-col h-full overflow-hidden rounded-2xl", ui.panel)}>
             {/* Header */}
-            <div className={cn("h-16 flex items-center justify-between px-6 shrink-0", ui.header)}>
+            <div className={cn("h-16 flex items-center justify-between px-4 shrink-0", ui.header)}>
                 <div>
                     <h2 className={cn("text-xl font-bold tracking-tight flex items-baseline gap-2", ui.title)}>
                         {panelTitle}
-                        <span className={cn("text-sm font-normal uppercase tracking-widest", ui.subtitle)}>— {panelSubtitle}</span>
                     </h2>
-                    <div className="text-[10px] font-mono text-emerald-400/80 uppercase tracking-wider mt-0.5 flex items-center gap-1.5">
-                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                        {isLoading ? "Syncing..." : isCorrectionIntent ? "Audit Mode Active" : "Live Operational Mode"}
-                    </div>
                 </div>
                 <button
                     onClick={closePanel}
@@ -352,9 +346,8 @@ export function IntentPanel() {
                         onClick={closePanel}
                         className={cn(
                             "w-full py-3 rounded-lg font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-lg active:scale-95",
-                            isDark
-                                ? "bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 border border-emerald-500/20 shadow-emerald-500/5"
-                                : "bg-emerald-600 text-white hover:bg-emerald-700 shadow-emerald-500/10"
+                            "w-full py-3 rounded-lg font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-lg active:scale-95",
+                            ui.actionBtn.enabled
                         )}
                     >
                         Finish Correction <AlertCircle className="w-4 h-4" />

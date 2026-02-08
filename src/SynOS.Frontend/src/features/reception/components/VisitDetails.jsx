@@ -295,7 +295,7 @@ export function VisitDetails({ snapshot, visitId, onVisitUpdated, isPrepaidInten
                     <div className={cn("w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold border", ui.indicator)}>
                         2
                     </div>
-                    <h3 className={cn("font-bold text-sm uppercase tracking-wide", ui.headerText)}>Visit Details</h3>
+                    <h3 className={cn("font-bold text-sm tracking-tight", ui.headerText)}>Visit Details</h3>
                     {isProcessing && <Loader2 className="w-3 h-3 animate-spin text-synos-primary" />}
                 </div>
                 {isReadOnly && (
@@ -310,7 +310,7 @@ export function VisitDetails({ snapshot, visitId, onVisitUpdated, isPrepaidInten
 
             {/* SECTION 2: VISIT CONTEXT (Phase 8 - Reordered Top) */}
             <div className={cn("space-y-4 p-4 rounded-lg border", ui.section)}>
-                <h4 className={cn("text-xs font-bold uppercase tracking-wider mb-2", ui.sectionTitle)}>Visit Context</h4>
+                <h4 className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 mb-2">Visit Context</h4>
 
                 {/* A. Prepaid Checkbox */}
                 <div className="flex items-start gap-3">
@@ -323,10 +323,10 @@ export function VisitDetails({ snapshot, visitId, onVisitUpdated, isPrepaidInten
                         className="mt-0.5 accent-synos-primary cursor-pointer w-4 h-4"
                     />
                     <div className="space-y-0.5">
-                        <label htmlFor="chkPrepaid" className={cn("text-sm font-bold cursor-pointer transition-colors",
+                        <label htmlFor="chkPrepaid" className={cn("text-sm font-medium cursor-pointer transition-colors",
                             isPrepaidIntent
                                 ? (isDark ? "text-amber-400" : "text-amber-700")
-                                : (isDark ? "text-zinc-300" : "text-black") // Crisp Black
+                                : (isDark ? "text-zinc-300" : "text-zinc-700") // Crisp Zinc-700
                         )}>
                             Prepaid Bill (Patient already paid)
                         </label>
@@ -338,9 +338,9 @@ export function VisitDetails({ snapshot, visitId, onVisitUpdated, isPrepaidInten
 
                 {/* B. Referral Input */}
                 <div className="pt-2">
-                    <div className="text-xs text-zinc-800 font-bold mb-1 flex justify-between">
+                    <div className="text-xs text-zinc-600 font-medium mb-1 flex justify-between">
                         <span>Referral / Doctor {isPrepaidIntent && <span className="text-red-500">*</span>}</span>
-                        {isPrepaidIntent && <span className="text-amber-500/50 text-[10px] uppercase">Who collected payment?</span>}
+                        {isPrepaidIntent && <span className="text-amber-500/50 text-[10px] uppercase font-bold tracking-wide">Who collected payment?</span>}
                     </div>
 
                     {/* 1. PARTNER BADGE (Highest Priority) */}

@@ -29,10 +29,10 @@ export function BillingSummary({ snapshot, onVisitUpdated, isCorrectionIntent, i
         indicator: "bg-zinc-800 border-synos-border text-zinc-400",
         headerText: "text-zinc-200",
         container: "bg-zinc-950/25 border-synos-border",
-        rowLabel: "text-zinc-400",
-        rowValue: "text-zinc-400 font-mono",
-        netLabel: "text-zinc-200",
-        netValue: "text-white",
+        rowLabel: "text-zinc-400 font-medium",
+        rowValue: "text-zinc-400 font-mono font-bold",
+        netLabel: "text-zinc-200 font-bold",
+        netValue: "text-white font-black",
         input: "bg-zinc-900 border-synos-border text-white focus:border-synos-primary",
         method: {
             active: "bg-zinc-100 text-black border-white font-bold shadow-md",
@@ -43,7 +43,7 @@ export function BillingSummary({ snapshot, onVisitUpdated, isCorrectionIntent, i
         headerText: "text-zinc-800 font-bold",
         // SIMULATION GLASS: White/60 + Deep Shadow + Solid Inputs
         container: "bg-white/60 backdrop-blur-none border border-white/40 shadow-[0_8px_32px_rgba(0,0,0,0.12)] ring-1 ring-black/5",
-        rowLabel: "text-zinc-700",
+        rowLabel: "text-zinc-600 font-medium",
         rowValue: "text-black font-mono font-bold",
         netLabel: "text-black font-bold",
         netValue: "text-black font-black",
@@ -183,12 +183,12 @@ export function BillingSummary({ snapshot, onVisitUpdated, isCorrectionIntent, i
     return (
         <div className="space-y-4">
             {/* Header */}
-            <div className="flex items-center justify-between mb-2 mt-6">
+            <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
                     <div className={cn("w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold border", ui.indicator)}>
                         3
                     </div>
-                    <h3 className={cn("font-bold text-sm uppercase tracking-wide", ui.headerText)}>Financials</h3>
+                    <h3 className={cn("font-bold text-sm tracking-tight", ui.headerText)}>Financials</h3>
                     {isProcessing && <Loader2 className="w-3 h-3 animate-spin text-synos-primary" />}
                 </div>
                 {billing.paymentStatus && (
@@ -206,7 +206,7 @@ export function BillingSummary({ snapshot, onVisitUpdated, isCorrectionIntent, i
             {/* SETTLEMENT ALERT (High Visibility) */}
             {isSettlementNeeded && (
                 <div className={cn(
-                    "p-3 rounded-lg border flex items-center justify-between shadow-lg animate-in slide-in-from-top-2 duration-300",
+                    "p-4 rounded-lg border flex items-center justify-between shadow-lg animate-in slide-in-from-top-2 duration-300",
                     settlementDiff > 0
                         ? (isDark ? "bg-emerald-950/40 border-emerald-500/50 text-emerald-100" : "bg-emerald-50 border-emerald-200 text-emerald-800") // Refund
                         : (isDark ? "bg-red-950/40 border-red-500/50 text-red-100" : "bg-red-50 border-red-200 text-red-800") // Due
@@ -231,7 +231,7 @@ export function BillingSummary({ snapshot, onVisitUpdated, isCorrectionIntent, i
 
                 {/* REFERRAL SOURCE (Read-Only Visualization) */}
                 <div className="space-y-1">
-                    <label className="text-[10px] uppercase font-bold text-zinc-500 tracking-wider">Referral Source</label>
+                    <label className="text-[10px] uppercase font-bold tracking-widest text-zinc-500">Referral Source</label>
                     <div className={cn("text-xs font-bold p-2 rounded border flex items-center justify-between",
                         isDark ? "text-zinc-300 bg-zinc-900/50 border-zinc-800" : "text-zinc-900 bg-white border-black/[0.05] shadow-sm")}>
                         {snapshot?.billing?.referral?.partner ? (
@@ -293,7 +293,7 @@ export function BillingSummary({ snapshot, onVisitUpdated, isCorrectionIntent, i
                         <span className={cn("font-bold text-sm", ui.netLabel)}>
                             {isPrepaidIntent ? "Amount to Collect (Prepaid)" : (billing.paymentStatus === 'Paid' ? "Total Bill Amount" : "Amount to Collect")}
                         </span>
-                        <span className={cn("text-xl font-bold font-mono flex items-center", ui.netValue)}>
+                        <span className={cn("text-xl font-black font-mono flex items-center", ui.netValue)}>
                             <IndianRupee className="w-4 h-4 mr-0.5" />
                             {displayAmountToCollect?.toLocaleString() ?? "—"}
                         </span>

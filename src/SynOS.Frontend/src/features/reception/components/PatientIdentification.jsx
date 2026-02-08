@@ -89,7 +89,7 @@ export function PatientIdentification({ snapshot, onSelectPatient, onClearPatien
                     {/* Header for Selected State */}
                     <div className="flex items-center gap-2 mb-3">
                         <div className={cn("w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold border", ui.indicator.active)}>1</div>
-                        <h3 className={cn("font-bold text-sm uppercase tracking-wide", ui.headerText.active)}>Patient Identification</h3>
+                        <h3 className={cn("font-bold text-sm tracking-tight", ui.headerText.active)}>Patient Identification</h3>
                     </div>
                     <RichPatientCard
                         patient={selectedPatient}
@@ -109,11 +109,11 @@ export function PatientIdentification({ snapshot, onSelectPatient, onClearPatien
                         {/* Integrated Header */}
                         <div className="flex items-center gap-2 mb-3">
                             <div className={cn("w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold border transition-colors", ui.indicator.inactive)}>1</div>
-                            <h3 className={cn("font-bold text-sm uppercase tracking-wide", ui.headerText.inactive)}>Patient Identification</h3>
+                            <h3 className={cn("font-bold text-sm tracking-tight", ui.headerText.inactive)}>Patient Identification</h3>
                         </div>
 
-                        <label className={cn("block text-xs font-bold uppercase mb-1.5 ml-1 transition-colors",
-                            isDark ? ui.formLabel : "text-black")} // Crisp Black Label
+                        <label className={cn("block text-[10px] uppercase font-medium tracking-wide mb-1 ml-1 transition-colors",
+                            isDark ? "text-zinc-500" : "text-zinc-500")}
                         >
                             Mobile Number / MRN
                         </label>
@@ -160,7 +160,7 @@ export function PatientIdentification({ snapshot, onSelectPatient, onClearPatien
                     {/* Always Show Create Option (Enterprise Family Use Case) */}
                     {searchQuery.length > 3 && !isSearching && (
                         <div className={cn(
-                            "rounded-lg p-3 flex flex-col items-center gap-2 transition-all",
+                            "rounded-lg p-6 flex flex-col items-center gap-2 transition-all",
                             matches.length > 0
                                 ? (isDark ? "mt-4 border-t border-zinc-800 pt-4" : "mt-4 border-t border-zinc-100 pt-4")
                                 : cn("border border-dashed", ui.emptyBox)
@@ -294,7 +294,7 @@ const RichPatientCard = ({ patient, onAction, actionLabel, isLocked }) => {
                         <div className="flex items-center flex-wrap gap-2 mt-1.5">
                             {/* Age Badge */}
                             <span className={cn(
-                                "px-1.5 py-0.5 rounded-full text-[10px] font-mono",
+                                "px-1.5 py-0.5 rounded-full text-[10px] font-sans font-bold",
                                 cardUi.badge
                             )}>
                                 {age ? `${age}Y` : 'N/A'}
@@ -303,7 +303,7 @@ const RichPatientCard = ({ patient, onAction, actionLabel, isLocked }) => {
                             {/* Gender Badge */}
                             {rawGender && (
                                 <span className={cn(
-                                    "px-1.5 py-0.5 rounded-full text-[10px] uppercase font-mono border",
+                                    "px-1.5 py-0.5 rounded-full text-[10px] uppercase font-sans font-bold border",
                                     isLocked
                                         ? "bg-synos-primary/20 border-synos-primary/30 text-synos-primary/80"
                                         : (isDark ? "bg-zinc-800 border-zinc-700 text-zinc-500" : "bg-white/80 border-zinc-300 text-zinc-900 font-bold")
@@ -347,8 +347,8 @@ const RichPatientCard = ({ patient, onAction, actionLabel, isLocked }) => {
                     {lastVisitDate ? (
                         <div className="text-right">
                             <div className={cn(
-                                "text-[10px] uppercase font-bold",
-                                isLocked ? "text-synos-primary/60" : "text-zinc-700" // Un-muted from 500
+                                "text-[10px] uppercase font-bold tracking-wide",
+                                isLocked ? "text-synos-primary/60" : "text-zinc-500"
                             )}>Last Visit</div>
                             <div className={cn(
                                 "text-xs font-mono font-bold",
@@ -448,9 +448,9 @@ function RegisterFormInline({ onSuccess }) {
             {error && <div className="text-xs text-red-500 bg-red-500/10 p-2 rounded border border-red-500/20 font-medium">{error}</div>}
 
             <div className="space-y-1">
-                <label className={cn("text-[10px] uppercase font-bold", ui.label)}>Full Name *</label>
+                <label className={cn("text-[10px] uppercase font-medium tracking-wide", ui.label)}>Full Name *</label>
                 <input
-                    className={cn("w-full rounded px-2 py-1.5 text-sm outline-none transition-all", ui.input)}
+                    className={cn("w-full rounded px-2 py-2 text-sm outline-none transition-all", ui.input)}
                     placeholder="e.g. Rahul Sharma"
                     value={formData.name}
                     onChange={e => setFormData({ ...formData, name: e.target.value })}
@@ -460,19 +460,19 @@ function RegisterFormInline({ onSuccess }) {
 
             <div className="grid grid-cols-2 gap-2">
                 <div className="space-y-1">
-                    <label className={cn("text-[10px] uppercase font-bold", ui.label)}>Mobile *</label>
+                    <label className={cn("text-[10px] uppercase font-medium tracking-wide", ui.label)}>Mobile *</label>
                     <input
-                        className={cn("w-full rounded px-2 py-1.5 text-sm outline-none transition-all", ui.input)}
+                        className={cn("w-full rounded px-2 py-2 text-sm outline-none transition-all", ui.input)}
                         placeholder="987..."
                         value={formData.mobile}
                         onChange={e => setFormData({ ...formData, mobile: e.target.value })}
                     />
                 </div>
                 <div className="space-y-1">
-                    <label className={cn("text-[10px] uppercase font-bold", ui.label)}>Age *</label>
+                    <label className={cn("text-[10px] uppercase font-medium tracking-wide", ui.label)}>Age *</label>
                     <input
                         type="number"
-                        className={cn("w-full rounded px-2 py-1.5 text-sm outline-none transition-all", ui.input)}
+                        className={cn("w-full rounded px-2 py-2 text-sm outline-none transition-all", ui.input)}
                         placeholder="25"
                         value={formData.age}
                         onChange={e => setFormData({ ...formData, age: e.target.value })}
@@ -481,7 +481,7 @@ function RegisterFormInline({ onSuccess }) {
             </div>
 
             <div className="space-y-1">
-                <label className={cn("text-[10px] uppercase font-bold", ui.label)}>Gender *</label>
+                <label className={cn("text-[10px] uppercase font-medium tracking-wide", ui.label)}>Gender *</label>
                 <div className={cn("flex rounded p-1 border", ui.genderBox)}>
                     {['Male', 'Female', 'Other'].map(g => (
                         <button

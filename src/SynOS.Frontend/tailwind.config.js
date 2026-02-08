@@ -22,8 +22,8 @@ module.exports = {
                 'synos-focus': '60% 40%',
             },
             fontFamily: {
-                sans: ['Inter', 'system-ui', 'sans-serif'],
-                mono: ['"JetBrains Mono"', '"Roboto Mono"', 'monospace'],
+                sans: ['Inter', 'system-ui', '-apple-system', 'Segoe UI', 'Roboto', 'Arial', 'sans-serif'],
+                mono: ['"JetBrains Mono"', '"Fira Code"', 'monospace'],
             },
             colors: {
                 border: "hsl(var(--border))",
