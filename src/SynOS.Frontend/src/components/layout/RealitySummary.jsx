@@ -85,13 +85,7 @@ export function RealityTile({ value, label, qualifier, icon: Icon, color = "defa
                     )}
                 </div>
 
-                {/* Progress/indicator line */}
-                <div className={cn(
-                    "w-full bg-zinc-100 rounded-full overflow-hidden",
-                    isCollapsed ? "h-1" : "h-1.5"
-                )}>
-                    <div className={cn("h-full rounded-full w-1/3 transition-all duration-500", colorClasses[color] || "bg-zinc-400")} />
-                </div>
+
             </div>
         </div>
     );
