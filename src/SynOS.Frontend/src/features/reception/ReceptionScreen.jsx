@@ -304,21 +304,29 @@ export function ReceptionScreen() {
             accessor: "operationalStatus",
             className: "w-40",
             render: (row) => {
+                // SYSTEM STATUS INDICATOR: Final Canonical Implementation
+                // Rules: Static Cyan Dot (6px), Body Text (14px), No Badge, No Pulse
+                const StatusDot = () => (
+                    <div className="w-1.5 h-1.5 rounded-full bg-cyan-500 shrink-0" />
+                );
+
                 if (row.assignedResource) {
                     return (
-                        <span className="bg-emerald-500/10 dark:text-emerald-400 text-emerald-700 border border-emerald-500/20 px-2 py-1 rounded text-xs font-medium flex items-center gap-1.5">
-                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                            Assigned: {row.assignedResource}
-                        </span>
+                        <div className="flex items-center gap-2">
+                            <StatusDot />
+                            <span className="type-body text-zinc-900 dark:text-zinc-200">
+                                Assigned: {row.assignedResource}
+                            </span>
+                        </div>
                     );
                 }
                 return (
-                    <span className={`
-                        px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border
-                        dark:bg-zinc-800 bg-emerald-100 dark:text-zinc-400 text-emerald-700 dark:border-zinc-700 border-emerald-200
-                    `}>
-                        {row.operationalStatus || "Processing"}
-                    </span>
+                    <div className="flex items-center gap-2">
+                        <StatusDot />
+                        <span className="type-body text-zinc-900 dark:text-zinc-200">
+                            {row.operationalStatus || "Processing"}
+                        </span>
+                    </div>
                 );
             }
         }
