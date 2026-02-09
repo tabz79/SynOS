@@ -341,38 +341,44 @@ export function ReceptionScreen() {
                 {/* 1. Grain/Noise Base */}
                 <div className="absolute inset-0 opacity-[0.03] mix-blend-overlay" style={{ backgroundImage: `url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyBAMAAADsEZWCAAAAGFBMVEUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAt66YlAAAAB3RSTlMAo7S066u0v76zAAABJklEQVQ4jXWSwW7DIAyGvRNoV9HeIdp7B2nvHaK9d7D27lX836VpY6t0p8oHicDHP4Z99qGf96HvX+h7NfSmX8U8z9M0z6+P/m8X6fB6L78XpX4X5X4O6fc8l7e8n+T9KO87ed+m77pP33Wfvuu6T991nb7rum/ed5+87z55333yvvvkfffJ++6T990n77pP33Wfvus6fdd13rrvu67rvXXfd13ne+u+77rO99Z933Wdt67rtnXdt67rtnWdt67rtjW999Y9ve9997mPu8997uPus9fZZ6+zz15nn73OPnudvU9f0+v0Nb1OX9Pr9DW9Tm9O9vTmaE5vjua09f7o/db7rff7f9H3v6XvP9TzL/X+U8+/1fMv9fw7fQ==")` }} />
 
-                {/* 2. Gradient 'Objects' (No Blur - Pure CSS Gradients) */}
-                {/* Cyan Pulse */}
+                {/* 2. Ambient Diffusion 'Objects' (No Blur - Multi-stop Non-linear falloff) */}
+                {/* Rules: 
+                    - Max opacity at center: 8%
+                    - Multi-stop: 0% -> 40% -> 85% for soft diffusion
+                    - Over-sized containers to prevent edge-clipping
+                */}
+
+                {/* Cyan Pulse (Ambient Bloom) */}
                 <div
-                    className="absolute top-[-10%] left-[5%] w-[35%] h-[40%] animate-pulse"
+                    className="absolute top-[-15%] left-[-5%] w-[50%] h-[55%] animate-pulse"
                     style={{
-                        background: 'radial-gradient(circle, rgba(34, 211, 238, 0.25) 0%, rgba(34, 211, 238, 0) 70%)',
-                        animationDuration: '8s'
+                        background: 'radial-gradient(circle at 40% 40%, rgba(6, 182, 212, 0.07) 0%, rgba(6, 182, 212, 0.02) 45%, rgba(6, 182, 212, 0) 85%)',
+                        animationDuration: '10s'
                     }}
                 />
 
-                {/* Blue Wash */}
+                {/* Blue Wash (Deep Scattering) */}
                 <div
-                    className="absolute top-[-5%] right-[15%] w-[30%] h-[35%]"
-                    style={{ background: 'radial-gradient(circle, rgba(37, 99, 235, 0.15) 0%, rgba(37, 99, 235, 0) 70%)' }}
+                    className="absolute top-[-10%] right-[10%] w-[45%] h-[50%]"
+                    style={{ background: 'radial-gradient(circle at center, rgba(37, 99, 235, 0.05) 0%, rgba(37, 99, 235, 0.01) 50%, rgba(37, 99, 235, 0) 90%)' }}
                 />
 
-                {/* Dark Anchor */}
+                {/* Dark Anchor (Subtle Depth) */}
                 <div
-                    className="absolute top-[2%] left-[40%] w-[15%] h-[15%]"
-                    style={{ background: 'radial-gradient(circle, rgba(39, 39, 42, 0.15) 0%, rgba(39, 39, 42, 0) 70%)' }}
+                    className="absolute top-[5%] left-[35%] w-[25%] h-[25%]"
+                    style={{ background: 'radial-gradient(circle at center, rgba(39, 39, 42, 0.04) 0%, rgba(39, 39, 42, 0) 75%)' }}
                 />
 
-                {/* Emerald Glow */}
+                {/* Emerald Glow (Warm Diffusion) */}
                 <div
-                    className="absolute top-[-20%] right-[-5%] w-[50%] h-[50%]"
-                    style={{ background: 'radial-gradient(circle, rgba(110, 231, 183, 0.15) 0%, rgba(110, 231, 183, 0) 70%)' }}
+                    className="absolute top-[-25%] right-[-10%] w-[60%] h-[65%]"
+                    style={{ background: 'radial-gradient(circle at 60% 30%, rgba(52, 211, 153, 0.06) 0%, rgba(52, 211, 153, 0.01) 40%, rgba(52, 211, 153, 0) 80%)' }}
                 />
 
-                {/* Amber Hint */}
+                {/* Amber Hint (Micro-Bloom) */}
                 <div
-                    className="absolute top-[5%] left-[20%] w-[20%] h-[20%]"
-                    style={{ background: 'radial-gradient(circle, rgba(253, 230, 138, 0.1) 0%, rgba(253, 230, 138, 0) 70%)' }}
+                    className="absolute top-[10%] left-[15%] w-[30%] h-[30%]"
+                    style={{ background: 'radial-gradient(circle at center, rgba(251, 191, 36, 0.03) 0%, rgba(251, 191, 36, 0) 70%)' }}
                 />
             </div>
 
