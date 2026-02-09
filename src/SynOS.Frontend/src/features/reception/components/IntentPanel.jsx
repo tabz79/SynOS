@@ -65,8 +65,13 @@ export function IntentPanel() {
     } : {
         // LIGHT MODE: REAL FAKE FROST (System Bar Match)
         // No Blur = No Performance Hit.
-        // Gradient simulates glass refraction.
-        panel: "bg-[linear-gradient(to_bottom,#F5FCFF_0%,#E6F2F5_50%,#D7E1E4_100%)] border-l border-white/50 shadow-[calc(0px_0px_50px_-12px_rgba(0,0,0,0.25))] relative z-20",
+        // KNIFE-EDGE STYLE: Sharp borders, deep shadow, no blur.
+        panel: cn(
+            "bg-[linear-gradient(to_bottom,#F5FCFF_0%,#E6F2F5_50%,#D7E1E4_100%)]",
+            "border-l border-white shadow-[-20px_0_50px_rgba(0,0,0,0.3)]", // Knife Edge: Solid White Border + Deep Shadow
+            "border-t border-white/80", // Top Rim Light
+            "relative z-20"
+        ),
         // Header: EXACT MATCH with ActivityStream.jsx (Line 172)
         header: "bg-[linear-gradient(to_bottom,rgba(248,253,255,0.98)_0%,rgba(238,245,248,0.98)_50%,rgba(228,235,238,0.98)_100%)] border-b border-black/[0.06]",
         // Footer: Matches bottom of panel gradient for anchor
