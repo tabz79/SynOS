@@ -3043,3 +3043,107 @@ Validation: required fields, numeric ranges, duplicate codes, department mapping
 
 ---
 **End of Part 11.**
+
+
+
+
+
+
+
+SynOS Reception UI Design Canons
+This document codifies the non-negotiable design rules currently enforced in the Reception UI. It serves as a contract for all future development.
+
+A. Typography Canon (System v2)
+Principle: "If it’s not a Role, it’s a defect." No ad-hoc font sizes, weights, colors, or tracking in components.
+
+Hard Rules
+No ad-hoc styles: text-xs, text-sm, font-bold, tracking-* are PROHIBITED directly in JSX.
+Roles only: Must use defined utility classes (e.g., .type-body).
+Monospace usage: Restricted to codes (IDs, MRNs) only. Never for human names.
+Status Text: Must use .type-body, never .type-meta.
+Minimum Size: No "tiny fonts" (< 10px) unless explicitly handled by a specific badge sub-role.
+Approved Roles
+Role	usage
+.type-display	Large numeric emphasis (tiles, totals)
+.type-page-title	Screen / modal titles
+.type-section-header	Structural dividers (NOT visual emphasis)
+.type-label	Field labels
+.type-body	Normal readable text
+.type-value	Primary data (names, amounts)
+.type-meta	Secondary info (timestamps, badges)
+.type-code	IDs, MRNs, codes (monospace only)
+B. Spacing Canon (Parent-Controlled Layout)
+Principle: "Parents own spacing. Children never push themselves away."
+
+Hard Rules
+No external margins: Children must NOT use mt-*, mb-*, my-*.
+Parent control: Vertical/Horizontal rhythm is controlled by parent containers using gap-* or space-y-*.
+Peer separation: No pt-* / pb-* for separation between siblings.
+Rhythm: Standard Unit = 16px (Base), 8px (Minor). No magic numbers (e.g., 7px, 13px).
+C. Grid & Row Canon (Action Queues)
+Principle: "Rows must not change height based on content type."
+
+Hard Rules
+Structured Columns:
+Patient Column: Fixed 2-line structure (Name+Badge / Test Codes).
+Payment Column: Conditional depth allowed (2 lines normally, 3rd only for Prepaid Referrer).
+No Wrapping: Content must truncate or stack, never wrap to increase row height unintentionally.
+Operational Status: Is a System Status Line, NOT a badge.
+D. Status vs Badge Canon
+Principle: "Status is current state. Badge is category metadata."
+
+Hard Rules
+Status Representation:
+Rendered as a Neutral Dot (System Color, e.g., Cyan, Zinc) + Body Text.
+NO pills, NO borders, NO bold text.
+Example: "● Ready for Sample" (Cyan dot + regular text).
+Badge Representation:
+For categories/identifiers only (e.g., "Age/Sex", "Payment Mode").
+Compact, bordered, or shaded.
+E. Color Canon (Muted System Theme)
+Principle: "Color must explain state, not decorate data."
+
+Hard Rules
+Default Palette: Zinc (Neutral) for almost everything.
+No Rainbows: semantic colors (Red/Green/Amber) only when meaning is critical (e.g., Error, Success, Warning).
+System Live: Cyan is reserved for "System Live" / "Active" indicators.
+Decoration: No fake progress bars or arbitrary colored backgrounds.
+F. Tile Layout Canon (Reality Summary)
+Principle: "Uniform structure beats responsive cleverness."
+
+Hard Rules
+Strict Vertical Categories (Slots):
+Slot 1 (Header): Top row containing Value (Left) and Icon (Right). Fixed structural constraints.
+Spacer: flex-1 element pushing Footer to bottom.
+Slot 2 (Footer): Bottom row containing Label.
+No Visual Float: justify-between is BANNED on the tile container to prevent content height from shifting alignment.
+Consistency: Icon position and Label position must be pixel-identical across all tiles, regardless of Value text length/size.
+Minimization: In collapsed state, Tiles strictly adhere to grid row height (h-full) and use adaptive short labels (e.g., "Prepaid Bills") to prevent truncation.
+G. Animation Canon (SynOS Motion)
+Principle: "Motion explains change, it does not decorate."
+
+Hard Rules
+Standard Duration: 260ms (The "OS feel" constant). Never faster, never slower.
+Standard Easing: cubic-bezier(0.22, 1, 0.36, 1) (Decelerated/Natural). No linear animations.
+Layout Transitions: Must use FLIP (First-Last-Invert-Play) technique for layout changes (e.g., Tiles colliding/expanding).
+Performance: will-change properties must be promoted strictly during animation and removed immediately after.
+H. Theming Canon (Polarity)
+Principle: "Structure is permanent, skin is transient."
+
+Hard Rules
+Dual Mode Support: All components must support dark and light modes natively via dark: variants.
+Zinc Backbone: Neutral colors (Zinc 50-950) form the structural skeleton in both modes.
+Semantic Inversion:
+Light Mode: White surfaces, Dark text.
+Dark Mode: Dark surfaces (Zinc-900/950), Light text.
+Note: Semantic colors (Red/Emerald) must adjust opacity/shade to remain legibility (e.g., emerald-600 in light vs emerald-400 in dark).
+I. Material Canon (Fake Frost UI)
+Principle: "Depth is defined by light and blur, not borders."
+
+Hard Rules
+Layer System: Must use defined glass utility classes (.glass-base, .glass-elevated) from 
+index.css
+.
+Blur Dominance: backdrop-blur (> 12px) is the primary depth cue, not opacity.
+Noise Texture: Atmospheric grain/noise is required on the base background to sell the "premium" physical effect.
+Borders: Ultra-thin white/black borders (10-20% opacity) define edges, not heavy lines.

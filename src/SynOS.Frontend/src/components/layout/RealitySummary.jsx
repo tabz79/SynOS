@@ -2,7 +2,7 @@ import { useLayoutEffect, useRef } from 'react';
 import { cn } from "@/lib/utils";
 import { useTheme } from "@/context/ThemeContext";
 
-export function RealityTile({ value, label, qualifier, icon: Icon, color = "default", id, style, isHidden, isCollapsed }) {
+export function RealityTile({ value, label, shortLabel, qualifier, icon: Icon, color = "default", id, style, isHidden, isCollapsed }) {
     const colorClasses = {
         default: "bg-zinc-200",
         amber: "bg-synos-amber",
@@ -22,6 +22,14 @@ export function RealityTile({ value, label, qualifier, icon: Icon, color = "defa
         text: "text-zinc-900"
     };
 
+    // ADAPTIVE LABEL LOGIC:
+    // Minimized: Use shortLabel if available (e.g. "Prepaid Bills")
+    // Maximized: Use full label (e.g. "Prepaid Bills Issued")
+    const displayLabel = (isCollapsed && shortLabel) ? shortLabel : label;
+
+    // Tooltip: Always show full context on hover, especially if truncated or using short label
+    const tileTitle = isCollapsed ? `${label}${qualifier ? ` (${qualifier})` : ''}` : undefined;
+
     return (
         <div
             id={id}
@@ -33,59 +41,64 @@ export function RealityTile({ value, label, qualifier, icon: Icon, color = "defa
                     : `url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyBAMAAADsEZWCAAAAGFBMVEUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAt66YlAAAAB3RSTlMAo7S066u0v76zAAABJklEQVQ4jXWSwW7DIAyGvRNoV9HeIdp7B2nvHaK9d7D27lX836VpY6t0p8oHicDHP4Z99qGf96HvX+h7NfSmX8U8z9M0z6+P/m8X6fB6L78XpX4X5X4O6fc8l7e8n+T9KO87ed+m77pP33Wfvuu6T991nb7rum/ed5+87z55333yvvvkfffJ++6T990n77pP33Wfvus6fdd13rrvu67rvXXfd13ne+u+77rO99Z933Wdt67rtnXdt67rtnWdt67rtjW999Y9ve9997mPu8997uPus9fZZ6+zz15nn73OPnudvU9f0+v0Nb1OX9Pr9DW9Tm9O9vTmaE5vjua09f7o/db7rff7f9H3v6XvP9TzL/X+U8+/1fMv9fw7fQ=="), 
                          linear-gradient(to bottom, #ffffff 0%, #f9fafb 100%)`
             }}
+            title={tileTitle}
             className={cn(
-                "rounded-xl transition-[transform,opacity] duration-300 group cursor-default flex flex-col justify-between",
+                "rounded-xl transition-[transform,opacity] duration-300 group cursor-default flex flex-col",
                 "isolation-auto relative z-10",
                 ui.card,
-                // FLIP: Opacity handled via props/style during animation, but base state here
                 isHidden && "opacity-0 pointer-events-none",
-                // STATE A (Expanded): h-32, p-5
-                // STATE C (Instrument): Compact padding, content-driven height
-                isCollapsed ? "px-4 py-2.5 gap-1.5" : "p-5 h-32"
+                // Grid Height Standardization
+                isCollapsed ? "px-4 py-2.5 gap-0 h-full" : "p-5 h-32 gap-0"
             )}
         >
-            <div className="flex justify-between items-start">
+            {/* SLOT 1: HEADER + VALUE (Top Section) */}
+            {/* We group Value and Icon together to replicate the original intended design: Value Left, Icon Right. */}
+            {/* But we keep them structurally rigorous. */}
+            <div className="flex justify-between items-start w-full">
+                {/* VALUE (Top Left) */}
                 <span className={cn(
-                    "font-bold font-sans tracking-tight group-hover:scale-[1.02] transition-transform duration-300 origin-left",
+                    "font-bold font-sans tracking-tight group-hover:scale-[1.02] transition-transform duration-300 origin-left block",
                     ui.text,
-                    // TYPOGRAPHY MORPH & SCALING:
-                    // State C (Collapsed): Always 3xl
-                    // State A (Expanded): Scale based on length to fit 1M+ (7+ chars)
                     isCollapsed
-                        ? "text-3xl leading-tight pb-0.5" // Fixed: leading-none caused clipping. Added pb-0.5 buffer.
-                        : value && value.toString().length > 9 ? "text-3xl leading-snug" // 1 Crore+
-                            : value && value.toString().length > 6 ? "text-4xl leading-snug" // 10 Lakhs+
-                                : "text-5xl leading-tight pb-1" // Default (Added pb-1 and relaxed leading)
+                        ? "text-3xl leading-tight pb-0.5"
+                        : value && value.toString().length > 9 ? "text-3xl leading-snug"
+                            : value && value.toString().length > 6 ? "text-4xl leading-snug"
+                                : "text-5xl leading-tight pb-1"
                 )}>
                     {value}
                 </span>
-                {Icon && <Icon className={cn(
-                    "transition-colors duration-300",
-                    isCollapsed ? "w-4 h-4" : "w-6 h-6",
-                    // MONOCHROME CORRECTION: Visible Gray (zinc-500) instead of Faint Gray (zinc-300)
-                    "text-zinc-500 group-hover:text-zinc-700"
-                )} />}
+
+                {/* ICON (Top Right) - Fixed Size Spacer */}
+                <div className={cn("flex shrink-0 justify-center items-center", isCollapsed ? "w-4 h-4 ml-2" : "w-6 h-6 ml-4")}>
+                    {Icon ? (
+                        <Icon className={cn(
+                            "transition-colors duration-300",
+                            isCollapsed ? "w-4 h-4" : "w-6 h-6",
+                            "text-zinc-500 group-hover:text-zinc-700"
+                        )} />
+                    ) : null}
+                </div>
             </div>
 
-            <div className="w-full">
+            {/* SPACER (Pushes Label to Bottom) */}
+            <div className="flex-1" />
+
+            {/* SLOT 2: FOOTER (Label) */}
+            <div className="w-full shrink-0">
                 <div className={cn(
                     "text-zinc-600 transition-colors group-hover:text-zinc-800 flex items-baseline gap-1.5 whitespace-nowrap overflow-hidden",
+                    // Reset margins here
                     isCollapsed
-                        ? "text-xs font-medium mb-1.5" // TECHNICAL METADATA (State C)
-                        : "text-sm font-medium mb-3 normal-case" // CONTEXT LABEL (State A)
+                        ? "text-xs font-medium mb-0"
+                        : "text-sm font-medium mb-0 normal-case"
                 )}>
-                    <span className="truncate">{label}</span>
-                    {qualifier && (
-                        <span className={cn(
-                            "opacity-60 font-normal truncate",
-                            isCollapsed ? "text-[10px]" : "text-xs"
-                        )}>
+                    <span className="truncate">{displayLabel}</span>
+                    {qualifier && !isCollapsed && (
+                        <span className="opacity-60 font-normal truncate text-xs">
                             {qualifier}
                         </span>
                     )}
                 </div>
-
-
             </div>
         </div>
     );

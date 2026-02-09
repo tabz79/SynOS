@@ -101,7 +101,7 @@ export function ActionQueue({ columns, data, onAction }) {
             </div>
 
             {/* Body */}
-            <div className="overflow-auto flex-1 p-0 space-y-0 scrollbar-thin scrollbar-thumb-zinc-800/50 hover:scrollbar-thumb-zinc-700">
+            <div className="overflow-auto flex-1 p-2 space-y-2 scrollbar-thin scrollbar-thumb-zinc-800/50 hover:scrollbar-thumb-zinc-700">
                 {data.length === 0 ? (
                     <div className="h-full flex flex-col items-center justify-center text-zinc-500/40 space-y-3">
                         <div className="p-6 rounded-full dark:bg-zinc-800/20 bg-black/[0.02] shadow-inner">

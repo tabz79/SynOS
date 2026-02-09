@@ -174,7 +174,7 @@ export function ReceptionScreen() {
         { value: `₹${(summary.paymentsOnlineTotal || 0).toLocaleString()}`, label: "Online Total", icon: ClipboardList, color: "blue" },
 
         // ROW 2: Receivables & Lab Performance
-        { value: summary.prepaidBillsCount?.toString() || "0", label: "Prepaid Bills Issued", icon: ClipboardList, color: "amber" }, // Prepaid = Credit
+        { value: summary.prepaidBillsCount?.toString() || "0", label: "Prepaid Bills Issued", shortLabel: "Prepaid Bills", icon: ClipboardList, color: "amber" }, // Prepaid = Credit
         { value: `₹${(summary.prepaidBillsTotal || 0).toLocaleString()}`, label: "Prepaid Total", icon: ClipboardList, color: "amber" },
         { value: summary.pendingReports?.toString() || "0", label: "Pending Reports", icon: Bed, color: "red" },
         { value: `${summary.avgReportTimeMinutes || 0}m`, label: "Avg Report Time", icon: Clock, color: "default" },
@@ -240,16 +240,19 @@ export function ReceptionScreen() {
             accessor: "patientName",
             className: "min-w-[200px]",
             render: (row) => (
-                <div className="flex flex-col gap-1">
-                    <div className="flex items-center gap-2">
-                        <span className="font-bold text-sm dark:text-zinc-200 text-zinc-900">{row.patientName}</span>
-                        {/* Age/Sex Badge */}
-                        <span className="dark:bg-zinc-800 bg-zinc-100 dark:text-zinc-400 text-zinc-600 text-[10px] px-1.5 py-0.5 rounded border dark:border-zinc-700 border-zinc-200 font-mono">
-                            {row.patientAgeGender || "N/A"}
+                <div className="flex flex-col gap-1 items-start justify-center min-h-[3rem]">
+                    {/* Line 1: Name + Age/Sex Badge */}
+                    <div className="flex items-center gap-2 w-full">
+                        <span className="font-bold text-sm dark:text-zinc-200 text-zinc-900 truncate leading-none pt-0.5">
+                            {row.patientName}
+                        </span>
+                        <span className="shrink-0 dark:bg-zinc-800 bg-zinc-100 dark:text-zinc-400 text-zinc-600 text-[10px] px-1.5 py-0.5 rounded border dark:border-zinc-700 border-zinc-200 font-mono leading-none">
+                            {(row.patientAgeGender || "N/A").replace(/\s*\/\s*/g, "/")}
                         </span>
                     </div>
-                    {/* Test Code Chips (No Truncation) */}
-                    <div className="flex flex-wrap gap-1">
+
+                    {/* Line 2: Test Codes */}
+                    <div className="flex flex-wrap gap-1 w-full">
                         {row.testCodes && row.testCodes.map((code, idx) => (
                             <span key={idx} className="bg-synos-primary/10 text-synos-primary border border-synos-primary/20 text-[10px] px-1 py-0.5 rounded font-mono leading-none">
                                 {code}
@@ -267,7 +270,7 @@ export function ReceptionScreen() {
                 // Determine Badge Logic
                 const isPrepaid = row.paymentMethod === "Prepaid";
                 // Match Test Code Dimensions/Font exactly
-                const badgeBase = "text-[10px] px-1 py-0.5 rounded font-mono leading-none border uppercase tracking-wide";
+                const badgeBase = "text-[10px] px-1 py-0.5 rounded font-mono leading-none border uppercase tracking-wide shrink-0";
                 const badgeColor = isPrepaid
                     ? "bg-red-500/10 dark:text-red-400 text-red-600 border-red-500/20"
                     : "bg-emerald-500/10 dark:text-emerald-400 text-emerald-600 border-emerald-500/20";
@@ -277,26 +280,23 @@ export function ReceptionScreen() {
                     : "₹0";
 
                 return (
-                    <div className="flex flex-col gap-1 items-start">
-                        {/* Row 1: Price + Referrer Badge */}
+                    <div className="flex flex-col gap-1 items-start justify-center min-h-[3rem]">
+                        {/* Line 1: Amount + Badge */}
                         <div className="flex items-center gap-2">
-                            {/* Match Patient Name Style */}
-                            <span className="font-bold text-sm dark:text-zinc-200 text-zinc-900">{amount}</span>
-
-                            {/* Match Age/Gender Badge Style */}
-                            {isPrepaid && (
-                                <span className="dark:bg-zinc-800 bg-zinc-100 dark:text-zinc-400 text-zinc-600 text-[10px] px-1.5 py-0.5 rounded border dark:border-zinc-700 border-zinc-200 font-mono" title={row.referrerName}>
-                                    {row.referrerName}
-                                </span>
-                            )}
+                            <span className="font-bold text-sm dark:text-zinc-200 text-zinc-900 leading-none pt-0.5">{amount}</span>
+                            <span className={`${badgeBase} ${badgeColor}`}>
+                                {row.paymentMethod || "DUE"}
+                            </span>
                         </div>
 
-                        {/* Row 2: Payment Method Badge (Matches Test Code Style) */}
-                        <span className={`${badgeBase} ${badgeColor}`}>
-                            {row.paymentMethod || "DUE"}
-                        </span>
+                        {/* Line 2: Referrer Name (Prepaid ONLY) */}
+                        {isPrepaid && row.referrerName && (
+                            <span className="type-meta text-zinc-500 truncate max-w-[140px]" title={row.referrerName}>
+                                {row.referrerName}
+                            </span>
+                        )}
                     </div>
-                )
+                );
             }
         },
         {
@@ -306,14 +306,14 @@ export function ReceptionScreen() {
             render: (row) => {
                 // SYSTEM STATUS INDICATOR: Final Canonical Implementation
                 // Rules: Static Cyan Dot (6px), Body Text (14px), No Badge, No Pulse
-                const StatusDot = () => (
+                const StatusDot = (
                     <div className="w-1.5 h-1.5 rounded-full bg-cyan-500 shrink-0" />
                 );
 
                 if (row.assignedResource) {
                     return (
                         <div className="flex items-center gap-2">
-                            <StatusDot />
+                            {StatusDot}
                             <span className="type-body text-zinc-900 dark:text-zinc-200">
                                 Assigned: {row.assignedResource}
                             </span>
@@ -322,7 +322,7 @@ export function ReceptionScreen() {
                 }
                 return (
                     <div className="flex items-center gap-2">
-                        <StatusDot />
+                        {StatusDot}
                         <span className="type-body text-zinc-900 dark:text-zinc-200">
                             {row.operationalStatus || "Processing"}
                         </span>
@@ -331,6 +331,8 @@ export function ReceptionScreen() {
             }
         }
     ];
+
+
 
     return (
         <div className="h-screen w-screen dark:bg-synos-background bg-transparent text-foreground flex flex-col overflow-hidden font-sans selection:bg-white/20 relative">
