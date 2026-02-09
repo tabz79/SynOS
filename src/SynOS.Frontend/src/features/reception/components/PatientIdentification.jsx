@@ -258,9 +258,9 @@ const RichPatientCard = ({ patient, onAction, actionLabel, isLocked }) => {
     } : {
         // LIGHT MODE: Simulation Glass Card (The "Frosted Slab")
         // Matches VisitDetails 'section' style exactly
-        locked: "bg-sky-50/60 backdrop-blur-sm border border-sky-200/60 shadow-sm ring-1 ring-sky-100 cursor-default", // Distinct Blue Tint for Selected
+        locked: "bg-sky-50/95 border border-sky-200/60 shadow-sm ring-1 ring-sky-100 cursor-default", // Distinct Blue Tint for Selected
         // Inactive: Same Glass Syle, but interactive hover
-        inactive: "bg-white/60 backdrop-blur-none border border-white/40 shadow-[0_4px_16px_rgba(0,0,0,0.08)] ring-1 ring-black/5 hover:border-zinc-300 hover:bg-white/70 cursor-pointer",
+        inactive: "bg-white/90 border border-white/40 shadow-[0_4px_16px_rgba(0,0,0,0.08)] ring-1 ring-black/5 hover:border-zinc-300 hover:bg-white cursor-pointer",
         name: isLocked ? "type-value text-[#0C4A6E]" : "type-value group-hover:text-synos-primary", // Reduced from extrabold
         badge: isLocked ? "bg-white text-[#0369A1] border-[#0EA5E9]/40" : "bg-white/80 text-black border border-zinc-300 type-meta", // High Contrast Badge
         mrn: "bg-white/80 border-zinc-300 text-black font-bold" // High Contrast MRN

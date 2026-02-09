@@ -336,17 +336,44 @@ export function ReceptionScreen() {
 
     return (
         <div className="h-screen w-screen dark:bg-synos-background bg-transparent text-foreground flex flex-col overflow-hidden font-sans selection:bg-white/20 relative">
-            {/* High-Complexity Atmospheric Accents (Drivers for Frosted Glass) */}
+            {/* High-Complexity Atmospheric Accents (Drivers for Frost Aesthetic - STATIC SIMULATION) */}
             <div className="fixed inset-0 pointer-events-none overflow-hidden z-[-1] dark:hidden">
                 {/* 1. Grain/Noise Base */}
                 <div className="absolute inset-0 opacity-[0.03] mix-blend-overlay" style={{ backgroundImage: `url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyBAMAAADsEZWCAAAAGFBMVEUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAt66YlAAAAB3RSTlMAo7S066u0v76zAAABJklEQVQ4jXWSwW7DIAyGvRNoV9HeIdp7B2nvHaK9d7D27lX836VpY6t0p8oHicDHP4Z99qGf96HvX+h7NfSmX8U8z9M0z6+P/m8X6fB6L78XpX4X5X4O6fc8l7e8n+T9KO87ed+m77pP33Wfvuu6T991nb7rum/ed5+87z55333yvvvkfffJ++6T990n77pP33Wfvus6fdd13rrvu67rvXXfd13ne+u+77rO99Z933Wdt67rtnXdt67rtnWdt67rtjW999Y9ve9997mPu8997uPus9fZZ6+zz15nn73OPnudvU9f0+v0Nb1OX9Pr9DW9Tm9O9vTmaE5vjua09f7o/db7rff7f9H3v6XvP9TzL/X+U8+/1fMv9fw7fQ==")` }} />
 
-                {/* 2. High-Contrast Chromatic 'Objects' */}
-                <div className="absolute top-[-10%] left-[5%] w-[35%] h-[40%] bg-cyan-400/20 rounded-full blur-[80px] animate-pulse" style={{ animationDuration: '8s' }} />
-                <div className="absolute top-[-5%] right-[15%] w-[30%] h-[35%] bg-blue-600/10 rounded-full blur-[60px]" />
-                <div className="absolute top-[2%] left-[40%] w-[15%] h-[15%] bg-zinc-800/10 rounded-full blur-[40px]" /> {/* Dark 'Anchor' Object */}
-                <div className="absolute top-[-20%] right-[-5%] w-[50%] h-[50%] bg-emerald-300/10 rounded-full blur-[100px]" />
-                <div className="absolute top-[5%] left-[20%] w-[20%] h-[20%] bg-amber-200/5 rounded-full blur-[50px]" />
+                {/* 2. Gradient 'Objects' (No Blur - Pure CSS Gradients) */}
+                {/* Cyan Pulse */}
+                <div
+                    className="absolute top-[-10%] left-[5%] w-[35%] h-[40%] animate-pulse"
+                    style={{
+                        background: 'radial-gradient(circle, rgba(34, 211, 238, 0.25) 0%, rgba(34, 211, 238, 0) 70%)',
+                        animationDuration: '8s'
+                    }}
+                />
+
+                {/* Blue Wash */}
+                <div
+                    className="absolute top-[-5%] right-[15%] w-[30%] h-[35%]"
+                    style={{ background: 'radial-gradient(circle, rgba(37, 99, 235, 0.15) 0%, rgba(37, 99, 235, 0) 70%)' }}
+                />
+
+                {/* Dark Anchor */}
+                <div
+                    className="absolute top-[2%] left-[40%] w-[15%] h-[15%]"
+                    style={{ background: 'radial-gradient(circle, rgba(39, 39, 42, 0.15) 0%, rgba(39, 39, 42, 0) 70%)' }}
+                />
+
+                {/* Emerald Glow */}
+                <div
+                    className="absolute top-[-20%] right-[-5%] w-[50%] h-[50%]"
+                    style={{ background: 'radial-gradient(circle, rgba(110, 231, 183, 0.15) 0%, rgba(110, 231, 183, 0) 70%)' }}
+                />
+
+                {/* Amber Hint */}
+                <div
+                    className="absolute top-[5%] left-[20%] w-[20%] h-[20%]"
+                    style={{ background: 'radial-gradient(circle, rgba(253, 230, 138, 0.1) 0%, rgba(253, 230, 138, 0) 70%)' }}
+                />
             </div>
 
             {/* 1. Global System Bar */}

@@ -42,7 +42,7 @@ export function BillingSummary({ snapshot, onVisitUpdated, isCorrectionIntent, i
         indicator: "bg-white border-zinc-200 shadow-sm type-label",
         headerText: "type-value",
         // SIMULATION GLASS: White/60 + Deep Shadow + Solid Inputs
-        container: "bg-white/60 backdrop-blur-none border border-white/40 shadow-sm ring-1 ring-black/5",
+        container: "bg-white/95 border border-white/40 shadow-sm ring-1 ring-black/5",
         rowLabel: "type-label",
         rowValue: "type-code", // Financials = Mono
         netLabel: "type-value",

@@ -157,21 +157,21 @@
     @apply outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 focus-visible:ring-offset-synos-background;
   }
 
-  /* MATERIAL LAYER SYSTEM (Light Mode) */
+  /* MATERIAL LAYER SYSTEM (Light Mode) - PERFORMANCE CANON (Static Frost) */
 
-  /* Level 1: Base Glass (System Bar, Sidebars) - High Refraction, Low Opacity */
+  /* Level 1: Base Glass (System Bar, Sidebars) */
   .glass-base-light {
-    @apply bg-white/40 backdrop-blur-xl backdrop-saturate-[0.5] backdrop-brightness-110 border border-white/40 shadow-sm;
+    @apply bg-gradient-to-b from-white/95 to-white/90 border border-white/50 shadow-sm;
   }
 
-  /* Level 2: Elevated Glass (Cards, Panels) - Balanced, Higher Opacity */
+  /* Level 2: Elevated Glass (Cards, Panels) */
   .glass-elevated-light {
-    @apply bg-white/70 backdrop-blur-2xl backdrop-saturate-[0.8] backdrop-brightness-105 border border-white/60 shadow-md;
+    @apply bg-white border border-white/60 shadow-md;
   }
 
   /* Level 3: Glass Surface (Embedded) */
   .glass-surface-light {
-    @apply bg-white/30 backdrop-blur-md border border-white/20;
+    @apply bg-white/50 border border-white/30;
   }
 
   /* TYPOGRAPHY SYSTEM v2.0 (THE LAW) */

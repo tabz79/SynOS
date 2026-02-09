@@ -74,7 +74,7 @@ export function VisitDetails({ snapshot, visitId, onVisitUpdated, isPrepaidInten
         headerText: "type-value",
         // SIMULATION GLASS: High Translucency (White/60) + Deep Shadow
         // The "Glass" effect relies on the background gradient showing through.
-        section: "bg-white/60 backdrop-blur-none border border-white/40 shadow-sm ring-1 ring-black/5",
+        section: "bg-white/95 border border-white/40 shadow-sm ring-1 ring-black/5",
         sectionTitle: "type-section-header",
         // Input: SOLID WHITE to pop against translucent glass
         input: "bg-white border-zinc-200 type-body focus:border-zinc-800 focus:ring-1 focus:ring-zinc-800 transition-all shadow-sm",
