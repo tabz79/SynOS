@@ -36,17 +36,20 @@ export function PatientIdentification({ snapshot, onSelectPatient, onClearPatien
     } : {
         indicator: {
             active: "bg-zinc-900 type-value border-zinc-900",
-            inactive: "bg-zinc-100 border-zinc-200 type-label"
+            inactive: "type-label border-black/10 shadow-none bg-white/20"
         },
         headerText: {
             active: "type-value",
-            inactive: "type-value" // Un-muted
+            inactive: "type-value opacity-60"
         },
-        input: "bg-zinc-50 border-zinc-200 type-code focus:border-zinc-900",
-        emptyBox: "bg-zinc-50 border-zinc-200 type-body",
-        form: "bg-white border-zinc-200 shadow-sm",
-        formLabel: "type-section-header",
-        formInput: "bg-white border-zinc-200 type-body focus:border-zinc-900"
+        // UNIFIED RECESSED SECTION
+        section: "p-4 rounded-lg bg-black/[0.04] border border-black/5 shadow-inner space-y-3",
+        // ETCHED INPUT
+        input: "bg-white/85 border-white/50 shadow-[inset_0_1px_2px_rgba(0,0,0,0.06)] type-code focus:ring-1 focus:ring-black/5 transition-all",
+        emptyBox: "border-dashed border-black/20 type-body opacity-60",
+        form: "ring-0 space-y-4",
+        formLabel: "type-section-header opacity-70",
+        formInput: "bg-white/85 border-white/50 shadow-[inset_0_1px_2px_rgba(0,0,0,0.06)] type-body focus:border-black"
     };
 
     // Search Effect (Debounced)
@@ -74,19 +77,17 @@ export function PatientIdentification({ snapshot, onSelectPatient, onClearPatien
     }, [searchQuery]);
 
     const handleSelectPatient = (patient) => {
-        // STATELESS: Just tell parent. Parent sets ID -> Fetches Snapshot.
         onSelectPatient(patient);
     };
 
     return (
         <div className="space-y-4">
-            {/* Header moved into state-specific contexts for sticky control */}
 
-            {/* LOCKED STATE (Patient Identified in Snapshot) */}
-            {/* LOCKED STATE (Patient Identified in Snapshot) */}
+            {/* LOCKED STATE (Patient Identified) */}
             {selectedPatient && (
                 <div className="animate-in fade-in slide-in-from-top-2 pt-4 px-4 space-y-4">
-                    {/* Header for Selected State */}
+                    {/* ... (Existing Locked View) ... */}
+                    {/* NOTE: This uses RichPatientCard which handles its own locked state style */}
                     <div className="flex items-center gap-2">
                         <div className={cn("w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold border", ui.indicator.active)}>1</div>
                         <h3 className={cn("tracking-tight", ui.headerText.active)}>Patient Identification</h3>
@@ -102,11 +103,11 @@ export function PatientIdentification({ snapshot, onSelectPatient, onClearPatien
 
             {/* SEARCH STATE (No Patient) */}
             {!selectedPatient && !isNewPatientMode && (
-                <div className="space-y-4 animate-in fade-in">
-                    {/* Sticky Header with Zero Top Margin (Parent Padding Removed) */}
-                    <div className={cn("sticky top-0 z-20 px-4 py-4 border-b shadow-md transition-all space-y-3",
-                        isDark ? "bg-[#0A0A0A] border-zinc-800" : "bg-white border-zinc-200")}>
-                        {/* Integrated Header */}
+                <div className="space-y-4 animate-in fade-in px-4 pt-4">
+
+                    {/* SECTION 1: SEARCH CONTEXT (Verified Recess) */}
+                    <div className={cn(ui.section, "sticky top-0 z-20 transition-all")}>
+                        {/* Header */}
                         <div className="flex items-center gap-2">
                             <div className={cn("w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold border transition-colors", ui.indicator.inactive)}>1</div>
                             <h3 className={cn("tracking-tight", ui.headerText.inactive)}>Patient Identification</h3>
@@ -122,15 +123,14 @@ export function PatientIdentification({ snapshot, onSelectPatient, onClearPatien
                                 <Search className="absolute left-3 top-2.5 w-4 h-4 text-zinc-500 group-focus-within:text-zinc-900 transition-colors" />
                                 <input
                                     type="text"
-                                    shadow-sm
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
                                     placeholder="Search by Mobile..."
                                     className={cn(
-                                        "w-full h-10 rounded-lg pl-9 pr-4 py-2 focus:outline-none focus:ring-1 transition-all shadow-sm type-code",
+                                        "w-full h-10 rounded-lg pl-9 pr-4 py-2 focus:outline-none focus:ring-1 transition-all type-code",
                                         isDark
                                             ? "bg-black border-zinc-700 focus:ring-synos-primary"
-                                            : "bg-white border-zinc-300 focus:ring-black placeholder:text-zinc-500" // High Contrast White Input
+                                            : ui.input // Use Etched Input Style
                                     )}
                                     autoFocus
                                 />
@@ -141,11 +141,11 @@ export function PatientIdentification({ snapshot, onSelectPatient, onClearPatien
                         </div>
                     </div>
 
-                    {/* Results: Independent Glass Slabs */}
+                    {/* SECTION 2: RESULTS (Verified Recess) */}
                     {matches.length > 0 && (
-                        <div className="space-y-3 pt-4 px-4">
+                        <div className={cn(ui.section, "space-y-1")}>
+                            {/* Header for Results? Optional. */}
                             {matches.map(p => {
-                                // Robust ID extraction to handle casing mismatch (id vs Id)
                                 const pId = p.id || p.Id || p.patientId;
                                 return (
                                     <RichPatientCard
@@ -159,9 +159,11 @@ export function PatientIdentification({ snapshot, onSelectPatient, onClearPatien
                         </div>
                     )}
 
-                    {/* Always Show Create Option (Enterprise Family Use Case) */}
+                    {/* SECTION 3: CREATE NEW (Verified Recess if needed, or leave as ghost) */}
+                    {/* For now, keep as ghost unless results exist */}
                     {searchQuery.length > 3 && !isSearching && (
                         <div className={cn(
+
                             "rounded-lg p-6 flex flex-col items-center gap-2 transition-all",
                             matches.length > 0
                                 ? (isDark ? "border-t border-zinc-800 pt-4" : "border-t border-zinc-100 pt-4")
@@ -256,14 +258,14 @@ const RichPatientCard = ({ patient, onAction, actionLabel, isLocked }) => {
         badge: isLocked ? "bg-synos-primary/20 border-synos-primary/30 text-synos-primary" : "bg-zinc-700 text-zinc-300",
         mrn: "bg-zinc-900 border-zinc-800 text-zinc-600"
     } : {
-        // LIGHT MODE: Simulation Glass Card (The "Frosted Slab")
-        // Matches VisitDetails 'section' style exactly
-        locked: "bg-sky-50/95 border border-sky-200/60 shadow-sm ring-1 ring-sky-100 cursor-default", // Distinct Blue Tint for Selected
-        // Inactive: Same Glass Syle, but interactive hover
-        inactive: "bg-white/90 border border-white/40 shadow-[0_4px_16px_rgba(0,0,0,0.08)] ring-1 ring-black/5 hover:border-zinc-300 hover:bg-white cursor-pointer",
-        name: isLocked ? "type-value text-[#0C4A6E]" : "type-value group-hover:text-synos-primary", // Reduced from extrabold
-        badge: isLocked ? "bg-white text-[#0369A1] border-[#0EA5E9]/40" : "bg-white/80 text-black border border-zinc-300 type-meta", // High Contrast Badge
-        mrn: "bg-white/80 border-zinc-300 text-black font-bold" // High Contrast MRN
+        // LIGHT MODE: SINGLE SLAB LIST ITEM
+        // Locked = Active Selection (Etched)
+        locked: "bg-black/[0.04] border border-black/5 shadow-inner rounded-lg cursor-default",
+        // Inactive = List Item (No BG, just hover)
+        inactive: "hover:bg-black/[0.02] border-b border-white/20 cursor-pointer transition-colors rounded-none px-2",
+        name: isLocked ? "type-value text-black font-semibold" : "type-value group-hover:text-black",
+        badge: isLocked ? "bg-white border-zinc-200 text-black shadow-sm" : "bg-white/50 border-zinc-200/50 text-zinc-600",
+        mrn: "bg-white/50 border-zinc-200/50 text-black font-medium"
     };
 
     return (

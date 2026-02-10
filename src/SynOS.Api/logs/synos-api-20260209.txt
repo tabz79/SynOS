@@ -71,3 +71,19 @@ Microsoft.Data.SqlClient.SqlException (0x80131904): Execution Timeout Expired.  
    at SynOS.Services.Operational.OperationalStatsProjector.ProcessEventAsync(BranchOperationalEvent evt) in D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\Operational\OperationalStatsProjector.cs:line 123
 ClientConnectionId:9a3b8be3-efe5-4ee2-b48c-dc86f817a93d
 Error Number:-2,State:0,Class:11
+2026-02-09 16:33:34.626 +05:30 [FTL] EVENT_WRITE for VisitId 9571823e-1183-4758-acc4-b19aad28fb58, Context 270a24dd-c94a-40fd-bf3a-7963329c4c91:0
+2026-02-09 16:33:34.664 +05:30 [FTL] EVENT_WRITE for VisitId 9571823e-1183-4758-acc4-b19aad28fb58, Context 270a24dd-c94a-40fd-bf3a-7963329c4c91:0
+2026-02-09 16:33:55.612 +05:30 [FTL] EVENT_WRITE for VisitId 9571823e-1183-4758-acc4-b19aad28fb58, Context 72b02f3b-afbb-4d06-acda-02c115e1abfb:0
+2026-02-09 16:34:05.299 +05:30 [FTL] EVENT_WRITE for VisitId 9571823e-1183-4758-acc4-b19aad28fb58, Context 25655cf9-f455-45ef-a098-e05037b485d6:0
+2026-02-09 16:34:31.854 +05:30 [FTL] EVENT_WRITE for VisitId 9571823e-1183-4758-acc4-b19aad28fb58, Context 24d845ad-7751-4c97-a108-a4c71d8fe477:0
+2026-02-09 16:34:31.895 +05:30 [INF] Auto-created Sample "308265c8-d54d-4a82-ae44-1bc7699b2178" for Order "56899326-b013-4767-b948-db70954f8549"
+2026-02-09 16:34:31.914 +05:30 [FTL] EVENT_WRITE for VisitId 9571823e-1183-4758-acc4-b19aad28fb58, Context 24d845ad-7751-4c97-a108-a4c71d8fe477:0
+2026-02-09 16:34:31.925 +05:30 [INF] Attempting to assign work "SampleCollection" for source "9571823e-1183-4758-acc4-b19aad28fb58" in Pathology
+2026-02-09 16:34:31.980 +05:30 [INF] Work "SampleCollection" assigned to "0e34b739-d97f-445d-b488-2e5fd6b9918c" (Desk 1)
+2026-02-09 16:34:41.254 +05:30 [WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+2026-02-09 16:36:56.947 +05:30 [FTL] EVENT_WRITE for VisitId 7b97607d-2360-42a4-bcdf-fe23884e8456, Context a3f44495-55b2-4c11-8f52-8e0aba775890:0
+2026-02-09 16:36:56.978 +05:30 [FTL] EVENT_WRITE for VisitId 7b97607d-2360-42a4-bcdf-fe23884e8456, Context a3f44495-55b2-4c11-8f52-8e0aba775890:0
+2026-02-09 20:35:31.623 +05:30 [FTL] EVENT_WRITE for VisitId 96537a9e-52df-4bd4-afe1-33eaf93d0df4, Context bda46d5b-a43f-4e0e-9a76-318cea903eaa:0
+2026-02-09 20:35:31.688 +05:30 [FTL] EVENT_WRITE for VisitId 96537a9e-52df-4bd4-afe1-33eaf93d0df4, Context bda46d5b-a43f-4e0e-9a76-318cea903eaa:0
+2026-02-09 20:36:09.495 +05:30 [FTL] EVENT_WRITE for VisitId 96537a9e-52df-4bd4-afe1-33eaf93d0df4, Context 5c4bc1f1-a976-4d12-95b1-3c6692142bde:0
+2026-02-09 21:37:56.621 +05:30 [FTL] EVENT_WRITE for VisitId 7b97607d-2360-42a4-bcdf-fe23884e8456, Context 73cba925-2b97-4f2e-9d35-3c900938ce6f:0

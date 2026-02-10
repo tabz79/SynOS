@@ -41,16 +41,16 @@ export function BillingSummary({ snapshot, onVisitUpdated, isCorrectionIntent, i
     } : {
         indicator: "bg-white border-zinc-200 shadow-sm type-label",
         headerText: "type-value",
-        // SIMULATION GLASS: White/60 + Deep Shadow + Solid Inputs
-        container: "bg-white/95 border border-white/40 shadow-sm ring-1 ring-black/5",
-        rowLabel: "type-label",
-        rowValue: "type-code", // Financials = Mono
-        netLabel: "type-value",
+        // UNIFIED CARD STYLE (From Patient Card)
+        container: "p-4 rounded-lg bg-black/[0.04] border border-black/5 shadow-inner space-y-4",
+        rowLabel: "type-label opacity-70",
+        rowValue: "type-code opacity-90", // Financials = Mono
+        netLabel: "type-value font-medium",
         netValue: "type-page-title", // 20px Bold
-        input: "bg-white border-zinc-200 type-body focus:border-black focus:ring-1 focus:ring-black transition-all shadow-sm", // Solid White Input
+        input: "bg-white/85 border-white/50 shadow-[inset_0_1px_2px_rgba(0,0,0,0.06)] type-body focus:ring-1 focus:ring-black/5 transition-all outline-none",
         method: {
-            active: "bg-black text-white border-zinc-900 shadow-md ring-1 ring-black/10", // Crisp Black Active
-            inactive: "bg-white border-zinc-300 hover:bg-zinc-50 hover:text-black shadow-sm" // High contrast inactive
+            active: "bg-black text-white border-zinc-900 shadow-md ring-1 ring-black/10",
+            inactive: "bg-white/50 border-black/5 hover:bg-white hover:text-black shadow-sm"
         }
     };
 

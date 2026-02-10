@@ -72,17 +72,18 @@ export function VisitDetails({ snapshot, visitId, onVisitUpdated, isPrepaidInten
     } : {
         indicator: "bg-white border-zinc-200 shadow-sm type-label",
         headerText: "type-value",
-        // SIMULATION GLASS: High Translucency (White/60) + Deep Shadow
-        // The "Glass" effect relies on the background gradient showing through.
-        section: "bg-white/95 border border-white/40 shadow-sm ring-1 ring-black/5",
-        sectionTitle: "type-section-header",
-        // Input: SOLID WHITE to pop against translucent glass
-        input: "bg-white border-zinc-200 type-body focus:border-zinc-800 focus:ring-1 focus:ring-zinc-800 transition-all shadow-sm",
-        suggestionBox: "bg-white border-zinc-300 shadow-xl",
-        testCard: "bg-white border-zinc-200 shadow-sm hover:border-zinc-400 transition-colors", // SOLID WHITE for Pop
-        testCode: "bg-zinc-100 border-zinc-300 type-code",
+        // UNIFIED CARD STYLE (From Patient Card)
+        section: "p-4 rounded-lg bg-black/[0.04] border border-black/5 shadow-inner space-y-3",
+        sectionTitle: "type-section-header opacity-70",
+        // ETCHED INPUT: Bright & sunken into the slab
+        input: "bg-white/85 border-white/50 shadow-[inset_0_1px_2px_rgba(0,0,0,0.06)] type-body focus:ring-1 focus:ring-black/5 transition-all placeholder:text-zinc-400",
+        suggestionBox: "bg-white border-zinc-200 shadow-xl",
+        // TEST CARD (Inside Recess): Needs to pop out slightly to be visible
+        // Default: White/60 Glass Chip. Hover: White/90 Bright Highlight.
+        testCard: "group flex items-center justify-between p-3 rounded-lg bg-white/60 border border-white/40 shadow-sm hover:bg-white/90 transition-all cursor-pointer",
+        testCode: "type-code opacity-70 group-hover:opacity-100 transition-opacity",
         modal: "bg-white border-zinc-200 type-body",
-        modalInput: "bg-zinc-50 border-zinc-300 type-body focus:border-black"
+        modalInput: "bg-zinc-50 border-zinc-200 type-body focus:border-black"
     };
 
     const readOnlyReason = snapshot?.uiHints?.readOnlyReason ||
