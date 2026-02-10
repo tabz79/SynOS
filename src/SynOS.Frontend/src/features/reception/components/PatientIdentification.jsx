@@ -81,7 +81,7 @@ export function PatientIdentification({ snapshot, onSelectPatient, onClearPatien
     };
 
     return (
-        <div className="space-y-4">
+        <div className="h-full flex flex-col space-y-4">
 
             {/* LOCKED STATE (Patient Identified) */}
             {selectedPatient && (
@@ -103,61 +103,64 @@ export function PatientIdentification({ snapshot, onSelectPatient, onClearPatien
 
             {/* SEARCH STATE (No Patient) */}
             {!selectedPatient && !isNewPatientMode && (
-                <div className="space-y-4 animate-in fade-in px-4 pt-4">
+                <div className="flex flex-col h-full min-h-0 overflow-hidden animate-in fade-in">
 
-                    {/* SECTION 1: SEARCH CONTEXT (Verified Recess) */}
-                    <div className={cn(ui.section, "sticky top-0 z-20 transition-all")}>
-                        {/* Header */}
-                        <div className="flex items-center gap-2">
-                            <div className={cn("w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold border transition-colors", ui.indicator.inactive)}>1</div>
-                            <h3 className={cn("tracking-tight", ui.headerText.inactive)}>Patient Identification</h3>
-                        </div>
+                    {/* BLOCK A: PATIENT IDENTIFICATION HEADER (Static) */}
+                    <div className="shrink-0 p-4 pb-0">
+                        <div className={cn(ui.section)}>
+                            {/* Header */}
+                            <div className="flex items-center gap-2">
+                                <div className={cn("w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold border transition-colors", ui.indicator.inactive)}>1</div>
+                                <h3 className={cn("tracking-tight", ui.headerText.inactive)}>Patient Identification</h3>
+                            </div>
 
-                        <div className="space-y-1">
-                            <label className={cn("block type-section-header ml-1 transition-colors",
-                                isDark ? "text-zinc-500" : "text-zinc-500")}
-                            >
-                                Mobile Number / MRN
-                            </label>
-                            <div className="relative group">
-                                <Search className="absolute left-3 top-2.5 w-4 h-4 text-zinc-500 group-focus-within:text-zinc-900 transition-colors" />
-                                <input
-                                    type="text"
-                                    value={searchQuery}
-                                    onChange={(e) => setSearchQuery(e.target.value)}
-                                    placeholder="Search by Mobile..."
-                                    className={cn(
-                                        "w-full h-10 rounded-lg pl-9 pr-4 py-2 focus:outline-none focus:ring-1 transition-all type-code",
-                                        isDark
-                                            ? "bg-black border-zinc-700 focus:ring-synos-primary"
-                                            : ui.input // Use Etched Input Style
+                            <div className="space-y-1">
+                                <label className={cn("block type-section-header ml-1 transition-colors",
+                                    isDark ? "text-zinc-500" : "text-zinc-500")}
+                                >
+                                    Mobile Number / MRN
+                                </label>
+                                <div className="relative group">
+                                    <Search className="absolute left-3 top-2.5 w-4 h-4 text-zinc-500 group-focus-within:text-zinc-900 transition-colors" />
+                                    <input
+                                        type="text"
+                                        value={searchQuery}
+                                        onChange={(e) => setSearchQuery(e.target.value)}
+                                        placeholder="Search by Mobile..."
+                                        className={cn(
+                                            "w-full h-10 rounded-lg pl-9 pr-4 py-2 focus:outline-none focus:ring-1 transition-all type-code",
+                                            isDark
+                                                ? "bg-black border-zinc-700 focus:ring-synos-primary"
+                                                : ui.input // Use Etched Input Style
+                                        )}
+                                        autoFocus
+                                    />
+                                    {isSearching && (
+                                        <Loader2 className="absolute right-3 top-2.5 w-4 h-4 text-zinc-500 animate-spin" />
                                     )}
-                                    autoFocus
-                                />
-                                {isSearching && (
-                                    <Loader2 className="absolute right-3 top-2.5 w-4 h-4 text-zinc-500 animate-spin" />
-                                )}
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    {/* SECTION 2: RESULTS (Individual Recessed Cards) */}
-                    {matches.length > 0 && (
-                        <div className="space-y-3 px-4">
-                            {/* Header for Results? Optional. */}
-                            {matches.map(p => {
-                                const pId = p.id || p.Id || p.patientId;
-                                return (
-                                    <RichPatientCard
-                                        key={pId}
-                                        patient={p}
-                                        onAction={() => handleSelectPatient({ ...p, id: pId })}
-                                        actionLabel="Select"
-                                    />
-                                );
-                            })}
-                        </div>
-                    )}
+                    {/* BLOCK B: SEARCH RESULTS (The ONLY Scrolling Region) */}
+                    <div className="flex-1 min-h-0 overflow-y-auto scrollbar-thin scrollbar-thumb-zinc-700 p-4 pt-3 space-y-3">
+                        {matches.length > 0 && (
+                            <>
+                                {matches.map(p => {
+                                    const pId = p.id || p.Id || p.patientId;
+                                    return (
+                                        <RichPatientCard
+                                            key={pId}
+                                            patient={p}
+                                            onAction={() => handleSelectPatient({ ...p, id: pId })}
+                                            actionLabel="Select"
+                                        />
+                                    );
+                                })}
+                            </>
+                        )}
+                    </div>
 
                     {/* SECTION 3: CREATE NEW (Verified Recess if needed, or leave as ghost) */}
                     {/* For now, keep as ghost unless results exist */}

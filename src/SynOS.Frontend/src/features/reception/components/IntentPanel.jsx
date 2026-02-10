@@ -302,8 +302,8 @@ export function IntentPanel() {
                 </button>
             </div>
 
-            {/* Scrollable Content - ZERO PADDING CONTAINER */}
-            <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-zinc-700 flex flex-col gap-4">
+            {/* PanelBody - REQUIRED ARCHITECTURE (Locked Chrome / Isolation) */}
+            <div className="flex-1 min-h-0 overflow-hidden flex flex-col">
                 {isLoading && !snapshot && <div className="flex items-center justify-center h-40"><Loader2 className="w-8 h-8 text-synos-primary animate-spin" /></div>}
                 {error && <div className="m-4 bg-red-500/10 border border-red-500/50 rounded-lg p-3 text-red-200 text-sm flex gap-3"><X className="w-4 h-4 mt-0.5" />{error}</div>}
 
@@ -316,9 +316,9 @@ export function IntentPanel() {
                             onClearPatient={handleClearPatient}
                         />
 
-                        {/* OTHER PANELS (Wrapped in Padding) */}
+                        {/* Block-Level Isolation for Visit Details (Scrollable) */}
                         {hasVisit && (
-                            <div className="px-4 pb-4 flex flex-col gap-4 animate-in fade-in duration-500">
+                            <div className="flex-1 min-h-0 overflow-y-auto px-4 pb-4 flex flex-col gap-4 animate-in fade-in duration-500">
                                 <VisitDetails
                                     snapshot={snapshot}
                                     visitId={snapshot.visit.visitId || snapshot.visit.id}
@@ -343,41 +343,42 @@ export function IntentPanel() {
                     </>
                 )}
             </div>
-
-            {/* Footer / Status Bar - UNIFIED BUTTON */}
-            <div className={cn("p-4 space-y-3", ui.footer)}>
-                {isCorrectionIntent ? (
-                    <button
-                        onClick={closePanel}
-                        className={cn(
-                            "w-full py-3 rounded-lg font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-lg active:scale-95",
-                            "w-full py-3 rounded-lg font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-lg active:scale-95",
-                            ui.actionBtn.enabled
-                        )}
-                    >
-                        Finish Correction <AlertCircle className="w-4 h-4" />
-                    </button>
-                ) : (
-                    hasVisit && (
-                        <button
-                            onClick={handleUnifiedAction}
-                            disabled={!isActionEnabled || isLoading}
-                            className={cn(
-                                "w-full py-3 rounded-lg font-bold text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.98]",
-                                isActionEnabled
-                                    ? ui.actionBtn.enabled
-                                    : ui.actionBtn.disabled
-                            )}
-                        >
-                            {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : (
-                                <>
-                                    {mainActionLabel} <ArrowRight className="w-4 h-4" />
-                                </>
-                            )}
-                        </button>
-                    )
-                )}
-            </div>
         </div>
+
+            {/* Footer / Status Bar - UNIFIED BUTTON */ }
+    <div className={cn("p-4 space-y-3", ui.footer)}>
+        {isCorrectionIntent ? (
+            <button
+                onClick={closePanel}
+                className={cn(
+                    "w-full py-3 rounded-lg font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-lg active:scale-95",
+                    "w-full py-3 rounded-lg font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-lg active:scale-95",
+                    ui.actionBtn.enabled
+                )}
+            >
+                Finish Correction <AlertCircle className="w-4 h-4" />
+            </button>
+        ) : (
+            hasVisit && (
+                <button
+                    onClick={handleUnifiedAction}
+                    disabled={!isActionEnabled || isLoading}
+                    className={cn(
+                        "w-full py-3 rounded-lg font-bold text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.98]",
+                        isActionEnabled
+                            ? ui.actionBtn.enabled
+                            : ui.actionBtn.disabled
+                    )}
+                >
+                    {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : (
+                        <>
+                            {mainActionLabel} <ArrowRight className="w-4 h-4" />
+                        </>
+                    )}
+                </button>
+            )
+        )}
+    </div>
+        </div >
     )
 }
