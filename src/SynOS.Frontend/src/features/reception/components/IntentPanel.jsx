@@ -303,7 +303,7 @@ export function IntentPanel() {
             </div>
 
             {/* PanelBody - REQUIRED ARCHITECTURE (Locked Chrome / Isolation) */}
-            <div className="flex-1 min-h-0 overflow-hidden flex flex-col">
+            <div className={cn("flex-1 min-h-0 flex flex-col", (snapshot?.patient || isCorrectionIntent) ? "overflow-y-auto" : "overflow-hidden")}>
                 {isLoading && !snapshot && <div className="flex items-center justify-center h-40"><Loader2 className="w-8 h-8 text-synos-primary animate-spin" /></div>}
                 {error && <div className="m-4 bg-red-500/10 border border-red-500/50 rounded-lg p-3 text-red-200 text-sm flex gap-3"><X className="w-4 h-4 mt-0.5" />{error}</div>}
 
@@ -318,7 +318,7 @@ export function IntentPanel() {
 
                         {/* Block-Level Isolation for Visit Details (Scrollable) */}
                         {hasVisit && (
-                            <div className="flex-1 min-h-0 overflow-y-auto px-4 pb-4 flex flex-col gap-4 animate-in fade-in duration-500">
+                            <div className={cn("px-4 pb-4 flex flex-col gap-6 animate-in fade-in duration-500 mt-6", (snapshot?.patient || isCorrectionIntent) ? "" : "flex-1 min-h-0 overflow-y-auto")}>
                                 <VisitDetails
                                     snapshot={snapshot}
                                     visitId={snapshot.visit.visitId || snapshot.visit.id}

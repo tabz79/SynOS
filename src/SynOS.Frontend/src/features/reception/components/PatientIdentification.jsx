@@ -35,7 +35,7 @@ export function PatientIdentification({ snapshot, onSelectPatient, onClearPatien
         formInput: "bg-black border-zinc-800 type-body focus:border-synos-primary"
     } : {
         indicator: {
-            active: "bg-zinc-900 type-value border-zinc-900",
+            active: "bg-white type-value border-zinc-200 shadow-sm",
             inactive: "type-label border-black/10 shadow-none bg-white/20"
         },
         headerText: {
