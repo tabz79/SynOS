@@ -147,5 +147,121 @@ namespace SynOS.Api.Controllers
             "TEST_ADDED" => "flask",
             _ => "default"
         };
+        // NEW: Operational Timeline Endpoint (Aggregated)
+        [HttpGet("timeline")]
+        public async Task<IActionResult> GetOperationalTimeline([FromQuery] string? branchId)
+        {
+            if (_userContext.CurrentBranchId == Guid.Empty) return Forbid();
+            var contextBranchId = _userContext.CurrentBranchId.ToString();
+            
+            if (!string.IsNullOrWhiteSpace(branchId) && !string.Equals(branchId, contextBranchId, StringComparison.OrdinalIgnoreCase))
+                return BadRequest("Branch mismatch.");
+
+            var targetBranchId = contextBranchId;
+            var utcToday = DateTime.UtcNow.Date;
+            var utcTomorrow = utcToday.AddDays(1);
+
+            // 1. Fetch Candidates (Visibility != Hide)
+            var rawEvents = await _context.BranchOperationalEvents
+                .AsNoTracking()
+                .Where(e => e.BranchId == targetBranchId 
+                            && e.OccurredAt >= utcToday 
+                            && e.OccurredAt < utcTomorrow
+                            && e.Visibility != TimelineVisibility.Hide)
+                .OrderByDescending(e => e.OccurredAt)
+                .Take(100)
+                .ToListAsync();
+
+            if (!rawEvents.Any()) return Ok(new List<object>());
+
+            // 2. Resolve Actor Names
+            var potentialUserIds = rawEvents
+                .Where(e => Guid.TryParse(e.ActorName, out _))
+                .Select(e => Guid.Parse(e.ActorName!))
+                .Distinct()
+                .ToList();
+
+            var userMap = new Dictionary<Guid, string>();
+            if (potentialUserIds.Any())
+            {
+                userMap = await _context.Users
+                    .AsNoTracking()
+                    .Where(u => potentialUserIds.Contains(u.UserId))
+                    .ToDictionaryAsync(u => u.UserId, u => u.Name);
+            }
+
+            Func<string?, string> resolveActor = (name) => {
+                if (string.IsNullOrEmpty(name)) return "System";
+                if (Guid.TryParse(name, out var g) && userMap.TryGetValue(g, out var resolved)) return resolved;
+                if (Guid.TryParse(name, out var g2) && g2 == _userContext.CurrentUserId) return "You";
+                return name; // Already a name?
+            };
+
+            // 3. Aggregation Logic
+            var aggregated = new List<TimelineEntryDto>();
+            
+            // Group by IntentId (if present)
+            // Events with null IntentId are treated as independent items (new grouping for each)
+            var intentGroups = rawEvents
+                .GroupBy(e => e.IntentId.HasValue ? e.IntentId.Value : Guid.NewGuid())
+                .ToList();
+
+            foreach (var group in intentGroups)
+            {
+                // Find primary (Surface) event
+                var surface = group.FirstOrDefault(e => e.Visibility == TimelineVisibility.Surface);
+                
+                // If no Surface event, fallback to the earliest event in group? 
+                // Or just pick the first one from the sorted list (latest)? 
+                // Since we sorted descending by OccurredAt, the first one is the LATEST.
+                // Usually Surface event is the "Head".
+                var primary = surface ?? group.First();
+
+                var entry = new TimelineEntryDto
+                {
+                    EventId = primary.EventId,
+                    Title = primary.SummaryText,
+                    OccurredAt = primary.OccurredAt,
+                    ActorName = resolveActor(primary.ActorName),
+                    EventType = primary.EventType,
+                    Color = GetEventColor(primary.EventType),
+                    Icon = GetEventIcon(primary.EventType),
+                    Metadata = primary.Metadata,
+                    ContextEvents = group
+                        .Where(e => e.EventId != primary.EventId) // Exclude self
+                        .Select(e => new TimelineContextDto 
+                        { 
+                            Summary = e.SummaryText, 
+                            Metadata = e.Metadata,
+                            EventType = e.EventType
+                        })
+                        .ToList()
+                };
+                aggregated.Add(entry);
+            }
+
+            // Re-sort aggregated entries by time (descending)
+            return Ok(aggregated.OrderByDescending(x => x.OccurredAt));
+        }
+
+        public class TimelineEntryDto
+        {
+            public Guid EventId { get; set; }
+            public string Title { get; set; }
+            public DateTime OccurredAt { get; set; }
+            public string ActorName { get; set; }
+            public string EventType { get; set; }
+            public string Color { get; set; }
+            public string Icon { get; set; }
+            public string? Metadata { get; set; }
+            public List<TimelineContextDto> ContextEvents { get; set; } = new();
+        }
+
+        public class TimelineContextDto
+        {
+            public string Summary { get; set; }
+            public string? Metadata { get; set; }
+            public string EventType { get; set; }
+        }
     }
 }

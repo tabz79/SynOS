@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using SynOS.Models.Enums;
+using SynOS.Models.ReadModels; // ADDED
 
 namespace SynOS.Services.Operational
 {
@@ -20,6 +21,9 @@ namespace SynOS.Services.Operational
             string? actorName = null,
             bool saveChanges = true,
             Guid? sourceId = null,
-            string? sourceType = null);
+            string? sourceType = null,
+            TimelineVisibility visibility = TimelineVisibility.Hide,
+            Guid? intentId = null,
+            string? metadata = null);
     }
 }

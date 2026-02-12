@@ -545,3 +545,405 @@ When Gemini comes back, we’ll check:
 * Did it stay OS-grade?
 
 Bring the response here. We continue calmly, one step at a time.
+
+
+
+
+
+
+
+SynOS Reception UI Design Canons
+This document codifies the non-negotiable design rules currently enforced in the Reception UI. It serves as a contract for all future development.
+
+A. Typography Canon (System v2)
+Principle: "If it’s not a Role, it’s a defect." No ad-hoc font sizes, weights, colors, or tracking in components.
+
+Hard Rules
+No ad-hoc styles: text-xs, text-sm, font-bold, tracking-* are PROHIBITED directly in JSX.
+Roles only: Must use defined utility classes (e.g., .type-body).
+Monospace usage: Restricted to codes (IDs, MRNs) only. Never for human names.
+Status Text: Must use .type-body, never .type-meta.
+Minimum Size: No "tiny fonts" (< 10px) unless explicitly handled by a specific badge sub-role.
+Approved Roles
+Role	usage
+.type-display	Large numeric emphasis (tiles, totals)
+.type-page-title	Screen / modal titles
+.type-section-header	Structural dividers (NOT visual emphasis)
+.type-label	Field labels
+.type-body	Normal readable text
+.type-value	Primary data (names, amounts)
+.type-meta	Secondary info (timestamps, badges)
+.type-code	IDs, MRNs, codes (monospace only)
+B. Spacing Canon (Parent-Controlled Layout)
+Principle: "Parents own spacing. Children never push themselves away."
+
+Hard Rules
+No external margins: Children must NOT use mt-*, mb-*, my-*.
+Parent control: Vertical/Horizontal rhythm is controlled by parent containers using gap-* or space-y-*.
+Peer separation: No pt-* / pb-* for separation between siblings.
+Rhythm: Standard Unit = 16px (Base), 8px (Minor). No magic numbers (e.g., 7px, 13px).
+C. Grid & Row Canon (Action Queues)
+Principle: "Rows must not change height based on content type."
+
+Hard Rules
+Structured Columns:
+Patient Column: Fixed 2-line structure (Name+Badge / Test Codes).
+Payment Column: Conditional depth allowed (2 lines normally, 3rd only for Prepaid Referrer).
+No Wrapping: Content must truncate or stack, never wrap to increase row height unintentionally.
+Operational Status: Is a System Status Line, NOT a badge.
+D. Status vs Badge Canon
+Principle: "Status is current state. Badge is category metadata."
+
+Hard Rules
+Status Representation:
+Rendered as a Neutral Dot (System Color, e.g., Cyan, Zinc) + Body Text.
+NO pills, NO borders, NO bold text.
+Example: "● Ready for Sample" (Cyan dot + regular text).
+Badge Representation:
+For categories/identifiers only (e.g., "Age/Sex", "Payment Mode").
+Compact, bordered, or shaded.
+E. Color Canon (Muted System Theme)
+Principle: "Color must explain state, not decorate data."
+
+Hard Rules
+Default Palette: Zinc (Neutral) for almost everything.
+No Rainbows: semantic colors (Red/Green/Amber) only when meaning is critical (e.g., Error, Success, Warning).
+System Live: Cyan is reserved for "System Live" / "Active" indicators.
+Decoration: No fake progress bars or arbitrary colored backgrounds.
+F. Tile Layout Canon (Reality Summary)
+Principle: "Uniform structure beats responsive cleverness."
+
+Hard Rules
+Strict Vertical Categories (Slots):
+Slot 1 (Header): Top row containing Value (Left) and Icon (Right). Fixed structural constraints.
+Spacer: flex-1 element pushing Footer to bottom.
+Slot 2 (Footer): Bottom row containing Label.
+No Visual Float: justify-between is BANNED on the tile container to prevent content height from shifting alignment.
+Consistency: Icon position and Label position must be pixel-identical across all tiles, regardless of Value text length/size.
+Minimization: In collapsed state, Tiles strictly adhere to grid row height (h-full) and use adaptive short labels (e.g., "Prepaid Bills") to prevent truncation.
+G. Animation Canon (SynOS Motion)
+Principle: "Motion explains change, it does not decorate."
+
+Hard Rules
+Standard Duration: 260ms (The "OS feel" constant). Never faster, never slower.
+Standard Easing: cubic-bezier(0.22, 1, 0.36, 1) (Decelerated/Natural). No linear animations.
+Layout Transitions: Must use FLIP (First-Last-Invert-Play) technique for layout changes (e.g., Tiles colliding/expanding).
+Performance: will-change properties must be promoted strictly during animation and removed immediately after.
+H. Theming Canon (Polarity)
+Principle: "Structure is permanent, skin is transient."
+
+Hard Rules
+Dual Mode Support: All components must support dark and light modes natively via dark: variants.
+Zinc Backbone: Neutral colors (Zinc 50-950) form the structural skeleton in both modes.
+Semantic Inversion:
+Light Mode: White surfaces, Dark text.
+Dark Mode: Dark surfaces (Zinc-900/950), Light text.
+Note: Semantic colors (Red/Emerald) must adjust opacity/shade to remain legibility (e.g., emerald-600 in light vs emerald-400 in dark).
+I. Material Canon (Fake Frost UI)
+Principle: "Depth is defined by light and blur, not borders."
+
+Hard Rules
+Layer System: Must use defined glass utility classes (.glass-base, .glass-elevated) from 
+index.css
+.
+Blur Dominance: backdrop-blur (> 12px) is the primary depth cue, not opacity.
+Noise Texture: Atmospheric grain/noise is required on the base background to sell the "premium" physical effect.
+Borders: Ultra-thin white/black borders (10-20% opacity) define edges, not heavy lines.
+
+
+
+
+
+
+
+# Central Search — Canonical Design (SynOS)
+
+> **Status:** Locked
+> **Scope:** System Capability (OS-grade)
+> **Audience:** Future You, Core System Builders
+> **Purpose:** Prevent re-design, re-thinking, and scope creep in v2+
+
+---
+
+## 1. What This Is (Non‑Negotiable Definition)
+
+**Central Search in SynOS is a system capability, not a feature and not a screen.**
+
+It exists *above* all screens and workflows.
+It answers questions.
+It does **not** assign work.
+
+If this distinction ever blurs, the system will degrade.
+
+---
+
+## 2. What Central Search Is NOT
+
+Central Search is **NOT**:
+
+* Registration search
+* Patient creation helper
+* A replacement for queues
+* A dumping ground for raw data
+* A developer convenience feature
+
+Registration search has a narrow, transactional job.
+Central search has a broad, investigative job.
+They must never be merged.
+
+---
+
+## 3. Mental Model (OS Analogy — Locked)
+
+Think operating system, not app.
+
+* **Action Queues** = *What you should work on now*
+* **Central Search** = *Ask the system a question*
+
+Examples:
+
+* Task Manager vs Spotlight
+* Worklist vs Find
+
+If users rely on search for daily work, the system is broken.
+
+---
+
+## 4. Core Design Laws
+
+These laws apply forever.
+
+### Law 1 — Search Answers, Queues Assign
+
+Search may explain past, present, or anomalies.
+Queues define responsibility and action.
+
+### Law 2 — Search Is Context‑Aware, Not Screen‑Bound
+
+Same input means different things in different operational contexts.
+The user does not choose this.
+The system infers it.
+
+### Law 3 — Visibility Is Responsibility‑Scoped
+
+Users only see what they are accountable for.
+Existence of data does not imply visibility.
+
+### Law 4 — Results Are Actionable, Not Exhaustive
+
+Search never returns *everything*.
+It returns *what the user can understand or act on*.
+
+### Law 5 — Design for Explanation, Not Retrieval
+
+The goal is:
+
+> “Explain what happened.”
+> Not:
+> “List all matching rows.”
+
+---
+
+## 5. Roles Supported (Fixed Enumeration)
+
+This document assumes exactly these roles:
+
+1. Reception
+2. Phlebo
+3. Pathologist
+4. X‑Ray / MRI Technician
+5. Radiologist
+6. Admin
+7. HR
+8. Accounting Manager
+9. Delivery Desk
+
+Each role plugs into the *same* search brain with a different lens.
+
+---
+
+## 6. Search Domains (Key Abstraction)
+
+Search is not built per screen.
+Search is built per **domain of responsibility**.
+
+A domain defines:
+
+* What entities matter
+* What time horizons matter
+* What actions are legitimate
+
+### Example: Reception Domain
+
+Reception is responsible for:
+
+* Patients they registered
+* Visits they initiated
+* Bills they generated
+* Payments they handled
+* Daily collection totals
+* Discrepancy explanations
+
+Reception is *not* responsible for:
+
+* Lab internals
+* Report generation
+* Other receptionists’ work
+
+---
+
+## 7. Reception Central Search — Locked Scope (v1+)
+
+### Questions Reception Must Be Able to Answer
+
+Central Search for Reception **must** answer:
+
+1. “Did I register this patient?”
+2. “When was this patient last here?”
+3. “Which bill belongs to this patient?”
+4. “What payments were collected on a past date?”
+5. “Why do today’s totals not match a past day?”
+6. “What happened on a specific date I worked?”
+7. “Was this bill cash or online?”
+
+If a search result does not help answer these, it does not belong.
+
+---
+
+## 8. Input Interpretation (System‑Inferred)
+
+The user types freely.
+The system interprets intent.
+
+Examples:
+
+* Name → Patient / Visit
+* Phone / MRN → Patient
+* Amount → Bill / Payment
+* Date → Day Summary
+* ID / Code → Bill / Visit
+
+Users never select a filter.
+Inference is implicit and invisible.
+
+---
+
+## 9. Result Structuring (Critical)
+
+Results are **grouped**, not mixed.
+
+Example search: `Rahul 07 Feb`
+
+### Group 1 — Patients
+
+* Rahul (handled by YOU)
+* Last visit: 07 Feb
+
+### Group 2 — Bills
+
+* 2 bills on 07 Feb
+* Total: ₹3,400
+* Payment modes
+
+### Group 3 — Day Summary
+
+* Cash: ₹X
+* Online: ₹Y
+* Net difference: ₹Z
+
+This explains the situation.
+
+---
+
+## 10. User Scope Enforcement
+
+Central Search is always implicitly scoped by:
+
+* Role
+* Login identity
+* Branch
+
+A receptionist:
+
+* Can see only their own operational footprint
+* Cannot search across peers
+
+This is invisible and absolute.
+
+---
+
+## 11. Relationship to Tiles & Dashboards
+
+Tiles:
+
+* Today only
+* Real‑time
+* Operational awareness
+
+Central Search:
+
+* Historical
+* Investigative
+* Explanation‑oriented
+
+Tiles reset.
+Search remembers.
+
+---
+
+## 12. Scalability to Other Roles (Future‑Safe)
+
+This design intentionally scales.
+
+Later:
+
+* Phlebo → samples collected by me
+* Pathologist → reports verified by me
+* Radiologist → studies reported by me
+* Accounting → payments, adjustments, revenue
+* Admin → audits, cross‑cuts
+* Delivery → dispatch and delivery
+
+Same capability.
+Different responsibility lens.
+
+---
+
+## 13. Non‑Goals (Explicitly Rejected)
+
+Central Search will **not**:
+
+* Replace queues
+* Show unauthorized data
+* Become a reporting engine
+* Become a power‑user SQL UI
+
+Those paths lead to chaos.
+
+---
+
+## 14. Success Criteria (How to Judge Correctness)
+
+Central Search is correct when:
+
+* Users trust it to explain discrepancies
+* Users do not rely on it for daily operations
+* Users never ask “Why is this here?”
+* Roles do not leak visibility
+
+If any of these fail, revisit laws — not implementation.
+
+---
+
+## 15. Final Lock
+
+This document is the **canonical reference** for Central Search in SynOS.
+
+Future iterations may extend domains,
+but must not violate:
+
+* Search vs Queue separation
+* Role responsibility scoping
+* Explanation‑first philosophy
+
+If a future idea contradicts this doc — the idea is wrong.

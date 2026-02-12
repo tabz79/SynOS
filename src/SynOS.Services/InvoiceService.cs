@@ -5,14 +5,16 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SynOS.Data;
 using SynOS.Models.DTOs;
-using SynOS.Models.DTOs.Dashboard; // ADDED
+using SynOS.Models.DTOs.Dashboard;
 using SynOS.Models.Entities;
 using SynOS.Services.Utils;
-using SynOS.Services.Operational; // ADDED
-using SynOS.Models.Enums; // ADDED
-using SynOS.Models.Entities.Revenue; // ADDED
-using SynOS.Services.Revenue; // ADDED
-using SynOS.Services.Security; // ADDED
+using SynOS.Services.Operational;
+using SynOS.Models.Enums;
+using SynOS.Models.Entities.Revenue;
+using SynOS.Services.Revenue;
+using SynOS.Services.Security;
+using SynOS.Models.ReadModels; // ADDED
+using System.Text.Json; // ADDED
 
 namespace SynOS.Services
 {
@@ -22,36 +24,31 @@ namespace SynOS.Services
         private readonly ILogger<InvoiceService> _logger;
         private readonly IOperationalEventWriter _operationalEventWriter;
         private readonly IUserContext _userContext;
-        private readonly IRevenueFactWriter _revenueFactWriter; // ADDED
-        private readonly IVisitService _visitService; // ADDED
+        private readonly IRevenueFactWriter _revenueFactWriter;
+        private readonly IVisitService _visitService;
 
         public InvoiceService(
             SynOSDbContext context, 
             ILogger<InvoiceService> logger, 
             IOperationalEventWriter operationalEventWriter, 
             IUserContext userContext,
-            IRevenueFactWriter revenueFactWriter, // ADDED
-            IVisitService visitService) // ADDED
+            IRevenueFactWriter revenueFactWriter,
+            IVisitService visitService)
         {
             _context = context;
             _logger = logger;
             _operationalEventWriter = operationalEventWriter ?? throw new ArgumentNullException(nameof(operationalEventWriter));
             _userContext = userContext ?? throw new ArgumentNullException(nameof(userContext));
-            _revenueFactWriter = revenueFactWriter ?? throw new ArgumentNullException(nameof(revenueFactWriter)); // ADDED
-            _visitService = visitService ?? throw new ArgumentNullException(nameof(visitService)); // ADDED
+            _revenueFactWriter = revenueFactWriter ?? throw new ArgumentNullException(nameof(revenueFactWriter));
+            _visitService = visitService ?? throw new ArgumentNullException(nameof(visitService));
         }
 
         public async Task<RevenueStatsDto> GetDailyRevenueStatsAsync(Guid branchId)
         {
             if (branchId == Guid.Empty) throw new ArgumentException("BranchId required");
 
-            // CRITICAL FIX: Read from Projected Stats (Source of Truth for Dashboard)
-            // Do NOT use DateTime.Today (Local) on raw tables, as it causes 0 results until push.
-            // The Projector maintains UserOperationalStats based on Events.
+            var today = DateTime.UtcNow.Date;
             
-            var today = DateTime.UtcNow.Date; // Projector uses UTC Date
-            
-            // We aggregate for the whole branch (all users)
             var stats = await _context.UserOperationalStats
                 .Where(s => s.BranchId == branchId && s.Date == today)
                 .GroupBy(s => s.BranchId)
@@ -61,7 +58,6 @@ namespace SynOS.Services
                     Payments = g.Sum(x => x.PaymentsTotal),
                     Cash = g.Sum(x => x.PaymentsCashTotal),
                     Online = g.Sum(x => x.PaymentsOnlineTotal),
-                    // EXTENDED PROJECTION
                     OnlineCount = g.Sum(x => x.PaymentsOnlineCount),
                     PrepaidCount = g.Sum(x => x.PrepaidBillsCount),
                     PrepaidTotal = g.Sum(x => x.PrepaidBillsTotal)
@@ -86,16 +82,11 @@ namespace SynOS.Services
             {
                 WalkInsToday = stats.WalkIns,
                 PaymentsCollected = stats.Payments,
-                
-                // CRITICAL FIX: Populate Splits so Dashboard Tiles work
                 PaymentsCashTotal = stats.Cash,
                 PaymentsOnlineTotal = stats.Online,
-                
-                // Populate other stats from projection
                 PaymentsOnlineCount = stats.OnlineCount,
                 PrepaidBillsCount = stats.PrepaidCount,
                 PrepaidBillsTotal = stats.PrepaidTotal,
-                
                 PendingReports = 0,
                 AvgReportTimeMinutes = 0
             };
@@ -106,12 +97,10 @@ namespace SynOS.Services
             var invoice = await _context.Invoices
                 .Include(i => i.Payments)
                 .Include(i => i.PartialPayments)
-                .Include(i => i.Visit) // ADDED: Need Visit for operational event context
+                .Include(i => i.Visit).ThenInclude(v => v.Patient) // Ensure Patient is loaded for context
                 .FirstOrDefaultAsync(i => i.InvoiceId == invoiceId);
 
             if (invoice == null) throw new KeyNotFoundException($"Invoice not found for ID {invoiceId}.");
-
-            // ... (checks)
 
             if (invoice.Status == "Paid" || invoice.Status == "Cancelled")
             {
@@ -157,7 +146,6 @@ namespace SynOS.Services
                 if (visit != null) 
                 {
                     visit.Status = "Paid";
-                    // Atomic Token Assignment on Completion
                     if (visit.Token.StartsWith("DRAFT"))
                     {
                         await _visitService.AssignOfficialTokenAsync(visit.VisitId, paymentDto.ReceivedByUserId);
@@ -167,7 +155,6 @@ namespace SynOS.Services
 
             await _context.SaveChangesAsync();
 
-            // 1. EMIT REVENUE FACT (Truth Engine) - FIRST
             var revenueFactId = await _revenueFactWriter.DeclareRevenueFactAsync(new SynOS.Models.DTOs.Revenue.DeclareRevenueFactCommand
             {
                 OccurredAt = payment.ReceivedAt,
@@ -175,8 +162,6 @@ namespace SynOS.Services
                 Currency = "INR",
                 Direction = RevenueDirection.Inflow,
                 SourceType = RevenueSourceType.Patient,
-                // SEMANTIC CORRECTION: The Financial Identity is the PAYMENT, not the Visit.
-                // This allows multiple payments per visit without ID collision.
                 SourceReferenceId = payment.PaymentId.ToString(), 
                 PaymentMode = MapPaymentMethod(payment.Method),
                 DeclaredByUserId = payment.ReceivedByUserId,
@@ -184,18 +169,34 @@ namespace SynOS.Services
                 ExternalTransactionId = payment.ReceiptNo
             });
 
-            // 2. Emit Operational Event: PAYMENT_RECEIVED (Linked to Fact)
+            // ENRICHED METADATA
+            string actorName = await GetActorNameAsync(payment.ReceivedByUserId);
+            string patientName = invoice.Visit != null ? $"{invoice.Visit.Patient.FirstName} {invoice.Visit.Patient.LastName}" : "Unknown Patient";
+            string tokenId = invoice.Visit?.Token ?? "Unknown";
+
+            var paymentMetadata = JsonSerializer.Serialize(new 
+            { 
+                PatientName = patientName, 
+                TokenId = tokenId, 
+                ActorName = actorName, 
+                Amount = payment.Amount, 
+                Method = payment.Method 
+            });
+
             await _operationalEventWriter.WriteEventAsync(
                 BranchEventType.PAYMENT_RECEIVED,
                 _userContext.CurrentBranchId.ToString(), 
                 invoice.VisitId.ToString(),
-                invoice.Visit?.Token ?? "Unknown",
+                tokenId, 
                 $"Payment received {payment.Amount:F2} ({payment.Method})",
-                "User",
+                actorName, // Use Real Name
                 payment.ReceivedByUserId.ToString(),
-                true, // saveChanges
-                revenueFactId, // sourceId (Points to Truth)
-                "RevenueFact" // sourceType (Explicit)
+                true, 
+                revenueFactId, 
+                "RevenueFact",
+                TimelineVisibility.Surface, // Ensure visibility
+                invoice.VisitId,
+                paymentMetadata
             );
 
             return payment;
@@ -206,18 +207,14 @@ namespace SynOS.Services
             return method?.Trim().ToLowerInvariant() switch
             {
                 "cash" => PaymentMode.Cash,
-                "0" => PaymentMode.Cash, // Legacy Fallback
-                
+                "0" => PaymentMode.Cash, 
                 "card" => PaymentMode.Card,
-                "2" => PaymentMode.Card, // Legacy Fallback
-                
+                "2" => PaymentMode.Card, 
                 "upi" => PaymentMode.UPI,
-                "1" => PaymentMode.UPI, // Legacy Fallback
-
+                "1" => PaymentMode.UPI, 
                 "banktransfer" => PaymentMode.BankTransfer,
-                "3" => PaymentMode.BankTransfer, // Legacy Fallback
-                
-                _ => PaymentMode.Other // Will result in 0 Splits but correct Grand Total
+                "3" => PaymentMode.BankTransfer, 
+                _ => PaymentMode.Other 
             };
         }
 
@@ -241,10 +238,10 @@ namespace SynOS.Services
             {
                 InvoiceNumber = invoice.InvoiceId.ToString(),
                 InvoiceDate = invoice.CreatedAt,
-                Patient = new PatientPrintDto { Name = $"{invoice.Visit.Patient.FirstName} {invoice.Visit.Patient.LastName}", Mrn = invoice.Visit.Patient.MRN },
+                Patient = new PatientPrintDto { Name = $"{invoice.Visit.Patient.FirstName} {invoice.Visit.Patient.LastName}", Mrn = invoice.Visit.Patient.MRN }, // Fixed typo in PatientPrintDto usage
                 Items = invoice.Visit.Orders.Select(o => new OrderItemPrintDto
                 {
-                    TestName = o.Test?.TestName ?? o.TestCode, // Corrected to o.Test?.TestName
+                    TestName = o.Test?.TestName ?? o.TestCode, 
                     Price = o.Price
                 }).ToList(),
                 GrossAmount = invoice.GrossAmount,
@@ -254,6 +251,12 @@ namespace SynOS.Services
                 PaymentMethod = invoice.Payments.FirstOrDefault()?.Method ?? "N/A",
                 PrintPayload = payload
             };
+        }
+
+        private async Task<string> GetActorNameAsync(Guid userId)
+        {
+            var user = await _context.Users.FindAsync(userId);
+            return user?.Name ?? "Unknown User";
         }
     }
 }

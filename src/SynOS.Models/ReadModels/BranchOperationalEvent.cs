@@ -16,7 +16,19 @@ namespace SynOS.Models.ReadModels
         public string TokenId { get; set; } = string.Empty;
         public string SummaryText { get; set; } = string.Empty;
         
-        public Guid? SourceId { get; set; } // ADDED: For strict entity lookup
-        public string? SourceType { get; set; } // ADDED: e.g. "Payment", "Report"
+        public Guid? SourceId { get; set; }
+        public string? SourceType { get; set; }
+        
+        // Operational Timeline Enhancements
+        public TimelineVisibility Visibility { get; set; } = TimelineVisibility.Hide; 
+        public Guid? IntentId { get; set; } 
+        public string? Metadata { get; set; } // JSON: { "Amount": 500, "PartnerName": "Dr. X" }
+    }
+
+    public enum TimelineVisibility
+    {
+        Hide = 0,    // Audit only (Noise)
+        Merge = 1,   // Context for a Surface event
+        Surface = 2  // Headline event (Signal)
     }
 }

@@ -15,9 +15,11 @@ using SynOS.Models.Entities.Discounts;
 using SynOS.Models.Entities.Revenue;
 using SynOS.Models.Entities.AR;
 using SynOS.Models.Entities.Referral;
-using SynOS.Models.Entities.Operations; // ADDED
+using SynOS.Models.Entities.Operations;
 using SynOS.Services.Referral;
-using SynOS.Services.Revenue; // ADDED
+using SynOS.Services.Revenue;
+using SynOS.Models.ReadModels;
+using System.Text.Json;
 
 namespace SynOS.Services
 {
@@ -31,20 +33,20 @@ namespace SynOS.Services
         private readonly IUserContext _userContext;
         private readonly IReferralFinancialService _referralFinancialService;
         private readonly IRevenueFactWriter _revenueFactWriter;
-        private readonly IRevenueEngine _revenueEngine; // ADDED
+        private readonly IRevenueEngine _revenueEngine;
 
-        private static TimeZoneInfo _labTimeZone = TimeZoneInfo.Local; 
+        private static TimeZoneInfo _labTimeZone = TimeZoneInfo.Local;
 
         public VisitService(
-            SynOSDbContext context, 
-            ILogger<VisitService> logger, 
-            ITestsCacheService testsCacheService, 
+            SynOSDbContext context,
+            ILogger<VisitService> logger,
+            ITestsCacheService testsCacheService,
             IAuditService auditService,
             IOperationalEventWriter operationalEventWriter,
             IUserContext userContext,
             IReferralFinancialService referralFinancialService,
             IRevenueFactWriter revenueFactWriter,
-            IRevenueEngine revenueEngine) // ADDED
+            IRevenueEngine revenueEngine)
         {
             _context = context;
             _logger = logger;
@@ -67,12 +69,12 @@ namespace SynOS.Services
 
             if (visit == null) throw new KeyNotFoundException($"Visit with ID {visitId} not found.");
 
-            // Fetch the current assignment
             WorkAssignment? assignment = null;
             if (visit.CurrentAssignmentId.HasValue)
             {
                 assignment = await _context.WorkAssignments
                     .Include(a => a.AssignedResource)
+                        .ThenInclude(r => r.User)
                     .FirstOrDefaultAsync(a => a.AssignmentId == visit.CurrentAssignmentId.Value);
             }
 
@@ -89,19 +91,13 @@ namespace SynOS.Services
                 Dept = visit.Department,
                 Time = visit.CreatedAt,
                 PrintPayload = payload,
-                AssignedResource = assignment?.AssignedResource?.Name,
+                AssignedResource = assignment?.AssignedResource?.User?.Name,
                 Station = assignment?.AssignedResource?.PhysicalStation
             };
         }
 
         public async Task<Visit> CreateVisitAsync(VisitCreateDto visitDto, string? idempotencyKey = null, Guid actorUserId = default)
         {
-            // ... (Create logic remains mostly same, but calls RevenueEngine at end instead of SaveChanges?)
-            // No, Create is special. It sets up initial state.
-            // But to enforce invariants, we should probably call RevenueEngine after creation?
-            // "Revenue Engine may ONLY read money from Active Orders...".
-            // So we Add Orders -> Save -> Call RevenueEngine.
-            
             var patient = await _context.Patients.FindAsync(visitDto.PatientId);
             if (patient == null || patient.IsSoftDeleted)
             {
@@ -144,7 +140,7 @@ namespace SynOS.Services
             {
                 var resolvedTest = await ResolveTestForReceptionAsync(testCode, visitDto.Department);
                 if (resolvedTest == null) throw new KeyNotFoundException($"Test '{testCode}' not found.");
-                
+
                 var order = new Order
                 {
                     OrderId = Guid.NewGuid(),
@@ -160,12 +156,12 @@ namespace SynOS.Services
                 _context.Orders.Add(order);
             }
 
-            // Create Invoice (Shell) - RevenueEngine will populate totals
+            // Create Invoice (Shell)
             var invoice = new Invoice
             {
                 InvoiceId = Guid.NewGuid(),
                 VisitId = visit.VisitId,
-                GrossAmount = 0, // Engine calculates
+                GrossAmount = 0,
                 DiscountAmount = 0,
                 NetAmount = 0,
                 TaxAmount = 0,
@@ -186,11 +182,10 @@ namespace SynOS.Services
 
                 if (appliedDiscount != null && appliedDiscount.IsActive)
                 {
-                    // Basic valid check
                     var now = DateTime.UtcNow;
                     bool effective = (!appliedDiscount.EffectiveFrom.HasValue || appliedDiscount.EffectiveFrom <= now) &&
                                      (!appliedDiscount.EffectiveTo.HasValue || appliedDiscount.EffectiveTo >= now);
-                    
+
                     if (effective)
                     {
                         var discountFact = new DiscountFact
@@ -212,30 +207,20 @@ namespace SynOS.Services
                 }
             }
 
-            // Save Initial State
             await _context.SaveChangesAsync();
 
-            // CALL REVENUE ENGINE to populate Invoice Financials
+            // CALL REVENUE ENGINE
             await _revenueEngine.ApplySnapshotAsync(visit.VisitId, actorUserId);
-
-            // Audit & Events
+            
             await _auditService.LogAsync(actorUserId, "CreateVisit", "Visit", visit.VisitId, visitDto);
-            
-            // Note: If PaymentCollectionModel logic needs Total, we must re-fetch or trust Engine updated the tracked entity?
-            // Engine updates tracked entities.
-            
+
             if (visit.PaymentCollectionModel == "PartnerCollects" && visit.ReferralPartnerId.HasValue)
             {
-                // Engine updated Invoice.Total.
-                // We can create Payment now?
-                // Or do it in a separate transaction?
-                // Let's do it here.
-                
                 var payment = new Payment
                 {
                     PaymentId = Guid.NewGuid(),
                     InvoiceId = invoice.InvoiceId,
-                    Amount = invoice.Total, // Uses updated total
+                    Amount = invoice.Total, 
                     Method = "PartnerAccount",
                     ReceiptNo = $"SYS-{visit.Token}",
                     ReceivedAt = DateTime.UtcNow,
@@ -243,7 +228,7 @@ namespace SynOS.Services
                 };
                 _context.Payments.Add(payment);
                 invoice.Status = "Paid";
-                visit.Status = "Paid"; // Sync
+                visit.Status = "Paid";
 
                 var receivable = new ReceivableFact
                 {
@@ -256,20 +241,42 @@ namespace SynOS.Services
                     RecordedAt = DateTimeOffset.UtcNow
                 };
                 _context.ReceivableFacts.Add(receivable);
+
+                await _context.SaveChangesAsync();
                 
-                await _context.SaveChangesAsync(); // Save Payment
-                
-                await MarkVisitAsPrepaidAsync(visit.VisitId, actorUserId);
+                await MarkVisitAsPrepaidAsync(visit.VisitId, actorUserId, visit.VisitId);
             }
 
+            // ENRICHED METADATA
+            string actorName = await GetActorNameAsync(actorUserId);
+            string patientName = $"{patient.FirstName} {patient.LastName}";
+
+            var visitMetadata = JsonSerializer.Serialize(new
+            {
+                PatientName = patientName,
+                PatientId = patient.PatientId,
+                TokenId = visit.Token,
+                ActorName = actorName,
+                ActorRole = "Reception", // Context implied
+                TestCodes = visitDto.TestCodes,
+                Total = invoice.Total,
+                Status = visit.Status
+            });
+
             await _operationalEventWriter.WriteEventAsync(
-                BranchEventType.BILL_GENERATED,
+                BranchEventType.VISIT_CREATED,
                 _userContext.CurrentBranchId.ToString(),
                 visit.VisitId.ToString(),
                 visit.Token,
-                $"Bill generated for {invoice.Total:F2}",
-                "User",
-                actorUserId.ToString()
+                $"Visit created for {patientName} by {actorName}",
+                actorName, // Use Real Name
+                actorUserId.ToString(),
+                true,
+                null,
+                null,
+                TimelineVisibility.Surface,
+                visit.VisitId,
+                visitMetadata
             );
 
             return visit;
@@ -277,15 +284,15 @@ namespace SynOS.Services
 
         public async Task<Visit> AddTestToVisitAsync(Guid visitId, string testCode, Guid actorUserId)
         {
-            // ... (Load Visit)
             var visit = await _context.Visits
+                .Include(v => v.Patient) // ADDED
                 .Include(v => v.Invoices).ThenInclude(i => i.Payments)
-                .Include(v => v.Orders).ThenInclude(o => o.Samples) // FIXED
+                .Include(v => v.Orders).ThenInclude(o => o.Samples)
                 .FirstOrDefaultAsync(v => v.VisitId == visitId);
 
             if (visit == null) throw new KeyNotFoundException($"Visit {visitId} not found.");
-            
-            if (IsPhysicallyLocked(visit)) 
+
+            if (IsPhysicallyLocked(visit))
                 throw new InvalidOperationException("Cannot add test. Sample collection has already started.");
 
             if (visit.Orders.Any(o => o.TestCode.Equals(testCode, StringComparison.OrdinalIgnoreCase) && o.Status != SynOS.Models.Enums.OrderStatus.Cancelled))
@@ -308,11 +315,23 @@ namespace SynOS.Services
             };
             _context.Orders.Add(order);
             if (!visit.Orders.Contains(order)) visit.Orders.Add(order);
-            
+
             await _context.SaveChangesAsync();
 
-            // REVENUE ENGINE
             await _revenueEngine.ApplySnapshotAsync(visitId, actorUserId);
+
+            // ENRICHED METADATA
+            string actorName = await GetActorNameAsync(actorUserId);
+            string patientName = $"{visit.Patient.FirstName} {visit.Patient.LastName}";
+
+            var addTestMetadata = JsonSerializer.Serialize(new 
+            { 
+                PatientName = patientName,
+                TokenId = visit.Token,
+                ActorName = actorName,
+                TestCode = testCode, 
+                Action = "Added" 
+            });
 
             await _operationalEventWriter.WriteEventAsync(
                 BranchEventType.VISIT_UPDATED,
@@ -320,8 +339,12 @@ namespace SynOS.Services
                 visit.VisitId.ToString(),
                 visit.Token,
                 $"Added test {testCode}",
-                "User",
-                actorUserId.ToString()
+                actorName, // Use Real Name
+                actorUserId.ToString(),
+                true, null, null,
+                TimelineVisibility.Surface,
+                visit.VisitId,
+                addTestMetadata
             );
 
             return visit;
@@ -330,12 +353,13 @@ namespace SynOS.Services
         public async Task<Visit> RemoveTestFromVisitAsync(Guid visitId, string testCode, Guid actorUserId)
         {
             var visit = await _context.Visits
+                .Include(v => v.Patient) // ADDED
                 .Include(v => v.Invoices).ThenInclude(i => i.Payments)
-                .Include(v => v.Orders).ThenInclude(o => o.Samples) // FIXED
+                .Include(v => v.Orders).ThenInclude(o => o.Samples)
                 .FirstOrDefaultAsync(v => v.VisitId == visitId);
 
             if (visit == null) throw new KeyNotFoundException($"Visit {visitId} not found.");
-            
+
             if (IsPhysicallyLocked(visit))
                 throw new InvalidOperationException("Cannot remove test. Sample collection has already started.");
 
@@ -345,23 +369,33 @@ namespace SynOS.Services
             var order = visit.Orders.FirstOrDefault(o => o.TestCode.Equals(testCode, StringComparison.OrdinalIgnoreCase));
             if (order == null) throw new KeyNotFoundException($"Test '{testCode}' not found.");
 
-            // --- OPERATIONAL GUARDRAIL ---
-            // Block removal if sample is already collected, rejected, or being processed.
             var hasCollectedSample = await _context.Samples.AnyAsync(s => s.OrderId == order.OrderId && s.Status != SampleStatus.Pending);
             if (hasCollectedSample)
             {
                 throw new InvalidOperationException($"Cannot remove test '{testCode}' because the sample has already been collected or processed. Use a proper clinical cancellation flow instead.");
             }
 
-            // FIX: Soft Cancel ONLY. No deletes. Ever.
             order.Status = SynOS.Models.Enums.OrderStatus.Cancelled;
             order.CancellationReason = SynOS.Models.Enums.OrderCancellationReason.ReceptionCorrection;
             order.CancelledAt = DateTime.UtcNow;
             order.CancelledByUserId = actorUserId;
-            
+
             await _context.SaveChangesAsync();
 
             await _revenueEngine.ApplySnapshotAsync(visitId, actorUserId);
+
+            // ENRICHED METADATA
+            string actorName = await GetActorNameAsync(actorUserId);
+            string patientName = $"{visit.Patient.FirstName} {visit.Patient.LastName}";
+
+            var removeTestMetadata = JsonSerializer.Serialize(new 
+            { 
+                PatientName = patientName,
+                TokenId = visit.Token,
+                ActorName = actorName,
+                TestCode = testCode, 
+                Action = "Removed" 
+            });
 
             await _operationalEventWriter.WriteEventAsync(
                 BranchEventType.VISIT_UPDATED,
@@ -369,21 +403,22 @@ namespace SynOS.Services
                 visit.VisitId.ToString(),
                 visit.Token,
                 $"Removed test {testCode}",
-                "User",
-                actorUserId.ToString()
+                actorName,
+                actorUserId.ToString(),
+                true, null, null,
+                TimelineVisibility.Surface,
+                visit.VisitId,
+                removeTestMetadata
             );
 
             return visit;
         }
 
-        // ... (Other methods updated similarly to use _revenueEngine.ApplySnapshotAsync)
-        // RemoveDiscount, ApplyDiscount, RemoveReferral, SetReferral, MarkPrepaid.
-        // I will implement them all in the file content.
-
         public async Task RemoveDiscountFromVisitAsync(Guid visitId, Guid actorUserId)
         {
             var visit = await _context.Visits
-                .Include(v => v.Orders).ThenInclude(o => o.Samples) // FIXED
+                .Include(v => v.Patient) // ADDED
+                .Include(v => v.Orders).ThenInclude(o => o.Samples)
                 .Include(v => v.Invoices)
                 .FirstOrDefaultAsync(v => v.VisitId == visitId);
 
@@ -391,7 +426,7 @@ namespace SynOS.Services
 
             if (IsPhysicallyLocked(visit))
                 throw new InvalidOperationException("Cannot modify discount. Sample collection has already started.");
-            
+
             var invoice = visit.Invoices.OrderByDescending(i => i.CreatedAt).FirstOrDefault();
             if (invoice != null)
             {
@@ -399,18 +434,37 @@ namespace SynOS.Services
                     .Where(df => df.InvoiceId == invoice.InvoiceId && df.IsActive)
                     .ToListAsync();
 
-                foreach(var df in discountFacts) { df.IsActive = false; } // Deactivate
+                foreach (var df in discountFacts) { df.IsActive = false; }
                 await _context.SaveChangesAsync();
             }
 
             await _revenueEngine.ApplySnapshotAsync(visitId, actorUserId);
-            // ... Event
+
+            // ENRICHED METADATA
+            string actorName = await GetActorNameAsync(actorUserId);
+            string patientName = $"{visit.Patient.FirstName} {visit.Patient.LastName}";
+            var meta = JsonSerializer.Serialize(new { PatientName = patientName, TokenId = visit.Token, ActorName = actorName, Action = "Discount Removed" });
+
+             await _operationalEventWriter.WriteEventAsync(
+                BranchEventType.VISIT_UPDATED,
+                _userContext.CurrentBranchId.ToString(),
+                visit.VisitId.ToString(),
+                visit.Token,
+                "Discount removed",
+                actorName,
+                actorUserId.ToString(),
+                true, null, null,
+                TimelineVisibility.Surface,
+                visit.VisitId,
+                meta
+            );
         }
 
         public async Task ApplyDiscountToVisitAsync(Guid visitId, Guid discountMasterId, Guid actorUserId)
         {
             var visit = await _context.Visits
-                .Include(v => v.Orders).ThenInclude(o => o.Samples) // FIXED
+                .Include(v => v.Patient) // ADDED
+                .Include(v => v.Orders).ThenInclude(o => o.Samples)
                 .Include(v => v.Invoices)
                 .FirstOrDefaultAsync(v => v.VisitId == visitId);
 
@@ -418,17 +472,16 @@ namespace SynOS.Services
 
             if (IsPhysicallyLocked(visit))
                 throw new InvalidOperationException("Cannot apply discount. Sample collection has already started.");
-            
+
             var invoice = visit.Invoices.OrderByDescending(i => i.CreatedAt).FirstOrDefault();
             if (invoice == null) throw new InvalidOperationException("No invoice.");
 
             var master = await _context.DiscountMasters.FindAsync(discountMasterId);
             if (master == null || !master.IsActive) throw new InvalidOperationException("Invalid discount.");
 
-            // Deactivate old
             var oldFacts = await _context.DiscountFacts.Where(df => df.InvoiceId == invoice.InvoiceId && df.IsActive).ToListAsync();
             var replacedId = oldFacts.OrderByDescending(f => f.AppliedAt).FirstOrDefault()?.DiscountFactId;
-            foreach(var f in oldFacts) f.IsActive = false;
+            foreach (var f in oldFacts) f.IsActive = false;
 
             var newFact = new DiscountFact
             {
@@ -449,27 +502,41 @@ namespace SynOS.Services
             await _context.SaveChangesAsync();
 
             await _revenueEngine.ApplySnapshotAsync(visitId, actorUserId);
-            // ... Event
+            
+            // ENRICHED METADATA
+            string actorName = await GetActorNameAsync(actorUserId);
+            string patientName = $"{visit.Patient.FirstName} {visit.Patient.LastName}";
+            var meta = JsonSerializer.Serialize(new { PatientName = patientName, TokenId = visit.Token, ActorName = actorName, DiscountCode = master.Code, Action = "Discount Applied" });
+
+             await _operationalEventWriter.WriteEventAsync(
+                BranchEventType.VISIT_UPDATED,
+                _userContext.CurrentBranchId.ToString(),
+                visit.VisitId.ToString(),
+                visit.Token,
+                $"Discount {master.Code} applied",
+                actorName,
+                actorUserId.ToString(),
+                true, null, null,
+                TimelineVisibility.Surface,
+                visit.VisitId,
+                meta
+            );
         }
 
-        // For brevity in replacement, I'll assume similar pattern for others.
-        // I will implement the FULL file content replacement to ensure consistency.
-        
         public async Task SetVisitReferralAsync(Guid visitId, Guid referralPartnerId, Guid actorUserId)
         {
             var visit = await _context.Visits
-                .Include(v => v.Orders).ThenInclude(o => o.Samples) // FIXED
+                .Include(v => v.Patient) // ADDED
+                .Include(v => v.Orders).ThenInclude(o => o.Samples)
                 .FirstOrDefaultAsync(v => v.VisitId == visitId);
 
             if (visit == null) throw new KeyNotFoundException($"Visit {visitId} not found.");
 
-            if (IsPhysicallyLocked(visit)) 
+            if (IsPhysicallyLocked(visit))
             {
-                // EXCEPTION: Late Referral Attribution
-                // Allowed ONLY if ReferralPartner was NOT previously set (null).
-                if (visit.ReferralPartnerId != null) 
+                if (visit.ReferralPartnerId != null)
                     throw new InvalidOperationException("Cannot change referral partner after sample collection. This visit is physically locked.");
-                
+
                 _logger.LogInformation("LATE ATTRIBUTION: Referral Partner {PartnerId} set for locked visit {VisitId}", referralPartnerId, visitId);
             }
 
@@ -479,22 +546,43 @@ namespace SynOS.Services
 
             await _revenueEngine.ApplySnapshotAsync(visitId, actorUserId);
 
-            // Audit Event
+            var partner = await _context.ReferralPartners.FindAsync(referralPartnerId);
+            var partnerName = partner?.Name ?? referralPartnerId.ToString();
+
+            // ENRICHED METADATA
+            string actorName = await GetActorNameAsync(actorUserId);
+            string patientName = $"{visit.Patient.FirstName} {visit.Patient.LastName}";
+
+            var referralMetadata = JsonSerializer.Serialize(new 
+            { 
+                PatientName = patientName,
+                TokenId = visit.Token,
+                ActorName = actorName,
+                PartnerName = partnerName, 
+                PartnerId = referralPartnerId, 
+                Action = "Set" 
+            });
+
             await _operationalEventWriter.WriteEventAsync(
-                BranchEventType.REFERRAL_CORRECTED, // NEW EVENT TYPE (Assumed defined or use generic with note)
+                BranchEventType.VISIT_UPDATED,
                 _userContext.CurrentBranchId.ToString(),
                 visitId.ToString(),
                 visit.Token,
-                $"Referral Partner updated to {referralPartnerId}",
-                "User",
-                actorUserId.ToString()
+                $"Referral Partner updated to {partnerName}",
+                actorName,
+                actorUserId.ToString(),
+                true, null, null,
+                TimelineVisibility.Surface,
+                Guid.NewGuid(),
+                referralMetadata
             );
         }
-        
+
         public async Task RemoveVisitReferralAsync(Guid visitId, Guid actorUserId)
         {
             var visit = await _context.Visits
-                .Include(v => v.Orders).ThenInclude(o => o.Samples) // FIXED
+                .Include(v => v.Patient) // ADDED
+                .Include(v => v.Orders).ThenInclude(o => o.Samples)
                 .FirstOrDefaultAsync(v => v.VisitId == visitId);
 
             if (visit == null) throw new KeyNotFoundException($"Visit {visitId} not found.");
@@ -507,44 +595,116 @@ namespace SynOS.Services
             await _context.SaveChangesAsync();
             await _revenueEngine.ApplySnapshotAsync(visitId, actorUserId);
 
+            // ENRICHED METADATA
+            string actorName = await GetActorNameAsync(actorUserId);
+            string patientName = $"{visit.Patient.FirstName} {visit.Patient.LastName}";
+
+            var removeReferralMetadata = JsonSerializer.Serialize(new 
+            { 
+                PatientName = patientName,
+                TokenId = visit.Token,
+                ActorName = actorName,
+                Action = "Removed" 
+            });
+
             await _operationalEventWriter.WriteEventAsync(
                 BranchEventType.VISIT_UPDATED,
                 _userContext.CurrentBranchId.ToString(),
                 visitId.ToString(),
                 visit.Token,
                 "Referral Partner removed",
-                "User",
-                actorUserId.ToString()
+                actorName,
+                actorUserId.ToString(),
+                true, null, null,
+                TimelineVisibility.Surface,
+                Guid.NewGuid(),
+                removeReferralMetadata
             );
         }
 
         public async Task UpdateVisitReferrerTextAsync(Guid visitId, string? referrerText, Guid actorUserId)
         {
-            var visit = await _context.Visits.FindAsync(visitId);
+            var visit = await _context.Visits
+                .Include(v => v.Patient)
+                .FirstOrDefaultAsync(v => v.VisitId == visitId);
+                
+            if (visit == null) return;
+
             visit.ReferrerText = referrerText;
             await _context.SaveChangesAsync();
-            // No financial change, no engine call needed?
-            // But just in case Audit?
-            await _operationalEventWriter.WriteEventAsync(BranchEventType.VISIT_UPDATED, _userContext.CurrentBranchId.ToString(), visitId.ToString(), visit.Token, "Referrer text updated", "User", actorUserId.ToString());
+            
+            // ENRICHED METADATA (Even for hidden events, consistency helps debugging)
+             string actorName = await GetActorNameAsync(actorUserId);
+            string patientName = $"{visit.Patient.FirstName} {visit.Patient.LastName}";
+
+            await _operationalEventWriter.WriteEventAsync(
+                BranchEventType.VISIT_UPDATED,
+                _userContext.CurrentBranchId.ToString(),
+                visitId.ToString(),
+                visit.Token,
+                "Referrer text updated",
+                actorName,
+                actorUserId.ToString(),
+                true, null, null,
+                TimelineVisibility.Hide,
+                 // Even if hidden, metadata might be useful if visibility changes later
+                 visit.VisitId,
+                 JsonSerializer.Serialize(new { PatientName = patientName, ActorName = actorName })
+            );
         }
 
-        public async Task MarkVisitAsPrepaidAsync(Guid visitId, Guid actorUserId)
+        public async Task MarkVisitAsPrepaidAsync(Guid visitId, Guid actorUserId, Guid? intentId = null)
         {
-             var visit = await _context.Visits.FindAsync(visitId);
-             visit.PaymentCollectionModel = "PartnerCollects";
-             visit.Status = "Paid";
-             if (visit.Token.StartsWith("DRAFT")) await AssignOfficialTokenAsync(visitId, actorUserId);
-             await _context.SaveChangesAsync();
-             await _revenueEngine.ApplySnapshotAsync(visitId, actorUserId);
-             // ... Event
+            var visit = await _context.Visits
+                .Include(v => v.Patient) 
+                .Include(v => v.Invoices) // ADDED: Need invoice for Total Amount
+                .FirstOrDefaultAsync(v => v.VisitId == visitId);
+
+            if (visit == null) throw new KeyNotFoundException($"Visit {visitId} not found");
+
+            visit.PaymentCollectionModel = "PartnerCollects";
+            visit.Status = "Paid";
+            if (visit.Token.StartsWith("DRAFT")) await AssignOfficialTokenAsync(visitId, actorUserId);
+            await _context.SaveChangesAsync();
+
+            await _revenueEngine.ApplySnapshotAsync(visitId, actorUserId);
+
+            // ENRICHED METADATA
+            string actorName = await GetActorNameAsync(actorUserId);
+            string patientName = $"{visit.Patient.FirstName} {visit.Patient.LastName}";
+            var invoice = visit.Invoices.OrderByDescending(i => i.CreatedAt).FirstOrDefault(); // Get Invoice
+
+            var prepaidMetadata = JsonSerializer.Serialize(new 
+            { 
+                PatientName = patientName,
+                TokenId = visit.Token,
+                ActorName = actorName,
+                Method = "PartnerCollects", 
+                Status = "Paid",
+                Amount = invoice.Total, // Added Amount for Frontend Display
+                Total = invoice.Total   // Alias for robustness
+            });
+
+            await _operationalEventWriter.WriteEventAsync(
+                BranchEventType.VISIT_FINALIZED,
+                _userContext.CurrentBranchId.ToString(),
+                visit.VisitId.ToString(),
+                visit.Token,
+                "Visit marked as Paid (Partner Collects)",
+                actorName,
+                actorUserId.ToString(),
+                true, null, null,
+                TimelineVisibility.Surface,
+                intentId ?? Guid.NewGuid(),
+                prepaidMetadata
+            );
         }
 
         public async Task<string> AssignOfficialTokenAsync(Guid visitId, Guid actorUserId)
         {
-            return await GenerateDailyTokenAsync("Pathology", DateTime.Today, actorUserId); // Simplified for this context
+            return await GenerateDailyTokenAsync("Pathology", DateTime.Today, actorUserId);
         }
 
-        // Implementation of Interface method (now using Engine)
         public async Task RecalculateFinancialsAsync(Guid visitId, Guid actorUserId)
         {
             await _revenueEngine.ApplySnapshotAsync(visitId, actorUserId);
@@ -586,11 +746,12 @@ namespace SynOS.Services
         public async Task<VisitCancellation> CancelVisitAsync(Guid visitId, CancelRequestDto cancelDto)
         {
             var visit = await _context.Visits
+                                      .Include(v => v.Patient) // ADDED just in case
                                       .Include(v => v.Invoices)
                                       .ThenInclude(i => i.Payments)
                                       .Include(v => v.Invoices)
                                       .ThenInclude(i => i.PartialPayments)
-                                      .Include(v => v.Orders).ThenInclude(o => o.Samples) // FIXED
+                                      .Include(v => v.Orders).ThenInclude(o => o.Samples)
                                       .FirstOrDefaultAsync(v => v.VisitId == visitId);
             if (visit == null) throw new KeyNotFoundException($"Visit with ID {visitId} not found.");
 
@@ -633,6 +794,24 @@ namespace SynOS.Services
 
             await _context.SaveChangesAsync();
             await _auditService.LogAsync(cancelDto.CancelledByUserId, "CancelVisit", "Visit", visitId, cancellation);
+            
+            // ENRICHED EVENT for Cancellation
+            string actorName = await GetActorNameAsync(cancelDto.CancelledByUserId);
+            string patientName = $"{visit.Patient.FirstName} {visit.Patient.LastName}";
+             await _operationalEventWriter.WriteEventAsync(
+                BranchEventType.VISIT_UPDATED,
+                _userContext.CurrentBranchId.ToString(),
+                visitId.ToString(),
+                visit.Token,
+                $"Visit Cancelled: {cancelDto.Reason}",
+                actorName,
+                cancelDto.CancelledByUserId.ToString(),
+                true, null, null,
+                TimelineVisibility.Surface,
+                visit.VisitId,
+                JsonSerializer.Serialize(new { PatientName = patientName, ActorName = actorName, Status = "Cancelled" })
+            );
+
             return cancellation;
         }
 
@@ -737,9 +916,13 @@ namespace SynOS.Services
         public bool IsPhysicallyLocked(Visit visit)
         {
             if (visit == null) return false;
-            // The system locks on physical reality. 
-            // Lock flips when Barcode is generated -> Sample Status != Pending.
             return visit.Orders != null && visit.Orders.Any(o => o.Samples != null && o.Samples.Any(s => s.Status != SampleStatus.Pending));
+        }
+
+        private async Task<string> GetActorNameAsync(Guid userId)
+        {
+            var user = await _context.Users.FindAsync(userId);
+            return user?.Name ?? "Unknown User";
         }
     }
 }

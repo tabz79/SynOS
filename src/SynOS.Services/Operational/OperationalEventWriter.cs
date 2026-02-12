@@ -28,7 +28,10 @@ namespace SynOS.Services.Operational
             string? actorName = null,
             bool saveChanges = true,
             Guid? sourceId = null,
-            string? sourceType = null)
+            string? sourceType = null,
+            TimelineVisibility visibility = TimelineVisibility.Hide,
+            Guid? intentId = null,
+            string? metadata = null)
         {
             try
             {
@@ -47,7 +50,12 @@ namespace SynOS.Services.Operational
                     ActorType = actorType,
                     ActorName = actorName,
                     SourceId = sourceId,
-                    SourceType = sourceType
+                    SourceType = sourceType,
+                    
+                    // Operational Timeline
+                    Visibility = visibility,
+                    IntentId = intentId,
+                    Metadata = metadata
                 };
 
                 _context.BranchOperationalEvents.Add(evt);

@@ -11,6 +11,7 @@ using SynOS.Models.Entities;
 
 using SynOS.Services.Operational; // ADDED
 using SynOS.Services.Security; // ADDED
+using SynOS.Models.ReadModels; // ADDED
 
 namespace SynOS.Services
 {
@@ -102,6 +103,15 @@ namespace SynOS.Services
             var currentUserId = _userContext.CurrentUserId != Guid.Empty ? _userContext.CurrentUserId.ToString() : "System";
             var currentBranchId = _userContext.CurrentBranchId != Guid.Empty ? _userContext.CurrentBranchId.ToString() : Guid.Empty.ToString();
 
+            var metadata = System.Text.Json.JsonSerializer.Serialize(new 
+            {
+                Name = $"{patient.FirstName} {patient.LastName}",
+                Age = age,
+                Gender = patient.Gender,
+                MRN = patient.MRN,
+                Phone = patient.CurrentPhoneNumber
+            });
+
             await _operationalEventWriter.WriteEventAsync(
                 Models.Enums.BranchEventType.PATIENT_REGISTERED,
                 currentBranchId,
@@ -109,49 +119,97 @@ namespace SynOS.Services
                 patient.MRN,
                 summary,
                 "Patient",
-                currentUserId
+                currentUserId,
+                true, // saveChanges
+                null, // sourceId
+                null, // sourceType
+                TimelineVisibility.Surface,
+                patient.PatientId, // IntentId matches PatientId for registration flow
+                metadata
             );
 
             return dto;
         }
 
-        // Enhanced search - returns DTOs directly with Last Visit info
+        // Enhanced search - returns DTOs directly with Last Visit info (Canonical JOIN Implementation)
         public async Task<IEnumerable<PatientDto>> SearchPatientsAsync(string query, int limit, int offset)
         {
-            query ??= string.Empty;
-            return await _context.Patients
+            var q = query?.Trim();
+            if (string.IsNullOrWhiteSpace(q))
+                return Enumerable.Empty<PatientDto>();
+
+            // 2️⃣ Base patient scope
+            var patients = _context.Patients
                 .AsNoTracking()
-                .Where(p => !p.IsSoftDeleted &&
-                            (EF.Functions.Like(p.FirstName, $"%{query}%") ||
-                             EF.Functions.Like(p.LastName, $"%{query}%") ||
-                             EF.Functions.Like(p.MRN, $"%{query}%") ||
-                             EF.Functions.Like(p.CurrentPhoneNumber, $"%{query}%")))
-                .OrderBy(p => p.LastName)
-                .Skip(offset)
-                .Take(limit)
-                .Select(p => new PatientDto
+                .Where(p => !p.IsSoftDeleted);
+
+            // 3️⃣ Active phone scope (canonical source)
+            var activePhones =
+                from ph in _context.PatientPhoneHistories
+                where ph.EndDate == null
+                select ph;
+
+            // 4️⃣ Alias scope
+            var aliases =
+                from a in _context.PatientAliases
+                select a;
+
+            // 5️⃣ Unified JOIN-based search query (CORE FIX)
+            var results =
+                from p in patients
+
+                join ph in activePhones
+                    on p.PatientId equals ph.PatientId into phoneGroup
+                from ph in phoneGroup.DefaultIfEmpty()
+
+                join a in aliases
+                    on p.PatientId equals a.PatientId into aliasGroup
+                from a in aliasGroup.DefaultIfEmpty()
+
+                where
+                    EF.Functions.Like(p.MRN, $"%{q}%")
+                    || EF.Functions.Like((p.FirstName + " " + p.LastName), $"%{q}%")
+                    || (a != null && EF.Functions.Like((a.FirstName + " " + a.LastName), $"%{q}%"))
+                    || (ph != null && EF.Functions.Like(ph.PhoneNumber, $"%{q}%"))
+
+                select new PatientDto
                 {
                     PatientId = p.PatientId,
                     MRN = p.MRN,
                     FirstName = p.FirstName,
                     LastName = p.LastName,
-                    Age = p.DateOfBirth == DateTime.MinValue ? 0 : DateTime.UtcNow.Year - p.DateOfBirth.Year, // Helper calculation
                     DateOfBirth = p.DateOfBirth,
+                    Age = p.DateOfBirth == DateTime.MinValue ? 0 : DateTime.UtcNow.Year - p.DateOfBirth.Year,
                     Gender = p.Gender,
-                    CurrentPhoneNumber = p.CurrentPhoneNumber,
                     CreatedAt = p.CreatedAt,
-                    LastVisitDate = p.Visits
-                        .Where(v => v.Invoices.Any(i => i.Status == "Paid"))
+                    
+                    // IMPORTANT: expose ACTIVE phone
+                    CurrentPhoneNumber = ph != null ? ph.PhoneNumber : null,
+
+                    LastVisitDate = _context.Visits
+                        .Where(v => v.PatientId == p.PatientId)
                         .OrderByDescending(v => v.TokenDate)
-                        .Select(v => v.TokenDate)
+                        .Select(v => (DateTime?)v.TokenDate)
                         .FirstOrDefault(),
-                    LastVisitTestCodes = p.Visits
-                        .Where(v => v.Invoices.Any(i => i.Status == "Paid"))
+
+                    // Keep existing TestCodes logic if possible, or simplified empty list if prompt implied restricted scope
+                    // The prompt didn't strictly forbid other fields, but "LastVisitDate" was mentioned.
+                    // I will preserve LastVisitTestCodes to avoid regression in UI (Patient Card shows them).
+                     LastVisitTestCodes = _context.Visits
+                        .Where(v => v.PatientId == p.PatientId)
                         .OrderByDescending(v => v.TokenDate)
                         .Select(v => v.Orders.Select(o => o.TestCode).ToList())
-                        .FirstOrDefault()
-                })
+                        .FirstOrDefault() ?? new List<string>()
+                };
+
+            // 6️⃣ Pagination
+            var paged = await results
+                .OrderBy(p => p.FirstName)
+                .Skip(offset)
+                .Take(limit)
                 .ToListAsync();
+
+            return paged;
         }
 
         // Return PatientDto (safe for API)

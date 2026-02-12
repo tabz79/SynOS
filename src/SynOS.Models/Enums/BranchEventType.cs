@@ -3,6 +3,7 @@ namespace SynOS.Models.Enums
     public enum BranchEventType
     {
         PATIENT_REGISTERED, // ADDED
+        VISIT_CREATED,      // ADDED: Operational Timeline
         VISIT_STARTED,
         VISIT_UPDATED,
         BILL_GENERATED,

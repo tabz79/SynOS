@@ -62,8 +62,7 @@ export function PatientIdentification({ snapshot, onSelectPatient, onClearPatien
         const timer = setTimeout(async () => {
             setIsSearching(true);
             try {
-                // Real API Search
-                // Note: reception.js has searchPatients
+                // Real API Search (Canonical Backend Fix Active)
                 const results = await ReceptionApi.searchPatients(searchQuery);
                 setMatches(results || []);
             } catch (err) {
@@ -71,7 +70,7 @@ export function PatientIdentification({ snapshot, onSelectPatient, onClearPatien
             } finally {
                 setIsSearching(false);
             }
-        }, 500);
+        }, 300);
 
         return () => clearTimeout(timer);
     }, [searchQuery]);
@@ -81,7 +80,7 @@ export function PatientIdentification({ snapshot, onSelectPatient, onClearPatien
     };
 
     return (
-        <div className="h-full flex flex-col space-y-4">
+        <div className={cn("flex flex-col space-y-4", !selectedPatient ? "h-full" : "w-full")}>
 
             {/* LOCKED STATE (Patient Identified) */}
             {selectedPatient && (
@@ -144,6 +143,7 @@ export function PatientIdentification({ snapshot, onSelectPatient, onClearPatien
                     </div>
 
                     {/* BLOCK B: SEARCH RESULTS (The ONLY Scrolling Region) */}
+                    {/* BLOCK B: SEARCH RESULTS (The ONLY Scrolling Region) */}
                     <div className="flex-1 min-h-0 overflow-y-auto scrollbar-thin scrollbar-thumb-zinc-700 p-4 pt-3 space-y-3">
                         {matches.length > 0 && (
                             <>
@@ -160,40 +160,38 @@ export function PatientIdentification({ snapshot, onSelectPatient, onClearPatien
                                 })}
                             </>
                         )}
-                    </div>
 
-                    {/* SECTION 3: CREATE NEW (Verified Recess if needed, or leave as ghost) */}
-                    {/* For now, keep as ghost unless results exist */}
-                    {searchQuery.length > 3 && !isSearching && (
-                        <div className={cn(
-
-                            "rounded-lg p-6 flex flex-col items-center gap-2 transition-all",
-                            matches.length > 0
-                                ? (isDark ? "border-t border-zinc-800 pt-4" : "border-t border-zinc-100 pt-4")
-                                : cn("border border-dashed", ui.emptyBox)
-                        )}>
-                            {matches.length === 0 ? (
-                                <span className="type-body">No match found.</span>
-                            ) : (
-                                <span className="type-label text-center px-4 opacity-70">
-                                    Family member sharing this number?
-                                </span>
-                            )}
-
-                            <button
-                                onClick={() => setIsNewPatientMode(true)}
-                                className={cn(
-                                    "flex items-center gap-2 px-4 py-1.5 rounded-md type-label shadow-sm transition-colors",
-                                    matches.length > 0
-                                        ? (isDark ? "bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border-zinc-700" : "bg-zinc-100 hover:bg-zinc-200 text-zinc-600 border-zinc-200 border")
-                                        : (isDark ? "bg-zinc-100 hover:bg-white text-zinc-900" : "bg-zinc-900 hover:bg-black text-white")
+                        {/* PART 1: CONTENT CARD FOOTER (Scrolls with list) */}
+                        {searchQuery.length > 2 && !isSearching && (
+                            <div className={cn(
+                                "rounded-lg p-6 flex flex-col items-center gap-2 transition-all mt-2",
+                                matches.length > 0
+                                    ? (isDark ? "border-t border-zinc-800 pt-8" : "border-t border-zinc-100 pt-8")
+                                    : cn("border border-dashed", ui.emptyBox)
+                            )}>
+                                {matches.length === 0 ? (
+                                    <span className="type-body">No match found.</span>
+                                ) : (
+                                    <span className="type-label text-center px-4 opacity-70">
+                                        Family member sharing this number?
+                                    </span>
                                 )}
-                            >
-                                <UserPlus className="w-3.5 h-3.5" />
-                                {matches.length > 0 ? "Add Family Member" : "Create New Patient"}
-                            </button>
-                        </div>
-                    )}
+
+                                <button
+                                    onClick={() => setIsNewPatientMode(true)}
+                                    className={cn(
+                                        "flex items-center gap-2 px-4 py-1.5 rounded-md type-label shadow-sm transition-colors",
+                                        matches.length > 0
+                                            ? (isDark ? "bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border-zinc-700" : "bg-zinc-100 hover:bg-zinc-200 text-zinc-600 border-zinc-200 border")
+                                            : (isDark ? "bg-zinc-100 hover:bg-white text-zinc-900" : "bg-zinc-900 hover:bg-black text-white")
+                                    )}
+                                >
+                                    <UserPlus className="w-3.5 h-3.5" />
+                                    {matches.length > 0 ? "Add Family Member" : "Create New Patient"}
+                                </button>
+                            </div>
+                        )}
+                    </div>
                 </div>
             )}
 
@@ -379,6 +377,8 @@ const RichPatientCard = ({ patient, onAction, actionLabel, isLocked }) => {
 
 function RegisterFormInline({ onSuccess }) {
     const [formData, setFormData] = useState({ name: '', mobile: '', age: '', gender: 'Male' });
+    const [error, setError] = useState(null);
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const { theme } = useTheme();
     const isDark = theme === 'dark';
 

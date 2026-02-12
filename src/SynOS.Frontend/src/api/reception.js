@@ -254,6 +254,31 @@ export const ReceptionApi = {
     },
 
     /**
+     * Fetches the operational timeline (Aggregated).
+     * @returns {Promise<Array>}
+     */
+    getOperationalTimeline: async () => {
+        const branchGuid = "A0000000-0000-0000-0000-000000000001"; // TODO: Context
+        const response = await fetch(`/api/v1/branch/activity/timeline?branchId=${branchGuid}`, {
+            headers: ReceptionApi.getHeaders()
+        });
+
+        if (!response.ok) {
+            if (response.status === 401) {
+                console.warn("Unauthorized: Session expired or invalid.");
+                localStorage.removeItem('synos_jwt');
+                window.location.href = '/login';
+                throw new Error("Unauthorized");
+            }
+            console.error("Timeline Stream Failed:", response.status);
+            throw new Error(`Timeline Stream Failed (${response.status})`);
+        }
+
+        const data = await response.json();
+        return Array.isArray(data) ? data : [];
+    },
+
+    /**
      * Registers a new patient.
      * @param {Object} payload - { name, mobile, age, gender }
      * @returns {Promise<Object>} - { patientId }
