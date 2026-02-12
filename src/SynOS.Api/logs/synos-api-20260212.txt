@@ -93,3 +93,46 @@
 2026-02-12 11:34:25.185 +05:30 [FTL] EVENT_WRITE for VisitId 6b1820bf-4f9b-4704-bb0b-f507b8a42a62, Context e7af4f68-4527-41a3-9179-854a9b84580b:0
 2026-02-12 11:58:15.597 +05:30 [FTL] EVENT_WRITE for VisitId b6263a14-79b0-45f7-87a3-bc43a3a01c84, Context b559ffe9-2110-44f3-b0da-8407842254fd:0
 2026-02-12 11:58:15.647 +05:30 [FTL] EVENT_WRITE for VisitId b6263a14-79b0-45f7-87a3-bc43a3a01c84, Context b559ffe9-2110-44f3-b0da-8407842254fd:0
+2026-02-12 13:17:46.202 +05:30 [FTL] EVENT_WRITE for VisitId f9c364b6-d4c7-49c6-b7aa-eb58bdc54665, Context 1c401318-c5a3-468c-8ab8-905bc7fa9911:0
+2026-02-12 13:17:46.233 +05:30 [FTL] EVENT_WRITE for VisitId f9c364b6-d4c7-49c6-b7aa-eb58bdc54665, Context 1c401318-c5a3-468c-8ab8-905bc7fa9911:0
+2026-02-12 13:17:54.653 +05:30 [FTL] EVENT_WRITE for VisitId f9c364b6-d4c7-49c6-b7aa-eb58bdc54665, Context d5d886ff-6aa3-484a-aa09-69229ab36d0a:0
+2026-02-12 13:17:59.544 +05:30 [FTL] EVENT_WRITE for VisitId f9c364b6-d4c7-49c6-b7aa-eb58bdc54665, Context 7c083535-3525-4533-b791-81e6a1badd75:0
+2026-02-12 13:18:06.416 +05:30 [FTL] EVENT_WRITE for VisitId f9c364b6-d4c7-49c6-b7aa-eb58bdc54665, Context 0d27b68f-9626-4098-9efd-7d5089995961:0
+2026-02-12 13:18:06.463 +05:30 [INF] Auto-created Sample "811e2fcf-c5b6-4117-a4a0-a9d250900927" for Order "87edecf4-a1b3-40b1-8605-054c3ecc3a80"
+2026-02-12 13:18:06.512 +05:30 [FTL] EVENT_WRITE for VisitId f9c364b6-d4c7-49c6-b7aa-eb58bdc54665, Context 0d27b68f-9626-4098-9efd-7d5089995961:0
+2026-02-12 13:18:06.525 +05:30 [INF] Attempting to assign work "SampleCollection" for source "f9c364b6-d4c7-49c6-b7aa-eb58bdc54665" in Pathology
+2026-02-12 13:18:06.571 +05:30 [INF] Work "SampleCollection" assigned to "0e34b739-d97f-445d-b488-2e5fd6b9918c" (Desk 1)
+2026-02-12 13:18:30.660 +05:30 [WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+2026-02-12 13:18:49.683 +05:30 [FTL] EVENT_WRITE for VisitId 71664d0c-4b3a-41c4-9c25-ab4c4dd0613a, Context 10083532-9069-4660-85ab-69ed5103ff4a:0
+2026-02-12 13:18:49.717 +05:30 [FTL] EVENT_WRITE for VisitId 71664d0c-4b3a-41c4-9c25-ab4c4dd0613a, Context 10083532-9069-4660-85ab-69ed5103ff4a:0
+2026-02-12 13:18:56.120 +05:30 [FTL] EVENT_WRITE for VisitId 71664d0c-4b3a-41c4-9c25-ab4c4dd0613a, Context 33cfa8a9-6e7b-40c7-b4bd-98f060e19dc1:0
+2026-02-12 13:18:58.957 +05:30 [FTL] EVENT_WRITE for VisitId 71664d0c-4b3a-41c4-9c25-ab4c4dd0613a, Context c5710c87-4e47-47de-bb53-6339bae66bd7:0
+2026-02-12 13:19:02.156 +05:30 [FTL] EVENT_WRITE for VisitId 71664d0c-4b3a-41c4-9c25-ab4c4dd0613a, Context f33c910e-024a-401b-8b4e-77db0d55ae1c:0
+2026-02-12 13:19:02.188 +05:30 [INF] Auto-created Sample "0c49e470-6bad-4219-99bd-57deaba0f9fa" for Order "c0e342c6-7d5f-4c7d-8309-193056428d7b"
+2026-02-12 13:19:02.217 +05:30 [FTL] EVENT_WRITE for VisitId 71664d0c-4b3a-41c4-9c25-ab4c4dd0613a, Context f33c910e-024a-401b-8b4e-77db0d55ae1c:0
+2026-02-12 13:19:02.227 +05:30 [INF] Attempting to assign work "SampleCollection" for source "71664d0c-4b3a-41c4-9c25-ab4c4dd0613a" in Pathology
+2026-02-12 13:19:02.274 +05:30 [INF] Work "SampleCollection" assigned to "0e34b739-d97f-445d-b488-2e5fd6b9918c" (Desk 1)
+2026-02-12 13:19:36.725 +05:30 [WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+2026-02-12 13:23:19.907 +05:30 [FTL] EVENT_WRITE for VisitId a8c878c4-cca5-4887-9622-1dbcba54a10a, Context ca310ab3-4edf-4506-bd83-1d215cbb33cf:0
+2026-02-12 13:23:19.952 +05:30 [FTL] EVENT_WRITE for VisitId a8c878c4-cca5-4887-9622-1dbcba54a10a, Context ca310ab3-4edf-4506-bd83-1d215cbb33cf:0
+2026-02-12 13:23:26.553 +05:30 [FTL] EVENT_WRITE for VisitId a8c878c4-cca5-4887-9622-1dbcba54a10a, Context 8a4fdb6e-3b13-4543-8bcc-8813f17a72fb:0
+2026-02-12 13:23:31.309 +05:30 [FTL] EVENT_WRITE for VisitId a8c878c4-cca5-4887-9622-1dbcba54a10a, Context 582b3000-4101-48b8-a52f-12e986a5a588:0
+2026-02-12 13:23:35.228 +05:30 [FTL] EVENT_WRITE for VisitId a8c878c4-cca5-4887-9622-1dbcba54a10a, Context 66927c09-94ce-4d23-8ead-70707b4c4ffb:0
+2026-02-12 13:23:35.266 +05:30 [INF] Auto-created Sample "69b6abaa-c9d6-44f5-9089-3f599c38010d" for Order "675ad935-1925-47a5-975e-85f2420c3cc4"
+2026-02-12 13:23:35.299 +05:30 [FTL] EVENT_WRITE for VisitId a8c878c4-cca5-4887-9622-1dbcba54a10a, Context 66927c09-94ce-4d23-8ead-70707b4c4ffb:0
+2026-02-12 13:23:35.313 +05:30 [INF] Attempting to assign work "SampleCollection" for source "a8c878c4-cca5-4887-9622-1dbcba54a10a" in Pathology
+2026-02-12 13:23:35.364 +05:30 [INF] Work "SampleCollection" assigned to "0e34b739-d97f-445d-b488-2e5fd6b9918c" (Desk 1)
+2026-02-12 13:23:59.025 +05:30 [WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+2026-02-12 13:24:26.080 +05:30 [FTL] EVENT_WRITE for VisitId 738a688d-0d4d-4caf-b95a-a5d8ede8866a, Context 6efb57c2-f489-428d-8a56-c037c183992c:0
+2026-02-12 13:24:26.104 +05:30 [FTL] EVENT_WRITE for VisitId 738a688d-0d4d-4caf-b95a-a5d8ede8866a, Context 6efb57c2-f489-428d-8a56-c037c183992c:0
+2026-02-12 13:24:29.122 +05:30 [FTL] EVENT_WRITE for VisitId 738a688d-0d4d-4caf-b95a-a5d8ede8866a, Context ce523a88-04c2-4af2-bc94-b4e16ee1396d:0
+2026-02-12 13:24:32.048 +05:30 [FTL] EVENT_WRITE for VisitId 738a688d-0d4d-4caf-b95a-a5d8ede8866a, Context 8defa68f-65e9-4fa6-8483-aed9f6af107f:0
+2026-02-12 13:24:37.892 +05:30 [FTL] EVENT_WRITE for VisitId 738a688d-0d4d-4caf-b95a-a5d8ede8866a, Context 488930e7-6ca6-4fdf-888a-f3ea4bf59117:0
+2026-02-12 13:24:37.962 +05:30 [INF] Auto-created Sample "146234ca-6710-4871-846f-af5b78c84fdb" for Order "be0f51a6-2867-4ee5-93ea-e83bb4c4ae05"
+2026-02-12 13:24:38.012 +05:30 [FTL] EVENT_WRITE for VisitId 738a688d-0d4d-4caf-b95a-a5d8ede8866a, Context 488930e7-6ca6-4fdf-888a-f3ea4bf59117:0
+2026-02-12 13:24:38.030 +05:30 [INF] Attempting to assign work "SampleCollection" for source "738a688d-0d4d-4caf-b95a-a5d8ede8866a" in Pathology
+2026-02-12 13:24:38.084 +05:30 [INF] Work "SampleCollection" assigned to "0e34b739-d97f-445d-b488-2e5fd6b9918c" (Desk 1)
+2026-02-12 13:25:04.598 +05:30 [WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+2026-02-12 14:33:26.691 +05:30 [INF] Analyzer TCP Listener Service stopping...
+2026-02-12 14:33:26.696 +05:30 [INF] Analyzer TCP Listener Service stopped.
+2026-02-12 14:33:26.705 +05:30 [INF] Notification Worker Service stopping gracefully.

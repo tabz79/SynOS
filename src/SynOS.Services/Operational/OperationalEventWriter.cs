@@ -12,10 +12,13 @@ namespace SynOS.Services.Operational
         private readonly SynOSDbContext _context;
         private readonly ILogger<OperationalEventWriter> _logger;
 
-        public OperationalEventWriter(SynOSDbContext context, ILogger<OperationalEventWriter> logger)
+        private readonly INotifier _notifier;
+
+        public OperationalEventWriter(SynOSDbContext context, ILogger<OperationalEventWriter> logger, INotifier notifier)
         {
             _context = context;
             _logger = logger;
+            _notifier = notifier;
         }
 
         public async Task WriteEventAsync(
@@ -63,6 +66,19 @@ namespace SynOS.Services.Operational
                 if (saveChanges)
                 {
                     await _context.SaveChangesAsync();
+
+                    // 3️⃣ Real-Time Signal to Dashboard
+                    try 
+                    {
+                        // Fire-and-forget notification (don't await deeply or block)
+                        // If saveChanges was false (transactional wrapper), the caller should trigger this manually?
+                        // For now, we only trigger if we saved.
+                        await _notifier.NotifyDashboardRefresh(branchId);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Failed to notify dashboard refresh.");
+                    }
                 }
             }
             catch (Exception ex)

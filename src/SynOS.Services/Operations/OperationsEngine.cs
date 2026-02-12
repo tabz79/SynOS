@@ -105,7 +105,7 @@ namespace SynOS.Services.Operations
                 .Include(v => v.Orders).ThenInclude(o => o.Test) // To get TestCode if denorm is missing, but Order has TestCode.
                 .Include(v => v.Invoices).ThenInclude(i => i.Payments)
                 .OrderByDescending(v => v.TokenDate) // Group by Date (Newest Day First)
-                .ThenBy(v => v.Token) // Sequential Tokens within Day
+                .ThenByDescending(v => v.CreatedAt) // Strict LIFO: Newest registrations on top
                 .ToListAsync();
 
             Console.WriteLine($"[ActionQueue] Found {visits.Count} raw visits.");

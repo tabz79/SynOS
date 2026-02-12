@@ -165,6 +165,7 @@ builder.Services.AddScoped<IAdminUserService, AdminUserService>();
 builder.Services.AddScoped<IOperationsEngine, OperationsEngine>(); // ADDED
 builder.Services.AddScoped<IDashboardService, DashboardService>(); // Auto-wired OK
 builder.Services.AddScoped<IDashboardNotificationService, SignalRDashboardNotificationService>(); // ADDED: Phase 2
+builder.Services.AddScoped<INotifier, SignalRNotifier>(); // ADDED: Action Queue Refresh
 builder.Services.AddScoped<IPatientService, PatientService>();
 builder.Services.AddReferralServices();
 builder.Services.AddPayableServices();
