@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Search, X, Loader2, UserPlus, Phone, Fingerprint, ArrowRight } from 'lucide-react'
+import { Search, X, Loader2, UserPlus, Phone, Fingerprint, ArrowRight, User, AlertCircle } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { ReceptionApi } from '@/api/reception'
 import { useTheme } from '@/context/ThemeContext'
@@ -375,7 +375,7 @@ const RichPatientCard = ({ patient, onAction, actionLabel, isLocked }) => {
     );
 };
 
-function RegisterFormInline({ onSuccess }) {
+function RegisterFormInline({ onSuccess, onCancel }) {
     const [formData, setFormData] = useState({ name: '', mobile: '', age: '', gender: 'Male' });
     const [error, setError] = useState(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -383,20 +383,24 @@ function RegisterFormInline({ onSuccess }) {
     const isDark = theme === 'dark';
 
     const ui = isDark ? {
-        label: "text-zinc-500",
-        input: "bg-black border-zinc-800 text-white focus:border-synos-primary",
+        container: "bg-zinc-900/50 border-zinc-800",
+        label: "type-label text-zinc-400",
+        input: "bg-black border-zinc-800 text-white focus:border-synos-primary type-body",
         genderBox: "bg-black border-zinc-800",
         genderBtn: {
-            active: "bg-zinc-800 text-white font-medium",
+            active: "bg-zinc-800 text-white font-medium shadow-sm",
             inactive: "text-zinc-500 hover:text-zinc-300"
         }
     } : {
-        label: "text-zinc-600",
-        input: "bg-zinc-50 border-zinc-200 text-zinc-900 focus:border-zinc-900",
-        genderBox: "bg-zinc-100 border-zinc-200",
+        // MATCHING VISIT DETAILS SLAB STYLE
+        container: "p-4 rounded-xl bg-black/[0.02] border border-black/5 shadow-inner space-y-4",
+        label: "type-label mb-1.5 block",
+        // MATCHING ETCHED INPUTS
+        input: "bg-white/85 border-white/50 shadow-[inset_0_1px_2px_rgba(0,0,0,0.06)] type-body focus:ring-1 focus:ring-black/5 transition-all placeholder:text-zinc-400 disabled:opacity-50",
+        genderBox: "bg-black/5 p-1 rounded-lg border border-black/5",
         genderBtn: {
-            active: "bg-white text-zinc-900 font-bold shadow-sm",
-            inactive: "text-zinc-500 hover:text-zinc-900"
+            active: "bg-white text-zinc-900 font-bold shadow-sm ring-1 ring-black/5",
+            inactive: "text-zinc-500 hover:text-zinc-900 font-medium"
         }
     };
 
@@ -421,72 +425,101 @@ function RegisterFormInline({ onSuccess }) {
     };
 
     return (
-        <form onSubmit={handleSubmit} className="space-y-3">
-            {error && <div className="type-body text-red-500 bg-red-500/10 p-2 rounded border border-red-500/20">{error}</div>}
+        <form onSubmit={handleSubmit} className={cn("animate-in fade-in zoom-in-95 duration-200", ui.container)}>
+            {/* Header / Title if needed, but context is usually enough. Just a distinct block. */}
 
-            <div className="space-y-1">
-                <label className={cn(ui.label, ui.formLabel)}>Full Name *</label>
-                <input
-                    className={cn("w-full h-10 rounded px-3 py-2 outline-none transition-all", ui.input)}
-                    placeholder="e.g. Rahul Sharma"
-                    value={formData.name}
-                    onChange={e => setFormData({ ...formData, name: e.target.value })}
-                    autoFocus
-                />
+            {error && (
+                <div className="flex items-center gap-2 text-xs text-red-600 bg-red-50 border border-red-100 p-2 rounded-lg">
+                    <AlertCircle className="w-3 h-3" />
+                    {error}
+                </div>
+            )}
+
+            <div className="space-y-4">
+                {/* 1. NAME */}
+                <div>
+                    <label className={ui.label}>Full Name <span className="text-red-400">*</span></label>
+                    <div className="relative">
+                        <User className="absolute left-3 top-2.5 w-4 h-4 text-zinc-400" />
+                        <input
+                            className={cn("w-full h-10 rounded-lg pl-9 pr-4 py-2 outline-none", ui.input)}
+                            placeholder="e.g. Rahul Sharma"
+                            value={formData.name}
+                            onChange={e => setFormData({ ...formData, name: e.target.value })}
+                            autoFocus
+                        />
+                    </div>
+                </div>
+
+                {/* 2. ROW: MOBILE + AGE */}
+                <div className="grid grid-cols-2 gap-4">
+                    <div>
+                        <label className={ui.label}>Mobile <span className="text-red-400">*</span></label>
+                        <input
+                            className={cn("w-full h-10 rounded-lg px-3 py-2 outline-none", ui.input)}
+                            placeholder="987..."
+                            value={formData.mobile}
+                            onChange={e => setFormData({ ...formData, mobile: e.target.value })}
+                        />
+                    </div>
+                    <div>
+                        <label className={ui.label}>Age <span className="text-red-400">*</span></label>
+                        <input
+                            type="number"
+                            className={cn("w-full h-10 rounded-lg px-3 py-2 outline-none", ui.input)}
+                            placeholder="25"
+                            value={formData.age}
+                            onChange={e => setFormData({ ...formData, age: e.target.value })}
+                        />
+                    </div>
+                </div>
+
+                {/* 3. GENDER SEGMENTED CONTROL */}
+                <div>
+                    <label className={ui.label}>Gender <span className="text-red-400">*</span></label>
+                    <div className={cn("flex", ui.genderBox)}>
+                        {['Male', 'Female', 'Other'].map(g => (
+                            <button
+                                key={g}
+                                type="button"
+                                onClick={() => setFormData({ ...formData, gender: g })}
+                                className={cn(
+                                    "flex-1 text-xs py-1.5 rounded-md transition-all duration-200",
+                                    formData.gender === g ? ui.genderBtn.active : ui.genderBtn.inactive
+                                )}
+                            >
+                                {g}
+                            </button>
+                        ))}
+                    </div>
+                </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-2">
-                <div className="space-y-1">
-                    <label className={cn(ui.label, ui.formLabel)}>Mobile *</label>
-                    <input
-                        className={cn("w-full h-10 rounded px-3 py-2 outline-none transition-all", ui.input)}
-                        placeholder="987..."
-                        value={formData.mobile}
-                        onChange={e => setFormData({ ...formData, mobile: e.target.value })}
-                    />
-                </div>
-                <div className="space-y-1">
-                    <label className={cn(ui.label, ui.formLabel)}>Age *</label>
-                    <input
-                        type="number"
-                        className={cn("w-full h-10 rounded px-3 py-2 outline-none transition-all", ui.input)}
-                        placeholder="25"
-                        value={formData.age}
-                        onChange={e => setFormData({ ...formData, age: e.target.value })}
-                    />
-                </div>
-            </div>
-
-            <div className="space-y-1">
-                <label className={cn(ui.label, ui.formLabel)}>Gender *</label>
-                <div className={cn("flex rounded p-1 border", ui.genderBox)}>
-                    {['Male', 'Female', 'Other'].map(g => (
-                        <button
-                            key={g}
-                            type="button"
-                            onClick={() => setFormData({ ...formData, gender: g })}
-                            className={cn(
-                                "flex-1 type-section-header py-1 rounded transition-all",
-                                formData.gender === g ? ui.genderBtn.active : ui.genderBtn.inactive
-                            )}
-                        >
-                            {g}
-                        </button>
-                    ))}
-                </div>
-            </div>
-
-            <button
-                type="submit"
-                disabled={isSubmitting}
-                className={cn(
-                    "w-full mt-2 text-white type-label py-2 rounded transition-all flex items-center justify-center gap-2 shadow-lg active:scale-95",
-                    isDark ? "bg-emerald-600 hover:bg-emerald-500" : "bg-zinc-900 hover:bg-black"
+            {/* ACTIONS */}
+            <div className="pt-2 flex items-center gap-2">
+                {onCancel && (
+                    <button
+                        type="button"
+                        onClick={onCancel}
+                        className="flex-1 py-2 rounded-lg border border-transparent hover:bg-black/5 text-zinc-500 text-xs font-medium transition-colors"
+                    >
+                        Cancel
+                    </button>
                 )}
-            >
-                {isSubmitting ? <Loader2 className="w-3 h-3 animate-spin" /> : <UserPlus className="w-3 h-3" />}
-                Register & Select
-            </button>
+                <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className={cn(
+                        "flex-[2] text-white text-sm font-medium py-2 rounded-lg transition-all flex items-center justify-center gap-2 shadow-lg hover:shadow-xl active:scale-95",
+                        isDark
+                            ? "bg-emerald-600 hover:bg-emerald-500"
+                            : "bg-gradient-to-r from-zinc-800 to-zinc-950 hover:to-black border-t border-white/20"
+                    )}
+                >
+                    {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <UserPlus className="w-4 h-4" />}
+                    Register & Select
+                </button>
+            </div>
         </form>
     );
 }
