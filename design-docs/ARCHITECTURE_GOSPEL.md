@@ -298,3 +298,54 @@ If any answer is unclear → STOP.
 
 
 
+
+
+SynOS Master Canon v1 (Unified Constitution)
+This document is the single source of truth for the SynOS operating environment. All other architectural blueprints are deprecated.
+
+1️⃣ Layout Hierarchy & Root Laws
+SynOS follows an OS-style rigid grid. No element reflow or jitter is permitted during data mutation.
+
+Core Regioning
+ScreenRoot (h-screen, overflow-hidden)
+SystemBar (h-14, Fixed, Sticky, z-50)
+MainLayout (flex-1, p-4, gap-4)
+WorkArea (flex-1, min-h-0)
+SummaryRegion (shrink-0, mb-4)
+QueuePane (flex-1, min-h-0, overflow-hidden)
+SideColumn (shrink-0, h-full, z-20)
+Deterministic Metric Governance
+SystemBar: h-14 (Static Anchor).
+Action Queue Rows: min-h-[72px] (Strict LIFO baseline).
+Intent Panel Header: h-16.
+Work vs Side Ratio:
+Context A (Log/Monitoring): Side Column w-[25%].
+Context B (Active Intent/In-take): Side Column w-[40%].
+Law: WorkArea always utilizes flex-1 (Dynamic Shrink/Grow). SideColumn uses deterministic width slots.
+2️⃣ Material & Materiality
+Zero Blur Policy: No backdrop-filter: blur. Use static gradients + micro-grain texture.
+Machined Slabs: Terminal containers for data. Single-layer only (No nesting slabs inside slabs).
+The Knife-Edge: Intent panels must utilize sharp borders (border-white) and deep shadows (shadow-[-20px_0_50px_rgba(0,0,0,0.3)]) to signify contextual overlay without blur.
+Atmospheric Accents: Radial gradients (Static Bloom) must be isolated to the background layer (z-[-1]).
+3️⃣ Density Tiers (Spacing & Typography)
+Instead of rigid classes, SynOS governs via Density Zones:
+
+Tier	Usage	Spacing Range	Typography Canon
+Tier 1 (Relaxed)	Performance Tiles	p-4 to p-6	Display Large/Medium/Small
+Tier 2 (Operational)	Queues, Forms	p-3	Data Value, Data Body
+Tier 3 (Sub-Nano)	Timelines, Logs	text-[9px] to text-[10px]	Meta, Micro, Monospace
+Typography Lock
+Role-Based Sizing: Use @apply type-* utilities only.
+Status Indicators: Always dot-based (Cyan/Emerald/Red). No ad-hoc badges.
+Monospace: Strictly reserved for Token IDs, MRNs, and numeric data.
+4️⃣ Scroll Ownership (The Iron Laws)
+Strict Level 0 Lock: The screen as a whole can NEVER scroll.
+Terminal Scroll Only: Only deepest content regions (Queue Body, Timeline ScrollArea, Form Body) own scroll behavior.
+Sticky Allowance: Restricted to 
+SystemBar
+ and SectionHeaders only.
+5️⃣ Non-Negotiable Prohibitions
+No Redesign: You are a maintainer of the canon, not an architect of novelty.
+No Layout Jitter: If a data update causes a row to expand vertically, it is a structural failure.
+No Nested Cards: Do not break the "Machined Slab" surface law.
+“SynOS Master Canon v1 Locked.”

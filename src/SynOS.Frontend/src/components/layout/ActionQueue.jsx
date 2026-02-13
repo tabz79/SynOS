@@ -53,16 +53,16 @@ export function ActionQueue({ columns, data, onAction }) {
             ? "bg-zinc-800 border-b border-white/5"
             : "border-b border-black/[0.08]",
         headerText: isDark
-            ? "text-[10px] uppercase font-semibold text-zinc-400 tracking-wider"
-            : "text-[10px] uppercase font-bold text-zinc-800 tracking-widest",
+            ? "type-section-header text-zinc-400"
+            : "type-section-header text-zinc-800",
         row: (isHistory, isFocused) => isDark
             ? cn(
-                "transition-all duration-200 outline-none border border-transparent",
+                "transition-all duration-200 outline-none border border-transparent min-h-[72px]",
                 "focus:bg-zinc-800 hover:bg-zinc-800",
                 isHistory ? "bg-black/10 opacity-40 grayscale" : "bg-zinc-950/40"
             )
             : cn(
-                "border border-black/[0.1] transition-all duration-200 outline-none",
+                "border border-black/[0.1] transition-all duration-200 outline-none min-h-[72px]",
                 "focus:bg-blue-100/30 hover:bg-zinc-100/80",
                 isHistory
                     ? "bg-zinc-100/30 opacity-60 grayscale"
@@ -93,7 +93,7 @@ export function ActionQueue({ columns, data, onAction }) {
             >
                 <div className="grid flex-1 grid-cols-[1fr_2fr_1fr_1fr_minmax(100px,auto)] gap-4">
                     {columns.map((col, idx) => (
-                        <div key={idx} className={cn("uppercase", ui.headerText, col.className)}>
+                        <div key={idx} className={cn(ui.headerText, col.className)}>
                             {col.header}
                         </div>
                     ))}
@@ -122,7 +122,7 @@ export function ActionQueue({ columns, data, onAction }) {
                                 {/* DATE GROUP HEADER */}
                                 {showHeader && (
                                     <div className={cn(
-                                        "px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-zinc-600 mt-4 mb-2 flex items-center gap-3",
+                                        "px-3 py-1 type-section-header mt-4 mb-2 flex items-center gap-3",
                                         rowIdx === 0 && "mt-0"
                                     )}>
                                         <div className="h-px dark:bg-zinc-800/50 bg-zinc-300/50 flex-1"></div>

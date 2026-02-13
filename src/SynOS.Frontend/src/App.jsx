@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider, useAuth } from '@/context/AuthContext'
 import { ReceptionProvider } from '@/features/reception/hooks/useReceptionPanelUI'
 import { ReceptionScreen } from '@/features/reception/ReceptionScreen'
+import { PhlebotomyScreen } from '@/features/phlebotomy/PhlebotomyScreen'
 import { LoginPage } from '@/pages/LoginPage'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 
@@ -9,6 +10,7 @@ function RootRedirect() {
   const { isAuthenticated, user } = useAuth();
   if (!isAuthenticated) return <Navigate to="/login" replace />;
   if (user?.role === 'Receptionist') return <Navigate to="/reception" replace />;
+  if (user?.role === 'Phlebotomist') return <Navigate to="/phlebotomist" replace />;
   return <div className="p-10 text-white">Role {user?.role} not supported yet.</div>;
 }
 
@@ -32,6 +34,10 @@ function App() {
             />
           </Route>
 
+          <Route element={<ProtectedRoute allowedRoles={['Phlebotomist', 'Receptionist']} />}>
+            <Route path="/phlebotomist" element={<PhlebotomyScreen />} />
+          </Route>
+
           {/* Root Redirection */}
           <Route path="/" element={<RootRedirect />} />
 
@@ -44,3 +50,4 @@ function App() {
 }
 
 export default App
+
