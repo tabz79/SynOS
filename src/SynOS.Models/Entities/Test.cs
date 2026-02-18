@@ -18,18 +18,24 @@ namespace SynOS.Models.Entities
         [StringLength(200)]
         public string TestName { get; set; }
 
-        [Required]
-        [StringLength(50)]
-        public string Department { get; set; } // Pathology | Radiology
+
 
         [StringLength(100)]
         public string? Category { get; set; }
 
-        public TubeType? DefaultTubeType { get; set; } // Added
+        [MaxLength(20)]
+        public string? SpecimenTypeCode { get; set; } // FK to SpecimenType.Code
 
-        [Required]
-        [Column(TypeName = "decimal(10, 2)")]
-        public decimal BasePrice { get; set; }
+        [ForeignKey("SpecimenTypeCode")]
+        public virtual SpecimenType? SpecimenType { get; set; }
+
+
+
+        public bool IsProfile { get; set; } = false; // Added Phase 8
+
+        public Guid? DepartmentId { get; set; } // Added Phase 8 (Nullable for migration)
+        [ForeignKey("DepartmentId")]
+        public virtual DepartmentMaster? DepartmentMaster { get; set; }
 
         public int TAT_Hours { get; set; } = 24;
 
@@ -41,6 +47,7 @@ namespace SynOS.Models.Entities
 
         // Navigation Properties
         public virtual ICollection<Parameter> Parameters { get; set; } = new List<Parameter>();
+        public virtual ICollection<TestPricing> TestPricings { get; set; } = new List<TestPricing>(); // Added Phase 8
         public virtual ICollection<PriceConfig> PriceConfigs { get; set; } = new List<PriceConfig>();
     }
 }

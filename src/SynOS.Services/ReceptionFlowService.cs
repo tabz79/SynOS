@@ -8,7 +8,7 @@ using Microsoft.Extensions.Configuration;
 using SynOS.Data;
 using SynOS.Models.DTOs;
 using SynOS.Models.Entities;
-using SynOS.Models.Enums; // Required for TubeType
+using SynOS.Models.Enums; // Required for WorkType, BranchEventType
 using SynOS.Services.Referral;
 using SynOS.Services.Operational; // ADDED
 using SynOS.Services.Security; // ADDED
@@ -35,6 +35,7 @@ namespace SynOS.Services
         private readonly IOperationalEventWriter _operationalEventWriter; // ADDED
         private readonly IUserContext _userContext; // ADDED
         private readonly IWorkRoutingEngine _routingEngine; // ADDED
+        private readonly ISpecimenGroupingService _groupingService; // ADDED
 
         public ReceptionFlowService(
             SynOSDbContext context,
@@ -47,7 +48,8 @@ namespace SynOS.Services
             IReferralFinancialService referralFinancialService,
             IOperationalEventWriter operationalEventWriter,
             IUserContext userContext,
-            IWorkRoutingEngine routingEngine) // ADDED
+            IWorkRoutingEngine routingEngine,
+            ISpecimenGroupingService groupingService) // ADDED
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
             _visitService = visitService ?? throw new ArgumentNullException(nameof(visitService));
@@ -60,6 +62,7 @@ namespace SynOS.Services
             _operationalEventWriter = operationalEventWriter ?? throw new ArgumentNullException(nameof(operationalEventWriter));
             _userContext = userContext ?? throw new ArgumentNullException(nameof(userContext)); // ADDED
             _routingEngine = routingEngine ?? throw new ArgumentNullException(nameof(routingEngine)); // ADDED
+            _groupingService = groupingService ?? throw new ArgumentNullException(nameof(groupingService)); // ADDED
         }
 
         // small helper to centralize a defensive check (keeps ctor lines tidy)
@@ -526,6 +529,7 @@ namespace SynOS.Services
                     if (test == null)
                     {
                         test = await _context.Tests
+                            .Include(t => t.DepartmentMaster) // Include DM
                             .AsNoTracking()
                             .FirstOrDefaultAsync(t => t.TestId == order.TestId);
                     }
@@ -536,7 +540,13 @@ namespace SynOS.Services
                         continue; // Skip if test not found
                     }
 
-                    if (string.Equals(order.Department, "Radiology", StringComparison.OrdinalIgnoreCase))
+                    // Phase 8: Use DepartmentMaster.Name
+                    var deptName = test.DepartmentMaster?.Name ?? (string.Equals(test.TestCode, "XRAY", StringComparison.OrdinalIgnoreCase) ? "Radiology" : "Unknown"); 
+                    // Fallback to order department if test dept is null (though order.Department is just a snapshot)
+                    if (string.IsNullOrWhiteSpace(deptName) && !string.IsNullOrWhiteSpace(order.Department)) deptName = order.Department;
+
+
+                    if (string.Equals(deptName, "Radiology", StringComparison.OrdinalIgnoreCase))
                     {
                         var studyExists = await _context.RadiologyStudies.AnyAsync(rs => rs.VisitTestId == order.OrderId);
                         if (!studyExists)
@@ -547,8 +557,8 @@ namespace SynOS.Services
                                 VisitId = visit.VisitId,
                                 PatientId = visit.PatientId,
                                 VisitTestId = order.OrderId,
-                                Modality = test.Department ?? "Unknown", // Use test.Department
-                                AccessionNumber = await _accessionService.GenerateRadiologyAccessionNumberAsync(),
+                                Modality = deptName, // Use resolved dept
+                                AccessionNumber = await _accessionService.GenerateRadiologyAccessionNumberAsync(visit.BranchId ?? throw new InvalidOperationException("Visit BranchId is required for Accession")),
                                 Status = "PendingImaging",
                                 CreatedBy = userId,
                                 CreatedAt = DateTimeOffset.UtcNow
@@ -578,24 +588,19 @@ namespace SynOS.Services
                     }
                     else if (string.Equals(order.Department, "Pathology", StringComparison.OrdinalIgnoreCase))
                     {
-                        var sampleExists = await _context.Samples.AnyAsync(s => s.OrderId == order.OrderId);
-                        if (!sampleExists)
-                        {
-                            var newSample = new Sample
-                            {
-                                SampleId = Guid.NewGuid(),
-                                OrderId = order.OrderId,
-                                Barcode = $"SAMP-{Guid.NewGuid().ToString().Substring(0, 12)}",
-                                TubeType = test.DefaultTubeType ?? TubeType.Other, // Use test.DefaultTubeType
-                                Status = SampleStatus.Pending
-                                // Removed CreatedAt = DateTimeOffset.UtcNow as it's handled by default in Sample entity
-                            };
-                            _context.Samples.Add(newSample);
-                            _logger.LogInformation("Auto-created Sample {SampleId} for Order {OrderId}", newSample.SampleId, order.OrderId);
-                        }
+                        // NO-OP: Pathology specimens are now created via TransitionToSpecimenPlannedAsync
+                        // This method is called Transactionally below.
                     }
                 }
                 await _context.SaveChangesAsync();
+
+                // --- SPECIMEN ARCHITECTURE TRANSITION ---
+                // If Pathology involved, trigger Specimen Planning
+                if (visit.Department == "Pathology")
+                {
+                    await TransitionToSpecimenPlannedAsync(visit.VisitId);
+                }
+                // ----------------------------------------
 
                 // --- DOMAIN EVENT TRIGGER (Temporary Location) ---
                 // The following logic responds to the "Payment Committed" domain event.
@@ -852,7 +857,7 @@ namespace SynOS.Services
                         var fromCache = cached.FirstOrDefault(t => string.Equals(t.TestCode, normalized, StringComparison.OrdinalIgnoreCase));
                         if (fromCache != null)
                         {
-                            if (string.IsNullOrWhiteSpace(dept) || string.Equals(fromCache.Department, dept, StringComparison.OrdinalIgnoreCase))
+                            if (string.IsNullOrWhiteSpace(dept) || (fromCache.DepartmentMaster != null && string.Equals(fromCache.DepartmentMaster.Name, dept, StringComparison.OrdinalIgnoreCase)))
                                 return fromCache;
                         }
                     }
@@ -870,12 +875,14 @@ namespace SynOS.Services
                 .AsNoTracking()
                 .Include(t => t.PriceConfigs)
                 .Include(t => t.Parameters)
+                .Include(t => t.DepartmentMaster) // Added Include
                 .Where(t => t.TestCode.ToUpper() == normalizedUpper);
 
             if (!string.IsNullOrWhiteSpace(dept))
             {
                 var deptUpper = dept.ToUpperInvariant();
-                query = query.Where(t => t.Department.ToUpper() == deptUpper);
+                // Filter by DeptMaster
+                query = query.Where(t => t.DepartmentMaster.Name.ToUpper() == deptUpper);
             }
 
             return await query.FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false);
@@ -901,6 +908,98 @@ namespace SynOS.Services
         public async Task RemoveDiscountAsync(Guid visitId, Guid actorUserId)
         {
             await _visitService.RemoveDiscountFromVisitAsync(visitId, actorUserId);
+        }
+
+        public async Task TransitionToSpecimenPlannedAsync(Guid visitId)
+        {
+            // 1. Transaction Boundary (Serializable for Accession Safety overlap check)
+            // Note: AccessionService uses UPDLOCK, so Serializable here is for the HOLISTIC visit state.
+            using var transaction = await _context.Database.BeginTransactionAsync(System.Data.IsolationLevel.Serializable);
+            try
+            {
+                // 2. Lock Visit & Re-fetch Orders (Ensure we have fresh state)
+                var visit = await _context.Visits
+                    .Include(v => v.Orders).ThenInclude(o => o.Test) // Need Test for SpecimenTypeCode
+                    .FirstOrDefaultAsync(v => v.VisitId == visitId);
+
+                if (visit == null) throw new KeyNotFoundException($"Visit {visitId} not found");
+
+                // Idempotency Check
+                if (visit.Status == "SpecimenPlanned" || visit.Status == "Completed")
+                {
+                    _logger.LogInformation("TransitionToSpecimenPlanned: Visit {VisitId} already in status {Status}. Skipping.", visitId, visit.Status);
+                    return; 
+                }
+
+                // 3. Group Orders
+                var plan = await _groupingService.CreateSpecimenPlanAsync(visit.Orders);
+
+                if (!plan.Any())
+                {
+                    _logger.LogWarning("TransitionToSpecimenPlanned: No valid orders or specimens generated for Visit {VisitId}", visitId);
+                    // Should we throw? Or just proceed? If no orders, maybe just update status if that's the flow?
+                    // For now, let's assume valid pathology visit implies specimens.
+                }
+
+                // 4. Generate Accessions & Create Specimens
+                var branchId = visit.BranchId ?? throw new InvalidOperationException("BranchId required for Accessioning");
+                var date = DateTime.Today; // Accession sequence resets daily
+
+                foreach (var group in plan)
+                {
+                    // Generate Atomic Accession Number (Locks AccessionSequence Row)
+                    // Format: {BranchCode}-{YYMMDD}-{Seq:D4} (e.g. BR1-240501-0001)
+                    
+                    // We need Branch Code. AccessionService might need a small refactor or we fetch it here.
+                    // AccessionService creates the number specific to *that* service's logic? 
+                    // Wait, AccessionService.GenerateNextAccessionNumberAsync returns a long/int.
+                    // We need to Formatting logic here or in AccessionService?
+                    // The plan says: "Format Accession: {BranchCode}-{YYMMDD}-{Seq:D4}"
+                    
+                    var seq = await _accessionService.GenerateNextAccessionNumberAsync(branchId, date);
+                    
+                    // Fetch Branch Code (Ideally cached or from UserContext, but visit.BranchId is source of truth)
+                    // We added Code to Branch entity.
+                    var branch = await _context.Branches.FindAsync(branchId);
+                    var branchCode = branch?.Code ?? "UNK"; 
+
+                    var dateStr = date.ToString("yyMMdd");
+                    var accessionNumber = $"{branchCode}-{dateStr}-{seq:D4}";
+
+                    var specimen = new Specimen
+                    {
+                        SpecimenId = Guid.NewGuid(),
+                        VisitId = visit.VisitId,
+                        SpecimenTypeCode = group.SpecimenTypeCode,
+                        AccessionNumber = accessionNumber,
+                        Status = SpecimenStatus.Pending, // Initial Status
+                        CreatedAt = DateTimeOffset.UtcNow              
+                    };
+
+                    _context.Specimens.Add(specimen);
+
+                    // Link Orders to this Specimen
+                    foreach (var order in group.Orders)
+                    {
+                         order.SpecimenId = specimen.SpecimenId;
+                         // _context.Update(order); // Tracked via inclusion
+                    }
+                }
+
+                // 5. Update Visit Status
+                visit.Status = "SpecimenPlanned"; // SynOS.Models.Enums.VisitStatus.SpecimenPlanned? Using string per legacy.
+
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                _logger.LogInformation("TransitionToSpecimenPlanned: Successfully planned {Count} specimens for Visit {VisitId}", plan.Count, visitId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "TransitionToSpecimenPlanned failed for Visit {VisitId}", visitId);
+                await transaction.RollbackAsync();
+                throw; // Rethrow to bubble up failure
+            }
         }
 
         public async Task ResolveReferralDraftAsync(Guid draftId, Guid targetPartnerId, Guid actorUserId)

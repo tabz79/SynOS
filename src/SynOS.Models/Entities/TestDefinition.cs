@@ -27,7 +27,8 @@ namespace SynOS.Models.Entities
 
         [Required]
         [StringLength(20)]
-        public TubeType DefaultTubeType { get; set; } = TubeType.Other;
+        [MaxLength(20)]
+        public string? SpecimenTypeCode { get; set; }
 
         public bool IsActive { get; set; } = true;
 

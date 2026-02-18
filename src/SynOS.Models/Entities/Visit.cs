@@ -61,5 +61,7 @@ namespace SynOS.Models.Entities
         public string? ReferrerText { get; set; } // Free-text metadata
 
         public virtual ReferralDraft? ReferralDraft { get; set; }
+        
+        public virtual ICollection<Specimen> Specimens { get; set; } = new List<Specimen>();
     }
 }

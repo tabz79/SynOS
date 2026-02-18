@@ -219,25 +219,7 @@ namespace SynOS.Api.Controllers
             }
         }
 
-        [HttpDelete("visit/referral")]
-        public async Task<IActionResult> RemoveReferral([FromQuery] Guid visitId)
-        {
-            try
-            {
-                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-                if (!Guid.TryParse(userIdClaim, out var userId)) return Unauthorized();
 
-                await _receptionFlowService.RemoveVisitReferralAsync(visitId, userId);
-                return Ok(new { success = true });
-            }
-            catch (KeyNotFoundException ex) { return NotFound(new { message = ex.Message }); }
-            catch (InvalidOperationException ex) { return Conflict(new { message = ex.Message }); }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to remove referral for visit {VisitId}", visitId);
-                return StatusCode(500, new { message = ex.Message });
-            }
-        }
 
         [HttpPost("visit/referral-draft")]
         public async Task<IActionResult> AddReferralDraft([FromBody] ReceptionAddReferralDraftRequest request)

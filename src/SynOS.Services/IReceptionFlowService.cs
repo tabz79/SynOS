@@ -24,5 +24,7 @@ namespace SynOS.Services
         Task AddReferralDraftAsync(Guid visitId, string providerName, string? clinicName, string? location, Guid actorUserId);
 
         Task ResolveReferralDraftAsync(Guid draftId, Guid targetPartnerId, Guid actorUserId);
+
+        Task TransitionToSpecimenPlannedAsync(Guid visitId); // ADDED: Specimen Architecture
     }
 }

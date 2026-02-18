@@ -13,8 +13,9 @@ namespace SynOS.Services.Operations
         Task<List<ActionQueueRowDto>> GetActionQueueAsync(Guid branchId, DateTime date, bool includeHistory = false); // ADDED: Action Queue Projection
         
         // Sample Lifecycle Write Authority
-        Task RecordSampleCollectedAsync(Guid sampleId, Guid branchId, Guid actorId);
-        Task RecordSampleRejectedAsync(Guid sampleId, Guid branchId, Guid actorId, string reason, bool requiresRecollection = false);
+        // Sample Lifecycle Write Authority
+        // Task RecordSampleCollectedAsync(Guid sampleId, Guid branchId, Guid actorId);
+        // Task RecordSampleRejectedAsync(Guid sampleId, Guid branchId, Guid actorId, string reason, bool requiresRecollection = false);
         // Task RecordSampleReceivedAsync(Guid sampleId, Guid branchId, Guid actorId); // Optional for now
 
         // Report Lifecycle Write Authority

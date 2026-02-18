@@ -216,7 +216,7 @@ namespace SynOS.Services.Operational
                             }
                             break;
 
-                        case BranchEventType.SAMPLE_COLLECTED:
+                        case BranchEventType.SPECIMEN_COLLECTED:
                             branchStats.PendingReportsCount++;
                             updated = true;
                             break;
@@ -230,6 +230,8 @@ namespace SynOS.Services.Operational
                                 {
                                     if (report.SourceType == "Order") 
                                     {
+                                        // REFACTOR: Disabled for Specimen Migration
+                                        /*
                                         var sample = await _context.Samples
                                             .Where(s => s.OrderId == report.SourceId && s.CollectedAt.HasValue)
                                             .FirstOrDefaultAsync();
@@ -244,6 +246,7 @@ namespace SynOS.Services.Operational
                                                 updated = true;
                                             }
                                         }
+                                        */
                                     }
                                 }
                             }

@@ -54,6 +54,8 @@ namespace SynOS.Services.Operations
                 {
                     if (report.SourceType == "Order")
                     {
+                        // REFACTOR: Disabled for Specimen Migration
+                        /*
                         var sampleCollectedAt = await _context.Samples
                             .Where(s => s.OrderId == report.SourceId && s.CollectedAt.HasValue)
                             .Select(s => s.CollectedAt)
@@ -64,6 +66,7 @@ namespace SynOS.Services.Operations
                             var minutes = (report.SignedAt.Value - sampleCollectedAt.Value).TotalMinutes;
                             if (minutes > 0) durations.Add(minutes);
                         }
+                        */
                     }
                 }
                 if (durations.Any()) avgTime = durations.Average();
@@ -113,11 +116,14 @@ namespace SynOS.Services.Operations
             // Fetch Status-Relevant Entities in Batch (Avoid N+1)
             var visitIds = visits.Select(v => v.VisitId).ToList();
             
+            // REFACTOR: Disabled for Specimen Migration
+            /*
             var samples = await _context.Samples
                 .AsNoTracking()
                 .Where(s => visitIds.Contains(s.Order.VisitId))
                 .Select(s => new { s.Order.VisitId, s.Status, s.CollectedAt })
                 .ToListAsync();
+            */
 
             var results = await _context.Results
                 .AsNoTracking()
@@ -145,7 +151,8 @@ namespace SynOS.Services.Operations
 
                 Console.WriteLine($"[ActionQueue] Processing Visit {visit.Token}. Invoice Status: {invoice.Status}.");
                 
-                var visitSamples = samples.Where(s => s.VisitId == visit.VisitId).ToList();
+                // var visitSamples = samples.Where(s => s.VisitId == visit.VisitId).ToList();
+                var visitSamples = new List<string>(); // Stubbed
                 var visitResults = results.Where(r => r.VisitId == visit.VisitId).ToList();
                 var visitReport = reports.FirstOrDefault(r => r.VisitId == visit.VisitId);
 
@@ -172,9 +179,9 @@ namespace SynOS.Services.Operations
                     PaymentMethod = DerivePaymentMethod(visit, invoice),
                     ReferrerName = visit.ReferralPartner?.Name ?? "Self",
 
-                    OperationalStatus = DeriveOperationalStatus(visit, visitSamples.Select(s => s.Status).ToList(), visitResults.Select(r => r.Status).ToList(), visitReport?.Status),
+                    OperationalStatus = DeriveOperationalStatus(visit, null /* visitSamples.Select(s => s.Status).ToList() */, visitResults.Select(r => r.Status).ToList(), visitReport?.Status),
                     
-                    LastUpdatedAt = CalculateLastUpdatedAt(visit, visitSamples.Select(s => s.CollectedAt).ToList(), visitResults.Select(r => r.EnteredAt).ToList(), visitReport?.SignedAt),
+                    LastUpdatedAt = CalculateLastUpdatedAt(visit, new List<DateTime?>(), visitResults.Select(r => r.EnteredAt).ToList(), visitReport?.SignedAt),
                     
                     DateGroup = CalculateDateGroup(visit.TokenDate, today),
 
@@ -247,7 +254,8 @@ namespace SynOS.Services.Operations
             return "Due";
         }
 
-        private string DeriveOperationalStatus(Visit visit, List<SampleStatus> sampleStatuses, List<string?> resultStatuses, string? reportStatus)
+        // private string DeriveOperationalStatus(Visit visit, List<SampleStatus> sampleStatuses, List<string?> resultStatuses, string? reportStatus)
+        private string DeriveOperationalStatus(Visit visit, List<object>? sampleStatuses, List<string?> resultStatuses, string? reportStatus)
         {
             // 5. Operational Status (SINGLE SOURCE OF TRUTH)
             
@@ -272,12 +280,12 @@ namespace SynOS.Services.Operations
             }
 
             // Sample Collected
-            // If we have samples and they are all collected (or at least one collected and none rejected?)
-            // Usually "Sample Collected" means at least one valid sample is in.
-            if (sampleStatuses.Any(s => s == SampleStatus.Collected))
+            /*
+            if (sampleStatuses != null && sampleStatuses.Any())
             {
-                return "Sample Collected";
+                 // Legacy logic disabled
             }
+            */
 
             // Default: Ready for Sample (since we filtered for Paid visits)
             return "Ready for Sample";
@@ -315,6 +323,7 @@ namespace SynOS.Services.Operations
             );
         }
 
+#if false
         public async Task RecordSampleCollectedAsync(Guid sampleId, Guid branchId, Guid actorId)
         {
             var sample = await _context.Samples
@@ -328,46 +337,50 @@ namespace SynOS.Services.Operations
             if (sample.Order == null || sample.Order.Visit == null)
             {
                 throw new InvalidOperationException($"Data Corruption: Sample {sampleId} is orphaned (missing Order or Visit links).");
-            }
+            // REFACTOR: Disabled for Specimen Migration
+            await Task.CompletedTask;
+            /*
+            var sample = await _context.Samples
+                .Include(s => s.Order).ThenInclude(o => o.Visit)
+                .FirstOrDefaultAsync(s => s.SampleId == sampleId);
 
-            // Issue 2 Fix: Strict Branch Check
-            if (sample.Order.Visit.BranchId != branchId)
+            if (sample == null)
+                throw new KeyNotFoundException("Sample not found.");
+
+            if (sample.Status == SampleStatus.Collected)
             {
-                throw new UnauthorizedAccessException($"Sample {sampleId} belongs to branch {sample.Order.Visit.BranchId}, access denied for context branch {branchId}.");
+                _logger.LogInformation("Sample {SampleId} is already marked as collected. Skipping event emission.", sampleId);
+                return;
             }
 
-            // Invariant: Cannot collect twice
-            if (sample.Status != SampleStatus.Pending && sample.Status != SampleStatus.Recollect)
-            {
-                throw new InvalidOperationException($"Cannot collect sample in state {sample.Status}");
-            }
-
-            if (sample.CollectedAt.HasValue)
-            {
-                throw new InvalidOperationException($"Sample already collected at {sample.CollectedAt}");
-            }
-
-            // Update State (Truth)
+            // 1. Update State
             sample.Status = SampleStatus.Collected;
             sample.CollectedAt = DateTime.UtcNow; // Standard: UTC
             sample.CollectedByUserId = actorId;
 
-            // Emit Event (Issue 1 Fix: Internal emission only)
+            // 2. Emit Event (Fact)
             await EmitEventAsync(
                 BranchEventType.SAMPLE_COLLECTED,
                 branchId,
-                sample.Order.VisitId,
-                sample.Barcode,
-                $"Sample {sample.Barcode} collected",
-                actorId
+                sampleId,
+                sample.Order.Visit.Token, // Token needed for UI grouping
+                $"Sample collected for {sample.Order.TestCode}",
+                actorId,
+                sampleId,
+                "Sample"
             );
 
-            // Persist (Atomic State + Event)
             await _context.SaveChangesAsync();
+            */
         }
+#endif
 
+#if false
         public async Task RecordSampleRejectedAsync(Guid sampleId, Guid branchId, Guid actorId, string reason, bool requiresRecollection = false)
         {
+            // REFACTOR: Disabled for Specimen Migration
+            await Task.CompletedTask;
+            /*
             var sample = await _context.Samples
                 .Include(s => s.Order)
                 .ThenInclude(o => o.Visit)
@@ -414,7 +427,9 @@ namespace SynOS.Services.Operations
 
             // Persist (Atomic State + Event)
             await _context.SaveChangesAsync();
+            */
         }
+#endif
 
         public async Task RecordResultDraftStartedAsync(Guid visitId, Guid resultId, Guid actorId)
         {

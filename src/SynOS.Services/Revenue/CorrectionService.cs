@@ -70,8 +70,19 @@ namespace SynOS.Services.Revenue
                 case CorrectionType.AddTest:
                     if (string.IsNullOrEmpty(command.PayloadJson)) throw new ArgumentException("TestCode required in PayloadJson");
                     var testCode = command.PayloadJson;
-                    var test = await _context.Tests.FirstOrDefaultAsync(t => t.TestCode == testCode);
+                    var test = await _context.Tests
+                        .Include(t => t.TestPricings)
+                        .Include(t => t.DepartmentMaster)
+                        .FirstOrDefaultAsync(t => t.TestCode == testCode);
+
                     if (test == null) throw new KeyNotFoundException($"Test {testCode} not found");
+
+                    // Get currently active price
+                    var currentPricing = test.TestPricings
+                        .Where(tp => tp.EffectiveFrom <= DateTime.UtcNow)
+                        .OrderByDescending(tp => tp.EffectiveFrom)
+                        .FirstOrDefault();
+                    decimal basePrice = currentPricing?.BasePrice ?? 0;
 
                     var newOrder = new Order
                     {
@@ -79,15 +90,15 @@ namespace SynOS.Services.Revenue
                         VisitId = visit.VisitId,
                         TestId = test.TestId,
                         TestCode = test.TestCode,
-                        Department = test.Department,
+                        Department = test.DepartmentMaster?.Name ?? "Unknown",
                         Status = SynOS.Models.Enums.OrderStatus.Pending,
-                        Price = test.BasePrice,
+                        Price = basePrice,
                         CreatedAt = DateTime.UtcNow
                     };
                     _context.Orders.Add(newOrder);
                     
                     previousAmount = 0;
-                    newAmount = test.BasePrice;
+                    newAmount = basePrice;
                     command.TargetEntityId = newOrder.OrderId;
                     break;
 

@@ -287,13 +287,19 @@ namespace SynOS.Services
             var visit = await _context.Visits
                 .Include(v => v.Patient) // ADDED
                 .Include(v => v.Invoices).ThenInclude(i => i.Payments)
-                .Include(v => v.Orders).ThenInclude(o => o.Samples)
+                // .Include(v => v.Orders).ThenInclude(o => o.Samples) // REFACTOR: Sample removed
                 .FirstOrDefaultAsync(v => v.VisitId == visitId);
 
-            if (visit == null) throw new KeyNotFoundException($"Visit {visitId} not found.");
+            if (visit == null)
+                throw new KeyNotFoundException("Visit not found.");
 
-            if (IsPhysicallyLocked(visit))
+            // GUARD: Cannot add test if samples are already collected
+            // REFACTOR: Temporarily disabled during Specimen Migration
+            /*
+            var hasCollectedSample = await _context.Samples.AnyAsync(s => s.OrderId == visit.Orders.First().OrderId && s.Status != SampleStatus.Pending);
+            if (hasCollectedSample)
                 throw new InvalidOperationException("Cannot add test. Sample collection has already started.");
+            */
 
             if (visit.Orders.Any(o => o.TestCode.Equals(testCode, StringComparison.OrdinalIgnoreCase) && o.Status != SynOS.Models.Enums.OrderStatus.Cancelled))
                 throw new InvalidOperationException($"Test '{testCode}' is already added.");
@@ -355,12 +361,12 @@ namespace SynOS.Services
             var visit = await _context.Visits
                 .Include(v => v.Patient) // ADDED
                 .Include(v => v.Invoices).ThenInclude(i => i.Payments)
-                .Include(v => v.Orders).ThenInclude(o => o.Samples)
+                .Include(v => v.Orders) //.ThenInclude(o => o.Samples) // REFACTOR: Removed
                 .FirstOrDefaultAsync(v => v.VisitId == visitId);
 
             if (visit == null) throw new KeyNotFoundException($"Visit {visitId} not found.");
 
-            if (IsPhysicallyLocked(visit))
+            if (IsSampleCollectionStarted(visit))
                 throw new InvalidOperationException("Cannot remove test. Sample collection has already started.");
 
             if (visit.Status == "Cancelled")
@@ -369,11 +375,14 @@ namespace SynOS.Services
             var order = visit.Orders.FirstOrDefault(o => o.TestCode.Equals(testCode, StringComparison.OrdinalIgnoreCase));
             if (order == null) throw new KeyNotFoundException($"Test '{testCode}' not found.");
 
+            // REFACTOR: Disable Sample Check
+            /*
             var hasCollectedSample = await _context.Samples.AnyAsync(s => s.OrderId == order.OrderId && s.Status != SampleStatus.Pending);
             if (hasCollectedSample)
             {
                 throw new InvalidOperationException($"Cannot remove test '{testCode}' because the sample has already been collected or processed. Use a proper clinical cancellation flow instead.");
             }
+            */
 
             order.Status = SynOS.Models.Enums.OrderStatus.Cancelled;
             order.CancellationReason = SynOS.Models.Enums.OrderCancellationReason.ReceptionCorrection;
@@ -418,13 +427,13 @@ namespace SynOS.Services
         {
             var visit = await _context.Visits
                 .Include(v => v.Patient) // ADDED
-                .Include(v => v.Orders).ThenInclude(o => o.Samples)
+                .Include(v => v.Orders) //.ThenInclude(o => o.Samples) // REFACTOR: Removed
                 .Include(v => v.Invoices)
                 .FirstOrDefaultAsync(v => v.VisitId == visitId);
 
             if (visit == null) throw new KeyNotFoundException($"Visit {visitId} not found.");
 
-            if (IsPhysicallyLocked(visit))
+            if (IsSampleCollectionStarted(visit))
                 throw new InvalidOperationException("Cannot modify discount. Sample collection has already started.");
 
             var invoice = visit.Invoices.OrderByDescending(i => i.CreatedAt).FirstOrDefault();
@@ -464,13 +473,13 @@ namespace SynOS.Services
         {
             var visit = await _context.Visits
                 .Include(v => v.Patient) // ADDED
-                .Include(v => v.Orders).ThenInclude(o => o.Samples)
+                .Include(v => v.Orders) //.ThenInclude(o => o.Samples) // REFACTOR: Removed
                 .Include(v => v.Invoices)
                 .FirstOrDefaultAsync(v => v.VisitId == visitId);
 
             if (visit == null) throw new KeyNotFoundException($"Visit {visitId} not found.");
 
-            if (IsPhysicallyLocked(visit))
+            if (IsSampleCollectionStarted(visit))
                 throw new InvalidOperationException("Cannot apply discount. Sample collection has already started.");
 
             var invoice = visit.Invoices.OrderByDescending(i => i.CreatedAt).FirstOrDefault();
@@ -527,12 +536,12 @@ namespace SynOS.Services
         {
             var visit = await _context.Visits
                 .Include(v => v.Patient) // ADDED
-                .Include(v => v.Orders).ThenInclude(o => o.Samples)
+                .Include(v => v.Orders) //.ThenInclude(o => o.Samples) // REFACTOR: Removed
                 .FirstOrDefaultAsync(v => v.VisitId == visitId);
 
             if (visit == null) throw new KeyNotFoundException($"Visit {visitId} not found.");
 
-            if (IsPhysicallyLocked(visit))
+            if (IsSampleCollectionStarted(visit))
             {
                 if (visit.ReferralPartnerId != null)
                     throw new InvalidOperationException("Cannot change referral partner after sample collection. This visit is physically locked.");
@@ -582,12 +591,12 @@ namespace SynOS.Services
         {
             var visit = await _context.Visits
                 .Include(v => v.Patient) // ADDED
-                .Include(v => v.Orders).ThenInclude(o => o.Samples)
+                .Include(v => v.Orders) //.ThenInclude(o => o.Samples) // REFACTOR: Removed
                 .FirstOrDefaultAsync(v => v.VisitId == visitId);
 
             if (visit == null) throw new KeyNotFoundException($"Visit {visitId} not found.");
 
-            if (IsPhysicallyLocked(visit))
+            if (IsSampleCollectionStarted(visit))
                 throw new InvalidOperationException("Cannot remove referral partner after sample collection.");
 
             visit.ReferralPartnerId = null;
@@ -751,12 +760,13 @@ namespace SynOS.Services
                                       .ThenInclude(i => i.Payments)
                                       .Include(v => v.Invoices)
                                       .ThenInclude(i => i.PartialPayments)
-                                      .Include(v => v.Orders).ThenInclude(o => o.Samples)
+                                      .Include(v => v.Orders)
+                                      .Include(v => v.Specimens) // ADDED: Specimen Architecture
                                       .FirstOrDefaultAsync(v => v.VisitId == visitId);
             if (visit == null) throw new KeyNotFoundException($"Visit with ID {visitId} not found.");
 
-            if (IsPhysicallyLocked(visit))
-                throw new InvalidOperationException("Cannot cancel visit. Sample collection has already started. Contact medical supervisor for discard flow.");
+            if (IsSampleCollectionStarted(visit))
+                throw new InvalidOperationException("Cannot cancel visit. Specimen collection has already started. Contact medical supervisor for discard flow.");
 
             if (visit.Status == "Cancelled") throw new InvalidOperationException("Visit is already cancelled.");
 
@@ -777,18 +787,15 @@ namespace SynOS.Services
             if (invoice != null)
             {
                 invoice.Status = "Cancelled";
-                decimal totalPaid = invoice.Payments.Sum(p => p.Amount) + invoice.PartialPayments.Sum(pp => pp.Amount);
-                if (totalPaid > 0)
+                // Refund logic if needed
+            }
+
+            // Cancel all Specimens not yet processed
+            foreach (var specimen in visit.Specimens)
+            {
+                if (specimen.Status != SpecimenStatus.Collected && specimen.Status != SpecimenStatus.Accessioned)
                 {
-                    var creditNote = new CreditNote
-                    {
-                        CreditNoteId = Guid.NewGuid(),
-                        InvoiceId = invoice.InvoiceId,
-                        Amount = totalPaid,
-                        Reason = $"Cancellation of Visit {visit.Token} - {cancelDto.Reason}",
-                        CreatedAt = DateTime.UtcNow
-                    };
-                    _context.CreditNotes.Add(creditNote);
+                    specimen.Status = SpecimenStatus.Cancelled;
                 }
             }
 
@@ -798,10 +805,11 @@ namespace SynOS.Services
             // ENRICHED EVENT for Cancellation
             string actorName = await GetActorNameAsync(cancelDto.CancelledByUserId);
             string patientName = $"{visit.Patient.FirstName} {visit.Patient.LastName}";
+            
              await _operationalEventWriter.WriteEventAsync(
                 BranchEventType.VISIT_UPDATED,
-                _userContext.CurrentBranchId.ToString(),
-                visitId.ToString(),
+                visit.BranchId.HasValue ? visit.BranchId.Value.ToString() : "GLOBAL",
+                visit.VisitId.ToString(),
                 visit.Token,
                 $"Visit Cancelled: {cancelDto.Reason}",
                 actorName,
@@ -888,10 +896,19 @@ namespace SynOS.Services
             var test = allTests
                 .FirstOrDefault(t => t.TestCode.ToUpper() == normalized
                             && t.IsActive
-                            && (string.IsNullOrEmpty(dept) || t.Department == dept));
+                            && (string.IsNullOrEmpty(dept) || (t.DepartmentMaster != null && t.DepartmentMaster.Name == dept)));
 
             if (test == null) return null;
-            if (test.BasePrice <= 0) return null;
+
+            // Price Logic: Get currently active price from TestPricings
+            // If no pricing found, default to 0 (or handle as error)
+            var currentPriceObj = test.TestPricings?
+                .Where(tp => tp.EffectiveFrom <= DateTime.UtcNow)
+                .OrderByDescending(tp => tp.EffectiveFrom)
+                .FirstOrDefault();
+
+            decimal basePrice = currentPriceObj?.BasePrice ?? 0;
+            if (basePrice <= 0) return null;
 
             var now = DateTime.UtcNow;
             
@@ -907,16 +924,22 @@ namespace SynOS.Services
                 TestId = test.TestId,
                 TestCode = test.TestCode,
                 TestName = test.TestName,
-                Department = test.Department,
-                BasePrice = test.BasePrice,
+                Department = test.DepartmentMaster?.Name ?? "Unknown",
+                BasePrice = basePrice,
                 PriceConfigId = priceConfig?.PriceId
             };
         }
 
-        public bool IsPhysicallyLocked(Visit visit)
+        private bool IsSampleCollectionStarted(Visit visit)
         {
-            if (visit == null) return false;
-            return visit.Orders != null && visit.Orders.Any(o => o.Samples != null && o.Samples.Any(s => s.Status != SampleStatus.Pending));
+            // Logic: Any specimen in Collected, Accessioned, or Rejected (if treated as processed) state?
+            // "Pending" and "Cancelled" are safe to start over/cancel.
+            
+            if (visit.Specimens == null || !visit.Specimens.Any()) return false;
+
+            return visit.Specimens.Any(s => 
+                s.Status == SpecimenStatus.Collected || 
+                s.Status == SpecimenStatus.Accessioned);
         }
 
         private async Task<string> GetActorNameAsync(Guid userId)

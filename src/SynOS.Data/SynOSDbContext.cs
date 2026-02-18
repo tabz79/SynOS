@@ -26,6 +26,11 @@ namespace SynOS.Data
         {
         }
 
+        // Registry Stabilization (Phase 8)
+        public DbSet<DepartmentMaster> DepartmentMasters { get; set; } = null!;
+        public DbSet<TestPricing> TestPricings { get; set; } = null!;
+        public DbSet<ProfileMap> ProfileMaps { get; set; } = null!;
+
         public DbSet<BranchOperationalEvent> BranchOperationalEvents { get; set; } = null!; // ADDED
         public DbSet<UserOperationalStats> UserOperationalStats { get; set; } = null!; // ADDED: Projections
         public DbSet<BranchOperationalStats> BranchOperationalStats { get; set; } = null!; // ADDED: Projections
@@ -55,16 +60,20 @@ namespace SynOS.Data
         // DbSets for Visit and Payment entities
         public DbSet<Visit> Visits { get; set; } = null!;
         public DbSet<TokenCounter> TokenCounters { get; set; } = null!;
-        public DbSet<TestDefinition> TestDefinitions { get; set; } = null!; // Obsolete, but kept for now
+        public DbSet<TestDefinition> TestDefinitions { get; set; } = null!; // Config
+        public DbSet<SpecimenType> SpecimenTypes { get; set; } = null!; // Master Data
+
+        // Core Transactional DbSets
         public DbSet<Order> Orders { get; set; } = null!;
+        public DbSet<Specimen> Specimens { get; set; } = null!; // Replaces Samples
+        public DbSet<AccessionSequence> AccessionSequences { get; set; } = null!; // Concurrency Control
         public DbSet<Invoice> Invoices { get; set; } = null!;
         public DbSet<Payment> Payments { get; set; } = null!;
         public DbSet<PartialPayment> PartialPayments { get; set; } = null!;
         public DbSet<VisitCancellation> VisitCancellations { get; set; } = null!;
         public DbSet<CreditNote> CreditNotes { get; set; } = null!;
         public DbSet<EditLock> EditLocks { get; set; } = null!;
-        public DbSet<Sample> Samples { get; set; } = null!;
-        public DbSet<SampleRejection> SampleRejections { get; set; } = null!;
+
         public DbSet<AccessionCounter> AccessionCounters { get; set; } = null!;
 
         // DbSets for Operational Assignments
@@ -270,7 +279,6 @@ namespace SynOS.Data
             modelBuilder.Entity<Test>(entity =>
             {
                 entity.HasIndex(e => e.TestCode).IsUnique();
-                entity.Property(e => e.BasePrice).HasColumnType("decimal(10, 2)");
             });
 
             modelBuilder.Entity<Parameter>(entity =>
@@ -297,6 +305,25 @@ namespace SynOS.Data
             modelBuilder.Entity<DeptScopePolicy>(entity =>
             {
                 entity.HasIndex(e => new { e.RoleId, e.Dept }).IsUnique();
+            });
+
+            // Registry Stabilization (Phase 8)
+            modelBuilder.Entity<DepartmentMaster>(entity =>
+            {
+                entity.HasIndex(e => e.Code).IsUnique();
+            });
+
+            modelBuilder.Entity<TestPricing>(entity =>
+            {
+                entity.HasIndex(e => new { e.TestId, e.EffectiveFrom }).IsUnique();
+                entity.HasOne(e => e.Test).WithMany().HasForeignKey(e => e.TestId).OnDelete(DeleteBehavior.Cascade);
+            });
+
+            modelBuilder.Entity<ProfileMap>(entity =>
+            {
+                entity.HasIndex(e => new { e.ParentTestId, e.ChildTestId }).IsUnique();
+                entity.HasOne(e => e.ParentTest).WithMany().HasForeignKey(e => e.ParentTestId).OnDelete(DeleteBehavior.Restrict);
+                entity.HasOne(e => e.ChildTest).WithMany().HasForeignKey(e => e.ChildTestId).OnDelete(DeleteBehavior.Restrict);
             });
 
             // Patient entities
@@ -360,34 +387,37 @@ namespace SynOS.Data
             });
 
             // Sample and SampleRejection
-            modelBuilder.Entity<Sample>(entity =>
+            // Specimen Configuration
+            modelBuilder.Entity<Specimen>(entity =>
             {
-                entity.Property(e => e.TubeType).HasConversion<string>().HasMaxLength(20);
+                entity.HasIndex(e => e.AccessionNumber).IsUnique(); // Enforce Uniqueness
                 entity.Property(e => e.Status).HasConversion<string>().HasMaxLength(20);
-                entity.HasIndex(e => e.Barcode).IsUnique();
-                entity.HasOne(e => e.Order)
-                      .WithMany(o => o.Samples)
-                      .HasForeignKey(e => e.OrderId)
-                      .OnDelete(DeleteBehavior.Cascade);
-            });
-
-            modelBuilder.Entity<SampleRejection>(entity =>
-            {
-                entity.HasOne(sr => sr.Sample)
-                      .WithMany(s => s.Rejections)
-                      .HasForeignKey(sr => sr.SampleId)
-                      .OnDelete(DeleteBehavior.Restrict);
                 
-                entity.HasOne(sr => sr.NewSample)
-                      .WithMany()
-                      .HasForeignKey(sr => sr.NewSampleId)
-                      .OnDelete(DeleteBehavior.NoAction); // Avoid multiple cascade paths
+                entity.HasOne(e => e.Visit)
+                      .WithMany() // Visit can have many Specimens, but we don't need a navigation property on Visit yet
+                      .HasForeignKey(e => e.VisitId)
+                      .OnDelete(DeleteBehavior.Cascade);
 
-                entity.HasOne(sr => sr.RejectedBy)
+                entity.HasOne(e => e.SpecimenType)
                       .WithMany()
-                      .HasForeignKey(sr => sr.RejectedByUserId)
+                      .HasForeignKey(e => e.SpecimenTypeCode)
                       .OnDelete(DeleteBehavior.Restrict);
             });
+
+            // SpecimenType Configuration
+            modelBuilder.Entity<SpecimenType>(entity =>
+            {
+                entity.HasKey(e => e.Code);
+            });
+
+            // AccessionSequence Configuration
+            modelBuilder.Entity<AccessionSequence>(entity =>
+            {
+                entity.HasKey(e => new { e.BranchId, e.Date }); // Composite Key
+                entity.Property(e => e.RowVersion).IsRowVersion();
+            });
+
+
 
             // Operational Assignments
             modelBuilder.Entity<OperationalResource>(entity =>

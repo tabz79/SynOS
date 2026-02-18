@@ -64,8 +64,8 @@ namespace SynOS.Services.Operational
                 },
                 "lab" => new List<BranchEventType>
                 {
-                    BranchEventType.SAMPLE_COLLECTED,
-                    BranchEventType.SAMPLE_REJECTED,
+                    BranchEventType.SPECIMEN_COLLECTED,
+                    BranchEventType.SPECIMEN_REJECTED,
                     BranchEventType.VISIT_FINALIZED,
                     BranchEventType.REPORT_VERIFIED
                 },
@@ -73,7 +73,7 @@ namespace SynOS.Services.Operational
                 {
                     BranchEventType.REPORT_VERIFIED,
                     BranchEventType.REPORT_SIGNED,
-                    BranchEventType.SAMPLE_REJECTED
+                    BranchEventType.SPECIMEN_REJECTED
                 },
                 _ => new List<BranchEventType>()
             };
@@ -109,8 +109,8 @@ namespace SynOS.Services.Operational
                 BranchEventType.VISIT_FINALIZED => ("check-circle", "green"),
                 BranchEventType.BILL_GENERATED => ("file-text", "blue"),
                 BranchEventType.PAYMENT_RECEIVED => ("dollar-sign", "green"),
-                BranchEventType.SAMPLE_COLLECTED => ("aperture", "purple"),
-                BranchEventType.SAMPLE_REJECTED => ("alert-triangle", "red"),
+                BranchEventType.SPECIMEN_COLLECTED => ("aperture", "purple"),
+                BranchEventType.SPECIMEN_REJECTED => ("alert-triangle", "red"),
                 BranchEventType.REPORT_VERIFIED => ("clipboard", "orange"),
                 BranchEventType.REPORT_SIGNED => ("pen-tool", "green"),
                 BranchEventType.REPORT_DELIVERED => ("send", "green"),

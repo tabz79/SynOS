@@ -304,7 +304,7 @@ namespace SynOS.Services
             var preview = new MergePreviewDto
             {
                 VisitsToMove = await _context.Patients.Where(p => p.PatientId == sourceId).SelectMany(p => p.PhoneHistory).CountAsync(),
-                SamplesToMove = 0,
+                // SamplesToMove = 0, // REFACTOR: Sample removed
                 PhoneHistoryToMove = await _context.PatientPhoneHistories.CountAsync(h => h.PatientId == sourceId),
                 AliasesToMove = await _context.PatientAliases.CountAsync(a => a.PatientId == sourceId),
                 ReferrerLinksToMove = await _context.PatientReferrerLinks.CountAsync(r => r.PatientId == sourceId)

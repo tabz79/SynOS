@@ -1,0 +1,991 @@
+2026-02-18 11:52:13.961 +05:30 [WRN] The foreign key property 'Specimen.VisitId1' was created in shadow state because a conflicting property with the simple name 'VisitId' exists in the entity type, but is either not mapped, is already used for another relationship, or is incompatible with the associated primary key type. See https://aka.ms/efcore-relationships for information on mapping relationships in EF Core.
+2026-02-18 11:52:14.044 +05:30 [WRN] The foreign key property 'TestPricing.TestId1' was created in shadow state because a conflicting property with the simple name 'TestId' exists in the entity type, but is either not mapped, is already used for another relationship, or is incompatible with the associated primary key type. See https://aka.ms/efcore-relationships for information on mapping relationships in EF Core.
+2026-02-18 11:52:22.097 +05:30 [INF] Notification Worker Service running.
+2026-02-18 11:52:22.204 +05:30 [INF] ExpiredLockCleanupService is starting.
+2026-02-18 11:52:22.298 +05:30 [INF] Analyzer TCP Listener Service starting...
+2026-02-18 11:52:22.304 +05:30 [WRN] No analyzer TCP listeners configured in appsettings.json.
+2026-02-18 11:52:22.315 +05:30 [INF] OperationalStatsProjectionWorker is starting. Interval: 5s
+2026-02-18 11:52:22.330 +05:30 [INF] Worker: Running Consistency Check...
+2026-02-18 11:53:44.114 +05:30 [WRN] Failed to determine the https port for redirect.
+2026-02-18 11:53:47.649 +05:30 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2026-02-18 11:53:47.727 +05:30 [ERR] Failed executing DbCommand (18ms) [Parameters=[@__branchId_0='?' (DbType = Guid), @__startDate_1='?' (DbType = DateTime2), @__today_2='?' (DbType = DateTime2), @__nextDay_3='?' (DbType = DateTime2)], CommandType='"Text"', CommandTimeout='30']
+SELECT [v].[VisitId], [v].[BranchId], [v].[CreatedAt], [v].[CurrentAssignmentId], [v].[Department], [v].[IsReferred], [v].[PatientId], [v].[PaymentCollectionModel], [v].[ReferralPartnerId], [v].[ReferrerId], [v].[ReferrerText], [v].[RowVersion], [v].[Status], [v].[Token], [v].[TokenDate], [p].[PatientId], [p].[CreatedAt], [p].[CurrentPhoneNumber], [p].[DateOfBirth], [p].[DisplayName], [p].[FirstName], [p].[Gender], [p].[IsDateOfBirthKnown], [p].[IsSoftDeleted], [p].[LastName], [p].[MRN], [p].[RowVersion], [p].[UpdatedAt], [r].[ReferralPartnerId], [r].[ContactInfo], [r].[CreatedAt], [r].[IsActive], [r].[Name], [r].[PartnerType], [r].[PaymentCollectionModel], [r].[UpdatedAt], [t0].[OrderId], [t0].[CancellationReason], [t0].[CancelledAt], [t0].[CancelledByUserId], [t0].[CreatedAt], [t0].[Department], [t0].[Discount], [t0].[Price], [t0].[SpecimenId], [t0].[Status], [t0].[TestCode], [t0].[TestId], [t0].[VisitId], [t0].[TestId0], [t0].[BasePrice], [t0].[Category], [t0].[CreatedAt0], [t0].[Department0], [t0].[DepartmentId], [t0].[IsActive], [t0].[IsProfile], [t0].[SpecimenTypeCode], [t0].[TAT_Hours], [t0].[TestCode0], [t0].[TestName], [t0].[UpdatedAt], [t1].[InvoiceId], [t1].[CreatedAt], [t1].[Currency], [t1].[DiscountAmount], [t1].[DueDate], [t1].[GrossAmount], [t1].[NetAmount], [t1].[Status], [t1].[TaxAmount], [t1].[Total], [t1].[VisitId], [t1].[PaymentId], [t1].[Amount], [t1].[InvoiceId0], [t1].[Method], [t1].[ReceiptNo], [t1].[ReceivedAt], [t1].[ReceivedByUserId]
+FROM [Visits] AS [v]
+INNER JOIN [Patients] AS [p] ON [v].[PatientId] = [p].[PatientId]
+LEFT JOIN [ReferralPartners] AS [r] ON [v].[ReferralPartnerId] = [r].[ReferralPartnerId]
+LEFT JOIN (
+    SELECT [o].[OrderId], [o].[CancellationReason], [o].[CancelledAt], [o].[CancelledByUserId], [o].[CreatedAt], [o].[Department], [o].[Discount], [o].[Price], [o].[SpecimenId], [o].[Status], [o].[TestCode], [o].[TestId], [o].[VisitId], [t].[TestId] AS [TestId0], [t].[BasePrice], [t].[Category], [t].[CreatedAt] AS [CreatedAt0], [t].[Department] AS [Department0], [t].[DepartmentId], [t].[IsActive], [t].[IsProfile], [t].[SpecimenTypeCode], [t].[TAT_Hours], [t].[TestCode] AS [TestCode0], [t].[TestName], [t].[UpdatedAt]
+    FROM [Orders] AS [o]
+    INNER JOIN [Tests] AS [t] ON [o].[TestId] = [t].[TestId]
+) AS [t0] ON [v].[VisitId] = [t0].[VisitId]
+LEFT JOIN (
+    SELECT [i].[InvoiceId], [i].[CreatedAt], [i].[Currency], [i].[DiscountAmount], [i].[DueDate], [i].[GrossAmount], [i].[NetAmount], [i].[Status], [i].[TaxAmount], [i].[Total], [i].[VisitId], [p0].[PaymentId], [p0].[Amount], [p0].[InvoiceId] AS [InvoiceId0], [p0].[Method], [p0].[ReceiptNo], [p0].[ReceivedAt], [p0].[ReceivedByUserId]
+    FROM [Invoices] AS [i]
+    LEFT JOIN [Payments] AS [p0] ON [i].[InvoiceId] = [p0].[InvoiceId]
+) AS [t1] ON [v].[VisitId] = [t1].[VisitId]
+WHERE [v].[BranchId] = @__branchId_0 AND [v].[Status] <> N'Cancelled' AND (([v].[Status] NOT IN (N'Paid', N'FullPaid') AND [v].[TokenDate] >= @__startDate_1) OR ([v].[Status] IN (N'Paid', N'FullPaid') AND [v].[TokenDate] >= @__today_2 AND [v].[TokenDate] < @__nextDay_3))
+ORDER BY [v].[TokenDate] DESC, [v].[CreatedAt] DESC, [v].[VisitId], [p].[PatientId], [r].[ReferralPartnerId], [t0].[OrderId], [t0].[TestId0], [t1].[InvoiceId]
+2026-02-18 11:53:47.798 +05:30 [ERR] An exception occurred while iterating over the results of a query for context type 'SynOS.Data.SynOSDbContext'.
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'DepartmentId'.
+Invalid column name 'IsProfile'.
+   at Microsoft.Data.SqlClient.SqlCommand.<>c.<ExecuteDbDataReaderAsync>b__209_0(Task`1 result)
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:bec35765-8e56-4718-a265-5b6600dddd51
+Error Number:207,State:1,Class:16
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'DepartmentId'.
+Invalid column name 'IsProfile'.
+   at Microsoft.Data.SqlClient.SqlCommand.<>c.<ExecuteDbDataReaderAsync>b__209_0(Task`1 result)
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:bec35765-8e56-4718-a265-5b6600dddd51
+Error Number:207,State:1,Class:16
+2026-02-18 11:53:47.887 +05:30 [ERR] Failed executing DbCommand (5ms) [Parameters=[@__branchId_0='?' (DbType = Guid), @__startDate_1='?' (DbType = DateTime2), @__today_2='?' (DbType = DateTime2), @__nextDay_3='?' (DbType = DateTime2)], CommandType='"Text"', CommandTimeout='30']
+SELECT [v].[VisitId], [v].[BranchId], [v].[CreatedAt], [v].[CurrentAssignmentId], [v].[Department], [v].[IsReferred], [v].[PatientId], [v].[PaymentCollectionModel], [v].[ReferralPartnerId], [v].[ReferrerId], [v].[ReferrerText], [v].[RowVersion], [v].[Status], [v].[Token], [v].[TokenDate], [p].[PatientId], [p].[CreatedAt], [p].[CurrentPhoneNumber], [p].[DateOfBirth], [p].[DisplayName], [p].[FirstName], [p].[Gender], [p].[IsDateOfBirthKnown], [p].[IsSoftDeleted], [p].[LastName], [p].[MRN], [p].[RowVersion], [p].[UpdatedAt], [r].[ReferralPartnerId], [r].[ContactInfo], [r].[CreatedAt], [r].[IsActive], [r].[Name], [r].[PartnerType], [r].[PaymentCollectionModel], [r].[UpdatedAt], [t0].[OrderId], [t0].[CancellationReason], [t0].[CancelledAt], [t0].[CancelledByUserId], [t0].[CreatedAt], [t0].[Department], [t0].[Discount], [t0].[Price], [t0].[SpecimenId], [t0].[Status], [t0].[TestCode], [t0].[TestId], [t0].[VisitId], [t0].[TestId0], [t0].[BasePrice], [t0].[Category], [t0].[CreatedAt0], [t0].[Department0], [t0].[DepartmentId], [t0].[IsActive], [t0].[IsProfile], [t0].[SpecimenTypeCode], [t0].[TAT_Hours], [t0].[TestCode0], [t0].[TestName], [t0].[UpdatedAt], [t1].[InvoiceId], [t1].[CreatedAt], [t1].[Currency], [t1].[DiscountAmount], [t1].[DueDate], [t1].[GrossAmount], [t1].[NetAmount], [t1].[Status], [t1].[TaxAmount], [t1].[Total], [t1].[VisitId], [t1].[PaymentId], [t1].[Amount], [t1].[InvoiceId0], [t1].[Method], [t1].[ReceiptNo], [t1].[ReceivedAt], [t1].[ReceivedByUserId]
+FROM [Visits] AS [v]
+INNER JOIN [Patients] AS [p] ON [v].[PatientId] = [p].[PatientId]
+LEFT JOIN [ReferralPartners] AS [r] ON [v].[ReferralPartnerId] = [r].[ReferralPartnerId]
+LEFT JOIN (
+    SELECT [o].[OrderId], [o].[CancellationReason], [o].[CancelledAt], [o].[CancelledByUserId], [o].[CreatedAt], [o].[Department], [o].[Discount], [o].[Price], [o].[SpecimenId], [o].[Status], [o].[TestCode], [o].[TestId], [o].[VisitId], [t].[TestId] AS [TestId0], [t].[BasePrice], [t].[Category], [t].[CreatedAt] AS [CreatedAt0], [t].[Department] AS [Department0], [t].[DepartmentId], [t].[IsActive], [t].[IsProfile], [t].[SpecimenTypeCode], [t].[TAT_Hours], [t].[TestCode] AS [TestCode0], [t].[TestName], [t].[UpdatedAt]
+    FROM [Orders] AS [o]
+    INNER JOIN [Tests] AS [t] ON [o].[TestId] = [t].[TestId]
+) AS [t0] ON [v].[VisitId] = [t0].[VisitId]
+LEFT JOIN (
+    SELECT [i].[InvoiceId], [i].[CreatedAt], [i].[Currency], [i].[DiscountAmount], [i].[DueDate], [i].[GrossAmount], [i].[NetAmount], [i].[Status], [i].[TaxAmount], [i].[Total], [i].[VisitId], [p0].[PaymentId], [p0].[Amount], [p0].[InvoiceId] AS [InvoiceId0], [p0].[Method], [p0].[ReceiptNo], [p0].[ReceivedAt], [p0].[ReceivedByUserId]
+    FROM [Invoices] AS [i]
+    LEFT JOIN [Payments] AS [p0] ON [i].[InvoiceId] = [p0].[InvoiceId]
+) AS [t1] ON [v].[VisitId] = [t1].[VisitId]
+WHERE [v].[BranchId] = @__branchId_0 AND [v].[Status] <> N'Cancelled' AND (([v].[Status] NOT IN (N'Paid', N'FullPaid') AND [v].[TokenDate] >= @__startDate_1) OR ([v].[Status] IN (N'Paid', N'FullPaid') AND [v].[TokenDate] >= @__today_2 AND [v].[TokenDate] < @__nextDay_3))
+ORDER BY [v].[TokenDate] DESC, [v].[CreatedAt] DESC, [v].[VisitId], [p].[PatientId], [r].[ReferralPartnerId], [t0].[OrderId], [t0].[TestId0], [t1].[InvoiceId]
+2026-02-18 11:53:47.915 +05:30 [ERR] An exception occurred while iterating over the results of a query for context type 'SynOS.Data.SynOSDbContext'.
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'DepartmentId'.
+Invalid column name 'IsProfile'.
+   at Microsoft.Data.SqlClient.SqlCommand.<>c.<ExecuteDbDataReaderAsync>b__209_0(Task`1 result)
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:bec35765-8e56-4718-a265-5b6600dddd51
+Error Number:207,State:1,Class:16
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'DepartmentId'.
+Invalid column name 'IsProfile'.
+   at Microsoft.Data.SqlClient.SqlCommand.<>c.<ExecuteDbDataReaderAsync>b__209_0(Task`1 result)
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:bec35765-8e56-4718-a265-5b6600dddd51
+Error Number:207,State:1,Class:16
+2026-02-18 11:53:48.003 +05:30 [ERR] Failed executing DbCommand (6ms) [Parameters=[@__branchId_0='?' (DbType = Guid), @__startDate_1='?' (DbType = DateTime2), @__today_2='?' (DbType = DateTime2), @__nextDay_3='?' (DbType = DateTime2)], CommandType='"Text"', CommandTimeout='30']
+SELECT [v].[VisitId], [v].[BranchId], [v].[CreatedAt], [v].[CurrentAssignmentId], [v].[Department], [v].[IsReferred], [v].[PatientId], [v].[PaymentCollectionModel], [v].[ReferralPartnerId], [v].[ReferrerId], [v].[ReferrerText], [v].[RowVersion], [v].[Status], [v].[Token], [v].[TokenDate], [p].[PatientId], [p].[CreatedAt], [p].[CurrentPhoneNumber], [p].[DateOfBirth], [p].[DisplayName], [p].[FirstName], [p].[Gender], [p].[IsDateOfBirthKnown], [p].[IsSoftDeleted], [p].[LastName], [p].[MRN], [p].[RowVersion], [p].[UpdatedAt], [r].[ReferralPartnerId], [r].[ContactInfo], [r].[CreatedAt], [r].[IsActive], [r].[Name], [r].[PartnerType], [r].[PaymentCollectionModel], [r].[UpdatedAt], [t0].[OrderId], [t0].[CancellationReason], [t0].[CancelledAt], [t0].[CancelledByUserId], [t0].[CreatedAt], [t0].[Department], [t0].[Discount], [t0].[Price], [t0].[SpecimenId], [t0].[Status], [t0].[TestCode], [t0].[TestId], [t0].[VisitId], [t0].[TestId0], [t0].[BasePrice], [t0].[Category], [t0].[CreatedAt0], [t0].[Department0], [t0].[DepartmentId], [t0].[IsActive], [t0].[IsProfile], [t0].[SpecimenTypeCode], [t0].[TAT_Hours], [t0].[TestCode0], [t0].[TestName], [t0].[UpdatedAt], [t1].[InvoiceId], [t1].[CreatedAt], [t1].[Currency], [t1].[DiscountAmount], [t1].[DueDate], [t1].[GrossAmount], [t1].[NetAmount], [t1].[Status], [t1].[TaxAmount], [t1].[Total], [t1].[VisitId], [t1].[PaymentId], [t1].[Amount], [t1].[InvoiceId0], [t1].[Method], [t1].[ReceiptNo], [t1].[ReceivedAt], [t1].[ReceivedByUserId]
+FROM [Visits] AS [v]
+INNER JOIN [Patients] AS [p] ON [v].[PatientId] = [p].[PatientId]
+LEFT JOIN [ReferralPartners] AS [r] ON [v].[ReferralPartnerId] = [r].[ReferralPartnerId]
+LEFT JOIN (
+    SELECT [o].[OrderId], [o].[CancellationReason], [o].[CancelledAt], [o].[CancelledByUserId], [o].[CreatedAt], [o].[Department], [o].[Discount], [o].[Price], [o].[SpecimenId], [o].[Status], [o].[TestCode], [o].[TestId], [o].[VisitId], [t].[TestId] AS [TestId0], [t].[BasePrice], [t].[Category], [t].[CreatedAt] AS [CreatedAt0], [t].[Department] AS [Department0], [t].[DepartmentId], [t].[IsActive], [t].[IsProfile], [t].[SpecimenTypeCode], [t].[TAT_Hours], [t].[TestCode] AS [TestCode0], [t].[TestName], [t].[UpdatedAt]
+    FROM [Orders] AS [o]
+    INNER JOIN [Tests] AS [t] ON [o].[TestId] = [t].[TestId]
+) AS [t0] ON [v].[VisitId] = [t0].[VisitId]
+LEFT JOIN (
+    SELECT [i].[InvoiceId], [i].[CreatedAt], [i].[Currency], [i].[DiscountAmount], [i].[DueDate], [i].[GrossAmount], [i].[NetAmount], [i].[Status], [i].[TaxAmount], [i].[Total], [i].[VisitId], [p0].[PaymentId], [p0].[Amount], [p0].[InvoiceId] AS [InvoiceId0], [p0].[Method], [p0].[ReceiptNo], [p0].[ReceivedAt], [p0].[ReceivedByUserId]
+    FROM [Invoices] AS [i]
+    LEFT JOIN [Payments] AS [p0] ON [i].[InvoiceId] = [p0].[InvoiceId]
+) AS [t1] ON [v].[VisitId] = [t1].[VisitId]
+WHERE [v].[BranchId] = @__branchId_0 AND [v].[Status] <> N'Cancelled' AND (([v].[Status] NOT IN (N'Paid', N'FullPaid') AND [v].[TokenDate] >= @__startDate_1) OR ([v].[Status] IN (N'Paid', N'FullPaid') AND [v].[TokenDate] >= @__today_2 AND [v].[TokenDate] < @__nextDay_3))
+ORDER BY [v].[TokenDate] DESC, [v].[CreatedAt] DESC, [v].[VisitId], [p].[PatientId], [r].[ReferralPartnerId], [t0].[OrderId], [t0].[TestId0], [t1].[InvoiceId]
+2026-02-18 11:53:48.036 +05:30 [ERR] An exception occurred while iterating over the results of a query for context type 'SynOS.Data.SynOSDbContext'.
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'DepartmentId'.
+Invalid column name 'IsProfile'.
+   at Microsoft.Data.SqlClient.SqlCommand.<>c.<ExecuteDbDataReaderAsync>b__209_0(Task`1 result)
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:bec35765-8e56-4718-a265-5b6600dddd51
+Error Number:207,State:1,Class:16
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'DepartmentId'.
+Invalid column name 'IsProfile'.
+   at Microsoft.Data.SqlClient.SqlCommand.<>c.<ExecuteDbDataReaderAsync>b__209_0(Task`1 result)
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:bec35765-8e56-4718-a265-5b6600dddd51
+Error Number:207,State:1,Class:16
+2026-02-18 11:53:48.118 +05:30 [ERR] Failed executing DbCommand (4ms) [Parameters=[@__branchId_0='?' (DbType = Guid), @__startDate_1='?' (DbType = DateTime2), @__today_2='?' (DbType = DateTime2), @__nextDay_3='?' (DbType = DateTime2)], CommandType='"Text"', CommandTimeout='30']
+SELECT [v].[VisitId], [v].[BranchId], [v].[CreatedAt], [v].[CurrentAssignmentId], [v].[Department], [v].[IsReferred], [v].[PatientId], [v].[PaymentCollectionModel], [v].[ReferralPartnerId], [v].[ReferrerId], [v].[ReferrerText], [v].[RowVersion], [v].[Status], [v].[Token], [v].[TokenDate], [p].[PatientId], [p].[CreatedAt], [p].[CurrentPhoneNumber], [p].[DateOfBirth], [p].[DisplayName], [p].[FirstName], [p].[Gender], [p].[IsDateOfBirthKnown], [p].[IsSoftDeleted], [p].[LastName], [p].[MRN], [p].[RowVersion], [p].[UpdatedAt], [r].[ReferralPartnerId], [r].[ContactInfo], [r].[CreatedAt], [r].[IsActive], [r].[Name], [r].[PartnerType], [r].[PaymentCollectionModel], [r].[UpdatedAt], [t0].[OrderId], [t0].[CancellationReason], [t0].[CancelledAt], [t0].[CancelledByUserId], [t0].[CreatedAt], [t0].[Department], [t0].[Discount], [t0].[Price], [t0].[SpecimenId], [t0].[Status], [t0].[TestCode], [t0].[TestId], [t0].[VisitId], [t0].[TestId0], [t0].[BasePrice], [t0].[Category], [t0].[CreatedAt0], [t0].[Department0], [t0].[DepartmentId], [t0].[IsActive], [t0].[IsProfile], [t0].[SpecimenTypeCode], [t0].[TAT_Hours], [t0].[TestCode0], [t0].[TestName], [t0].[UpdatedAt], [t1].[InvoiceId], [t1].[CreatedAt], [t1].[Currency], [t1].[DiscountAmount], [t1].[DueDate], [t1].[GrossAmount], [t1].[NetAmount], [t1].[Status], [t1].[TaxAmount], [t1].[Total], [t1].[VisitId], [t1].[PaymentId], [t1].[Amount], [t1].[InvoiceId0], [t1].[Method], [t1].[ReceiptNo], [t1].[ReceivedAt], [t1].[ReceivedByUserId]
+FROM [Visits] AS [v]
+INNER JOIN [Patients] AS [p] ON [v].[PatientId] = [p].[PatientId]
+LEFT JOIN [ReferralPartners] AS [r] ON [v].[ReferralPartnerId] = [r].[ReferralPartnerId]
+LEFT JOIN (
+    SELECT [o].[OrderId], [o].[CancellationReason], [o].[CancelledAt], [o].[CancelledByUserId], [o].[CreatedAt], [o].[Department], [o].[Discount], [o].[Price], [o].[SpecimenId], [o].[Status], [o].[TestCode], [o].[TestId], [o].[VisitId], [t].[TestId] AS [TestId0], [t].[BasePrice], [t].[Category], [t].[CreatedAt] AS [CreatedAt0], [t].[Department] AS [Department0], [t].[DepartmentId], [t].[IsActive], [t].[IsProfile], [t].[SpecimenTypeCode], [t].[TAT_Hours], [t].[TestCode] AS [TestCode0], [t].[TestName], [t].[UpdatedAt]
+    FROM [Orders] AS [o]
+    INNER JOIN [Tests] AS [t] ON [o].[TestId] = [t].[TestId]
+) AS [t0] ON [v].[VisitId] = [t0].[VisitId]
+LEFT JOIN (
+    SELECT [i].[InvoiceId], [i].[CreatedAt], [i].[Currency], [i].[DiscountAmount], [i].[DueDate], [i].[GrossAmount], [i].[NetAmount], [i].[Status], [i].[TaxAmount], [i].[Total], [i].[VisitId], [p0].[PaymentId], [p0].[Amount], [p0].[InvoiceId] AS [InvoiceId0], [p0].[Method], [p0].[ReceiptNo], [p0].[ReceivedAt], [p0].[ReceivedByUserId]
+    FROM [Invoices] AS [i]
+    LEFT JOIN [Payments] AS [p0] ON [i].[InvoiceId] = [p0].[InvoiceId]
+) AS [t1] ON [v].[VisitId] = [t1].[VisitId]
+WHERE [v].[BranchId] = @__branchId_0 AND [v].[Status] <> N'Cancelled' AND (([v].[Status] NOT IN (N'Paid', N'FullPaid') AND [v].[TokenDate] >= @__startDate_1) OR ([v].[Status] IN (N'Paid', N'FullPaid') AND [v].[TokenDate] >= @__today_2 AND [v].[TokenDate] < @__nextDay_3))
+ORDER BY [v].[TokenDate] DESC, [v].[CreatedAt] DESC, [v].[VisitId], [p].[PatientId], [r].[ReferralPartnerId], [t0].[OrderId], [t0].[TestId0], [t1].[InvoiceId]
+2026-02-18 11:53:48.144 +05:30 [ERR] An exception occurred while iterating over the results of a query for context type 'SynOS.Data.SynOSDbContext'.
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'DepartmentId'.
+Invalid column name 'IsProfile'.
+   at Microsoft.Data.SqlClient.SqlCommand.<>c.<ExecuteDbDataReaderAsync>b__209_0(Task`1 result)
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:bec35765-8e56-4718-a265-5b6600dddd51
+Error Number:207,State:1,Class:16
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'DepartmentId'.
+Invalid column name 'IsProfile'.
+   at Microsoft.Data.SqlClient.SqlCommand.<>c.<ExecuteDbDataReaderAsync>b__209_0(Task`1 result)
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:bec35765-8e56-4718-a265-5b6600dddd51
+Error Number:207,State:1,Class:16
+2026-02-18 11:54:17.190 +05:30 [ERR] Failed executing DbCommand (8ms) [Parameters=[@__branchId_0='?' (DbType = Guid), @__startDate_1='?' (DbType = DateTime2), @__today_2='?' (DbType = DateTime2), @__nextDay_3='?' (DbType = DateTime2)], CommandType='"Text"', CommandTimeout='30']
+SELECT [v].[VisitId], [v].[BranchId], [v].[CreatedAt], [v].[CurrentAssignmentId], [v].[Department], [v].[IsReferred], [v].[PatientId], [v].[PaymentCollectionModel], [v].[ReferralPartnerId], [v].[ReferrerId], [v].[ReferrerText], [v].[RowVersion], [v].[Status], [v].[Token], [v].[TokenDate], [p].[PatientId], [p].[CreatedAt], [p].[CurrentPhoneNumber], [p].[DateOfBirth], [p].[DisplayName], [p].[FirstName], [p].[Gender], [p].[IsDateOfBirthKnown], [p].[IsSoftDeleted], [p].[LastName], [p].[MRN], [p].[RowVersion], [p].[UpdatedAt], [r].[ReferralPartnerId], [r].[ContactInfo], [r].[CreatedAt], [r].[IsActive], [r].[Name], [r].[PartnerType], [r].[PaymentCollectionModel], [r].[UpdatedAt], [t0].[OrderId], [t0].[CancellationReason], [t0].[CancelledAt], [t0].[CancelledByUserId], [t0].[CreatedAt], [t0].[Department], [t0].[Discount], [t0].[Price], [t0].[SpecimenId], [t0].[Status], [t0].[TestCode], [t0].[TestId], [t0].[VisitId], [t0].[TestId0], [t0].[BasePrice], [t0].[Category], [t0].[CreatedAt0], [t0].[Department0], [t0].[DepartmentId], [t0].[IsActive], [t0].[IsProfile], [t0].[SpecimenTypeCode], [t0].[TAT_Hours], [t0].[TestCode0], [t0].[TestName], [t0].[UpdatedAt], [t1].[InvoiceId], [t1].[CreatedAt], [t1].[Currency], [t1].[DiscountAmount], [t1].[DueDate], [t1].[GrossAmount], [t1].[NetAmount], [t1].[Status], [t1].[TaxAmount], [t1].[Total], [t1].[VisitId], [t1].[PaymentId], [t1].[Amount], [t1].[InvoiceId0], [t1].[Method], [t1].[ReceiptNo], [t1].[ReceivedAt], [t1].[ReceivedByUserId]
+FROM [Visits] AS [v]
+INNER JOIN [Patients] AS [p] ON [v].[PatientId] = [p].[PatientId]
+LEFT JOIN [ReferralPartners] AS [r] ON [v].[ReferralPartnerId] = [r].[ReferralPartnerId]
+LEFT JOIN (
+    SELECT [o].[OrderId], [o].[CancellationReason], [o].[CancelledAt], [o].[CancelledByUserId], [o].[CreatedAt], [o].[Department], [o].[Discount], [o].[Price], [o].[SpecimenId], [o].[Status], [o].[TestCode], [o].[TestId], [o].[VisitId], [t].[TestId] AS [TestId0], [t].[BasePrice], [t].[Category], [t].[CreatedAt] AS [CreatedAt0], [t].[Department] AS [Department0], [t].[DepartmentId], [t].[IsActive], [t].[IsProfile], [t].[SpecimenTypeCode], [t].[TAT_Hours], [t].[TestCode] AS [TestCode0], [t].[TestName], [t].[UpdatedAt]
+    FROM [Orders] AS [o]
+    INNER JOIN [Tests] AS [t] ON [o].[TestId] = [t].[TestId]
+) AS [t0] ON [v].[VisitId] = [t0].[VisitId]
+LEFT JOIN (
+    SELECT [i].[InvoiceId], [i].[CreatedAt], [i].[Currency], [i].[DiscountAmount], [i].[DueDate], [i].[GrossAmount], [i].[NetAmount], [i].[Status], [i].[TaxAmount], [i].[Total], [i].[VisitId], [p0].[PaymentId], [p0].[Amount], [p0].[InvoiceId] AS [InvoiceId0], [p0].[Method], [p0].[ReceiptNo], [p0].[ReceivedAt], [p0].[ReceivedByUserId]
+    FROM [Invoices] AS [i]
+    LEFT JOIN [Payments] AS [p0] ON [i].[InvoiceId] = [p0].[InvoiceId]
+) AS [t1] ON [v].[VisitId] = [t1].[VisitId]
+WHERE [v].[BranchId] = @__branchId_0 AND [v].[Status] <> N'Cancelled' AND (([v].[Status] NOT IN (N'Paid', N'FullPaid') AND [v].[TokenDate] >= @__startDate_1) OR ([v].[Status] IN (N'Paid', N'FullPaid') AND [v].[TokenDate] >= @__today_2 AND [v].[TokenDate] < @__nextDay_3))
+ORDER BY [v].[TokenDate] DESC, [v].[CreatedAt] DESC, [v].[VisitId], [p].[PatientId], [r].[ReferralPartnerId], [t0].[OrderId], [t0].[TestId0], [t1].[InvoiceId]
+2026-02-18 11:54:17.220 +05:30 [ERR] An exception occurred while iterating over the results of a query for context type 'SynOS.Data.SynOSDbContext'.
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'DepartmentId'.
+Invalid column name 'IsProfile'.
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:bec35765-8e56-4718-a265-5b6600dddd51
+Error Number:207,State:1,Class:16
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'DepartmentId'.
+Invalid column name 'IsProfile'.
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:bec35765-8e56-4718-a265-5b6600dddd51
+Error Number:207,State:1,Class:16
+2026-02-18 11:54:47.138 +05:30 [ERR] Failed executing DbCommand (8ms) [Parameters=[@__branchId_0='?' (DbType = Guid), @__startDate_1='?' (DbType = DateTime2), @__today_2='?' (DbType = DateTime2), @__nextDay_3='?' (DbType = DateTime2)], CommandType='"Text"', CommandTimeout='30']
+SELECT [v].[VisitId], [v].[BranchId], [v].[CreatedAt], [v].[CurrentAssignmentId], [v].[Department], [v].[IsReferred], [v].[PatientId], [v].[PaymentCollectionModel], [v].[ReferralPartnerId], [v].[ReferrerId], [v].[ReferrerText], [v].[RowVersion], [v].[Status], [v].[Token], [v].[TokenDate], [p].[PatientId], [p].[CreatedAt], [p].[CurrentPhoneNumber], [p].[DateOfBirth], [p].[DisplayName], [p].[FirstName], [p].[Gender], [p].[IsDateOfBirthKnown], [p].[IsSoftDeleted], [p].[LastName], [p].[MRN], [p].[RowVersion], [p].[UpdatedAt], [r].[ReferralPartnerId], [r].[ContactInfo], [r].[CreatedAt], [r].[IsActive], [r].[Name], [r].[PartnerType], [r].[PaymentCollectionModel], [r].[UpdatedAt], [t0].[OrderId], [t0].[CancellationReason], [t0].[CancelledAt], [t0].[CancelledByUserId], [t0].[CreatedAt], [t0].[Department], [t0].[Discount], [t0].[Price], [t0].[SpecimenId], [t0].[Status], [t0].[TestCode], [t0].[TestId], [t0].[VisitId], [t0].[TestId0], [t0].[BasePrice], [t0].[Category], [t0].[CreatedAt0], [t0].[Department0], [t0].[DepartmentId], [t0].[IsActive], [t0].[IsProfile], [t0].[SpecimenTypeCode], [t0].[TAT_Hours], [t0].[TestCode0], [t0].[TestName], [t0].[UpdatedAt], [t1].[InvoiceId], [t1].[CreatedAt], [t1].[Currency], [t1].[DiscountAmount], [t1].[DueDate], [t1].[GrossAmount], [t1].[NetAmount], [t1].[Status], [t1].[TaxAmount], [t1].[Total], [t1].[VisitId], [t1].[PaymentId], [t1].[Amount], [t1].[InvoiceId0], [t1].[Method], [t1].[ReceiptNo], [t1].[ReceivedAt], [t1].[ReceivedByUserId]
+FROM [Visits] AS [v]
+INNER JOIN [Patients] AS [p] ON [v].[PatientId] = [p].[PatientId]
+LEFT JOIN [ReferralPartners] AS [r] ON [v].[ReferralPartnerId] = [r].[ReferralPartnerId]
+LEFT JOIN (
+    SELECT [o].[OrderId], [o].[CancellationReason], [o].[CancelledAt], [o].[CancelledByUserId], [o].[CreatedAt], [o].[Department], [o].[Discount], [o].[Price], [o].[SpecimenId], [o].[Status], [o].[TestCode], [o].[TestId], [o].[VisitId], [t].[TestId] AS [TestId0], [t].[BasePrice], [t].[Category], [t].[CreatedAt] AS [CreatedAt0], [t].[Department] AS [Department0], [t].[DepartmentId], [t].[IsActive], [t].[IsProfile], [t].[SpecimenTypeCode], [t].[TAT_Hours], [t].[TestCode] AS [TestCode0], [t].[TestName], [t].[UpdatedAt]
+    FROM [Orders] AS [o]
+    INNER JOIN [Tests] AS [t] ON [o].[TestId] = [t].[TestId]
+) AS [t0] ON [v].[VisitId] = [t0].[VisitId]
+LEFT JOIN (
+    SELECT [i].[InvoiceId], [i].[CreatedAt], [i].[Currency], [i].[DiscountAmount], [i].[DueDate], [i].[GrossAmount], [i].[NetAmount], [i].[Status], [i].[TaxAmount], [i].[Total], [i].[VisitId], [p0].[PaymentId], [p0].[Amount], [p0].[InvoiceId] AS [InvoiceId0], [p0].[Method], [p0].[ReceiptNo], [p0].[ReceivedAt], [p0].[ReceivedByUserId]
+    FROM [Invoices] AS [i]
+    LEFT JOIN [Payments] AS [p0] ON [i].[InvoiceId] = [p0].[InvoiceId]
+) AS [t1] ON [v].[VisitId] = [t1].[VisitId]
+WHERE [v].[BranchId] = @__branchId_0 AND [v].[Status] <> N'Cancelled' AND (([v].[Status] NOT IN (N'Paid', N'FullPaid') AND [v].[TokenDate] >= @__startDate_1) OR ([v].[Status] IN (N'Paid', N'FullPaid') AND [v].[TokenDate] >= @__today_2 AND [v].[TokenDate] < @__nextDay_3))
+ORDER BY [v].[TokenDate] DESC, [v].[CreatedAt] DESC, [v].[VisitId], [p].[PatientId], [r].[ReferralPartnerId], [t0].[OrderId], [t0].[TestId0], [t1].[InvoiceId]
+2026-02-18 11:54:47.191 +05:30 [ERR] An exception occurred while iterating over the results of a query for context type 'SynOS.Data.SynOSDbContext'.
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'DepartmentId'.
+Invalid column name 'IsProfile'.
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:a9b9a5c1-3a22-4ccd-be1c-f6dfca31f1d7
+Error Number:207,State:1,Class:16
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'DepartmentId'.
+Invalid column name 'IsProfile'.
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:a9b9a5c1-3a22-4ccd-be1c-f6dfca31f1d7
+Error Number:207,State:1,Class:16
+2026-02-18 11:55:17.140 +05:30 [ERR] Failed executing DbCommand (8ms) [Parameters=[@__branchId_0='?' (DbType = Guid), @__startDate_1='?' (DbType = DateTime2), @__today_2='?' (DbType = DateTime2), @__nextDay_3='?' (DbType = DateTime2)], CommandType='"Text"', CommandTimeout='30']
+SELECT [v].[VisitId], [v].[BranchId], [v].[CreatedAt], [v].[CurrentAssignmentId], [v].[Department], [v].[IsReferred], [v].[PatientId], [v].[PaymentCollectionModel], [v].[ReferralPartnerId], [v].[ReferrerId], [v].[ReferrerText], [v].[RowVersion], [v].[Status], [v].[Token], [v].[TokenDate], [p].[PatientId], [p].[CreatedAt], [p].[CurrentPhoneNumber], [p].[DateOfBirth], [p].[DisplayName], [p].[FirstName], [p].[Gender], [p].[IsDateOfBirthKnown], [p].[IsSoftDeleted], [p].[LastName], [p].[MRN], [p].[RowVersion], [p].[UpdatedAt], [r].[ReferralPartnerId], [r].[ContactInfo], [r].[CreatedAt], [r].[IsActive], [r].[Name], [r].[PartnerType], [r].[PaymentCollectionModel], [r].[UpdatedAt], [t0].[OrderId], [t0].[CancellationReason], [t0].[CancelledAt], [t0].[CancelledByUserId], [t0].[CreatedAt], [t0].[Department], [t0].[Discount], [t0].[Price], [t0].[SpecimenId], [t0].[Status], [t0].[TestCode], [t0].[TestId], [t0].[VisitId], [t0].[TestId0], [t0].[BasePrice], [t0].[Category], [t0].[CreatedAt0], [t0].[Department0], [t0].[DepartmentId], [t0].[IsActive], [t0].[IsProfile], [t0].[SpecimenTypeCode], [t0].[TAT_Hours], [t0].[TestCode0], [t0].[TestName], [t0].[UpdatedAt], [t1].[InvoiceId], [t1].[CreatedAt], [t1].[Currency], [t1].[DiscountAmount], [t1].[DueDate], [t1].[GrossAmount], [t1].[NetAmount], [t1].[Status], [t1].[TaxAmount], [t1].[Total], [t1].[VisitId], [t1].[PaymentId], [t1].[Amount], [t1].[InvoiceId0], [t1].[Method], [t1].[ReceiptNo], [t1].[ReceivedAt], [t1].[ReceivedByUserId]
+FROM [Visits] AS [v]
+INNER JOIN [Patients] AS [p] ON [v].[PatientId] = [p].[PatientId]
+LEFT JOIN [ReferralPartners] AS [r] ON [v].[ReferralPartnerId] = [r].[ReferralPartnerId]
+LEFT JOIN (
+    SELECT [o].[OrderId], [o].[CancellationReason], [o].[CancelledAt], [o].[CancelledByUserId], [o].[CreatedAt], [o].[Department], [o].[Discount], [o].[Price], [o].[SpecimenId], [o].[Status], [o].[TestCode], [o].[TestId], [o].[VisitId], [t].[TestId] AS [TestId0], [t].[BasePrice], [t].[Category], [t].[CreatedAt] AS [CreatedAt0], [t].[Department] AS [Department0], [t].[DepartmentId], [t].[IsActive], [t].[IsProfile], [t].[SpecimenTypeCode], [t].[TAT_Hours], [t].[TestCode] AS [TestCode0], [t].[TestName], [t].[UpdatedAt]
+    FROM [Orders] AS [o]
+    INNER JOIN [Tests] AS [t] ON [o].[TestId] = [t].[TestId]
+) AS [t0] ON [v].[VisitId] = [t0].[VisitId]
+LEFT JOIN (
+    SELECT [i].[InvoiceId], [i].[CreatedAt], [i].[Currency], [i].[DiscountAmount], [i].[DueDate], [i].[GrossAmount], [i].[NetAmount], [i].[Status], [i].[TaxAmount], [i].[Total], [i].[VisitId], [p0].[PaymentId], [p0].[Amount], [p0].[InvoiceId] AS [InvoiceId0], [p0].[Method], [p0].[ReceiptNo], [p0].[ReceivedAt], [p0].[ReceivedByUserId]
+    FROM [Invoices] AS [i]
+    LEFT JOIN [Payments] AS [p0] ON [i].[InvoiceId] = [p0].[InvoiceId]
+) AS [t1] ON [v].[VisitId] = [t1].[VisitId]
+WHERE [v].[BranchId] = @__branchId_0 AND [v].[Status] <> N'Cancelled' AND (([v].[Status] NOT IN (N'Paid', N'FullPaid') AND [v].[TokenDate] >= @__startDate_1) OR ([v].[Status] IN (N'Paid', N'FullPaid') AND [v].[TokenDate] >= @__today_2 AND [v].[TokenDate] < @__nextDay_3))
+ORDER BY [v].[TokenDate] DESC, [v].[CreatedAt] DESC, [v].[VisitId], [p].[PatientId], [r].[ReferralPartnerId], [t0].[OrderId], [t0].[TestId0], [t1].[InvoiceId]
+2026-02-18 11:55:17.164 +05:30 [ERR] An exception occurred while iterating over the results of a query for context type 'SynOS.Data.SynOSDbContext'.
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'DepartmentId'.
+Invalid column name 'IsProfile'.
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:a9b9a5c1-3a22-4ccd-be1c-f6dfca31f1d7
+Error Number:207,State:1,Class:16
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'DepartmentId'.
+Invalid column name 'IsProfile'.
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:a9b9a5c1-3a22-4ccd-be1c-f6dfca31f1d7
+Error Number:207,State:1,Class:16
+2026-02-18 11:55:47.135 +05:30 [ERR] Failed executing DbCommand (10ms) [Parameters=[@__branchId_0='?' (DbType = Guid), @__startDate_1='?' (DbType = DateTime2), @__today_2='?' (DbType = DateTime2), @__nextDay_3='?' (DbType = DateTime2)], CommandType='"Text"', CommandTimeout='30']
+SELECT [v].[VisitId], [v].[BranchId], [v].[CreatedAt], [v].[CurrentAssignmentId], [v].[Department], [v].[IsReferred], [v].[PatientId], [v].[PaymentCollectionModel], [v].[ReferralPartnerId], [v].[ReferrerId], [v].[ReferrerText], [v].[RowVersion], [v].[Status], [v].[Token], [v].[TokenDate], [p].[PatientId], [p].[CreatedAt], [p].[CurrentPhoneNumber], [p].[DateOfBirth], [p].[DisplayName], [p].[FirstName], [p].[Gender], [p].[IsDateOfBirthKnown], [p].[IsSoftDeleted], [p].[LastName], [p].[MRN], [p].[RowVersion], [p].[UpdatedAt], [r].[ReferralPartnerId], [r].[ContactInfo], [r].[CreatedAt], [r].[IsActive], [r].[Name], [r].[PartnerType], [r].[PaymentCollectionModel], [r].[UpdatedAt], [t0].[OrderId], [t0].[CancellationReason], [t0].[CancelledAt], [t0].[CancelledByUserId], [t0].[CreatedAt], [t0].[Department], [t0].[Discount], [t0].[Price], [t0].[SpecimenId], [t0].[Status], [t0].[TestCode], [t0].[TestId], [t0].[VisitId], [t0].[TestId0], [t0].[BasePrice], [t0].[Category], [t0].[CreatedAt0], [t0].[Department0], [t0].[DepartmentId], [t0].[IsActive], [t0].[IsProfile], [t0].[SpecimenTypeCode], [t0].[TAT_Hours], [t0].[TestCode0], [t0].[TestName], [t0].[UpdatedAt], [t1].[InvoiceId], [t1].[CreatedAt], [t1].[Currency], [t1].[DiscountAmount], [t1].[DueDate], [t1].[GrossAmount], [t1].[NetAmount], [t1].[Status], [t1].[TaxAmount], [t1].[Total], [t1].[VisitId], [t1].[PaymentId], [t1].[Amount], [t1].[InvoiceId0], [t1].[Method], [t1].[ReceiptNo], [t1].[ReceivedAt], [t1].[ReceivedByUserId]
+FROM [Visits] AS [v]
+INNER JOIN [Patients] AS [p] ON [v].[PatientId] = [p].[PatientId]
+LEFT JOIN [ReferralPartners] AS [r] ON [v].[ReferralPartnerId] = [r].[ReferralPartnerId]
+LEFT JOIN (
+    SELECT [o].[OrderId], [o].[CancellationReason], [o].[CancelledAt], [o].[CancelledByUserId], [o].[CreatedAt], [o].[Department], [o].[Discount], [o].[Price], [o].[SpecimenId], [o].[Status], [o].[TestCode], [o].[TestId], [o].[VisitId], [t].[TestId] AS [TestId0], [t].[BasePrice], [t].[Category], [t].[CreatedAt] AS [CreatedAt0], [t].[Department] AS [Department0], [t].[DepartmentId], [t].[IsActive], [t].[IsProfile], [t].[SpecimenTypeCode], [t].[TAT_Hours], [t].[TestCode] AS [TestCode0], [t].[TestName], [t].[UpdatedAt]
+    FROM [Orders] AS [o]
+    INNER JOIN [Tests] AS [t] ON [o].[TestId] = [t].[TestId]
+) AS [t0] ON [v].[VisitId] = [t0].[VisitId]
+LEFT JOIN (
+    SELECT [i].[InvoiceId], [i].[CreatedAt], [i].[Currency], [i].[DiscountAmount], [i].[DueDate], [i].[GrossAmount], [i].[NetAmount], [i].[Status], [i].[TaxAmount], [i].[Total], [i].[VisitId], [p0].[PaymentId], [p0].[Amount], [p0].[InvoiceId] AS [InvoiceId0], [p0].[Method], [p0].[ReceiptNo], [p0].[ReceivedAt], [p0].[ReceivedByUserId]
+    FROM [Invoices] AS [i]
+    LEFT JOIN [Payments] AS [p0] ON [i].[InvoiceId] = [p0].[InvoiceId]
+) AS [t1] ON [v].[VisitId] = [t1].[VisitId]
+WHERE [v].[BranchId] = @__branchId_0 AND [v].[Status] <> N'Cancelled' AND (([v].[Status] NOT IN (N'Paid', N'FullPaid') AND [v].[TokenDate] >= @__startDate_1) OR ([v].[Status] IN (N'Paid', N'FullPaid') AND [v].[TokenDate] >= @__today_2 AND [v].[TokenDate] < @__nextDay_3))
+ORDER BY [v].[TokenDate] DESC, [v].[CreatedAt] DESC, [v].[VisitId], [p].[PatientId], [r].[ReferralPartnerId], [t0].[OrderId], [t0].[TestId0], [t1].[InvoiceId]
+2026-02-18 11:55:47.155 +05:30 [ERR] An exception occurred while iterating over the results of a query for context type 'SynOS.Data.SynOSDbContext'.
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'DepartmentId'.
+Invalid column name 'IsProfile'.
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:bec35765-8e56-4718-a265-5b6600dddd51
+Error Number:207,State:1,Class:16
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'DepartmentId'.
+Invalid column name 'IsProfile'.
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:bec35765-8e56-4718-a265-5b6600dddd51
+Error Number:207,State:1,Class:16
+2026-02-18 11:56:17.123 +05:30 [ERR] Failed executing DbCommand (6ms) [Parameters=[@__branchId_0='?' (DbType = Guid), @__startDate_1='?' (DbType = DateTime2), @__today_2='?' (DbType = DateTime2), @__nextDay_3='?' (DbType = DateTime2)], CommandType='"Text"', CommandTimeout='30']
+SELECT [v].[VisitId], [v].[BranchId], [v].[CreatedAt], [v].[CurrentAssignmentId], [v].[Department], [v].[IsReferred], [v].[PatientId], [v].[PaymentCollectionModel], [v].[ReferralPartnerId], [v].[ReferrerId], [v].[ReferrerText], [v].[RowVersion], [v].[Status], [v].[Token], [v].[TokenDate], [p].[PatientId], [p].[CreatedAt], [p].[CurrentPhoneNumber], [p].[DateOfBirth], [p].[DisplayName], [p].[FirstName], [p].[Gender], [p].[IsDateOfBirthKnown], [p].[IsSoftDeleted], [p].[LastName], [p].[MRN], [p].[RowVersion], [p].[UpdatedAt], [r].[ReferralPartnerId], [r].[ContactInfo], [r].[CreatedAt], [r].[IsActive], [r].[Name], [r].[PartnerType], [r].[PaymentCollectionModel], [r].[UpdatedAt], [t0].[OrderId], [t0].[CancellationReason], [t0].[CancelledAt], [t0].[CancelledByUserId], [t0].[CreatedAt], [t0].[Department], [t0].[Discount], [t0].[Price], [t0].[SpecimenId], [t0].[Status], [t0].[TestCode], [t0].[TestId], [t0].[VisitId], [t0].[TestId0], [t0].[BasePrice], [t0].[Category], [t0].[CreatedAt0], [t0].[Department0], [t0].[DepartmentId], [t0].[IsActive], [t0].[IsProfile], [t0].[SpecimenTypeCode], [t0].[TAT_Hours], [t0].[TestCode0], [t0].[TestName], [t0].[UpdatedAt], [t1].[InvoiceId], [t1].[CreatedAt], [t1].[Currency], [t1].[DiscountAmount], [t1].[DueDate], [t1].[GrossAmount], [t1].[NetAmount], [t1].[Status], [t1].[TaxAmount], [t1].[Total], [t1].[VisitId], [t1].[PaymentId], [t1].[Amount], [t1].[InvoiceId0], [t1].[Method], [t1].[ReceiptNo], [t1].[ReceivedAt], [t1].[ReceivedByUserId]
+FROM [Visits] AS [v]
+INNER JOIN [Patients] AS [p] ON [v].[PatientId] = [p].[PatientId]
+LEFT JOIN [ReferralPartners] AS [r] ON [v].[ReferralPartnerId] = [r].[ReferralPartnerId]
+LEFT JOIN (
+    SELECT [o].[OrderId], [o].[CancellationReason], [o].[CancelledAt], [o].[CancelledByUserId], [o].[CreatedAt], [o].[Department], [o].[Discount], [o].[Price], [o].[SpecimenId], [o].[Status], [o].[TestCode], [o].[TestId], [o].[VisitId], [t].[TestId] AS [TestId0], [t].[BasePrice], [t].[Category], [t].[CreatedAt] AS [CreatedAt0], [t].[Department] AS [Department0], [t].[DepartmentId], [t].[IsActive], [t].[IsProfile], [t].[SpecimenTypeCode], [t].[TAT_Hours], [t].[TestCode] AS [TestCode0], [t].[TestName], [t].[UpdatedAt]
+    FROM [Orders] AS [o]
+    INNER JOIN [Tests] AS [t] ON [o].[TestId] = [t].[TestId]
+) AS [t0] ON [v].[VisitId] = [t0].[VisitId]
+LEFT JOIN (
+    SELECT [i].[InvoiceId], [i].[CreatedAt], [i].[Currency], [i].[DiscountAmount], [i].[DueDate], [i].[GrossAmount], [i].[NetAmount], [i].[Status], [i].[TaxAmount], [i].[Total], [i].[VisitId], [p0].[PaymentId], [p0].[Amount], [p0].[InvoiceId] AS [InvoiceId0], [p0].[Method], [p0].[ReceiptNo], [p0].[ReceivedAt], [p0].[ReceivedByUserId]
+    FROM [Invoices] AS [i]
+    LEFT JOIN [Payments] AS [p0] ON [i].[InvoiceId] = [p0].[InvoiceId]
+) AS [t1] ON [v].[VisitId] = [t1].[VisitId]
+WHERE [v].[BranchId] = @__branchId_0 AND [v].[Status] <> N'Cancelled' AND (([v].[Status] NOT IN (N'Paid', N'FullPaid') AND [v].[TokenDate] >= @__startDate_1) OR ([v].[Status] IN (N'Paid', N'FullPaid') AND [v].[TokenDate] >= @__today_2 AND [v].[TokenDate] < @__nextDay_3))
+ORDER BY [v].[TokenDate] DESC, [v].[CreatedAt] DESC, [v].[VisitId], [p].[PatientId], [r].[ReferralPartnerId], [t0].[OrderId], [t0].[TestId0], [t1].[InvoiceId]
+2026-02-18 11:56:17.143 +05:30 [ERR] An exception occurred while iterating over the results of a query for context type 'SynOS.Data.SynOSDbContext'.
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'DepartmentId'.
+Invalid column name 'IsProfile'.
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:bec35765-8e56-4718-a265-5b6600dddd51
+Error Number:207,State:1,Class:16
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'DepartmentId'.
+Invalid column name 'IsProfile'.
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:bec35765-8e56-4718-a265-5b6600dddd51
+Error Number:207,State:1,Class:16
+2026-02-18 11:56:47.131 +05:30 [ERR] Failed executing DbCommand (4ms) [Parameters=[@__branchId_0='?' (DbType = Guid), @__startDate_1='?' (DbType = DateTime2), @__today_2='?' (DbType = DateTime2), @__nextDay_3='?' (DbType = DateTime2)], CommandType='"Text"', CommandTimeout='30']
+SELECT [v].[VisitId], [v].[BranchId], [v].[CreatedAt], [v].[CurrentAssignmentId], [v].[Department], [v].[IsReferred], [v].[PatientId], [v].[PaymentCollectionModel], [v].[ReferralPartnerId], [v].[ReferrerId], [v].[ReferrerText], [v].[RowVersion], [v].[Status], [v].[Token], [v].[TokenDate], [p].[PatientId], [p].[CreatedAt], [p].[CurrentPhoneNumber], [p].[DateOfBirth], [p].[DisplayName], [p].[FirstName], [p].[Gender], [p].[IsDateOfBirthKnown], [p].[IsSoftDeleted], [p].[LastName], [p].[MRN], [p].[RowVersion], [p].[UpdatedAt], [r].[ReferralPartnerId], [r].[ContactInfo], [r].[CreatedAt], [r].[IsActive], [r].[Name], [r].[PartnerType], [r].[PaymentCollectionModel], [r].[UpdatedAt], [t0].[OrderId], [t0].[CancellationReason], [t0].[CancelledAt], [t0].[CancelledByUserId], [t0].[CreatedAt], [t0].[Department], [t0].[Discount], [t0].[Price], [t0].[SpecimenId], [t0].[Status], [t0].[TestCode], [t0].[TestId], [t0].[VisitId], [t0].[TestId0], [t0].[BasePrice], [t0].[Category], [t0].[CreatedAt0], [t0].[Department0], [t0].[DepartmentId], [t0].[IsActive], [t0].[IsProfile], [t0].[SpecimenTypeCode], [t0].[TAT_Hours], [t0].[TestCode0], [t0].[TestName], [t0].[UpdatedAt], [t1].[InvoiceId], [t1].[CreatedAt], [t1].[Currency], [t1].[DiscountAmount], [t1].[DueDate], [t1].[GrossAmount], [t1].[NetAmount], [t1].[Status], [t1].[TaxAmount], [t1].[Total], [t1].[VisitId], [t1].[PaymentId], [t1].[Amount], [t1].[InvoiceId0], [t1].[Method], [t1].[ReceiptNo], [t1].[ReceivedAt], [t1].[ReceivedByUserId]
+FROM [Visits] AS [v]
+INNER JOIN [Patients] AS [p] ON [v].[PatientId] = [p].[PatientId]
+LEFT JOIN [ReferralPartners] AS [r] ON [v].[ReferralPartnerId] = [r].[ReferralPartnerId]
+LEFT JOIN (
+    SELECT [o].[OrderId], [o].[CancellationReason], [o].[CancelledAt], [o].[CancelledByUserId], [o].[CreatedAt], [o].[Department], [o].[Discount], [o].[Price], [o].[SpecimenId], [o].[Status], [o].[TestCode], [o].[TestId], [o].[VisitId], [t].[TestId] AS [TestId0], [t].[BasePrice], [t].[Category], [t].[CreatedAt] AS [CreatedAt0], [t].[Department] AS [Department0], [t].[DepartmentId], [t].[IsActive], [t].[IsProfile], [t].[SpecimenTypeCode], [t].[TAT_Hours], [t].[TestCode] AS [TestCode0], [t].[TestName], [t].[UpdatedAt]
+    FROM [Orders] AS [o]
+    INNER JOIN [Tests] AS [t] ON [o].[TestId] = [t].[TestId]
+) AS [t0] ON [v].[VisitId] = [t0].[VisitId]
+LEFT JOIN (
+    SELECT [i].[InvoiceId], [i].[CreatedAt], [i].[Currency], [i].[DiscountAmount], [i].[DueDate], [i].[GrossAmount], [i].[NetAmount], [i].[Status], [i].[TaxAmount], [i].[Total], [i].[VisitId], [p0].[PaymentId], [p0].[Amount], [p0].[InvoiceId] AS [InvoiceId0], [p0].[Method], [p0].[ReceiptNo], [p0].[ReceivedAt], [p0].[ReceivedByUserId]
+    FROM [Invoices] AS [i]
+    LEFT JOIN [Payments] AS [p0] ON [i].[InvoiceId] = [p0].[InvoiceId]
+) AS [t1] ON [v].[VisitId] = [t1].[VisitId]
+WHERE [v].[BranchId] = @__branchId_0 AND [v].[Status] <> N'Cancelled' AND (([v].[Status] NOT IN (N'Paid', N'FullPaid') AND [v].[TokenDate] >= @__startDate_1) OR ([v].[Status] IN (N'Paid', N'FullPaid') AND [v].[TokenDate] >= @__today_2 AND [v].[TokenDate] < @__nextDay_3))
+ORDER BY [v].[TokenDate] DESC, [v].[CreatedAt] DESC, [v].[VisitId], [p].[PatientId], [r].[ReferralPartnerId], [t0].[OrderId], [t0].[TestId0], [t1].[InvoiceId]
+2026-02-18 11:56:47.151 +05:30 [ERR] An exception occurred while iterating over the results of a query for context type 'SynOS.Data.SynOSDbContext'.
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'DepartmentId'.
+Invalid column name 'IsProfile'.
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:bec35765-8e56-4718-a265-5b6600dddd51
+Error Number:207,State:1,Class:16
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'DepartmentId'.
+Invalid column name 'IsProfile'.
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:bec35765-8e56-4718-a265-5b6600dddd51
+Error Number:207,State:1,Class:16
+2026-02-18 11:57:17.136 +05:30 [ERR] Failed executing DbCommand (6ms) [Parameters=[@__branchId_0='?' (DbType = Guid), @__startDate_1='?' (DbType = DateTime2), @__today_2='?' (DbType = DateTime2), @__nextDay_3='?' (DbType = DateTime2)], CommandType='"Text"', CommandTimeout='30']
+SELECT [v].[VisitId], [v].[BranchId], [v].[CreatedAt], [v].[CurrentAssignmentId], [v].[Department], [v].[IsReferred], [v].[PatientId], [v].[PaymentCollectionModel], [v].[ReferralPartnerId], [v].[ReferrerId], [v].[ReferrerText], [v].[RowVersion], [v].[Status], [v].[Token], [v].[TokenDate], [p].[PatientId], [p].[CreatedAt], [p].[CurrentPhoneNumber], [p].[DateOfBirth], [p].[DisplayName], [p].[FirstName], [p].[Gender], [p].[IsDateOfBirthKnown], [p].[IsSoftDeleted], [p].[LastName], [p].[MRN], [p].[RowVersion], [p].[UpdatedAt], [r].[ReferralPartnerId], [r].[ContactInfo], [r].[CreatedAt], [r].[IsActive], [r].[Name], [r].[PartnerType], [r].[PaymentCollectionModel], [r].[UpdatedAt], [t0].[OrderId], [t0].[CancellationReason], [t0].[CancelledAt], [t0].[CancelledByUserId], [t0].[CreatedAt], [t0].[Department], [t0].[Discount], [t0].[Price], [t0].[SpecimenId], [t0].[Status], [t0].[TestCode], [t0].[TestId], [t0].[VisitId], [t0].[TestId0], [t0].[BasePrice], [t0].[Category], [t0].[CreatedAt0], [t0].[Department0], [t0].[DepartmentId], [t0].[IsActive], [t0].[IsProfile], [t0].[SpecimenTypeCode], [t0].[TAT_Hours], [t0].[TestCode0], [t0].[TestName], [t0].[UpdatedAt], [t1].[InvoiceId], [t1].[CreatedAt], [t1].[Currency], [t1].[DiscountAmount], [t1].[DueDate], [t1].[GrossAmount], [t1].[NetAmount], [t1].[Status], [t1].[TaxAmount], [t1].[Total], [t1].[VisitId], [t1].[PaymentId], [t1].[Amount], [t1].[InvoiceId0], [t1].[Method], [t1].[ReceiptNo], [t1].[ReceivedAt], [t1].[ReceivedByUserId]
+FROM [Visits] AS [v]
+INNER JOIN [Patients] AS [p] ON [v].[PatientId] = [p].[PatientId]
+LEFT JOIN [ReferralPartners] AS [r] ON [v].[ReferralPartnerId] = [r].[ReferralPartnerId]
+LEFT JOIN (
+    SELECT [o].[OrderId], [o].[CancellationReason], [o].[CancelledAt], [o].[CancelledByUserId], [o].[CreatedAt], [o].[Department], [o].[Discount], [o].[Price], [o].[SpecimenId], [o].[Status], [o].[TestCode], [o].[TestId], [o].[VisitId], [t].[TestId] AS [TestId0], [t].[BasePrice], [t].[Category], [t].[CreatedAt] AS [CreatedAt0], [t].[Department] AS [Department0], [t].[DepartmentId], [t].[IsActive], [t].[IsProfile], [t].[SpecimenTypeCode], [t].[TAT_Hours], [t].[TestCode] AS [TestCode0], [t].[TestName], [t].[UpdatedAt]
+    FROM [Orders] AS [o]
+    INNER JOIN [Tests] AS [t] ON [o].[TestId] = [t].[TestId]
+) AS [t0] ON [v].[VisitId] = [t0].[VisitId]
+LEFT JOIN (
+    SELECT [i].[InvoiceId], [i].[CreatedAt], [i].[Currency], [i].[DiscountAmount], [i].[DueDate], [i].[GrossAmount], [i].[NetAmount], [i].[Status], [i].[TaxAmount], [i].[Total], [i].[VisitId], [p0].[PaymentId], [p0].[Amount], [p0].[InvoiceId] AS [InvoiceId0], [p0].[Method], [p0].[ReceiptNo], [p0].[ReceivedAt], [p0].[ReceivedByUserId]
+    FROM [Invoices] AS [i]
+    LEFT JOIN [Payments] AS [p0] ON [i].[InvoiceId] = [p0].[InvoiceId]
+) AS [t1] ON [v].[VisitId] = [t1].[VisitId]
+WHERE [v].[BranchId] = @__branchId_0 AND [v].[Status] <> N'Cancelled' AND (([v].[Status] NOT IN (N'Paid', N'FullPaid') AND [v].[TokenDate] >= @__startDate_1) OR ([v].[Status] IN (N'Paid', N'FullPaid') AND [v].[TokenDate] >= @__today_2 AND [v].[TokenDate] < @__nextDay_3))
+ORDER BY [v].[TokenDate] DESC, [v].[CreatedAt] DESC, [v].[VisitId], [p].[PatientId], [r].[ReferralPartnerId], [t0].[OrderId], [t0].[TestId0], [t1].[InvoiceId]
+2026-02-18 11:57:17.157 +05:30 [ERR] An exception occurred while iterating over the results of a query for context type 'SynOS.Data.SynOSDbContext'.
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'DepartmentId'.
+Invalid column name 'IsProfile'.
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:bec35765-8e56-4718-a265-5b6600dddd51
+Error Number:207,State:1,Class:16
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'DepartmentId'.
+Invalid column name 'IsProfile'.
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:bec35765-8e56-4718-a265-5b6600dddd51
+Error Number:207,State:1,Class:16
+2026-02-18 11:57:47.126 +05:30 [ERR] Failed executing DbCommand (6ms) [Parameters=[@__branchId_0='?' (DbType = Guid), @__startDate_1='?' (DbType = DateTime2), @__today_2='?' (DbType = DateTime2), @__nextDay_3='?' (DbType = DateTime2)], CommandType='"Text"', CommandTimeout='30']
+SELECT [v].[VisitId], [v].[BranchId], [v].[CreatedAt], [v].[CurrentAssignmentId], [v].[Department], [v].[IsReferred], [v].[PatientId], [v].[PaymentCollectionModel], [v].[ReferralPartnerId], [v].[ReferrerId], [v].[ReferrerText], [v].[RowVersion], [v].[Status], [v].[Token], [v].[TokenDate], [p].[PatientId], [p].[CreatedAt], [p].[CurrentPhoneNumber], [p].[DateOfBirth], [p].[DisplayName], [p].[FirstName], [p].[Gender], [p].[IsDateOfBirthKnown], [p].[IsSoftDeleted], [p].[LastName], [p].[MRN], [p].[RowVersion], [p].[UpdatedAt], [r].[ReferralPartnerId], [r].[ContactInfo], [r].[CreatedAt], [r].[IsActive], [r].[Name], [r].[PartnerType], [r].[PaymentCollectionModel], [r].[UpdatedAt], [t0].[OrderId], [t0].[CancellationReason], [t0].[CancelledAt], [t0].[CancelledByUserId], [t0].[CreatedAt], [t0].[Department], [t0].[Discount], [t0].[Price], [t0].[SpecimenId], [t0].[Status], [t0].[TestCode], [t0].[TestId], [t0].[VisitId], [t0].[TestId0], [t0].[BasePrice], [t0].[Category], [t0].[CreatedAt0], [t0].[Department0], [t0].[DepartmentId], [t0].[IsActive], [t0].[IsProfile], [t0].[SpecimenTypeCode], [t0].[TAT_Hours], [t0].[TestCode0], [t0].[TestName], [t0].[UpdatedAt], [t1].[InvoiceId], [t1].[CreatedAt], [t1].[Currency], [t1].[DiscountAmount], [t1].[DueDate], [t1].[GrossAmount], [t1].[NetAmount], [t1].[Status], [t1].[TaxAmount], [t1].[Total], [t1].[VisitId], [t1].[PaymentId], [t1].[Amount], [t1].[InvoiceId0], [t1].[Method], [t1].[ReceiptNo], [t1].[ReceivedAt], [t1].[ReceivedByUserId]
+FROM [Visits] AS [v]
+INNER JOIN [Patients] AS [p] ON [v].[PatientId] = [p].[PatientId]
+LEFT JOIN [ReferralPartners] AS [r] ON [v].[ReferralPartnerId] = [r].[ReferralPartnerId]
+LEFT JOIN (
+    SELECT [o].[OrderId], [o].[CancellationReason], [o].[CancelledAt], [o].[CancelledByUserId], [o].[CreatedAt], [o].[Department], [o].[Discount], [o].[Price], [o].[SpecimenId], [o].[Status], [o].[TestCode], [o].[TestId], [o].[VisitId], [t].[TestId] AS [TestId0], [t].[BasePrice], [t].[Category], [t].[CreatedAt] AS [CreatedAt0], [t].[Department] AS [Department0], [t].[DepartmentId], [t].[IsActive], [t].[IsProfile], [t].[SpecimenTypeCode], [t].[TAT_Hours], [t].[TestCode] AS [TestCode0], [t].[TestName], [t].[UpdatedAt]
+    FROM [Orders] AS [o]
+    INNER JOIN [Tests] AS [t] ON [o].[TestId] = [t].[TestId]
+) AS [t0] ON [v].[VisitId] = [t0].[VisitId]
+LEFT JOIN (
+    SELECT [i].[InvoiceId], [i].[CreatedAt], [i].[Currency], [i].[DiscountAmount], [i].[DueDate], [i].[GrossAmount], [i].[NetAmount], [i].[Status], [i].[TaxAmount], [i].[Total], [i].[VisitId], [p0].[PaymentId], [p0].[Amount], [p0].[InvoiceId] AS [InvoiceId0], [p0].[Method], [p0].[ReceiptNo], [p0].[ReceivedAt], [p0].[ReceivedByUserId]
+    FROM [Invoices] AS [i]
+    LEFT JOIN [Payments] AS [p0] ON [i].[InvoiceId] = [p0].[InvoiceId]
+) AS [t1] ON [v].[VisitId] = [t1].[VisitId]
+WHERE [v].[BranchId] = @__branchId_0 AND [v].[Status] <> N'Cancelled' AND (([v].[Status] NOT IN (N'Paid', N'FullPaid') AND [v].[TokenDate] >= @__startDate_1) OR ([v].[Status] IN (N'Paid', N'FullPaid') AND [v].[TokenDate] >= @__today_2 AND [v].[TokenDate] < @__nextDay_3))
+ORDER BY [v].[TokenDate] DESC, [v].[CreatedAt] DESC, [v].[VisitId], [p].[PatientId], [r].[ReferralPartnerId], [t0].[OrderId], [t0].[TestId0], [t1].[InvoiceId]
+2026-02-18 11:57:47.146 +05:30 [ERR] An exception occurred while iterating over the results of a query for context type 'SynOS.Data.SynOSDbContext'.
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'DepartmentId'.
+Invalid column name 'IsProfile'.
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:bec35765-8e56-4718-a265-5b6600dddd51
+Error Number:207,State:1,Class:16
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'DepartmentId'.
+Invalid column name 'IsProfile'.
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:bec35765-8e56-4718-a265-5b6600dddd51
+Error Number:207,State:1,Class:16
+2026-02-18 11:58:17.127 +05:30 [ERR] Failed executing DbCommand (10ms) [Parameters=[@__branchId_0='?' (DbType = Guid), @__startDate_1='?' (DbType = DateTime2), @__today_2='?' (DbType = DateTime2), @__nextDay_3='?' (DbType = DateTime2)], CommandType='"Text"', CommandTimeout='30']
+SELECT [v].[VisitId], [v].[BranchId], [v].[CreatedAt], [v].[CurrentAssignmentId], [v].[Department], [v].[IsReferred], [v].[PatientId], [v].[PaymentCollectionModel], [v].[ReferralPartnerId], [v].[ReferrerId], [v].[ReferrerText], [v].[RowVersion], [v].[Status], [v].[Token], [v].[TokenDate], [p].[PatientId], [p].[CreatedAt], [p].[CurrentPhoneNumber], [p].[DateOfBirth], [p].[DisplayName], [p].[FirstName], [p].[Gender], [p].[IsDateOfBirthKnown], [p].[IsSoftDeleted], [p].[LastName], [p].[MRN], [p].[RowVersion], [p].[UpdatedAt], [r].[ReferralPartnerId], [r].[ContactInfo], [r].[CreatedAt], [r].[IsActive], [r].[Name], [r].[PartnerType], [r].[PaymentCollectionModel], [r].[UpdatedAt], [t0].[OrderId], [t0].[CancellationReason], [t0].[CancelledAt], [t0].[CancelledByUserId], [t0].[CreatedAt], [t0].[Department], [t0].[Discount], [t0].[Price], [t0].[SpecimenId], [t0].[Status], [t0].[TestCode], [t0].[TestId], [t0].[VisitId], [t0].[TestId0], [t0].[BasePrice], [t0].[Category], [t0].[CreatedAt0], [t0].[Department0], [t0].[DepartmentId], [t0].[IsActive], [t0].[IsProfile], [t0].[SpecimenTypeCode], [t0].[TAT_Hours], [t0].[TestCode0], [t0].[TestName], [t0].[UpdatedAt], [t1].[InvoiceId], [t1].[CreatedAt], [t1].[Currency], [t1].[DiscountAmount], [t1].[DueDate], [t1].[GrossAmount], [t1].[NetAmount], [t1].[Status], [t1].[TaxAmount], [t1].[Total], [t1].[VisitId], [t1].[PaymentId], [t1].[Amount], [t1].[InvoiceId0], [t1].[Method], [t1].[ReceiptNo], [t1].[ReceivedAt], [t1].[ReceivedByUserId]
+FROM [Visits] AS [v]
+INNER JOIN [Patients] AS [p] ON [v].[PatientId] = [p].[PatientId]
+LEFT JOIN [ReferralPartners] AS [r] ON [v].[ReferralPartnerId] = [r].[ReferralPartnerId]
+LEFT JOIN (
+    SELECT [o].[OrderId], [o].[CancellationReason], [o].[CancelledAt], [o].[CancelledByUserId], [o].[CreatedAt], [o].[Department], [o].[Discount], [o].[Price], [o].[SpecimenId], [o].[Status], [o].[TestCode], [o].[TestId], [o].[VisitId], [t].[TestId] AS [TestId0], [t].[BasePrice], [t].[Category], [t].[CreatedAt] AS [CreatedAt0], [t].[Department] AS [Department0], [t].[DepartmentId], [t].[IsActive], [t].[IsProfile], [t].[SpecimenTypeCode], [t].[TAT_Hours], [t].[TestCode] AS [TestCode0], [t].[TestName], [t].[UpdatedAt]
+    FROM [Orders] AS [o]
+    INNER JOIN [Tests] AS [t] ON [o].[TestId] = [t].[TestId]
+) AS [t0] ON [v].[VisitId] = [t0].[VisitId]
+LEFT JOIN (
+    SELECT [i].[InvoiceId], [i].[CreatedAt], [i].[Currency], [i].[DiscountAmount], [i].[DueDate], [i].[GrossAmount], [i].[NetAmount], [i].[Status], [i].[TaxAmount], [i].[Total], [i].[VisitId], [p0].[PaymentId], [p0].[Amount], [p0].[InvoiceId] AS [InvoiceId0], [p0].[Method], [p0].[ReceiptNo], [p0].[ReceivedAt], [p0].[ReceivedByUserId]
+    FROM [Invoices] AS [i]
+    LEFT JOIN [Payments] AS [p0] ON [i].[InvoiceId] = [p0].[InvoiceId]
+) AS [t1] ON [v].[VisitId] = [t1].[VisitId]
+WHERE [v].[BranchId] = @__branchId_0 AND [v].[Status] <> N'Cancelled' AND (([v].[Status] NOT IN (N'Paid', N'FullPaid') AND [v].[TokenDate] >= @__startDate_1) OR ([v].[Status] IN (N'Paid', N'FullPaid') AND [v].[TokenDate] >= @__today_2 AND [v].[TokenDate] < @__nextDay_3))
+ORDER BY [v].[TokenDate] DESC, [v].[CreatedAt] DESC, [v].[VisitId], [p].[PatientId], [r].[ReferralPartnerId], [t0].[OrderId], [t0].[TestId0], [t1].[InvoiceId]
+2026-02-18 11:58:17.147 +05:30 [ERR] An exception occurred while iterating over the results of a query for context type 'SynOS.Data.SynOSDbContext'.
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'DepartmentId'.
+Invalid column name 'IsProfile'.
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:bec35765-8e56-4718-a265-5b6600dddd51
+Error Number:207,State:1,Class:16
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'DepartmentId'.
+Invalid column name 'IsProfile'.
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:bec35765-8e56-4718-a265-5b6600dddd51
+Error Number:207,State:1,Class:16
+2026-02-18 11:58:47.144 +05:30 [ERR] Failed executing DbCommand (5ms) [Parameters=[@__branchId_0='?' (DbType = Guid), @__startDate_1='?' (DbType = DateTime2), @__today_2='?' (DbType = DateTime2), @__nextDay_3='?' (DbType = DateTime2)], CommandType='"Text"', CommandTimeout='30']
+SELECT [v].[VisitId], [v].[BranchId], [v].[CreatedAt], [v].[CurrentAssignmentId], [v].[Department], [v].[IsReferred], [v].[PatientId], [v].[PaymentCollectionModel], [v].[ReferralPartnerId], [v].[ReferrerId], [v].[ReferrerText], [v].[RowVersion], [v].[Status], [v].[Token], [v].[TokenDate], [p].[PatientId], [p].[CreatedAt], [p].[CurrentPhoneNumber], [p].[DateOfBirth], [p].[DisplayName], [p].[FirstName], [p].[Gender], [p].[IsDateOfBirthKnown], [p].[IsSoftDeleted], [p].[LastName], [p].[MRN], [p].[RowVersion], [p].[UpdatedAt], [r].[ReferralPartnerId], [r].[ContactInfo], [r].[CreatedAt], [r].[IsActive], [r].[Name], [r].[PartnerType], [r].[PaymentCollectionModel], [r].[UpdatedAt], [t0].[OrderId], [t0].[CancellationReason], [t0].[CancelledAt], [t0].[CancelledByUserId], [t0].[CreatedAt], [t0].[Department], [t0].[Discount], [t0].[Price], [t0].[SpecimenId], [t0].[Status], [t0].[TestCode], [t0].[TestId], [t0].[VisitId], [t0].[TestId0], [t0].[BasePrice], [t0].[Category], [t0].[CreatedAt0], [t0].[Department0], [t0].[DepartmentId], [t0].[IsActive], [t0].[IsProfile], [t0].[SpecimenTypeCode], [t0].[TAT_Hours], [t0].[TestCode0], [t0].[TestName], [t0].[UpdatedAt], [t1].[InvoiceId], [t1].[CreatedAt], [t1].[Currency], [t1].[DiscountAmount], [t1].[DueDate], [t1].[GrossAmount], [t1].[NetAmount], [t1].[Status], [t1].[TaxAmount], [t1].[Total], [t1].[VisitId], [t1].[PaymentId], [t1].[Amount], [t1].[InvoiceId0], [t1].[Method], [t1].[ReceiptNo], [t1].[ReceivedAt], [t1].[ReceivedByUserId]
+FROM [Visits] AS [v]
+INNER JOIN [Patients] AS [p] ON [v].[PatientId] = [p].[PatientId]
+LEFT JOIN [ReferralPartners] AS [r] ON [v].[ReferralPartnerId] = [r].[ReferralPartnerId]
+LEFT JOIN (
+    SELECT [o].[OrderId], [o].[CancellationReason], [o].[CancelledAt], [o].[CancelledByUserId], [o].[CreatedAt], [o].[Department], [o].[Discount], [o].[Price], [o].[SpecimenId], [o].[Status], [o].[TestCode], [o].[TestId], [o].[VisitId], [t].[TestId] AS [TestId0], [t].[BasePrice], [t].[Category], [t].[CreatedAt] AS [CreatedAt0], [t].[Department] AS [Department0], [t].[DepartmentId], [t].[IsActive], [t].[IsProfile], [t].[SpecimenTypeCode], [t].[TAT_Hours], [t].[TestCode] AS [TestCode0], [t].[TestName], [t].[UpdatedAt]
+    FROM [Orders] AS [o]
+    INNER JOIN [Tests] AS [t] ON [o].[TestId] = [t].[TestId]
+) AS [t0] ON [v].[VisitId] = [t0].[VisitId]
+LEFT JOIN (
+    SELECT [i].[InvoiceId], [i].[CreatedAt], [i].[Currency], [i].[DiscountAmount], [i].[DueDate], [i].[GrossAmount], [i].[NetAmount], [i].[Status], [i].[TaxAmount], [i].[Total], [i].[VisitId], [p0].[PaymentId], [p0].[Amount], [p0].[InvoiceId] AS [InvoiceId0], [p0].[Method], [p0].[ReceiptNo], [p0].[ReceivedAt], [p0].[ReceivedByUserId]
+    FROM [Invoices] AS [i]
+    LEFT JOIN [Payments] AS [p0] ON [i].[InvoiceId] = [p0].[InvoiceId]
+) AS [t1] ON [v].[VisitId] = [t1].[VisitId]
+WHERE [v].[BranchId] = @__branchId_0 AND [v].[Status] <> N'Cancelled' AND (([v].[Status] NOT IN (N'Paid', N'FullPaid') AND [v].[TokenDate] >= @__startDate_1) OR ([v].[Status] IN (N'Paid', N'FullPaid') AND [v].[TokenDate] >= @__today_2 AND [v].[TokenDate] < @__nextDay_3))
+ORDER BY [v].[TokenDate] DESC, [v].[CreatedAt] DESC, [v].[VisitId], [p].[PatientId], [r].[ReferralPartnerId], [t0].[OrderId], [t0].[TestId0], [t1].[InvoiceId]
+2026-02-18 11:58:47.163 +05:30 [ERR] An exception occurred while iterating over the results of a query for context type 'SynOS.Data.SynOSDbContext'.
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'DepartmentId'.
+Invalid column name 'IsProfile'.
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:d68c8d9c-68d2-47ee-a076-0b784c14ca56
+Error Number:207,State:1,Class:16
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'DepartmentId'.
+Invalid column name 'IsProfile'.
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:d68c8d9c-68d2-47ee-a076-0b784c14ca56
+Error Number:207,State:1,Class:16
+2026-02-18 11:59:17.123 +05:30 [ERR] Failed executing DbCommand (9ms) [Parameters=[@__branchId_0='?' (DbType = Guid), @__startDate_1='?' (DbType = DateTime2), @__today_2='?' (DbType = DateTime2), @__nextDay_3='?' (DbType = DateTime2)], CommandType='"Text"', CommandTimeout='30']
+SELECT [v].[VisitId], [v].[BranchId], [v].[CreatedAt], [v].[CurrentAssignmentId], [v].[Department], [v].[IsReferred], [v].[PatientId], [v].[PaymentCollectionModel], [v].[ReferralPartnerId], [v].[ReferrerId], [v].[ReferrerText], [v].[RowVersion], [v].[Status], [v].[Token], [v].[TokenDate], [p].[PatientId], [p].[CreatedAt], [p].[CurrentPhoneNumber], [p].[DateOfBirth], [p].[DisplayName], [p].[FirstName], [p].[Gender], [p].[IsDateOfBirthKnown], [p].[IsSoftDeleted], [p].[LastName], [p].[MRN], [p].[RowVersion], [p].[UpdatedAt], [r].[ReferralPartnerId], [r].[ContactInfo], [r].[CreatedAt], [r].[IsActive], [r].[Name], [r].[PartnerType], [r].[PaymentCollectionModel], [r].[UpdatedAt], [t0].[OrderId], [t0].[CancellationReason], [t0].[CancelledAt], [t0].[CancelledByUserId], [t0].[CreatedAt], [t0].[Department], [t0].[Discount], [t0].[Price], [t0].[SpecimenId], [t0].[Status], [t0].[TestCode], [t0].[TestId], [t0].[VisitId], [t0].[TestId0], [t0].[BasePrice], [t0].[Category], [t0].[CreatedAt0], [t0].[Department0], [t0].[DepartmentId], [t0].[IsActive], [t0].[IsProfile], [t0].[SpecimenTypeCode], [t0].[TAT_Hours], [t0].[TestCode0], [t0].[TestName], [t0].[UpdatedAt], [t1].[InvoiceId], [t1].[CreatedAt], [t1].[Currency], [t1].[DiscountAmount], [t1].[DueDate], [t1].[GrossAmount], [t1].[NetAmount], [t1].[Status], [t1].[TaxAmount], [t1].[Total], [t1].[VisitId], [t1].[PaymentId], [t1].[Amount], [t1].[InvoiceId0], [t1].[Method], [t1].[ReceiptNo], [t1].[ReceivedAt], [t1].[ReceivedByUserId]
+FROM [Visits] AS [v]
+INNER JOIN [Patients] AS [p] ON [v].[PatientId] = [p].[PatientId]
+LEFT JOIN [ReferralPartners] AS [r] ON [v].[ReferralPartnerId] = [r].[ReferralPartnerId]
+LEFT JOIN (
+    SELECT [o].[OrderId], [o].[CancellationReason], [o].[CancelledAt], [o].[CancelledByUserId], [o].[CreatedAt], [o].[Department], [o].[Discount], [o].[Price], [o].[SpecimenId], [o].[Status], [o].[TestCode], [o].[TestId], [o].[VisitId], [t].[TestId] AS [TestId0], [t].[BasePrice], [t].[Category], [t].[CreatedAt] AS [CreatedAt0], [t].[Department] AS [Department0], [t].[DepartmentId], [t].[IsActive], [t].[IsProfile], [t].[SpecimenTypeCode], [t].[TAT_Hours], [t].[TestCode] AS [TestCode0], [t].[TestName], [t].[UpdatedAt]
+    FROM [Orders] AS [o]
+    INNER JOIN [Tests] AS [t] ON [o].[TestId] = [t].[TestId]
+) AS [t0] ON [v].[VisitId] = [t0].[VisitId]
+LEFT JOIN (
+    SELECT [i].[InvoiceId], [i].[CreatedAt], [i].[Currency], [i].[DiscountAmount], [i].[DueDate], [i].[GrossAmount], [i].[NetAmount], [i].[Status], [i].[TaxAmount], [i].[Total], [i].[VisitId], [p0].[PaymentId], [p0].[Amount], [p0].[InvoiceId] AS [InvoiceId0], [p0].[Method], [p0].[ReceiptNo], [p0].[ReceivedAt], [p0].[ReceivedByUserId]
+    FROM [Invoices] AS [i]
+    LEFT JOIN [Payments] AS [p0] ON [i].[InvoiceId] = [p0].[InvoiceId]
+) AS [t1] ON [v].[VisitId] = [t1].[VisitId]
+WHERE [v].[BranchId] = @__branchId_0 AND [v].[Status] <> N'Cancelled' AND (([v].[Status] NOT IN (N'Paid', N'FullPaid') AND [v].[TokenDate] >= @__startDate_1) OR ([v].[Status] IN (N'Paid', N'FullPaid') AND [v].[TokenDate] >= @__today_2 AND [v].[TokenDate] < @__nextDay_3))
+ORDER BY [v].[TokenDate] DESC, [v].[CreatedAt] DESC, [v].[VisitId], [p].[PatientId], [r].[ReferralPartnerId], [t0].[OrderId], [t0].[TestId0], [t1].[InvoiceId]
+2026-02-18 11:59:17.144 +05:30 [ERR] An exception occurred while iterating over the results of a query for context type 'SynOS.Data.SynOSDbContext'.
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'DepartmentId'.
+Invalid column name 'IsProfile'.
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:d68c8d9c-68d2-47ee-a076-0b784c14ca56
+Error Number:207,State:1,Class:16
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'DepartmentId'.
+Invalid column name 'IsProfile'.
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:d68c8d9c-68d2-47ee-a076-0b784c14ca56
+Error Number:207,State:1,Class:16
+2026-02-18 11:59:47.126 +05:30 [ERR] Failed executing DbCommand (8ms) [Parameters=[@__branchId_0='?' (DbType = Guid), @__startDate_1='?' (DbType = DateTime2), @__today_2='?' (DbType = DateTime2), @__nextDay_3='?' (DbType = DateTime2)], CommandType='"Text"', CommandTimeout='30']
+SELECT [v].[VisitId], [v].[BranchId], [v].[CreatedAt], [v].[CurrentAssignmentId], [v].[Department], [v].[IsReferred], [v].[PatientId], [v].[PaymentCollectionModel], [v].[ReferralPartnerId], [v].[ReferrerId], [v].[ReferrerText], [v].[RowVersion], [v].[Status], [v].[Token], [v].[TokenDate], [p].[PatientId], [p].[CreatedAt], [p].[CurrentPhoneNumber], [p].[DateOfBirth], [p].[DisplayName], [p].[FirstName], [p].[Gender], [p].[IsDateOfBirthKnown], [p].[IsSoftDeleted], [p].[LastName], [p].[MRN], [p].[RowVersion], [p].[UpdatedAt], [r].[ReferralPartnerId], [r].[ContactInfo], [r].[CreatedAt], [r].[IsActive], [r].[Name], [r].[PartnerType], [r].[PaymentCollectionModel], [r].[UpdatedAt], [t0].[OrderId], [t0].[CancellationReason], [t0].[CancelledAt], [t0].[CancelledByUserId], [t0].[CreatedAt], [t0].[Department], [t0].[Discount], [t0].[Price], [t0].[SpecimenId], [t0].[Status], [t0].[TestCode], [t0].[TestId], [t0].[VisitId], [t0].[TestId0], [t0].[BasePrice], [t0].[Category], [t0].[CreatedAt0], [t0].[Department0], [t0].[DepartmentId], [t0].[IsActive], [t0].[IsProfile], [t0].[SpecimenTypeCode], [t0].[TAT_Hours], [t0].[TestCode0], [t0].[TestName], [t0].[UpdatedAt], [t1].[InvoiceId], [t1].[CreatedAt], [t1].[Currency], [t1].[DiscountAmount], [t1].[DueDate], [t1].[GrossAmount], [t1].[NetAmount], [t1].[Status], [t1].[TaxAmount], [t1].[Total], [t1].[VisitId], [t1].[PaymentId], [t1].[Amount], [t1].[InvoiceId0], [t1].[Method], [t1].[ReceiptNo], [t1].[ReceivedAt], [t1].[ReceivedByUserId]
+FROM [Visits] AS [v]
+INNER JOIN [Patients] AS [p] ON [v].[PatientId] = [p].[PatientId]
+LEFT JOIN [ReferralPartners] AS [r] ON [v].[ReferralPartnerId] = [r].[ReferralPartnerId]
+LEFT JOIN (
+    SELECT [o].[OrderId], [o].[CancellationReason], [o].[CancelledAt], [o].[CancelledByUserId], [o].[CreatedAt], [o].[Department], [o].[Discount], [o].[Price], [o].[SpecimenId], [o].[Status], [o].[TestCode], [o].[TestId], [o].[VisitId], [t].[TestId] AS [TestId0], [t].[BasePrice], [t].[Category], [t].[CreatedAt] AS [CreatedAt0], [t].[Department] AS [Department0], [t].[DepartmentId], [t].[IsActive], [t].[IsProfile], [t].[SpecimenTypeCode], [t].[TAT_Hours], [t].[TestCode] AS [TestCode0], [t].[TestName], [t].[UpdatedAt]
+    FROM [Orders] AS [o]
+    INNER JOIN [Tests] AS [t] ON [o].[TestId] = [t].[TestId]
+) AS [t0] ON [v].[VisitId] = [t0].[VisitId]
+LEFT JOIN (
+    SELECT [i].[InvoiceId], [i].[CreatedAt], [i].[Currency], [i].[DiscountAmount], [i].[DueDate], [i].[GrossAmount], [i].[NetAmount], [i].[Status], [i].[TaxAmount], [i].[Total], [i].[VisitId], [p0].[PaymentId], [p0].[Amount], [p0].[InvoiceId] AS [InvoiceId0], [p0].[Method], [p0].[ReceiptNo], [p0].[ReceivedAt], [p0].[ReceivedByUserId]
+    FROM [Invoices] AS [i]
+    LEFT JOIN [Payments] AS [p0] ON [i].[InvoiceId] = [p0].[InvoiceId]
+) AS [t1] ON [v].[VisitId] = [t1].[VisitId]
+WHERE [v].[BranchId] = @__branchId_0 AND [v].[Status] <> N'Cancelled' AND (([v].[Status] NOT IN (N'Paid', N'FullPaid') AND [v].[TokenDate] >= @__startDate_1) OR ([v].[Status] IN (N'Paid', N'FullPaid') AND [v].[TokenDate] >= @__today_2 AND [v].[TokenDate] < @__nextDay_3))
+ORDER BY [v].[TokenDate] DESC, [v].[CreatedAt] DESC, [v].[VisitId], [p].[PatientId], [r].[ReferralPartnerId], [t0].[OrderId], [t0].[TestId0], [t1].[InvoiceId]
+2026-02-18 11:59:47.149 +05:30 [ERR] An exception occurred while iterating over the results of a query for context type 'SynOS.Data.SynOSDbContext'.
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'DepartmentId'.
+Invalid column name 'IsProfile'.
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:bec35765-8e56-4718-a265-5b6600dddd51
+Error Number:207,State:1,Class:16
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'DepartmentId'.
+Invalid column name 'IsProfile'.
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:bec35765-8e56-4718-a265-5b6600dddd51
+Error Number:207,State:1,Class:16
+2026-02-18 12:00:17.382 +05:30 [ERR] Failed executing DbCommand (49ms) [Parameters=[@__branchId_0='?' (DbType = Guid), @__startDate_1='?' (DbType = DateTime2), @__today_2='?' (DbType = DateTime2), @__nextDay_3='?' (DbType = DateTime2)], CommandType='"Text"', CommandTimeout='30']
+SELECT [v].[VisitId], [v].[BranchId], [v].[CreatedAt], [v].[CurrentAssignmentId], [v].[Department], [v].[IsReferred], [v].[PatientId], [v].[PaymentCollectionModel], [v].[ReferralPartnerId], [v].[ReferrerId], [v].[ReferrerText], [v].[RowVersion], [v].[Status], [v].[Token], [v].[TokenDate], [p].[PatientId], [p].[CreatedAt], [p].[CurrentPhoneNumber], [p].[DateOfBirth], [p].[DisplayName], [p].[FirstName], [p].[Gender], [p].[IsDateOfBirthKnown], [p].[IsSoftDeleted], [p].[LastName], [p].[MRN], [p].[RowVersion], [p].[UpdatedAt], [r].[ReferralPartnerId], [r].[ContactInfo], [r].[CreatedAt], [r].[IsActive], [r].[Name], [r].[PartnerType], [r].[PaymentCollectionModel], [r].[UpdatedAt], [t0].[OrderId], [t0].[CancellationReason], [t0].[CancelledAt], [t0].[CancelledByUserId], [t0].[CreatedAt], [t0].[Department], [t0].[Discount], [t0].[Price], [t0].[SpecimenId], [t0].[Status], [t0].[TestCode], [t0].[TestId], [t0].[VisitId], [t0].[TestId0], [t0].[BasePrice], [t0].[Category], [t0].[CreatedAt0], [t0].[Department0], [t0].[DepartmentId], [t0].[IsActive], [t0].[IsProfile], [t0].[SpecimenTypeCode], [t0].[TAT_Hours], [t0].[TestCode0], [t0].[TestName], [t0].[UpdatedAt], [t1].[InvoiceId], [t1].[CreatedAt], [t1].[Currency], [t1].[DiscountAmount], [t1].[DueDate], [t1].[GrossAmount], [t1].[NetAmount], [t1].[Status], [t1].[TaxAmount], [t1].[Total], [t1].[VisitId], [t1].[PaymentId], [t1].[Amount], [t1].[InvoiceId0], [t1].[Method], [t1].[ReceiptNo], [t1].[ReceivedAt], [t1].[ReceivedByUserId]
+FROM [Visits] AS [v]
+INNER JOIN [Patients] AS [p] ON [v].[PatientId] = [p].[PatientId]
+LEFT JOIN [ReferralPartners] AS [r] ON [v].[ReferralPartnerId] = [r].[ReferralPartnerId]
+LEFT JOIN (
+    SELECT [o].[OrderId], [o].[CancellationReason], [o].[CancelledAt], [o].[CancelledByUserId], [o].[CreatedAt], [o].[Department], [o].[Discount], [o].[Price], [o].[SpecimenId], [o].[Status], [o].[TestCode], [o].[TestId], [o].[VisitId], [t].[TestId] AS [TestId0], [t].[BasePrice], [t].[Category], [t].[CreatedAt] AS [CreatedAt0], [t].[Department] AS [Department0], [t].[DepartmentId], [t].[IsActive], [t].[IsProfile], [t].[SpecimenTypeCode], [t].[TAT_Hours], [t].[TestCode] AS [TestCode0], [t].[TestName], [t].[UpdatedAt]
+    FROM [Orders] AS [o]
+    INNER JOIN [Tests] AS [t] ON [o].[TestId] = [t].[TestId]
+) AS [t0] ON [v].[VisitId] = [t0].[VisitId]
+LEFT JOIN (
+    SELECT [i].[InvoiceId], [i].[CreatedAt], [i].[Currency], [i].[DiscountAmount], [i].[DueDate], [i].[GrossAmount], [i].[NetAmount], [i].[Status], [i].[TaxAmount], [i].[Total], [i].[VisitId], [p0].[PaymentId], [p0].[Amount], [p0].[InvoiceId] AS [InvoiceId0], [p0].[Method], [p0].[ReceiptNo], [p0].[ReceivedAt], [p0].[ReceivedByUserId]
+    FROM [Invoices] AS [i]
+    LEFT JOIN [Payments] AS [p0] ON [i].[InvoiceId] = [p0].[InvoiceId]
+) AS [t1] ON [v].[VisitId] = [t1].[VisitId]
+WHERE [v].[BranchId] = @__branchId_0 AND [v].[Status] <> N'Cancelled' AND (([v].[Status] NOT IN (N'Paid', N'FullPaid') AND [v].[TokenDate] >= @__startDate_1) OR ([v].[Status] IN (N'Paid', N'FullPaid') AND [v].[TokenDate] >= @__today_2 AND [v].[TokenDate] < @__nextDay_3))
+ORDER BY [v].[TokenDate] DESC, [v].[CreatedAt] DESC, [v].[VisitId], [p].[PatientId], [r].[ReferralPartnerId], [t0].[OrderId], [t0].[TestId0], [t1].[InvoiceId]
+2026-02-18 12:00:17.506 +05:30 [ERR] An exception occurred while iterating over the results of a query for context type 'SynOS.Data.SynOSDbContext'.
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'DepartmentId'.
+Invalid column name 'IsProfile'.
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:d68c8d9c-68d2-47ee-a076-0b784c14ca56
+Error Number:207,State:1,Class:16
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'DepartmentId'.
+Invalid column name 'IsProfile'.
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:d68c8d9c-68d2-47ee-a076-0b784c14ca56
+Error Number:207,State:1,Class:16
+2026-02-18 12:00:47.996 +05:30 [ERR] Failed executing DbCommand (750ms) [Parameters=[@__branchId_0='?' (DbType = Guid), @__startDate_1='?' (DbType = DateTime2), @__today_2='?' (DbType = DateTime2), @__nextDay_3='?' (DbType = DateTime2)], CommandType='"Text"', CommandTimeout='30']
+SELECT [v].[VisitId], [v].[BranchId], [v].[CreatedAt], [v].[CurrentAssignmentId], [v].[Department], [v].[IsReferred], [v].[PatientId], [v].[PaymentCollectionModel], [v].[ReferralPartnerId], [v].[ReferrerId], [v].[ReferrerText], [v].[RowVersion], [v].[Status], [v].[Token], [v].[TokenDate], [p].[PatientId], [p].[CreatedAt], [p].[CurrentPhoneNumber], [p].[DateOfBirth], [p].[DisplayName], [p].[FirstName], [p].[Gender], [p].[IsDateOfBirthKnown], [p].[IsSoftDeleted], [p].[LastName], [p].[MRN], [p].[RowVersion], [p].[UpdatedAt], [r].[ReferralPartnerId], [r].[ContactInfo], [r].[CreatedAt], [r].[IsActive], [r].[Name], [r].[PartnerType], [r].[PaymentCollectionModel], [r].[UpdatedAt], [t0].[OrderId], [t0].[CancellationReason], [t0].[CancelledAt], [t0].[CancelledByUserId], [t0].[CreatedAt], [t0].[Department], [t0].[Discount], [t0].[Price], [t0].[SpecimenId], [t0].[Status], [t0].[TestCode], [t0].[TestId], [t0].[VisitId], [t0].[TestId0], [t0].[BasePrice], [t0].[Category], [t0].[CreatedAt0], [t0].[Department0], [t0].[DepartmentId], [t0].[IsActive], [t0].[IsProfile], [t0].[SpecimenTypeCode], [t0].[TAT_Hours], [t0].[TestCode0], [t0].[TestName], [t0].[UpdatedAt], [t1].[InvoiceId], [t1].[CreatedAt], [t1].[Currency], [t1].[DiscountAmount], [t1].[DueDate], [t1].[GrossAmount], [t1].[NetAmount], [t1].[Status], [t1].[TaxAmount], [t1].[Total], [t1].[VisitId], [t1].[PaymentId], [t1].[Amount], [t1].[InvoiceId0], [t1].[Method], [t1].[ReceiptNo], [t1].[ReceivedAt], [t1].[ReceivedByUserId]
+FROM [Visits] AS [v]
+INNER JOIN [Patients] AS [p] ON [v].[PatientId] = [p].[PatientId]
+LEFT JOIN [ReferralPartners] AS [r] ON [v].[ReferralPartnerId] = [r].[ReferralPartnerId]
+LEFT JOIN (
+    SELECT [o].[OrderId], [o].[CancellationReason], [o].[CancelledAt], [o].[CancelledByUserId], [o].[CreatedAt], [o].[Department], [o].[Discount], [o].[Price], [o].[SpecimenId], [o].[Status], [o].[TestCode], [o].[TestId], [o].[VisitId], [t].[TestId] AS [TestId0], [t].[BasePrice], [t].[Category], [t].[CreatedAt] AS [CreatedAt0], [t].[Department] AS [Department0], [t].[DepartmentId], [t].[IsActive], [t].[IsProfile], [t].[SpecimenTypeCode], [t].[TAT_Hours], [t].[TestCode] AS [TestCode0], [t].[TestName], [t].[UpdatedAt]
+    FROM [Orders] AS [o]
+    INNER JOIN [Tests] AS [t] ON [o].[TestId] = [t].[TestId]
+) AS [t0] ON [v].[VisitId] = [t0].[VisitId]
+LEFT JOIN (
+    SELECT [i].[InvoiceId], [i].[CreatedAt], [i].[Currency], [i].[DiscountAmount], [i].[DueDate], [i].[GrossAmount], [i].[NetAmount], [i].[Status], [i].[TaxAmount], [i].[Total], [i].[VisitId], [p0].[PaymentId], [p0].[Amount], [p0].[InvoiceId] AS [InvoiceId0], [p0].[Method], [p0].[ReceiptNo], [p0].[ReceivedAt], [p0].[ReceivedByUserId]
+    FROM [Invoices] AS [i]
+    LEFT JOIN [Payments] AS [p0] ON [i].[InvoiceId] = [p0].[InvoiceId]
+) AS [t1] ON [v].[VisitId] = [t1].[VisitId]
+WHERE [v].[BranchId] = @__branchId_0 AND [v].[Status] <> N'Cancelled' AND (([v].[Status] NOT IN (N'Paid', N'FullPaid') AND [v].[TokenDate] >= @__startDate_1) OR ([v].[Status] IN (N'Paid', N'FullPaid') AND [v].[TokenDate] >= @__today_2 AND [v].[TokenDate] < @__nextDay_3))
+ORDER BY [v].[TokenDate] DESC, [v].[CreatedAt] DESC, [v].[VisitId], [p].[PatientId], [r].[ReferralPartnerId], [t0].[OrderId], [t0].[TestId0], [t1].[InvoiceId]
+2026-02-18 12:00:50.752 +05:30 [ERR] An exception occurred while iterating over the results of a query for context type 'SynOS.Data.SynOSDbContext'.
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'DepartmentId'.
+Invalid column name 'IsProfile'.
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:bec35765-8e56-4718-a265-5b6600dddd51
+Error Number:207,State:1,Class:16
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'DepartmentId'.
+Invalid column name 'IsProfile'.
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:bec35765-8e56-4718-a265-5b6600dddd51
+Error Number:207,State:1,Class:16
+2026-02-18 12:01:17.193 +05:30 [ERR] Failed executing DbCommand (10ms) [Parameters=[@__branchId_0='?' (DbType = Guid), @__startDate_1='?' (DbType = DateTime2), @__today_2='?' (DbType = DateTime2), @__nextDay_3='?' (DbType = DateTime2)], CommandType='"Text"', CommandTimeout='30']
+SELECT [v].[VisitId], [v].[BranchId], [v].[CreatedAt], [v].[CurrentAssignmentId], [v].[Department], [v].[IsReferred], [v].[PatientId], [v].[PaymentCollectionModel], [v].[ReferralPartnerId], [v].[ReferrerId], [v].[ReferrerText], [v].[RowVersion], [v].[Status], [v].[Token], [v].[TokenDate], [p].[PatientId], [p].[CreatedAt], [p].[CurrentPhoneNumber], [p].[DateOfBirth], [p].[DisplayName], [p].[FirstName], [p].[Gender], [p].[IsDateOfBirthKnown], [p].[IsSoftDeleted], [p].[LastName], [p].[MRN], [p].[RowVersion], [p].[UpdatedAt], [r].[ReferralPartnerId], [r].[ContactInfo], [r].[CreatedAt], [r].[IsActive], [r].[Name], [r].[PartnerType], [r].[PaymentCollectionModel], [r].[UpdatedAt], [t0].[OrderId], [t0].[CancellationReason], [t0].[CancelledAt], [t0].[CancelledByUserId], [t0].[CreatedAt], [t0].[Department], [t0].[Discount], [t0].[Price], [t0].[SpecimenId], [t0].[Status], [t0].[TestCode], [t0].[TestId], [t0].[VisitId], [t0].[TestId0], [t0].[BasePrice], [t0].[Category], [t0].[CreatedAt0], [t0].[Department0], [t0].[DepartmentId], [t0].[IsActive], [t0].[IsProfile], [t0].[SpecimenTypeCode], [t0].[TAT_Hours], [t0].[TestCode0], [t0].[TestName], [t0].[UpdatedAt], [t1].[InvoiceId], [t1].[CreatedAt], [t1].[Currency], [t1].[DiscountAmount], [t1].[DueDate], [t1].[GrossAmount], [t1].[NetAmount], [t1].[Status], [t1].[TaxAmount], [t1].[Total], [t1].[VisitId], [t1].[PaymentId], [t1].[Amount], [t1].[InvoiceId0], [t1].[Method], [t1].[ReceiptNo], [t1].[ReceivedAt], [t1].[ReceivedByUserId]
+FROM [Visits] AS [v]
+INNER JOIN [Patients] AS [p] ON [v].[PatientId] = [p].[PatientId]
+LEFT JOIN [ReferralPartners] AS [r] ON [v].[ReferralPartnerId] = [r].[ReferralPartnerId]
+LEFT JOIN (
+    SELECT [o].[OrderId], [o].[CancellationReason], [o].[CancelledAt], [o].[CancelledByUserId], [o].[CreatedAt], [o].[Department], [o].[Discount], [o].[Price], [o].[SpecimenId], [o].[Status], [o].[TestCode], [o].[TestId], [o].[VisitId], [t].[TestId] AS [TestId0], [t].[BasePrice], [t].[Category], [t].[CreatedAt] AS [CreatedAt0], [t].[Department] AS [Department0], [t].[DepartmentId], [t].[IsActive], [t].[IsProfile], [t].[SpecimenTypeCode], [t].[TAT_Hours], [t].[TestCode] AS [TestCode0], [t].[TestName], [t].[UpdatedAt]
+    FROM [Orders] AS [o]
+    INNER JOIN [Tests] AS [t] ON [o].[TestId] = [t].[TestId]
+) AS [t0] ON [v].[VisitId] = [t0].[VisitId]
+LEFT JOIN (
+    SELECT [i].[InvoiceId], [i].[CreatedAt], [i].[Currency], [i].[DiscountAmount], [i].[DueDate], [i].[GrossAmount], [i].[NetAmount], [i].[Status], [i].[TaxAmount], [i].[Total], [i].[VisitId], [p0].[PaymentId], [p0].[Amount], [p0].[InvoiceId] AS [InvoiceId0], [p0].[Method], [p0].[ReceiptNo], [p0].[ReceivedAt], [p0].[ReceivedByUserId]
+    FROM [Invoices] AS [i]
+    LEFT JOIN [Payments] AS [p0] ON [i].[InvoiceId] = [p0].[InvoiceId]
+) AS [t1] ON [v].[VisitId] = [t1].[VisitId]
+WHERE [v].[BranchId] = @__branchId_0 AND [v].[Status] <> N'Cancelled' AND (([v].[Status] NOT IN (N'Paid', N'FullPaid') AND [v].[TokenDate] >= @__startDate_1) OR ([v].[Status] IN (N'Paid', N'FullPaid') AND [v].[TokenDate] >= @__today_2 AND [v].[TokenDate] < @__nextDay_3))
+ORDER BY [v].[TokenDate] DESC, [v].[CreatedAt] DESC, [v].[VisitId], [p].[PatientId], [r].[ReferralPartnerId], [t0].[OrderId], [t0].[TestId0], [t1].[InvoiceId]
+2026-02-18 12:01:17.456 +05:30 [ERR] An exception occurred while iterating over the results of a query for context type 'SynOS.Data.SynOSDbContext'.
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'DepartmentId'.
+Invalid column name 'IsProfile'.
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:bec35765-8e56-4718-a265-5b6600dddd51
+Error Number:207,State:1,Class:16
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'DepartmentId'.
+Invalid column name 'IsProfile'.
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:bec35765-8e56-4718-a265-5b6600dddd51
+Error Number:207,State:1,Class:16
+2026-02-18 12:01:47.163 +05:30 [ERR] Failed executing DbCommand (24ms) [Parameters=[@__branchId_0='?' (DbType = Guid), @__startDate_1='?' (DbType = DateTime2), @__today_2='?' (DbType = DateTime2), @__nextDay_3='?' (DbType = DateTime2)], CommandType='"Text"', CommandTimeout='30']
+SELECT [v].[VisitId], [v].[BranchId], [v].[CreatedAt], [v].[CurrentAssignmentId], [v].[Department], [v].[IsReferred], [v].[PatientId], [v].[PaymentCollectionModel], [v].[ReferralPartnerId], [v].[ReferrerId], [v].[ReferrerText], [v].[RowVersion], [v].[Status], [v].[Token], [v].[TokenDate], [p].[PatientId], [p].[CreatedAt], [p].[CurrentPhoneNumber], [p].[DateOfBirth], [p].[DisplayName], [p].[FirstName], [p].[Gender], [p].[IsDateOfBirthKnown], [p].[IsSoftDeleted], [p].[LastName], [p].[MRN], [p].[RowVersion], [p].[UpdatedAt], [r].[ReferralPartnerId], [r].[ContactInfo], [r].[CreatedAt], [r].[IsActive], [r].[Name], [r].[PartnerType], [r].[PaymentCollectionModel], [r].[UpdatedAt], [t0].[OrderId], [t0].[CancellationReason], [t0].[CancelledAt], [t0].[CancelledByUserId], [t0].[CreatedAt], [t0].[Department], [t0].[Discount], [t0].[Price], [t0].[SpecimenId], [t0].[Status], [t0].[TestCode], [t0].[TestId], [t0].[VisitId], [t0].[TestId0], [t0].[BasePrice], [t0].[Category], [t0].[CreatedAt0], [t0].[Department0], [t0].[DepartmentId], [t0].[IsActive], [t0].[IsProfile], [t0].[SpecimenTypeCode], [t0].[TAT_Hours], [t0].[TestCode0], [t0].[TestName], [t0].[UpdatedAt], [t1].[InvoiceId], [t1].[CreatedAt], [t1].[Currency], [t1].[DiscountAmount], [t1].[DueDate], [t1].[GrossAmount], [t1].[NetAmount], [t1].[Status], [t1].[TaxAmount], [t1].[Total], [t1].[VisitId], [t1].[PaymentId], [t1].[Amount], [t1].[InvoiceId0], [t1].[Method], [t1].[ReceiptNo], [t1].[ReceivedAt], [t1].[ReceivedByUserId]
+FROM [Visits] AS [v]
+INNER JOIN [Patients] AS [p] ON [v].[PatientId] = [p].[PatientId]
+LEFT JOIN [ReferralPartners] AS [r] ON [v].[ReferralPartnerId] = [r].[ReferralPartnerId]
+LEFT JOIN (
+    SELECT [o].[OrderId], [o].[CancellationReason], [o].[CancelledAt], [o].[CancelledByUserId], [o].[CreatedAt], [o].[Department], [o].[Discount], [o].[Price], [o].[SpecimenId], [o].[Status], [o].[TestCode], [o].[TestId], [o].[VisitId], [t].[TestId] AS [TestId0], [t].[BasePrice], [t].[Category], [t].[CreatedAt] AS [CreatedAt0], [t].[Department] AS [Department0], [t].[DepartmentId], [t].[IsActive], [t].[IsProfile], [t].[SpecimenTypeCode], [t].[TAT_Hours], [t].[TestCode] AS [TestCode0], [t].[TestName], [t].[UpdatedAt]
+    FROM [Orders] AS [o]
+    INNER JOIN [Tests] AS [t] ON [o].[TestId] = [t].[TestId]
+) AS [t0] ON [v].[VisitId] = [t0].[VisitId]
+LEFT JOIN (
+    SELECT [i].[InvoiceId], [i].[CreatedAt], [i].[Currency], [i].[DiscountAmount], [i].[DueDate], [i].[GrossAmount], [i].[NetAmount], [i].[Status], [i].[TaxAmount], [i].[Total], [i].[VisitId], [p0].[PaymentId], [p0].[Amount], [p0].[InvoiceId] AS [InvoiceId0], [p0].[Method], [p0].[ReceiptNo], [p0].[ReceivedAt], [p0].[ReceivedByUserId]
+    FROM [Invoices] AS [i]
+    LEFT JOIN [Payments] AS [p0] ON [i].[InvoiceId] = [p0].[InvoiceId]
+) AS [t1] ON [v].[VisitId] = [t1].[VisitId]
+WHERE [v].[BranchId] = @__branchId_0 AND [v].[Status] <> N'Cancelled' AND (([v].[Status] NOT IN (N'Paid', N'FullPaid') AND [v].[TokenDate] >= @__startDate_1) OR ([v].[Status] IN (N'Paid', N'FullPaid') AND [v].[TokenDate] >= @__today_2 AND [v].[TokenDate] < @__nextDay_3))
+ORDER BY [v].[TokenDate] DESC, [v].[CreatedAt] DESC, [v].[VisitId], [p].[PatientId], [r].[ReferralPartnerId], [t0].[OrderId], [t0].[TestId0], [t1].[InvoiceId]
+2026-02-18 12:01:50.249 +05:30 [ERR] An exception occurred while iterating over the results of a query for context type 'SynOS.Data.SynOSDbContext'.
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'DepartmentId'.
+Invalid column name 'IsProfile'.
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:d68c8d9c-68d2-47ee-a076-0b784c14ca56
+Error Number:207,State:1,Class:16
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'DepartmentId'.
+Invalid column name 'IsProfile'.
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:d68c8d9c-68d2-47ee-a076-0b784c14ca56
+Error Number:207,State:1,Class:16
+2026-02-18 12:02:14.616 +05:30 [INF] Analyzer TCP Listener Service stopping...
+2026-02-18 12:02:16.626 +05:30 [INF] Analyzer TCP Listener Service stopped.
+2026-02-18 12:02:16.634 +05:30 [INF] Notification Worker Service stopping gracefully.
+2026-02-18 14:16:13.879 +05:30 [WRN] The foreign key property 'Specimen.VisitId1' was created in shadow state because a conflicting property with the simple name 'VisitId' exists in the entity type, but is either not mapped, is already used for another relationship, or is incompatible with the associated primary key type. See https://aka.ms/efcore-relationships for information on mapping relationships in EF Core.
+2026-02-18 14:16:13.954 +05:30 [WRN] The foreign key property 'TestPricing.TestId1' was created in shadow state because a conflicting property with the simple name 'TestId' exists in the entity type, but is either not mapped, is already used for another relationship, or is incompatible with the associated primary key type. See https://aka.ms/efcore-relationships for information on mapping relationships in EF Core.
+2026-02-18 14:16:21.669 +05:30 [INF] Notification Worker Service running.
+2026-02-18 14:16:21.782 +05:30 [INF] ExpiredLockCleanupService is starting.
+2026-02-18 14:16:21.877 +05:30 [INF] Analyzer TCP Listener Service starting...
+2026-02-18 14:16:21.883 +05:30 [WRN] No analyzer TCP listeners configured in appsettings.json.
+2026-02-18 14:16:21.890 +05:30 [INF] OperationalStatsProjectionWorker is starting. Interval: 5s
+2026-02-18 14:16:21.903 +05:30 [INF] Worker: Running Consistency Check...
+2026-02-18 14:16:28.685 +05:30 [WRN] Failed to determine the https port for redirect.
+2026-02-18 14:16:30.695 +05:30 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.

@@ -22,9 +22,9 @@ namespace SynOS.Services
             _logger = logger;
         }
 
-        public async Task ConsumeStockOnSampleCollectedAsync(Guid sampleId, Guid consumedByUserId)
+        public async Task ConsumeStockForSpecimenAsync(Guid specimenId, Guid consumedByUserId)
         {
-            var strategy = _context.Database.CreateExecutionStrategy();
+             var strategy = _context.Database.CreateExecutionStrategy();
             await strategy.ExecuteAsync(async () =>
             {
                 using (var transaction = await _context.Database.BeginTransactionAsync())
@@ -32,53 +32,53 @@ namespace SynOS.Services
                     try
                     {
                         // 1. Idempotency Check
-                        var referenceId = sampleId.ToString();
+                        var referenceId = specimenId.ToString();
                         if (await _context.ImsStockMovements.AnyAsync(m => m.ReferenceId == referenceId && m.MovementType == StockMovementType.Consumption))
                         {
-                            _logger.LogInformation("Stock consumption for SampleId {SampleId} has already been processed.", sampleId);
+                            _logger.LogInformation("Stock consumption for SpecimenId {SpecimenId} has already been processed.", specimenId);
                             return;
                         }
 
-                        // 2. Load Sample, Test, and Visit to get BranchId
-                        var sample = await _context.Samples
-                            .Include(s => s.Order).ThenInclude(o => o.Test)
-                            .Include(s => s.Order).ThenInclude(o => o.Visit)
-                            .FirstOrDefaultAsync(s => s.SampleId == sampleId);
+                        // 2. Load Specimen, Orders, Tests, Visit
+                        var specimen = await _context.Specimens
+                            .Include(s => s.Visit)
+                            .Include(s => s.Orders).ThenInclude(o => o.Test) // Need Test for Tube Map
+                            .FirstOrDefaultAsync(s => s.SpecimenId == specimenId);
 
-                        if (sample?.Order?.Test == null || sample.Order.Visit == null)
+                        if (specimen == null || !specimen.Orders.Any())
                         {
-                            _logger.LogError("Could not process tube consumption for SampleId {SampleId}: Sample, Order, Test, or Visit not found.", sampleId);
+                            _logger.LogError("Could not process tube consumption: Specimen {SpecimenId} not found or has no orders.", specimenId);
                             return;
                         }
 
+                        // 3. Determine Branch
                         Guid branchId;
-                        // Use the Visit's BranchId if available.
-                        // If Visit.BranchId is null or Guid.Empty (unassigned), fallback to the system's DefaultBranchId.
-                        // This addresses the "BranchId mismatch" by ensuring a valid BranchId is always used for consumption.
-                        if (sample.Order.Visit.BranchId == null || sample.Order.Visit.BranchId == Guid.Empty)
+                        if (specimen.Visit?.BranchId == null || specimen.Visit.BranchId == Guid.Empty)
                         {
                             branchId = DbInitializer.DefaultBranchId;
-                            _logger.LogWarning("Visit BranchId for SampleId {SampleId} is null or empty. Falling back to system's DefaultBranchId {DefaultBranchId} for consumption.", sampleId, branchId);
+                            _logger.LogWarning("Visit BranchId for Specimen {SpecimenId} is null. Using Default {DefaultBranchId}.", specimenId, branchId);
                         }
                         else
                         {
-                            branchId = sample.Order.Visit.BranchId.Value;
+                            branchId = specimen.Visit.BranchId.Value;
                         }
 
-
-                        // 3. Resolve required tube
+                        // 4. Resolve Tube via FIRST Test (Assumption: All tests in specimen use same/compatible tube)
+                        // In future, mapped via SpecimenType directly.
+                        var firstTest = specimen.Orders.First().Test;
+                        
                         var tubeMap = await _context.ImsTestTubeMaps
-                            .FirstOrDefaultAsync(m => m.TestId == sample.Order.Test.TestId);
+                            .FirstOrDefaultAsync(m => m.TestId == firstTest.TestId);
 
                         if (tubeMap == null)
                         {
-                            _logger.LogWarning("No tube mapping for TestId {TestId}. Skipping stock consumption.", sample.Order.Test.TestId);
+                            _logger.LogWarning("No tube mapping for Test {TestName} ({TestId}). Consumption skipped for Specimen {SpecimenId}.", firstTest.TestName, firstTest.TestId, specimenId);
                             return;
                         }
-                        
-                        var quantityToConsume = tubeMap.QuantityPerSample;
-                        
-                        // 4. Get active lots for that tube and branch (FEFO)
+
+                        var quantityToConsume = tubeMap.QuantityPerSample; // Usually 1
+
+                        // 5. Get active lots (FEFO)
                         var activeLots = await _context.ImsTubeLots
                             .Where(lot => lot.TubeId == tubeMap.TubeId &&
                                           lot.BranchId == branchId &&
@@ -90,57 +90,55 @@ namespace SynOS.Services
 
                         if (!activeLots.Any() || activeLots.Sum(l => l.CurrentQuantity) < quantityToConsume)
                         {
-                            _logger.LogError("Insufficient stock for TubeId {TubeId} at BranchId {BranchId}. Required: {Required}, Available: {Available}. Consumption skipped.",
+                             _logger.LogWarning("Insufficient stock for Tube {TubeId} at Branch {BranchId}. Required: {Required}, Avail: {Available}. Consumption skipped.",
                                 tubeMap.TubeId, branchId, quantityToConsume, activeLots.Sum(l => l.CurrentQuantity));
-                            // DO NOT throw, DO NOT roll back the overall sample collection transaction.
-                            // Simply return, effectively not committing the consumption part of the transaction.
-                            return;
+                             return;
                         }
 
-                        // 5. FEFO Deduction Logic
-                        var remainingToConsume = quantityToConsume;
+                        // 6. FEFO Deduction
+                        var remaining = quantityToConsume;
                         foreach (var lot in activeLots)
                         {
-                            if (remainingToConsume <= 0) break;
-
-                            var quantityFromThisLot = Math.Min(lot.CurrentQuantity, remainingToConsume);
+                            if (remaining <= 0) break;
+                            var deduct = Math.Min(lot.CurrentQuantity, remaining);
                             
-                            lot.CurrentQuantity -= quantityFromThisLot;
-                            remainingToConsume -= quantityFromThisLot;
+                            lot.CurrentQuantity -= deduct;
+                            remaining -= deduct;
 
                             var movement = new ImsStockMovement
                             {
                                 MovementId = Guid.NewGuid(),
                                 TubeId = tubeMap.TubeId,
                                 TubeLotId = lot.LotId,
-                                ConsumableId = null, // This is a legacy tube-based flow
-                                ConsumableLotId = null,
-                                Quantity = quantityFromThisLot,
+                                Quantity = deduct,
                                 MovementType = StockMovementType.Consumption,
-                                ReferenceType = MovementReferenceType.Sample,
+                                ReferenceType = MovementReferenceType.Sample, // Keep enum as Sample? Or rename to Specimen? Specimen is the new Sample.
                                 ReferenceId = referenceId,
                                 RecordedByUserId = consumedByUserId,
                                 MovedAt = DateTimeOffset.UtcNow
                             };
                             await _context.ImsStockMovements.AddAsync(movement);
-
-                            _logger.LogInformation("Consumed {Quantity} from Lot {LotNumber} for TubeId {TubeId}. New lot quantity: {NewQuantity}",
-                                quantityFromThisLot, lot.LotNumber, lot.TubeId, lot.CurrentQuantity);
                         }
 
                         await _context.SaveChangesAsync();
                         await transaction.CommitAsync();
 
-                        _logger.LogInformation("Successfully processed stock consumption for SampleId {SampleId}.", sampleId);
+                        _logger.LogInformation("Consumed {Quantity} tubes for Specimen {SpecimenId}", quantityToConsume, specimenId);
+
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError(ex, "An error occurred during tube stock consumption for SampleId {SampleId}. Stock consumption skipped.", sampleId);
-                        // Do NOT re-throw, do NOT block the overall sample collection flow.
-                        // The transaction for consumption will implicitly not be committed.
+                        _logger.LogError(ex, "Tube consumption failed for Specimen {SpecimenId}", specimenId);
+                        // Swallow to not block clinical flow
                     }
                 }
             });
+        }
+        
+        public async Task ConsumeStockOnSampleCollectedAsync(Guid sampleId, Guid consumedByUserId)
+        {
+             // DEPRECATED
+             await Task.CompletedTask;
         }
 
         public async Task<IEnumerable<NearExpiryLotDto>> GetNearExpiryAlertsAsync(Guid? branchId, int days)

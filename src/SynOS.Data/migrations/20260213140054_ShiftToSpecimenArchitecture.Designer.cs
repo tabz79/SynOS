@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SynOS.Data;
 
@@ -11,9 +12,11 @@ using SynOS.Data;
 namespace SynOS.Data.Migrations
 {
     [DbContext(typeof(SynOSDbContext))]
-    partial class SynOSDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260213140054_ShiftToSpecimenArchitecture")]
+    partial class ShiftToSpecimenArchitecture
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -808,36 +811,6 @@ namespace SynOS.Data.Migrations
                     b.HasIndex("ReviewedByUserId");
 
                     b.ToTable("DeltaCheckEvents");
-                });
-
-            modelBuilder.Entity("SynOS.Models.Entities.DepartmentMaster", b =>
-                {
-                    b.Property<Guid>("DepartmentId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Code")
-                        .IsRequired()
-                        .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)");
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.HasKey("DepartmentId");
-
-                    b.HasIndex("Code")
-                        .IsUnique();
-
-                    b.ToTable("DepartmentMasters");
                 });
 
             modelBuilder.Entity("SynOS.Models.Entities.DeptScopePolicy", b =>
@@ -2924,31 +2897,6 @@ namespace SynOS.Data.Migrations
                     b.ToTable("PriceConfigs");
                 });
 
-            modelBuilder.Entity("SynOS.Models.Entities.ProfileMap", b =>
-                {
-                    b.Property<Guid>("ProfileMapId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("ChildTestId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("ParentTestId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<int>("Sequence")
-                        .HasColumnType("int");
-
-                    b.HasKey("ProfileMapId");
-
-                    b.HasIndex("ChildTestId");
-
-                    b.HasIndex("ParentTestId", "ChildTestId")
-                        .IsUnique();
-
-                    b.ToTable("ProfileMaps");
-                });
-
             modelBuilder.Entity("SynOS.Models.Entities.RadiologyImage", b =>
                 {
                     b.Property<Guid>("ImageId")
@@ -4050,9 +3998,6 @@ namespace SynOS.Data.Migrations
                     b.Property<Guid>("VisitId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid?>("VisitId1")
-                        .HasColumnType("uniqueidentifier");
-
                     b.HasKey("SpecimenId");
 
                     b.HasIndex("AccessionNumber")
@@ -4061,8 +4006,6 @@ namespace SynOS.Data.Migrations
                     b.HasIndex("SpecimenTypeCode");
 
                     b.HasIndex("VisitId");
-
-                    b.HasIndex("VisitId1");
 
                     b.ToTable("Specimens");
                 });
@@ -4157,6 +4100,9 @@ namespace SynOS.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<decimal>("BasePrice")
+                        .HasColumnType("decimal(10, 2)");
+
                     b.Property<string>("Category")
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
@@ -4164,13 +4110,12 @@ namespace SynOS.Data.Migrations
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("datetimeoffset");
 
-                    b.Property<Guid?>("DepartmentId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<string>("Department")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsProfile")
                         .HasColumnType("bit");
 
                     b.Property<string>("SpecimenTypeCode")
@@ -4194,8 +4139,6 @@ namespace SynOS.Data.Migrations
                         .HasColumnType("datetimeoffset");
 
                     b.HasKey("TestId");
-
-                    b.HasIndex("DepartmentId");
 
                     b.HasIndex("SpecimenTypeCode");
 
@@ -4248,43 +4191,6 @@ namespace SynOS.Data.Migrations
                         .IsUnique();
 
                     b.ToTable("TestDefinitions");
-                });
-
-            modelBuilder.Entity("SynOS.Models.Entities.TestPricing", b =>
-                {
-                    b.Property<Guid>("PricingId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<decimal>("BasePrice")
-                        .HasColumnType("decimal(10, 2)");
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<Guid>("CreatedByUserId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("EffectiveFrom")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("EffectiveTo")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid>("TestId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid?>("TestId1")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("PricingId");
-
-                    b.HasIndex("TestId1");
-
-                    b.HasIndex("TestId", "EffectiveFrom")
-                        .IsUnique();
-
-                    b.ToTable("TestPricing");
                 });
 
             modelBuilder.Entity("SynOS.Models.Entities.Time.ClockEventFact", b =>
@@ -5536,25 +5442,6 @@ namespace SynOS.Data.Migrations
                     b.Navigation("Test");
                 });
 
-            modelBuilder.Entity("SynOS.Models.Entities.ProfileMap", b =>
-                {
-                    b.HasOne("SynOS.Models.Entities.Test", "ChildTest")
-                        .WithMany()
-                        .HasForeignKey("ChildTestId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("SynOS.Models.Entities.Test", "ParentTest")
-                        .WithMany()
-                        .HasForeignKey("ParentTestId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("ChildTest");
-
-                    b.Navigation("ParentTest");
-                });
-
             modelBuilder.Entity("SynOS.Models.Entities.RadiologyImage", b =>
                 {
                     b.HasOne("SynOS.Models.Entities.RadiologyStudy", "RadiologyStudy")
@@ -5864,10 +5751,6 @@ namespace SynOS.Data.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("SynOS.Models.Entities.Visit", null)
-                        .WithMany("Specimens")
-                        .HasForeignKey("VisitId1");
-
                     b.Navigation("SpecimenType");
 
                     b.Navigation("Visit");
@@ -5875,32 +5758,11 @@ namespace SynOS.Data.Migrations
 
             modelBuilder.Entity("SynOS.Models.Entities.Test", b =>
                 {
-                    b.HasOne("SynOS.Models.Entities.DepartmentMaster", "DepartmentMaster")
-                        .WithMany()
-                        .HasForeignKey("DepartmentId");
-
                     b.HasOne("SynOS.Models.Entities.SpecimenType", "SpecimenType")
                         .WithMany()
                         .HasForeignKey("SpecimenTypeCode");
 
-                    b.Navigation("DepartmentMaster");
-
                     b.Navigation("SpecimenType");
-                });
-
-            modelBuilder.Entity("SynOS.Models.Entities.TestPricing", b =>
-                {
-                    b.HasOne("SynOS.Models.Entities.Test", "Test")
-                        .WithMany()
-                        .HasForeignKey("TestId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("SynOS.Models.Entities.Test", null)
-                        .WithMany("TestPricings")
-                        .HasForeignKey("TestId1");
-
-                    b.Navigation("Test");
                 });
 
             modelBuilder.Entity("SynOS.Models.Entities.UserBranchRole", b =>
@@ -6083,8 +5945,6 @@ namespace SynOS.Data.Migrations
                     b.Navigation("Parameters");
 
                     b.Navigation("PriceConfigs");
-
-                    b.Navigation("TestPricings");
                 });
 
             modelBuilder.Entity("SynOS.Models.Entities.User", b =>
@@ -6107,8 +5967,6 @@ namespace SynOS.Data.Migrations
                     b.Navigation("Orders");
 
                     b.Navigation("ReferralDraft");
-
-                    b.Navigation("Specimens");
                 });
 #pragma warning restore 612, 618
         }

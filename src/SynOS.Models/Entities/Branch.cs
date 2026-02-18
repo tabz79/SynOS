@@ -9,6 +9,10 @@ namespace SynOS.Models.Entities
         public Guid BranchId { get; set; }
 
         [Required]
+        [StringLength(10)]
+        public string Code { get; set; } = string.Empty; // ADDED for Accessioning
+
+        [Required]
         [StringLength(100)]
         public string Name { get; set; }
 

@@ -173,16 +173,19 @@ builder.Services.AddScoped<ISettlementService, SettlementService>(); // ADDED
 builder.Services.AddScoped<IVisitService, VisitService>();
 builder.Services.AddScoped<IEditLockService, EditLockService>();
 builder.Services.AddScoped<IDiscountService, DiscountService>(); // ADDED
-builder.Services.AddScoped<ISampleService, SampleService>(provider =>
-    new SampleService(
-        provider.GetRequiredService<SynOSDbContext>(),
-        provider.GetRequiredService<ISampleNotifier>(),
-        provider.GetRequiredService<ITubeConsumptionService>(),
-        provider.GetRequiredService<ILogger<SampleService>>(),
-        provider.GetRequiredService<IOperationalEventWriter>(),
-        provider.GetRequiredService<IUserContext>(),
-        provider.GetRequiredService<IOperationsEngine>() // ADDED
-    ));
+    // REFACTOR: Disabled for Specimen Migration
+    /*
+    builder.Services.AddScoped<ISampleService, SampleService>(provider =>
+        new SampleService(
+            provider.GetRequiredService<SynOSDbContext>(),
+            provider.GetRequiredService<ISampleNotifier>(),
+            provider.GetRequiredService<ITubeConsumptionService>(),
+            provider.GetRequiredService<ILogger<SampleService>>(),
+            provider.GetRequiredService<IOperationalEventWriter>(),
+            provider.GetRequiredService<IUserContext>(),
+            provider.GetRequiredService<IOperationsEngine>() // ADDED
+        ));
+    */
 builder.Services.AddScoped<ITubeConsumptionService, TubeConsumptionService>();
 builder.Services.AddScoped<IPurchasingService, PurchasingService>();
 builder.Services.AddScoped<IIMSWastageInsightService, IMSWastageInsightService>();
@@ -223,7 +226,8 @@ builder.Services.AddScoped<IReceptionFlowService>(provider =>
         provider.GetRequiredService<IReferralFinancialService>(),
         provider.GetRequiredService<IOperationalEventWriter>(),
         provider.GetRequiredService<IUserContext>(), // ADDED
-        provider.GetRequiredService<IWorkRoutingEngine>() // ADDED
+        provider.GetRequiredService<IWorkRoutingEngine>(), // ADDED
+        provider.GetRequiredService<ISpecimenGroupingService>() // ADDED
     ));
 builder.Services.AddScoped<IResultService, ResultService>();
 builder.Services.AddScoped<SynOS.Services.Reception.IReceptionSnapshotService, SynOS.Services.Reception.ReceptionSnapshotService>();
@@ -248,6 +252,7 @@ builder.Services.AddScoped<IPacsService, PacsService>();
 builder.Services.AddScoped<IRadiologyAccessGuard, RadiologyAccessGuard>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IAccessionService, AccessionService>();
+builder.Services.AddScoped<ISpecimenGroupingService, SpecimenGroupingService>(); // ADDED
 builder.Services.AddScoped<IEmployeeAdminService, EmployeeAdminService>(); // ADDED
 builder.Services.AddScoped<ILabAnalyzerService, LabAnalyzerService>();
 builder.Services.AddScoped<IAnalyzerResultMatcherService, AnalyzerResultMatcherService>();

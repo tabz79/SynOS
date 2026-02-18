@@ -139,7 +139,8 @@ namespace SynOS.Services
             var visit = await _context.Visits
                 .Include(v => v.Patient)
                 .Include(v => v.Orders)
-                    .ThenInclude(o => o.Test) // Corrected to o.Test
+                    .ThenInclude(o => o.Test) 
+                        .ThenInclude(t => t.DepartmentMaster) // Added
                 .FirstOrDefaultAsync(v => v.VisitId == visitId);
 
             if (visit == null)
@@ -177,7 +178,7 @@ namespace SynOS.Services
                     VisitId = visit.VisitId,
                     PatientId = visit.PatientId,
                     VisitTestId = order.OrderId,
-                    Modality = order.Test?.Department ?? "Unknown", // Corrected to order.Test?.Department
+                    Modality = order.Test?.DepartmentMaster?.Name ?? "Unknown", // Refactored
                     Status = "PendingImaging",
                     CreatedBy = userId,
                     CreatedAt = DateTimeOffset.UtcNow
@@ -313,7 +314,7 @@ namespace SynOS.Services
                 join visit in _context.Visits on study.VisitId equals visit.VisitId
                 join patient in _context.Patients on study.PatientId equals patient.PatientId
                 join order in _context.Orders on study.VisitTestId equals order.OrderId
-                join test in _context.Tests on order.TestId equals test.TestId // Corrected to join on Test entity
+                join test in _context.Tests on order.TestId equals test.TestId // Join
                 join tech in _context.Users on study.AssignedTo equals tech.UserId into techGroup
                 from tech in techGroup.DefaultIfEmpty()
                 select new { study, visit, patient, order, test, tech }; // Corrected to test
@@ -383,7 +384,7 @@ namespace SynOS.Services
                 join v in _context.Visits on rs.VisitId equals v.VisitId
                 join p in _context.Patients on rs.PatientId equals p.PatientId
                 join o in _context.Orders on rs.VisitTestId equals o.OrderId
-                join t in _context.Tests on o.TestId equals t.TestId // Corrected to join on Test entity
+                join t in _context.Tests on o.TestId equals t.TestId 
                 join tech in _context.Users on rs.AssignedTo equals tech.UserId into techGroup
                 from tech in techGroup.DefaultIfEmpty()
                 orderby rs.CreatedAt
@@ -534,6 +535,12 @@ namespace SynOS.Services
                 pdfBytes,
                 fileName,
                 "radiology-reports");
+
+            if (string.Equals(studyEntity.Order.Test?.DepartmentMaster?.Name ?? studyEntity.Order.Department, "Radiology", StringComparison.OrdinalIgnoreCase))
+            {
+               // Just to be safe, sometimes we blindly cast unknown department to Modality
+               // Check logic flow.
+            }
 
             report.Status = "Signed";
             report.PdfUrl = fileUrl;

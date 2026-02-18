@@ -44,6 +44,9 @@ namespace SynOS.Models.Entities
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
-        public virtual System.Collections.Generic.ICollection<Sample> Samples { get; set; } = new System.Collections.Generic.List<Sample>();
+        public Guid? SpecimenId { get; set; }
+        
+        [ForeignKey("SpecimenId")]
+        public virtual Specimen? Specimen { get; set; }
     }
 }

@@ -31,6 +31,8 @@ namespace SynOS.Services
                     .Include(t => t.Parameters)
                         .ThenInclude(p => p.ReferenceRanges)
                     .Include(t => t.PriceConfigs)
+                    .Include(t => t.DepartmentMaster) // Added
+                    .Include(t => t.TestPricings) // Added
                     .Where(t => t.IsActive)
                     .ToListAsync();
             }) ?? new List<Test>();

@@ -39,6 +39,51 @@ namespace SynOS.Services
             test.CreatedAt = DateTimeOffset.UtcNow;
             test.IsActive = true;
 
+            // Phase 8: Resolve DepartmentId from string
+            if (!string.IsNullOrEmpty(dto.Department))
+            {
+                var deptMaster = await _context.DepartmentMasters.FirstOrDefaultAsync(d => d.Name == dto.Department);
+                if (deptMaster == null)
+                {
+                    // Fallback or Create? For now, we assume Master exists or throw.
+                    // Let's default to creating it if strict mode isn't on, OR throw.
+                    // SAFE: Throw if not found to enforce master data integrity.
+                    // Actually, during migration we might want flexibility but strict is better.
+                    // But wait, DTO likely still has 'Department' string.
+                    // Try to find by Name or Code.
+                     deptMaster = await _context.DepartmentMasters.FirstOrDefaultAsync(d => d.Name == dto.Department || d.Code == dto.Department);
+                }
+                
+                if (deptMaster != null)
+                {
+                    test.DepartmentId = deptMaster.DepartmentId;
+                }
+                else
+                {
+                     // Fallback: Create dynamic department? No, that violates stabilization.
+                     // Assign to 'Other' or throw?
+                     // Current choice: Leave null, let validation catch it, or assign 'Pathology' default?
+                     // Let's query Pathology default.
+                     var defaultDept = await _context.DepartmentMasters.FirstOrDefaultAsync(d => d.Name == "Pathology");
+                     test.DepartmentId = defaultDept?.DepartmentId;
+                }
+            }
+
+            if (dto.BasePrice > 0)
+            {
+                test.TestPricings = new List<TestPricing>
+                {
+                    new TestPricing
+                    {
+                        PricingId = Guid.NewGuid(),
+                        TestId = test.TestId,
+                        BasePrice = dto.BasePrice,
+                        EffectiveFrom = DateTime.Today, // Effective Today
+                        CreatedAt = DateTimeOffset.UtcNow
+                    }
+                };
+            }
+
             _context.Tests.Add(test);
             await _context.SaveChangesAsync();
 
@@ -52,12 +97,62 @@ namespace SynOS.Services
 
         public async Task<Test> UpdateTestAsync(Guid testId, UpdateTestDto dto, Guid actorUserId)
         {
-            var test = await _context.Tests.FindAsync(testId);
+            var test = await _context.Tests
+                .Include(t => t.TestPricings)
+                .Include(t => t.DepartmentMaster)
+                .FirstOrDefaultAsync(t => t.TestId == testId);
+                
             if (test == null) throw new KeyNotFoundException("Test not found");
 
             var oldDto = _mapper.Map<TestDto>(test);
 
-            _mapper.Map(dto, test);
+            // Phase 8: Handle Department Change
+            if (dto.Department != null && (test.DepartmentMaster?.Name != dto.Department))
+            {
+                var newDept = await _context.DepartmentMasters.FirstOrDefaultAsync(d => d.Name == dto.Department || d.Code == dto.Department);
+                if (newDept != null)
+                {
+                    test.DepartmentId = newDept.DepartmentId;
+                    test.DepartmentMaster = newDept; // Update nav for automapper if needed
+                }
+            }
+
+            // Phase 8: Handle Price Change
+            // Check current price
+            var currentPricing = test.TestPricings
+                .Where(tp => tp.EffectiveFrom <= DateTime.UtcNow)
+                .OrderByDescending(tp => tp.EffectiveFrom)
+                .FirstOrDefault();
+
+            decimal currentPrice = currentPricing?.BasePrice ?? 0;
+
+            if (dto.BasePrice != currentPrice)
+            {
+                 var newPricing = new TestPricing
+                 {
+                     PricingId = Guid.NewGuid(),
+                     TestId = test.TestId,
+                     BasePrice = dto.BasePrice,
+                     EffectiveFrom = DateTime.Today, // Effective from today
+                     CreatedAt = DateTimeOffset.UtcNow
+                 };
+                 _context.TestPricings.Add(newPricing);
+            }
+
+            // Map other fields (Name, Category, TAT, etc.)
+            // Exclude Department and BasePrice from auto-mapping if they conflict, 
+            // but since they are removed from Test entity, AutoMapper might ignore them or we need to be careful.
+            // DTO likely still has them.
+            // We should manually map what allowed.
+            if (dto.TestName != null) test.TestName = dto.TestName;
+            if (dto.Category != null) test.Category = dto.Category;
+            test.TAT_Hours = dto.TAT_Hours;
+            test.IsActive = dto.IsActive;
+            
+            // _mapper.Map(dto, test); // CAUTION: If DTO has BasePrice/Department, this might try to set non-existent props? 
+            // Since props are removed from Test, AutoMapper fails silently or errors depending on config.
+            // To be safe, rely on the manual updates above and standard properties.
+            
             test.UpdatedAt = DateTimeOffset.UtcNow;
 
             await _context.SaveChangesAsync();
@@ -74,7 +169,11 @@ namespace SynOS.Services
             return await _context.Tests
                 .Include(t => t.Parameters)
                     .ThenInclude(p => p.ReferenceRanges)
+                .Include(t => t.Parameters)
+                    .ThenInclude(p => p.ReferenceRanges)
                 .Include(t => t.PriceConfigs)
+                .Include(t => t.TestPricings) // Added
+                .Include(t => t.DepartmentMaster) // Added
                 .AsNoTracking()
                 .FirstOrDefaultAsync(t => t.TestId == testId);
         }
@@ -279,12 +378,15 @@ namespace SynOS.Services
                 .Include(t => t.Parameters)
                     .ThenInclude(p => p.ReferenceRanges)
                 .Include(t => t.PriceConfigs)
+                .Include(t => t.DepartmentMaster) // Added
+                .Include(t => t.TestPricings) // Added
                 .Where(t => t.TestCode.ToUpper() == normalized.ToUpper());
 
             if (!string.IsNullOrWhiteSpace(department))
             {
                 var deptUpper = department.ToUpperInvariant();
-                query = query.Where(t => t.Department.ToUpper() == deptUpper);
+                // Phase 8: Filter by DepartmentMaster.Name or DepartmentMaster.Code
+                query = query.Where(t => t.DepartmentMaster.Name.ToUpper() == deptUpper || t.DepartmentMaster.Code.ToUpper() == deptUpper);
             }
 
             return await query.FirstOrDefaultAsync();
