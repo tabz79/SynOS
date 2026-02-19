@@ -22,7 +22,8 @@ namespace SynOS.Api.Controllers.Radiology
         [HttpGet("orphans")]
         public async Task<IActionResult> GetOrphanSummary()
         {
-            var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!Guid.TryParse(userIdString, out var userId)) return Unauthorized();
             var result = await _pacsService.GetOrphanSummaryAsync(userId);
             return Ok(result);
         }
@@ -30,7 +31,8 @@ namespace SynOS.Api.Controllers.Radiology
         [HttpPost("orphans/cleanup")]
         public async Task<IActionResult> CleanupOrphans()
         {
-            var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!Guid.TryParse(userIdString, out var userId)) return Unauthorized();
             var result = await _pacsService.CleanupOrphansAsync(userId);
             return Ok(result);
         }
@@ -38,7 +40,8 @@ namespace SynOS.Api.Controllers.Radiology
         [HttpGet("storage-stats")]
         public async Task<IActionResult> GetStorageStats()
         {
-            var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!Guid.TryParse(userIdString, out var userId)) return Unauthorized();
             var result = await _pacsService.GetStorageStatsAsync(userId);
             return Ok(result);
         }

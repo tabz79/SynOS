@@ -43,7 +43,8 @@ namespace SynOS.Api.Controllers
         [HttpPost("draft")]
         public async Task<IActionResult> DraftReport([FromBody] RadiologyReportDraftDto request)
         {
-            var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!Guid.TryParse(userIdString, out var userId)) return Unauthorized();
             var reportDto = await _radiologyService.DraftReportAsync(request, userId);
             return Ok(reportDto);
         }
@@ -51,7 +52,8 @@ namespace SynOS.Api.Controllers
         [HttpPost("sign")]
         public async Task<IActionResult> SignReport([FromBody] SignRadiologyReportRequestDto request)
         {
-            var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!Guid.TryParse(userIdString, out var userId)) return Unauthorized();
             var reportDto = await _radiologyService.SignReportAsync(request.StudyId, userId);
             
             // Trigger live projection

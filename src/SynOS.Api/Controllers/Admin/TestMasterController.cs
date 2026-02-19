@@ -81,8 +81,19 @@ namespace SynOS.Api.Controllers.Admin
             if (request.File == null || request.File.Length == 0)
                 return BadRequest("No file uploaded");
                 
+            var extension = System.IO.Path.GetExtension(request.File.FileName).ToLowerInvariant();
             using var stream = request.File.OpenReadStream();
-            var result = await _csvService.ImportTestsFromCsvAsync(stream, GetCurrentUserId());
+            
+            CsvImportResultDto result;
+            if (extension == ".xlsx")
+            {
+                result = await _csvService.ImportTestsFromExcelAsync(stream, GetCurrentUserId());
+            }
+            else
+            {
+                result = await _csvService.ImportTestsFromCsvAsync(stream, GetCurrentUserId());
+            }
+
             if (result.ErrorCount > 0)
             {
                 return BadRequest(result);

@@ -39,7 +39,7 @@ namespace SynOS.Api.Controllers
                     ConsumableName = g.Key.ConsumableName,
                     ConsumableCategory = g.Key.ConsumableCategory,
                     TotalQuantity = g.Sum(m => m.Quantity),
-                    TotalCost = g.Any(m => m.CostPerUnit == null) ? null : (decimal?)g.Sum(m => m.Quantity * m.CostPerUnit.Value)
+                    TotalCost = g.Sum(m => m.Quantity * (m.CostPerUnit ?? 0m))
                 })
                 .OrderBy(s => s.MovementType)
                 .ThenBy(s => s.ConsumableCategory)

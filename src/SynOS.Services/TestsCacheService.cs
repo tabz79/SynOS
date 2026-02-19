@@ -33,6 +33,7 @@ namespace SynOS.Services
                     .Include(t => t.PriceConfigs)
                     .Include(t => t.DepartmentMaster) // Added
                     .Include(t => t.TestPricings) // Added
+                    .Include(t => t.ProfileChildren) // Added for Expansion
                     .Where(t => t.IsActive)
                     .ToListAsync();
             }) ?? new List<Test>();

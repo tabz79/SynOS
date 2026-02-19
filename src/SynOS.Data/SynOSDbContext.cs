@@ -322,8 +322,16 @@ namespace SynOS.Data
             modelBuilder.Entity<ProfileMap>(entity =>
             {
                 entity.HasIndex(e => new { e.ParentTestId, e.ChildTestId }).IsUnique();
-                entity.HasOne(e => e.ParentTest).WithMany().HasForeignKey(e => e.ParentTestId).OnDelete(DeleteBehavior.Restrict);
-                entity.HasOne(e => e.ChildTest).WithMany().HasForeignKey(e => e.ChildTestId).OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(e => e.ParentTest)
+                      .WithMany(t => t.ProfileChildren)
+                      .HasForeignKey(e => e.ParentTestId)
+                      .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(e => e.ChildTest)
+                      .WithMany(t => t.ProfileParents)
+                      .HasForeignKey(e => e.ChildTestId)
+                      .OnDelete(DeleteBehavior.Restrict);
             });
 
             // Patient entities

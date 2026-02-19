@@ -124,7 +124,9 @@ namespace SynOS.Api.Controllers
         {
             try
             {
-                var userId = Guid.Parse(User.FindFirstValue(System.Security.Claims.ClaimTypes.NameIdentifier));
+                var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (!Guid.TryParse(userIdString, out var userId)) return Unauthorized();
+
                 var lot = await _purchasingService.ReceiveStockAsync(poItemId, dto, userId);
                 return Ok(lot);
             }

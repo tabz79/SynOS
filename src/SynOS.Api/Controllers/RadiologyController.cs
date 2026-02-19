@@ -27,7 +27,9 @@ namespace SynOS.Api.Controllers
         [Authorize(Roles = "Admin,Technician,XRayTech,Receptionist")]
         public async Task<IActionResult> CreateStudiesForVisit([FromBody] CreateRadiologyStudiesRequestDto request)
         {
-            var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!Guid.TryParse(userIdString, out var userId)) return Unauthorized();
+
             var studies = await _radiologyService.CreateRadiologyStudiesForVisitAsync(request.VisitId, userId);
             return Ok(studies);
         }
@@ -44,7 +46,9 @@ namespace SynOS.Api.Controllers
         [Authorize(Roles = "Admin,Technician,XRayTech")]
         public async Task<IActionResult> AssignStudy([FromBody] AssignStudyRequestDto request)
         {
-            var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!Guid.TryParse(userIdString, out var userId)) return Unauthorized();
+
             await _radiologyService.AssignStudyAsync(request.StudyId, userId);
             return NoContent();
         }
@@ -58,7 +62,8 @@ namespace SynOS.Api.Controllers
                 return BadRequest("No file uploaded.");
             }
 
-            var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!Guid.TryParse(userIdString, out var userId)) return Unauthorized();
             
             // Define constraints
             const long maxFileSize = 100 * 1024 * 1024; // 100 MB
@@ -89,7 +94,9 @@ namespace SynOS.Api.Controllers
         [Authorize(Roles = "Admin,Technician,XRayTech")]
         public async Task<IActionResult> SetExternalMapping([FromBody] RadiologyStudyExternalMappingDto request)
         {
-            var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!Guid.TryParse(userIdString, out var userId)) return Unauthorized();
+
             await _radiologyService.SetExternalMappingAsync(request, userId);
             return NoContent();
         }
@@ -98,7 +105,9 @@ namespace SynOS.Api.Controllers
         [Authorize(Roles = "Admin,Technician,XRayTech")]
         public async Task<IActionResult> MarkImagingCompleted([FromBody] AssignStudyRequestDto request)
         {
-            var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!Guid.TryParse(userIdString, out var userId)) return Unauthorized();
+
             await _radiologyService.MarkImagingCompletedAsync(request.StudyId, userId);
             return NoContent();
         }

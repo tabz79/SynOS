@@ -284,10 +284,10 @@ builder.Services.AddScoped<ISmsSender, StubSmsSender>();
 builder.Services.AddScoped<IEmailSender, StubEmailSender>();
 builder.Services.AddScoped<IPrintService, StubPrintService>();
 
-builder.Services.AddHostedService<NotificationWorkerService>();
-builder.Services.AddHostedService<ExpiredLockCleanupService>();
-builder.Services.AddHostedService<AnalyzerTcpListenerService>();
-builder.Services.AddHostedService<OperationalStatsProjectionWorker>();
+// builder.Services.AddHostedService<NotificationWorkerService>();
+// builder.Services.AddHostedService<ExpiredLockCleanupService>();
+// builder.Services.AddHostedService<AnalyzerTcpListenerService>();
+// builder.Services.AddHostedService<OperationalStatsProjectionWorker>();
 
 // Add SignalR
 builder.Services.AddSignalR();
@@ -317,7 +317,7 @@ using (var scope = app.Services.CreateScope())
     try
     {
         var context = services.GetRequiredService<SynOSDbContext>();
-        DbInitializer.Initialize(context);
+        // DbInitializer.Initialize(context);
     }
     catch (Exception ex)
     {
@@ -384,7 +384,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-app.MapHub<SynOS.Api.Hubs.SampleHub>("/sampleHub");
-app.MapHub<SynOS.Api.Hubs.DashboardHub>("/dashboardHub"); // ADDED
+// app.MapHub<SynOS.Api.Hubs.SampleHub>("/sampleHub"); // DISABLED TEMPORARILY
+// app.MapHub<SynOS.Api.Hubs.DashboardHub>("/dashboardHub"); // DISABLED TEMPORARILY
 
 app.Run();

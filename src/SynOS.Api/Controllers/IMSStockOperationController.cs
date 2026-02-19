@@ -24,7 +24,9 @@ namespace SynOS.Api.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> AddStockLot([FromBody] LotCreateDto lotDto)
         {
-            var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!Guid.TryParse(userIdString, out var userId)) return Unauthorized();
+
             await _tubeConsumptionService.AddStockManualAsync(lotDto, userId);
             return Ok(new { message = "Stock lot added successfully." });
         }
@@ -33,7 +35,9 @@ namespace SynOS.Api.Controllers
         [Authorize(Roles = "Admin,LabTech")]
         public async Task<IActionResult> RecordWastage([FromBody] WastageRequestDto dto)
         {
-            var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!Guid.TryParse(userIdString, out var userId)) return Unauthorized();
+
             try
             {
                 await _tubeConsumptionService.RecordWastageAsync(dto, userId);

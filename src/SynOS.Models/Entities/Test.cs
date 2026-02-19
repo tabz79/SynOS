@@ -49,5 +49,10 @@ namespace SynOS.Models.Entities
         public virtual ICollection<Parameter> Parameters { get; set; } = new List<Parameter>();
         public virtual ICollection<TestPricing> TestPricings { get; set; } = new List<TestPricing>(); // Added Phase 8
         public virtual ICollection<PriceConfig> PriceConfigs { get; set; } = new List<PriceConfig>();
+
+        [InverseProperty("ParentTest")]
+        public virtual ICollection<ProfileMap> ProfileChildren { get; set; } = new List<ProfileMap>();
+        [InverseProperty("ChildTest")]
+        public virtual ICollection<ProfileMap> ProfileParents { get; set; } = new List<ProfileMap>();
     }
 }

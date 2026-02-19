@@ -247,21 +247,21 @@ namespace SynOS.Api.Controllers
         public class TimelineEntryDto
         {
             public Guid EventId { get; set; }
-            public string Title { get; set; }
+            public string Title { get; set; } = string.Empty;
             public DateTime OccurredAt { get; set; }
-            public string ActorName { get; set; }
-            public string EventType { get; set; }
-            public string Color { get; set; }
-            public string Icon { get; set; }
+            public string ActorName { get; set; } = string.Empty;
+            public string EventType { get; set; } = string.Empty;
+            public string Color { get; set; } = string.Empty;
+            public string Icon { get; set; } = string.Empty;
             public string? Metadata { get; set; }
             public List<TimelineContextDto> ContextEvents { get; set; } = new();
         }
 
         public class TimelineContextDto
         {
-            public string Summary { get; set; }
+            public string Summary { get; set; } = string.Empty;
             public string? Metadata { get; set; }
-            public string EventType { get; set; }
+            public string EventType { get; set; } = string.Empty;
         }
     }
 }

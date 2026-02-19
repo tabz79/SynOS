@@ -29,7 +29,8 @@ namespace SynOS.Api.Controllers.Radiology
                 return BadRequest("No files uploaded.");
             }
             
-            var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!Guid.TryParse(userIdString, out var userId)) return Unauthorized();
 
             var result = await _pacsService.UploadDicomAsync(radiologyStudyId, files, userId);
 
@@ -42,7 +43,8 @@ namespace SynOS.Api.Controllers.Radiology
         [HttpGet("instances/{instanceId:guid}/file")]
         public async Task<IActionResult> GetDicom(Guid instanceId)
         {
-            var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!Guid.TryParse(userIdString, out var userId)) return Unauthorized();
             
             var (stream, contentType) = await _pacsService.GetDicomStreamAsync(instanceId, userId);
 
@@ -56,7 +58,8 @@ namespace SynOS.Api.Controllers.Radiology
         [Authorize(Roles = "Admin,Radiologist")]
         public async Task<IActionResult> ReindexStudy(Guid radiologyStudyId)
         {
-            var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!Guid.TryParse(userIdString, out var userId)) return Unauthorized();
             var result = await _pacsService.ReindexStudyAsync(radiologyStudyId, userId);
             return Ok(result);
         }
@@ -65,7 +68,8 @@ namespace SynOS.Api.Controllers.Radiology
         [Authorize(Roles = "Admin,Radiologist,XRayTech")]
         public async Task<IActionResult> GetSeriesTree(Guid radiologyStudyId)
         {
-            var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!Guid.TryParse(userIdString, out var userId)) return Unauthorized();
             
             var request = HttpContext.Request;
             var apiBaseUrl = $"{request.Scheme}://{request.Host.ToUriComponent()}";

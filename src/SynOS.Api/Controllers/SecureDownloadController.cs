@@ -58,9 +58,9 @@ public class SecureDownloadController : ControllerBase
             // Assuming the filename can be derived or is stored with the report.
             // For now, a generic filename. The service should ideally return filename too.
             var fileName = $"Report_{token}.pdf"; 
-            Response.Headers.Add("X-Content-Type-Options", "nosniff");
-            Response.Headers.Add("X-Frame-Options", "DENY");
-            Response.Headers.Add("Content-Security-Policy", "default-src 'none'");
+            Response.Headers.Append("X-Content-Type-Options", "nosniff");
+            Response.Headers.Append("X-Frame-Options", "DENY");
+            Response.Headers.Append("Content-Security-Policy", "default-src 'none'");
             return File(fileStream, "application/pdf", fileName);
         }
         catch (BadHttpRequestException ex) when (ex.StatusCode == 401)
@@ -91,9 +91,9 @@ public class SecureDownloadController : ControllerBase
         {
             var fileStream = await _deliveryService.DownloadReportPackageAsync(token, phone);
             var fileName = $"ReportPackage_{token}.zip"; 
-            Response.Headers.Add("X-Content-Type-Options", "nosniff");
-            Response.Headers.Add("X-Frame-Options", "DENY");
-            Response.Headers.Add("Content-Security-Policy", "default-src 'none'");
+            Response.Headers.Append("X-Content-Type-Options", "nosniff");
+            Response.Headers.Append("X-Frame-Options", "DENY");
+            Response.Headers.Append("Content-Security-Policy", "default-src 'none'");
             return File(fileStream, "application/zip", fileName);
         }
         catch (BadHttpRequestException ex) when (ex.StatusCode == 401)

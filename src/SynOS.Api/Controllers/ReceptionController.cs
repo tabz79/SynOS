@@ -264,7 +264,7 @@ namespace SynOS.Api.Controllers
     public class ReceptionAddTestRequest
     {
         public Guid VisitId { get; set; }
-        public string TestCode { get; set; }
+        public required string TestCode { get; set; }
     }
     
     public class ReceptionAddReferralDraftRequest
@@ -278,7 +278,7 @@ namespace SynOS.Api.Controllers
     public class ReceptionApplyDiscountRequest
     {
         public Guid VisitId { get; set; }
-        public string DiscountCode { get; set; }
+        public required string DiscountCode { get; set; }
     }
 
     public class ReceptionUpdateReferralRequest

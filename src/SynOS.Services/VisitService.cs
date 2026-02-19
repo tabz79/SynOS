@@ -135,25 +135,11 @@ namespace SynOS.Services
 
             _context.Visits.Add(visit);
 
-            // Create Orders (Active)
+            // Create Orders (with recursive expansion)
+            var currentOrders = new List<Order>();
             foreach (var testCode in visitDto.TestCodes)
             {
-                var resolvedTest = await ResolveTestForReceptionAsync(testCode, visitDto.Department);
-                if (resolvedTest == null) throw new KeyNotFoundException($"Test '{testCode}' not found.");
-
-                var order = new Order
-                {
-                    OrderId = Guid.NewGuid(),
-                    VisitId = visit.VisitId,
-                    TestId = resolvedTest.TestId,
-                    TestCode = resolvedTest.TestCode,
-                    Department = resolvedTest.Department,
-                    Status = SynOS.Models.Enums.OrderStatus.Pending,
-                    Price = resolvedTest.BasePrice,
-                    Discount = 0,
-                    CreatedAt = DateTime.UtcNow
-                };
-                _context.Orders.Add(order);
+                await ExpandAndAddOrdersInternalAsync(visit.VisitId, testCode, visitDto.Department, currentOrders, false);
             }
 
             // Create Invoice (Shell)
@@ -304,23 +290,8 @@ namespace SynOS.Services
             if (visit.Orders.Any(o => o.TestCode.Equals(testCode, StringComparison.OrdinalIgnoreCase) && o.Status != SynOS.Models.Enums.OrderStatus.Cancelled))
                 throw new InvalidOperationException($"Test '{testCode}' is already added.");
 
-            var resolvedTest = await ResolveTestForReceptionAsync(testCode, visit.Department);
-            if (resolvedTest == null) throw new KeyNotFoundException($"Test '{testCode}' not found.");
-
-            var order = new Order
-            {
-                OrderId = Guid.NewGuid(),
-                VisitId = visit.VisitId,
-                TestId = resolvedTest.TestId,
-                TestCode = resolvedTest.TestCode,
-                Department = resolvedTest.Department,
-                Status = SynOS.Models.Enums.OrderStatus.Pending,
-                Price = resolvedTest.BasePrice,
-                Discount = 0,
-                CreatedAt = DateTime.UtcNow
-            };
-            _context.Orders.Add(order);
-            if (!visit.Orders.Contains(order)) visit.Orders.Add(order);
+            var currentOrders = visit.Orders.ToList();
+            await ExpandAndAddOrdersInternalAsync(visitId, testCode, visit.Department, currentOrders, false);
 
             await _context.SaveChangesAsync();
 
@@ -932,14 +903,53 @@ namespace SynOS.Services
 
         private bool IsSampleCollectionStarted(Visit visit)
         {
-            // Logic: Any specimen in Collected, Accessioned, or Rejected (if treated as processed) state?
-            // "Pending" and "Cancelled" are safe to start over/cancel.
-            
             if (visit.Specimens == null || !visit.Specimens.Any()) return false;
 
             return visit.Specimens.Any(s => 
                 s.Status == SpecimenStatus.Collected || 
                 s.Status == SpecimenStatus.Accessioned);
+        }
+
+        private async Task ExpandAndAddOrdersInternalAsync(Guid visitId, string testCode, string dept, List<Order> collection, bool isChild)
+        {
+            var resolved = await ResolveTestForReceptionAsync(testCode, dept);
+            if (resolved == null) return;
+
+            // Prevent duplicates in same visit
+            if (collection.Any(o => o.TestId == resolved.TestId && o.Status != SynOS.Models.Enums.OrderStatus.Cancelled))
+                 return;
+
+            var order = new Order
+            {
+                OrderId = Guid.NewGuid(),
+                VisitId = visitId,
+                TestId = resolved.TestId,
+                TestCode = resolved.TestCode,
+                Department = resolved.Department,
+                Status = SynOS.Models.Enums.OrderStatus.Pending,
+                Price = isChild ? 0 : resolved.BasePrice, // Children in profile are 0-priced
+                Discount = 0,
+                CreatedAt = DateTime.UtcNow
+            };
+            
+            _context.Orders.Add(order);
+            collection.Add(order);
+
+            // Fetch full test from cache to check for children
+            var allTests = await _testsCacheService.GetCachedTestsAsync();
+            var test = allTests.FirstOrDefault(t => t.TestId == resolved.TestId);
+
+            if (test != null && test.IsProfile && test.ProfileChildren != null)
+            {
+                foreach (var mapping in test.ProfileChildren)
+                {
+                    var child = allTests.FirstOrDefault(t => t.TestId == mapping.ChildTestId);
+                    if (child != null)
+                    {
+                        await ExpandAndAddOrdersInternalAsync(visitId, child.TestCode, dept, collection, true);
+                    }
+                }
+            }
         }
 
         private async Task<string> GetActorNameAsync(Guid userId)

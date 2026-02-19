@@ -6,6 +6,6 @@ namespace SynOS.Models.DTOs.Admin
     public class CsvImportRequestDto
     {
         [Required]
-        public IFormFile File { get; set; }
+        public IFormFile? File { get; set; }
     }
 }
