@@ -41,6 +41,12 @@ namespace SynOS.Models.Entities
 
         public bool IsActive { get; set; } = true;
 
+        [StringLength(1000)]
+        public string? ExtraInfo { get; set; }
+
+        [StringLength(1000)]
+        public string? SpecialInstructions { get; set; }
+
         public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
 
         public DateTimeOffset UpdatedAt { get; set; } = DateTimeOffset.UtcNow;

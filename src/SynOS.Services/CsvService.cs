@@ -427,95 +427,11 @@ namespace SynOS.Services
 
             using var workbook = new XLWorkbook(fileStream);
 
-            // --- PROCESS SHEET 1: Master Data ---
-            if (workbook.Worksheets.Count < 1)
-            {
-                result.Errors.Add("Workbook must have at least one worksheet.");
-                result.ErrorCount++;
-                return result;
-            }
-
-            var sheet1 = workbook.Worksheet(1);
-            var rows1 = sheet1.RangeUsed().RowsUsed().Skip(1); // Skip header
-
-            var records = new List<CsvTestRecord>();
-            int rowIdx = 2; // Excel is 1-based, header is 1
-
-            foreach (var row in rows1)
-            {
-                // Basic mapping by column index (Assuming standard template order for simplicity, or we could find headers)
-                // TestCode, TestName, Department, Category, BasePrice, TAT_Hours, IsProfile...
-                // Only mapping essential columns for brevity in this snippet. 
-                // Ideally, use a helper to map by header name.
-
-                // Helper local function to safely get string
-                string GetVal(int col) => row.Cell(col).GetValue<string>()?.Trim();
-                decimal? GetDec(int col) => row.Cell(col).IsEmpty() ? null : (decimal?)row.Cell(col).GetValue<decimal>();
-                int? GetInt(int col) => row.Cell(col).IsEmpty() ? null : (int?)row.Cell(col).GetValue<int>();
-                bool GetBool(int col) => !row.Cell(col).IsEmpty() && row.Cell(col).GetValue<bool>();
-
-                // Assuming columns:
-                // 1: TestCode, 2: TestName, 3: Dept, 4: Category, 5: Price, 6: TAT, 7: Parameters..., 22: Price_IsActive, 23: IsProfile
-                // To be safe, let's just map by header name.
-                
-                // For this implementation, I will assume the provided template structure + IsProfile at the end.
-                // Or I can dynamically find headers. Let's do dynamic headers.
-                
-            }
-            
-            // Re-Implementing using CsvHelper-like object mapping for Sheet 1 would be tedious. 
-            // IMPROVEMENT: Let's assume the user uses the specific template and just map by specific logic
-            // But wait, the existing CsvService uses CsvHelper which maps by header name.
-            // I should try to replicate that robustness.
-            
-            // Let's grab headers first
-            var headerRow = sheet1.Row(1);
-            var headers = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
-            foreach(var cell in headerRow.CellsUsed())
-            {
-                headers[cell.GetValue<string>().Trim()] = cell.Address.ColumnNumber;
-            }
-
-            // Validation: minimal headers
-            if(!headers.ContainsKey("TestCode")) { result.Errors.Add("Missing TestCode column in Sheet 1"); return result; }
-
-            foreach(var row in rows1)
-            {
-                Func<string, string> S = name => headers.ContainsKey(name) ? row.Cell(headers[name]).GetValue<string>()?.Trim() : null;
-                Func<string, decimal?> D = name => headers.ContainsKey(name) && !row.Cell(headers[name]).IsEmpty() ? (decimal?)row.Cell(headers[name]).GetValue<decimal>() : null;
-                Func<string, int?> I = name => headers.ContainsKey(name) && !row.Cell(headers[name]).IsEmpty() ? (int?)row.Cell(headers[name]).GetValue<int>() : null;
-                Func<string, bool> B = name => headers.ContainsKey(name) && !row.Cell(headers[name]).IsEmpty() && row.Cell(headers[name]).GetValue<bool>(); 
-
-                records.Add(new CsvTestRecord
-                {
-                    RowNumber = row.RowNumber(),
-                    TestCode = S("TestCode"),
-                    TestName = S("TestName"),
-                    Department = S("Department"),
-                    Category = S("Category"),
-                    BasePrice = D("BasePrice"),
-                    TAT_Hours = I("TAT_Hours"),
-                    ParameterCode = S("ParameterCode"),
-                    ParameterName = S("ParameterName"),
-                    Unit = S("Unit"),
-                    DataType = S("DataType"),
-                    SortOrder = I("SortOrder"),
-                    RefLow = D("RefLow"),
-                    RefHigh = D("RefHigh"),
-                    CriticalLow = D("CriticalLow"),
-                    CriticalHigh = D("CriticalHigh"),
-                    AgeGroup = S("AgeGroup"),
-                    AgeMin = D("AgeMin"),
-                    AgeMax = D("AgeMax"),
-                    Sex = S("Sex"),
-                    TextRange = S("TextRange"),
-                    EffectiveFrom = S("EffectiveFrom"),
-                    IsProfile = B("IsProfile") 
-                });
-            }
-
-            // --- PROCESS SHEET 2: Profile Map ---
+            // --- STEP 1: READ SHEET 2 (Profile Map) FIRST ---
+            // We need to know which tests are profiles BEFORE we process Sheet 1
             var profileMaps = new List<ProfileMapRow>();
+            var profileCodes = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
             if (workbook.Worksheets.Count >= 2)
             {
                 var sheet2 = workbook.Worksheet(2);
@@ -543,8 +459,78 @@ namespace SynOS.Services
                                  ChildTestCode = cCode,
                                  Sequence = I2("Sequence")
                              });
+                             profileCodes.Add(pCode);
                          }
                      }
+                }
+            }
+
+            // --- PROCESS SHEET 1: Master Data ---
+            if (workbook.Worksheets.Count < 1)
+            {
+                result.Errors.Add("Workbook must have at least one worksheet.");
+                result.ErrorCount++;
+                return result;
+            }
+
+            var sheet1 = workbook.Worksheet(1);
+            var rows1 = sheet1.RangeUsed().RowsUsed().Skip(1); // Skip header
+
+            var records = new List<CsvTestRecord>();
+
+            // Let's grab headers first
+            var headerRow = sheet1.Row(1);
+            var headers = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+            foreach(var cell in headerRow.CellsUsed())
+            {
+                headers[cell.GetValue<string>().Trim()] = cell.Address.ColumnNumber;
+            }
+
+            // Validation: minimal headers
+            if(!headers.ContainsKey("TestCode")) { result.Errors.Add("Missing TestCode column in Sheet 1"); return result; }
+
+            foreach(var row in rows1)
+            {
+                Func<string, string> S = name => headers.ContainsKey(name) ? row.Cell(headers[name]).GetValue<string>()?.Trim() : null;
+                Func<string, decimal?> D = name => headers.ContainsKey(name) && !row.Cell(headers[name]).IsEmpty() ? (decimal?)row.Cell(headers[name]).GetValue<decimal>() : null;
+                Func<string, int?> I = name => headers.ContainsKey(name) && !row.Cell(headers[name]).IsEmpty() ? (int?)row.Cell(headers[name]).GetValue<int>() : null;
+                
+                // Note: We ignore IsProfile column from CSV/Excel and use auto-detection
+                var tCode = S("TestCode");
+                var isProfile = !string.IsNullOrEmpty(tCode) && profileCodes.Contains(tCode);
+
+                records.Add(new CsvTestRecord
+                {
+                    RowNumber = row.RowNumber(),
+                    TestCode = tCode,
+                    TestName = S("TestName"),
+                    DepartmentCode = S("DepartmentCode"),
+                    Price = D("Price"),
+                    ParameterName = S("ParameterName"),
+                    SpecimenType = S("SpecimenType"),
+                    TubeType = S("TubeType"),
+                    ResultUnits = S("ResultUnits"),
+                    ReferenceRange = S("ReferenceRange"),
+                    ExtraInfo = S("ExtraInfo"),
+                    SpecialInstructions = S("SpecialInstructions"),
+                    IsProfile = isProfile // Auto-detected from Sheet 2
+                });
+            }
+
+            // --- VALIDATION: Check if all ProfileCodes in Sheet 2 exist in Sheet 1 ---
+            var sheet1TestCodes = new HashSet<string>(records.Where(r => !string.IsNullOrEmpty(r.TestCode)).Select(r => r.TestCode), StringComparer.OrdinalIgnoreCase);
+            foreach(var pCode in profileCodes)
+            {
+                // We only check against Sheet 1 codes because we are creating/updating them now.
+                // If the test exists in DB but not in Sheet 1, we might accept it, but for this import to be self-contained, 
+                // it's safer to warn if a profile is defined in Map but not in Master.
+                // However, the user req says: "If Sheet-2 references a ProfileCode that does not exist in Sheet-1 -> Throw descriptive validation error"
+                if (!sheet1TestCodes.Contains(pCode))
+                {
+                    // Check if it exists in DB? The requirement implies Sheet-1 strictly.
+                    // "If Sheet-2 references a ProfileCode that does not exist in Sheet-1"
+                    result.Errors.Add($"ProfileCode '{pCode}' referenced in Sheet-2 not found in Sheet-1.");
+                    result.ErrorCount++;
                 }
             }
 
@@ -561,6 +547,8 @@ namespace SynOS.Services
                 // Pre-fetch all DepartmentMasters to avoid repeated queries
                 var allDepts = await _context.DepartmentMasters.ToListAsync();
                 var pathology = allDepts.FirstOrDefault(d => d.Code == "PATH") ?? allDepts.FirstOrDefault(d => d.Name == "Pathology");
+                var allSpecimens = await _context.SpecimenTypes.ToListAsync();
+                var allTubes = await _context.ImsTubeMasters.ToListAsync();
 
                 // 1. Process Master Records (Atomic + Profile Headers)
                 foreach (var group in grouped)
@@ -570,11 +558,47 @@ namespace SynOS.Services
                     var testCode = group.Key;
                     var first = group.First();
 
+                    // Extract strict first available values for Test entity
+                    var specType = group.FirstOrDefault(g => !string.IsNullOrWhiteSpace(g.SpecimenType))?.SpecimenType?.Trim();
+                    var tubeType = group.FirstOrDefault(g => !string.IsNullOrWhiteSpace(g.TubeType))?.TubeType?.Trim();
+                    var extraInfo = group.FirstOrDefault(g => !string.IsNullOrWhiteSpace(g.ExtraInfo))?.ExtraInfo?.Trim();
+                    var specialInst = group.FirstOrDefault(g => !string.IsNullOrWhiteSpace(g.SpecialInstructions))?.SpecialInstructions?.Trim();
+
+                    // VALIDATE SpecimenType exists
+                    if (!string.IsNullOrWhiteSpace(specType))
+                    {
+                        var exists = allSpecimens.Any(s => s.Code.Equals(specType, StringComparison.OrdinalIgnoreCase));
+                        if (!exists)
+                        {
+                            foreach(var r in group) {
+                                result.RowResults.Add(new RowResult { RowNumber = r.RowNumber, TestCode = testCode, Success = false, Message = $"Validation Error: SpecimenType '{specType}' does not exist." });
+                            }
+                            result.ErrorCount += group.Count();
+                            continue; // Skip this Test entirely
+                        }
+                    }
+
+                    // VALIDATE TubeType exists
+                    Guid? tubeId = null;
+                    if (!string.IsNullOrWhiteSpace(tubeType))
+                    {
+                        var tube = allTubes.FirstOrDefault(t => t.Code.Equals(tubeType, StringComparison.OrdinalIgnoreCase) || t.Name.Equals(tubeType, StringComparison.OrdinalIgnoreCase));
+                        if (tube == null)
+                        {
+                            foreach(var r in group) {
+                                result.RowResults.Add(new RowResult { RowNumber = r.RowNumber, TestCode = testCode, Success = false, Message = $"Validation Error: TubeType '{tubeType}' does not exist in ImsTubeMaster." });
+                            }
+                            result.ErrorCount += group.Count();
+                            continue; // Skip this Test entirely
+                        }
+                        tubeId = tube.TubeId;
+                    }
+
                     // Resolve Department ID
                     Guid? deptId = null;
-                    if (!string.IsNullOrWhiteSpace(first.Department))
+                    if (!string.IsNullOrWhiteSpace(first.DepartmentCode))
                     {
-                        var matchingDept = allDepts.FirstOrDefault(d => d.Name.ToUpper() == first.Department.Trim().ToUpper() || d.Code.ToUpper() == first.Department.Trim().ToUpper());
+                        var matchingDept = allDepts.FirstOrDefault(d => d.Name.ToUpper() == first.DepartmentCode.Trim().ToUpper() || d.Code.ToUpper() == first.DepartmentCode.Trim().ToUpper());
                         deptId = matchingDept?.DepartmentId;
                     }
                     if (deptId == null) deptId = pathology?.DepartmentId;
@@ -593,8 +617,9 @@ namespace SynOS.Services
                             TestCode = testCode,
                             TestName = first.TestName?.Trim() ?? testCode,
                             DepartmentId = deptId, 
-                            Category = first.Category?.Trim(),
-                            TAT_Hours = first.TAT_Hours ?? 24,
+                            SpecimenTypeCode = specType,
+                            ExtraInfo = extraInfo,
+                            SpecialInstructions = specialInst,
                             IsActive = true,
                             IsProfile = first.IsProfile, // SET IS PROFILE
                             CreatedAt = DateTimeOffset.UtcNow
@@ -602,13 +627,13 @@ namespace SynOS.Services
                         _context.Tests.Add(test);
 
                         // Initial Price
-                        if (first.BasePrice.HasValue)
+                        if (first.Price.HasValue)
                         {
                             var initialPrice = new TestPricing
                             {
                                 PricingId = Guid.NewGuid(),
                                 TestId = test.TestId,
-                                BasePrice = first.BasePrice.Value,
+                                BasePrice = first.Price.Value,
                                 EffectiveFrom = DateTime.Today,
                                 CreatedAt = DateTimeOffset.UtcNow
                             };
@@ -624,6 +649,15 @@ namespace SynOS.Services
                             changed = true;
                         }
                         
+                        if (!string.IsNullOrWhiteSpace(specType) && !string.Equals(test.SpecimenTypeCode, specType, StringComparison.OrdinalIgnoreCase))
+                        {
+                             var sObj = allSpecimens.FirstOrDefault(s => s.Code.Equals(specType, StringComparison.OrdinalIgnoreCase));
+                             if (sObj != null) { test.SpecimenTypeCode = sObj.Code; changed = true; }
+                        }
+
+                        if (!string.IsNullOrWhiteSpace(extraInfo) && test.ExtraInfo != extraInfo) { test.ExtraInfo = extraInfo; changed = true; }
+                        if (!string.IsNullOrWhiteSpace(specialInst) && test.SpecialInstructions != specialInst) { test.SpecialInstructions = specialInst; changed = true; }
+
                         // Update IsProfile if explicitly provided
                         if (first.IsProfile != test.IsProfile)
                         {
@@ -645,13 +679,13 @@ namespace SynOS.Services
                             .FirstOrDefault();
                         decimal currentPrice = currentPricing?.BasePrice ?? 0;
 
-                        if (first.BasePrice.HasValue && currentPrice != first.BasePrice.Value)
+                        if (first.Price.HasValue && currentPrice != first.Price.Value)
                         {
                              var newPrice = new TestPricing
                              {
                                  PricingId = Guid.NewGuid(),
                                  TestId = test.TestId,
-                                 BasePrice = first.BasePrice.Value,
+                                 BasePrice = first.Price.Value,
                                  EffectiveFrom = DateTime.Today, // Effective Today
                                  CreatedAt = DateTimeOffset.UtcNow
                              };
@@ -665,21 +699,48 @@ namespace SynOS.Services
                         }
                     }
 
-                    // Process Params and other details (kept identical mostly)
+                    // Process Tube Mapping
+                    if (tubeId.HasValue)
+                    {
+                        var existingTubeMap = await _context.ImsTestTubeMaps.FirstOrDefaultAsync(m => m.TestId == test.TestId && m.TubeId == tubeId.Value, cancellationToken);
+                        if (existingTubeMap == null)
+                        {
+                            _context.ImsTestTubeMaps.Add(new ImsTestTubeMap
+                            {
+                                TestTubeMapId = Guid.NewGuid(),
+                                TestId = test.TestId,
+                                TubeId = tubeId.Value,
+                                QuantityRequired = 1,
+                                IsMandatory = true,
+                                CreatedAt = DateTimeOffset.UtcNow
+                            });
+                        }
+                    }
+
+                    // Process Params
                     foreach (var rec in group)
                     {
                         cancellationToken.ThrowIfCancellationRequested();
 
+                        var pName = rec.ParameterName?.Trim();
                         // Parameter upsert
-                        if (string.IsNullOrWhiteSpace(rec.ParameterCode))
+                        if (string.IsNullOrWhiteSpace(pName))
                         {
-                            result.RowResults.Add(new RowResult { RowNumber = rec.RowNumber, TestCode = testCode, Success = true, Message = "No parameter in row, test-only row processed." });
+                            result.RowResults.Add(new RowResult { RowNumber = rec.RowNumber, TestCode = testCode, Success = true, Message = "No parameter name, test-only row processed." });
                             result.SuccessCount++;
                             continue;
                         }
 
-                        var paramCode = rec.ParameterCode.Trim().ToUpperInvariant();
-                        var parameter = await _context.Parameters.FirstOrDefaultAsync(p => p.TestId == test.TestId && p.ParameterCode.ToUpper() == paramCode, cancellationToken);
+                        var paramCode = rec.ParameterCode?.Trim().ToUpperInvariant();
+                        if (string.IsNullOrWhiteSpace(paramCode)) 
+                        {
+                             var safeName = Regex.Replace(pName, @"[^a-zA-Z0-9\s]", "").Replace(" ", "_").ToUpperInvariant();
+                             if (safeName.Length > 20) safeName = safeName.Substring(0, 20);
+                             paramCode = $"{testCode}_{safeName}";
+                             if (paramCode.Length > 50) paramCode = paramCode.Substring(0, 50);
+                        }
+
+                        var parameter = await _context.Parameters.FirstOrDefaultAsync(p => p.TestId == test.TestId && (p.ParameterCode.ToUpper() == paramCode || p.ParameterName.ToUpper() == pName.ToUpper()), cancellationToken);
                         if (parameter == null)
                         {
                             parameter = new Parameter
@@ -687,24 +748,55 @@ namespace SynOS.Services
                                 ParameterId = Guid.NewGuid(),
                                 TestId = test.TestId,
                                 ParameterCode = paramCode,
-                                ParameterName = rec.ParameterName ?? paramCode,
-                                Unit = rec.Unit,
-                                DataType = rec.DataType ?? "Numeric",
+                                ParameterName = pName,
+                                Unit = rec.ResultUnits ?? rec.Unit,
+                                DataType = "Numeric", // Default
                                 SortOrder = rec.SortOrder ?? 0,
                                 IsActive = true,
                                 CreatedAt = DateTimeOffset.UtcNow
                             };
                             _context.Parameters.Add(parameter);
-                            
                         }
                         else
                         {
-                            // update param
-                             // Simplified update logic
-                             parameter.ParameterName = rec.ParameterName ?? parameter.ParameterName;
-                             parameter.Unit = rec.Unit ?? parameter.Unit;
-                             parameter.SortOrder = rec.SortOrder ?? parameter.SortOrder;
-                             parameter.UpdatedAt = DateTimeOffset.UtcNow;
+                             var pChanged = false;
+                             if (parameter.ParameterName != pName) { parameter.ParameterName = pName; pChanged = true; }
+                             var newUnit = rec.ResultUnits ?? rec.Unit;
+                             if (!string.IsNullOrWhiteSpace(newUnit) && parameter.Unit != newUnit) { parameter.Unit = newUnit; pChanged = true; }
+                             if (pChanged) parameter.UpdatedAt = DateTimeOffset.UtcNow;
+                        }
+
+                        // Reference Range mapped safely as TEXT per requirements
+                        var refRangeText = rec.ReferenceRange?.Trim();
+                        if (!string.IsNullOrWhiteSpace(refRangeText))
+                        {
+                             var existingRange = await _context.ReferenceRanges.FirstOrDefaultAsync(r =>
+                                r.ParameterId == parameter.ParameterId &&
+                                r.AgeGroup == "ALL" &&
+                                r.Sex == "ALL", cancellationToken);
+
+                             if (existingRange == null)
+                             {
+                                 _context.ReferenceRanges.Add(new ReferenceRange
+                                 {
+                                     ReferenceRangeId = Guid.NewGuid(),
+                                     ParameterId = parameter.ParameterId,
+                                     AgeGroup = "ALL",
+                                     Sex = "ALL",
+                                     TextRange = refRangeText,
+                                     EffectiveFrom = DateTime.UtcNow.Date,
+                                     IsActive = true,
+                                     CreatedAt = DateTimeOffset.UtcNow
+                                 });
+                             }
+                             else
+                             {
+                                 if (existingRange.TextRange != refRangeText)
+                                 {
+                                     existingRange.TextRange = refRangeText;
+                                     existingRange.UpdatedAt = DateTimeOffset.UtcNow;
+                                 }
+                             }
                         }
 
                         result.RowResults.Add(new RowResult { RowNumber = rec.RowNumber, TestCode = testCode, Success = true, Message = "Parameter processed" });
@@ -818,5 +910,15 @@ namespace SynOS.Services
         public string Price_EffectiveTo { get; set; }
         public bool? Price_IsActive { get; set; }
         public bool IsProfile { get; set; } // Added for Profile Support
+        
+        // --- 11-Column Template Fields ---
+        public string DepartmentCode { get; set; }
+        public string ResultUnits { get; set; }
+        public string ReferenceRange { get; set; }
+        public string SpecimenType { get; set; }
+        public string TubeType { get; set; }
+        public string ExtraInfo { get; set; }
+        public string SpecialInstructions { get; set; }
+        public decimal? Price { get; set; }
     }
 }
