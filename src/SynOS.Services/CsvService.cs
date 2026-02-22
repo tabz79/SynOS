@@ -218,14 +218,36 @@ namespace SynOS.Services
                     var testCode = group.Key;
                     var first = group.First();
 
-                    // Resolve Department ID
+                    // Unified Visit Model: Resolve or Upsert DepartmentMaster
                     Guid? deptId = null;
-                    if (!string.IsNullOrWhiteSpace(first.Department))
+                    var macroDept = first.MacroDepartment?.Trim() ?? "Pathology";
+                    var deptCode = first.DepartmentCode?.Trim() ?? first.Department?.Trim(); // Fallback to legacy column
+
+                    if (!string.IsNullOrWhiteSpace(deptCode))
                     {
-                        var matchingDept = allDepts.FirstOrDefault(d => d.Name.ToUpper() == first.Department.Trim().ToUpper() || d.Code.ToUpper() == first.Department.Trim().ToUpper());
-                        deptId = matchingDept?.DepartmentId;
+                        var dept = allDepts.FirstOrDefault(d => d.Code.Equals(deptCode, StringComparison.OrdinalIgnoreCase));
+                        if (dept == null)
+                        {
+                            // NEW: Upsert missing DepartmentMaster
+                            dept = new DepartmentMaster
+                            {
+                                DepartmentId = Guid.NewGuid(),
+                                Code = deptCode.ToUpperInvariant(),
+                                Name = deptCode, // Use code as name if new
+                                MacroDepartment = macroDept,
+                                IsActive = true,
+                                CreatedAt = DateTimeOffset.UtcNow
+                            };
+                            _context.DepartmentMasters.Add(dept);
+                            allDepts.Add(dept); // Update local cache
+                        }
+                        else if (dept.MacroDepartment != macroDept)
+                        {
+                            // Update existing MacroDepartment if it differs
+                            dept.MacroDepartment = macroDept;
+                        }
+                        deptId = dept.DepartmentId;
                     }
-                    if (deptId == null) deptId = pathology?.DepartmentId;
 
                     // Upsert test
                     var test = await _context.Tests
@@ -911,7 +933,8 @@ namespace SynOS.Services
         public bool IsProfile { get; set; } // Added for Profile Support
         
         // --- 11-Column Template Fields ---
-        public string DepartmentCode { get; set; }
+        public string MacroDepartment { get; set; } // e.g. Pathology, Radiology
+        public string DepartmentCode { get; set; } // e.g. BIO, HAE
         public string ResultUnits { get; set; }
         public string ReferenceRange { get; set; }
         public string SpecimenType { get; set; }
