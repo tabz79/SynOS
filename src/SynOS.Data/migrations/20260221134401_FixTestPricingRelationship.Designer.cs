@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SynOS.Data;
 
@@ -11,9 +12,11 @@ using SynOS.Data;
 namespace SynOS.Data.Migrations
 {
     [DbContext(typeof(SynOSDbContext))]
-    partial class SynOSDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260221134401_FixTestPricingRelationship")]
+    partial class FixTestPricingRelationship
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -826,11 +829,6 @@ namespace SynOS.Data.Migrations
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
-
-                    b.Property<string>("MacroDepartment")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("Name")
                         .IsRequired()

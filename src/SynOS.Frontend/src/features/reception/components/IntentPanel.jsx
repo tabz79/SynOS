@@ -321,7 +321,7 @@ export function IntentPanel() {
                             <div className={cn("px-4 pb-4 flex flex-col gap-6 animate-in fade-in duration-500 mt-6", (snapshot?.patient || isCorrectionIntent) ? "" : "flex-1 min-h-0 overflow-y-auto")}>
                                 <VisitDetails
                                     snapshot={snapshot}
-                                    visitId={snapshot.visit.visitId || snapshot.visit.id}
+                                    visitId={snapshot.visit.visitId || snapshot.visit.id || snapshot.visit.VisitId}
                                     onVisitUpdated={loadSnapshot}
                                     isPrepaidIntent={isPrepaidIntent} // PASSING DOWN
                                     setIsPrepaidIntent={setIsPrepaidIntent} // PASSING DOWN

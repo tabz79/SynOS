@@ -14,6 +14,7 @@ using Microsoft.EntityFrameworkCore;
 using SynOS.Data;
 using SynOS.Models.DTOs.Admin;
 using SynOS.Models.Entities;
+using SynOS.Models.Entities.IMS;
 using ClosedXML.Excel; // Added
 using System.Text.RegularExpressions;
 
@@ -707,12 +708,10 @@ namespace SynOS.Services
                         {
                             _context.ImsTestTubeMaps.Add(new ImsTestTubeMap
                             {
-                                TestTubeMapId = Guid.NewGuid(),
+                                MapId = Guid.NewGuid(),
                                 TestId = test.TestId,
                                 TubeId = tubeId.Value,
-                                QuantityRequired = 1,
-                                IsMandatory = true,
-                                CreatedAt = DateTimeOffset.UtcNow
+                                QuantityPerSample = 1
                             });
                         }
                     }

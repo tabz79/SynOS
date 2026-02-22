@@ -1,129 +1,115 @@
-[12:34:22 INF] Notification Worker Service running.
-[12:34:22 INF] Notification Worker Service running.
-[12:34:22 INF] ExpiredLockCleanupService is starting.
-[12:34:22 INF] ExpiredLockCleanupService is starting.
-[12:34:22 INF] Analyzer TCP Listener Service starting...
-[12:34:22 INF] Analyzer TCP Listener Service starting...
-[12:34:22 WRN] No analyzer TCP listeners configured in appsettings.json.
-[12:34:22 WRN] No analyzer TCP listeners configured in appsettings.json.
-[12:34:22 INF] OperationalStatsProjectionWorker is starting. Interval: 5s
-[12:34:22 INF] OperationalStatsProjectionWorker is starting. Interval: 5s
-[12:34:22 INF] Worker: Running Consistency Check...
-[12:34:22 INF] Worker: Running Consistency Check...
-[12:34:37 WRN] Failed to determine the https port for redirect.
-[12:34:37 WRN] Failed to determine the https port for redirect.
-[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=04-02-2026 12:34:41, Today=04-02-2026 00:00:00, Window=[04-02-2026 00:00:00 - 05-02-2026 00:00:00)
-[12:34:41 WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
-[12:34:41 WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
-[ActionQueue] Found 0 raw visits.
-[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=04-02-2026 12:34:56, Today=04-02-2026 00:00:00, Window=[04-02-2026 00:00:00 - 05-02-2026 00:00:00)
-[ActionQueue] Found 0 raw visits.
-[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=04-02-2026 12:34:56, Today=04-02-2026 00:00:00, Window=[04-02-2026 00:00:00 - 05-02-2026 00:00:00)
-[ActionQueue] Found 0 raw visits.
-[12:35:17 WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
-[12:35:17 WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
-[12:35:17 ERR] Failed executing DbCommand (15ms) [Parameters=[@__request_PatientId_0='?' (DbType = Guid), @__branchId_1='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
-SELECT [t].[VisitId], [t].[BranchId], [t].[CreatedAt], [t].[CurrentAssignmentId], [t].[Department], [t].[IsReferred], [t].[PatientId], [t].[PaymentCollectionModel], [t].[ReferralPartnerId], [t].[ReferrerId], [t].[ReferrerText], [t].[RowVersion], [t].[Status], [t].[Token], [t].[TokenDate], [t].[PatientId0], [t].[CreatedAt0], [t].[CurrentPhoneNumber], [t].[DateOfBirth], [t].[DisplayName], [t].[FirstName], [t].[Gender], [t].[IsDateOfBirthKnown], [t].[IsSoftDeleted], [t].[LastName], [t].[MRN], [t].[RowVersion0], [t].[UpdatedAt], [t].[ReferralDraftId], [o].[OrderId], [o].[CancellationReason], [o].[CancelledAt], [o].[CancelledByUserId], [o].[CreatedAt], [o].[Department], [o].[Discount], [o].[Price], [o].[Status], [o].[TestCode], [o].[TestId], [o].[VisitId], [t0].[InvoiceId], [t0].[CreatedAt], [t0].[Currency], [t0].[DiscountAmount], [t0].[DueDate], [t0].[GrossAmount], [t0].[NetAmount], [t0].[Status], [t0].[TaxAmount], [t0].[Total], [t0].[VisitId], [t0].[PaymentId], [t0].[Amount], [t0].[InvoiceId0], [t0].[Method], [t0].[ReceiptNo], [t0].[ReceivedAt], [t0].[ReceivedByUserId], [t].[ClinicName], [t].[CreatedAt1], [t].[CreatedByUserId], [t].[IsResolved], [t].[Location], [t].[ProviderName], [t].[ResolvedAt], [t].[ResolvedByUserId], [t].[ResolvedToPartnerId], [t].[VisitId0]
+[10:21:18 INF] Request starting HTTP/1.1 POST http://127.0.0.1:59999/api/v1/reception/visit/test - application/json 67
+[10:21:18 INF] Request starting HTTP/1.1 POST http://127.0.0.1:59999/api/v1/reception/visit/test - application/json 67
+[10:21:18 INF] CORS policy execution successful.
+[10:21:18 INF] CORS policy execution successful.
+[10:21:18 INF] Executing endpoint 'SynOS.Api.Controllers.ReceptionController.AddTest (SynOS.Api)'
+[10:21:18 INF] Executing endpoint 'SynOS.Api.Controllers.ReceptionController.AddTest (SynOS.Api)'
+[10:21:18 INF] Route matched with {action = "AddTest", controller = "Reception"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] AddTest(SynOS.Api.Controllers.ReceptionAddTestRequest) on controller SynOS.Api.Controllers.ReceptionController (SynOS.Api).
+[10:21:18 INF] Route matched with {action = "AddTest", controller = "Reception"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] AddTest(SynOS.Api.Controllers.ReceptionAddTestRequest) on controller SynOS.Api.Controllers.ReceptionController (SynOS.Api).
+[10:21:18 INF] TRACE: AddTestToVisitAsync called. visitId=5aecf0d0-6018-45c6-91ad-64ada9a07c7f, testCode=LFT
+[10:21:18 INF] TRACE: AddTestToVisitAsync called. visitId=5aecf0d0-6018-45c6-91ad-64ada9a07c7f, testCode=LFT
+[10:21:18 INF] Executed DbCommand (25ms) [Parameters=[@__visitId_0='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+SELECT [t].[VisitId], [t].[BranchId], [t].[CreatedAt], [t].[CurrentAssignmentId], [t].[Department], [t].[IsReferred], [t].[PatientId], [t].[PaymentCollectionModel], [t].[ReferralPartnerId], [t].[ReferrerId], [t].[ReferrerText], [t].[RowVersion], [t].[Status], [t].[Token], [t].[TokenDate], [t].[PatientId0], [t].[CreatedAt0], [t].[CurrentPhoneNumber], [t].[DateOfBirth], [t].[DisplayName], [t].[FirstName], [t].[Gender], [t].[IsDateOfBirthKnown], [t].[IsSoftDeleted], [t].[LastName], [t].[MRN], [t].[RowVersion0], [t].[UpdatedAt], [t0].[InvoiceId], [t0].[CreatedAt], [t0].[Currency], [t0].[DiscountAmount], [t0].[DueDate], [t0].[GrossAmount], [t0].[NetAmount], [t0].[Status], [t0].[TaxAmount], [t0].[Total], [t0].[VisitId], [t0].[PaymentId], [t0].[Amount], [t0].[InvoiceId0], [t0].[Method], [t0].[ReceiptNo], [t0].[ReceivedAt], [t0].[ReceivedByUserId]
 FROM (
-    SELECT TOP(1) [v].[VisitId], [v].[BranchId], [v].[CreatedAt], [v].[CurrentAssignmentId], [v].[Department], [v].[IsReferred], [v].[PatientId], [v].[PaymentCollectionModel], [v].[ReferralPartnerId], [v].[ReferrerId], [v].[ReferrerText], [v].[RowVersion], [v].[Status], [v].[Token], [v].[TokenDate], [p].[PatientId] AS [PatientId0], [p].[CreatedAt] AS [CreatedAt0], [p].[CurrentPhoneNumber], [p].[DateOfBirth], [p].[DisplayName], [p].[FirstName], [p].[Gender], [p].[IsDateOfBirthKnown], [p].[IsSoftDeleted], [p].[LastName], [p].[MRN], [p].[RowVersion] AS [RowVersion0], [p].[UpdatedAt], [r].[ReferralDraftId], [r].[ClinicName], [r].[CreatedAt] AS [CreatedAt1], [r].[CreatedByUserId], [r].[IsResolved], [r].[Location], [r].[ProviderName], [r].[ResolvedAt], [r].[ResolvedByUserId], [r].[ResolvedToPartnerId], [r].[VisitId] AS [VisitId0]
+    SELECT TOP(1) [v].[VisitId], [v].[BranchId], [v].[CreatedAt], [v].[CurrentAssignmentId], [v].[Department], [v].[IsReferred], [v].[PatientId], [v].[PaymentCollectionModel], [v].[ReferralPartnerId], [v].[ReferrerId], [v].[ReferrerText], [v].[RowVersion], [v].[Status], [v].[Token], [v].[TokenDate], [p].[PatientId] AS [PatientId0], [p].[CreatedAt] AS [CreatedAt0], [p].[CurrentPhoneNumber], [p].[DateOfBirth], [p].[DisplayName], [p].[FirstName], [p].[Gender], [p].[IsDateOfBirthKnown], [p].[IsSoftDeleted], [p].[LastName], [p].[MRN], [p].[RowVersion] AS [RowVersion0], [p].[UpdatedAt]
     FROM [Visits] AS [v]
     INNER JOIN [Patients] AS [p] ON [v].[PatientId] = [p].[PatientId]
-    LEFT JOIN [ReferralDrafts] AS [r] ON [v].[VisitId] = [r].[VisitId]
-    WHERE [v].[PatientId] = @__request_PatientId_0 AND [v].[BranchId] = @__branchId_1 AND [v].[Status] = N'Draft'
+    WHERE [v].[VisitId] = @__visitId_0
 ) AS [t]
-LEFT JOIN [Orders] AS [o] ON [t].[VisitId] = [o].[VisitId]
 LEFT JOIN (
     SELECT [i].[InvoiceId], [i].[CreatedAt], [i].[Currency], [i].[DiscountAmount], [i].[DueDate], [i].[GrossAmount], [i].[NetAmount], [i].[Status], [i].[TaxAmount], [i].[Total], [i].[VisitId], [p0].[PaymentId], [p0].[Amount], [p0].[InvoiceId] AS [InvoiceId0], [p0].[Method], [p0].[ReceiptNo], [p0].[ReceivedAt], [p0].[ReceivedByUserId]
     FROM [Invoices] AS [i]
     LEFT JOIN [Payments] AS [p0] ON [i].[InvoiceId] = [p0].[InvoiceId]
 ) AS [t0] ON [t].[VisitId] = [t0].[VisitId]
-ORDER BY [t].[VisitId], [t].[PatientId0], [t].[ReferralDraftId], [o].[OrderId], [t0].[InvoiceId]
-[12:35:17 ERR] Failed executing DbCommand (15ms) [Parameters=[@__request_PatientId_0='?' (DbType = Guid), @__branchId_1='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
-SELECT [t].[VisitId], [t].[BranchId], [t].[CreatedAt], [t].[CurrentAssignmentId], [t].[Department], [t].[IsReferred], [t].[PatientId], [t].[PaymentCollectionModel], [t].[ReferralPartnerId], [t].[ReferrerId], [t].[ReferrerText], [t].[RowVersion], [t].[Status], [t].[Token], [t].[TokenDate], [t].[PatientId0], [t].[CreatedAt0], [t].[CurrentPhoneNumber], [t].[DateOfBirth], [t].[DisplayName], [t].[FirstName], [t].[Gender], [t].[IsDateOfBirthKnown], [t].[IsSoftDeleted], [t].[LastName], [t].[MRN], [t].[RowVersion0], [t].[UpdatedAt], [t].[ReferralDraftId], [o].[OrderId], [o].[CancellationReason], [o].[CancelledAt], [o].[CancelledByUserId], [o].[CreatedAt], [o].[Department], [o].[Discount], [o].[Price], [o].[Status], [o].[TestCode], [o].[TestId], [o].[VisitId], [t0].[InvoiceId], [t0].[CreatedAt], [t0].[Currency], [t0].[DiscountAmount], [t0].[DueDate], [t0].[GrossAmount], [t0].[NetAmount], [t0].[Status], [t0].[TaxAmount], [t0].[Total], [t0].[VisitId], [t0].[PaymentId], [t0].[Amount], [t0].[InvoiceId0], [t0].[Method], [t0].[ReceiptNo], [t0].[ReceivedAt], [t0].[ReceivedByUserId], [t].[ClinicName], [t].[CreatedAt1], [t].[CreatedByUserId], [t].[IsResolved], [t].[Location], [t].[ProviderName], [t].[ResolvedAt], [t].[ResolvedByUserId], [t].[ResolvedToPartnerId], [t].[VisitId0]
+ORDER BY [t].[VisitId], [t].[PatientId0], [t0].[InvoiceId]
+[10:21:18 INF] Executed DbCommand (25ms) [Parameters=[@__visitId_0='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+SELECT [t].[VisitId], [t].[BranchId], [t].[CreatedAt], [t].[CurrentAssignmentId], [t].[Department], [t].[IsReferred], [t].[PatientId], [t].[PaymentCollectionModel], [t].[ReferralPartnerId], [t].[ReferrerId], [t].[ReferrerText], [t].[RowVersion], [t].[Status], [t].[Token], [t].[TokenDate], [t].[PatientId0], [t].[CreatedAt0], [t].[CurrentPhoneNumber], [t].[DateOfBirth], [t].[DisplayName], [t].[FirstName], [t].[Gender], [t].[IsDateOfBirthKnown], [t].[IsSoftDeleted], [t].[LastName], [t].[MRN], [t].[RowVersion0], [t].[UpdatedAt], [t0].[InvoiceId], [t0].[CreatedAt], [t0].[Currency], [t0].[DiscountAmount], [t0].[DueDate], [t0].[GrossAmount], [t0].[NetAmount], [t0].[Status], [t0].[TaxAmount], [t0].[Total], [t0].[VisitId], [t0].[PaymentId], [t0].[Amount], [t0].[InvoiceId0], [t0].[Method], [t0].[ReceiptNo], [t0].[ReceivedAt], [t0].[ReceivedByUserId]
 FROM (
-    SELECT TOP(1) [v].[VisitId], [v].[BranchId], [v].[CreatedAt], [v].[CurrentAssignmentId], [v].[Department], [v].[IsReferred], [v].[PatientId], [v].[PaymentCollectionModel], [v].[ReferralPartnerId], [v].[ReferrerId], [v].[ReferrerText], [v].[RowVersion], [v].[Status], [v].[Token], [v].[TokenDate], [p].[PatientId] AS [PatientId0], [p].[CreatedAt] AS [CreatedAt0], [p].[CurrentPhoneNumber], [p].[DateOfBirth], [p].[DisplayName], [p].[FirstName], [p].[Gender], [p].[IsDateOfBirthKnown], [p].[IsSoftDeleted], [p].[LastName], [p].[MRN], [p].[RowVersion] AS [RowVersion0], [p].[UpdatedAt], [r].[ReferralDraftId], [r].[ClinicName], [r].[CreatedAt] AS [CreatedAt1], [r].[CreatedByUserId], [r].[IsResolved], [r].[Location], [r].[ProviderName], [r].[ResolvedAt], [r].[ResolvedByUserId], [r].[ResolvedToPartnerId], [r].[VisitId] AS [VisitId0]
+    SELECT TOP(1) [v].[VisitId], [v].[BranchId], [v].[CreatedAt], [v].[CurrentAssignmentId], [v].[Department], [v].[IsReferred], [v].[PatientId], [v].[PaymentCollectionModel], [v].[ReferralPartnerId], [v].[ReferrerId], [v].[ReferrerText], [v].[RowVersion], [v].[Status], [v].[Token], [v].[TokenDate], [p].[PatientId] AS [PatientId0], [p].[CreatedAt] AS [CreatedAt0], [p].[CurrentPhoneNumber], [p].[DateOfBirth], [p].[DisplayName], [p].[FirstName], [p].[Gender], [p].[IsDateOfBirthKnown], [p].[IsSoftDeleted], [p].[LastName], [p].[MRN], [p].[RowVersion] AS [RowVersion0], [p].[UpdatedAt]
     FROM [Visits] AS [v]
     INNER JOIN [Patients] AS [p] ON [v].[PatientId] = [p].[PatientId]
-    LEFT JOIN [ReferralDrafts] AS [r] ON [v].[VisitId] = [r].[VisitId]
-    WHERE [v].[PatientId] = @__request_PatientId_0 AND [v].[BranchId] = @__branchId_1 AND [v].[Status] = N'Draft'
+    WHERE [v].[VisitId] = @__visitId_0
 ) AS [t]
-LEFT JOIN [Orders] AS [o] ON [t].[VisitId] = [o].[VisitId]
 LEFT JOIN (
     SELECT [i].[InvoiceId], [i].[CreatedAt], [i].[Currency], [i].[DiscountAmount], [i].[DueDate], [i].[GrossAmount], [i].[NetAmount], [i].[Status], [i].[TaxAmount], [i].[Total], [i].[VisitId], [p0].[PaymentId], [p0].[Amount], [p0].[InvoiceId] AS [InvoiceId0], [p0].[Method], [p0].[ReceiptNo], [p0].[ReceivedAt], [p0].[ReceivedByUserId]
     FROM [Invoices] AS [i]
     LEFT JOIN [Payments] AS [p0] ON [i].[InvoiceId] = [p0].[InvoiceId]
 ) AS [t0] ON [t].[VisitId] = [t0].[VisitId]
-ORDER BY [t].[VisitId], [t].[PatientId0], [t].[ReferralDraftId], [o].[OrderId], [t0].[InvoiceId]
-[12:35:17 WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
-[12:35:17 WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
-[12:35:17 ERR] An exception occurred while iterating over the results of a query for context type 'SynOS.Data.SynOSDbContext'.
-Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'CreatedByUserId'.
-Invalid column name 'ResolvedAt'.
-Invalid column name 'ResolvedByUserId'.
-   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
-   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
---- End of stack trace from previous location ---
-   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
-   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
---- End of stack trace from previous location ---
-   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
-ClientConnectionId:a24d8a6a-fbd7-4cae-b8b0-0064d249e757
-Error Number:207,State:1,Class:16
-Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'CreatedByUserId'.
-Invalid column name 'ResolvedAt'.
-Invalid column name 'ResolvedByUserId'.
-   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
-   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
---- End of stack trace from previous location ---
-   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
-   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
---- End of stack trace from previous location ---
-   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
-ClientConnectionId:a24d8a6a-fbd7-4cae-b8b0-0064d249e757
-Error Number:207,State:1,Class:16
-[12:35:17 ERR] An exception occurred while iterating over the results of a query for context type 'SynOS.Data.SynOSDbContext'.
-Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'CreatedByUserId'.
-Invalid column name 'ResolvedAt'.
-Invalid column name 'ResolvedByUserId'.
-   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
-   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
---- End of stack trace from previous location ---
-   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
-   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
---- End of stack trace from previous location ---
-   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
-ClientConnectionId:a24d8a6a-fbd7-4cae-b8b0-0064d249e757
-Error Number:207,State:1,Class:16
-Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'CreatedByUserId'.
-Invalid column name 'ResolvedAt'.
-Invalid column name 'ResolvedByUserId'.
-   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
-   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
---- End of stack trace from previous location ---
-   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
-   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
---- End of stack trace from previous location ---
-   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
-ClientConnectionId:a24d8a6a-fbd7-4cae-b8b0-0064d249e757
-Error Number:207,State:1,Class:16
-[12:35:17 ERR] Failed executing DbCommand (14ms) [Parameters=[@__visitId_0='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
-SELECT [t].[VisitId], [t].[BranchId], [t].[CreatedAt], [t].[CurrentAssignmentId], [t].[Department], [t].[IsReferred], [t].[PatientId], [t].[PaymentCollectionModel], [t].[ReferralPartnerId], [t].[ReferrerId], [t].[ReferrerText], [t].[RowVersion], [t].[Status], [t].[Token], [t].[TokenDate], [t].[PatientId0], [t].[CreatedAt0], [t].[CurrentPhoneNumber], [t].[DateOfBirth], [t].[DisplayName], [t].[FirstName], [t].[Gender], [t].[IsDateOfBirthKnown], [t].[IsSoftDeleted], [t].[LastName], [t].[MRN], [t].[RowVersion0], [t].[UpdatedAt], [t].[ReferralDraftId], [t0].[OrderId], [t0].[CancellationReason], [t0].[CancelledAt], [t0].[CancelledByUserId], [t0].[CreatedAt], [t0].[Department], [t0].[Discount], [t0].[Price], [t0].[Status], [t0].[TestCode], [t0].[TestId], [t0].[VisitId], [t0].[TestId0], [t0].[BasePrice], [t0].[Category], [t0].[CreatedAt0], [t0].[DefaultTubeType], [t0].[Department0], [t0].[IsActive], [t0].[TAT_Hours], [t0].[TestCode0], [t0].[TestName], [t0].[UpdatedAt], [t2].[InvoiceId], [t2].[CreatedAt], [t2].[Currency], [t2].[DiscountAmount], [t2].[DueDate], [t2].[GrossAmount], [t2].[NetAmount], [t2].[Status], [t2].[TaxAmount], [t2].[Total], [t2].[VisitId], [t2].[PaymentId], [t2].[Amount], [t2].[InvoiceId0], [t2].[Method], [t2].[ReceiptNo], [t2].[ReceivedAt], [t2].[ReceivedByUserId], [t].[ClinicName], [t].[CreatedAt1], [t].[CreatedByUserId], [t].[IsResolved], [t].[Location], [t].[ProviderName], [t].[ResolvedAt], [t].[ResolvedByUserId], [t].[ResolvedToPartnerId], [t].[VisitId0]
+ORDER BY [t].[VisitId], [t].[PatientId0], [t0].[InvoiceId]
+[10:21:18 INF] TRACE: ResolveTestForReceptionAsync returned null for testCode=LFT, dept=Pathology
+[10:21:18 INF] TRACE: ResolveTestForReceptionAsync returned null for testCode=LFT, dept=Pathology
+[10:21:18 INF] TRACE: SaveChangesAsync reached. Affected rows: 0
+[10:21:18 INF] TRACE: SaveChangesAsync reached. Affected rows: 0
+[10:21:18 INF] Executed DbCommand (30ms) [Parameters=[@__visitId_0='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+SELECT [t].[VisitId], [t].[BranchId], [t].[CreatedAt], [t].[CurrentAssignmentId], [t].[Department], [t].[IsReferred], [t].[PatientId], [t].[PaymentCollectionModel], [t].[ReferralPartnerId], [t].[ReferrerId], [t].[ReferrerText], [t].[RowVersion], [t].[Status], [t].[Token], [t].[TokenDate], [i].[InvoiceId], [i].[CreatedAt], [i].[Currency], [i].[DiscountAmount], [i].[DueDate], [i].[GrossAmount], [i].[NetAmount], [i].[Status], [i].[TaxAmount], [i].[Total], [i].[VisitId], [o].[OrderId], [o].[CancellationReason], [o].[CancelledAt], [o].[CancelledByUserId], [o].[CreatedAt], [o].[Department], [o].[Discount], [o].[Price], [o].[SpecimenId], [o].[Status], [o].[TestCode], [o].[TestId], [o].[VisitId]
+FROM (
+    SELECT TOP(1) [v].[VisitId], [v].[BranchId], [v].[CreatedAt], [v].[CurrentAssignmentId], [v].[Department], [v].[IsReferred], [v].[PatientId], [v].[PaymentCollectionModel], [v].[ReferralPartnerId], [v].[ReferrerId], [v].[ReferrerText], [v].[RowVersion], [v].[Status], [v].[Token], [v].[TokenDate]
+    FROM [Visits] AS [v]
+    WHERE [v].[VisitId] = @__visitId_0
+) AS [t]
+LEFT JOIN [Invoices] AS [i] ON [t].[VisitId] = [i].[VisitId]
+LEFT JOIN [Orders] AS [o] ON [t].[VisitId] = [o].[VisitId]
+ORDER BY [t].[VisitId], [i].[InvoiceId]
+[10:21:18 INF] Executed DbCommand (30ms) [Parameters=[@__visitId_0='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+SELECT [t].[VisitId], [t].[BranchId], [t].[CreatedAt], [t].[CurrentAssignmentId], [t].[Department], [t].[IsReferred], [t].[PatientId], [t].[PaymentCollectionModel], [t].[ReferralPartnerId], [t].[ReferrerId], [t].[ReferrerText], [t].[RowVersion], [t].[Status], [t].[Token], [t].[TokenDate], [i].[InvoiceId], [i].[CreatedAt], [i].[Currency], [i].[DiscountAmount], [i].[DueDate], [i].[GrossAmount], [i].[NetAmount], [i].[Status], [i].[TaxAmount], [i].[Total], [i].[VisitId], [o].[OrderId], [o].[CancellationReason], [o].[CancelledAt], [o].[CancelledByUserId], [o].[CreatedAt], [o].[Department], [o].[Discount], [o].[Price], [o].[SpecimenId], [o].[Status], [o].[TestCode], [o].[TestId], [o].[VisitId]
+FROM (
+    SELECT TOP(1) [v].[VisitId], [v].[BranchId], [v].[CreatedAt], [v].[CurrentAssignmentId], [v].[Department], [v].[IsReferred], [v].[PatientId], [v].[PaymentCollectionModel], [v].[ReferralPartnerId], [v].[ReferrerId], [v].[ReferrerText], [v].[RowVersion], [v].[Status], [v].[Token], [v].[TokenDate]
+    FROM [Visits] AS [v]
+    WHERE [v].[VisitId] = @__visitId_0
+) AS [t]
+LEFT JOIN [Invoices] AS [i] ON [t].[VisitId] = [i].[VisitId]
+LEFT JOIN [Orders] AS [o] ON [t].[VisitId] = [o].[VisitId]
+ORDER BY [t].[VisitId], [i].[InvoiceId]
+[10:21:18 INF] Executed DbCommand (11ms) [Parameters=[@__invoice_InvoiceId_0='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+SELECT COALESCE(SUM([p].[DeltaAmount]), 0.0)
+FROM [PriceAdjustmentFacts] AS [p]
+WHERE [p].[InvoiceId] = @__invoice_InvoiceId_0
+[10:21:18 INF] Executed DbCommand (11ms) [Parameters=[@__invoice_InvoiceId_0='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+SELECT COALESCE(SUM([p].[DeltaAmount]), 0.0)
+FROM [PriceAdjustmentFacts] AS [p]
+WHERE [p].[InvoiceId] = @__invoice_InvoiceId_0
+[10:21:18 INF] Executed DbCommand (12ms) [Parameters=[@__invoice_InvoiceId_0='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+SELECT TOP(1) [d].[DiscountFactId], [d].[AppliedAt], [d].[AppliedBy], [d].[CreatedAt], [d].[DiscountAmount], [d].[DiscountDefinitionId], [d].[GrossAmount], [d].[InvoiceId], [d].[IsActive], [d].[MaxLimit], [d].[NetAmountAfterDiscount], [d].[ReplacedDiscountFactId], [d].[Type], [d].[Value]
+FROM [DiscountFacts] AS [d]
+WHERE [d].[InvoiceId] = @__invoice_InvoiceId_0 AND [d].[IsActive] = CAST(1 AS bit)
+ORDER BY [d].[AppliedAt] DESC
+[10:21:18 INF] Executed DbCommand (12ms) [Parameters=[@__invoice_InvoiceId_0='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+SELECT TOP(1) [d].[DiscountFactId], [d].[AppliedAt], [d].[AppliedBy], [d].[CreatedAt], [d].[DiscountAmount], [d].[DiscountDefinitionId], [d].[GrossAmount], [d].[InvoiceId], [d].[IsActive], [d].[MaxLimit], [d].[NetAmountAfterDiscount], [d].[ReplacedDiscountFactId], [d].[Type], [d].[Value]
+FROM [DiscountFacts] AS [d]
+WHERE [d].[InvoiceId] = @__invoice_InvoiceId_0 AND [d].[IsActive] = CAST(1 AS bit)
+ORDER BY [d].[AppliedAt] DESC
+[10:21:18 INF] Executed DbCommand (3ms) [Parameters=[@__get_Item_0='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+SELECT TOP(1) [u].[UserId], [u].[CreatedAt], [u].[Designation], [u].[Email], [u].[FailedLoginAttempts], [u].[IsActive], [u].[LockoutEnd], [u].[Name], [u].[PasswordHash], [u].[RowVersion], [u].[SignatureImageUrl], [u].[SignatureUpdatedAt], [u].[UpdatedAt]
+FROM [Users] AS [u]
+WHERE [u].[UserId] = @__get_Item_0
+[10:21:18 INF] Executed DbCommand (3ms) [Parameters=[@__get_Item_0='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+SELECT TOP(1) [u].[UserId], [u].[CreatedAt], [u].[Designation], [u].[Email], [u].[FailedLoginAttempts], [u].[IsActive], [u].[LockoutEnd], [u].[Name], [u].[PasswordHash], [u].[RowVersion], [u].[SignatureImageUrl], [u].[SignatureUpdatedAt], [u].[UpdatedAt]
+FROM [Users] AS [u]
+WHERE [u].[UserId] = @__get_Item_0
+[10:21:18 INF] Executed DbCommand (5ms) [Parameters=[@__visit_VisitId_0='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+SELECT TOP(1) [r].[ReferralDraftId], [r].[ClinicName], [r].[CreatedAt], [r].[CreatedByUserId], [r].[IsResolved], [r].[Location], [r].[ProviderName], [r].[ResolvedAt], [r].[ResolvedByUserId], [r].[ResolvedToPartnerId], [r].[VisitId]
+FROM [ReferralDrafts] AS [r]
+WHERE [r].[VisitId] = @__visit_VisitId_0
+[10:21:18 INF] Executed DbCommand (5ms) [Parameters=[@__visit_VisitId_0='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+SELECT TOP(1) [r].[ReferralDraftId], [r].[ClinicName], [r].[CreatedAt], [r].[CreatedByUserId], [r].[IsResolved], [r].[Location], [r].[ProviderName], [r].[ResolvedAt], [r].[ResolvedByUserId], [r].[ResolvedToPartnerId], [r].[VisitId]
+FROM [ReferralDrafts] AS [r]
+WHERE [r].[VisitId] = @__visit_VisitId_0
+[10:21:19 INF] Executing OkObjectResult, writing value of type 'SynOS.Models.DTOs.ApiResponse`1[[SynOS.Models.DTOs.ReceptionStartVisitResponse, SynOS.Models, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]'.
+[10:21:19 INF] Executing OkObjectResult, writing value of type 'SynOS.Models.DTOs.ApiResponse`1[[SynOS.Models.DTOs.ReceptionStartVisitResponse, SynOS.Models, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]'.
+[10:21:19 INF] Executed action SynOS.Api.Controllers.ReceptionController.AddTest (SynOS.Api) in 287.9277ms
+[10:21:19 INF] Executed action SynOS.Api.Controllers.ReceptionController.AddTest (SynOS.Api) in 287.9277ms
+[10:21:19 INF] Request starting HTTP/1.1 GET http://127.0.0.1:59999/api/v1/reception/intake/snapshot?patientId=f83f0fdd-ea27-4260-921e-b98c8b7ad1d0&visitId=5aecf0d0-6018-45c6-91ad-64ada9a07c7f - application/json null
+[10:21:19 INF] Request starting HTTP/1.1 GET http://127.0.0.1:59999/api/v1/reception/intake/snapshot?patientId=f83f0fdd-ea27-4260-921e-b98c8b7ad1d0&visitId=5aecf0d0-6018-45c6-91ad-64ada9a07c7f - application/json null
+[10:21:19 INF] Executed endpoint 'SynOS.Api.Controllers.ReceptionController.AddTest (SynOS.Api)'
+[10:21:19 INF] Executed endpoint 'SynOS.Api.Controllers.ReceptionController.AddTest (SynOS.Api)'
+[10:21:19 INF] Executing endpoint 'SynOS.Api.Controllers.Reception.IntakeSnapshotController.GetSnapshot (SynOS.Api)'
+[10:21:19 INF] Executing endpoint 'SynOS.Api.Controllers.Reception.IntakeSnapshotController.GetSnapshot (SynOS.Api)'
+[10:21:19 INF] Request finished HTTP/1.1 POST http://127.0.0.1:59999/api/v1/reception/visit/test - 200 null application/json; charset=utf-8 493.9463ms
+[10:21:19 INF] Request finished HTTP/1.1 POST http://127.0.0.1:59999/api/v1/reception/visit/test - 200 null application/json; charset=utf-8 493.9463ms
+[10:21:19 INF] Route matched with {action = "GetSnapshot", controller = "IntakeSnapshot"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] GetSnapshot(System.Nullable`1[System.Guid], System.Nullable`1[System.Guid]) on controller SynOS.Api.Controllers.Reception.IntakeSnapshotController (SynOS.Api).
+[10:21:19 INF] Route matched with {action = "GetSnapshot", controller = "IntakeSnapshot"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] GetSnapshot(System.Nullable`1[System.Guid], System.Nullable`1[System.Guid]) on controller SynOS.Api.Controllers.Reception.IntakeSnapshotController (SynOS.Api).
+[10:21:19 INF] Executed DbCommand (86ms) [Parameters=[@__visitId_0='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+SELECT [t].[VisitId], [t].[BranchId], [t].[CreatedAt], [t].[CurrentAssignmentId], [t].[Department], [t].[IsReferred], [t].[PatientId], [t].[PaymentCollectionModel], [t].[ReferralPartnerId], [t].[ReferrerId], [t].[ReferrerText], [t].[RowVersion], [t].[Status], [t].[Token], [t].[TokenDate], [t].[PatientId0], [t].[CreatedAt0], [t].[CurrentPhoneNumber], [t].[DateOfBirth], [t].[DisplayName], [t].[FirstName], [t].[Gender], [t].[IsDateOfBirthKnown], [t].[IsSoftDeleted], [t].[LastName], [t].[MRN], [t].[RowVersion0], [t].[UpdatedAt], [t].[ReferralDraftId], [t0].[OrderId], [t0].[CancellationReason], [t0].[CancelledAt], [t0].[CancelledByUserId], [t0].[CreatedAt], [t0].[Department], [t0].[Discount], [t0].[Price], [t0].[SpecimenId], [t0].[Status], [t0].[TestCode], [t0].[TestId], [t0].[VisitId], [t0].[TestId0], [t0].[Category], [t0].[CreatedAt0], [t0].[DepartmentId], [t0].[ExtraInfo], [t0].[IsActive], [t0].[IsProfile], [t0].[SpecialInstructions], [t0].[SpecimenTypeCode], [t0].[TAT_Hours], [t0].[TestCode0], [t0].[TestName], [t0].[UpdatedAt], [t2].[InvoiceId], [t2].[CreatedAt], [t2].[Currency], [t2].[DiscountAmount], [t2].[DueDate], [t2].[GrossAmount], [t2].[NetAmount], [t2].[Status], [t2].[TaxAmount], [t2].[Total], [t2].[VisitId], [t2].[PaymentId], [t2].[Amount], [t2].[InvoiceId0], [t2].[Method], [t2].[ReceiptNo], [t2].[ReceivedAt], [t2].[ReceivedByUserId], [t].[ClinicName], [t].[CreatedAt1], [t].[CreatedByUserId], [t].[IsResolved], [t].[Location], [t].[ProviderName], [t].[ResolvedAt], [t].[ResolvedByUserId], [t].[ResolvedToPartnerId], [t].[VisitId0]
 FROM (
     SELECT TOP(1) [v].[VisitId], [v].[BranchId], [v].[CreatedAt], [v].[CurrentAssignmentId], [v].[Department], [v].[IsReferred], [v].[PatientId], [v].[PaymentCollectionModel], [v].[ReferralPartnerId], [v].[ReferrerId], [v].[ReferrerText], [v].[RowVersion], [v].[Status], [v].[Token], [v].[TokenDate], [p].[PatientId] AS [PatientId0], [p].[CreatedAt] AS [CreatedAt0], [p].[CurrentPhoneNumber], [p].[DateOfBirth], [p].[DisplayName], [p].[FirstName], [p].[Gender], [p].[IsDateOfBirthKnown], [p].[IsSoftDeleted], [p].[LastName], [p].[MRN], [p].[RowVersion] AS [RowVersion0], [p].[UpdatedAt], [r].[ReferralDraftId], [r].[ClinicName], [r].[CreatedAt] AS [CreatedAt1], [r].[CreatedByUserId], [r].[IsResolved], [r].[Location], [r].[ProviderName], [r].[ResolvedAt], [r].[ResolvedByUserId], [r].[ResolvedToPartnerId], [r].[VisitId] AS [VisitId0]
     FROM [Visits] AS [v]
@@ -132,7 +118,7 @@ FROM (
     WHERE [v].[VisitId] = @__visitId_0
 ) AS [t]
 LEFT JOIN (
-    SELECT [o].[OrderId], [o].[CancellationReason], [o].[CancelledAt], [o].[CancelledByUserId], [o].[CreatedAt], [o].[Department], [o].[Discount], [o].[Price], [o].[Status], [o].[TestCode], [o].[TestId], [o].[VisitId], [t1].[TestId] AS [TestId0], [t1].[BasePrice], [t1].[Category], [t1].[CreatedAt] AS [CreatedAt0], [t1].[DefaultTubeType], [t1].[Department] AS [Department0], [t1].[IsActive], [t1].[TAT_Hours], [t1].[TestCode] AS [TestCode0], [t1].[TestName], [t1].[UpdatedAt]
+    SELECT [o].[OrderId], [o].[CancellationReason], [o].[CancelledAt], [o].[CancelledByUserId], [o].[CreatedAt], [o].[Department], [o].[Discount], [o].[Price], [o].[SpecimenId], [o].[Status], [o].[TestCode], [o].[TestId], [o].[VisitId], [t1].[TestId] AS [TestId0], [t1].[Category], [t1].[CreatedAt] AS [CreatedAt0], [t1].[DepartmentId], [t1].[ExtraInfo], [t1].[IsActive], [t1].[IsProfile], [t1].[SpecialInstructions], [t1].[SpecimenTypeCode], [t1].[TAT_Hours], [t1].[TestCode] AS [TestCode0], [t1].[TestName], [t1].[UpdatedAt]
     FROM [Orders] AS [o]
     INNER JOIN [Tests] AS [t1] ON [o].[TestId] = [t1].[TestId]
 ) AS [t0] ON [t].[VisitId] = [t0].[VisitId]
@@ -142,8 +128,8 @@ LEFT JOIN (
     LEFT JOIN [Payments] AS [p0] ON [i].[InvoiceId] = [p0].[InvoiceId]
 ) AS [t2] ON [t].[VisitId] = [t2].[VisitId]
 ORDER BY [t].[VisitId], [t].[PatientId0], [t].[ReferralDraftId], [t0].[OrderId], [t0].[TestId0], [t2].[InvoiceId]
-[12:35:17 ERR] Failed executing DbCommand (14ms) [Parameters=[@__visitId_0='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
-SELECT [t].[VisitId], [t].[BranchId], [t].[CreatedAt], [t].[CurrentAssignmentId], [t].[Department], [t].[IsReferred], [t].[PatientId], [t].[PaymentCollectionModel], [t].[ReferralPartnerId], [t].[ReferrerId], [t].[ReferrerText], [t].[RowVersion], [t].[Status], [t].[Token], [t].[TokenDate], [t].[PatientId0], [t].[CreatedAt0], [t].[CurrentPhoneNumber], [t].[DateOfBirth], [t].[DisplayName], [t].[FirstName], [t].[Gender], [t].[IsDateOfBirthKnown], [t].[IsSoftDeleted], [t].[LastName], [t].[MRN], [t].[RowVersion0], [t].[UpdatedAt], [t].[ReferralDraftId], [t0].[OrderId], [t0].[CancellationReason], [t0].[CancelledAt], [t0].[CancelledByUserId], [t0].[CreatedAt], [t0].[Department], [t0].[Discount], [t0].[Price], [t0].[Status], [t0].[TestCode], [t0].[TestId], [t0].[VisitId], [t0].[TestId0], [t0].[BasePrice], [t0].[Category], [t0].[CreatedAt0], [t0].[DefaultTubeType], [t0].[Department0], [t0].[IsActive], [t0].[TAT_Hours], [t0].[TestCode0], [t0].[TestName], [t0].[UpdatedAt], [t2].[InvoiceId], [t2].[CreatedAt], [t2].[Currency], [t2].[DiscountAmount], [t2].[DueDate], [t2].[GrossAmount], [t2].[NetAmount], [t2].[Status], [t2].[TaxAmount], [t2].[Total], [t2].[VisitId], [t2].[PaymentId], [t2].[Amount], [t2].[InvoiceId0], [t2].[Method], [t2].[ReceiptNo], [t2].[ReceivedAt], [t2].[ReceivedByUserId], [t].[ClinicName], [t].[CreatedAt1], [t].[CreatedByUserId], [t].[IsResolved], [t].[Location], [t].[ProviderName], [t].[ResolvedAt], [t].[ResolvedByUserId], [t].[ResolvedToPartnerId], [t].[VisitId0]
+[10:21:19 INF] Executed DbCommand (86ms) [Parameters=[@__visitId_0='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+SELECT [t].[VisitId], [t].[BranchId], [t].[CreatedAt], [t].[CurrentAssignmentId], [t].[Department], [t].[IsReferred], [t].[PatientId], [t].[PaymentCollectionModel], [t].[ReferralPartnerId], [t].[ReferrerId], [t].[ReferrerText], [t].[RowVersion], [t].[Status], [t].[Token], [t].[TokenDate], [t].[PatientId0], [t].[CreatedAt0], [t].[CurrentPhoneNumber], [t].[DateOfBirth], [t].[DisplayName], [t].[FirstName], [t].[Gender], [t].[IsDateOfBirthKnown], [t].[IsSoftDeleted], [t].[LastName], [t].[MRN], [t].[RowVersion0], [t].[UpdatedAt], [t].[ReferralDraftId], [t0].[OrderId], [t0].[CancellationReason], [t0].[CancelledAt], [t0].[CancelledByUserId], [t0].[CreatedAt], [t0].[Department], [t0].[Discount], [t0].[Price], [t0].[SpecimenId], [t0].[Status], [t0].[TestCode], [t0].[TestId], [t0].[VisitId], [t0].[TestId0], [t0].[Category], [t0].[CreatedAt0], [t0].[DepartmentId], [t0].[ExtraInfo], [t0].[IsActive], [t0].[IsProfile], [t0].[SpecialInstructions], [t0].[SpecimenTypeCode], [t0].[TAT_Hours], [t0].[TestCode0], [t0].[TestName], [t0].[UpdatedAt], [t2].[InvoiceId], [t2].[CreatedAt], [t2].[Currency], [t2].[DiscountAmount], [t2].[DueDate], [t2].[GrossAmount], [t2].[NetAmount], [t2].[Status], [t2].[TaxAmount], [t2].[Total], [t2].[VisitId], [t2].[PaymentId], [t2].[Amount], [t2].[InvoiceId0], [t2].[Method], [t2].[ReceiptNo], [t2].[ReceivedAt], [t2].[ReceivedByUserId], [t].[ClinicName], [t].[CreatedAt1], [t].[CreatedByUserId], [t].[IsResolved], [t].[Location], [t].[ProviderName], [t].[ResolvedAt], [t].[ResolvedByUserId], [t].[ResolvedToPartnerId], [t].[VisitId0]
 FROM (
     SELECT TOP(1) [v].[VisitId], [v].[BranchId], [v].[CreatedAt], [v].[CurrentAssignmentId], [v].[Department], [v].[IsReferred], [v].[PatientId], [v].[PaymentCollectionModel], [v].[ReferralPartnerId], [v].[ReferrerId], [v].[ReferrerText], [v].[RowVersion], [v].[Status], [v].[Token], [v].[TokenDate], [p].[PatientId] AS [PatientId0], [p].[CreatedAt] AS [CreatedAt0], [p].[CurrentPhoneNumber], [p].[DateOfBirth], [p].[DisplayName], [p].[FirstName], [p].[Gender], [p].[IsDateOfBirthKnown], [p].[IsSoftDeleted], [p].[LastName], [p].[MRN], [p].[RowVersion] AS [RowVersion0], [p].[UpdatedAt], [r].[ReferralDraftId], [r].[ClinicName], [r].[CreatedAt] AS [CreatedAt1], [r].[CreatedByUserId], [r].[IsResolved], [r].[Location], [r].[ProviderName], [r].[ResolvedAt], [r].[ResolvedByUserId], [r].[ResolvedToPartnerId], [r].[VisitId] AS [VisitId0]
     FROM [Visits] AS [v]
@@ -152,7 +138,7 @@ FROM (
     WHERE [v].[VisitId] = @__visitId_0
 ) AS [t]
 LEFT JOIN (
-    SELECT [o].[OrderId], [o].[CancellationReason], [o].[CancelledAt], [o].[CancelledByUserId], [o].[CreatedAt], [o].[Department], [o].[Discount], [o].[Price], [o].[Status], [o].[TestCode], [o].[TestId], [o].[VisitId], [t1].[TestId] AS [TestId0], [t1].[BasePrice], [t1].[Category], [t1].[CreatedAt] AS [CreatedAt0], [t1].[DefaultTubeType], [t1].[Department] AS [Department0], [t1].[IsActive], [t1].[TAT_Hours], [t1].[TestCode] AS [TestCode0], [t1].[TestName], [t1].[UpdatedAt]
+    SELECT [o].[OrderId], [o].[CancellationReason], [o].[CancelledAt], [o].[CancelledByUserId], [o].[CreatedAt], [o].[Department], [o].[Discount], [o].[Price], [o].[SpecimenId], [o].[Status], [o].[TestCode], [o].[TestId], [o].[VisitId], [t1].[TestId] AS [TestId0], [t1].[Category], [t1].[CreatedAt] AS [CreatedAt0], [t1].[DepartmentId], [t1].[ExtraInfo], [t1].[IsActive], [t1].[IsProfile], [t1].[SpecialInstructions], [t1].[SpecimenTypeCode], [t1].[TAT_Hours], [t1].[TestCode] AS [TestCode0], [t1].[TestName], [t1].[UpdatedAt]
     FROM [Orders] AS [o]
     INNER JOIN [Tests] AS [t1] ON [o].[TestId] = [t1].[TestId]
 ) AS [t0] ON [t].[VisitId] = [t0].[VisitId]
@@ -162,132 +148,50 @@ LEFT JOIN (
     LEFT JOIN [Payments] AS [p0] ON [i].[InvoiceId] = [p0].[InvoiceId]
 ) AS [t2] ON [t].[VisitId] = [t2].[VisitId]
 ORDER BY [t].[VisitId], [t].[PatientId0], [t].[ReferralDraftId], [t0].[OrderId], [t0].[TestId0], [t2].[InvoiceId]
-[12:35:17 ERR] Error starting visit for patient 18aea5b8-6056-4ef9-a204-871e06dc4f6f
-Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'CreatedByUserId'.
-Invalid column name 'ResolvedAt'.
-Invalid column name 'ResolvedByUserId'.
-   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
-   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
---- End of stack trace from previous location ---
-   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
-   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
---- End of stack trace from previous location ---
-   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
-   at Microsoft.EntityFrameworkCore.Query.ShapedQueryCompilingExpressionVisitor.SingleOrDefaultAsync[TSource](IAsyncEnumerable`1 asyncEnumerable, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Query.ShapedQueryCompilingExpressionVisitor.SingleOrDefaultAsync[TSource](IAsyncEnumerable`1 asyncEnumerable, CancellationToken cancellationToken)
-   at SynOS.Services.ReceptionFlowService.StartVisitAsync(ReceptionStartVisitRequest request, Guid actorUserId) in D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReceptionFlowService.cs:line 128
-   at SynOS.Api.Controllers.ReceptionController.StartVisit(ReceptionStartVisitRequest request) in D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\ReceptionController.cs:line 43
-ClientConnectionId:a24d8a6a-fbd7-4cae-b8b0-0064d249e757
-Error Number:207,State:1,Class:16
-[12:35:17 ERR] An exception occurred while iterating over the results of a query for context type 'SynOS.Data.SynOSDbContext'.
-Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'CreatedByUserId'.
-Invalid column name 'ResolvedAt'.
-Invalid column name 'ResolvedByUserId'.
-   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
-   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
---- End of stack trace from previous location ---
-   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
-   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
---- End of stack trace from previous location ---
-   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
-ClientConnectionId:a24d8a6a-fbd7-4cae-b8b0-0064d249e757
-Error Number:207,State:1,Class:16
-Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'CreatedByUserId'.
-Invalid column name 'ResolvedAt'.
-Invalid column name 'ResolvedByUserId'.
-   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
-   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
---- End of stack trace from previous location ---
-   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
-   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
---- End of stack trace from previous location ---
-   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
-ClientConnectionId:a24d8a6a-fbd7-4cae-b8b0-0064d249e757
-Error Number:207,State:1,Class:16
-[12:35:17 ERR] An exception occurred while iterating over the results of a query for context type 'SynOS.Data.SynOSDbContext'.
-Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'CreatedByUserId'.
-Invalid column name 'ResolvedAt'.
-Invalid column name 'ResolvedByUserId'.
-   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
-   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
---- End of stack trace from previous location ---
-   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
-   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
---- End of stack trace from previous location ---
-   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
-ClientConnectionId:a24d8a6a-fbd7-4cae-b8b0-0064d249e757
-Error Number:207,State:1,Class:16
-Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'CreatedByUserId'.
-Invalid column name 'ResolvedAt'.
-Invalid column name 'ResolvedByUserId'.
-   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
-   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
---- End of stack trace from previous location ---
-   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
-   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
---- End of stack trace from previous location ---
-   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
-ClientConnectionId:a24d8a6a-fbd7-4cae-b8b0-0064d249e757
-Error Number:207,State:1,Class:16
-[12:35:17 ERR] Error starting visit for patient 18aea5b8-6056-4ef9-a204-871e06dc4f6f
-[Snapshot Error] Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'CreatedByUserId'.
-Invalid column name 'ResolvedAt'.
-Invalid column name 'ResolvedByUserId'.
-   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
-   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
---- End of stack trace from previous location ---
-   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
-   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
---- End of stack trace from previous location ---
-   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
-   at Microsoft.EntityFrameworkCore.Query.ShapedQueryCompilingExpressionVisitor.SingleOrDefaultAsync[TSource](IAsyncEnumerable`1 asyncEnumerable, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Query.ShapedQueryCompilingExpressionVisitor.SingleOrDefaultAsync[TSource](IAsyncEnumerable`1 asyncEnumerable, CancellationToken cancellationToken)
-   at SynOS.Services.Reception.ReceptionSnapshotService.LoadVisitContextAsync(ReceptionIntakeSnapshotDto snapshot, Guid visitId, Nullable`1 requestedPatientId) in D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\Reception\ReceptionSnapshotService.cs:line 80
-   at SynOS.Services.Reception.ReceptionSnapshotService.GetSnapshotAsync(ReceptionSnapshotQuery query) in D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\Reception\ReceptionSnapshotService.cs:line 52
-ClientConnectionId:a24d8a6a-fbd7-4cae-b8b0-0064d249e757
-Error Number:207,State:1,Class:16
-Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'CreatedByUserId'.
-Invalid column name 'ResolvedAt'.
-Invalid column name 'ResolvedByUserId'.
-   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
-   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
---- End of stack trace from previous location ---
-   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
-   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
---- End of stack trace from previous location ---
-   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
-   at Microsoft.EntityFrameworkCore.Query.ShapedQueryCompilingExpressionVisitor.SingleOrDefaultAsync[TSource](IAsyncEnumerable`1 asyncEnumerable, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Query.ShapedQueryCompilingExpressionVisitor.SingleOrDefaultAsync[TSource](IAsyncEnumerable`1 asyncEnumerable, CancellationToken cancellationToken)
-   at SynOS.Services.ReceptionFlowService.StartVisitAsync(ReceptionStartVisitRequest request, Guid actorUserId) in D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReceptionFlowService.cs:line 128
-   at SynOS.Api.Controllers.ReceptionController.StartVisit(ReceptionStartVisitRequest request) in D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\ReceptionController.cs:line 43
-ClientConnectionId:a24d8a6a-fbd7-4cae-b8b0-0064d249e757
-Error Number:207,State:1,Class:16
-[ActionQueue
+[10:21:19 INF] Executed DbCommand (18ms) [Parameters=[@__visit_PatientId_0='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+SELECT [t].[TokenDate], [t].[VisitId], [o].[TestCode], [o].[OrderId]
+FROM (
+    SELECT TOP(1) [v].[TokenDate], [v].[VisitId]
+    FROM [Visits] AS [v]
+    WHERE [v].[PatientId] = @__visit_PatientId_0 AND [v].[Status] <> N'Cancelled'
+    ORDER BY [v].[TokenDate] DESC
+) AS [t]
+LEFT JOIN [Orders] AS [o] ON [t].[VisitId] = [o].[VisitId]
+ORDER BY [t].[TokenDate] DESC, [t].[VisitId]
+[10:21:19 INF] Executed DbCommand (18ms) [Parameters=[@__visit_PatientId_0='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+SELECT [t].[TokenDate], [t].[VisitId], [o].[TestCode], [o].[OrderId]
+FROM (
+    SELECT TOP(1) [v].[TokenDate], [v].[VisitId]
+    FROM [Visits] AS [v]
+    WHERE [v].[PatientId] = @__visit_PatientId_0 AND [v].[Status] <> N'Cancelled'
+    ORDER BY [v].[TokenDate] DESC
+) AS [t]
+LEFT JOIN [Orders] AS [o] ON [t].[VisitId] = [o].[VisitId]
+ORDER BY [t].[TokenDate] DESC, [t].[VisitId]
+[10:21:19 INF] Executed DbCommand (16ms) [Parameters=[@__invoice_InvoiceId_0='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+SELECT TOP(1) [d].[DiscountFactId], [d].[AppliedAt], [d].[AppliedBy], [d].[CreatedAt], [d].[DiscountAmount], [d].[DiscountDefinitionId], [d].[GrossAmount], [d].[InvoiceId], [d].[IsActive], [d].[MaxLimit], [d].[NetAmountAfterDiscount], [d].[ReplacedDiscountFactId], [d].[Type], [d].[Value]
+FROM [DiscountFacts] AS [d]
+WHERE [d].[InvoiceId] = @__invoice_InvoiceId_0
+ORDER BY [d].[AppliedAt] DESC
+[10:21:19 INF] Executed DbCommand (16ms) [Parameters=[@__invoice_InvoiceId_0='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+SELECT TOP(1) [d].[DiscountFactId], [d].[AppliedAt], [d].[AppliedBy], [d].[CreatedAt], [d].[DiscountAmount], [d].[DiscountDefinitionId], [d].[GrossAmount], [d].[InvoiceId], [d].[IsActive], [d].[MaxLimit], [d].[NetAmountAfterDiscount], [d].[ReplacedDiscountFactId], [d].[Type], [d].[Value]
+FROM [DiscountFacts] AS [d]
+WHERE [d].[InvoiceId] = @__invoice_InvoiceId_0
+ORDER BY [d].[AppliedAt] DESC
+[10:21:19 INF] Executed DbCommand (4ms) [Parameters=[@__visit_ReferralPartnerId_Value_0='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+SELECT TOP(1) [r].[ReferralPartnerId], [r].[ContactInfo], [r].[CreatedAt], [r].[IsActive], [r].[Name], [r].[PartnerType], [r].[PaymentCollectionModel], [r].[UpdatedAt]
+FROM [ReferralPartners] AS [r]
+WHERE [r].[ReferralPartnerId] = @__visit_ReferralPartnerId_Value_0
+[10:21:19 INF] Executed DbCommand (4ms) [Parameters=[@__visit_ReferralPartnerId_Value_0='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+SELECT TOP(1) [r].[ReferralPartnerId], [r].[ContactInfo], [r].[CreatedAt], [r].[IsActive], [r].[Name], [r].[PartnerType], [r].[PaymentCollectionModel], [r].[UpdatedAt]
+FROM [ReferralPartners] AS [r]
+WHERE [r].[ReferralPartnerId] = @__visit_ReferralPartnerId_Value_0
+[10:21:19 INF] Executing OkObjectResult, writing value of type 'SynOS.Models.DTOs.Reception.ReceptionIntakeSnapshotDto'.
+[10:21:19 INF] Executing OkObjectResult, writing value of type 'SynOS.Models.DTOs.Reception.ReceptionIntakeSnapshotDto'.
+[10:21:19 INF] Executed action SynOS.Api.Controllers.Reception.IntakeSnapshotController.GetSnapshot (SynOS.Api) in 322.4498ms
+[10:21:19 INF] Executed action SynOS.Api.Controllers.Reception.IntakeSnapshotController.GetSnapshot (SynOS.Api) in 322.4498ms
+[10:21:19 INF] Executed endpoint 'SynOS.Api.Controllers.Reception.IntakeSnapshotController.GetSnapshot (SynOS.Api)'
+[10:21:19 INF] Executed endpoint 'SynOS.Api.Controllers.Reception.IntakeSnapshotController.GetSnapshot (SynOS.Api)'
+[10:21:19 INF] Request finished HTTP/1.1 GET http://127.0.0.1:59999/api/v1/reception/intake/snapshot?patientId=f83f0fdd-ea27-4260-921e-b98c8b7ad1d0&visitId=5aecf0d0-6018-45c6-91ad-64ada9a07c7f - 200 null application/json; charset=utf-8 524.4373ms
+[10:21:19 INF] Request finished HTTP/1.1 GET http://127.0.0.1:59999/api/v1/reception/intake/snapshot?patientId=f83f0fdd-ea27-4260-921e-b98c8b7ad1d0&visitId=5aecf0d0-6018-45c6-91ad-64ada9a07c7f - 200 null application/json; charset=utf-8 524.4373ms
+[10:21

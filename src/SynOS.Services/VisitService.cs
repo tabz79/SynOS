@@ -139,7 +139,7 @@ namespace SynOS.Services
             var currentOrders = new List<Order>();
             foreach (var testCode in visitDto.TestCodes)
             {
-                await ExpandAndAddOrdersInternalAsync(visit.VisitId, testCode, visitDto.Department, currentOrders, false);
+                await ExpandAndAddOrdersInternalAsync(visit.VisitId, testCode, currentOrders, false);
             }
 
             // Create Invoice (Shell)
@@ -270,6 +270,7 @@ namespace SynOS.Services
 
         public async Task<Visit> AddTestToVisitAsync(Guid visitId, string testCode, Guid actorUserId)
         {
+            _logger.LogInformation("TRACE: AddTestToVisitAsync called. visitId={VisitId}, testCode={TestCode}", visitId, testCode);
             var visit = await _context.Visits
                 .Include(v => v.Patient) // ADDED
                 .Include(v => v.Invoices).ThenInclude(i => i.Payments)
@@ -291,9 +292,18 @@ namespace SynOS.Services
                 throw new InvalidOperationException($"Test '{testCode}' is already added.");
 
             var currentOrders = visit.Orders.ToList();
-            await ExpandAndAddOrdersInternalAsync(visitId, testCode, visit.Department, currentOrders, false);
+            await ExpandAndAddOrdersInternalAsync(visitId, testCode, currentOrders, false);
 
-            await _context.SaveChangesAsync();
+            try
+            {
+                int affectedRows = await _context.SaveChangesAsync();
+                _logger.LogInformation("TRACE: SaveChangesAsync reached. Affected rows: {AffectedRows}", affectedRows);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "TRACE: SaveChangesAsync threw exception. Message: {Message}", ex.Message);
+                throw;
+            }
 
             await _revenueEngine.ApplySnapshotAsync(visitId, actorUserId);
 
@@ -310,6 +320,7 @@ namespace SynOS.Services
                 Action = "Added" 
             });
 
+            /* 
             await _operationalEventWriter.WriteEventAsync(
                 BranchEventType.VISIT_UPDATED,
                 _userContext.CurrentBranchId.ToString(),
@@ -323,6 +334,7 @@ namespace SynOS.Services
                 visit.VisitId,
                 addTestMetadata
             );
+            */
 
             return visit;
         }
@@ -852,27 +864,27 @@ namespace SynOS.Services
             public Guid TestId { get; set; }
             public string TestCode { get; set; }
             public string TestName { get; set; }
-            public string Department { get; set; }
+            public string MacroDepartment { get; set; } // Broad operational branch
+            public string Department { get; set; } // Specific specialization
             public decimal BasePrice { get; set; }
             public Guid? PriceConfigId { get; set; }
         }
 
-        private async Task<ResolvedTestDto?> ResolveTestForReceptionAsync(string testCode, string dept)
+        private async Task<ResolvedTestDto?> ResolveTestForReceptionAsync(string testCode)
         {
             var normalized = testCode?.Trim().ToUpperInvariant();
             if (string.IsNullOrEmpty(normalized)) return null;
 
             var allTests = await _testsCacheService.GetCachedTestsAsync();
 
+            // Unified Visit Model: Decouple from Visit.Department gating.
+            // Resolve purely by Code, Active status, and valid pricing.
             var test = allTests
-                .FirstOrDefault(t => t.TestCode.ToUpper() == normalized
-                            && t.IsActive
-                            && (string.IsNullOrEmpty(dept) || (t.DepartmentMaster != null && t.DepartmentMaster.Name == dept)));
+                .FirstOrDefault(t => t.TestCode.ToUpper() == normalized && t.IsActive);
 
             if (test == null) return null;
 
             // Price Logic: Get currently active price from TestPricings
-            // If no pricing found, default to 0 (or handle as error)
             var currentPriceObj = test.TestPricings?
                 .Where(tp => tp.EffectiveFrom <= DateTime.UtcNow)
                 .OrderByDescending(tp => tp.EffectiveFrom)
@@ -895,6 +907,7 @@ namespace SynOS.Services
                 TestId = test.TestId,
                 TestCode = test.TestCode,
                 TestName = test.TestName,
+                MacroDepartment = test.DepartmentMaster?.MacroDepartment ?? "Unknown",
                 Department = test.DepartmentMaster?.Name ?? "Unknown",
                 BasePrice = basePrice,
                 PriceConfigId = priceConfig?.PriceId
@@ -910,10 +923,16 @@ namespace SynOS.Services
                 s.Status == SpecimenStatus.Accessioned);
         }
 
-        private async Task ExpandAndAddOrdersInternalAsync(Guid visitId, string testCode, string dept, List<Order> collection, bool isChild)
+        private async Task ExpandAndAddOrdersInternalAsync(Guid visitId, string testCode, List<Order> collection, bool isChild)
         {
-            var resolved = await ResolveTestForReceptionAsync(testCode, dept);
-            if (resolved == null) return;
+            var resolved = await ResolveTestForReceptionAsync(testCode);
+            if (resolved == null)
+            {
+                _logger.LogInformation("TRACE: ResolveTestForReceptionAsync returned null for testCode={TestCode}", testCode);
+                return;
+            }
+
+            _logger.LogInformation("TRACE: ResolveTestForReceptionAsync returned not null. TestId={TestId}, MacroDept={MacroDept}", resolved.TestId, resolved.MacroDepartment);
 
             // Prevent duplicates in same visit
             if (collection.Any(o => o.TestId == resolved.TestId && o.Status != SynOS.Models.Enums.OrderStatus.Cancelled))
@@ -925,7 +944,7 @@ namespace SynOS.Services
                 VisitId = visitId,
                 TestId = resolved.TestId,
                 TestCode = resolved.TestCode,
-                Department = resolved.Department,
+                Department = resolved.MacroDepartment, // Unified Visit Model: Set Order.Department from Test's MacroDepartment
                 Status = SynOS.Models.Enums.OrderStatus.Pending,
                 Price = isChild ? 0 : resolved.BasePrice, // Children in profile are 0-priced
                 Discount = 0,
@@ -933,6 +952,7 @@ namespace SynOS.Services
             };
             
             _context.Orders.Add(order);
+            _logger.LogInformation("TRACE: _context.Orders.Add(order) executed for TestId={TestId}, MacroDept={MacroDept}", order.TestId, order.Department);
             collection.Add(order);
 
             // Fetch full test from cache to check for children
@@ -946,7 +966,7 @@ namespace SynOS.Services
                     var child = allTests.FirstOrDefault(t => t.TestId == mapping.ChildTestId);
                     if (child != null)
                     {
-                        await ExpandAndAddOrdersInternalAsync(visitId, child.TestCode, dept, collection, true);
+                        await ExpandAndAddOrdersInternalAsync(visitId, child.TestCode, collection, true);
                     }
                 }
             }

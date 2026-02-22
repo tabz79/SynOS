@@ -63,7 +63,12 @@ namespace SynOS.Api
             // Test Master Mappings
             CreateMap<CreateTestDto, Test>();
             CreateMap<UpdateTestDto, Test>();
-            CreateMap<Test, TestDto>();
+            CreateMap<Test, TestDto>()
+                .ForMember(dest => dest.Department, opt => opt.MapFrom(src => src.DepartmentMaster != null ? src.DepartmentMaster.Name : string.Empty))
+                .ForMember(dest => dest.BasePrice, opt => opt.MapFrom(src => 
+                    src.TestPricings != null && src.TestPricings.Any()
+                    ? src.TestPricings.OrderByDescending(tp => tp.EffectiveFrom).FirstOrDefault().BasePrice
+                    : 0m));
 
             CreateMap<CreateParameterDto, Parameter>();
             CreateMap<UpdateParameterDto, Parameter>();

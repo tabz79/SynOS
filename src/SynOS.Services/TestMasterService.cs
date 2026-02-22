@@ -182,6 +182,8 @@ namespace SynOS.Services
         {
             return await _context.Tests
                 .Include(t => t.Parameters)
+                .Include(t => t.TestPricings)
+                .Include(t => t.DepartmentMaster)
                 .AsNoTracking()
                 .ToListAsync();
         }

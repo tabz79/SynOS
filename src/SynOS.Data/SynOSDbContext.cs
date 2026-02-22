@@ -316,7 +316,10 @@ namespace SynOS.Data
             modelBuilder.Entity<TestPricing>(entity =>
             {
                 entity.HasIndex(e => new { e.TestId, e.EffectiveFrom }).IsUnique();
-                entity.HasOne(e => e.Test).WithMany().HasForeignKey(e => e.TestId).OnDelete(DeleteBehavior.Cascade);
+                entity.HasOne(e => e.Test)
+                      .WithMany(t => t.TestPricings)
+                      .HasForeignKey(e => e.TestId)
+                      .OnDelete(DeleteBehavior.Cascade);
             });
 
             modelBuilder.Entity<ProfileMap>(entity =>

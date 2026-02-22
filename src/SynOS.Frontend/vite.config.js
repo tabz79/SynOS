@@ -18,10 +18,10 @@ export default defineConfig({
         secure: false,
       },
       '/dashboardHub': {
-        target: 'http://127.0.0.1:59999',
+        target: 'ws://127.0.0.1:59999',
+        ws: true,
         changeOrigin: true,
         secure: false,
-        ws: true,
         // Sometimes SignalR needs rewrite if path differs, but here it matches.
         // Adding headers to help backend trust proxy
         configure: (proxy, _options) => {

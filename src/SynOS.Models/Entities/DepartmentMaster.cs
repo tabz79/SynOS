@@ -18,6 +18,10 @@ namespace SynOS.Models.Entities
         [StringLength(100)]
         public string Name { get; set; } = string.Empty; // e.g., "Biochemistry"
 
+        [Required]
+        [StringLength(50)]
+        public string MacroDepartment { get; set; } = string.Empty;
+
         public bool IsActive { get; set; } = true;
 
         public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;

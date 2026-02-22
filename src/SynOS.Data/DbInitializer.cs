@@ -20,6 +20,9 @@ namespace SynOS.Data
             
             SeedBranches(context); // Seed branches first
             SeedRolesAndUsers(context);
+
+            SeedSpecimenTypes(context);
+            SeedTubes(context);
             
             // The following seeding methods for TestDefinitions, etc. are now obsolete
             // and should be removed or updated to use the new Test entity structure.
@@ -356,6 +359,54 @@ namespace SynOS.Data
                 });
             }
 
+            context.SaveChanges();
+        }
+
+        private static void SeedSpecimenTypes(SynOSDbContext context)
+        {
+            var types = new[]
+            {
+                new SpecimenType { Code = "SERUM", Name = "Serum", ContainerCategory = "Blood", IsActive = true, CreatedAt = DateTimeOffset.UtcNow },
+                new SpecimenType { Code = "EDTA", Name = "EDTA Whole Blood", ContainerCategory = "Blood", IsActive = true, CreatedAt = DateTimeOffset.UtcNow },
+                new SpecimenType { Code = "PLASMA", Name = "Plasma", ContainerCategory = "Blood", IsActive = true, CreatedAt = DateTimeOffset.UtcNow },
+                new SpecimenType { Code = "URINE", Name = "Urine", ContainerCategory = "Urine", IsActive = true, CreatedAt = DateTimeOffset.UtcNow },
+                new SpecimenType { Code = "CSF", Name = "Cerebrospinal Fluid", ContainerCategory = "Other", IsActive = true, CreatedAt = DateTimeOffset.UtcNow },
+                new SpecimenType { Code = "SST", Name = "Serum Separator Tube", ContainerCategory = "Blood", IsActive = true, CreatedAt = DateTimeOffset.UtcNow },
+                new SpecimenType { Code = "SWAB", Name = "Swab", ContainerCategory = "Other", IsActive = true, CreatedAt = DateTimeOffset.UtcNow }
+            };
+            foreach (var type in types)
+            {
+                if (!context.SpecimenTypes.Any(s => s.Code == type.Code))
+                {
+                    context.SpecimenTypes.Add(type);
+                }
+            }
+            context.SaveChanges();
+        }
+
+        private static void SeedTubes(SynOSDbContext context)
+        {
+            var tubes = new[]
+            {
+                new SynOS.Models.Entities.IMS.ImsTubeMaster { TubeId = Guid.NewGuid(), Code = "SST", Name = "SST (Yellow)", UnitOfMeasure = "each", IsActive = true },
+                new SynOS.Models.Entities.IMS.ImsTubeMaster { TubeId = Guid.NewGuid(), Code = "EDTA", Name = "EDTA (Purple)", UnitOfMeasure = "each", IsActive = true },
+                new SynOS.Models.Entities.IMS.ImsTubeMaster { TubeId = Guid.NewGuid(), Code = "FLUORIDE", Name = "Fluoride (Grey)", UnitOfMeasure = "each", IsActive = true },
+                new SynOS.Models.Entities.IMS.ImsTubeMaster { TubeId = Guid.NewGuid(), Code = "CITRATE", Name = "Citrate (Blue)", UnitOfMeasure = "each", IsActive = true },
+                new SynOS.Models.Entities.IMS.ImsTubeMaster { TubeId = Guid.NewGuid(), Code = "PLAIN", Name = "Plain (Red)", UnitOfMeasure = "each", IsActive = true },
+                new SynOS.Models.Entities.IMS.ImsTubeMaster { TubeId = Guid.NewGuid(), Code = "PLAIN_RED", Name = "Plain (Red)", UnitOfMeasure = "each", IsActive = true },
+                new SynOS.Models.Entities.IMS.ImsTubeMaster { TubeId = Guid.NewGuid(), Code = "HEPARIN", Name = "Heparin (Green)", UnitOfMeasure = "each", IsActive = true },
+                new SynOS.Models.Entities.IMS.ImsTubeMaster { TubeId = Guid.NewGuid(), Code = "URINE_CUP", Name = "Urine Cup", UnitOfMeasure = "each", IsActive = true },
+                new SynOS.Models.Entities.IMS.ImsTubeMaster { TubeId = Guid.NewGuid(), Code = "STERILE", Name = "Sterile Container", UnitOfMeasure = "each", IsActive = true },
+                new SynOS.Models.Entities.IMS.ImsTubeMaster { TubeId = Guid.NewGuid(), Code = "STERILE_CONTAINER", Name = "Sterile Container", UnitOfMeasure = "each", IsActive = true }
+            };
+
+            foreach (var tube in tubes)
+            {
+                if (!context.ImsTubeMasters.Any(t => t.Code == tube.Code))
+                {
+                    context.ImsTubeMasters.Add(tube);
+                }
+            }
             context.SaveChanges();
         }
     }

@@ -498,7 +498,7 @@ export function VisitDetails({ snapshot, visitId, onVisitUpdated, isPrepaidInten
                                             <div className="type-code">{test.testCode || test.code}</div>
                                         </div>
                                         <div className="flex items-center gap-2">
-                                            <span className="type-code">₹{test.basePrice || test.price}</span>
+                                            <span className="type-code">₹{test.basePrice || test.price || test.Price}</span>
                                             <Plus className="w-4 h-4 text-zinc-500 group-hover:text-synos-primary" />
                                         </div>
                                     </button>
@@ -528,7 +528,7 @@ export function VisitDetails({ snapshot, visitId, onVisitUpdated, isPrepaidInten
                                 </div>
                             </div>
                             <div className="flex items-center gap-4">
-                                <div className="type-code">₹{test.basePrice || test.price}</div>
+                                <div className="type-code">₹{test.basePrice || test.price || test.Price}</div>
                                 {/* Allow Remove if NOT ReadOnly OR if Correction Intent */}
                                 {(!isReadOnly || isCorrectionIntent) && (
                                     <button

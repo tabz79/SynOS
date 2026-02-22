@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SynOS.Data;
 
@@ -11,9 +12,11 @@ using SynOS.Data;
 namespace SynOS.Data.Migrations
 {
     [DbContext(typeof(SynOSDbContext))]
-    partial class SynOSDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260221060556_ExpandPhlebotomyInfo")]
+    partial class ExpandPhlebotomyInfo
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -826,11 +829,6 @@ namespace SynOS.Data.Migrations
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
-
-                    b.Property<string>("MacroDepartment")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -4287,7 +4285,12 @@ namespace SynOS.Data.Migrations
                     b.Property<Guid>("TestId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<Guid?>("TestId1")
+                        .HasColumnType("uniqueidentifier");
+
                     b.HasKey("PricingId");
+
+                    b.HasIndex("TestId1");
 
                     b.HasIndex("TestId", "EffectiveFrom")
                         .IsUnique();
@@ -5899,10 +5902,14 @@ namespace SynOS.Data.Migrations
             modelBuilder.Entity("SynOS.Models.Entities.TestPricing", b =>
                 {
                     b.HasOne("SynOS.Models.Entities.Test", "Test")
-                        .WithMany("TestPricings")
+                        .WithMany()
                         .HasForeignKey("TestId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.HasOne("SynOS.Models.Entities.Test", null)
+                        .WithMany("TestPricings")
+                        .HasForeignKey("TestId1");
 
                     b.Navigation("Test");
                 });

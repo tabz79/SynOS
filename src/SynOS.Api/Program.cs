@@ -311,18 +311,28 @@ builder.Services.AddCors(options =>
 var app = builder.Build();
 
 // Seed the database
-using (var scope = app.Services.CreateScope())
+if (args.Contains("seed") || app.Environment.IsDevelopment())
 {
-    var services = scope.ServiceProvider;
-    try
+    using (var scope = app.Services.CreateScope())
     {
-        var context = services.GetRequiredService<SynOSDbContext>();
-        // DbInitializer.Initialize(context);
+        var services = scope.ServiceProvider;
+        try
+        {
+            var context = services.GetRequiredService<SynOSDbContext>();
+            SynOS.Data.DbInitializer.Initialize(context);
+            Log.Information("Database seeding completed successfully.");
+        }
+        catch (Exception ex)
+        {
+            var logger = services.GetRequiredService<ILogger<Program>>();
+            logger.LogError(ex, "An error occurred while seeding the database.");
+        }
     }
-    catch (Exception ex)
+
+    if (args.Contains("seed"))
     {
-        var logger = services.GetRequiredService<ILogger<Program>>();
-        logger.LogError(ex, "An error occurred while seeding the database.");
+        Log.Information("Exiting after seeding because 'seed' argument was provided.");
+        return;
     }
 }
 
@@ -385,6 +395,6 @@ app.UseAuthorization();
 
 app.MapControllers();
 // app.MapHub<SynOS.Api.Hubs.SampleHub>("/sampleHub"); // DISABLED TEMPORARILY
-// app.MapHub<SynOS.Api.Hubs.DashboardHub>("/dashboardHub"); // DISABLED TEMPORARILY
+app.MapHub<SynOS.Api.Hubs.DashboardHub>("/dashboardHub"); // RESTORED
 
 app.Run();
