@@ -38,12 +38,17 @@ namespace SynOS.Services
             var branchCode = branch.Code ?? "UNK";
 
             // 2. Atomic Get-Or-Create Sequence
-            // We use raw SQL to enforce UPDLOCK on the specific row.
-            // This prevents race conditions where two threads try to insert or update the same sequence.
-            
-            var sequence = await _context.AccessionSequences
-                .FromSqlRaw("SELECT * FROM AccessionSequences WITH (UPDLOCK, ROWLOCK) WHERE BranchId = {0} AND Date = {1}", branchId, datePart)
-                .SingleOrDefaultAsync();
+            // First check if we already loaded or added the sequence in the current context
+            var sequence = _context.AccessionSequences.Local
+                .FirstOrDefault(s => s.BranchId == branchId && s.Date == datePart);
+
+            // If not in local tracking, hit the database with UPDLOCK
+            if (sequence == null)
+            {
+                sequence = await _context.AccessionSequences
+                    .FromSqlRaw("SELECT * FROM AccessionSequences WITH (UPDLOCK, ROWLOCK) WHERE BranchId = {0} AND Date = {1}", branchId, datePart)
+                    .SingleOrDefaultAsync();
+            }
 
             int nextSeq;
 

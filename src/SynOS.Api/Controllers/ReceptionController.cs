@@ -171,7 +171,7 @@ namespace SynOS.Api.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to add test {TestCode}", request.TestCode);
-                return StatusCode(500, new { message = ex.Message });
+                return StatusCode(500, new { message = ex.Message, inner = ex.InnerException?.Message });
             }
         }
 
@@ -195,6 +195,26 @@ namespace SynOS.Api.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to remove test {TestCode}", testCode);
+                return StatusCode(500, new { message = ex.Message });
+            }
+        }
+
+        [HttpDelete("order")]
+        public async Task<IActionResult> RemoveOrder([FromQuery] Guid visitId, [FromQuery] Guid orderId)
+        {
+            try
+            {
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (!Guid.TryParse(userIdClaim, out var userId)) return Unauthorized();
+
+                var response = await _receptionFlowService.RemoveOrderAsync(visitId, orderId, userId);
+                return Ok(new ApiResponse<ReceptionStartVisitResponse>(response));
+            }
+            catch (KeyNotFoundException ex) { return NotFound(new { message = ex.Message }); }
+            catch (InvalidOperationException ex) { return Conflict(new { message = ex.Message }); }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to remove order {OrderId}", orderId);
                 return StatusCode(500, new { message = ex.Message });
             }
         }

@@ -243,6 +243,12 @@ namespace SynOS.Services
             return await MapToStartVisitResponse(visit);
         }
 
+        public async Task<ReceptionStartVisitResponse> RemoveOrderAsync(Guid visitId, Guid orderId, Guid actorUserId)
+        {
+            var visit = await _visitService.RemoveOrderAsync(visitId, orderId, actorUserId);
+            return await MapToStartVisitResponse(visit);
+        }
+
         public async Task SetVisitReferralAsync(Guid visitId, Guid referralPartnerId, Guid actorUserId)
         {
             await _visitService.SetVisitReferralAsync(visitId, referralPartnerId, actorUserId);
@@ -919,10 +925,13 @@ namespace SynOS.Services
             {
                 // 2. Lock Visit & Re-fetch Orders (Ensure we have fresh state)
                 var visit = await _context.Visits
-                    .Include(v => v.Orders).ThenInclude(o => o.Test) // Need Test for SpecimenTypeCode
+                    .Include(v => v.Orders)
+                        .ThenInclude(o => o.Test) // Ensure Test navigation is loaded for specimen grouping
                     .FirstOrDefaultAsync(v => v.VisitId == visitId);
 
                 if (visit == null) throw new KeyNotFoundException($"Visit {visitId} not found");
+
+                _logger.LogInformation($"[DebugSpecimen] Loaded Visit {visitId}, Status: {visit.Status}, Orders: {visit.Orders.Count}, TestNavPresent: {visit.Orders.All(o => o.Test != null)}");
 
                 // Idempotency Check
                 if (visit.Status == "SpecimenPlanned" || visit.Status == "Completed")

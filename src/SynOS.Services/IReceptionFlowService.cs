@@ -9,6 +9,7 @@ namespace SynOS.Services
         Task<ReceptionStartVisitResponse> StartVisitAsync(ReceptionStartVisitRequest request, Guid actorUserId);
         Task<ReceptionStartVisitResponse> AddTestAsync(Guid visitId, string testCode, Guid actorUserId);
         Task<ReceptionStartVisitResponse> RemoveTestAsync(Guid visitId, string testCode, Guid actorUserId);
+        Task<ReceptionStartVisitResponse> RemoveOrderAsync(Guid visitId, Guid orderId, Guid actorUserId);
         Task SetVisitReferralAsync(Guid visitId, Guid referralPartnerId, Guid actorUserId);
         Task RemoveVisitReferralAsync(Guid visitId, Guid actorUserId);
         Task UpdateVisitReferrerTextAsync(Guid visitId, string? referrerText, Guid actorUserId);

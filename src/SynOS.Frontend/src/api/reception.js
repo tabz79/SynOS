@@ -124,7 +124,11 @@ export const ReceptionApi = {
             // Payload aligned with IntakeAddTestRequest
             body: JSON.stringify({ VisitId: visitId, TestCode: testCode })
         });
-        if (!response.ok) throw new Error('Failed to add test');
+        if (!response.ok) {
+            const errData = await response.json().catch(() => ({}));
+            const msg = errData.message ? `Failed to add test: ${errData.message}` : 'Failed to add test';
+            throw new Error(msg);
+        }
     },
 
     /**

@@ -94,13 +94,20 @@ namespace SynOS.Services.Operational
 
         private async Task ProcessEventAsync(BranchOperationalEvent evt)
         {
-            // PROVISIONAL FIX: Random Jitter to break Race Condition if multiple Worker Instances are running.
-            // Logs indicate 2 workers starting. This delay allows one to win the Idempotency race.
-            await Task.Delay(Random.Shared.Next(50, 300));
+            // Parse standard fields
+            if (!Guid.TryParse(evt.BranchId, out var branchId)) return;
+            var date = evt.OccurredAt.Date;
+            
+            _logger.LogInformation("[ProjectorDebug] Processing Event Type: {Type}, BranchId: {BranchId}, SourceId: {SourceId}, SourceType: {SourceType}, VisitId: {VisitId}", 
+                evt.EventType, branchId, evt.SourceId, evt.SourceType, evt.VisitId);
 
-            using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
+                // PROVISIONAL FIX: Random Jitter to break Race Condition
+                await Task.Delay(Random.Shared.Next(50, 300));
+
+                using var transaction = await _context.Database.BeginTransactionAsync();
+                
                 // 2. Idempotency Check (Event ID)
                 var isProcessed = await _context.ProcessedProjectionEvents
                     .AnyAsync(p => p.EventId == evt.EventId && p.ProjectionName == "OperationalStats");
@@ -109,22 +116,22 @@ namespace SynOS.Services.Operational
 
                 bool updated = false;
 
-                // Parse standard fields (Move UP for scope visibility)
-                if (!Guid.TryParse(evt.BranchId, out var branchId)) return;
-                var date = evt.OccurredAt.Date;
                 Guid userId = Guid.Empty;
                 if (evt.ActorType == "User" && !string.IsNullOrEmpty(evt.ActorName))
                 {
                     Guid.TryParse(evt.ActorName, out userId);
                 }
 
-                // 3. Load/Create State (Move UP for scope visibility)
+                // 3. Load/Create State
                 var userStats = await GetOrCreateUserStats(userId, branchId, date);
                 var branchStats = await GetOrCreateBranchStats(branchId, date);
 
-                // 2b. Strict Deduplication (Source ID) - Prevent processing same Fact twice if multiple events reference it.
+                // 2b. Strict Deduplication (Source ID)
                 if (evt.SourceId.HasValue)
                 {
+                     // INSTRUMENTATION: Log the join specifically as it was a known crash point
+                     _logger.LogInformation("[ProjectorDebug] Checking Fact Deduplication for SourceId: {SourceId}", evt.SourceId);
+                     
                      var isFactProcessed = await _context.ProcessedProjectionEvents
                         .Join(_context.BranchOperationalEvents,
                               ppe => ppe.EventId,
@@ -141,21 +148,14 @@ namespace SynOS.Services.Operational
                 }
 
                 // 4. Switch on Event Type
-                // 4. Switch on Event Type
                 if (Enum.TryParse<BranchEventType>(evt.EventType, out var type))
                 {
                     switch (type)
                     {
                         case BranchEventType.VISIT_STARTED:
-                            // REMOVED: Walk-in logic moved to Financial Events (Strict Validation)
                             break;
 
                         case BranchEventType.PAYMENT_RECEIVED:
-                            // ARCHITECTURE LOCK: Stats aggregation is fact-driven only. 
-                            // Any new aggregation source is an architectural violation.
-                            // We ONLY listen to canonical RevenueFacts.
-
-                            // A. Revenue Fact (Preferred - Future)
                             if (evt.SourceId.HasValue && evt.SourceType == "RevenueFact")
                             {
                                 var fact = await _context.RevenueFacts.FindAsync(evt.SourceId.Value);
@@ -164,32 +164,35 @@ namespace SynOS.Services.Operational
                                      userStats.PaymentsTotal += fact.Amount;
                                      if (fact.PaymentMode == PaymentMode.Cash || fact.PaymentMode == PaymentMode.Other) 
                                      {
-                                         // Default 'Other' to Cash to recover legacy/untrimmed data
                                          userStats.PaymentsCashTotal += fact.Amount;
                                      }
                                      else if (fact.PaymentMode == PaymentMode.UPI || fact.PaymentMode == PaymentMode.Card || fact.PaymentMode == PaymentMode.BankTransfer) {
                                          userStats.PaymentsOnlineTotal += fact.Amount;
                                          userStats.PaymentsOnlineCount++;
                                      }
-                                     await CheckAndIncrementWalkInAsync(userStats, Guid.Parse(fact.SourceReferenceId), evt.SourceId.Value);
+                                     
+                                     _logger.LogInformation("[ProjectorDebug] Incrementing WalkIn for RevenueFact. SourceRef: {Ref}", fact.SourceReferenceId);
+                                     
+                                     if (Guid.TryParse(fact.SourceReferenceId, out var visitId))
+                                     {
+                                         await CheckAndIncrementWalkInAsync(userStats, visitId, evt.SourceId.Value);
+                                     }
+                                     else
+                                     {
+                                         _logger.LogError("[ProjectorDebug] Invalid SourceReferenceId (VisitId) in RevenueFact: {Ref}", fact.SourceReferenceId);
+                                     }
                                      updated = true;
                                 }
                             }
-                            // B. Payment Confirmed Fact (Reception Flow Service)
                             else if (evt.SourceId.HasValue && evt.SourceType == "PaymentConfirmedFact")
                             {
-                                // HARD LOCK: DISABLED.
-                                // We strictly ignore this event to prevent Double Counting.
-                                // Only RevenueFact is authoritative.
                                 _logger.LogWarning("Projector: Ignoring PaymentConfirmedFact {EventId} (Architecture Lock).", evt.EventId);
-                                updated = true; // Mark processed to clear queue
+                                updated = true;
                             }
-                            // C. Payment Entity (Legacy Invoice Service)
                             else if (evt.SourceId.HasValue && evt.SourceType == "Payment") 
                             {
-                                // HARD LOCK: DISABLED.
                                 _logger.LogWarning("Projector: Ignoring Legacy Payment Event {EventId} (Architecture Lock).", evt.EventId);
-                                updated = true; // Mark processed to clear queue
+                                updated = true;
                             }
                             break;
 
@@ -199,19 +202,11 @@ namespace SynOS.Services.Operational
                                 var fact = await _context.ReceivableFacts.FindAsync(evt.SourceId.Value);
                                 if (fact != null)
                                 {
-                                    _logger.LogWarning("Projecting Receivable {FactId}. Amount: {Amount}. Current Total: {CurrentTotal}", fact.ReceivableFactId, fact.Amount, userStats.PrepaidBillsTotal);
-                                    
                                     userStats.PrepaidBillsCount++;
                                     userStats.PrepaidBillsTotal += fact.Amount;
                                     
                                     await CheckAndIncrementWalkInAsync(userStats, fact.SourceVisitId, evt.SourceId.Value);
                                     updated = true;
-                                    
-                                    _logger.LogWarning("New Total: {NewTotal}. WalkIns: {WalkIns}", userStats.PrepaidBillsTotal, userStats.WalkInsCount);
-                                }
-                                else
-                                {
-                                    _logger.LogError("ReceivableFact {FactId} NOT FOUND during projection", evt.SourceId.Value);
                                 }
                             }
                             break;
@@ -223,33 +218,6 @@ namespace SynOS.Services.Operational
 
                         case BranchEventType.REPORT_SIGNED:
                             branchStats.PendingReportsCount--;
-                            if (Guid.TryParse(evt.TokenId, out var reportId))
-                            {
-                                var report = await _context.Reports.FindAsync(reportId);
-                                if (report != null && report.SignedAt.HasValue)
-                                {
-                                    if (report.SourceType == "Order") 
-                                    {
-                                        // REFACTOR: Disabled for Specimen Migration
-                                        /*
-                                        var sample = await _context.Samples
-                                            .Where(s => s.OrderId == report.SourceId && s.CollectedAt.HasValue)
-                                            .FirstOrDefaultAsync();
-                                        
-                                        if (sample != null)
-                                        {
-                                            var tat = (report.SignedAt.Value - sample.CollectedAt.Value).TotalMinutes;
-                                            if (tat > 0)
-                                            {
-                                                userStats.ReportTatTotalMinutes += tat;
-                                                userStats.ReportTatCount++;
-                                                updated = true;
-                                            }
-                                        }
-                                        */
-                                    }
-                                }
-                            }
                             updated = true;
                             break;
                     }
@@ -279,32 +247,37 @@ namespace SynOS.Services.Operational
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error projecting event {EventId}", evt.EventId);
+                _logger.LogCritical(ex, "FATAL CRASH in OperationalStatsProjector. ProcessEventAsync failed. EventId: {EventId}, Type: {Type}, StackTrace: {StackTrace}", 
+                    evt.EventId, evt.EventType, ex.ToString());
+                throw;
             }
         }
 
         private async Task CheckAndIncrementWalkInAsync(UserOperationalStats stats, Guid visitId, Guid currentFactId)
         {
-            // Definition: "Unique Visit where a Payment/Receivable was Accepted".
-            // ARCHITECTURE LOCK: We check FACTS only. Reference to Mutable Tables (Payments, Invoices) is FORBIDDEN.
-            
-            // 1. Check Prior Receivables (Immutable Fact)
-            var hasPriorReceivable = await _context.ReceivableFacts
-                .AnyAsync(r => r.SourceVisitId == visitId && r.ReceivableFactId != currentFactId);
-            
-            if (hasPriorReceivable) return; // Already counted via receivable
+            try
+            {
+                // 1. Check Prior Receivables
+                var hasPriorReceivable = await _context.ReceivableFacts
+                    .AnyAsync(r => r.SourceVisitId == visitId && r.ReceivableFactId != currentFactId);
+                
+                if (hasPriorReceivable) return;
 
-            // 2. Check Prior Revenue Facts (Immutable Fact)
-            // Note: RevenueFact.SourceReferenceId is the VisitId (string).
-            var visitIdStr = visitId.ToString();
-            
-            var hasPriorRevenue = await _context.RevenueFacts
-                .AnyAsync(f => f.SourceReferenceId == visitIdStr && f.RevenueFactId != currentFactId);
+                // 2. Check Prior Revenue Facts
+                var visitIdStr = visitId.ToString();
+                var hasPriorRevenue = await _context.RevenueFacts
+                    .AnyAsync(f => f.SourceReferenceId == visitIdStr && f.RevenueFactId != currentFactId);
 
-            if (hasPriorRevenue) return; // Already counted via revenue fact
+                if (hasPriorRevenue) return;
 
-            // If no prior facts, this is the first (statistically unique visit validation)
-            stats.WalkInsCount++;
+                stats.WalkInsCount++;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogCritical(ex, "FATAL CRASH in CheckAndIncrementWalkInAsync. VisitId: {VisitId}, FactId: {FactId}, Full Exception: {Ex}", 
+                    visitId, currentFactId, ex.ToString());
+                throw;
+            }
         }
 
         private async Task<UserOperationalStats> GetOrCreateUserStats(Guid userId, Guid branchId, DateTime date)

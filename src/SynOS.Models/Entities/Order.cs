@@ -48,5 +48,7 @@ namespace SynOS.Models.Entities
         
         [ForeignKey("SpecimenId")]
         public virtual Specimen? Specimen { get; set; }
+
+        public Guid? ParentOrderId { get; set; }
     }
 }

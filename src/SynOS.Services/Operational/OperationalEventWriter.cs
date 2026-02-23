@@ -65,14 +65,19 @@ namespace SynOS.Services.Operational
 
                 if (saveChanges)
                 {
-                    await _context.SaveChangesAsync();
+                    try
+                    {
+                        await _context.SaveChangesAsync();
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogCritical(ex, "CRITICAL FAILURE: SaveChangesAsync failed in OperationalEventWriter. VisitId: {VisitId}. Full Exception: {Exception}", visitId, ex.ToString());
+                        throw; // Do not swallow - preserve fatal crash for capture
+                    }
 
                     // 3️⃣ Real-Time Signal to Dashboard
                     try 
                     {
-                        // Fire-and-forget notification (don't await deeply or block)
-                        // If saveChanges was false (transactional wrapper), the caller should trigger this manually?
-                        // For now, we only trigger if we saved.
                         await _notifier.NotifyDashboardRefresh(branchId);
                     }
                     catch (Exception ex)
@@ -83,8 +88,9 @@ namespace SynOS.Services.Operational
             }
             catch (Exception ex)
             {
-                // NEVER throw. Situational awareness must not block core ops.
-                _logger.LogError(ex, "Failed to write BranchOperationalEvent. Type: {EventType}, VisitId: {VisitId}", eventType, visitId);
+                // Inner catch will re-throw. Outer catch handles anything before SaveChanges (e.g. Add(evt))
+                _logger.LogCritical(ex, "EVENT_WRITE OUTER_FAIL: VisitId {VisitId}. Exception: {Message}", visitId, ex.Message);
+                throw; // DO NOT SWALLOW
             }
         }
     }

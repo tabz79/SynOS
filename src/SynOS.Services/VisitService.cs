@@ -271,10 +271,14 @@ namespace SynOS.Services
         public async Task<Visit> AddTestToVisitAsync(Guid visitId, string testCode, Guid actorUserId)
         {
             _logger.LogInformation("TRACE: AddTestToVisitAsync called. visitId={VisitId}, testCode={TestCode}", visitId, testCode);
+
+            // Ensure we are working with fresh test mapping data
+            _testsCacheService.InvalidateTestsCache();
+
             var visit = await _context.Visits
-                .Include(v => v.Patient) // ADDED
+                .Include(v => v.Patient)
                 .Include(v => v.Invoices).ThenInclude(i => i.Payments)
-                // .Include(v => v.Orders).ThenInclude(o => o.Samples) // REFACTOR: Sample removed
+                .Include(v => v.Orders) // ADDED: Must include orders for duplicate check and state management
                 .FirstOrDefaultAsync(v => v.VisitId == visitId);
 
             if (visit == null)
@@ -342,65 +346,94 @@ namespace SynOS.Services
         public async Task<Visit> RemoveTestFromVisitAsync(Guid visitId, string testCode, Guid actorUserId)
         {
             var visit = await _context.Visits
-                .Include(v => v.Patient) // ADDED
+                .Include(v => v.Patient)
                 .Include(v => v.Invoices).ThenInclude(i => i.Payments)
-                .Include(v => v.Orders) //.ThenInclude(o => o.Samples) // REFACTOR: Removed
+                .Include(v => v.Orders)
                 .FirstOrDefaultAsync(v => v.VisitId == visitId);
 
             if (visit == null) throw new KeyNotFoundException($"Visit {visitId} not found.");
 
-            if (IsSampleCollectionStarted(visit))
-                throw new InvalidOperationException("Cannot remove test. Sample collection has already started.");
-
-            if (visit.Status == "Cancelled")
-                throw new InvalidOperationException($"Cannot modify a cancelled visit.");
-
             var order = visit.Orders.FirstOrDefault(o => o.TestCode.Equals(testCode, StringComparison.OrdinalIgnoreCase));
             if (order == null) throw new KeyNotFoundException($"Test '{testCode}' not found.");
 
-            // REFACTOR: Disable Sample Check
-            /*
-            var hasCollectedSample = await _context.Samples.AnyAsync(s => s.OrderId == order.OrderId && s.Status != SampleStatus.Pending);
-            if (hasCollectedSample)
+            return await RemoveOrderAsync(visitId, order.OrderId, actorUserId);
+        }
+
+        public async Task<Visit> RemoveOrderAsync(Guid visitId, Guid orderId, Guid actorUserId)
+        {
+            var visit = await _context.Visits
+                .Include(v => v.Patient)
+                .Include(v => v.Orders)
+                .Include(v => v.Invoices).ThenInclude(i => i.Payments)
+                .Include(v => v.Specimens)
+                .FirstOrDefaultAsync(v => v.VisitId == visitId);
+
+            if (visit == null) throw new KeyNotFoundException($"Visit {visitId} not found.");
+
+            // 1. Visit-Scoped Validation
+            if (visit.Status != "Draft")
+                throw new InvalidOperationException($"Cannot delete orders from a visit in {visit.Status} state. Only Draft visits allow deletion.");
+
+            if (visit.Invoices.Any(i => i.Status == "Paid" || i.Status == "PartiallyPaid"))
+                throw new InvalidOperationException("Cannot delete orders. Payment has already been accepted for this visit.");
+
+            var targetOrder = visit.Orders.FirstOrDefault(o => o.OrderId == orderId);
+            if (targetOrder == null) throw new KeyNotFoundException($"Order {orderId} not found in visit {visitId}.");
+
+            // 2. Compute Deletion Set
+            var deleteSet = new List<Order> { targetOrder };
+
+            if (targetOrder.ParentOrderId == null)
             {
-                throw new InvalidOperationException($"Cannot remove test '{testCode}' because the sample has already been collected or processed. Use a proper clinical cancellation flow instead.");
+                // Is Parent: Add all children
+                var children = visit.Orders.Where(o => o.ParentOrderId == targetOrder.OrderId).ToList();
+                deleteSet.AddRange(children);
             }
-            */
+            else
+            {
+                // Is Child: Check if last child of this parent
+                var otherChildrenExist = visit.Orders.Any(o => o.ParentOrderId == targetOrder.ParentOrderId && o.OrderId != targetOrder.OrderId);
+                if (!otherChildrenExist)
+                {
+                    var parent = visit.Orders.FirstOrDefault(o => o.OrderId == targetOrder.ParentOrderId);
+                    if (parent != null) deleteSet.Add(parent);
+                }
+            }
 
-            order.Status = SynOS.Models.Enums.OrderStatus.Cancelled;
-            order.CancellationReason = SynOS.Models.Enums.OrderCancellationReason.ReceptionCorrection;
-            order.CancelledAt = DateTime.UtcNow;
-            order.CancelledByUserId = actorUserId;
+            // 3. Order-Scoped Validation
+            var deleteOrderIds = deleteSet.Select(o => o.OrderId).ToList();
 
+            foreach (var order in deleteSet)
+            {
+                if (order.SpecimenId != null)
+                {
+                    var specimen = visit.Specimens.FirstOrDefault(s => s.SpecimenId == order.SpecimenId);
+                    if (specimen != null && specimen.Status != SpecimenStatus.Pending)
+                        throw new InvalidOperationException($"Cannot delete order {order.TestCode}. A specimen ({specimen.AccessionNumber}) has already been collected/processed.");
+                }
+            }
+
+            var resultsExist = await _context.Results.AnyAsync(r => deleteOrderIds.Contains(r.OrderId));
+            if (resultsExist)
+                throw new InvalidOperationException("Cannot delete orders. Results have already been entered for one or more tests in the deletion set.");
+
+            // 4. Action
+            _context.Orders.RemoveRange(deleteSet);
             await _context.SaveChangesAsync();
 
+            // 5. Sync Revenue & Events
             await _revenueEngine.ApplySnapshotAsync(visitId, actorUserId);
 
-            // ENRICHED METADATA
             string actorName = await GetActorNameAsync(actorUserId);
-            string patientName = $"{visit.Patient.FirstName} {visit.Patient.LastName}";
-
-            var removeTestMetadata = JsonSerializer.Serialize(new 
-            { 
-                PatientName = patientName,
-                TokenId = visit.Token,
-                ActorName = actorName,
-                TestCode = testCode, 
-                Action = "Removed" 
-            });
-
             await _operationalEventWriter.WriteEventAsync(
                 BranchEventType.VISIT_UPDATED,
                 _userContext.CurrentBranchId.ToString(),
                 visit.VisitId.ToString(),
                 visit.Token,
-                $"Removed test {testCode}",
+                $"Deleted {deleteSet.Count} orders (Target: {targetOrder.TestCode})",
                 actorName,
                 actorUserId.ToString(),
-                true, null, null,
-                TimelineVisibility.Surface,
-                visit.VisitId,
-                removeTestMetadata
+                true
             );
 
             return visit;
@@ -870,7 +903,7 @@ namespace SynOS.Services
             public Guid? PriceConfigId { get; set; }
         }
 
-        private async Task<ResolvedTestDto?> ResolveTestForReceptionAsync(string testCode)
+        private async Task<ResolvedTestDto?> ResolveTestForReceptionAsync(string testCode, bool isChild = false)
         {
             var normalized = testCode?.Trim().ToUpperInvariant();
             if (string.IsNullOrEmpty(normalized)) return null;
@@ -884,6 +917,35 @@ namespace SynOS.Services
 
             if (test == null) return null;
 
+            // Diagnostic Logging
+            _logger.LogWarning($"[Validation] Resolving Test: {test.TestCode}, IsProfile: {test.IsProfile}, HasChildren: {test.ProfileChildren?.Any() == true}, SpecimenType: {test.SpecimenTypeCode}");
+
+            // NEW: SpecimenType Validation Rule for Billable Non-Profile Tests
+            if (string.IsNullOrEmpty(test.SpecimenTypeCode))
+            {
+                if (!test.IsProfile || (test.ProfileChildren != null && !test.ProfileChildren.Any()))
+                {
+                    throw new InvalidOperationException($"Specimen type not configured for test {test.TestCode}");
+                }
+            }
+
+            // --- PRICE BYPASS START ---
+            if (isChild)
+            {
+                // For profile children, we completely skip all pricing table checks and return the test data with 0 price.
+                return new ResolvedTestDto
+                {
+                    TestId = test.TestId,
+                    TestCode = test.TestCode,
+                    TestName = test.TestName,
+                    MacroDepartment = test.DepartmentMaster?.MacroDepartment ?? "Unknown",
+                    Department = test.DepartmentMaster?.Name ?? "Unknown",
+                    BasePrice = 0,
+                    PriceConfigId = null
+                };
+            }
+            // --- PRICE BYPASS END ---
+
             // Price Logic: Get currently active price from TestPricings
             var currentPriceObj = test.TestPricings?
                 .Where(tp => tp.EffectiveFrom <= DateTime.UtcNow)
@@ -891,6 +953,8 @@ namespace SynOS.Services
                 .FirstOrDefault();
 
             decimal basePrice = currentPriceObj?.BasePrice ?? 0;
+            
+            // RULE: Standalone tests MUST have a price > 0. Profile children logic handled above.
             if (basePrice <= 0) return null;
 
             var now = DateTime.UtcNow;
@@ -923,20 +987,23 @@ namespace SynOS.Services
                 s.Status == SpecimenStatus.Accessioned);
         }
 
-        private async Task ExpandAndAddOrdersInternalAsync(Guid visitId, string testCode, List<Order> collection, bool isChild)
+        private async Task ExpandAndAddOrdersInternalAsync(Guid visitId, string testCode, List<Order> collection, bool isChild, Guid? parentOrderId = null)
         {
-            var resolved = await ResolveTestForReceptionAsync(testCode);
+            _logger.LogInformation($"[ExpansionDebug] Starting expansion for {testCode}. isChild: {isChild}, parentOrderId: {parentOrderId}");
+
+            var resolved = await ResolveTestForReceptionAsync(testCode, isChild);
             if (resolved == null)
             {
-                _logger.LogInformation("TRACE: ResolveTestForReceptionAsync returned null for testCode={TestCode}", testCode);
+                _logger.LogWarning($"[ExpansionDebug] ResolveTestForReceptionAsync returned NULL for {testCode}");
                 return;
             }
 
-            _logger.LogInformation("TRACE: ResolveTestForReceptionAsync returned not null. TestId={TestId}, MacroDept={MacroDept}", resolved.TestId, resolved.MacroDepartment);
-
             // Prevent duplicates in same visit
             if (collection.Any(o => o.TestId == resolved.TestId && o.Status != SynOS.Models.Enums.OrderStatus.Cancelled))
-                 return;
+            {
+                _logger.LogInformation($"[ExpansionDebug] Test {testCode} (Id: {resolved.TestId}) already exists in visit. Skipping.");
+                return;
+            }
 
             var order = new Order
             {
@@ -944,30 +1011,51 @@ namespace SynOS.Services
                 VisitId = visitId,
                 TestId = resolved.TestId,
                 TestCode = resolved.TestCode,
-                Department = resolved.MacroDepartment, // Unified Visit Model: Set Order.Department from Test's MacroDepartment
+                Department = resolved.MacroDepartment,
                 Status = SynOS.Models.Enums.OrderStatus.Pending,
-                Price = isChild ? 0 : resolved.BasePrice, // Children in profile are 0-priced
+                Price = isChild ? 0 : resolved.BasePrice,
+                ParentOrderId = parentOrderId,
                 Discount = 0,
                 CreatedAt = DateTime.UtcNow
             };
             
+            _logger.LogInformation($"[ExpansionDebug] Creating Order entry: {order.TestCode}, ID: {order.OrderId}, Parent: {order.ParentOrderId}");
             _context.Orders.Add(order);
-            _logger.LogInformation("TRACE: _context.Orders.Add(order) executed for TestId={TestId}, MacroDept={MacroDept}", order.TestId, order.Department);
             collection.Add(order);
+            _logger.LogInformation($"[ExpansionDebug] Order {order.TestCode} added to context and local collection.");
 
             // Fetch full test from cache to check for children
             var allTests = await _testsCacheService.GetCachedTestsAsync();
             var test = allTests.FirstOrDefault(t => t.TestId == resolved.TestId);
 
-            if (test != null && test.IsProfile && test.ProfileChildren != null)
+            if (test != null && test.IsProfile)
             {
-                foreach (var mapping in test.ProfileChildren)
+                var childCount = test.ProfileChildren?.Count ?? 0;
+                _logger.LogInformation($"[ExpansionDebug] Test {test.TestCode} is a Profile. Children found in cache: {childCount}");
+
+                if (childCount > 0)
                 {
-                    var child = allTests.FirstOrDefault(t => t.TestId == mapping.ChildTestId);
-                    if (child != null)
+                    // Ensure current order is saved if it's a parent, so children can reference it? 
+                    // Actually EF handles the graph, but for clarity:
+                    // await _context.SaveChangesAsync(); 
+
+                    foreach (var mapping in test.ProfileChildren!)
                     {
-                        await ExpandAndAddOrdersInternalAsync(visitId, child.TestCode, collection, true);
+                        var childDef = allTests.FirstOrDefault(t => t.TestId == mapping.ChildTestId);
+                        if (childDef != null)
+                        {
+                            _logger.LogInformation($"[ExpansionDebug] Expanding child: {childDef.TestCode} (ID: {childDef.TestId}) for parent: {test.TestCode}");
+                            await ExpandAndAddOrdersInternalAsync(visitId, childDef.TestCode, collection, true, order.OrderId);
+                        }
+                        else
+                        {
+                            _logger.LogWarning($"[ExpansionDebug] Child TestId {mapping.ChildTestId} not found in cache for parent {test.TestCode}");
+                        }
                     }
+                }
+                else
+                {
+                    _logger.LogWarning($"[ExpansionDebug] Profile {test.TestCode} has ZERO children in cache.");
                 }
             }
         }
