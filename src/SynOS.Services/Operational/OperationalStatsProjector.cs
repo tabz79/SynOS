@@ -82,7 +82,8 @@ namespace SynOS.Services.Operational
             var lookbackTime = DateTime.UtcNow.AddHours(-24);
             
             var recentEvents = await _context.BranchOperationalEvents
-                .Where(e => e.OccurredAt > lookbackTime)
+                .Where(e => e.OccurredAt > lookbackTime && 
+                            !_context.ProcessedProjectionEvents.Any(p => p.EventId == e.EventId && p.ProjectionName == "OperationalStats"))
                 .OrderBy(e => e.OccurredAt)
                 .ToListAsync(cancellationToken);
 
@@ -97,10 +98,6 @@ namespace SynOS.Services.Operational
             // Parse standard fields
             if (!Guid.TryParse(evt.BranchId, out var branchId)) return;
             var date = evt.OccurredAt.Date;
-            
-            _logger.LogInformation("[ProjectorDebug] Processing Event Type: {Type}, BranchId: {BranchId}, SourceId: {SourceId}, SourceType: {SourceType}, VisitId: {VisitId}", 
-                evt.EventType, branchId, evt.SourceId, evt.SourceType, evt.VisitId);
-
             try
             {
                 // PROVISIONAL FIX: Random Jitter to break Race Condition
@@ -113,6 +110,9 @@ namespace SynOS.Services.Operational
                     .AnyAsync(p => p.EventId == evt.EventId && p.ProjectionName == "OperationalStats");
 
                 if (isProcessed) return;
+
+                _logger.LogInformation("[ProjectorDebug] Processing Event Type: {Type}, BranchId: {BranchId}, SourceId: {SourceId}, SourceType: {SourceType}, VisitId: {VisitId}", 
+                    evt.EventType, branchId, evt.SourceId, evt.SourceType, evt.VisitId);
 
                 bool updated = false;
 
