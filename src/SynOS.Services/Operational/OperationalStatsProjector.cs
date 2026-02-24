@@ -224,25 +224,26 @@ namespace SynOS.Services.Operational
                 }
 
             MarkProcessed:
+                // ALways mark as processed to prevent infinite loops on unhandled events.
+                _context.ProcessedProjectionEvents.Add(new ProcessedProjectionEvent
+                {
+                    EventId = evt.EventId,
+                    ProjectionName = "OperationalStats",
+                    ProcessedAt = DateTime.UtcNow
+                });
+
                 if (updated)
                 {
                     userStats.LastUpdated = DateTime.UtcNow;
                     branchStats.LastUpdated = DateTime.UtcNow;
-                    
-                    _context.ProcessedProjectionEvents.Add(new ProcessedProjectionEvent
-                    {
-                        EventId = evt.EventId,
-                        ProjectionName = "OperationalStats",
-                        ProcessedAt = DateTime.UtcNow
-                    });
+                }
 
-                    await _context.SaveChangesAsync();
-                    await transaction.CommitAsync();
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
 
-                    if (userId != Guid.Empty)
-                    {
-                        await PushUpdateAsync(userId, branchId, date);
-                    }
+                if (updated && userId != Guid.Empty)
+                {
+                    await PushUpdateAsync(userId, branchId, date);
                 }
             }
             catch (Exception ex)

@@ -1,6 +1,6 @@
 
 import { X, Loader2, ArrowRight, AlertCircle } from 'lucide-react'
-import { useReceptionPanelUI } from '../hooks/useReceptionPanelUI'
+import { useReceptionDrawer } from '../hooks/useReceptionPanelUI'
 import { PatientIdentification } from './PatientIdentification'
 import { VisitDetails } from './VisitDetails'
 import { BillingSummary } from './BillingSummary'
@@ -17,7 +17,7 @@ export function IntentPanel() {
     // We still use the UI hook ONLY for the panel visibility toggle if that's purely UI state.
     // If "User is working on intake" is backend state, this should also be driven by snapshot presence!
     // For Phase 6, let's treat "Open/Closed" as UI, but "Content" as Snapshot.
-    const { isOpen, closePanel, drawerState } = useReceptionPanelUI();
+    const { isOpen, closePanel, drawerState } = useReceptionDrawer();
 
     // MOTION CANON: Rigid Body Entry
     const panelRef = useRef(null);

@@ -75,10 +75,10 @@ namespace SynOS.Services.Operational
                         throw; // Do not swallow - preserve fatal crash for capture
                     }
 
-                    // 3️⃣ Real-Time Signal to Dashboard
+                    // 3️⃣ Real-Time Signal to Dashboard (Now with Targeted Delta)
                     try 
                     {
-                        await _notifier.NotifyDashboardRefresh(branchId);
+                        await _notifier.NotifyDashboardRefresh(branchId, visitId);
                     }
                     catch (Exception ex)
                     {

@@ -5,6 +5,6 @@ namespace SynOS.Services.Operational
 {
     public interface INotifier 
     {
-        Task NotifyDashboardRefresh(string branchId);
+        Task NotifyDashboardRefresh(string branchId, string? visitId = null);
     }
 }

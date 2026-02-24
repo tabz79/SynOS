@@ -112,15 +112,28 @@ export const SignalRService = {
     },
 
     /**
-     * Subscribes to Action Queue updates.
+     * Subscribes to Action Queue updates (Fallback for full refresh).
      * @param {Function} callback - () => void
      */
     onActionQueueUpdated: (callback) => {
         if (!connection) return;
         connection.off("ActionQueueUpdated");
         connection.on("ActionQueueUpdated", () => {
-            console.log("SignalR: ActionQueueUpdated received");
+            console.log("SignalR: ActionQueueUpdated received (Thundering Herd Fallback)");
             callback();
+        });
+    },
+
+    /**
+     * Subscribes to targeted Delta Updates for the Action Queue.
+     * @param {Function} callback - (deltaRow) => void
+     */
+    onActionQueueDeltaReceived: (callback) => {
+        if (!connection) return;
+        connection.off("ActionQueueDeltaReceived");
+        connection.on("ActionQueueDeltaReceived", (deltaRow) => {
+            console.log("SignalR: ActionQueueDeltaReceived received", deltaRow?.token);
+            callback(deltaRow);
         });
     },
 

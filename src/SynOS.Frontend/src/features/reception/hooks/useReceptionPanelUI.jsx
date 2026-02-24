@@ -1,7 +1,8 @@
 import React, { createContext, useContext, useState, useMemo } from 'react';
 
-// Create Context
-const ReceptionContext = createContext(null);
+// Create Concept Split
+const ReceptionDrawerContext = createContext(null);
+const ReceptionDraftContext = createContext(null);
 
 /**
  * Ephemeral UI State for the Reception Intent Panel.
@@ -11,14 +12,14 @@ const ReceptionContext = createContext(null);
  * Implemented using React Context to scope state to the Screen.
  */
 export function ReceptionProvider({ children }) {
-    // Unified Drawer State
+    // Unified Drawer State (Low Frequency)
     const [drawerState, setDrawerState] = useState({
         mode: 'closed', // 'closed' | 'open'
         intent: null,   // 'create' | 'resume' | 'correction'
         visitId: null
     });
 
-    // Draft Inputs (Persist only if needed, but usually reset on close)
+    // Draft Inputs (High Frequency)
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedPatient, setSelectedPatient] = useState(null);
     const [isNewPatientMode, setIsNewPatientMode] = useState(false);
@@ -27,14 +28,8 @@ export function ReceptionProvider({ children }) {
     });
     const [selectedTestCodes, setSelectedTestCodes] = useState([]);
 
-    // Actions
-    const actions = useMemo(() => ({
-        // OLD: openPanel (Mapped to Create Intent)
-        openPanel: () => {
-            setDrawerState({ mode: 'open', intent: 'create', visitId: null });
-        },
-
-        // NEW: Explicit Intents (Phase 3A)
+    // Drawer Actions
+    const drawerActions = useMemo(() => ({
         openCreateIntent: () => {
             // New Walk-In
             setDrawerState({ mode: 'open', intent: 'create', visitId: null });
@@ -47,22 +42,6 @@ export function ReceptionProvider({ children }) {
             // Correct Paid Visit (Audit Mode)
             setDrawerState({ mode: 'open', intent: 'correction', visitId });
         },
-        // Backward Compat (View Mode -> Resume/Correction depending on state?? No, View is distinct in UI, but logically it's resume/correction)
-        // For now, mapping 'view' to 'resume' conceptually if we treat "ReadOnly" as a state of resume.
-        // But prompt said: "view" mode is conflated. 
-        // Let's keep "view" as "restricted resume" or just use Resume for everything and let component decide ReadOnly?
-        // Prompt says: "if isFinalized === true -> openCorrectionIntent".
-        // So we don't need a explicit 'view' intent anymore? 
-        // Wait, 'view' was used for history. 
-        // Let's support 'view' as 'resume' with read-only flag? 
-        // No, let's follow prompt EXACTLY: "create -> create, resume -> resume, correction -> correction".
-        // If user just wants to SEE a paid visit without correcting?
-        // That sounds like "Resume" but locked.
-        // Prompt says: "if isFinalized === true -> openCorrectionIntent".
-        // This implies clicking a paid token enters correction mode immediately?
-        // Or maybe "Correction Intent" handles the "View vs Edit" toggle internally?
-        // Let's stick to the 3 explicit intents.
-
         closePanel: () => {
             setDrawerState({ mode: 'closed', intent: null, visitId: null });
 
@@ -72,8 +51,11 @@ export function ReceptionProvider({ children }) {
             setIsNewPatientMode(false);
             setNewPatientDraft({ mobile: '', firstName: '', lastName: '', gender: '', age: '', dob: '' });
             setSelectedTestCodes([]);
-        },
+        }
+    }), []);
 
+    // Draft Actions
+    const draftActions = useMemo(() => ({
         setSearchQuery,
         setSelectedPatient: (patient) => {
             setSelectedPatient(patient);
@@ -95,31 +77,55 @@ export function ReceptionProvider({ children }) {
         resetTestSelection: () => setSelectedTestCodes([])
     }), []);
 
-    const value = {
-        isOpen: drawerState.mode !== 'closed', // Compat
-        drawerState, // Exposed for logic
-        mode: drawerState.mode, // Compat (active/idle mapped to create/view?) No, just string mode.
+    const drawerValue = {
+        isOpen: drawerState.mode !== 'closed',
+        drawerState,
+        ...drawerActions
+    };
+
+    const draftValue = {
         searchQuery,
         selectedPatient,
         isNewPatientMode,
         newPatientDraft,
         selectedTestCodes,
-        ...actions
+        ...draftActions
     };
 
     return (
         <React.Fragment>
-            <ReceptionContext.Provider value={value}>
-                {children}
-            </ReceptionContext.Provider>
+            <ReceptionDrawerContext.Provider value={drawerValue}>
+                <ReceptionDraftContext.Provider value={draftValue}>
+                    {children}
+                </ReceptionDraftContext.Provider>
+            </ReceptionDrawerContext.Provider>
         </React.Fragment>
     );
 }
 
+// Old hook for backward compatibility during refactor
 export function useReceptionPanelUI() {
-    const context = useContext(ReceptionContext);
-    if (!context) {
+    const drawer = useContext(ReceptionDrawerContext);
+    const draft = useContext(ReceptionDraftContext);
+    if (!drawer || !draft) {
         throw new Error('useReceptionPanelUI must be used within a ReceptionProvider');
+    }
+    return { ...drawer, ...draft };
+}
+
+// New Hooks: High-Frequency Isolation
+export function useReceptionDrawer() {
+    const context = useContext(ReceptionDrawerContext);
+    if (!context) {
+        throw new Error('useReceptionDrawer must be used within a ReceptionProvider');
+    }
+    return context;
+}
+
+export function useReceptionDraft() {
+    const context = useContext(ReceptionDraftContext);
+    if (!context) {
+        throw new Error('useReceptionDraft must be used within a ReceptionProvider');
     }
     return context;
 }

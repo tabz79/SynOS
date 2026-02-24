@@ -7,7 +7,7 @@ import { RealitySummary } from '@/components/layout/RealitySummary'
 import { ActionQueue, ActionQueueHeader } from '@/components/layout/ActionQueue'
 import { ActivityStream } from '@/components/layout/ActivityStream'
 import { IntentPanel } from '@/features/reception/components/IntentPanel'
-import { useReceptionPanelUI } from '@/features/reception/hooks/useReceptionPanelUI'
+import { useReceptionDrawer } from '@/features/reception/hooks/useReceptionPanelUI'
 import { ReceptionApi } from '@/api/reception'
 import { SignalRService } from '@/lib/signalr'
 import { useTheme } from '@/context/ThemeContext'
@@ -17,7 +17,7 @@ export function ReceptionScreen() {
     const [activeQueue, setActiveQueue] = useState("pending");
     const [summary, setSummary] = useState(null);
     // Unified Drawer State + Helpers
-    const { isOpen: isIntentPanelOpen, openCreateIntent, openResumeIntent, openCorrectionIntent } = useReceptionPanelUI();
+    const { isOpen: isIntentPanelOpen, openCreateIntent, openResumeIntent, openCorrectionIntent } = useReceptionDrawer();
 
     const [actionQueue, setActionQueue] = useState([]); // Real Data
     const [isLoadingQueue, setIsLoadingQueue] = useState(true);
@@ -87,6 +87,24 @@ export function ReceptionScreen() {
                 setSummary(payload);
             });
 
+            // TARGETED DELTA PAYLOAD (Eliminates Thundering Herd)
+            SignalRService.onActionQueueDeltaReceived((deltaRow) => {
+                if (!deltaRow) return;
+
+                console.log("SignalR: Action Queue Delta Upsert for", deltaRow.token);
+                const normalized = normalizeQueueData([deltaRow])[0];
+
+                setActionQueue(prev => {
+                    const exists = prev.some(r => r.visitId === normalized.visitId);
+                    if (exists) {
+                        return prev.map(r => r.visitId === normalized.visitId ? normalized : r);
+                    } else {
+                        // Unshift to top of queue
+                        return [normalized, ...prev];
+                    }
+                });
+            });
+
             SignalRService.onActionQueueUpdated(() => {
                 // SignalR triggers refresh - must respect current filter
                 ReceptionApi.getActionQueue(showHistoryRef.current).then(data => {
@@ -117,7 +135,7 @@ export function ReceptionScreen() {
 
         connect();
 
-        // Failsafe Polling (every 30s)
+        // Failsafe Polling (every 5 minutes)
         const interval = setInterval(async () => {
             try {
                 const data = await ReceptionApi.getActionQueue(showHistoryRef.current);
@@ -127,7 +145,7 @@ export function ReceptionScreen() {
             } catch (e) {
                 console.error("Queue Poll Failed", e);
             }
-        }, 30000);
+        }, 300000);
 
         // Cleanup
         return () => {

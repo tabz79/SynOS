@@ -194,6 +194,69 @@ namespace SynOS.Services.Operations
             return queue;
         }
 
+        public async Task<ActionQueueRowDto?> ProjectActionQueueRowAsync(Guid visitId)
+        {
+            if (visitId == Guid.Empty) throw new ArgumentException("VisitId required");
+
+            var visit = await _context.Visits
+                .AsNoTracking()
+                .Include(v => v.Patient)
+                .Include(v => v.ReferralPartner)
+                .Include(v => v.Orders).ThenInclude(o => o.Test)
+                .Include(v => v.Invoices).ThenInclude(i => i.Payments)
+                .FirstOrDefaultAsync(v => v.VisitId == visitId);
+
+            if (visit == null) return null;
+
+            var invoice = visit.Invoices.FirstOrDefault();
+            if (invoice == null) return null;
+
+            var results = await _context.Results
+                .AsNoTracking()
+                .Where(r => r.Order.VisitId == visitId)
+                .Select(r => new { r.Status, r.EnteredAt }) // Changed UpdatedAt to EnteredAt
+                .ToListAsync();
+
+            var report = await _context.Reports
+                .AsNoTracking()
+                .Where(r => r.VisitId == visitId)
+                .Select(r => new { r.Status, r.SignedAt }) // Changed VerifiedAt to SignedAt
+                .FirstOrDefaultAsync();
+
+            var today = DateTime.Now.Date;
+
+            return new ActionQueueRowDto
+            {
+                VisitId = visit.VisitId,
+                Token = visit.Token,
+                CreatedAt = visit.CreatedAt,
+                
+                PatientName = visit.Patient != null 
+                    ? (!string.IsNullOrEmpty(visit.Patient.DisplayName) ? visit.Patient.DisplayName : $"{visit.Patient.FirstName} {visit.Patient.LastName}")
+                    : "Unknown",
+                
+                PatientAgeGender = FormatPatientAgeGender(visit.Patient),
+                
+                TestCodes = visit.Orders
+                    .Where(o => o.Status != SynOS.Models.Enums.OrderStatus.Cancelled)
+                    .Select(o => o.TestCode).ToList(),
+                
+                PaymentDisplay = DerivePaymentDisplay(visit, invoice),
+                
+                TotalAmount = invoice.Total,
+                PaymentMethod = DerivePaymentMethod(visit, invoice),
+                ReferrerName = visit.ReferralPartner?.Name ?? "Self",
+
+                OperationalStatus = DeriveOperationalStatus(visit, null, results.Select(r => r.Status).ToList(), report?.Status),
+                
+                LastUpdatedAt = CalculateLastUpdatedAt(visit, new List<DateTime?>(), results.Select(r => r.EnteredAt).ToList(), report?.SignedAt),
+                
+                DateGroup = CalculateDateGroup(visit.TokenDate, today),
+
+                IsFinalized = (invoice.Status == "Paid" || invoice.Status == "FullPaid")
+            };
+        }
+
         private string CalculateDateGroup(DateTime tokenDate, DateTime today)
         {
             if (tokenDate.Date == today) return "Today";

@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection; // For ScopeFactory
 using SynOS.Api.Hubs;
 using SynOS.Services.Operational;
+using SynOS.Services.Operations; // For IOperationsEngine
 using SynOS.Services; // For IInvoiceService
 
 namespace SynOS.Api.Services
@@ -19,16 +20,41 @@ namespace SynOS.Api.Services
             _scopeFactory = scopeFactory;
         }
 
-        public async Task NotifyDashboardRefresh(string branchId)
+        public async Task NotifyDashboardRefresh(string branchId, string? visitId = null)
         {
             if (string.IsNullOrEmpty(branchId)) return;
 
-            // 1. Trigger Action Queue Refresh (Let client fetch)
+            // 1. Trigger Action Queue Refresh (with Delta if available)
             try
             {
-                await _hubContext.Clients.All.SendAsync("ActionQueueUpdated");
+                bool deltaPushed = false;
+                
+                if (!string.IsNullOrEmpty(visitId) && Guid.TryParse(visitId, out var vGuid))
+                {
+                    using (var scope = _scopeFactory.CreateScope())
+                    {
+                        var opsEngine = scope.ServiceProvider.GetRequiredService<IOperationsEngine>();
+                        var delta = await opsEngine.ProjectActionQueueRowAsync(vGuid);
+                        
+                        if (delta != null)
+                        {
+                            await _hubContext.Clients.All.SendAsync("ActionQueueDeltaReceived", delta);
+                            deltaPushed = true;
+                        }
+                    }
+                }
+
+                if (!deltaPushed)
+                {
+                    // Fallback to Thundering Herd if no Delta is provided or fetch failed
+                    await _hubContext.Clients.All.SendAsync("ActionQueueUpdated");
+                }
             }
-            catch { /* Best effort */ }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[SignalRNotifier] Delta Push Failed: {ex.Message}");
+                try { await _hubContext.Clients.All.SendAsync("ActionQueueUpdated"); } catch { }
+            }
 
             // 2. Push Revenue Stats (Calculate here via Scope to break cycle)
             try
