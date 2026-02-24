@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider, useAuth } from '@/context/AuthContext'
+import { PrintOrchestratorProvider } from '@/context/PrintOrchestratorContext'
 import { ReceptionProvider } from '@/features/reception/hooks/useReceptionPanelUI'
 import { ReceptionScreen } from '@/features/reception/ReceptionScreen'
 import { PhlebotomyScreen } from '@/features/phlebotomy/PhlebotomyScreen'
@@ -17,34 +18,36 @@ function RootRedirect() {
 function App() {
   return (
     <AuthProvider>
-      <BrowserRouter>
-        <Routes>
-          {/* Public Route */}
-          <Route path="/login" element={<LoginPage />} />
+      <PrintOrchestratorProvider>
+        <BrowserRouter>
+          <Routes>
+            {/* Public Route */}
+            <Route path="/login" element={<LoginPage />} />
 
-          {/* Protected Routes */}
-          <Route element={<ProtectedRoute allowedRoles={['Receptionist']} />}>
-            <Route
-              path="/reception"
-              element={
-                <ReceptionProvider>
-                  <ReceptionScreen />
-                </ReceptionProvider>
-              }
-            />
-          </Route>
+            {/* Protected Routes */}
+            <Route element={<ProtectedRoute allowedRoles={['Receptionist']} />}>
+              <Route
+                path="/reception"
+                element={
+                  <ReceptionProvider>
+                    <ReceptionScreen />
+                  </ReceptionProvider>
+                }
+              />
+            </Route>
 
-          <Route element={<ProtectedRoute allowedRoles={['Phlebotomist', 'Receptionist']} />}>
-            <Route path="/phlebotomist" element={<PhlebotomyScreen />} />
-          </Route>
+            <Route element={<ProtectedRoute allowedRoles={['Phlebotomist', 'Receptionist']} />}>
+              <Route path="/phlebotomist" element={<PhlebotomyScreen />} />
+            </Route>
 
-          {/* Root Redirection */}
-          <Route path="/" element={<RootRedirect />} />
+            {/* Root Redirection */}
+            <Route path="/" element={<RootRedirect />} />
 
-          {/* Fallback */}
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </BrowserRouter>
+            {/* Fallback */}
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </BrowserRouter>
+      </PrintOrchestratorProvider>
     </AuthProvider>
   )
 }

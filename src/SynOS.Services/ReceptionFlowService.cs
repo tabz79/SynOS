@@ -36,6 +36,7 @@ namespace SynOS.Services
         private readonly IUserContext _userContext; // ADDED
         private readonly IWorkRoutingEngine _routingEngine; // ADDED
         private readonly ISpecimenGroupingService _groupingService; // ADDED
+        private readonly IEventPublishingService _eventPublishingService; // ADDED
 
         public ReceptionFlowService(
             SynOSDbContext context,
@@ -49,7 +50,8 @@ namespace SynOS.Services
             IOperationalEventWriter operationalEventWriter,
             IUserContext userContext,
             IWorkRoutingEngine routingEngine,
-            ISpecimenGroupingService groupingService) // ADDED
+            ISpecimenGroupingService groupingService,
+            IEventPublishingService eventPublishingService) // ADDED
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
             _visitService = visitService ?? throw new ArgumentNullException(nameof(visitService));
@@ -63,6 +65,7 @@ namespace SynOS.Services
             _userContext = userContext ?? throw new ArgumentNullException(nameof(userContext)); // ADDED
             _routingEngine = routingEngine ?? throw new ArgumentNullException(nameof(routingEngine)); // ADDED
             _groupingService = groupingService ?? throw new ArgumentNullException(nameof(groupingService)); // ADDED
+            _eventPublishingService = eventPublishingService ?? throw new ArgumentNullException(nameof(eventPublishingService)); // ADDED
         }
 
         // small helper to centralize a defensive check (keeps ctor lines tidy)
@@ -680,6 +683,34 @@ namespace SynOS.Services
 
             var updatedVisit = await _context.Visits.FindAsync(visit.VisitId);
 
+            // --- THERMAL RECEIPT EVENT EMISSION ---
+            if (visit.BranchId.HasValue)
+            {
+                try
+                {
+                    // Fetch full projection needed for the printer
+                    var printSnapshot = await GetVisitSummaryAsync(visit.VisitId);
+
+                    var printEvent = new SynOS.Models.Events.Reception.PrintThermalReceiptEvent
+                    {
+                        EventId = Guid.NewGuid(),
+                        VisitId = visit.VisitId,
+                        BranchId = visit.BranchId.Value,
+                        Token = printSnapshot.Token,
+                        Patient = printSnapshot.Patient,
+                        Billing = printSnapshot.Invoice,
+                        Orders = printSnapshot.Orders
+                    };
+
+                    await _eventPublishingService.PublishVisitFinalizedAsync(printEvent);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Failed to publish PrintThermalReceiptEvent for VisitId {VisitId}. This did not affect the payment transaction.", visit.VisitId);
+                }
+            }
+            // --------------------------------------
+
             return new ReceptionCompletePaymentResponse
             {
                 VisitId = visit.VisitId,
@@ -740,7 +771,11 @@ namespace SynOS.Services
                     TestName = o.Test.TestName, // Corrected to o.Test.TestName
                     Dept = o.Department,
                     Price = o.Price,
-                    Discount = o.Discount
+                    Discount = o.Discount,
+                    GrossAmount = o.Price,
+                    NetAmount = o.Price - o.Discount,
+                    TaxAmount = 0m,
+                    TaxRate = 0m
                 }).ToList(),
                 Invoice = new InvoiceSummaryDto
                 {

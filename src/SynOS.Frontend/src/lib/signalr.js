@@ -196,3 +196,124 @@ export const SignalRService = {
         }
     }
 };
+
+let branchConnection = null;
+let branchConnectionPromise = null;
+let branchSubscriberCount = 0;
+let branchStopTimer = null;
+
+export const BranchOperationsSignalRService = {
+    startConnection: async (branchId, terminalId, capabilities) => {
+        branchSubscriberCount++;
+        console.log(`SignalR(Branch): Subscriber added (Total: ${branchSubscriberCount})`);
+
+        if (branchStopTimer) {
+            clearTimeout(branchStopTimer);
+            branchStopTimer = null;
+            console.log("SignalR(Branch): Aborted scheduled disconnect");
+        }
+
+        const token = localStorage.getItem('synos_jwt');
+        if (!token) return;
+
+        if (branchConnection?.state === HubConnectionState.Connected) {
+            return;
+        }
+
+        if (branchConnectionPromise) {
+            return branchConnectionPromise;
+        }
+
+        if (!branchConnection) {
+            branchConnection = new HubConnectionBuilder()
+                .withUrl("/branchOperationsHub", {
+                    accessTokenFactory: () => localStorage.getItem('synos_jwt'),
+                    skipNegotiation: true,
+                    transport: HttpTransportType.WebSockets
+                })
+                .withAutomaticReconnect()
+                .configureLogging(LogLevel.Information)
+                .build();
+        }
+
+        console.log("SignalR(Branch): Starting connection...");
+        branchConnectionPromise = branchConnection.start()
+            .then(async () => {
+                console.log("SignalR(Branch): Connected to /branchOperationsHub");
+                branchConnectionPromise = null;
+
+                // Register Capabilities immediately upon connecting
+                for (const cap of capabilities) {
+                    try {
+                        await branchConnection.invoke("RegisterCapability", branchId, terminalId, cap);
+                    } catch (err) {
+                        console.error(`SignalR(Branch): Failed to register capability ${cap}`, err);
+                    }
+                }
+
+                branchConnection.onclose(() => console.log("SignalR(Branch): Connection Closed"));
+                branchConnection.onreconnecting(() => console.log("SignalR(Branch): Reconnecting..."));
+                branchConnection.onreconnected(async () => {
+                    console.log("SignalR(Branch): Reconnected. Re-registering capabilities...");
+                    for (const cap of capabilities) {
+                        try {
+                            await branchConnection.invoke("RegisterCapability", branchId, terminalId, cap);
+                        } catch (err) {
+                            console.error(`SignalR(Branch): Failed to re-register capability ${cap}`, err);
+                        }
+                    }
+                });
+            })
+            .catch(err => {
+                console.error("SignalR(Branch): Connection Failed:", err);
+                branchConnectionPromise = null;
+            });
+
+        return branchConnectionPromise;
+    },
+
+    onCapabilityRegistered: (callback) => {
+        if (!branchConnection) return;
+        branchConnection.off("CapabilityRegistered");
+        branchConnection.on("CapabilityRegistered", (capability, isAuthorized) => {
+            console.log(`SignalR(Branch): Capability '${capability}' registration result: ${isAuthorized ? "AUTHORIZED" : "DENIED"}`);
+            callback(capability, isAuthorized);
+        });
+    },
+
+    onPrintThermalReceipt: (callback) => {
+        if (!branchConnection) return;
+        branchConnection.off("OnPrintThermalReceipt");
+        branchConnection.on("OnPrintThermalReceipt", (payload) => {
+            console.log("SignalR(Branch): OnPrintThermalReceipt received", payload);
+            callback(payload);
+        });
+    },
+
+    stopConnection: async () => {
+        branchSubscriberCount--;
+        console.log(`SignalR(Branch): Subscriber removed (Total: ${branchSubscriberCount})`);
+
+        if (branchSubscriberCount <= 0) {
+            branchSubscriberCount = 0;
+            if (branchStopTimer) clearTimeout(branchStopTimer);
+
+            branchStopTimer = setTimeout(async () => {
+                if (branchSubscriberCount > 0) return;
+                console.log("SignalR(Branch): No subscribers, disconnecting...");
+                if (branchConnection) {
+                    try {
+                        if (branchConnectionPromise) await branchConnectionPromise;
+                        await branchConnection.stop();
+                        console.log("SignalR(Branch): Disconnected");
+                    } catch (err) {
+                        console.error("SignalR(Branch): Error stopping connection:", err);
+                    } finally {
+                        branchConnectionPromise = null;
+                        branchStopTimer = null;
+                    }
+                }
+            }, 2000);
+        }
+    }
+};

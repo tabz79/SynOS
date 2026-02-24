@@ -254,6 +254,37 @@ namespace SynOS.Data.Migrations
                     b.ToTable("Branches", (string)null);
                 });
 
+            modelBuilder.Entity("SynOS.Models.Entities.BranchPrinter", b =>
+                {
+                    b.Property<Guid>("PrinterId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("BranchId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("PrinterName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("PrinterType")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("PrinterId");
+
+                    b.HasIndex("BranchId");
+
+                    b.ToTable("BranchPrinters");
+                });
+
             modelBuilder.Entity("SynOS.Models.Entities.Compliance.StatutoryObligationFact", b =>
                 {
                     b.Property<Guid>("StatutoryObligationFactId")
@@ -4159,6 +4190,33 @@ namespace SynOS.Data.Migrations
                     b.ToTable("SpendFacts", (string)null);
                 });
 
+            modelBuilder.Entity("SynOS.Models.Entities.TerminalPrinterConfig", b =>
+                {
+                    b.Property<string>("TerminalIdentifier")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<Guid>("BranchId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("IsLeadPrintTerminal")
+                        .HasColumnType("bit");
+
+                    b.Property<Guid?>("SpecificReceiptPrinterId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("TerminalIdentifier");
+
+                    b.HasIndex("BranchId");
+
+                    b.HasIndex("SpecificReceiptPrinterId");
+
+                    b.ToTable("TerminalPrinterConfigs");
+                });
+
             modelBuilder.Entity("SynOS.Models.Entities.Test", b =>
                 {
                     b.Property<Guid>("TestId")
@@ -4928,6 +4986,17 @@ namespace SynOS.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("SynOS.Models.Entities.BranchPrinter", b =>
+                {
+                    b.HasOne("SynOS.Models.Entities.Branch", "Branch")
+                        .WithMany()
+                        .HasForeignKey("BranchId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Branch");
                 });
 
             modelBuilder.Entity("SynOS.Models.Entities.CostAttribution.CostAttribution_UsagePolicy", b =>
@@ -5882,6 +5951,23 @@ namespace SynOS.Data.Migrations
                     b.Navigation("SpecimenType");
 
                     b.Navigation("Visit");
+                });
+
+            modelBuilder.Entity("SynOS.Models.Entities.TerminalPrinterConfig", b =>
+                {
+                    b.HasOne("SynOS.Models.Entities.Branch", "Branch")
+                        .WithMany()
+                        .HasForeignKey("BranchId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SynOS.Models.Entities.BranchPrinter", "SpecificReceiptPrinter")
+                        .WithMany()
+                        .HasForeignKey("SpecificReceiptPrinterId");
+
+                    b.Navigation("Branch");
+
+                    b.Navigation("SpecificReceiptPrinter");
                 });
 
             modelBuilder.Entity("SynOS.Models.Entities.Test", b =>

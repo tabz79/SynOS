@@ -225,6 +225,11 @@ export function IntentPanel() {
             try {
                 // Default Cash for now as per previous UI -> STAGE 2: Dynamic Method
                 await ReceptionApi.collectPayment(snapshot.visit.visitId, snapshot.billing.netAmount, paymentMethod);
+
+                // DECOUPLED: Thermal Printing is now completely Event-Driven.
+                // The backend emits 'PrintThermalReceiptEvent' via SignalR, which is 
+                // intercepted and executed by the global PrintOrchestratorContext.
+
                 handleClearPatient();
                 closePanel();
                 // REMOVED: Alert "Payment Collected"

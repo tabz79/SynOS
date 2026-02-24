@@ -1,0 +1,62 @@
+using System;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.SignalR;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using SynOS.Data;
+
+namespace SynOS.Api.Hubs
+{
+    public class BranchOperationsHub : Hub
+    {
+        private readonly SynOSDbContext _context;
+        private readonly ILogger<BranchOperationsHub> _logger;
+
+        public BranchOperationsHub(SynOSDbContext context, ILogger<BranchOperationsHub> logger)
+        {
+            _context = context;
+            _logger = logger;
+        }
+
+        /// <summary>
+        /// Allows a terminal to register for specific hardware capabilities (e.g., Thermal80mm).
+        /// The backend strictly enforces if the terminal is permitted to act as the Lead Printer for the branch,
+        /// ensuring only authorized instances join the SignalR event group.
+        /// </summary>
+        /// <param name="branchId">The physical branch the terminal resides in.</param>
+        /// <param name="terminalId">The unique hardware/browser footprint ID of the terminal.</param>
+        /// <param name="capability">The capability requested, e.g., "Thermal80mm".</param>
+        public async Task RegisterCapability(Guid branchId, string terminalId, string capability)
+        {
+            if (string.IsNullOrWhiteSpace(terminalId))
+            {
+                _logger.LogWarning("Terminal registration rejected: TerminalId is missing.");
+                return;
+            }
+
+            // Backend Authorization: Ensure this terminal is designated as the Lead Printer for this branch.
+            var isLead = await _context.TerminalPrinterConfigs
+                .AsNoTracking()
+                .AnyAsync(c => c.BranchId == branchId 
+                            && c.TerminalIdentifier == terminalId 
+                            && c.IsLeadPrintTerminal);
+
+            if (isLead && capability == "Thermal80mm")
+            {
+                // Join the Redis-ready Lead group
+                string groupName = $"Branch-{branchId}-Lead-Thermal80mm";
+                await Groups.AddToGroupAsync(Context.ConnectionId, groupName);
+                
+                _logger.LogInformation("Terminal {TerminalIdentifier} authorized and added to Lead Print Group for Branch {BranchId}.", terminalId, branchId);
+                
+                // Acknowledge back to the caller for UI state (e.g., showing a green "Printer Connected" icon)
+                await Clients.Caller.SendAsync("CapabilityRegistered", capability, true);
+            }
+            else
+            {
+                _logger.LogInformation("Terminal {TerminalIdentifier} attempted to register {Capability} for Branch {BranchId} but lacked Lead authorization.", terminalId, capability, branchId);
+                await Clients.Caller.SendAsync("CapabilityRegistered", capability, false);
+            }
+        }
+    }
+}

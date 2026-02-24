@@ -126,7 +126,9 @@ builder.Services.AddAuthentication(options =>
             var accessToken = context.Request.Query["access_token"];
             var path = context.HttpContext.Request.Path;
             if (!string.IsNullOrEmpty(accessToken) &&
-                (path.StartsWithSegments("/dashboardHub") || path.StartsWithSegments("/sampleHub")))
+                (path.StartsWithSegments("/dashboardHub") || 
+                 path.StartsWithSegments("/sampleHub") ||
+                 path.StartsWithSegments("/branchOperationsHub")))
             {
                 context.Token = accessToken;
             }
@@ -227,7 +229,8 @@ builder.Services.AddScoped<IReceptionFlowService>(provider =>
         provider.GetRequiredService<IOperationalEventWriter>(),
         provider.GetRequiredService<IUserContext>(), // ADDED
         provider.GetRequiredService<IWorkRoutingEngine>(), // ADDED
-        provider.GetRequiredService<ISpecimenGroupingService>() // ADDED
+        provider.GetRequiredService<ISpecimenGroupingService>(), // ADDED
+        provider.GetRequiredService<IEventPublishingService>() // ADDED
     ));
 builder.Services.AddScoped<IResultService, ResultService>();
 builder.Services.AddScoped<SynOS.Services.Reception.IReceptionSnapshotService, SynOS.Services.Reception.ReceptionSnapshotService>();
@@ -283,6 +286,9 @@ builder.Services.AddScoped<IWhatsAppSender, StubWhatsAppSender>();
 builder.Services.AddScoped<ISmsSender, StubSmsSender>();
 builder.Services.AddScoped<IEmailSender, StubEmailSender>();
 builder.Services.AddScoped<IPrintService, StubPrintService>();
+
+// Register Domain Event Publishing
+builder.Services.AddScoped<IEventPublishingService, SynOS.Api.Services.EventPublishingService>();
 
 // builder.Services.AddHostedService<NotificationWorkerService>();
 // builder.Services.AddHostedService<ExpiredLockCleanupService>();
@@ -396,5 +402,6 @@ app.UseAuthorization();
 app.MapControllers();
 // app.MapHub<SynOS.Api.Hubs.SampleHub>("/sampleHub"); // DISABLED TEMPORARILY
 app.MapHub<SynOS.Api.Hubs.DashboardHub>("/dashboardHub"); // RESTORED
+app.MapHub<SynOS.Api.Hubs.BranchOperationsHub>("/branchOperationsHub");
 
 app.Run();

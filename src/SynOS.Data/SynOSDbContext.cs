@@ -138,6 +138,10 @@ namespace SynOS.Data
         public DbSet<ImsTubeMaster> ImsTubeMasters { get; set; } = null!;
         public DbSet<ImsTubeLot> ImsTubeLots { get; set; } = null!;
         public DbSet<ImsStockMovement> ImsStockMovements { get; set; } = null!;
+
+        // DbSets for Terminal Printing
+        public DbSet<BranchPrinter> BranchPrinters { get; set; } = null!;
+        public DbSet<TerminalPrinterConfig> TerminalPrinterConfigs { get; set; } = null!;
         public DbSet<ImsTestTubeMap> ImsTestTubeMaps { get; set; } = null!;
         public DbSet<ImsSupplier> ImsSuppliers { get; set; } = null!;
         public DbSet<ImsPurchaseOrder> ImsPurchaseOrders { get; set; } = null!;
