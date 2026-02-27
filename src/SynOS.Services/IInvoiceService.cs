@@ -9,7 +9,7 @@ namespace SynOS.Services
     public interface IInvoiceService
     {
         Task<Payment> RecordPaymentAsync(Guid invoiceId, PaymentRequestDto request);
-        Task<RevenueStatsDto> GetDailyRevenueStatsAsync(Guid branchId);
+        Task<RevenueStatsDto> GetDailyRevenueStatsAsync(Guid branchId, Guid? userId = null);
         Task<InvoicePrintDto> GetInvoiceForPrintingAsync(Guid invoiceId); // RESTORED
     }
 }

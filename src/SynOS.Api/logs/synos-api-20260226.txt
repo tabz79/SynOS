@@ -1,0 +1,186 @@
+2026-02-26 14:20:31.090 +05:30 [INF] OperationalStatsProjectionWorker is starting in Event-Driven Mode.
+2026-02-26 14:20:32.085 +05:30 [INF] Worker: Running Consistency Check and Catch-up...
+2026-02-26 14:20:34.515 +05:30 [WRN] The foreign key property 'Specimen.VisitId1' was created in shadow state because a conflicting property with the simple name 'VisitId' exists in the entity type, but is either not mapped, is already used for another relationship, or is incompatible with the associated primary key type. See https://aka.ms/efcore-relationships for information on mapping relationships in EF Core.
+2026-02-26 14:20:39.614 +05:30 [INF] Worker: Catch-up complete. Awaiting real-time events...
+2026-02-26 14:21:35.997 +05:30 [WRN] Failed to determine the https port for redirect.
+2026-02-26 14:50:06.305 +05:30 [INF] Terminal web-1zy6xxtky authorized and added to Lead Print Group for Branch "a0000000-0000-0000-0000-000000000001".
+2026-02-26 14:51:52.264 +05:30 [INF] Terminal web-3nbr8lknz attempted to register Thermal80mm for Branch "a0000000-0000-0000-0000-000000000001" but lacked Lead authorization.
+2026-02-26 14:52:13.633 +05:30 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2026-02-26 14:52:13.705 +05:30 [ERR] An exception occurred while iterating over the results of a query for context type 'SynOS.Data.SynOSDbContext'.
+Microsoft.Data.SqlClient.SqlException (0x80131904): Conversion failed when converting the nvarchar value 'Paid' to data type int.
+   at Microsoft.Data.SqlClient.SqlConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   at Microsoft.Data.SqlClient.SqlInternalConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   at Microsoft.Data.SqlClient.TdsParser.ThrowExceptionAndWarning(TdsParserStateObject stateObj, Boolean callerHasConnectionLock, Boolean asyncClose)
+   at Microsoft.Data.SqlClient.TdsParser.TryRun(RunBehavior runBehavior, SqlCommand cmdHandler, SqlDataReader dataStream, BulkCopySimpleResultSet bulkCopyHandler, TdsParserStateObject stateObj, Boolean& dataReady)
+   at Microsoft.Data.SqlClient.SqlDataReader.TryHasMoreRows(Boolean& moreRows)
+   at Microsoft.Data.SqlClient.SqlDataReader.TryReadInternal(Boolean setTimeout, Boolean& more)
+   at Microsoft.Data.SqlClient.SqlDataReader.ReadAsyncExecute(Task task, Object state)
+   at Microsoft.Data.SqlClient.SqlDataReader.InvokeAsyncCall[T](SqlDataReaderBaseAsyncCallContext`1 context)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:38103100-710a-4352-b03e-b176036679ec
+Error Number:245,State:1,Class:16
+Microsoft.Data.SqlClient.SqlException (0x80131904): Conversion failed when converting the nvarchar value 'Paid' to data type int.
+   at Microsoft.Data.SqlClient.SqlConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   at Microsoft.Data.SqlClient.SqlInternalConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   at Microsoft.Data.SqlClient.TdsParser.ThrowExceptionAndWarning(TdsParserStateObject stateObj, Boolean callerHasConnectionLock, Boolean asyncClose)
+   at Microsoft.Data.SqlClient.TdsParser.TryRun(RunBehavior runBehavior, SqlCommand cmdHandler, SqlDataReader dataStream, BulkCopySimpleResultSet bulkCopyHandler, TdsParserStateObject stateObj, Boolean& dataReady)
+   at Microsoft.Data.SqlClient.SqlDataReader.TryHasMoreRows(Boolean& moreRows)
+   at Microsoft.Data.SqlClient.SqlDataReader.TryReadInternal(Boolean setTimeout, Boolean& more)
+   at Microsoft.Data.SqlClient.SqlDataReader.ReadAsyncExecute(Task task, Object state)
+   at Microsoft.Data.SqlClient.SqlDataReader.InvokeAsyncCall[T](SqlDataReaderBaseAsyncCallContext`1 context)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:38103100-710a-4352-b03e-b176036679ec
+Error Number:245,State:1,Class:16
+2026-02-26 14:52:13.721 +05:30 [ERR] An exception occurred while iterating over the results of a query for context type 'SynOS.Data.SynOSDbContext'.
+Microsoft.Data.SqlClient.SqlException (0x80131904): Conversion failed when converting the nvarchar value 'Paid' to data type int.
+   at Microsoft.Data.SqlClient.SqlConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   at Microsoft.Data.SqlClient.SqlInternalConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   at Microsoft.Data.SqlClient.TdsParser.ThrowExceptionAndWarning(TdsParserStateObject stateObj, Boolean callerHasConnectionLock, Boolean asyncClose)
+   at Microsoft.Data.SqlClient.TdsParser.TryRun(RunBehavior runBehavior, SqlCommand cmdHandler, SqlDataReader dataStream, BulkCopySimpleResultSet bulkCopyHandler, TdsParserStateObject stateObj, Boolean& dataReady)
+   at Microsoft.Data.SqlClient.SqlDataReader.TryHasMoreRows(Boolean& moreRows)
+   at Microsoft.Data.SqlClient.SqlDataReader.TryReadInternal(Boolean setTimeout, Boolean& more)
+   at Microsoft.Data.SqlClient.SqlDataReader.ReadAsyncExecute(Task task, Object state)
+   at Microsoft.Data.SqlClient.SqlDataReader.InvokeAsyncCall[T](SqlDataReaderBaseAsyncCallContext`1 context)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:4cad8589-e672-4091-a787-0e432f8254d6
+Error Number:245,State:1,Class:16
+Microsoft.Data.SqlClient.SqlException (0x80131904): Conversion failed when converting the nvarchar value 'Paid' to data type int.
+   at Microsoft.Data.SqlClient.SqlConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   at Microsoft.Data.SqlClient.SqlInternalConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   at Microsoft.Data.SqlClient.TdsParser.ThrowExceptionAndWarning(TdsParserStateObject stateObj, Boolean callerHasConnectionLock, Boolean asyncClose)
+   at Microsoft.Data.SqlClient.TdsParser.TryRun(RunBehavior runBehavior, SqlCommand cmdHandler, SqlDataReader dataStream, BulkCopySimpleResultSet bulkCopyHandler, TdsParserStateObject stateObj, Boolean& dataReady)
+   at Microsoft.Data.SqlClient.SqlDataReader.TryHasMoreRows(Boolean& moreRows)
+   at Microsoft.Data.SqlClient.SqlDataReader.TryReadInternal(Boolean setTimeout, Boolean& more)
+   at Microsoft.Data.SqlClient.SqlDataReader.ReadAsyncExecute(Task task, Object state)
+   at Microsoft.Data.SqlClient.SqlDataReader.InvokeAsyncCall[T](SqlDataReaderBaseAsyncCallContext`1 context)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:4cad8589-e672-4091-a787-0e432f8254d6
+Error Number:245,State:1,Class:16
+2026-02-26 14:52:13.739 +05:30 [ERR] Error starting visit for patient "18aea5b8-6056-4ef9-a204-871e06dc4f6f"
+Microsoft.Data.SqlClient.SqlException (0x80131904): Conversion failed when converting the nvarchar value 'Paid' to data type int.
+   at Microsoft.Data.SqlClient.SqlConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   at Microsoft.Data.SqlClient.SqlInternalConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   at Microsoft.Data.SqlClient.TdsParser.ThrowExceptionAndWarning(TdsParserStateObject stateObj, Boolean callerHasConnectionLock, Boolean asyncClose)
+   at Microsoft.Data.SqlClient.TdsParser.TryRun(RunBehavior runBehavior, SqlCommand cmdHandler, SqlDataReader dataStream, BulkCopySimpleResultSet bulkCopyHandler, TdsParserStateObject stateObj, Boolean& dataReady)
+   at Microsoft.Data.SqlClient.SqlDataReader.TryHasMoreRows(Boolean& moreRows)
+   at Microsoft.Data.SqlClient.SqlDataReader.TryReadInternal(Boolean setTimeout, Boolean& more)
+   at Microsoft.Data.SqlClient.SqlDataReader.ReadAsyncExecute(Task task, Object state)
+   at Microsoft.Data.SqlClient.SqlDataReader.InvokeAsyncCall[T](SqlDataReaderBaseAsyncCallContext`1 context)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+   at Microsoft.EntityFrameworkCore.Query.ShapedQueryCompilingExpressionVisitor.SingleOrDefaultAsync[TSource](IAsyncEnumerable`1 asyncEnumerable, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.ShapedQueryCompilingExpressionVisitor.SingleOrDefaultAsync[TSource](IAsyncEnumerable`1 asyncEnumerable, CancellationToken cancellationToken)
+   at SynOS.Services.ReceptionFlowService.StartVisitAsync(ReceptionStartVisitRequest request, Guid actorUserId) in D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReceptionFlowService.cs:line 137
+   at SynOS.Api.Controllers.ReceptionController.StartVisit(ReceptionStartVisitRequest request) in D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\ReceptionController.cs:line 43
+ClientConnectionId:4cad8589-e672-4091-a787-0e432f8254d6
+Error Number:245,State:1,Class:16
+2026-02-26 15:09:24.311 +05:30 [INF] OperationalStatsProjectionWorker is starting in Event-Driven Mode.
+2026-02-26 15:09:24.786 +05:30 [INF] Worker: Running Consistency Check and Catch-up...
+2026-02-26 15:09:28.198 +05:30 [WRN] The foreign key property 'Specimen.VisitId1' was created in shadow state because a conflicting property with the simple name 'VisitId' exists in the entity type, but is either not mapped, is already used for another relationship, or is incompatible with the associated primary key type. See https://aka.ms/efcore-relationships for information on mapping relationships in EF Core.
+2026-02-26 15:09:30.219 +05:30 [INF] Worker: Catch-up complete. Awaiting real-time events...
+2026-02-26 15:09:36.165 +05:30 [WRN] Failed to determine the https port for redirect.
+2026-02-26 15:09:59.936 +05:30 [INF] Terminal web-1zy6xxtky authorized and added to Lead Print Group for Branch "a0000000-0000-0000-0000-000000000001".
+2026-02-26 15:10:16.431 +05:30 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2026-02-26 15:10:17.084 +05:30 [INF] StartVisit Idempotency: returning existing Draft visit "d5c8ee0a-8147-4c6d-8f8e-9707ad397683"
+2026-02-26 15:10:17.236 +05:30 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2026-02-26 15:10:36.279 +05:30 [INF] StartVisit Idempotency: returning existing Draft visit "d5c8ee0a-8147-4c6d-8f8e-9707ad397683"
+2026-02-26 15:10:52.231 +05:30 [INF] StartVisit Idempotency: returning existing Draft visit "d5c8ee0a-8147-4c6d-8f8e-9707ad397683"
+2026-02-26 15:12:54.119 +05:30 [INF] Terminal web-3nbr8lknz attempted to register Thermal80mm for Branch "a0000000-0000-0000-0000-000000000001" but lacked Lead authorization.
+2026-02-26 15:23:28.781 +05:30 [INF] OperationalStatsProjectionWorker is starting in Event-Driven Mode.
+2026-02-26 15:23:29.349 +05:30 [INF] Worker: Running Consistency Check and Catch-up...
+2026-02-26 15:23:33.213 +05:30 [WRN] The foreign key property 'Specimen.VisitId1' was created in shadow state because a conflicting property with the simple name 'VisitId' exists in the entity type, but is either not mapped, is already used for another relationship, or is incompatible with the associated primary key type. See https://aka.ms/efcore-relationships for information on mapping relationships in EF Core.
+2026-02-26 15:23:36.040 +05:30 [INF] Worker: Catch-up complete. Awaiting real-time events...
+2026-02-26 15:23:37.235 +05:30 [WRN] Failed to determine the https port for redirect.
+2026-02-26 15:23:37.773 +05:30 [INF] Terminal web-3nbr8lknz attempted to register Thermal80mm for Branch "a0000000-0000-0000-0000-000000000001" but lacked Lead authorization.
+2026-02-26 15:23:37.773 +05:30 [INF] Terminal web-1zy6xxtky authorized and added to Lead Print Group for Branch "a0000000-0000-0000-0000-000000000001".
+2026-02-26 15:23:52.027 +05:30 [INF] Terminal web-1zy6xxtky authorized and added to Lead Print Group for Branch "a0000000-0000-0000-0000-000000000001".
+2026-02-26 15:23:56.372 +05:30 [INF] Terminal web-3nbr8lknz attempted to register Thermal80mm for Branch "a0000000-0000-0000-0000-000000000001" but lacked Lead authorization.
+2026-02-26 15:24:04.875 +05:30 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2026-02-26 15:24:05.428 +05:30 [ERR] Error starting visit for patient "eacb78ee-d164-4326-be2a-11ec0731d1dd"
+System.UnauthorizedAccessException: This patient is currently being registered by another receptionist.
+   at SynOS.Services.ReceptionFlowService.StartVisitAsync(ReceptionStartVisitRequest request, Guid actorUserId) in D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReceptionFlowService.cs:line 151
+   at SynOS.Api.Controllers.ReceptionController.StartVisit(ReceptionStartVisitRequest request) in D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\ReceptionController.cs:line 43
+2026-02-26 15:27:48.069 +05:30 [ERR] Error starting visit for patient "18aea5b8-6056-4ef9-a204-871e06dc4f6f"
+System.UnauthorizedAccessException: This patient is currently being registered by another receptionist.
+   at SynOS.Services.ReceptionFlowService.StartVisitAsync(ReceptionStartVisitRequest request, Guid actorUserId) in D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReceptionFlowService.cs:line 151
+   at SynOS.Api.Controllers.ReceptionController.StartVisit(ReceptionStartVisitRequest request) in D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Controllers\ReceptionController.cs:line 43
+2026-02-26 15:33:24.689 +05:30 [INF] OperationalStatsProjectionWorker is starting in Event-Driven Mode.
+2026-02-26 15:33:25.351 +05:30 [INF] Worker: Running Consistency Check and Catch-up...
+2026-02-26 15:33:29.281 +05:30 [WRN] The foreign key property 'Specimen.VisitId1' was created in shadow state because a conflicting property with the simple name 'VisitId' exists in the entity type, but is either not mapped, is already used for another relationship, or is incompatible with the associated primary key type. See https://aka.ms/efcore-relationships for information on mapping relationships in EF Core.
+2026-02-26 15:33:32.054 +05:30 [WRN] Failed to determine the https port for redirect.
+2026-02-26 15:33:32.152 +05:30 [INF] Worker: Catch-up complete. Awaiting real-time events...
+2026-02-26 15:33:32.566 +05:30 [INF] Terminal web-3nbr8lknz attempted to register Thermal80mm for Branch "a0000000-0000-0000-0000-000000000001" but lacked Lead authorization.
+2026-02-26 15:33:32.568 +05:30 [INF] Terminal web-1zy6xxtky authorized and added to Lead Print Group for Branch "a0000000-0000-0000-0000-000000000001".
+2026-02-26 15:33:42.146 +05:30 [INF] Terminal web-1zy6xxtky authorized and added to Lead Print Group for Branch "a0000000-0000-0000-0000-000000000001".
+2026-02-26 15:33:45.528 +05:30 [INF] Terminal web-3nbr8lknz attempted to register Thermal80mm for Branch "a0000000-0000-0000-0000-000000000001" but lacked Lead authorization.
+2026-02-26 15:33:55.010 +05:30 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2026-02-26 15:33:55.899 +05:30 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2026-02-26 15:33:56.238 +05:30 [INF] EVENT_WRITE for VisitId 4a136328-38c3-4ff5-8786-b3ea0dae5e0e, Context eca360ba-8bf9-45dd-8b05-a9663236984a:0
+2026-02-26 15:33:56.421 +05:30 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2026-02-26 15:33:56.588 +05:30 [INF] EVENT_WRITE for VisitId 4a136328-38c3-4ff5-8786-b3ea0dae5e0e, Context eca360ba-8bf9-45dd-8b05-a9663236984a:0
+2026-02-26 15:33:56.589 +05:30 [INF] [ProjectorDebug] Processing Event Type: VISIT_CREATED, BranchId: "a0000000-0000-0000-0000-000000000001", SourceId: null, SourceType: null, VisitId: 4a136328-38c3-4ff5-8786-b3ea0dae5e0e
+2026-02-26 15:33:56.815 +05:30 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2026-02-26 15:33:56.855 +05:30 [WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+2026-02-26 15:33:56.913 +05:30 [INF] [ProjectorDebug] Processing Event Type: VISIT_STARTED, BranchId: "a0000000-0000-0000-0000-000000000001", SourceId: null, SourceType: null, VisitId: 4a136328-38c3-4ff5-8786-b3ea0dae5e0e
+2026-02-26 15:33:56.936 +05:30 [WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+2026-02-26 15:33:57.207 +05:30 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2026-02-26 15:34:08.016 +05:30 [INF] EVENT_WRITE for VisitId cb76dce4-4800-42a3-93f2-a8d19cb6d9bb, Context 968c1ed8-bbb6-4ba4-aa2d-fe9797fcfb27:0
+2026-02-26 15:34:08.044 +05:30 [INF] EVENT_WRITE for VisitId cb76dce4-4800-42a3-93f2-a8d19cb6d9bb, Context 968c1ed8-bbb6-4ba4-aa2d-fe9797fcfb27:0
+2026-02-26 15:34:08.080 +05:30 [INF] [ProjectorDebug] Processing Event Type: VISIT_CREATED, BranchId: "a0000000-0000-0000-0000-000000000001", SourceId: null, SourceType: null, VisitId: cb76dce4-4800-42a3-93f2-a8d19cb6d9bb
+2026-02-26 15:34:08.109 +05:30 [WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+2026-02-26 15:34:08.126 +05:30 [INF] [ProjectorDebug] Processing Event Type: VISIT_STARTED, BranchId: "a0000000-0000-0000-0000-000000000001", SourceId: null, SourceType: null, VisitId: cb76dce4-4800-42a3-93f2-a8d19cb6d9bb
+2026-02-26 15:34:08.142 +05:30 [WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+2026-02-26 15:34:15.358 +05:30 [INF] EVENT_WRITE for VisitId 4a136328-38c3-4ff5-8786-b3ea0dae5e0e, Context dc0abb65-61b3-419f-9d57-f2111978aa5b:0
+2026-02-26 15:34:15.448 +05:30 [INF] [ProjectorDebug] Processing Event Type: VISIT_UPDATED, BranchId: "a0000000-0000-0000-0000-000000000001", SourceId: null, SourceType: null, VisitId: 4a136328-38c3-4ff5-8786-b3ea0dae5e0e
+2026-02-26 15:34:15.467 +05:30 [WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+2026-02-26 15:34:22.158 +05:30 [INF] EVENT_WRITE for VisitId cb76dce4-4800-42a3-93f2-a8d19cb6d9bb, Context 570875e2-e021-4de0-95ed-5ed5d3de5b4a:0
+2026-02-26 15:34:22.213 +05:30 [INF] [ProjectorDebug] Processing Event Type: VISIT_UPDATED, BranchId: "a0000000-0000-0000-0000-000000000001", SourceId: null, SourceType: null, VisitId: cb76dce4-4800-42a3-93f2-a8d19cb6d9bb
+2026-02-26 15:34:22.307 +05:30 [WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+2026-02-26 15:34:32.318 +05:30 [INF] TRACE: AddTestToVisitAsync called. visitId="4a136328-38c3-4ff5-8786-b3ea0dae5e0e", testCode=SGPT
+2026-02-26 15:34:32.392 +05:30 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2026-02-26 15:34:32.460 +05:30 [INF] [ExpansionDebug] Starting expansion for SGPT. isChild: False, parentOrderId: 
+2026-02-26 15:34:32.545 +05:30 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2026-02-26 15:34:32.612 +05:30 [WRN] [Validation] Resolving Test: SGPT, IsProfile: False, HasChildren: False, SpecimenType: SERUM
+2026-02-26 15:34:32.617 +05:30 [INF] [ExpansionDebug] Creating Order entry: SGPT, ID: 05f8e2ba-e4ad-409c-ba11-3c58df09044b, Parent: 
+2026-02-26 15:34:32.693 +05:30 [INF] [ExpansionDebug] Order SGPT added to context and local collection.
+2026-02-26 15:34:32.734 +05:30 [INF] TRACE: SaveChangesAsync reached. Affected rows: 1
+2026-02-26 15:34:42.109 +05:30 [INF] TRACE: AddTestToVisitAsync called. visitId="cb76dce4-4800-42a3-93f2-a8d19cb6d9bb", testCode=SGOT
+2026-02-26 15:34:42.122 +05:30 [INF] [ExpansionDebug] Starting expansion for SGOT. isChild: False, parentOrderId: 
+2026-02-26 15:34:42.147 +05:30 [WRN] [Validation] Resolving Test: SGOT, IsProfile: False, HasChildren: False, SpecimenType: SERUM
+2026-02-26 15:34:42.151 +05:30 [INF] [ExpansionDebug] Creating Order entry: SGOT, ID: fca8d9b5-17e6-4ca8-95b3-9e8f043ecc65, Parent: 
+2026-02-26 15:34:42.154 +05:30 [INF] [ExpansionDebug] Order SGOT added to context and local collection.
+2026-02-26 15:34:42.189 +05:30 [INF] TRACE: SaveChangesAsync reached. Affected rows: 1
+2026-02-26 15:34:49.063 +05:30 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2026-02-26 15:34:49.504 +05:30 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2026-02-26 15:34:49.874 +05:30 [INF] EVENT_WRITE for VisitId 4a136328-38c3-4ff5-8786-b3ea0dae5e0e, Context dfd59367-e190-4f3a-9c97-d538ac45bbb0:0
+2026-02-26 15:34:49.911 +05:30 [INF] [ProjectorDebug] Processing Event Type: PAYMENT_RECEIVED, BranchId: "a0000000-0000-0000-0000-000000000001", SourceId: "3ed009ae-5beb-4f2b-933d-f5e5bade229e", SourceType: RevenueFact, VisitId: 4a136328-38c3-4ff5-8786-b3ea0dae5e0e
+2026-02-26 15:34:49.929 +05:30 [INF] [ProjectorDebug] Checking Fact Deduplication for SourceId: "3ed009ae-5beb-4f2b-933d-f5e5bade229e"
+2026-02-26 15:34:50.006 +05:30 [INF] [ProjectorDebug] Incrementing WalkIn for RevenueFact. SourceRef: 03491dbd-9e9d-46f4-a5e0-95a129b9f7b1
+2026-02-26 15:34:50.061 +05:30 [WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+2026-02-26 15:34:50.205 +05:30 [INF] [DebugSpecimen] Loaded Visit 4a136328-38c3-4ff5-8786-b3ea0dae5e0e, Status: Paid, Orders: 1, TestNavPresent: True
+2026-02-26 15:34:50.209 +05:30 [INF] TransitionToSpecimenPlanned: Visit "4a136328-38c3-4ff5-8786-b3ea0dae5e0e" already in status "Paid". Skipping.
+2026-02-26 15:34:50.273 +05:30 [INF] EVENT_WRITE for VisitId 4a136328-38c3-4ff5-8786-b3ea0dae5e0e, Context dfd59367-e190-4f3a-9c97-d538ac45bbb0:0
+2026-02-26 15:34:50.298 +05:30 [INF] [ProjectorDebug] Processing Event Type: VISIT_FINALIZED, BranchId: "a0000000-0000-0000-0000-000000000001", SourceId: null, SourceType: null, VisitId: 4a136328-38c3-4ff5-8786-b3ea0dae5e0e
+2026-02-26 15:34:50.309 +05:30 [INF] Attempting to assign work "SampleCollection" for source "4a136328-38c3-4ff5-8786-b3ea0dae5e0e" in Pathology
+2026-02-26 15:34:50.328 +05:30 [WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+2026-02-26 15:34:50.611 +05:30 [INF] Work "SampleCollection" assigned to "0e34b739-d97f-445d-b488-2e5fd6b9918c" (Desk 1)
+2026-02-26 15:34:50.662 +05:30 [INF] Publishing PrintThermalReceiptEvent to Branch-a0000000-0000-0000-0000-000000000001-Lead-Thermal80mm (VisitId: "4a136328-38c3-4ff5-8786-b3ea0dae5e0e")
+2026-02-26 15:34:52.228 +05:30 [INF] EVENT_WRITE for VisitId cb76dce4-4800-42a3-93f2-a8d19cb6d9bb, Context 2ef64914-9c6c-4095-8c5a-18660b4228e9:0
+2026-02-26 15:34:52.280 +05:30 [INF] [ProjectorDebug] Processing Event Type: PAYMENT_RECEIVED, BranchId: "a0000000-0000-0000-0000-000000000001", SourceId: "b09878fa-93e1-400c-b325-1dd9f7d42aec", SourceType: RevenueFact, VisitId: cb76dce4-4800-42a3-93f2-a8d19cb6d9bb
+2026-02-26 15:34:52.292 +05:30 [INF] [DebugSpecimen] Loaded Visit cb76dce4-4800-42a3-93f2-a8d19cb6d9bb, Status: Paid, Orders: 1, TestNavPresent: True
+2026-02-26 15:34:52.312 +05:30 [INF] [ProjectorDebug] Checking Fact Deduplication for SourceId: "b09878fa-93e1-400c-b325-1dd9f7d42aec"
+2026-02-26 15:34:52.312 +05:30 [INF] TransitionToSpecimenPlanned: Visit "cb76dce4-4800-42a3-93f2-a8d19cb6d9bb" already in status "Paid". Skipping.
+2026-02-26 15:34:52.327 +05:30 [INF] [ProjectorDebug] Incrementing WalkIn for RevenueFact. SourceRef: 54759960-4fbc-4dc2-ad2e-0e478544b08f
+2026-02-26 15:34:52.344 +05:30 [WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+2026-02-26 15:34:52.345 +05:30 [INF] EVENT_WRITE for VisitId cb76dce4-4800-42a3-93f2-a8d19cb6d9bb, Context 2ef64914-9c6c-4095-8c5a-18660b4228e9:0
+2026-02-26 15:34:52.375 +05:30 [INF] Attempting to assign work "SampleCollection" for source "cb76dce4-4800-42a3-93f2-a8d19cb6d9bb" in Pathology
+2026-02-26 15:34:52.381 +05:30 [INF] [ProjectorDebug] Processing Event Type: VISIT_FINALIZED, BranchId: "a0000000-0000-0000-0000-000000000001", SourceId: null, SourceType: null, VisitId: cb76dce4-4800-42a3-93f2-a8d19cb6d9bb
+2026-02-26 15:34:52.397 +05:30 [INF] Work "SampleCollection" assigned to "0e34b739-d97f-445d-b488-2e5fd6b9918c" (Desk 1)
+2026-02-26 15:34:52.399 +05:30 [WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+2026-02-26 15:34:52.427 +05:30 [INF] Publishing PrintThermalReceiptEvent to Branch-a0000000-0000-0000-0000-000000000001-Lead-Thermal80mm (VisitId: "cb76dce4-4800-42a3-93f2-a8d19cb6d9bb")
+2026-02-26 15:37:46.390 +05:30 [INF] Terminal web-1zy6xxtky authorized and added to Lead Print Group for Branch "a0000000-0000-0000-0000-000000000001".
+2026-02-26 15:37:50.727 +05:30 [INF] Terminal web-3nbr8lknz attempted to register Thermal80mm for Branch "a0000000-0000-0000-0000-000000000001" but lacked Lead authorization.

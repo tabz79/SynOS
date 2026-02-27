@@ -43,14 +43,26 @@ namespace SynOS.Services
             _visitService = visitService ?? throw new ArgumentNullException(nameof(visitService));
         }
 
-        public async Task<RevenueStatsDto> GetDailyRevenueStatsAsync(Guid branchId)
+        public async Task<RevenueStatsDto> GetDailyRevenueStatsAsync(Guid branchId, Guid? userId = null)
         {
             if (branchId == Guid.Empty) throw new ArgumentException("BranchId required");
 
             var today = DateTime.UtcNow.Date;
             
-            var stats = await _context.UserOperationalStats
-                .Where(s => s.BranchId == branchId && s.Date == today)
+            var query = _context.UserOperationalStats
+                .Where(s => s.BranchId == branchId && s.Date == today);
+
+            if (userId.HasValue)
+            {
+                query = query.Where(s => s.UserId == userId.Value);
+            }
+            else if (_userContext.CurrentRole == "Receptionist")
+            {
+                var currentUserId = _userContext.CurrentUserId;
+                query = query.Where(s => s.UserId == currentUserId);
+            }
+
+            var stats = await query
                 .GroupBy(s => s.BranchId)
                 .Select(g => new 
                 {
@@ -145,7 +157,7 @@ namespace SynOS.Services
                 var visit = await _context.Visits.FindAsync(invoice.VisitId);
                 if (visit != null) 
                 {
-                    visit.Status = "Paid";
+                    visit.Status = VisitStatus.Paid;
                     if (visit.Token.StartsWith("DRAFT"))
                     {
                         await _visitService.AssignOfficialTokenAsync(visit.VisitId, paymentDto.ReceivedByUserId);

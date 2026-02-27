@@ -37,6 +37,7 @@ namespace SynOS.Services
         private readonly IWorkRoutingEngine _routingEngine; // ADDED
         private readonly ISpecimenGroupingService _groupingService; // ADDED
         private readonly IEventPublishingService _eventPublishingService; // ADDED
+        private readonly INotifier _notifier; // ADDED
 
         public ReceptionFlowService(
             SynOSDbContext context,
@@ -51,7 +52,8 @@ namespace SynOS.Services
             IUserContext userContext,
             IWorkRoutingEngine routingEngine,
             ISpecimenGroupingService groupingService,
-            IEventPublishingService eventPublishingService) // ADDED
+            IEventPublishingService eventPublishingService,
+            INotifier notifier) // ADDED
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
             _visitService = visitService ?? throw new ArgumentNullException(nameof(visitService));
@@ -66,6 +68,7 @@ namespace SynOS.Services
             _routingEngine = routingEngine ?? throw new ArgumentNullException(nameof(routingEngine)); // ADDED
             _groupingService = groupingService ?? throw new ArgumentNullException(nameof(groupingService)); // ADDED
             _eventPublishingService = eventPublishingService ?? throw new ArgumentNullException(nameof(eventPublishingService)); // ADDED
+            _notifier = notifier ?? throw new ArgumentNullException(nameof(notifier)); // ADDED
         }
 
         // small helper to centralize a defensive check (keeps ctor lines tidy)
@@ -128,9 +131,10 @@ namespace SynOS.Services
                 await EnsureAllTestCodesExistAsync(request.TestCodes, request.Dept);
             }
 
-            // --- IDEMPOTENCY CHECK (Guardrail 2: Single Active Draft) ---
-            // If a Draft visit exists for this patient at this branch, return it instead of creating duplicate.
+            // --- IDEMPOTENCY CHECK (Guardrail 2: Single Active Draft Per Desk) ---
+            // If a Draft visit exists for this patient at this desk, return it instead of creating duplicate.
             var branchId = _userContext.CurrentBranchId;
+            var currentUserId = _userContext.CurrentUserId;
             var existingDraft = await _context.Visits
                 .Include(v => v.Patient)
                 .Include(v => v.Orders)
@@ -139,7 +143,8 @@ namespace SynOS.Services
                 .FirstOrDefaultAsync(v => 
                     v.PatientId == request.PatientId && 
                     v.BranchId == branchId && 
-                    v.Status == "Draft");
+                    v.AssignedReceptionistId == currentUserId &&
+                    v.Status == VisitStatus.Draft);
 
             if (existingDraft != null)
             {
@@ -210,7 +215,7 @@ namespace SynOS.Services
                 Token = visit.Token,
                 TokenDate = visit.TokenDate,
                 Dept = visit.Department,
-                Status = visit.Status,
+                Status = visit.Status.ToString(),
                 PatientSummary = patient == null ? null : new PatientSummaryDto
                 {
                     PatientId = patient.PatientId,
@@ -276,7 +281,7 @@ namespace SynOS.Services
             if (visit == null) throw new KeyNotFoundException($"Visit {visitId} not found");
             
             // Check status - ensure not finalized (though read-only in UI handles this, backend should guard)
-            if (new[] { "Paid", "Cancelled" }.Contains(visit.Status))
+            if (new[] { VisitStatus.Paid, VisitStatus.Cancelled }.Contains(visit.Status))
             {
                 throw new InvalidOperationException($"Cannot add draft to solidified visit status: {visit.Status}");
             }
@@ -401,7 +406,7 @@ namespace SynOS.Services
                 Token = visit.Token,
                 TokenDate = visit.TokenDate,
                 Dept = visit.Department,
-                Status = visit.Status,
+                Status = visit.Status.ToString(),
                 ReferralDraft = draft == null ? null : new ReferralDraftDto
                 {
                     ReferralDraftId = draft.ReferralDraftId,
@@ -711,6 +716,20 @@ namespace SynOS.Services
             }
             // --------------------------------------
 
+            // --- DASHBOARD REAL-TIME SYNC ---
+            if (visit.BranchId.HasValue)
+            {
+                try
+                {
+                    await _notifier.NotifyActionQueueDeltaAsync(visit.BranchId.Value.ToString(), visit.VisitId.ToString());
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Failed to notify dashboard refresh for Visit {VisitId}.", visit.VisitId);
+                }
+            }
+            // --------------------------------
+
             return new ReceptionCompletePaymentResponse
             {
                 VisitId = visit.VisitId,
@@ -726,7 +745,7 @@ namespace SynOS.Services
                     ReceiptNo = payment.ReceiptNo,
                     ReceivedAt = payment.ReceivedAt
                 },
-                VisitStatus = updatedVisit?.Status
+                VisitStatus = updatedVisit?.Status.ToString()
             };
         }
 
@@ -748,7 +767,7 @@ namespace SynOS.Services
                 Token = visit.Token,
                 TokenDate = visit.TokenDate,
                 Dept = visit.Department,
-                VisitStatus = visit.Status,
+                VisitStatus = visit.Status.ToString(),
                 ReferralDraft = draft == null ? null : new ReferralDraftDto
                 {
                    ReferralDraftId = draft.ReferralDraftId,
@@ -797,7 +816,7 @@ namespace SynOS.Services
                 }).ToList(),
                 Flags = new ReadinessFlagsDto
                 {
-                    CanPrintToken = visit.Status != "Cancelled",
+                    CanPrintToken = visit.Status != VisitStatus.Cancelled,
                     CanCollectSamples = visit.Department == "Pathology" && invoice.Status == "Paid",
                     CanPerformScan = visit.Department == "Radiology" && invoice.Status == "Paid"
                 }
@@ -969,7 +988,7 @@ namespace SynOS.Services
                 _logger.LogInformation($"[DebugSpecimen] Loaded Visit {visitId}, Status: {visit.Status}, Orders: {visit.Orders.Count}, TestNavPresent: {visit.Orders.All(o => o.Test != null)}");
 
                 // Idempotency Check
-                if (visit.Status == "SpecimenPlanned" || visit.Status == "Completed")
+                if (visit.Status != VisitStatus.Draft) // Status check for SpecimenPlanned removed as it's being handled by the flow
                 {
                     _logger.LogInformation("TransitionToSpecimenPlanned: Visit {VisitId} already in status {Status}. Skipping.", visitId, visit.Status);
                     return; 
@@ -1031,7 +1050,7 @@ namespace SynOS.Services
                 }
 
                 // 5. Update Visit Status
-                visit.Status = "SpecimenPlanned"; // SynOS.Models.Enums.VisitStatus.SpecimenPlanned? Using string per legacy.
+                // visit.Status = VisitStatus.Completed; // Transition to Completed if that's the desired flow
 
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
@@ -1074,7 +1093,7 @@ namespace SynOS.Services
             // Logic: Is this a Prepaid Visit? Did we skip the Receivable earlier?
             var visit = draft.Visit;
 
-            bool isPrepaid = visit.PaymentCollectionModel == "PartnerCollects" && visit.Status != "Cancelled";
+            bool isPrepaid = visit.PaymentCollectionModel == "PartnerCollects" && visit.Status != VisitStatus.Cancelled;
             
             if (isPrepaid)
             {
@@ -1122,6 +1141,29 @@ namespace SynOS.Services
             
             await _context.SaveChangesAsync();
             _logger.LogInformation("Resolved Draft {DraftId} to Partner {PartnerId}", draftId, targetPartnerId);
+        }
+        public async Task ReassignVisitAsync(Guid visitId, Guid newReceptionistId, Guid actorUserId)
+        {
+            var visit = await _context.Visits.FindAsync(visitId);
+            if (visit == null) throw new KeyNotFoundException($"Visit {visitId} not found");
+
+            var oldReceptionistId = visit.AssignedReceptionistId;
+            visit.AssignedReceptionistId = newReceptionistId;
+            await _context.SaveChangesAsync();
+
+            _logger.LogInformation("Visit {VisitId} reassigned from {OldId} to {NewId} by {ActorId}", 
+                visitId, oldReceptionistId, newReceptionistId, actorUserId);
+
+            // Audit
+            await _operationalEventWriter.WriteEventAsync(
+                BranchEventType.VISIT_UPDATED,
+                visit.BranchId?.ToString() ?? _userContext.CurrentBranchId.ToString(),
+                visitId.ToString(),
+                visit.Token,
+                $"Visit ownership transferred to user {newReceptionistId}",
+                "System",
+                actorUserId.ToString()
+            );
         }
     }
 }

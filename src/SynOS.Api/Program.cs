@@ -168,6 +168,7 @@ builder.Services.AddScoped<IOperationsEngine, OperationsEngine>(); // ADDED
 builder.Services.AddScoped<IDashboardService, DashboardService>(); // Auto-wired OK
 builder.Services.AddScoped<IDashboardNotificationService, SignalRDashboardNotificationService>(); // ADDED: Phase 2
 builder.Services.AddScoped<INotifier, SignalRNotifier>(); // ADDED: Action Queue Refresh
+builder.Services.AddSingleton<SynOS.Services.Operational.IOperationalEventChannel, SynOS.Services.Operational.OperationalEventChannel>(); // ADDED: Event-Driven Projection
 builder.Services.AddScoped<IPatientService, PatientService>();
 builder.Services.AddReferralServices();
 builder.Services.AddPayableServices();
@@ -230,7 +231,8 @@ builder.Services.AddScoped<IReceptionFlowService>(provider =>
         provider.GetRequiredService<IUserContext>(), // ADDED
         provider.GetRequiredService<IWorkRoutingEngine>(), // ADDED
         provider.GetRequiredService<ISpecimenGroupingService>(), // ADDED
-        provider.GetRequiredService<IEventPublishingService>() // ADDED
+        provider.GetRequiredService<IEventPublishingService>(), // ADDED
+        provider.GetRequiredService<INotifier>() // ADDED
     ));
 builder.Services.AddScoped<IResultService, ResultService>();
 builder.Services.AddScoped<SynOS.Services.Reception.IReceptionSnapshotService, SynOS.Services.Reception.ReceptionSnapshotService>();

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SynOS.Data;
 
@@ -11,9 +12,11 @@ using SynOS.Data;
 namespace SynOS.Data.Migrations
 {
     [DbContext(typeof(SynOSDbContext))]
-    partial class SynOSDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260226082130_AddActionQueueIndex")]
+    partial class AddActionQueueIndex
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -4880,46 +4883,10 @@ namespace SynOS.Data.Migrations
                     b.Property<DateTime>("Date")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("CompletedCollectionsCount")
-                        .HasColumnType("int");
-
                     b.Property<DateTime>("LastUpdated")
                         .HasColumnType("datetime2");
 
-                    b.Property<decimal>("PaymentsCashTotal")
-                        .HasColumnType("decimal(18, 2)");
-
-                    b.Property<int>("PaymentsOnlineCount")
-                        .HasColumnType("int");
-
-                    b.Property<decimal>("PaymentsOnlineTotal")
-                        .HasColumnType("decimal(18, 2)");
-
-                    b.Property<decimal>("PaymentsTotal")
-                        .HasColumnType("decimal(18, 2)");
-
-                    b.Property<int>("PendingCollectionsCount")
-                        .HasColumnType("int");
-
                     b.Property<int>("PendingReportsCount")
-                        .HasColumnType("int");
-
-                    b.Property<int>("PrepaidBillsCount")
-                        .HasColumnType("int");
-
-                    b.Property<decimal>("PrepaidBillsTotal")
-                        .HasColumnType("decimal(18, 2)");
-
-                    b.Property<int>("ReportTatCount")
-                        .HasColumnType("int");
-
-                    b.Property<double>("ReportTatTotalMinutes")
-                        .HasColumnType("float");
-
-                    b.Property<int>("TestsRunningCount")
-                        .HasColumnType("int");
-
-                    b.Property<int>("WalkInsCount")
                         .HasColumnType("int");
 
                     b.HasKey("BranchId", "Date");
@@ -4959,9 +4926,6 @@ namespace SynOS.Data.Migrations
                     b.Property<DateTime>("Date")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("CompletedCollectionsCount")
-                        .HasColumnType("int");
-
                     b.Property<DateTime>("LastUpdated")
                         .HasColumnType("datetime2");
 
@@ -4977,12 +4941,6 @@ namespace SynOS.Data.Migrations
                     b.Property<decimal>("PaymentsTotal")
                         .HasColumnType("decimal(18, 2)");
 
-                    b.Property<int>("PendingCollectionsCount")
-                        .HasColumnType("int");
-
-                    b.Property<int>("PendingReportsCount")
-                        .HasColumnType("int");
-
                     b.Property<int>("PrepaidBillsCount")
                         .HasColumnType("int");
 
@@ -4995,9 +4953,6 @@ namespace SynOS.Data.Migrations
                     b.Property<double>("ReportTatTotalMinutes")
                         .HasColumnType("float");
 
-                    b.Property<int>("TestsRunningCount")
-                        .HasColumnType("int");
-
                     b.Property<int>("WalkInsCount")
                         .HasColumnType("int");
 
@@ -5006,41 +4961,6 @@ namespace SynOS.Data.Migrations
                     b.HasIndex("UserId", "BranchId", "Date");
 
                     b.ToTable("UserOperationalStats", (string)null);
-                });
-
-            modelBuilder.Entity("SynOS.Models.ReadModels.VisitOperationalState", b =>
-                {
-                    b.Property<Guid>("VisitId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("AssignedReceptionistId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("BranchId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<int>("CompletedCollectionsCount")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("Date")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("PendingCollectionsCount")
-                        .HasColumnType("int");
-
-                    b.Property<int>("PendingReportsCount")
-                        .HasColumnType("int");
-
-                    b.Property<int>("TestsRunningCount")
-                        .HasColumnType("int");
-
-                    b.Property<bool>("WalkInActive")
-                        .HasColumnType("bit");
-
-                    b.HasKey("VisitId");
-
-                    b.ToTable("VisitOperationalStates");
                 });
 
             modelBuilder.Entity("SynOS.Models.Entities.Appointment", b =>

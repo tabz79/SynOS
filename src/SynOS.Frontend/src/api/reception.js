@@ -10,6 +10,32 @@ export const ReceptionApi = {
     },
 
     /**
+     * Normalizes Backend ActionQueueRowDto (PascalCase -> camelCase) using defensive mapping
+     * @param {Array} data 
+     * @returns {Array}
+     */
+    normalizeQueueData: (data) => {
+        if (!Array.isArray(data)) return [];
+        return data.map(row => ({
+            ...row,
+            visitId: row.visitId || row.VisitId,
+            token: row.token || row.Token,
+            patientName: row.patientName || row.PatientName,
+            patientAgeGender: row.patientAgeGender || row.PatientAgeGender,
+            testCodes: row.testCodes || row.TestCodes || [],
+            paymentDisplay: row.paymentDisplay || row.PaymentDisplay,
+            totalAmount: row.totalAmount || row.TotalAmount,
+            paymentMethod: row.paymentMethod || row.PaymentMethod,
+            referrerName: row.referrerName || row.ReferrerName,
+            operationalStatus: row.operationalStatus || row.OperationalStatus,
+            isFinalized: row.isFinalized || row.IsFinalized,
+            assignedResource: row.assignedResource || row.AssignedResource,
+            isTokenPrinted: row.isTokenPrinted ?? row.IsTokenPrinted,
+            dateGroup: row.dateGroup || row.DateGroup || "Today"
+        }));
+    },
+
+    /**
      * Commits the reception intent to start a visit.
      * @param {Object} payload - { patientId, referralPartnerId, paymentCollectionModel }
      * @returns {Promise<Object>} - { visitId }

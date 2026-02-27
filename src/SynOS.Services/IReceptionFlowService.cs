@@ -27,5 +27,7 @@ namespace SynOS.Services
         Task ResolveReferralDraftAsync(Guid draftId, Guid targetPartnerId, Guid actorUserId);
 
         Task TransitionToSpecimenPlannedAsync(Guid visitId); // ADDED: Specimen Architecture
+
+        Task ReassignVisitAsync(Guid visitId, Guid newReceptionistId, Guid actorUserId);
     }
 }

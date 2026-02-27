@@ -12,9 +12,8 @@ export function LoginPage() {
     const navigate = useNavigate();
 
     // Redirect if already logged in (cleanup mainly, or auto-redirect logic handled in wrapper)
-    // But helpful here too.
-    if (user?.role === 'Receptionist') {
-        setTimeout(() => navigate('/reception'), 100);
+    if (user) {
+        setTimeout(() => navigate('/'), 100);
     }
 
     const handleSubmit = async (e) => {
@@ -24,9 +23,7 @@ export function LoginPage() {
 
         try {
             await login(email, password);
-            // Navigation handled by effect or parent, but we can push here too.
-            // Role check happens in RouteGuard, but we can hint user here.
-            navigate('/reception');
+            navigate('/');
         } catch (err) {
             setError(err.message);
         } finally {

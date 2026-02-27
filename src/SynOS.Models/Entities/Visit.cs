@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using SynOS.Models.Entities.Referral;
+using SynOS.Models.Enums;
 
 namespace SynOS.Models.Entities
 {
@@ -16,6 +17,14 @@ namespace SynOS.Models.Entities
 
         [ForeignKey("PatientId")]
         public Patient? Patient { get; set; }
+
+        public Guid? CreatedByUserId { get; set; }
+        [ForeignKey("CreatedByUserId")]
+        public virtual User? Creator { get; set; }
+
+        public Guid? AssignedReceptionistId { get; set; }
+        [ForeignKey("AssignedReceptionistId")]
+        public virtual User? AssignedReceptionist { get; set; }
 
         public Guid? ReferrerId { get; set; }
         [ForeignKey("ReferrerId")]
@@ -37,8 +46,7 @@ namespace SynOS.Models.Entities
         public string Department { get; set; } = string.Empty;
 
         [Required]
-        [StringLength(50)]
-        public string Status { get; set; } = string.Empty;
+        public VisitStatus Status { get; set; }
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 

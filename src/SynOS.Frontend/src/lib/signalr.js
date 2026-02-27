@@ -6,6 +6,21 @@ let subscriberCount = 0;
 let stopTimer = null;
 
 export const SignalRService = {
+    _getConnection: () => {
+        if (!connection) {
+            connection = new HubConnectionBuilder()
+                .withUrl("/dashboardHub", {
+                    accessTokenFactory: () => localStorage.getItem('synos_jwt'),
+                    skipNegotiation: true,
+                    transport: HttpTransportType.WebSockets
+                })
+                .withAutomaticReconnect()
+                .configureLogging(LogLevel.Information)
+                .build();
+        }
+        return connection;
+    },
+
     /**
      * Initializes and starts the SignalR connection.
      * Uses Reference Counting to handle React Strict Mode.
@@ -15,7 +30,6 @@ export const SignalRService = {
         subscriberCount++;
         console.log(`SignalR: Subscriber added (Total: ${subscriberCount})`);
 
-        // If a stop was scheduled, cancel it (We are still needed!)
         if (stopTimer) {
             clearTimeout(stopTimer);
             stopTimer = null;
@@ -25,50 +39,34 @@ export const SignalRService = {
         const token = localStorage.getItem('synos_jwt');
         if (!token) return;
 
-        // If already connected, just return existing state
-        if (connection?.state === HubConnectionState.Connected) {
+        const conn = SignalRService._getConnection();
+
+        if (conn.state === HubConnectionState.Connected) {
             return;
         }
 
-        // If currently connecting, join the wait
         if (connectionPromise) {
             return connectionPromise;
         }
 
-        // Create new connection if needed
-        if (!connection) {
-            connection = new HubConnectionBuilder()
-                .withUrl("/dashboardHub", {
-                    // FIX: Read directly from storage to avoid stale closure
-                    accessTokenFactory: () => localStorage.getItem('synos_jwt'),
-                    skipNegotiation: true,
-                    transport: HttpTransportType.WebSockets
-                })
-                .withAutomaticReconnect()
-                .configureLogging(LogLevel.Information)
-                .build();
-        }
-
-        // Start connection
         console.log("SignalR: Starting connection...");
-        connectionPromise = connection.start()
+        connectionPromise = conn.start()
             .then(() => {
                 console.log("SignalR: Connected to /dashboardHub");
                 SignalRService._notifyStatusChange("Synced");
                 connectionPromise = null;
 
-                // Wire up lifecycle events
-                connection.onclose(() => {
+                conn.onclose(() => {
                     console.log("SignalR: Connection Closed");
                     SignalRService._notifyStatusChange("Not Synced");
                 });
 
-                connection.onreconnecting(() => {
+                conn.onreconnecting(() => {
                     console.log("SignalR: Reconnecting...");
                     SignalRService._notifyStatusChange("Reconnecting");
                 });
 
-                connection.onreconnected(() => {
+                conn.onreconnected(() => {
                     console.log("SignalR: Reconnected");
                     SignalRService._notifyStatusChange("Synced");
                 });
@@ -77,92 +75,62 @@ export const SignalRService = {
                 console.error("SignalR: Connection Failed:", err);
                 SignalRService._notifyStatusChange("Not Synced");
                 connectionPromise = null;
-                // Don't nullify connection object here, allow retry
             });
 
         return connectionPromise;
     },
 
-    /**
-     * Subscribes to the Reception Summary updates.
-     * @param {Function} callback - (payload) => void
-     */
     onReceptionSummaryUpdated: (callback) => {
-        if (!connection) return;
-        connection.off("ReceptionSummaryUpdated");
-        connection.on("ReceptionSummaryUpdated", (payload) => {
+        const conn = SignalRService._getConnection();
+        conn.off("ReceptionSummaryUpdated");
+        conn.on("ReceptionSummaryUpdated", (payload) => {
             console.log("SignalR: ReceptionSummaryUpdated received", payload);
             callback(payload);
         });
     },
 
-    /**
-     * Subscribes to the Intake Snapshot updates.
-     * @param {Function} callback - (snapshot) => void
-     */
     onIntakeSnapshotUpdated: (callback) => {
-        if (!connection) return;
-        // Clean up previous listeners to avoid duplicates
-        connection.off("ReceptionIntakeUpdated");
-
-        connection.on("ReceptionIntakeUpdated", (snapshot) => {
+        const conn = SignalRService._getConnection();
+        conn.off("ReceptionIntakeUpdated");
+        conn.on("ReceptionIntakeUpdated", (snapshot) => {
             console.log("SignalR: ReceptionIntakeUpdated received", snapshot);
             callback(snapshot);
         });
     },
 
-    /**
-     * Subscribes to Action Queue updates (Fallback for full refresh).
-     * @param {Function} callback - () => void
-     */
     onActionQueueUpdated: (callback) => {
-        if (!connection) return;
-        connection.off("ActionQueueUpdated");
-        connection.on("ActionQueueUpdated", () => {
+        const conn = SignalRService._getConnection();
+        conn.off("ActionQueueUpdated");
+        conn.on("ActionQueueUpdated", () => {
             console.log("SignalR: ActionQueueUpdated received (Thundering Herd Fallback)");
             callback();
         });
     },
 
-    /**
-     * Subscribes to targeted Delta Updates for the Action Queue.
-     * @param {Function} callback - (deltaRow) => void
-     */
     onActionQueueDeltaReceived: (callback) => {
-        if (!connection) return;
-        connection.off("ActionQueueDeltaReceived");
-        connection.on("ActionQueueDeltaReceived", (deltaRow) => {
-            console.log("SignalR: ActionQueueDeltaReceived received", deltaRow?.token);
+        const conn = SignalRService._getConnection();
+        conn.off("ActionQueueDeltaReceived");
+        conn.on("ActionQueueDeltaReceived", (deltaRow) => {
+            console.log("SignalR: ActionQueueDeltaReceived received", deltaRow?.token || deltaRow?.Token);
             callback(deltaRow);
         });
     },
 
-    /**
-     * Subscribes to Server Time updates (Anchor).
-     * @param {Function} callback - (serverTime) => void
-     */
     onReceiveServerTime: (callback) => {
-        if (!connection) return;
-        connection.off("ReceiveServerTime");
-        connection.on("ReceiveServerTime", (serverTime) => {
+        const conn = SignalRService._getConnection();
+        conn.off("ReceiveServerTime");
+        conn.on("ReceiveServerTime", (serverTime) => {
             console.log("SignalR: ReceiveServerTime received", serverTime);
             callback(serverTime);
         });
     },
 
-    /**
-     * Subscribes to Connection Status changes.
-     * @param {Function} callback - (status) => void ("Synced" | "Reconnecting" | "Not Synced")
-     */
     onConnectionStatusChanged: (callback) => {
-        // Store callback globally or handled via internal eventing? 
-        // Simplest: just assign to a property we call internally.
-        // For multiple subscribers, we need an array.
         if (!window._signalrStatusSubscribers) window._signalrStatusSubscribers = [];
         window._signalrStatusSubscribers.push(callback);
 
-        // Emit current state immediately
-        const state = connection?.state === HubConnectionState.Connected ? "Synced" : "Not Synced";
+        const conn = SignalRService._getConnection();
+        const state = conn.state === HubConnectionState.Connected ? "Synced" : "Not Synced";
         callback(state);
     },
 
@@ -172,30 +140,22 @@ export const SignalRService = {
         }
     },
 
-    /**
-     * Stops the connection with a grace period.
-     * Only actually disconnects if no subscribers remain after delay.
-     */
     stopConnection: async () => {
         subscriberCount--;
         console.log(`SignalR: Subscriber removed (Total: ${subscriberCount})`);
 
         if (subscriberCount <= 0) {
-            subscriberCount = 0; // Safety clamp
+            subscriberCount = 0;
 
-            // Schedule disconnect in future to allow React Strict Mode 
-            // to remount immediately without killing the socket
             if (stopTimer) clearTimeout(stopTimer);
 
             stopTimer = setTimeout(async () => {
-                if (subscriberCount > 0) return; // Saved at the buzzer!
+                if (subscriberCount > 0) return;
 
                 console.log("SignalR: No subscribers, disconnecting...");
                 if (connection) {
                     try {
-                        // Wait for any pending start
                         if (connectionPromise) await connectionPromise;
-
                         await connection.stop();
                         console.log("SignalR: Disconnected");
                     } catch (err) {
@@ -203,9 +163,10 @@ export const SignalRService = {
                     } finally {
                         connectionPromise = null;
                         stopTimer = null;
+                        // Keep connection object for potential restart
                     }
                 }
-            }, 2000); // 2 second grace period
+            }, 2000);
         }
     }
 };
@@ -216,6 +177,21 @@ let branchSubscriberCount = 0;
 let branchStopTimer = null;
 
 export const BranchOperationsSignalRService = {
+    _getConnection: () => {
+        if (!branchConnection) {
+            branchConnection = new HubConnectionBuilder()
+                .withUrl("/branchOperationsHub", {
+                    accessTokenFactory: () => localStorage.getItem('synos_jwt'),
+                    skipNegotiation: true,
+                    transport: HttpTransportType.WebSockets
+                })
+                .withAutomaticReconnect()
+                .configureLogging(LogLevel.Information)
+                .build();
+        }
+        return branchConnection;
+    },
+
     startConnection: async (branchId, terminalId, capabilities) => {
         branchSubscriberCount++;
         console.log(`SignalR(Branch): Subscriber added (Total: ${branchSubscriberCount})`);
@@ -229,7 +205,9 @@ export const BranchOperationsSignalRService = {
         const token = localStorage.getItem('synos_jwt');
         if (!token) return;
 
-        if (branchConnection?.state === HubConnectionState.Connected) {
+        const conn = BranchOperationsSignalRService._getConnection();
+
+        if (conn.state === HubConnectionState.Connected) {
             return;
         }
 
@@ -237,20 +215,8 @@ export const BranchOperationsSignalRService = {
             return branchConnectionPromise;
         }
 
-        if (!branchConnection) {
-            branchConnection = new HubConnectionBuilder()
-                .withUrl("/branchOperationsHub", {
-                    accessTokenFactory: () => localStorage.getItem('synos_jwt'),
-                    skipNegotiation: true,
-                    transport: HttpTransportType.WebSockets
-                })
-                .withAutomaticReconnect()
-                .configureLogging(LogLevel.Information)
-                .build();
-        }
-
         console.log("SignalR(Branch): Starting connection...");
-        branchConnectionPromise = branchConnection.start()
+        branchConnectionPromise = conn.start()
             .then(async () => {
                 console.log("SignalR(Branch): Connected to /branchOperationsHub");
                 branchConnectionPromise = null;
@@ -258,19 +224,19 @@ export const BranchOperationsSignalRService = {
                 // Register Capabilities immediately upon connecting
                 for (const cap of capabilities) {
                     try {
-                        await branchConnection.invoke("RegisterCapability", branchId, terminalId, cap);
+                        await conn.invoke("RegisterCapability", branchId, terminalId, cap);
                     } catch (err) {
                         console.error(`SignalR(Branch): Failed to register capability ${cap}`, err);
                     }
                 }
 
-                branchConnection.onclose(() => console.log("SignalR(Branch): Connection Closed"));
-                branchConnection.onreconnecting(() => console.log("SignalR(Branch): Reconnecting..."));
-                branchConnection.onreconnected(async () => {
+                conn.onclose(() => console.log("SignalR(Branch): Connection Closed"));
+                conn.onreconnecting(() => console.log("SignalR(Branch): Reconnecting..."));
+                conn.onreconnected(async () => {
                     console.log("SignalR(Branch): Reconnected. Re-registering capabilities...");
                     for (const cap of capabilities) {
                         try {
-                            await branchConnection.invoke("RegisterCapability", branchId, terminalId, cap);
+                            await conn.invoke("RegisterCapability", branchId, terminalId, cap);
                         } catch (err) {
                             console.error(`SignalR(Branch): Failed to re-register capability ${cap}`, err);
                         }
@@ -286,18 +252,18 @@ export const BranchOperationsSignalRService = {
     },
 
     onCapabilityRegistered: (callback) => {
-        if (!branchConnection) return;
-        branchConnection.off("CapabilityRegistered");
-        branchConnection.on("CapabilityRegistered", (capability, isAuthorized) => {
+        const conn = BranchOperationsSignalRService._getConnection();
+        conn.off("CapabilityRegistered");
+        conn.on("CapabilityRegistered", (capability, isAuthorized) => {
             console.log(`SignalR(Branch): Capability '${capability}' registration result: ${isAuthorized ? "AUTHORIZED" : "DENIED"}`);
             callback(capability, isAuthorized);
         });
     },
 
     onPrintThermalReceipt: (callback) => {
-        if (!branchConnection) return;
-        branchConnection.off("OnPrintThermalReceipt");
-        branchConnection.on("OnPrintThermalReceipt", (payload) => {
+        const conn = BranchOperationsSignalRService._getConnection();
+        conn.off("OnPrintThermalReceipt");
+        conn.on("OnPrintThermalReceipt", (payload) => {
             console.log("SignalR(Branch): OnPrintThermalReceipt received", payload);
             callback(payload);
         });

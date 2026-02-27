@@ -5,6 +5,7 @@ namespace SynOS.Services.Operational
 {
     public interface INotifier 
     {
-        Task NotifyDashboardRefresh(string branchId, string? visitId = null);
+        Task NotifyActionQueueDeltaAsync(string branchId, string visitId);
+        Task NotifyRealitySummaryUpdateAsync(string branchId, Guid? targetUserId = null);
     }
 }

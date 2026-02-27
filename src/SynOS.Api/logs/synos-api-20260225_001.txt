@@ -1,0 +1,488 @@
+2026-02-25 14:53:24.780 +05:30 [INF] OperationalStatsProjectionWorker is starting. Interval: 5s
+2026-02-25 14:53:25.436 +05:30 [INF] Worker: Running Consistency Check...
+2026-02-25 14:53:29.917 +05:30 [WRN] The foreign key property 'Specimen.VisitId1' was created in shadow state because a conflicting property with the simple name 'VisitId' exists in the entity type, but is either not mapped, is already used for another relationship, or is incompatible with the associated primary key type. See https://aka.ms/efcore-relationships for information on mapping relationships in EF Core.
+2026-02-25 14:53:36.630 +05:30 [WRN] Failed to determine the https port for redirect.
+2026-02-25 14:54:09.894 +05:30 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2026-02-25 14:54:09.940 +05:30 [INF] Terminal web-1zy6xxtky authorized and added to Lead Print Group for Branch "a0000000-0000-0000-0000-000000000001".
+2026-02-25 14:54:23.513 +05:30 [INF] Terminal web-1zy6xxtky authorized and added to Lead Print Group for Branch "a0000000-0000-0000-0000-000000000001".
+2026-02-25 14:54:32.955 +05:30 [INF] Terminal web-1zy6xxtky authorized and added to Lead Print Group for Branch "a0000000-0000-0000-0000-000000000001".
+2026-02-25 14:55:08.521 +05:30 [INF] Terminal web-1zy6xxtky authorized and added to Lead Print Group for Branch "a0000000-0000-0000-0000-000000000001".
+2026-02-25 14:56:09.194 +05:30 [INF] Terminal web-l52dlpr0q attempted to register Thermal80mm for Branch "a0000000-0000-0000-0000-000000000001" but lacked Lead authorization.
+2026-02-25 14:57:18.496 +05:30 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2026-02-25 14:57:18.630 +05:30 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2026-02-25 14:57:18.883 +05:30 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2026-02-25 14:57:19.031 +05:30 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2026-02-25 14:57:19.255 +05:30 [INF] EVENT_WRITE for VisitId 03453b99-3b3d-40c3-b81d-999c648dd15e, Context f979ce7e-0326-47ae-bda7-5825680461b8:0
+2026-02-25 14:57:19.535 +05:30 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2026-02-25 14:57:19.701 +05:30 [INF] EVENT_WRITE for VisitId 03453b99-3b3d-40c3-b81d-999c648dd15e, Context f979ce7e-0326-47ae-bda7-5825680461b8:0
+2026-02-25 14:57:23.442 +05:30 [INF] [ProjectorDebug] Processing Event Type: VISIT_CREATED, BranchId: "a0000000-0000-0000-0000-000000000001", SourceId: null, SourceType: null, VisitId: 03453b99-3b3d-40c3-b81d-999c648dd15e
+2026-02-25 14:57:23.774 +05:30 [WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+2026-02-25 14:57:23.804 +05:30 [INF] EVENT_WRITE for VisitId 03453b99-3b3d-40c3-b81d-999c648dd15e, Context 255efae4-136b-4a3b-a939-6e6ac732d5a6:0
+2026-02-25 14:57:24.004 +05:30 [INF] [ProjectorDebug] Processing Event Type: VISIT_STARTED, BranchId: "a0000000-0000-0000-0000-000000000001", SourceId: null, SourceType: null, VisitId: 03453b99-3b3d-40c3-b81d-999c648dd15e
+2026-02-25 14:57:24.031 +05:30 [WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+2026-02-25 14:57:29.308 +05:30 [INF] [ProjectorDebug] Processing Event Type: VISIT_UPDATED, BranchId: "a0000000-0000-0000-0000-000000000001", SourceId: null, SourceType: null, VisitId: 03453b99-3b3d-40c3-b81d-999c648dd15e
+2026-02-25 14:57:29.322 +05:30 [WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+2026-02-25 14:57:32.450 +05:30 [INF] TRACE: AddTestToVisitAsync called. visitId="03453b99-3b3d-40c3-b81d-999c648dd15e", testCode=LFT
+2026-02-25 14:57:32.513 +05:30 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2026-02-25 14:57:32.580 +05:30 [INF] [ExpansionDebug] Starting expansion for LFT. isChild: False, parentOrderId: 
+2026-02-25 14:57:32.666 +05:30 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2026-02-25 14:57:32.747 +05:30 [WRN] [Validation] Resolving Test: LFT, IsProfile: True, HasChildren: True, SpecimenType: SERUM
+2026-02-25 14:57:32.752 +05:30 [INF] [ExpansionDebug] Creating Order entry: LFT, ID: 6c6fac0e-cfc0-46e8-9f75-e80794107183, Parent: 
+2026-02-25 14:57:32.844 +05:30 [INF] [ExpansionDebug] Order LFT added to context and local collection.
+2026-02-25 14:57:32.847 +05:30 [INF] [ExpansionDebug] Test LFT is a Profile. Children found in cache: 8
+2026-02-25 14:57:32.851 +05:30 [INF] [ExpansionDebug] Expanding child: BIL_T (ID: 312b6601-79e1-450a-93df-130c2fe45499) for parent: LFT
+2026-02-25 14:57:32.860 +05:30 [INF] [ExpansionDebug] Starting expansion for BIL_T. isChild: True, parentOrderId: 6c6fac0e-cfc0-46e8-9f75-e80794107183
+2026-02-25 14:57:32.863 +05:30 [WRN] [Validation] Resolving Test: BIL_T, IsProfile: False, HasChildren: False, SpecimenType: SERUM
+2026-02-25 14:57:32.866 +05:30 [INF] [ExpansionDebug] Creating Order entry: BIL_T, ID: 3ae8c11d-b4c2-4458-8232-cfc3ed258106, Parent: 6c6fac0e-cfc0-46e8-9f75-e80794107183
+2026-02-25 14:57:32.873 +05:30 [INF] [ExpansionDebug] Order BIL_T added to context and local collection.
+2026-02-25 14:57:32.878 +05:30 [INF] [ExpansionDebug] Expanding child: BIL_I (ID: 703b55e4-0ce0-4264-9a10-044170be3dff) for parent: LFT
+2026-02-25 14:57:32.880 +05:30 [INF] [ExpansionDebug] Starting expansion for BIL_I. isChild: True, parentOrderId: 6c6fac0e-cfc0-46e8-9f75-e80794107183
+2026-02-25 14:57:32.883 +05:30 [WRN] [Validation] Resolving Test: BIL_I, IsProfile: False, HasChildren: False, SpecimenType: SERUM
+2026-02-25 14:57:32.888 +05:30 [INF] [ExpansionDebug] Creating Order entry: BIL_I, ID: 20d57b6f-3c8c-499f-b267-35615c995cde, Parent: 6c6fac0e-cfc0-46e8-9f75-e80794107183
+2026-02-25 14:57:32.892 +05:30 [INF] [ExpansionDebug] Order BIL_I added to context and local collection.
+2026-02-25 14:57:32.894 +05:30 [INF] [ExpansionDebug] Expanding child: ALP (ID: 2f43b453-5f8b-44b8-8964-64f8a8a0d257) for parent: LFT
+2026-02-25 14:57:32.897 +05:30 [INF] [ExpansionDebug] Starting expansion for ALP. isChild: True, parentOrderId: 6c6fac0e-cfc0-46e8-9f75-e80794107183
+2026-02-25 14:57:32.899 +05:30 [WRN] [Validation] Resolving Test: ALP, IsProfile: False, HasChildren: False, SpecimenType: SERUM
+2026-02-25 14:57:32.902 +05:30 [INF] [ExpansionDebug] Creating Order entry: ALP, ID: 878bf596-b281-4d44-bd00-2bf1444f335f, Parent: 6c6fac0e-cfc0-46e8-9f75-e80794107183
+2026-02-25 14:57:32.909 +05:30 [INF] [ExpansionDebug] Order ALP added to context and local collection.
+2026-02-25 14:57:32.911 +05:30 [INF] [ExpansionDebug] Expanding child: GLOB (ID: 264c0834-e3bc-43ff-b5d7-1a699095f9e5) for parent: LFT
+2026-02-25 14:57:32.914 +05:30 [INF] [ExpansionDebug] Starting expansion for GLOB. isChild: True, parentOrderId: 6c6fac0e-cfc0-46e8-9f75-e80794107183
+2026-02-25 14:57:32.916 +05:30 [WRN] [Validation] Resolving Test: GLOB, IsProfile: False, HasChildren: False, SpecimenType: SERUM
+2026-02-25 14:57:32.918 +05:30 [INF] [ExpansionDebug] Creating Order entry: GLOB, ID: 9b532ba4-866f-4bf6-a82b-81742f72b50f, Parent: 6c6fac0e-cfc0-46e8-9f75-e80794107183
+2026-02-25 14:57:32.926 +05:30 [INF] [ExpansionDebug] Order GLOB added to context and local collection.
+2026-02-25 14:57:32.929 +05:30 [INF] [ExpansionDebug] Expanding child: SGPT (ID: a5bbbf60-2969-498e-a560-48713dc89b86) for parent: LFT
+2026-02-25 14:57:32.931 +05:30 [INF] [ExpansionDebug] Starting expansion for SGPT. isChild: True, parentOrderId: 6c6fac0e-cfc0-46e8-9f75-e80794107183
+2026-02-25 14:57:32.934 +05:30 [WRN] [Validation] Resolving Test: SGPT, IsProfile: False, HasChildren: False, SpecimenType: SERUM
+2026-02-25 14:57:32.940 +05:30 [INF] [ExpansionDebug] Creating Order entry: SGPT, ID: 1015ab86-59d1-48fc-bad8-43d4561b40de, Parent: 6c6fac0e-cfc0-46e8-9f75-e80794107183
+2026-02-25 14:57:32.945 +05:30 [INF] [ExpansionDebug] Order SGPT added to context and local collection.
+2026-02-25 14:57:32.948 +05:30 [INF] [ExpansionDebug] Expanding child: TP (ID: bf9efc48-9655-4d4e-90c4-449dcdbf2848) for parent: LFT
+2026-02-25 14:57:32.950 +05:30 [INF] [ExpansionDebug] Starting expansion for TP. isChild: True, parentOrderId: 6c6fac0e-cfc0-46e8-9f75-e80794107183
+2026-02-25 14:57:32.957 +05:30 [WRN] [Validation] Resolving Test: TP, IsProfile: False, HasChildren: False, SpecimenType: SERUM
+2026-02-25 14:57:32.961 +05:30 [INF] [ExpansionDebug] Creating Order entry: TP, ID: da8715aa-8698-4046-9397-933ad222df4b, Parent: 6c6fac0e-cfc0-46e8-9f75-e80794107183
+2026-02-25 14:57:32.964 +05:30 [INF] [ExpansionDebug] Order TP added to context and local collection.
+2026-02-25 14:57:32.966 +05:30 [INF] [ExpansionDebug] Expanding child: SGOT (ID: caa95f56-021f-401f-9caa-fbaa64653b14) for parent: LFT
+2026-02-25 14:57:32.968 +05:30 [INF] [ExpansionDebug] Starting expansion for SGOT. isChild: True, parentOrderId: 6c6fac0e-cfc0-46e8-9f75-e80794107183
+2026-02-25 14:57:32.974 +05:30 [WRN] [Validation] Resolving Test: SGOT, IsProfile: False, HasChildren: False, SpecimenType: SERUM
+2026-02-25 14:57:32.979 +05:30 [INF] [ExpansionDebug] Creating Order entry: SGOT, ID: 5279728c-d3bf-4f66-9618-b893334f1b1f, Parent: 6c6fac0e-cfc0-46e8-9f75-e80794107183
+2026-02-25 14:57:32.981 +05:30 [INF] [ExpansionDebug] Order SGOT added to context and local collection.
+2026-02-25 14:57:32.983 +05:30 [INF] [ExpansionDebug] Expanding child: ALB (ID: 349cae91-37b9-4d2b-bc30-11085aabcf01) for parent: LFT
+2026-02-25 14:57:32.987 +05:30 [INF] [ExpansionDebug] Starting expansion for ALB. isChild: True, parentOrderId: 6c6fac0e-cfc0-46e8-9f75-e80794107183
+2026-02-25 14:57:32.991 +05:30 [WRN] [Validation] Resolving Test: ALB, IsProfile: False, HasChildren: False, SpecimenType: SERUM
+2026-02-25 14:57:32.996 +05:30 [INF] [ExpansionDebug] Creating Order entry: ALB, ID: baa96b60-29e0-43b6-96d3-c14747aec2f3, Parent: 6c6fac0e-cfc0-46e8-9f75-e80794107183
+2026-02-25 14:57:32.998 +05:30 [INF] [ExpansionDebug] Order ALB added to context and local collection.
+2026-02-25 14:57:33.095 +05:30 [INF] TRACE: SaveChangesAsync reached. Affected rows: 9
+2026-02-25 14:57:39.622 +05:30 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2026-02-25 14:57:39.822 +05:30 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2026-02-25 14:57:40.306 +05:30 [INF] EVENT_WRITE for VisitId 03453b99-3b3d-40c3-b81d-999c648dd15e, Context 7791155c-9268-4585-8b26-27eb9c2526d0:0
+2026-02-25 14:57:40.667 +05:30 [INF] [DebugSpecimen] Loaded Visit 03453b99-3b3d-40c3-b81d-999c648dd15e, Status: Paid, Orders: 9, TestNavPresent: True
+2026-02-25 14:57:40.672 +05:30 [INF] [DebugGrouping] Order: 878bf596-b281-4d44-bd00-2bf1444f335f, TestCode: ALP, TestNavigationPresent: True
+2026-02-25 14:57:40.681 +05:30 [INF] [DebugGrouping] Order: 20d57b6f-3c8c-499f-b267-35615c995cde, TestCode: BIL_I, TestNavigationPresent: True
+2026-02-25 14:57:40.685 +05:30 [INF] [DebugGrouping] Order: 1015ab86-59d1-48fc-bad8-43d4561b40de, TestCode: SGPT, TestNavigationPresent: True
+2026-02-25 14:57:40.688 +05:30 [INF] [DebugGrouping] Order: 9b532ba4-866f-4bf6-a82b-81742f72b50f, TestCode: GLOB, TestNavigationPresent: True
+2026-02-25 14:57:40.690 +05:30 [INF] [DebugGrouping] Order: da8715aa-8698-4046-9397-933ad222df4b, TestCode: TP, TestNavigationPresent: True
+2026-02-25 14:57:40.698 +05:30 [INF] [DebugGrouping] Order: 5279728c-d3bf-4f66-9618-b893334f1b1f, TestCode: SGOT, TestNavigationPresent: True
+2026-02-25 14:57:40.702 +05:30 [INF] [DebugGrouping] Order: baa96b60-29e0-43b6-96d3-c14747aec2f3, TestCode: ALB, TestNavigationPresent: True
+2026-02-25 14:57:40.704 +05:30 [INF] [DebugGrouping] Order: 3ae8c11d-b4c2-4458-8232-cfc3ed258106, TestCode: BIL_T, TestNavigationPresent: True
+2026-02-25 14:57:40.707 +05:30 [INF] [DebugGrouping] Order: 6c6fac0e-cfc0-46e8-9f75-e80794107183, TestCode: LFT, TestNavigationPresent: True
+2026-02-25 14:57:40.902 +05:30 [WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+2026-02-25 14:57:40.961 +05:30 [INF] TransitionToSpecimenPlanned: Successfully planned 1 specimens for Visit "03453b99-3b3d-40c3-b81d-999c648dd15e"
+2026-02-25 14:57:41.054 +05:30 [INF] EVENT_WRITE for VisitId 03453b99-3b3d-40c3-b81d-999c648dd15e, Context 7791155c-9268-4585-8b26-27eb9c2526d0:0
+2026-02-25 14:57:41.106 +05:30 [INF] Attempting to assign work "SampleCollection" for source "03453b99-3b3d-40c3-b81d-999c648dd15e" in Pathology
+2026-02-25 14:57:41.458 +05:30 [INF] Work "SampleCollection" assigned to "0e34b739-d97f-445d-b488-2e5fd6b9918c" (Desk 1)
+2026-02-25 14:57:41.510 +05:30 [INF] Publishing PrintThermalReceiptEvent to Branch-a0000000-0000-0000-0000-000000000001-Lead-Thermal80mm (VisitId: "03453b99-3b3d-40c3-b81d-999c648dd15e")
+2026-02-25 14:57:48.430 +05:30 [INF] [ProjectorDebug] Processing Event Type: PAYMENT_RECEIVED, BranchId: "a0000000-0000-0000-0000-000000000001", SourceId: "145bd146-6322-40b5-898a-1653c7dd1996", SourceType: RevenueFact, VisitId: 03453b99-3b3d-40c3-b81d-999c648dd15e
+2026-02-25 14:57:48.461 +05:30 [INF] [ProjectorDebug] Checking Fact Deduplication for SourceId: "145bd146-6322-40b5-898a-1653c7dd1996"
+2026-02-25 14:57:48.555 +05:30 [INF] [ProjectorDebug] Incrementing WalkIn for RevenueFact. SourceRef: a2945d27-a07e-41a8-8241-cb3be9194641
+2026-02-25 14:57:48.593 +05:30 [WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+2026-02-25 14:57:48.794 +05:30 [INF] [ProjectorDebug] Processing Event Type: VISIT_FINALIZED, BranchId: "a0000000-0000-0000-0000-000000000001", SourceId: null, SourceType: null, VisitId: 03453b99-3b3d-40c3-b81d-999c648dd15e
+2026-02-25 14:57:49.062 +05:30 [WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+2026-02-25 15:01:38.206 +05:30 [INF] Terminal web-l52dlpr0q attempted to register Thermal80mm for Branch "a0000000-0000-0000-0000-000000000001" but lacked Lead authorization.
+2026-02-25 15:02:08.605 +05:30 [INF] EVENT_WRITE for VisitId e24d254a-e65b-4a57-9c6d-eefa7e7a5842, Context da30a20a-d14e-467b-bf53-23ccc92ef436:0
+2026-02-25 15:02:08.897 +05:30 [INF] EVENT_WRITE for VisitId e24d254a-e65b-4a57-9c6d-eefa7e7a5842, Context da30a20a-d14e-467b-bf53-23ccc92ef436:0
+2026-02-25 15:02:13.537 +05:30 [INF] [ProjectorDebug] Processing Event Type: VISIT_CREATED, BranchId: "a0000000-0000-0000-0000-000000000001", SourceId: null, SourceType: null, VisitId: e24d254a-e65b-4a57-9c6d-eefa7e7a5842
+2026-02-25 15:02:13.559 +05:30 [WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+2026-02-25 15:02:13.673 +05:30 [INF] [ProjectorDebug] Processing Event Type: VISIT_STARTED, BranchId: "a0000000-0000-0000-0000-000000000001", SourceId: null, SourceType: null, VisitId: e24d254a-e65b-4a57-9c6d-eefa7e7a5842
+2026-02-25 15:02:13.692 +05:30 [WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+2026-02-25 15:02:20.864 +05:30 [INF] EVENT_WRITE for VisitId e24d254a-e65b-4a57-9c6d-eefa7e7a5842, Context 26e30876-4753-417b-b186-a2f937789688:0
+2026-02-25 15:02:23.842 +05:30 [INF] [ProjectorDebug] Processing Event Type: VISIT_UPDATED, BranchId: "a0000000-0000-0000-0000-000000000001", SourceId: null, SourceType: null, VisitId: e24d254a-e65b-4a57-9c6d-eefa7e7a5842
+2026-02-25 15:02:23.850 +05:30 [WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+2026-02-25 15:02:29.409 +05:30 [INF] TRACE: AddTestToVisitAsync called. visitId="e24d254a-e65b-4a57-9c6d-eefa7e7a5842", testCode=DIAB_PRO
+2026-02-25 15:02:29.444 +05:30 [INF] [ExpansionDebug] Starting expansion for DIAB_PRO. isChild: False, parentOrderId: 
+2026-02-25 15:02:29.517 +05:30 [WRN] [Validation] Resolving Test: DIAB_PRO, IsProfile: True, HasChildren: True, SpecimenType: 
+2026-02-25 15:02:29.519 +05:30 [INF] [ExpansionDebug] Creating Order entry: DIAB_PRO, ID: cbd27f79-0bc6-45db-8e3c-8bd86f55fe7d, Parent: 
+2026-02-25 15:02:29.522 +05:30 [INF] [ExpansionDebug] Order DIAB_PRO added to context and local collection.
+2026-02-25 15:02:29.524 +05:30 [INF] [ExpansionDebug] Test DIAB_PRO is a Profile. Children found in cache: 10
+2026-02-25 15:02:29.535 +05:30 [INF] [ExpansionDebug] Expanding child: HDL (ID: 7d6daecd-11ae-4db1-b3e7-96fbb320af29) for parent: DIAB_PRO
+2026-02-25 15:02:29.537 +05:30 [INF] [ExpansionDebug] Starting expansion for HDL. isChild: True, parentOrderId: cbd27f79-0bc6-45db-8e3c-8bd86f55fe7d
+2026-02-25 15:02:29.540 +05:30 [WRN] [Validation] Resolving Test: HDL, IsProfile: False, HasChildren: False, SpecimenType: SERUM
+2026-02-25 15:02:29.542 +05:30 [INF] [ExpansionDebug] Creating Order entry: HDL, ID: 40390bc6-a9e5-45ec-b751-1f55c678b603, Parent: cbd27f79-0bc6-45db-8e3c-8bd86f55fe7d
+2026-02-25 15:02:29.551 +05:30 [INF] [ExpansionDebug] Order HDL added to context and local collection.
+2026-02-25 15:02:29.553 +05:30 [INF] [ExpansionDebug] Expanding child: UREA (ID: c87e90b0-51f7-441a-b667-a8721156cae5) for parent: DIAB_PRO
+2026-02-25 15:02:29.555 +05:30 [INF] [ExpansionDebug] Starting expansion for UREA. isChild: True, parentOrderId: cbd27f79-0bc6-45db-8e3c-8bd86f55fe7d
+2026-02-25 15:02:29.557 +05:30 [WRN] [Validation] Resolving Test: UREA, IsProfile: False, HasChildren: False, SpecimenType: SERUM
+2026-02-25 15:02:29.565 +05:30 [INF] [ExpansionDebug] Creating Order entry: UREA, ID: 8b67cafa-92af-49af-82f6-e0b02446af84, Parent: cbd27f79-0bc6-45db-8e3c-8bd86f55fe7d
+2026-02-25 15:02:29.569 +05:30 [INF] [ExpansionDebug] Order UREA added to context and local collection.
+2026-02-25 15:02:29.571 +05:30 [INF] [ExpansionDebug] Expanding child: UR_GL_PP (ID: 2d07d587-bb95-4c0f-8cb8-61736a1ffa90) for parent: DIAB_PRO
+2026-02-25 15:02:29.573 +05:30 [INF] [ExpansionDebug] Starting expansion for UR_GL_PP. isChild: True, parentOrderId: cbd27f79-0bc6-45db-8e3c-8bd86f55fe7d
+2026-02-25 15:02:29.575 +05:30 [WRN] [Validation] Resolving Test: UR_GL_PP, IsProfile: False, HasChildren: False, SpecimenType: URINE
+2026-02-25 15:02:29.584 +05:30 [INF] [ExpansionDebug] Creating Order entry: UR_GL_PP, ID: 31386b13-5177-43da-b3d6-bcda758e1b35, Parent: cbd27f79-0bc6-45db-8e3c-8bd86f55fe7d
+2026-02-25 15:02:29.587 +05:30 [INF] [ExpansionDebug] Order UR_GL_PP added to context and local collection.
+2026-02-25 15:02:29.590 +05:30 [INF] [ExpansionDebug] Expanding child: UR_GL_F (ID: b8a00ff1-f492-4bf0-943c-41e227bc5502) for parent: DIAB_PRO
+2026-02-25 15:02:29.592 +05:30 [INF] [ExpansionDebug] Starting expansion for UR_GL_F. isChild: True, parentOrderId: cbd27f79-0bc6-45db-8e3c-8bd86f55fe7d
+2026-02-25 15:02:29.601 +05:30 [WRN] [Validation] Resolving Test: UR_GL_F, IsProfile: False, HasChildren: False, SpecimenType: URINE
+2026-02-25 15:02:29.604 +05:30 [INF] [ExpansionDebug] Creating Order entry: UR_GL_F, ID: 71b36361-df16-49dc-8eca-2b3f05a8403f, Parent: cbd27f79-0bc6-45db-8e3c-8bd86f55fe7d
+2026-02-25 15:02:29.606 +05:30 [INF] [ExpansionDebug] Order UR_GL_F added to context and local collection.
+2026-02-25 15:02:29.608 +05:30 [INF] [ExpansionDebug] Expanding child: TRIG (ID: db0007a6-d874-4f48-a3c3-263319e180b6) for parent: DIAB_PRO
+2026-02-25 15:02:29.612 +05:30 [INF] [ExpansionDebug] Starting expansion for TRIG. isChild: True, parentOrderId: cbd27f79-0bc6-45db-8e3c-8bd86f55fe7d
+2026-02-25 15:02:29.617 +05:30 [WRN] [Validation] Resolving Test: TRIG, IsProfile: False, HasChildren: False, SpecimenType: SERUM
+2026-02-25 15:02:29.619 +05:30 [INF] [ExpansionDebug] Creating Order entry: TRIG, ID: 19c9e603-2f72-4287-978b-44071bba1b98, Parent: cbd27f79-0bc6-45db-8e3c-8bd86f55fe7d
+2026-02-25 15:02:29.622 +05:30 [INF] [ExpansionDebug] Order TRIG added to context and local collection.
+2026-02-25 15:02:29.624 +05:30 [INF] [ExpansionDebug] Expanding child: PPBS (ID: 6ba88608-50db-41a7-b265-6aeb8d6904fa) for parent: DIAB_PRO
+2026-02-25 15:02:29.629 +05:30 [INF] [ExpansionDebug] Starting expansion for PPBS. isChild: True, parentOrderId: cbd27f79-0bc6-45db-8e3c-8bd86f55fe7d
+2026-02-25 15:02:29.633 +05:30 [WRN] [Validation] Resolving Test: PPBS, IsProfile: False, HasChildren: False, SpecimenType: PLASMA
+2026-02-25 15:02:29.635 +05:30 [INF] [ExpansionDebug] Creating Order entry: PPBS, ID: 7e9380f5-1e6a-4d31-81cb-213fece9831a, Parent: cbd27f79-0bc6-45db-8e3c-8bd86f55fe7d
+2026-02-25 15:02:29.638 +05:30 [INF] [ExpansionDebug] Order PPBS added to context and local collection.
+2026-02-25 15:02:29.640 +05:30 [INF] [ExpansionDebug] Expanding child: CHOL (ID: ccc6d900-420a-4b1d-b75c-3320257df226) for parent: DIAB_PRO
+2026-02-25 15:02:29.641 +05:30 [INF] [ExpansionDebug] Starting expansion for CHOL. isChild: True, parentOrderId: cbd27f79-0bc6-45db-8e3c-8bd86f55fe7d
+2026-02-25 15:02:29.647 +05:30 [WRN] [Validation] Resolving Test: CHOL, IsProfile: False, HasChildren: False, SpecimenType: SERUM
+2026-02-25 15:02:29.651 +05:30 [INF] [ExpansionDebug] Creating Order entry: CHOL, ID: f70358ee-7ae6-4f36-8d8a-96a1a78ce3d9, Parent: cbd27f79-0bc6-45db-8e3c-8bd86f55fe7d
+2026-02-25 15:02:29.653 +05:30 [INF] [ExpansionDebug] Order CHOL added to context and local collection.
+2026-02-25 15:02:29.656 +05:30 [INF] [ExpansionDebug] Expanding child: UREA_N (ID: e6bc5882-30c2-45a0-9c02-788808e3870a) for parent: DIAB_PRO
+2026-02-25 15:02:29.658 +05:30 [INF] [ExpansionDebug] Starting expansion for UREA_N. isChild: True, parentOrderId: cbd27f79-0bc6-45db-8e3c-8bd86f55fe7d
+2026-02-25 15:02:29.665 +05:30 [WRN] [Validation] Resolving Test: UREA_N, IsProfile: False, HasChildren: False, SpecimenType: SERUM
+2026-02-25 15:02:29.668 +05:30 [INF] [ExpansionDebug] Creating Order entry: UREA_N, ID: f76e0a0d-4b37-4dfd-83c7-1b824b6c77e7, Parent: cbd27f79-0bc6-45db-8e3c-8bd86f55fe7d
+2026-02-25 15:02:29.670 +05:30 [INF] [ExpansionDebug] Order UREA_N added to context and local collection.
+2026-02-25 15:02:29.673 +05:30 [INF] [ExpansionDebug] Expanding child: CREA (ID: 5573f581-cc22-438a-ab04-451e08475be5) for parent: DIAB_PRO
+2026-02-25 15:02:29.675 +05:30 [INF] [ExpansionDebug] Starting expansion for CREA. isChild: True, parentOrderId: cbd27f79-0bc6-45db-8e3c-8bd86f55fe7d
+2026-02-25 15:02:29.681 +05:30 [WRN] [Validation] Resolving Test: CREA, IsProfile: False, HasChildren: False, SpecimenType: SERUM
+2026-02-25 15:02:29.684 +05:30 [INF] [ExpansionDebug] Creating Order entry: CREA, ID: 174e7048-d82a-4286-8a4d-7292effdedd8, Parent: cbd27f79-0bc6-45db-8e3c-8bd86f55fe7d
+2026-02-25 15:02:29.687 +05:30 [INF] [ExpansionDebug] Order CREA added to context and local collection.
+2026-02-25 15:02:29.689 +05:30 [INF] [ExpansionDebug] Expanding child: FBS (ID: 77363cb5-a49c-434f-bab8-bd7cf077bc9f) for parent: DIAB_PRO
+2026-02-25 15:02:29.692 +05:30 [INF] [ExpansionDebug] Starting expansion for FBS. isChild: True, parentOrderId: cbd27f79-0bc6-45db-8e3c-8bd86f55fe7d
+2026-02-25 15:02:29.699 +05:30 [WRN] [Validation] Resolving Test: FBS, IsProfile: False, HasChildren: False, SpecimenType: PLASMA
+2026-02-25 15:02:29.701 +05:30 [INF] [ExpansionDebug] Creating Order entry: FBS, ID: 52dd4165-52e4-4a00-8c27-84b6fe8fe1da, Parent: cbd27f79-0bc6-45db-8e3c-8bd86f55fe7d
+2026-02-25 15:02:29.703 +05:30 [INF] [ExpansionDebug] Order FBS added to context and local collection.
+2026-02-25 15:02:29.734 +05:30 [INF] TRACE: SaveChangesAsync reached. Affected rows: 11
+2026-02-25 15:02:36.762 +05:30 [INF] EVENT_WRITE for VisitId e24d254a-e65b-4a57-9c6d-eefa7e7a5842, Context 1f8e0bee-2170-4128-919e-9fb11b9d4568:0
+2026-02-25 15:02:36.876 +05:30 [INF] [DebugSpecimen] Loaded Visit e24d254a-e65b-4a57-9c6d-eefa7e7a5842, Status: Paid, Orders: 11, TestNavPresent: True
+2026-02-25 15:02:36.890 +05:30 [INF] [DebugGrouping] Order: f76e0a0d-4b37-4dfd-83c7-1b824b6c77e7, TestCode: UREA_N, TestNavigationPresent: True
+2026-02-25 15:02:36.893 +05:30 [INF] [DebugGrouping] Order: 40390bc6-a9e5-45ec-b751-1f55c678b603, TestCode: HDL, TestNavigationPresent: True
+2026-02-25 15:02:36.895 +05:30 [INF] [DebugGrouping] Order: 7e9380f5-1e6a-4d31-81cb-213fece9831a, TestCode: PPBS, TestNavigationPresent: True
+2026-02-25 15:02:36.906 +05:30 [INF] [DebugGrouping] Order: 71b36361-df16-49dc-8eca-2b3f05a8403f, TestCode: UR_GL_F, TestNavigationPresent: True
+2026-02-25 15:02:36.909 +05:30 [INF] [DebugGrouping] Order: 19c9e603-2f72-4287-978b-44071bba1b98, TestCode: TRIG, TestNavigationPresent: True
+2026-02-25 15:02:36.912 +05:30 [INF] [DebugGrouping] Order: 174e7048-d82a-4286-8a4d-7292effdedd8, TestCode: CREA, TestNavigationPresent: True
+2026-02-25 15:02:36.923 +05:30 [INF] [DebugGrouping] Order: 52dd4165-52e4-4a00-8c27-84b6fe8fe1da, TestCode: FBS, TestNavigationPresent: True
+2026-02-25 15:02:36.926 +05:30 [INF] [DebugGrouping] Order: cbd27f79-0bc6-45db-8e3c-8bd86f55fe7d, TestCode: DIAB_PRO, TestNavigationPresent: True
+2026-02-25 15:02:36.929 +05:30 [INF] [DebugGrouping] Order: f70358ee-7ae6-4f36-8d8a-96a1a78ce3d9, TestCode: CHOL, TestNavigationPresent: True
+2026-02-25 15:02:36.943 +05:30 [INF] [DebugGrouping] Order: 31386b13-5177-43da-b3d6-bcda758e1b35, TestCode: UR_GL_PP, TestNavigationPresent: True
+2026-02-25 15:02:36.959 +05:30 [INF] [DebugGrouping] Order: 8b67cafa-92af-49af-82f6-e0b02446af84, TestCode: UREA, TestNavigationPresent: True
+2026-02-25 15:02:37.011 +05:30 [WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+2026-02-25 15:02:37.194 +05:30 [INF] TransitionToSpecimenPlanned: Successfully planned 3 specimens for Visit "e24d254a-e65b-4a57-9c6d-eefa7e7a5842"
+2026-02-25 15:02:37.264 +05:30 [INF] EVENT_WRITE for VisitId e24d254a-e65b-4a57-9c6d-eefa7e7a5842, Context 1f8e0bee-2170-4128-919e-9fb11b9d4568:0
+2026-02-25 15:02:37.295 +05:30 [INF] Attempting to assign work "SampleCollection" for source "e24d254a-e65b-4a57-9c6d-eefa7e7a5842" in Pathology
+2026-02-25 15:02:37.360 +05:30 [INF] Work "SampleCollection" assigned to "0e34b739-d97f-445d-b488-2e5fd6b9918c" (Desk 1)
+2026-02-25 15:02:37.406 +05:30 [INF] Publishing PrintThermalReceiptEvent to Branch-a0000000-0000-0000-0000-000000000001-Lead-Thermal80mm (VisitId: "e24d254a-e65b-4a57-9c6d-eefa7e7a5842")
+2026-02-25 15:02:39.049 +05:30 [INF] [ProjectorDebug] Processing Event Type: PAYMENT_RECEIVED, BranchId: "a0000000-0000-0000-0000-000000000001", SourceId: "83bcb1b3-d57c-4e4b-aef0-c2980befd37a", SourceType: RevenueFact, VisitId: e24d254a-e65b-4a57-9c6d-eefa7e7a5842
+2026-02-25 15:02:39.062 +05:30 [INF] [ProjectorDebug] Checking Fact Deduplication for SourceId: "83bcb1b3-d57c-4e4b-aef0-c2980befd37a"
+2026-02-25 15:02:39.075 +05:30 [INF] [ProjectorDebug] Incrementing WalkIn for RevenueFact. SourceRef: e2eec931-12a4-48d2-92ee-b1d56701cb7e
+2026-02-25 15:02:39.090 +05:30 [WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+2026-02-25 15:02:39.173 +05:30 [INF] [ProjectorDebug] Processing Event Type: VISIT_FINALIZED, BranchId: "a0000000-0000-0000-0000-000000000001", SourceId: null, SourceType: null, VisitId: e24d254a-e65b-4a57-9c6d-eefa7e7a5842
+2026-02-25 15:02:39.181 +05:30 [WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+2026-02-25 15:04:11.196 +05:30 [INF] Terminal web-l52dlpr0q attempted to register Thermal80mm for Branch "a0000000-0000-0000-0000-000000000001" but lacked Lead authorization.
+2026-02-25 15:05:23.583 +05:30 [INF] Terminal web-1zy6xxtky authorized and added to Lead Print Group for Branch "a0000000-0000-0000-0000-000000000001".
+2026-02-25 15:10:53.917 +05:30 [ERR] Error occurred while executing OperationalStatsProjectionWorker.
+System.Threading.Tasks.TaskCanceledException: A task was canceled.
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+   at Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToListAsync[TSource](IQueryable`1 source, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToListAsync[TSource](IQueryable`1 source, CancellationToken cancellationToken)
+   at SynOS.Services.Operational.OperationalStatsProjector.ProjectPendingEventsAsync(CancellationToken cancellationToken) in D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\Operational\OperationalStatsProjector.cs:line 91
+   at SynOS.Api.BackgroundServices.OperationalStatsProjectionWorker.ExecuteAsync(CancellationToken stoppingToken) in D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\BackgroundServices\OperationalStatsProjectionWorker.cs:line 47
+2026-02-25 15:12:03.063 +05:30 [INF] OperationalStatsProjectionWorker is starting. Interval: 5s
+2026-02-25 15:12:03.788 +05:30 [INF] Worker: Running Consistency Check...
+2026-02-25 15:12:07.868 +05:30 [WRN] The foreign key property 'Specimen.VisitId1' was created in shadow state because a conflicting property with the simple name 'VisitId' exists in the entity type, but is either not mapped, is already used for another relationship, or is incompatible with the associated primary key type. See https://aka.ms/efcore-relationships for information on mapping relationships in EF Core.
+2026-02-25 15:25:26.097 +05:30 [INF] [ProjectorDebug] Processing Event Type: VISIT_CREATED, BranchId: "a0000000-0000-0000-0000-000000000001", SourceId: null, SourceType: null, VisitId: d168a39b-d717-4738-94cb-354ba8d410f7
+2026-02-25 15:25:26.625 +05:30 [WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+2026-02-25 15:25:26.676 +05:30 [ERR] Failed executing DbCommand (10ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (Size = 100), @p2='?' (DbType = DateTime2)], CommandType='"Text"', CommandTimeout='30']
+SET IMPLICIT_TRANSACTIONS OFF;
+SET NOCOUNT ON;
+INSERT INTO [ProcessedProjectionEvents] ([EventId], [ProjectionName], [ProcessedAt])
+VALUES (@p0, @p1, @p2);
+2026-02-25 15:25:26.763 +05:30 [ERR] An exception occurred in the database while saving changes for context type 'SynOS.Data.SynOSDbContext'.
+Microsoft.EntityFrameworkCore.DbUpdateException: An error occurred while saving the entity changes. See the inner exception for details.
+ ---> Microsoft.Data.SqlClient.SqlException (0x80131904): Violation of PRIMARY KEY constraint 'PK_ProcessedProjectionEvents'. Cannot insert duplicate key in object 'dbo.ProcessedProjectionEvents'. The duplicate key value is (9ee371a6-d52a-4587-a94f-1e0d9a6ac329, OperationalStats).
+The statement has been terminated.
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.ReaderModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
+ClientConnectionId:a4bbc753-fc24-46b0-bf7e-2acb491a0810
+Error Number:2627,State:1,Class:14
+   --- End of inner exception stack trace ---
+   at Microsoft.EntityFrameworkCore.Update.ReaderModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Update.Internal.SqlServerModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.ChangeTracking.Internal.StateManager.SaveChangesAsync(IList`1 entriesToSave, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.ChangeTracking.Internal.StateManager.SaveChangesAsync(StateManager stateManager, Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.DbContext.SaveChangesAsync(Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
+Microsoft.EntityFrameworkCore.DbUpdateException: An error occurred while saving the entity changes. See the inner exception for details.
+ ---> Microsoft.Data.SqlClient.SqlException (0x80131904): Violation of PRIMARY KEY constraint 'PK_ProcessedProjectionEvents'. Cannot insert duplicate key in object 'dbo.ProcessedProjectionEvents'. The duplicate key value is (9ee371a6-d52a-4587-a94f-1e0d9a6ac329, OperationalStats).
+The statement has been terminated.
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.ReaderModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
+ClientConnectionId:a4bbc753-fc24-46b0-bf7e-2acb491a0810
+Error Number:2627,State:1,Class:14
+   --- End of inner exception stack trace ---
+   at Microsoft.EntityFrameworkCore.Update.ReaderModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Update.Internal.SqlServerModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.ChangeTracking.Internal.StateManager.SaveChangesAsync(IList`1 entriesToSave, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.ChangeTracking.Internal.StateManager.SaveChangesAsync(StateManager stateManager, Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.DbContext.SaveChangesAsync(Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
+2026-02-25 15:25:26.938 +05:30 [FTL] FATAL CRASH in OperationalStatsProjector. ProcessEventAsync failed. EventId: "9ee371a6-d52a-4587-a94f-1e0d9a6ac329", Type: VISIT_CREATED, StackTrace: Microsoft.EntityFrameworkCore.DbUpdateException: An error occurred while saving the entity changes. See the inner exception for details.
+ ---> Microsoft.Data.SqlClient.SqlException (0x80131904): Violation of PRIMARY KEY constraint 'PK_ProcessedProjectionEvents'. Cannot insert duplicate key in object 'dbo.ProcessedProjectionEvents'. The duplicate key value is (9ee371a6-d52a-4587-a94f-1e0d9a6ac329, OperationalStats).
+The statement has been terminated.
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.ReaderModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
+ClientConnectionId:a4bbc753-fc24-46b0-bf7e-2acb491a0810
+Error Number:2627,State:1,Class:14
+   --- End of inner exception stack trace ---
+   at Microsoft.EntityFrameworkCore.Update.ReaderModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Update.Internal.SqlServerModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.ChangeTracking.Internal.StateManager.SaveChangesAsync(IList`1 entriesToSave, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.ChangeTracking.Internal.StateManager.SaveChangesAsync(StateManager stateManager, Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.DbContext.SaveChangesAsync(Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.DbContext.SaveChangesAsync(Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
+   at SynOS.Services.Operational.OperationalStatsProjector.ProcessEventAsync(BranchOperationalEvent evt) in D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\Operational\OperationalStatsProjector.cs:line 248
+Microsoft.EntityFrameworkCore.DbUpdateException: An error occurred while saving the entity changes. See the inner exception for details.
+ ---> Microsoft.Data.SqlClient.SqlException (0x80131904): Violation of PRIMARY KEY constraint 'PK_ProcessedProjectionEvents'. Cannot insert duplicate key in object 'dbo.ProcessedProjectionEvents'. The duplicate key value is (9ee371a6-d52a-4587-a94f-1e0d9a6ac329, OperationalStats).
+The statement has been terminated.
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.ReaderModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
+ClientConnectionId:a4bbc753-fc24-46b0-bf7e-2acb491a0810
+Error Number:2627,State:1,Class:14
+   --- End of inner exception stack trace ---
+   at Microsoft.EntityFrameworkCore.Update.ReaderModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Update.Internal.SqlServerModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.ChangeTracking.Internal.StateManager.SaveChangesAsync(IList`1 entriesToSave, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.ChangeTracking.Internal.StateManager.SaveChangesAsync(StateManager stateManager, Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.DbContext.SaveChangesAsync(Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.DbContext.SaveChangesAsync(Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
+   at SynOS.Services.Operational.OperationalStatsProjector.ProcessEventAsync(BranchOperationalEvent evt) in D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\Operational\OperationalStatsProjector.cs:line 248
+2026-02-25 15:25:27.001 +05:30 [ERR] Error occurred while executing OperationalStatsProjectionWorker.
+Microsoft.EntityFrameworkCore.DbUpdateException: An error occurred while saving the entity changes. See the inner exception for details.
+ ---> Microsoft.Data.SqlClient.SqlException (0x80131904): Violation of PRIMARY KEY constraint 'PK_ProcessedProjectionEvents'. Cannot insert duplicate key in object 'dbo.ProcessedProjectionEvents'. The duplicate key value is (9ee371a6-d52a-4587-a94f-1e0d9a6ac329, OperationalStats).
+The statement has been terminated.
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.ReaderModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
+ClientConnectionId:a4bbc753-fc24-46b0-bf7e-2acb491a0810
+Error Number:2627,State:1,Class:14
+   --- End of inner exception stack trace ---
+   at Microsoft.EntityFrameworkCore.Update.ReaderModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Update.Internal.SqlServerModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.ChangeTracking.Internal.StateManager.SaveChangesAsync(IList`1 entriesToSave, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.ChangeTracking.Internal.StateManager.SaveChangesAsync(StateManager stateManager, Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.DbContext.SaveChangesAsync(Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.DbContext.SaveChangesAsync(Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
+   at SynOS.Services.Operational.OperationalStatsProjector.ProcessEventAsync(BranchOperationalEvent evt) in D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\Operational\OperationalStatsProjector.cs:line 248
+   at SynOS.Services.Operational.OperationalStatsProjector.ProjectPendingEventsAsync(CancellationToken cancellationToken) in D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\Operational\OperationalStatsProjector.cs:line 99
+   at SynOS.Api.BackgroundServices.OperationalStatsProjectionWorker.ExecuteAsync(CancellationToken stoppingToken) in D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\BackgroundServices\OperationalStatsProjectionWorker.cs:line 47
+2026-02-25 15:27:01.810 +05:30 [INF] [ProjectorDebug] Processing Event Type: PAYMENT_RECEIVED, BranchId: "a0000000-0000-0000-0000-000000000001", SourceId: "a6b32603-7429-4faf-aede-103fe5e85421", SourceType: RevenueFact, VisitId: 33978318-34ef-47e3-b017-fddc449af442
+2026-02-25 15:27:01.827 +05:30 [INF] [ProjectorDebug] Checking Fact Deduplication for SourceId: "a6b32603-7429-4faf-aede-103fe5e85421"
+2026-02-25 15:27:01.861 +05:30 [WRN] Projector: Duplicate Event for Fact "a6b32603-7429-4faf-aede-103fe5e85421" detected. Skipping Logic, marking as Processed. EventId: "be85c57b-68e3-4c1f-aff4-173f8f3efe79"
+2026-02-25 15:27:01.905 +05:30 [WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+2026-02-25 15:27:01.944 +05:30 [ERR] An exception occurred in the database while saving changes for context type 'SynOS.Data.SynOSDbContext'.
+Microsoft.EntityFrameworkCore.DbUpdateException: An error occurred while saving the entity changes. See the inner exception for details.
+ ---> Microsoft.Data.SqlClient.SqlException (0x80131904): Violation of PRIMARY KEY constraint 'PK_ProcessedProjectionEvents'. Cannot insert duplicate key in object 'dbo.ProcessedProjectionEvents'. The duplicate key value is (be85c57b-68e3-4c1f-aff4-173f8f3efe79, OperationalStats).
+   at Microsoft.Data.SqlClient.SqlConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   at Microsoft.Data.SqlClient.SqlInternalConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   at Microsoft.Data.SqlClient.TdsParser.ThrowExceptionAndWarning(TdsParserStateObject stateObj, Boolean callerHasConnectionLock, Boolean asyncClose)
+   at Microsoft.Data.SqlClient.TdsParser.TryRun(RunBehavior runBehavior, SqlCommand cmdHandler, SqlDataReader dataStream, BulkCopySimpleResultSet bulkCopyHandler, TdsParserStateObject stateObj, Boolean& dataReady)
+   at Microsoft.Data.SqlClient.SqlDataReader.TryHasMoreRows(Boolean& moreRows)
+   at Microsoft.Data.SqlClient.SqlDataReader.TryHasMoreResults(Boolean& moreResults)
+   at Microsoft.Data.SqlClient.SqlDataReader.TryNextResult(Boolean& more)
+   at Microsoft.Data.SqlClient.SqlDataReader.NextResultAsyncExecute(Task task, Object state)
+   at Microsoft.Data.SqlClient.SqlDataReader.InvokeAsyncCall[T](SqlDataReaderBaseAsyncCallContext`1 context)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Update.AffectedCountModificationCommandBatch.ConsumeAsync(RelationalDataReader reader, CancellationToken cancellationToken)
+ClientConnectionId:a4bbc753-fc24-46b0-bf7e-2acb491a0810
+Error Number:2627,State:1,Class:14
+   --- End of inner exception stack trace ---
+   at Microsoft.EntityFrameworkCore.Update.AffectedCountModificationCommandBatch.ConsumeAsync(RelationalDataReader reader, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.ReaderModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.ReaderModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Update.Internal.SqlServerModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.ChangeTracking.Internal.StateManager.SaveChangesAsync(IList`1 entriesToSave, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.ChangeTracking.Internal.StateManager.SaveChangesAsync(StateManager stateManager, Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.DbContext.SaveChangesAsync(Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
+Microsoft.EntityFrameworkCore.DbUpdateException: An error occurred while saving the entity changes. See the inner exception for details.
+ ---> Microsoft.Data.SqlClient.SqlException (0x80131904): Violation of PRIMARY KEY constraint 'PK_ProcessedProjectionEvents'. Cannot insert duplicate key in object 'dbo.ProcessedProjectionEvents'. The duplicate key value is (be85c57b-68e3-4c1f-aff4-173f8f3efe79, OperationalStats).
+   at Microsoft.Data.SqlClient.SqlConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   at Microsoft.Data.SqlClient.SqlInternalConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   at Microsoft.Data.SqlClient.TdsParser.ThrowExceptionAndWarning(TdsParserStateObject stateObj, Boolean callerHasConnectionLock, Boolean asyncClose)
+   at Microsoft.Data.SqlClient.TdsParser.TryRun(RunBehavior runBehavior, SqlCommand cmdHandler, SqlDataReader dataStream, BulkCopySimpleResultSet bulkCopyHandler, TdsParserStateObject stateObj, Boolean& dataReady)
+   at Microsoft.Data.SqlClient.SqlDataReader.TryHasMoreRows(Boolean& moreRows)
+   at Microsoft.Data.SqlClient.SqlDataReader.TryHasMoreResults(Boolean& moreResults)
+   at Microsoft.Data.SqlClient.SqlDataReader.TryNextResult(Boolean& more)
+   at Microsoft.Data.SqlClient.SqlDataReader.NextResultAsyncExecute(Task task, Object state)
+   at Microsoft.Data.SqlClient.SqlDataReader.InvokeAsyncCall[T](SqlDataReaderBaseAsyncCallContext`1 context)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Update.AffectedCountModificationCommandBatch.ConsumeAsync(RelationalDataReader reader, CancellationToken cancellationToken)
+ClientConnectionId:a4bbc753-fc24-46b0-bf7e-2acb491a0810
+Error Number:2627,State:1,Class:14
+   --- End of inner exception stack trace ---
+   at Microsoft.EntityFrameworkCore.Update.AffectedCountModificationCommandBatch.ConsumeAsync(RelationalDataReader reader, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.ReaderModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.ReaderModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Update.Internal.SqlServerModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.ChangeTracking.Internal.StateManager.SaveChangesAsync(IList`1 entriesToSave, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.ChangeTracking.Internal.StateManager.SaveChangesAsync(StateManager stateManager, Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.DbContext.SaveChangesAsync(Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
+2026-02-25 15:27:02.044 +05:30 [FTL] FATAL CRASH in OperationalStatsProjector. ProcessEventAsync failed. EventId: "be85c57b-68e3-4c1f-aff4-173f8f3efe79", Type: PAYMENT_RECEIVED, StackTrace: Microsoft.EntityFrameworkCore.DbUpdateException: An error occurred while saving the entity changes. See the inner exception for details.
+ ---> Microsoft.Data.SqlClient.SqlException (0x80131904): Violation of PRIMARY KEY constraint 'PK_ProcessedProjectionEvents'. Cannot insert duplicate key in object 'dbo.ProcessedProjectionEvents'. The duplicate key value is (be85c57b-68e3-4c1f-aff4-173f8f3efe79, OperationalStats).
+   at Microsoft.Data.SqlClient.SqlConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   at Microsoft.Data.SqlClient.SqlInternalConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   at Microsoft.Data.SqlClient.TdsParser.ThrowExceptionAndWarning(TdsParserStateObject stateObj, Boolean callerHasConnectionLock, Boolean asyncClose)
+   at Microsoft.Data.SqlClient.TdsParser.TryRun(RunBehavior runBehavior, SqlCommand cmdHandler, SqlDataReader dataStream, BulkCopySimpleResultSet bulkCopyHandler, TdsParserStateObject stateObj, Boolean& dataReady)
+   at Microsoft.Data.SqlClient.SqlDataReader.TryHasMoreRows(Boolean& moreRows)
+   at Microsoft.Data.SqlClient.SqlDataReader.TryHasMoreResults(Boolean& moreResults)
+   at Microsoft.Data.SqlClient.SqlDataReader.TryNextResult(Boolean& more)
+   at Microsoft.Data.SqlClient.SqlDataReader.NextResultAsyncExecute(Task task, Object state)
+   at Microsoft.Data.SqlClient.SqlDataReader.InvokeAsyncCall[T](SqlDataReaderBaseAsyncCallContext`1 context)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Update.AffectedCountModificationCommandBatch.ConsumeAsync(RelationalDataReader reader, CancellationToken cancellationToken)
+ClientConnectionId:a4bbc753-fc24-46b0-bf7e-2acb491a0810
+Error Number:2627,State:1,Class:14
+   --- End of inner exception stack trace ---
+   at Microsoft.EntityFrameworkCore.Update.AffectedCountModificationCommandBatch.ConsumeAsync(RelationalDataReader reader, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.ReaderModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.ReaderModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Update.Internal.SqlServerModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.ChangeTracking.Internal.StateManager.SaveChangesAsync(IList`1 entriesToSave, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.ChangeTracking.Internal.StateManager.SaveChangesAsync(StateManager stateManager, Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.DbContext.SaveChangesAsync(Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.DbContext.SaveChangesAsync(Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
+   at SynOS.Services.Operational.OperationalStatsProjector.ProcessEventAsync(BranchOperationalEvent evt) in D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\Operational\OperationalStatsProjector.cs:line 248
+Microsoft.EntityFrameworkCore.DbUpdateException: An error occurred while saving the entity changes. See the inner exception for details.
+ ---> Microsoft.Data.SqlClient.SqlException (0x80131904): Violation of PRIMARY KEY constraint 'PK_ProcessedProjectionEvents'. Cannot insert duplicate key in object 'dbo.ProcessedProjectionEvents'. The duplicate key value is (be85c57b-68e3-4c1f-aff4-173f8f3efe79, OperationalStats).
+   at Microsoft.Data.SqlClient.SqlConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   at Microsoft.Data.SqlClient.SqlInternalConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   at Microsoft.Data.SqlClient.TdsParser.ThrowExceptionAndWarning(TdsParserStateObject stateObj, Boolean callerHasConnectionLock, Boolean asyncClose)
+   at Microsoft.Data.SqlClient.TdsParser.TryRun(RunBehavior runBehavior, SqlCommand cmdHandler, SqlDataReader dataStream, BulkCopySimpleResultSet bulkCopyHandler, TdsParserStateObject stateObj, Boolean& dataReady)
+   at Microsoft.Data.SqlClient.SqlDataReader.TryHasMoreRows(Boolean& moreRows)
+   at Microsoft.Data.SqlClient.SqlDataReader.TryHasMoreResults(Boolean& moreResults)
+   at Microsoft.Data.SqlClient.SqlDataReader.TryNextResult(Boolean& more)
+   at Microsoft.Data.SqlClient.SqlDataReader.NextResultAsyncExecute(Task task, Object state)
+   at Microsoft.Data.SqlClient.SqlDataReader.InvokeAsyncCall[T](SqlDataReaderBaseAsyncCallContext`1 context)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Update.AffectedCountModificationCommandBatch.ConsumeAsync(RelationalDataReader reader, CancellationToken cancellationToken)
+ClientConnectionId:a4bbc753-fc24-46b0-bf7e-2acb491a0810
+Error Number:2627,State:1,Class:14
+   --- End of inner exception stack trace ---
+   at Microsoft.EntityFrameworkCore.Update.AffectedCountModificationCommandBatch.ConsumeAsync(RelationalDataReader reader, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.ReaderModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.ReaderModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Update.Internal.SqlServerModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.ChangeTracking.Internal.StateManager.SaveChangesAsync(IList`1 entriesToSave, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.ChangeTracking.Internal.StateManager.SaveChangesAsync(StateManager stateManager, Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.DbContext.SaveChangesAsync(Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.DbContext.SaveChangesAsync(Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
+   at SynOS.Services.Operational.OperationalStatsProjector.ProcessEventAsync(BranchOperationalEvent evt) in D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\Operational\OperationalStatsProjector.cs:line 248
+2026-02-25 15:27:02.325 +05:30 [ERR] Error occurred while executing OperationalStatsProjectionWorker.
+Microsoft.EntityFrameworkCore.DbUpdateException: An error occurred while saving the entity changes. See the inner exception for details.
+ ---> Microsoft.Data.SqlClient.SqlException (0x80131904): Violation of PRIMARY KEY constraint 'PK_ProcessedProjectionEvents'. Cannot insert duplicate key in object 'dbo.ProcessedProjectionEvents'. The duplicate key value is (be85c57b-68e3-4c1f-aff4-173f8f3efe79, OperationalStats).
+   at Microsoft.Data.SqlClient.SqlConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   at Microsoft.Data.SqlClient.SqlInternalConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   at Microsoft.Data.SqlClient.TdsParser.ThrowExceptionAndWarning(TdsParserStateObject stateObj, Boolean callerHasConnectionLock, Boolean asyncClose)
+   at Microsoft.Data.SqlClient.TdsParser.TryRun(RunBehavior runBehavior, SqlCommand cmdHandler, SqlDataReader dataStream, BulkCopySimpleResultSet bulkCopyHandler, TdsParserStateObject stateObj, Boolean& dataReady)
+   at Microsoft.Data.SqlClient.SqlDataReader.TryHasMoreRows(Boolean& moreRows)
+   at Microsoft.Data.SqlClient.SqlDataReader.TryHasMoreResults(Boolean& moreResults)
+   at Microsoft.Data.SqlClient.SqlDataReader.TryNextResult(Boolean& more)
+   at Microsoft.Data.SqlClient.SqlDataReader.NextResultAsyncExecute(Task task, Object state)
+   at Microsoft.Data.SqlClient.SqlDataReader.InvokeAsyncCall[T](SqlDataReaderBaseAsyncCallContext`1 context)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Update.AffectedCountModificationCommandBatch.ConsumeAsync(RelationalDataReader reader, CancellationToken cancellationToken)
+ClientConnectionId:a4bbc753-fc24-46b0-bf7e-2acb491a0810
+Error Number:2627,State:1,Class:14
+   --- End of inner exception stack trace ---
+   at Microsoft.EntityFrameworkCore.Update.AffectedCountModificationCommandBatch.ConsumeAsync(RelationalDataReader reader, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.ReaderModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.ReaderModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Update.Internal.SqlServerModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.ChangeTracking.Internal.StateManager.SaveChangesAsync(IList`1 entriesToSave, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.ChangeTracking.Internal.StateManager.SaveChangesAsync(StateManager stateManager, Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.DbContext.SaveChangesAsync(Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.DbContext.SaveChangesAsync(Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
+   at SynOS.Services.Operational.OperationalStatsProjector.ProcessEventAsync(BranchOperationalEvent evt) in D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\Operational\OperationalStatsProjector.cs:line 248
+   at SynOS.Services.Operational.OperationalStatsProjector.ProjectPendingEventsAsync(CancellationToken cancellationToken) in D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\Operational\OperationalStatsProjector.cs:line 99
+   at SynOS.Api.BackgroundServices.OperationalStatsProjectionWorker.ExecuteAsync(CancellationToken stoppingToken) in D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\BackgroundServices\OperationalStatsProjectionWorker.cs:line 47

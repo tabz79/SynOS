@@ -125,12 +125,14 @@ namespace SynOS.Services
                 Token = token,
                 TokenDate = labLocalToday,
                 Department = visitDto.Department,
-                Status = "PendingPayment",
+                Status = VisitStatus.Draft,
                 CreatedAt = DateTime.UtcNow,
                 IsReferred = visitDto.IsReferred ?? false,
                 ReferralPartnerId = visitDto.ReferralPartnerId,
                 PaymentCollectionModel = visitDto.PaymentCollectionModel,
-                ReferrerText = visitDto.ReferrerText
+                ReferrerText = visitDto.ReferrerText,
+                CreatedByUserId = actorUserId != Guid.Empty ? actorUserId : (Guid?)null,
+                AssignedReceptionistId = actorUserId != Guid.Empty ? actorUserId : (Guid?)null
             };
 
             _context.Visits.Add(visit);
@@ -214,7 +216,7 @@ namespace SynOS.Services
                 };
                 _context.Payments.Add(payment);
                 invoice.Status = "Paid";
-                visit.Status = "Paid";
+                visit.Status = VisitStatus.Paid;
 
                 var receivable = new ReceivableFact
                 {
@@ -246,7 +248,7 @@ namespace SynOS.Services
                 ActorRole = "Reception", // Context implied
                 TestCodes = visitDto.TestCodes,
                 Total = invoice.Total,
-                Status = visit.Status
+                Status = visit.Status.ToString()
             });
 
             await _operationalEventWriter.WriteEventAsync(
@@ -283,6 +285,8 @@ namespace SynOS.Services
 
             if (visit == null)
                 throw new KeyNotFoundException("Visit not found.");
+
+            CheckVisitOwnership(visit);
 
             // GUARD: Cannot add test if samples are already collected
             // REFACTOR: Temporarily disabled during Specimen Migration
@@ -353,6 +357,8 @@ namespace SynOS.Services
 
             if (visit == null) throw new KeyNotFoundException($"Visit {visitId} not found.");
 
+            CheckVisitOwnership(visit);
+
             var order = visit.Orders.FirstOrDefault(o => o.TestCode.Equals(testCode, StringComparison.OrdinalIgnoreCase));
             if (order == null) throw new KeyNotFoundException($"Test '{testCode}' not found.");
 
@@ -371,7 +377,7 @@ namespace SynOS.Services
             if (visit == null) throw new KeyNotFoundException($"Visit {visitId} not found.");
 
             // 1. Visit-Scoped Validation
-            if (visit.Status != "Draft")
+            if (visit.Status != VisitStatus.Draft)
                 throw new InvalidOperationException($"Cannot delete orders from a visit in {visit.Status} state. Only Draft visits allow deletion.");
 
             if (visit.Invoices.Any(i => i.Status == "Paid" || i.Status == "PartiallyPaid"))
@@ -655,6 +661,8 @@ namespace SynOS.Services
                 
             if (visit == null) return;
 
+            CheckVisitOwnership(visit);
+
             visit.ReferrerText = referrerText;
             await _context.SaveChangesAsync();
             
@@ -687,8 +695,10 @@ namespace SynOS.Services
 
             if (visit == null) throw new KeyNotFoundException($"Visit {visitId} not found");
 
+            CheckVisitOwnership(visit);
+
             visit.PaymentCollectionModel = "PartnerCollects";
-            visit.Status = "Paid";
+            visit.Status = VisitStatus.Paid;
             if (visit.Token.StartsWith("DRAFT")) await AssignOfficialTokenAsync(visitId, actorUserId);
             await _context.SaveChangesAsync();
 
@@ -755,7 +765,7 @@ namespace SynOS.Services
             return visit;
         }
 
-        public async Task<IEnumerable<Visit>> GetVisitsAsync(string department, string status, int limit)
+        public async Task<IEnumerable<Visit>> GetVisitsAsync(string department, VisitStatus status, int limit)
         {
             return await _context.Visits
                 .Include(v => v.Patient)
@@ -784,9 +794,9 @@ namespace SynOS.Services
             if (IsSampleCollectionStarted(visit))
                 throw new InvalidOperationException("Cannot cancel visit. Specimen collection has already started. Contact medical supervisor for discard flow.");
 
-            if (visit.Status == "Cancelled") throw new InvalidOperationException("Visit is already cancelled.");
+            if (visit.Status == VisitStatus.Cancelled) throw new InvalidOperationException("Visit is already cancelled.");
 
-            visit.Status = "Cancelled";
+            visit.Status = VisitStatus.Cancelled;
 
             var cancellation = new VisitCancellation
             {
@@ -1064,6 +1074,42 @@ namespace SynOS.Services
         {
             var user = await _context.Users.FindAsync(userId);
             return user?.Name ?? "Unknown User";
+        }
+
+        private void CheckVisitOwnership(Visit visit)
+        {
+            if (visit == null) throw new KeyNotFoundException("Visit not found.");
+            
+            var role = _userContext.CurrentRole;
+            var currentUserId = _userContext.CurrentUserId;
+            
+            // Exempt Admin, Manager, and System (Empty Guid)
+            if (role == "Admin" || role == "Manager" || currentUserId == Guid.Empty) return;
+
+            if (role == "Receptionist" && visit.AssignedReceptionistId != currentUserId)
+            {
+                throw new UnauthorizedAccessException($"Visit {visit.Token} is assigned to another desk. Modification denied.");
+            }
+        }
+
+        private async Task CheckVisitOwnershipAsync(Guid visitId)
+        {
+            var role = _userContext.CurrentRole;
+            var currentUserId = _userContext.CurrentUserId;
+            
+            if (role == "Admin" || role == "Manager" || currentUserId == Guid.Empty) return;
+
+            var ownership = await _context.Visits
+                .Where(v => v.VisitId == visitId)
+                .Select(v => new { v.AssignedReceptionistId, v.Token })
+                .FirstOrDefaultAsync();
+
+            if (ownership == null) throw new KeyNotFoundException($"Visit {visitId} not found.");
+
+            if (role == "Receptionist" && ownership.AssignedReceptionistId != currentUserId)
+            {
+                throw new UnauthorizedAccessException($"Visit {ownership.Token} is assigned to another desk. Modification denied.");
+            }
         }
     }
 }

@@ -1,0 +1,367 @@
+2026-02-25 11:57:24.686 +05:30 [INF] Terminal web-1zy6xxtky authorized and added to Lead Print Group for Branch "a0000000-0000-0000-0000-000000000001".
+2026-02-25 11:57:30.955 +05:30 [INF] Terminal web-1zy6xxtky authorized and added to Lead Print Group for Branch "a0000000-0000-0000-0000-000000000001".
+2026-02-25 11:57:34.637 +05:30 [INF] Terminal web-1zy6xxtky authorized and added to Lead Print Group for Branch "a0000000-0000-0000-0000-000000000001".
+2026-02-25 11:57:35.026 +05:30 [INF] Terminal web-1zy6xxtky authorized and added to Lead Print Group for Branch "a0000000-0000-0000-0000-000000000001".
+2026-02-25 12:08:41.040 +05:30 [INF] Terminal web-rqelen47i attempted to register Thermal80mm for Branch "a0000000-0000-0000-0000-000000000001" but lacked Lead authorization.
+2026-02-25 12:09:11.848 +05:30 [ERR] Failed executing DbCommand (30,493ms) [Parameters=[@__branchId_0='?' (DbType = Guid), @__startDate_1='?' (DbType = DateTime2), @__today_2='?' (DbType = DateTime2), @__nextDay_3='?' (DbType = DateTime2)], CommandType='"Text"', CommandTimeout='30']
+SELECT [v].[VisitId], [v].[BranchId], [v].[CreatedAt], [v].[CurrentAssignmentId], [v].[Department], [v].[IsReferred], [v].[PatientId], [v].[PaymentCollectionModel], [v].[ReferralPartnerId], [v].[ReferrerId], [v].[ReferrerText], [v].[RowVersion], [v].[Status], [v].[Token], [v].[TokenDate], [p].[PatientId], [p].[CreatedAt], [p].[CurrentPhoneNumber], [p].[DateOfBirth], [p].[DisplayName], [p].[FirstName], [p].[Gender], [p].[IsDateOfBirthKnown], [p].[IsSoftDeleted], [p].[LastName], [p].[MRN], [p].[RowVersion], [p].[UpdatedAt], [r].[ReferralPartnerId], [r].[ContactInfo], [r].[CreatedAt], [r].[IsActive], [r].[Name], [r].[PartnerType], [r].[PaymentCollectionModel], [r].[UpdatedAt], [t0].[OrderId], [t0].[CancellationReason], [t0].[CancelledAt], [t0].[CancelledByUserId], [t0].[CreatedAt], [t0].[Department], [t0].[Discount], [t0].[ParentOrderId], [t0].[Price], [t0].[SpecimenId], [t0].[Status], [t0].[TestCode], [t0].[TestId], [t0].[VisitId], [t0].[TestId0], [t0].[Category], [t0].[CreatedAt0], [t0].[DepartmentId], [t0].[ExtraInfo], [t0].[IsActive], [t0].[IsProfile], [t0].[SpecialInstructions], [t0].[SpecimenTypeCode], [t0].[TAT_Hours], [t0].[TestCode0], [t0].[TestName], [t0].[UpdatedAt], [t1].[InvoiceId], [t1].[CreatedAt], [t1].[Currency], [t1].[DiscountAmount], [t1].[DueDate], [t1].[GrossAmount], [t1].[NetAmount], [t1].[Status], [t1].[TaxAmount], [t1].[Total], [t1].[VisitId], [t1].[PaymentId], [t1].[Amount], [t1].[InvoiceId0], [t1].[Method], [t1].[ReceiptNo], [t1].[ReceivedAt], [t1].[ReceivedByUserId]
+FROM [Visits] AS [v]
+INNER JOIN [Patients] AS [p] ON [v].[PatientId] = [p].[PatientId]
+LEFT JOIN [ReferralPartners] AS [r] ON [v].[ReferralPartnerId] = [r].[ReferralPartnerId]
+LEFT JOIN (
+    SELECT [o].[OrderId], [o].[CancellationReason], [o].[CancelledAt], [o].[CancelledByUserId], [o].[CreatedAt], [o].[Department], [o].[Discount], [o].[ParentOrderId], [o].[Price], [o].[SpecimenId], [o].[Status], [o].[TestCode], [o].[TestId], [o].[VisitId], [t].[TestId] AS [TestId0], [t].[Category], [t].[CreatedAt] AS [CreatedAt0], [t].[DepartmentId], [t].[ExtraInfo], [t].[IsActive], [t].[IsProfile], [t].[SpecialInstructions], [t].[SpecimenTypeCode], [t].[TAT_Hours], [t].[TestCode] AS [TestCode0], [t].[TestName], [t].[UpdatedAt]
+    FROM [Orders] AS [o]
+    INNER JOIN [Tests] AS [t] ON [o].[TestId] = [t].[TestId]
+) AS [t0] ON [v].[VisitId] = [t0].[VisitId]
+LEFT JOIN (
+    SELECT [i].[InvoiceId], [i].[CreatedAt], [i].[Currency], [i].[DiscountAmount], [i].[DueDate], [i].[GrossAmount], [i].[NetAmount], [i].[Status], [i].[TaxAmount], [i].[Total], [i].[VisitId], [p0].[PaymentId], [p0].[Amount], [p0].[InvoiceId] AS [InvoiceId0], [p0].[Method], [p0].[ReceiptNo], [p0].[ReceivedAt], [p0].[ReceivedByUserId]
+    FROM [Invoices] AS [i]
+    LEFT JOIN [Payments] AS [p0] ON [i].[InvoiceId] = [p0].[InvoiceId]
+) AS [t1] ON [v].[VisitId] = [t1].[VisitId]
+WHERE [v].[BranchId] = @__branchId_0 AND [v].[Status] <> N'Cancelled' AND (([v].[Status] NOT IN (N'Paid', N'FullPaid') AND [v].[TokenDate] >= @__startDate_1) OR ([v].[Status] IN (N'Paid', N'FullPaid') AND [v].[TokenDate] >= @__today_2 AND [v].[TokenDate] < @__nextDay_3))
+ORDER BY [v].[TokenDate] DESC, [v].[CreatedAt] DESC, [v].[VisitId], [p].[PatientId], [r].[ReferralPartnerId], [t0].[OrderId], [t0].[TestId0], [t1].[InvoiceId]
+2026-02-25 12:09:12.230 +05:30 [ERR] An exception occurred while iterating over the results of a query for context type 'SynOS.Data.SynOSDbContext'.
+Microsoft.Data.SqlClient.SqlException (0x80131904): Execution Timeout Expired.  The timeout period elapsed prior to completion of the operation or the server is not responding.
+ ---> System.ComponentModel.Win32Exception (258): The wait operation timed out.
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:6a2aeb66-975a-4f29-be9b-7f18e7f358be
+Error Number:-2,State:0,Class:11
+Microsoft.Data.SqlClient.SqlException (0x80131904): Execution Timeout Expired.  The timeout period elapsed prior to completion of the operation or the server is not responding.
+ ---> System.ComponentModel.Win32Exception (258): The wait operation timed out.
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:6a2aeb66-975a-4f29-be9b-7f18e7f358be
+Error Number:-2,State:0,Class:11
+2026-02-25 12:14:02.906 +05:30 [INF] Terminal web-rqelen47i attempted to register Thermal80mm for Branch "a0000000-0000-0000-0000-000000000001" but lacked Lead authorization.
+2026-02-25 12:14:16.593 +05:30 [INF] Terminal web-rqelen47i attempted to register Thermal80mm for Branch "a0000000-0000-0000-0000-000000000001" but lacked Lead authorization.
+2026-02-25 12:14:47.627 +05:30 [INF] Terminal web-1zy6xxtky authorized and added to Lead Print Group for Branch "a0000000-0000-0000-0000-000000000001".
+2026-02-25 12:14:54.795 +05:30 [INF] Terminal web-1zy6xxtky authorized and added to Lead Print Group for Branch "a0000000-0000-0000-0000-000000000001".
+2026-02-25 12:15:08.471 +05:30 [INF] Terminal web-1zy6xxtky authorized and added to Lead Print Group for Branch "a0000000-0000-0000-0000-000000000001".
+2026-02-25 12:16:21.490 +05:30 [INF] Terminal web-1zy6xxtky authorized and added to Lead Print Group for Branch "a0000000-0000-0000-0000-000000000001".
+2026-02-25 14:37:54.220 +05:30 [INF] Terminal web-1zy6xxtky authorized and added to Lead Print Group for Branch "a0000000-0000-0000-0000-000000000001".
+2026-02-25 14:42:20.998 +05:30 [ERR] Error occurred while executing OperationalStatsProjectionWorker.
+System.Threading.Tasks.TaskCanceledException: A task was canceled.
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+   at Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToListAsync[TSource](IQueryable`1 source, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToListAsync[TSource](IQueryable`1 source, CancellationToken cancellationToken)
+   at SynOS.Services.Operational.OperationalStatsProjector.ProjectPendingEventsAsync(CancellationToken cancellationToken)
+   at SynOS.Api.BackgroundServices.OperationalStatsProjectionWorker.ExecuteAsync(CancellationToken stoppingToken) in D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\BackgroundServices\OperationalStatsProjectionWorker.cs:line 47
+2026-02-25 14:45:24.136 +05:30 [INF] OperationalStatsProjectionWorker is starting. Interval: 5s
+2026-02-25 14:45:25.478 +05:30 [INF] Worker: Running Consistency Check...
+2026-02-25 14:45:28.435 +05:30 [WRN] The foreign key property 'Specimen.VisitId1' was created in shadow state because a conflicting property with the simple name 'VisitId' exists in the entity type, but is either not mapped, is already used for another relationship, or is incompatible with the associated primary key type. See https://aka.ms/efcore-relationships for information on mapping relationships in EF Core.
+2026-02-25 14:57:23.495 +05:30 [INF] [ProjectorDebug] Processing Event Type: VISIT_CREATED, BranchId: "a0000000-0000-0000-0000-000000000001", SourceId: null, SourceType: null, VisitId: 03453b99-3b3d-40c3-b81d-999c648dd15e
+2026-02-25 14:57:24.301 +05:30 [WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+2026-02-25 14:57:24.343 +05:30 [ERR] Failed executing DbCommand (12ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (Size = 100), @p2='?' (DbType = DateTime2), @p3='?' (DbType = Guid), @p4='?' (DbType = DateTime2), @p5='?' (DbType = Guid), @p6='?' (DbType = DateTime2), @p7='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p8='?' (DbType = Int32), @p9='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p10='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p11='?' (DbType = Int32), @p12='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p13='?' (DbType = Int32), @p14='?' (DbType = Double), @p15='?' (DbType = Int32)], CommandType='"Text"', CommandTimeout='30']
+SET NOCOUNT ON;
+INSERT INTO [ProcessedProjectionEvents] ([EventId], [ProjectionName], [ProcessedAt])
+VALUES (@p0, @p1, @p2);
+INSERT INTO [UserOperationalStats] ([BranchId], [Date], [UserId], [LastUpdated], [PaymentsCashTotal], [PaymentsOnlineCount], [PaymentsOnlineTotal], [PaymentsTotal], [PrepaidBillsCount], [PrepaidBillsTotal], [ReportTatCount], [ReportTatTotalMinutes], [WalkInsCount])
+VALUES (@p3, @p4, @p5, @p6, @p7, @p8, @p9, @p10, @p11, @p12, @p13, @p14, @p15);
+2026-02-25 14:57:24.400 +05:30 [ERR] An exception occurred in the database while saving changes for context type 'SynOS.Data.SynOSDbContext'.
+Microsoft.EntityFrameworkCore.DbUpdateException: An error occurred while saving the entity changes. See the inner exception for details.
+ ---> Microsoft.Data.SqlClient.SqlException (0x80131904): Violation of PRIMARY KEY constraint 'PK_ProcessedProjectionEvents'. Cannot insert duplicate key in object 'dbo.ProcessedProjectionEvents'. The duplicate key value is (6198b762-77ad-449f-aae4-2f7dfd3b57cd, OperationalStats).
+Violation of PRIMARY KEY constraint 'PK_UserOperationalStats'. Cannot insert duplicate key in object 'dbo.UserOperationalStats'. The duplicate key value is (00000000-0000-0000-0000-000000000000, a0000000-0000-0000-0000-000000000001, 2026-02-25 00:00:00.0000000).
+The statement has been terminated.
+The statement has been terminated.
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.ReaderModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
+ClientConnectionId:9232a7c5-6d1f-493f-85b6-7914a64596fb
+Error Number:2627,State:1,Class:14
+   --- End of inner exception stack trace ---
+   at Microsoft.EntityFrameworkCore.Update.ReaderModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Update.Internal.SqlServerModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.ChangeTracking.Internal.StateManager.SaveChangesAsync(IList`1 entriesToSave, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.ChangeTracking.Internal.StateManager.SaveChangesAsync(StateManager stateManager, Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.DbContext.SaveChangesAsync(Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
+Microsoft.EntityFrameworkCore.DbUpdateException: An error occurred while saving the entity changes. See the inner exception for details.
+ ---> Microsoft.Data.SqlClient.SqlException (0x80131904): Violation of PRIMARY KEY constraint 'PK_ProcessedProjectionEvents'. Cannot insert duplicate key in object 'dbo.ProcessedProjectionEvents'. The duplicate key value is (6198b762-77ad-449f-aae4-2f7dfd3b57cd, OperationalStats).
+Violation of PRIMARY KEY constraint 'PK_UserOperationalStats'. Cannot insert duplicate key in object 'dbo.UserOperationalStats'. The duplicate key value is (00000000-0000-0000-0000-000000000000, a0000000-0000-0000-0000-000000000001, 2026-02-25 00:00:00.0000000).
+The statement has been terminated.
+The statement has been terminated.
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.ReaderModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
+ClientConnectionId:9232a7c5-6d1f-493f-85b6-7914a64596fb
+Error Number:2627,State:1,Class:14
+   --- End of inner exception stack trace ---
+   at Microsoft.EntityFrameworkCore.Update.ReaderModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Update.Internal.SqlServerModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.ChangeTracking.Internal.StateManager.SaveChangesAsync(IList`1 entriesToSave, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.ChangeTracking.Internal.StateManager.SaveChangesAsync(StateManager stateManager, Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.DbContext.SaveChangesAsync(Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
+2026-02-25 14:57:24.468 +05:30 [FTL] FATAL CRASH in OperationalStatsProjector. ProcessEventAsync failed. EventId: "6198b762-77ad-449f-aae4-2f7dfd3b57cd", Type: VISIT_CREATED, StackTrace: Microsoft.EntityFrameworkCore.DbUpdateException: An error occurred while saving the entity changes. See the inner exception for details.
+ ---> Microsoft.Data.SqlClient.SqlException (0x80131904): Violation of PRIMARY KEY constraint 'PK_ProcessedProjectionEvents'. Cannot insert duplicate key in object 'dbo.ProcessedProjectionEvents'. The duplicate key value is (6198b762-77ad-449f-aae4-2f7dfd3b57cd, OperationalStats).
+Violation of PRIMARY KEY constraint 'PK_UserOperationalStats'. Cannot insert duplicate key in object 'dbo.UserOperationalStats'. The duplicate key value is (00000000-0000-0000-0000-000000000000, a0000000-0000-0000-0000-000000000001, 2026-02-25 00:00:00.0000000).
+The statement has been terminated.
+The statement has been terminated.
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.ReaderModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
+ClientConnectionId:9232a7c5-6d1f-493f-85b6-7914a64596fb
+Error Number:2627,State:1,Class:14
+   --- End of inner exception stack trace ---
+   at Microsoft.EntityFrameworkCore.Update.ReaderModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Update.Internal.SqlServerModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.ChangeTracking.Internal.StateManager.SaveChangesAsync(IList`1 entriesToSave, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.ChangeTracking.Internal.StateManager.SaveChangesAsync(StateManager stateManager, Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.DbContext.SaveChangesAsync(Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.DbContext.SaveChangesAsync(Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
+   at SynOS.Services.Operational.OperationalStatsProjector.ProcessEventAsync(BranchOperationalEvent evt) in D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\Operational\OperationalStatsProjector.cs:line 248
+Microsoft.EntityFrameworkCore.DbUpdateException: An error occurred while saving the entity changes. See the inner exception for details.
+ ---> Microsoft.Data.SqlClient.SqlException (0x80131904): Violation of PRIMARY KEY constraint 'PK_ProcessedProjectionEvents'. Cannot insert duplicate key in object 'dbo.ProcessedProjectionEvents'. The duplicate key value is (6198b762-77ad-449f-aae4-2f7dfd3b57cd, OperationalStats).
+Violation of PRIMARY KEY constraint 'PK_UserOperationalStats'. Cannot insert duplicate key in object 'dbo.UserOperationalStats'. The duplicate key value is (00000000-0000-0000-0000-000000000000, a0000000-0000-0000-0000-000000000001, 2026-02-25 00:00:00.0000000).
+The statement has been terminated.
+The statement has been terminated.
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.ReaderModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
+ClientConnectionId:9232a7c5-6d1f-493f-85b6-7914a64596fb
+Error Number:2627,State:1,Class:14
+   --- End of inner exception stack trace ---
+   at Microsoft.EntityFrameworkCore.Update.ReaderModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Update.Internal.SqlServerModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.ChangeTracking.Internal.StateManager.SaveChangesAsync(IList`1 entriesToSave, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.ChangeTracking.Internal.StateManager.SaveChangesAsync(StateManager stateManager, Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.DbContext.SaveChangesAsync(Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.DbContext.SaveChangesAsync(Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
+   at SynOS.Services.Operational.OperationalStatsProjector.ProcessEventAsync(BranchOperationalEvent evt) in D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\Operational\OperationalStatsProjector.cs:line 248
+2026-02-25 14:57:24.509 +05:30 [ERR] Error occurred while executing OperationalStatsProjectionWorker.
+Microsoft.EntityFrameworkCore.DbUpdateException: An error occurred while saving the entity changes. See the inner exception for details.
+ ---> Microsoft.Data.SqlClient.SqlException (0x80131904): Violation of PRIMARY KEY constraint 'PK_ProcessedProjectionEvents'. Cannot insert duplicate key in object 'dbo.ProcessedProjectionEvents'. The duplicate key value is (6198b762-77ad-449f-aae4-2f7dfd3b57cd, OperationalStats).
+Violation of PRIMARY KEY constraint 'PK_UserOperationalStats'. Cannot insert duplicate key in object 'dbo.UserOperationalStats'. The duplicate key value is (00000000-0000-0000-0000-000000000000, a0000000-0000-0000-0000-000000000001, 2026-02-25 00:00:00.0000000).
+The statement has been terminated.
+The statement has been terminated.
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.ReaderModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
+ClientConnectionId:9232a7c5-6d1f-493f-85b6-7914a64596fb
+Error Number:2627,State:1,Class:14
+   --- End of inner exception stack trace ---
+   at Microsoft.EntityFrameworkCore.Update.ReaderModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Update.Internal.SqlServerModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.ChangeTracking.Internal.StateManager.SaveChangesAsync(IList`1 entriesToSave, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.ChangeTracking.Internal.StateManager.SaveChangesAsync(StateManager stateManager, Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.DbContext.SaveChangesAsync(Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.DbContext.SaveChangesAsync(Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
+   at SynOS.Services.Operational.OperationalStatsProjector.ProcessEventAsync(BranchOperationalEvent evt) in D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\Operational\OperationalStatsProjector.cs:line 248
+   at SynOS.Services.Operational.OperationalStatsProjector.ProjectPendingEventsAsync(CancellationToken cancellationToken) in D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\Operational\OperationalStatsProjector.cs:line 99
+   at SynOS.Api.BackgroundServices.OperationalStatsProjectionWorker.ExecuteAsync(CancellationToken stoppingToken) in D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\BackgroundServices\OperationalStatsProjectionWorker.cs:line 47
+2026-02-25 14:57:48.293 +05:30 [INF] [ProjectorDebug] Processing Event Type: PAYMENT_RECEIVED, BranchId: "a0000000-0000-0000-0000-000000000001", SourceId: "145bd146-6322-40b5-898a-1653c7dd1996", SourceType: RevenueFact, VisitId: 03453b99-3b3d-40c3-b81d-999c648dd15e
+2026-02-25 14:57:48.323 +05:30 [INF] [ProjectorDebug] Checking Fact Deduplication for SourceId: "145bd146-6322-40b5-898a-1653c7dd1996"
+2026-02-25 14:57:48.503 +05:30 [INF] [ProjectorDebug] Incrementing WalkIn for RevenueFact. SourceRef: a2945d27-a07e-41a8-8241-cb3be9194641
+2026-02-25 14:57:48.668 +05:30 [WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+2026-02-25 14:57:48.695 +05:30 [ERR] An exception occurred in the database while saving changes for context type 'SynOS.Data.SynOSDbContext'.
+Microsoft.EntityFrameworkCore.DbUpdateException: An error occurred while saving the entity changes. See the inner exception for details.
+ ---> Microsoft.Data.SqlClient.SqlException (0x80131904): Violation of PRIMARY KEY constraint 'PK_ProcessedProjectionEvents'. Cannot insert duplicate key in object 'dbo.ProcessedProjectionEvents'. The duplicate key value is (4fceb675-1b36-4607-9e25-f4b64c14c38c, OperationalStats).
+   at Microsoft.Data.SqlClient.SqlConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   at Microsoft.Data.SqlClient.SqlInternalConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   at Microsoft.Data.SqlClient.TdsParser.ThrowExceptionAndWarning(TdsParserStateObject stateObj, Boolean callerHasConnectionLock, Boolean asyncClose)
+   at Microsoft.Data.SqlClient.TdsParser.TryRun(RunBehavior runBehavior, SqlCommand cmdHandler, SqlDataReader dataStream, BulkCopySimpleResultSet bulkCopyHandler, TdsParserStateObject stateObj, Boolean& dataReady)
+   at Microsoft.Data.SqlClient.SqlDataReader.TryHasMoreRows(Boolean& moreRows)
+   at Microsoft.Data.SqlClient.SqlDataReader.TryHasMoreResults(Boolean& moreResults)
+   at Microsoft.Data.SqlClient.SqlDataReader.TryNextResult(Boolean& more)
+   at Microsoft.Data.SqlClient.SqlDataReader.NextResultAsyncExecute(Task task, Object state)
+   at Microsoft.Data.SqlClient.SqlDataReader.InvokeAsyncCall[T](SqlDataReaderBaseAsyncCallContext`1 context)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Update.AffectedCountModificationCommandBatch.ConsumeAsync(RelationalDataReader reader, CancellationToken cancellationToken)
+ClientConnectionId:9232a7c5-6d1f-493f-85b6-7914a64596fb
+Error Number:2627,State:1,Class:14
+   --- End of inner exception stack trace ---
+   at Microsoft.EntityFrameworkCore.Update.AffectedCountModificationCommandBatch.ConsumeAsync(RelationalDataReader reader, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.ReaderModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.ReaderModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Update.Internal.SqlServerModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.ChangeTracking.Internal.StateManager.SaveChangesAsync(IList`1 entriesToSave, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.ChangeTracking.Internal.StateManager.SaveChangesAsync(StateManager stateManager, Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.DbContext.SaveChangesAsync(Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
+Microsoft.EntityFrameworkCore.DbUpdateException: An error occurred while saving the entity changes. See the inner exception for details.
+ ---> Microsoft.Data.SqlClient.SqlException (0x80131904): Violation of PRIMARY KEY constraint 'PK_ProcessedProjectionEvents'. Cannot insert duplicate key in object 'dbo.ProcessedProjectionEvents'. The duplicate key value is (4fceb675-1b36-4607-9e25-f4b64c14c38c, OperationalStats).
+   at Microsoft.Data.SqlClient.SqlConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   at Microsoft.Data.SqlClient.SqlInternalConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   at Microsoft.Data.SqlClient.TdsParser.ThrowExceptionAndWarning(TdsParserStateObject stateObj, Boolean callerHasConnectionLock, Boolean asyncClose)
+   at Microsoft.Data.SqlClient.TdsParser.TryRun(RunBehavior runBehavior, SqlCommand cmdHandler, SqlDataReader dataStream, BulkCopySimpleResultSet bulkCopyHandler, TdsParserStateObject stateObj, Boolean& dataReady)
+   at Microsoft.Data.SqlClient.SqlDataReader.TryHasMoreRows(Boolean& moreRows)
+   at Microsoft.Data.SqlClient.SqlDataReader.TryHasMoreResults(Boolean& moreResults)
+   at Microsoft.Data.SqlClient.SqlDataReader.TryNextResult(Boolean& more)
+   at Microsoft.Data.SqlClient.SqlDataReader.NextResultAsyncExecute(Task task, Object state)
+   at Microsoft.Data.SqlClient.SqlDataReader.InvokeAsyncCall[T](SqlDataReaderBaseAsyncCallContext`1 context)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Update.AffectedCountModificationCommandBatch.ConsumeAsync(RelationalDataReader reader, CancellationToken cancellationToken)
+ClientConnectionId:9232a7c5-6d1f-493f-85b6-7914a64596fb
+Error Number:2627,State:1,Class:14
+   --- End of inner exception stack trace ---
+   at Microsoft.EntityFrameworkCore.Update.AffectedCountModificationCommandBatch.ConsumeAsync(RelationalDataReader reader, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.ReaderModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.ReaderModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Update.Internal.SqlServerModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.ChangeTracking.Internal.StateManager.SaveChangesAsync(IList`1 entriesToSave, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.ChangeTracking.Internal.StateManager.SaveChangesAsync(StateManager stateManager, Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.DbContext.SaveChangesAsync(Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
+2026-02-25 14:57:48.863 +05:30 [FTL] FATAL CRASH in OperationalStatsProjector. ProcessEventAsync failed. EventId: "4fceb675-1b36-4607-9e25-f4b64c14c38c", Type: PAYMENT_RECEIVED, StackTrace: Microsoft.EntityFrameworkCore.DbUpdateException: An error occurred while saving the entity changes. See the inner exception for details.
+ ---> Microsoft.Data.SqlClient.SqlException (0x80131904): Violation of PRIMARY KEY constraint 'PK_ProcessedProjectionEvents'. Cannot insert duplicate key in object 'dbo.ProcessedProjectionEvents'. The duplicate key value is (4fceb675-1b36-4607-9e25-f4b64c14c38c, OperationalStats).
+   at Microsoft.Data.SqlClient.SqlConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   at Microsoft.Data.SqlClient.SqlInternalConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   at Microsoft.Data.SqlClient.TdsParser.ThrowExceptionAndWarning(TdsParserStateObject stateObj, Boolean callerHasConnectionLock, Boolean asyncClose)
+   at Microsoft.Data.SqlClient.TdsParser.TryRun(RunBehavior runBehavior, SqlCommand cmdHandler, SqlDataReader dataStream, BulkCopySimpleResultSet bulkCopyHandler, TdsParserStateObject stateObj, Boolean& dataReady)
+   at Microsoft.Data.SqlClient.SqlDataReader.TryHasMoreRows(Boolean& moreRows)
+   at Microsoft.Data.SqlClient.SqlDataReader.TryHasMoreResults(Boolean& moreResults)
+   at Microsoft.Data.SqlClient.SqlDataReader.TryNextResult(Boolean& more)
+   at Microsoft.Data.SqlClient.SqlDataReader.NextResultAsyncExecute(Task task, Object state)
+   at Microsoft.Data.SqlClient.SqlDataReader.InvokeAsyncCall[T](SqlDataReaderBaseAsyncCallContext`1 context)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Update.AffectedCountModificationCommandBatch.ConsumeAsync(RelationalDataReader reader, CancellationToken cancellationToken)
+ClientConnectionId:9232a7c5-6d1f-493f-85b6-7914a64596fb
+Error Number:2627,State:1,Class:14
+   --- End of inner exception stack trace ---
+   at Microsoft.EntityFrameworkCore.Update.AffectedCountModificationCommandBatch.ConsumeAsync(RelationalDataReader reader, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.ReaderModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.ReaderModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Update.Internal.SqlServerModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.ChangeTracking.Internal.StateManager.SaveChangesAsync(IList`1 entriesToSave, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.ChangeTracking.Internal.StateManager.SaveChangesAsync(StateManager stateManager, Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.DbContext.SaveChangesAsync(Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.DbContext.SaveChangesAsync(Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
+   at SynOS.Services.Operational.OperationalStatsProjector.ProcessEventAsync(BranchOperationalEvent evt) in D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\Operational\OperationalStatsProjector.cs:line 248
+Microsoft.EntityFrameworkCore.DbUpdateException: An error occurred while saving the entity changes. See the inner exception for details.
+ ---> Microsoft.Data.SqlClient.SqlException (0x80131904): Violation of PRIMARY KEY constraint 'PK_ProcessedProjectionEvents'. Cannot insert duplicate key in object 'dbo.ProcessedProjectionEvents'. The duplicate key value is (4fceb675-1b36-4607-9e25-f4b64c14c38c, OperationalStats).
+   at Microsoft.Data.SqlClient.SqlConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   at Microsoft.Data.SqlClient.SqlInternalConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   at Microsoft.Data.SqlClient.TdsParser.ThrowExceptionAndWarning(TdsParserStateObject stateObj, Boolean callerHasConnectionLock, Boolean asyncClose)
+   at Microsoft.Data.SqlClient.TdsParser.TryRun(RunBehavior runBehavior, SqlCommand cmdHandler, SqlDataReader dataStream, BulkCopySimpleResultSet bulkCopyHandler, TdsParserStateObject stateObj, Boolean& dataReady)
+   at Microsoft.Data.SqlClient.SqlDataReader.TryHasMoreRows(Boolean& moreRows)
+   at Microsoft.Data.SqlClient.SqlDataReader.TryHasMoreResults(Boolean& moreResults)
+   at Microsoft.Data.SqlClient.SqlDataReader.TryNextResult(Boolean& more)
+   at Microsoft.Data.SqlClient.SqlDataReader.NextResultAsyncExecute(Task task, Object state)
+   at Microsoft.Data.SqlClient.SqlDataReader.InvokeAsyncCall[T](SqlDataReaderBaseAsyncCallContext`1 context)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Update.AffectedCountModificationCommandBatch.ConsumeAsync(RelationalDataReader reader, CancellationToken cancellationToken)
+ClientConnectionId:9232a7c5-6d1f-493f-85b6-7914a64596fb
+Error Number:2627,State:1,Class:14
+   --- End of inner exception stack trace ---
+   at Microsoft.EntityFrameworkCore.Update.AffectedCountModificationCommandBatch.ConsumeAsync(RelationalDataReader reader, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.ReaderModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.ReaderModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Update.Internal.SqlServerModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.ChangeTracking.Internal.StateManager.SaveChangesAsync(IList`1 entriesToSave, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.ChangeTracking.Internal.StateManager.SaveChangesAsync(StateManager stateManager, Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.DbContext.SaveChangesAsync(Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.DbContext.SaveChangesAsync(Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
+   at SynOS.Services.Operational.OperationalStatsProjector.ProcessEventAsync(BranchOperationalEvent evt) in D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\Operational\OperationalStatsProjector.cs:line 248
+2026-02-25 14:57:49.105 +05:30 [ERR] Error occurred while executing OperationalStatsProjectionWorker.
+Microsoft.EntityFrameworkCore.DbUpdateException: An error occurred while saving the entity changes. See the inner exception for details.
+ ---> Microsoft.Data.SqlClient.SqlException (0x80131904): Violation of PRIMARY KEY constraint 'PK_ProcessedProjectionEvents'. Cannot insert duplicate key in object 'dbo.ProcessedProjectionEvents'. The duplicate key value is (4fceb675-1b36-4607-9e25-f4b64c14c38c, OperationalStats).
+   at Microsoft.Data.SqlClient.SqlConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   at Microsoft.Data.SqlClient.SqlInternalConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   at Microsoft.Data.SqlClient.TdsParser.ThrowExceptionAndWarning(TdsParserStateObject stateObj, Boolean callerHasConnectionLock, Boolean asyncClose)
+   at Microsoft.Data.SqlClient.TdsParser.TryRun(RunBehavior runBehavior, SqlCommand cmdHandler, SqlDataReader dataStream, BulkCopySimpleResultSet bulkCopyHandler, TdsParserStateObject stateObj, Boolean& dataReady)
+   at Microsoft.Data.SqlClient.SqlDataReader.TryHasMoreRows(Boolean& moreRows)
+   at Microsoft.Data.SqlClient.SqlDataReader.TryHasMoreResults(Boolean& moreResults)
+   at Microsoft.Data.SqlClient.SqlDataReader.TryNextResult(Boolean& more)
+   at Microsoft.Data.SqlClient.SqlDataReader.NextResultAsyncExecute(Task task, Object state)
+   at Microsoft.Data.SqlClient.SqlDataReader.InvokeAsyncCall[T](SqlDataReaderBaseAsyncCallContext`1 context)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Update.AffectedCountModificationCommandBatch.ConsumeAsync(RelationalDataReader reader, CancellationToken cancellationToken)
+ClientConnectionId:9232a7c5-6d1f-493f-85b6-7914a64596fb
+Error Number:2627,State:1,Class:14
+   --- End of inner exception stack trace ---
+   at Microsoft.EntityFrameworkCore.Update.AffectedCountModificationCommandBatch.ConsumeAsync(RelationalDataReader reader, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.ReaderModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.ReaderModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Update.Internal.SqlServerModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.ChangeTracking.Internal.StateManager.SaveChangesAsync(IList`1 entriesToSave, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.ChangeTracking.Internal.StateManager.SaveChangesAsync(StateManager stateManager, Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.DbContext.SaveChangesAsync(Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.DbContext.SaveChangesAsync(Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
+   at SynOS.Services.Operational.OperationalStatsProjector.ProcessEventAsync(BranchOperationalEvent evt) in D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\Operational\OperationalStatsProjector.cs:line 248
+   at SynOS.Services.Operational.OperationalStatsProjector.ProjectPendingEventsAsync(CancellationToken cancellationToken) in D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\Operational\OperationalStatsProjector.cs:line 99
+   at SynOS.Api.BackgroundServices.OperationalStatsProjectionWorker.ExecuteAsync(CancellationToken stoppingToken) in D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\BackgroundServices\OperationalStatsProjectionWorker.cs:line 47

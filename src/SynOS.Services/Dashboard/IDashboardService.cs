@@ -5,6 +5,6 @@ namespace SynOS.Services.Dashboard
 {
     public interface IDashboardService
     {
-        Task<TodaysSummaryDto> GetTodaysSummaryAsync();
+        Task<TodaysSummaryDto> GetTodaysSummaryAsync(System.Guid? branchId = null, System.Guid? userId = null);
     }
 }

@@ -59,7 +59,7 @@ namespace SynOS.Services
 
             // Find a recent PAID visit for the patient. Prioritize today's visit.
             var visit = await _context.Visits
-                                      .Where(v => v.PatientId == patient.PatientId && v.Status == "Paid") // Assuming "Paid" as visit status
+                                      .Where(v => v.PatientId == patient.PatientId && v.Status == VisitStatus.FullPaid)
                                       .OrderByDescending(v => v.CreatedAt)
                                       .FirstOrDefaultAsync();
 

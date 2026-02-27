@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection; // For ScopeFactory
 using SynOS.Api.Hubs;
 using SynOS.Services.Operational;
 using SynOS.Services.Operations; // For IOperationsEngine
+using SynOS.Services.Dashboard; // For IDashboardService
 using SynOS.Services; // For IInvoiceService
 
 namespace SynOS.Api.Services
@@ -20,15 +21,12 @@ namespace SynOS.Api.Services
             _scopeFactory = scopeFactory;
         }
 
-        public async Task NotifyDashboardRefresh(string branchId, string? visitId = null)
+        public async Task NotifyActionQueueDeltaAsync(string branchId, string visitId)
         {
             if (string.IsNullOrEmpty(branchId)) return;
 
-            // 1. Trigger Action Queue Refresh (with Delta if available)
             try
             {
-                bool deltaPushed = false;
-                
                 if (!string.IsNullOrEmpty(visitId) && Guid.TryParse(visitId, out var vGuid))
                 {
                     using (var scope = _scopeFactory.CreateScope())
@@ -38,42 +36,58 @@ namespace SynOS.Api.Services
                         
                         if (delta != null)
                         {
-                            await _hubContext.Clients.All.SendAsync("ActionQueueDeltaReceived", delta);
-                            deltaPushed = true;
+                            // 1. Target Receptionist (Private Desktop)
+                            if (delta.AssignedToUserId.HasValue && delta.AssignedToUserId.Value != Guid.Empty)
+                            {
+                                await _hubContext.Clients.User(delta.AssignedToUserId.Value.ToString()).SendAsync("ActionQueueDeltaReceived", delta);
+                            }
+
+                            // 2. Target Branch Admins (Observation Desk)
+                            await _hubContext.Clients.Group($"BranchAdmins-{branchId}").SendAsync("ActionQueueDeltaReceived", delta);
+                            
+                            return;
                         }
                     }
                 }
 
-                if (!deltaPushed)
-                {
-                    // Fallback to Thundering Herd if no Delta is provided or fetch failed
-                    await _hubContext.Clients.All.SendAsync("ActionQueueUpdated");
-                }
+                // Fallback to Thundering Herd (Scoped to Group) if no Delta is provided or fetch failed
+                await _hubContext.Clients.Group($"BranchAdmins-{branchId}").SendAsync("ActionQueueUpdated");
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"[SignalRNotifier] Delta Push Failed: {ex.Message}");
-                try { await _hubContext.Clients.All.SendAsync("ActionQueueUpdated"); } catch { }
+                try { await _hubContext.Clients.Group($"BranchAdmins-{branchId}").SendAsync("ActionQueueUpdated"); } catch { }
             }
+        }
 
-            // 2. Push Revenue Stats (Calculate here via Scope to break cycle)
+        public async Task NotifyRealitySummaryUpdateAsync(string branchId, Guid? targetUserId = null)
+        {
+            if (string.IsNullOrEmpty(branchId)) return;
+
             try
             {
                 using (var scope = _scopeFactory.CreateScope())
                 {
-                    var invoiceService = scope.ServiceProvider.GetRequiredService<IInvoiceService>();
+                    var dashboardService = scope.ServiceProvider.GetRequiredService<IDashboardService>();
+                    
                     if (Guid.TryParse(branchId, out var guid))
                     {
-                        var stats = await invoiceService.GetDailyRevenueStatsAsync(guid);
-                        // Broadcast Summary Payload
-                        await _hubContext.Clients.All.SendAsync("ReceptionSummaryUpdated", stats);
+                        // Broadcast Branch-Wide Reality Summary to Branch Admins Group
+                        var branchStats = await dashboardService.GetTodaysSummaryAsync(guid, null);
+                        await _hubContext.Clients.Group($"BranchAdmins-{branchId}").SendAsync("ReceptionSummaryUpdated", branchStats);
+
+                        // If the event corresponds to a specific desk, push only to that desk
+                        if (targetUserId.HasValue && targetUserId.Value != Guid.Empty)
+                        {
+                            var userStats = await dashboardService.GetTodaysSummaryAsync(guid, targetUserId.Value);
+                            await _hubContext.Clients.User(targetUserId.Value.ToString()).SendAsync("ReceptionSummaryUpdated", userStats);
+                        }
                     }
                 }
             }
             catch (Exception ex)
             {
-                // Never crash the upstream operational writer
-                Console.WriteLine($"[SignalRNotifier] Failed to push stats: {ex.Message}");
+                Console.WriteLine($"[SignalRNotifier] Error pushing Reality Summary update to branch admins via SignalR: {ex.Message}");
             }
         }
     }

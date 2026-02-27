@@ -34,6 +34,7 @@ namespace SynOS.Data
         public DbSet<BranchOperationalEvent> BranchOperationalEvents { get; set; } = null!; // ADDED
         public DbSet<UserOperationalStats> UserOperationalStats { get; set; } = null!; // ADDED: Projections
         public DbSet<BranchOperationalStats> BranchOperationalStats { get; set; } = null!; // ADDED: Projections
+        public DbSet<VisitOperationalState> VisitOperationalStates { get; set; } = null!; // ADDED: Projections
         public DbSet<ProcessedProjectionEvent> ProcessedProjectionEvents { get; set; } = null!; // ADDED: Idempotency
 
         public DbSet<ReceivableFact> ReceivableFacts { get; set; } = null!;
@@ -360,6 +361,7 @@ namespace SynOS.Data
 
             // Visit and Payment entities
             modelBuilder.Entity<Visit>(entity => {
+                entity.HasIndex(e => new { e.BranchId, e.AssignedReceptionistId, e.TokenDate });
                 entity.HasIndex(e => new { e.TokenDate, e.Department });
                 entity.Property(e => e.RowVersion).IsRowVersion();
                 entity.HasOne(v => v.Branch).WithMany().HasForeignKey(v => v.BranchId).OnDelete(DeleteBehavior.Restrict).IsRequired(false);

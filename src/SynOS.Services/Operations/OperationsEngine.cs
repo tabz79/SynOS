@@ -16,66 +16,63 @@ namespace SynOS.Services.Operations
     {
         private readonly SynOSDbContext _context;
         private readonly IOperationalEventWriter _eventWriter;
+        private readonly SynOS.Services.Security.IUserContext _userContext;
 
-        public OperationsEngine(SynOSDbContext context, IOperationalEventWriter eventWriter)
+        public OperationsEngine(SynOSDbContext context, IOperationalEventWriter eventWriter, SynOS.Services.Security.IUserContext userContext)
         {
             _context = context;
             _eventWriter = eventWriter;
+            _userContext = userContext;
         }
 
-        public async Task<OperationsStatsDto> GetDailyOperationsStatsAsync(Guid branchId)
+        public async Task<OperationsStatsDto> GetDailyOperationsStatsAsync(Guid branchId, Guid? userId = null)
         {
             if (branchId == Guid.Empty) throw new ArgumentException("BranchId required");
 
-            // Server Local Time boundaries
-            DateTime localStart = DateTime.Today; 
-            DateTime localEnd = DateTime.Now;
-            DateTime utcStart = localStart.ToUniversalTime();
-            DateTime utcEnd = localEnd.ToUniversalTime();
-
-            // 1. Pending Reports (Operational State)
-            // Definition: Report exists, Visit is in this branch, Status is NOT Signed/Finalized
-            var pendingReports = await _context.Reports
-                .Join(_context.Visits, r => r.VisitId, v => v.VisitId, (r, v) => new { r, v })
-                .CountAsync(x => x.v.BranchId == branchId && x.r.Status != "Signed" && x.r.Status != "Finalized");
-
-            // 2. TAT (Operational Metric)
-            var finalizedReports = await _context.Reports
-                .Join(_context.Visits, r => r.VisitId, v => v.VisitId, (r, v) => new { r, v })
-                .Where(x => x.v.BranchId == branchId && x.r.Status == "Signed" && x.r.SignedAt >= utcStart && x.r.SignedAt <= utcEnd)
-                .Select(x => new { x.r.SignedAt, x.r.SourceId, x.r.SourceType })
-                .ToListAsync();
-
+            var today = DateTime.UtcNow.Date;
+            
+            int pendingReports = 0;
             double avgTime = 0;
-            if (finalizedReports.Any())
-            {
-                var durations = new System.Collections.Generic.List<double>();
-                foreach (var report in finalizedReports)
-                {
-                    if (report.SourceType == "Order")
-                    {
-                        // REFACTOR: Disabled for Specimen Migration
-                        /*
-                        var sampleCollectedAt = await _context.Samples
-                            .Where(s => s.OrderId == report.SourceId && s.CollectedAt.HasValue)
-                            .Select(s => s.CollectedAt)
-                            .FirstOrDefaultAsync();
+            int pendingCollections = 0;
+            int completedCollections = 0;
+            int testsRunning = 0;
 
-                        if (sampleCollectedAt.HasValue && report.SignedAt.HasValue)
-                        {
-                            var minutes = (report.SignedAt.Value - sampleCollectedAt.Value).TotalMinutes;
-                            if (minutes > 0) durations.Add(minutes);
-                        }
-                        */
-                    }
+            if (userId.HasValue)
+            {
+                var stats = await _context.UserOperationalStats
+                    .FirstOrDefaultAsync(s => s.UserId == userId.Value && s.BranchId == branchId && s.Date == today);
+                
+                if (stats != null)
+                {
+                    pendingReports = stats.PendingReportsCount;
+                    if (stats.ReportTatCount > 0) avgTime = stats.ReportTatTotalMinutes / stats.ReportTatCount;
+                    pendingCollections = stats.PendingCollectionsCount;
+                    completedCollections = stats.CompletedCollectionsCount;
+                    testsRunning = stats.TestsRunningCount;
                 }
-                if (durations.Any()) avgTime = durations.Average();
+            }
+            else
+            {
+                var stats = await _context.BranchOperationalStats
+                    .FirstOrDefaultAsync(s => s.BranchId == branchId && s.Date == today);
+
+                if (stats != null)
+                {
+                    pendingReports = stats.PendingReportsCount;
+                    if (stats.ReportTatCount > 0) avgTime = stats.ReportTatTotalMinutes / stats.ReportTatCount;
+                    pendingCollections = stats.PendingCollectionsCount;
+                    completedCollections = stats.CompletedCollectionsCount;
+                    testsRunning = stats.TestsRunningCount;
+                }
             }
 
             return new OperationsStatsDto
             {
                 PendingReports = pendingReports,
-                AvgReportTimeMinutes = Math.Round(avgTime, 2)
+                AvgReportTimeMinutes = avgTime,
+                PendingCollections = pendingCollections,
+                CompletedCollections = completedCollections,
+                TestsRunning = testsRunning
             };
         }
 
@@ -91,22 +88,32 @@ namespace SynOS.Services.Operations
             // DEBUG TRACING
             Console.WriteLine($"[ActionQueue] Query: Branch={branchId}, Date={date}, Today={today}, Window=[{startDate} - {nextDay})");
 
-            // Fetch Data Graph (No Tracking for Read-Only Projection)
-            var visits = await _context.Visits
+            var visitQuery = _context.Visits
                 .AsNoTracking()
+                .AsSplitQuery()
                 .Where(v => v.BranchId == branchId && 
-                            v.Status != "Cancelled" &&
+                            v.Status != VisitStatus.Cancelled &&
                             (
                                 // Rule 1: Show ALL Active (Unpaid) visits from recent window (7 days) covers clock skew/backlog
-                                (v.Status != "Paid" && v.Status != "FullPaid" && v.TokenDate >= startDate)
+                                (v.Status != VisitStatus.Paid && v.Status != VisitStatus.FullPaid && v.TokenDate >= startDate)
                                 ||
                                 // Rule 2: Show FINALIZED (Paid) visits ONLY from Today (to keep list clean)
-                                ((v.Status == "Paid" || v.Status == "FullPaid") && v.TokenDate >= today && v.TokenDate < nextDay)
-                            ))
+                                ((v.Status == VisitStatus.Paid || v.Status == VisitStatus.FullPaid) && v.TokenDate >= today && v.TokenDate < nextDay)
+                            ));
+
+            if (_userContext.CurrentRole == "Receptionist")
+            {
+                var currentUserId = _userContext.CurrentUserId;
+                visitQuery = visitQuery.Where(v => v.AssignedReceptionistId == currentUserId);
+            }
+
+            // Fetch Data Graph (No Tracking for Read-Only Projection)
+            var visits = await visitQuery
                 .Include(v => v.Patient)
                 .Include(v => v.ReferralPartner)
                 .Include(v => v.Orders).ThenInclude(o => o.Test) // To get TestCode if denorm is missing, but Order has TestCode.
                 .Include(v => v.Invoices).ThenInclude(i => i.Payments)
+                .Include(v => v.AssignedReceptionist)
                 .OrderByDescending(v => v.TokenDate) // Group by Date (Newest Day First)
                 .ThenByDescending(v => v.CreatedAt) // Strict LIFO: Newest registrations on top
                 .ToListAsync();
@@ -143,13 +150,8 @@ namespace SynOS.Services.Operations
             foreach (var visit in visits)
             {
                 var invoice = visit.Invoices.FirstOrDefault(); // Assuming 1 invoice per visit for V1
-                if (invoice == null) 
-                {
-                    Console.WriteLine($"[ActionQueue] Skipping Visit {visit.Token}: No Invoice Found.");
-                    continue; 
-                }
 
-                Console.WriteLine($"[ActionQueue] Processing Visit {visit.Token}. Invoice Status: {invoice.Status}.");
+                Console.WriteLine($"[ActionQueue] Processing Visit {visit.Token}. Invoice Status: {invoice?.Status ?? "None"}.");
                 
                 // var visitSamples = samples.Where(s => s.VisitId == visit.VisitId).ToList();
                 var visitSamples = new List<string>(); // Stubbed
@@ -175,7 +177,7 @@ namespace SynOS.Services.Operations
                     PaymentDisplay = DerivePaymentDisplay(visit, invoice),
                     
                     // Phase 6: Granular Payment Fields
-                    TotalAmount = invoice.Total,
+                    TotalAmount = invoice?.Total ?? 0m,
                     PaymentMethod = DerivePaymentMethod(visit, invoice),
                     ReferrerName = visit.ReferralPartner?.Name ?? "Self",
 
@@ -185,7 +187,9 @@ namespace SynOS.Services.Operations
                     
                     DateGroup = CalculateDateGroup(visit.TokenDate, today),
 
-                    IsFinalized = (invoice.Status == "Paid" || invoice.Status == "FullPaid")
+                    IsFinalized = invoice != null && (invoice.Status == "Paid" || invoice.Status == "FullPaid"),
+                    AssignedToUserId = visit.AssignedReceptionistId,
+                    AssignedToName = visit.AssignedReceptionist?.Name
                 };
 
                 queue.Add(dto);
@@ -204,12 +208,12 @@ namespace SynOS.Services.Operations
                 .Include(v => v.ReferralPartner)
                 .Include(v => v.Orders).ThenInclude(o => o.Test)
                 .Include(v => v.Invoices).ThenInclude(i => i.Payments)
+                .Include(v => v.AssignedReceptionist)
                 .FirstOrDefaultAsync(v => v.VisitId == visitId);
 
             if (visit == null) return null;
 
             var invoice = visit.Invoices.FirstOrDefault();
-            if (invoice == null) return null;
 
             var results = await _context.Results
                 .AsNoTracking()
@@ -243,7 +247,7 @@ namespace SynOS.Services.Operations
                 
                 PaymentDisplay = DerivePaymentDisplay(visit, invoice),
                 
-                TotalAmount = invoice.Total,
+                TotalAmount = invoice?.Total ?? 0m,
                 PaymentMethod = DerivePaymentMethod(visit, invoice),
                 ReferrerName = visit.ReferralPartner?.Name ?? "Self",
 
@@ -253,7 +257,9 @@ namespace SynOS.Services.Operations
                 
                 DateGroup = CalculateDateGroup(visit.TokenDate, today),
 
-                IsFinalized = (invoice.Status == "Paid" || invoice.Status == "FullPaid")
+                IsFinalized = invoice != null && (invoice.Status == "Paid" || invoice.Status == "FullPaid"),
+                AssignedToUserId = visit.AssignedReceptionistId,
+                AssignedToName = visit.AssignedReceptionist?.Name
             };
         }
 
@@ -279,7 +285,7 @@ namespace SynOS.Services.Operations
             return $"{age}y / {gender}";
         }
 
-        private string DerivePaymentDisplay(Visit visit, Invoice invoice)
+        private string DerivePaymentDisplay(Visit visit, Invoice? invoice)
         {
             if (visit.PaymentCollectionModel == "PartnerCollects")
             {
@@ -287,7 +293,7 @@ namespace SynOS.Services.Operations
                 return $"Prepaid ({partnerName})";
             }
 
-            if (invoice.Status == "Paid" || invoice.Status == "FullPaid")
+            if (invoice != null && (invoice.Status == "Paid" || invoice.Status == "FullPaid"))
             {
                 var method = invoice.Payments.FirstOrDefault()?.Method;
                 if (!string.IsNullOrEmpty(method))
@@ -305,11 +311,11 @@ namespace SynOS.Services.Operations
             return "Due";
         }
 
-        private string DerivePaymentMethod(Visit visit, Invoice invoice)
+        private string DerivePaymentMethod(Visit visit, Invoice? invoice)
         {
             if (visit.PaymentCollectionModel == "PartnerCollects") return "Prepaid";
 
-            if (invoice.Status == "Paid" || invoice.Status == "FullPaid")
+            if (invoice != null && (invoice.Status == "Paid" || invoice.Status == "FullPaid"))
             {
                 var method = invoice.Payments.FirstOrDefault()?.Method;
                 return method ?? "Paid"; // Fallback

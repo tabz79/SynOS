@@ -105,12 +105,12 @@ namespace SynOS.Services.Revenue
             if (totalPaid >= totalAmount && totalAmount > 0)
             {
                 invoice.Status = "Paid";
-                visit.Status = "Paid";
+                visit.Status = VisitStatus.FullPaid;
             }
             else if (totalPaid > 0)
             {
                 invoice.Status = "PartialPayment";
-                visit.Status = "PartialPayment"; // Operational State
+                visit.Status = VisitStatus.PartialPayment; // Operational State
             }
             else
             {
@@ -118,8 +118,8 @@ namespace SynOS.Services.Revenue
                 // Don't revert Visit status if it's already Finalized/etc? 
                 // "Visit Operational State".
                 // Keep it simple: Financial status sync.
-                if (visit.Status == "Paid" || visit.Status == "PartialPayment")
-                    visit.Status = "PendingPayment";
+                if (visit.Status == VisitStatus.FullPaid || visit.Status == VisitStatus.PartialPayment)
+                    visit.Status = VisitStatus.PendingPayment;
             }
 
             await _context.SaveChangesAsync();

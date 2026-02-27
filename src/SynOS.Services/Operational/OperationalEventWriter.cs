@@ -13,12 +13,14 @@ namespace SynOS.Services.Operational
         private readonly ILogger<OperationalEventWriter> _logger;
 
         private readonly INotifier _notifier;
+        private readonly IOperationalEventChannel _eventChannel;
 
-        public OperationalEventWriter(SynOSDbContext context, ILogger<OperationalEventWriter> logger, INotifier notifier)
+        public OperationalEventWriter(SynOSDbContext context, ILogger<OperationalEventWriter> logger, INotifier notifier, IOperationalEventChannel eventChannel)
         {
             _context = context;
             _logger = logger;
             _notifier = notifier;
+            _eventChannel = eventChannel;
         }
 
         public async Task WriteEventAsync(
@@ -39,7 +41,7 @@ namespace SynOS.Services.Operational
             try
             {
                 // 2️⃣ Instrument Event Writer
-                _logger.LogCritical("EVENT_WRITE for VisitId {VisitId}, Context {ContextId}", visitId, _context.ContextId);
+                _logger.LogInformation("EVENT_WRITE for VisitId {VisitId}, Context {ContextId}", visitId, _context.ContextId);
 
                 var evt = new BranchOperationalEvent
                 {
@@ -78,11 +80,21 @@ namespace SynOS.Services.Operational
                     // 3️⃣ Real-Time Signal to Dashboard (Now with Targeted Delta)
                     try 
                     {
-                        await _notifier.NotifyDashboardRefresh(branchId, visitId);
+                        await _notifier.NotifyActionQueueDeltaAsync(branchId, visitId);
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError(ex, "Failed to notify dashboard refresh.");
+                        _logger.LogError(ex, "Failed to notify dashboard action queue delta.");
+                    }
+
+                    // 4️⃣ Publish Event to Projection Channel for Immediate Processing
+                    try
+                    {
+                        await _eventChannel.PublishEventAsync(evt.EventId);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Failed to publish event {EventId} to the projection channel.", evt.EventId);
                     }
                 }
             }

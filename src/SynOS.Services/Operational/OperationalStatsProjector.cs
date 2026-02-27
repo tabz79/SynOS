@@ -12,6 +12,7 @@ using SynOS.Services.Dashboard; // ADDED
 using SynOS.Models.Entities.AR; // ADDED: Stage 1 Financials
 using SynOS.Models.Entities.Payments; // ADDED: Stage 1 Financials
 using SynOS.Models.Entities.Revenue; // ADDED: Revenue Engine Link
+using SynOS.Services.Operational; // ADDED
 
 namespace SynOS.Services.Operational
 {
@@ -19,21 +20,22 @@ namespace SynOS.Services.Operational
     {
         Task EnsureStateConsistencyAsync(System.Threading.CancellationToken cancellationToken);
         Task ProjectPendingEventsAsync(System.Threading.CancellationToken cancellationToken = default);
+        Task ProjectSingleEventAsync(Guid eventId, System.Threading.CancellationToken cancellationToken = default);
     }
 
     public class OperationalStatsProjector : IOperationalStatsProjector
     {
         private readonly SynOSDbContext _context;
-        private readonly IDashboardNotificationService _notificationService; // CHANGED
+        private readonly INotifier _notifier; // CHANGED
         private readonly ILogger<OperationalStatsProjector> _logger;
 
         public OperationalStatsProjector(
             SynOSDbContext context,
-            IDashboardNotificationService notificationService,
+            INotifier notifier,
             ILogger<OperationalStatsProjector> logger)
         {
             _context = context;
-            _notificationService = notificationService;
+            _notifier = notifier;
             _logger = logger;
         }
 
@@ -45,15 +47,22 @@ namespace SynOS.Services.Operational
             var statsToday = await _context.UserOperationalStats
                 .FirstOrDefaultAsync(s => s.Date == DateTime.Today, cancellationToken);
 
-            // 2. Get Processed Extensions Log Count
-            var processedEventCount = await _context.ProcessedProjectionEvents
-                .Where(p => p.ProjectionName == "OperationalStats" && p.ProcessedAt >= DateTime.Today)
+            // 2. Get Processed Events that actually OCCURRED today
+            // Joining with BranchOperationalEvents to ensure we don't flag backlog processing as a today-mismatch.
+            var today = DateTime.Today;
+            var processedTodayEventsCount = await _context.ProcessedProjectionEvents
+                .Where(p => p.ProjectionName == "OperationalStats")
+                .Join(_context.BranchOperationalEvents,
+                      ppe => ppe.EventId,
+                      boe => boe.EventId,
+                      (ppe, boe) => boe)
+                .Where(boe => boe.OccurredAt >= today)
                 .CountAsync(cancellationToken);
-
+            
             // 3. Audit Check (No Mutation)
-            if (statsToday == null && processedEventCount > 0)
+            if (statsToday == null && processedTodayEventsCount > 0)
             {
-                _logger.LogCritical("AUDIT FAILURE: UserOperationalStats Missing but {Count} Events Processed. Manual Replay Required.", processedEventCount);
+                _logger.LogWarning("AUDIT FAILURE: UserOperationalStats record for today is missing, but {Count} events occurring today were processed. Manual Replay Required.", processedTodayEventsCount);
             }
             else if (statsToday != null)
             {
@@ -93,6 +102,15 @@ namespace SynOS.Services.Operational
             }
         }
 
+        public async Task ProjectSingleEventAsync(Guid eventId, System.Threading.CancellationToken cancellationToken = default)
+        {
+            var evt = await _context.BranchOperationalEvents.FirstOrDefaultAsync(e => e.EventId == eventId, cancellationToken);
+            if (evt != null)
+            {
+                await ProcessEventAsync(evt);
+            }
+        }
+
         private async Task ProcessEventAsync(BranchOperationalEvent evt)
         {
             // Parse standard fields
@@ -100,9 +118,6 @@ namespace SynOS.Services.Operational
             var date = evt.OccurredAt.Date;
             try
             {
-                // PROVISIONAL FIX: Random Jitter to break Race Condition
-                await Task.Delay(Random.Shared.Next(50, 300));
-
                 using var transaction = await _context.Database.BeginTransactionAsync();
                 
                 // 2. Idempotency Check (Event ID)
@@ -116,15 +131,28 @@ namespace SynOS.Services.Operational
 
                 bool updated = false;
 
-                Guid userId = Guid.Empty;
-                if (evt.ActorType == "User" && !string.IsNullOrEmpty(evt.ActorName))
+                // Strict Actor Attribution: Always resolve AssignedReceptionistId from Visit
+                Guid receptionistId = Guid.Empty;
+                if ((!string.IsNullOrEmpty(evt.VisitId)))
                 {
-                    Guid.TryParse(evt.ActorName, out userId);
+                    var visit = await _context.Visits.FindAsync(Guid.Parse(evt.VisitId));
+                    if (visit != null && visit.AssignedReceptionistId != Guid.Empty && visit.AssignedReceptionistId.HasValue)
+                    {
+                        receptionistId = visit.AssignedReceptionistId.Value;
+                    }
                 }
+
+                if (receptionistId == Guid.Empty && evt.ActorType == "User" && !string.IsNullOrEmpty(evt.ActorName))
+                {
+                    Guid.TryParse(evt.ActorName, out receptionistId);
+                }
+                
+                Guid userId = receptionistId;
 
                 // 3. Load/Create State
                 var userStats = await GetOrCreateUserStats(userId, branchId, date);
                 var branchStats = await GetOrCreateBranchStats(branchId, date);
+                var visitState = (!string.IsNullOrEmpty(evt.VisitId)) ? await GetOrCreateVisitStateAsync(Guid.Parse(evt.VisitId), userId, branchId) : null;
 
                 // 2b. Strict Deduplication (Source ID)
                 if (evt.SourceId.HasValue)
@@ -153,6 +181,37 @@ namespace SynOS.Services.Operational
                     switch (type)
                     {
                         case BranchEventType.VISIT_STARTED:
+                            userStats.WalkInsCount++;
+                            branchStats.WalkInsCount++;
+                            if (visitState != null) visitState.WalkInActive = true;
+                            updated = true;
+                            break;
+
+                        case BranchEventType.VISIT_CANCELLED:
+                            if (visitState != null)
+                            {
+                                // Cascade Reversal in O(1)
+                                if (visitState.WalkInActive)
+                                {
+                                    userStats.WalkInsCount--;
+                                    branchStats.WalkInsCount--;
+                                }
+                                userStats.TestsRunningCount -= visitState.TestsRunningCount;
+                                branchStats.TestsRunningCount -= visitState.TestsRunningCount;
+                                
+                                userStats.PendingCollectionsCount -= visitState.PendingCollectionsCount;
+                                branchStats.PendingCollectionsCount -= visitState.PendingCollectionsCount;
+                                
+                                userStats.CompletedCollectionsCount -= visitState.CompletedCollectionsCount;
+                                branchStats.CompletedCollectionsCount -= visitState.CompletedCollectionsCount;
+                                
+                                userStats.PendingReportsCount -= visitState.PendingReportsCount;
+                                branchStats.PendingReportsCount -= visitState.PendingReportsCount;
+
+                                _context.VisitOperationalStates.Remove(visitState);
+                                visitState = null; 
+                            }
+                            updated = true;
                             break;
 
                         case BranchEventType.PAYMENT_RECEIVED:
@@ -162,37 +221,46 @@ namespace SynOS.Services.Operational
                                 if (fact != null)
                                 {
                                      userStats.PaymentsTotal += fact.Amount;
+                                     branchStats.PaymentsTotal += fact.Amount;
+
                                      if (fact.PaymentMode == PaymentMode.Cash || fact.PaymentMode == PaymentMode.Other) 
                                      {
                                          userStats.PaymentsCashTotal += fact.Amount;
+                                         branchStats.PaymentsCashTotal += fact.Amount;
                                      }
                                      else if (fact.PaymentMode == PaymentMode.UPI || fact.PaymentMode == PaymentMode.Card || fact.PaymentMode == PaymentMode.BankTransfer) {
                                          userStats.PaymentsOnlineTotal += fact.Amount;
+                                         branchStats.PaymentsOnlineTotal += fact.Amount;
                                          userStats.PaymentsOnlineCount++;
-                                     }
-                                     
-                                     _logger.LogInformation("[ProjectorDebug] Incrementing WalkIn for RevenueFact. SourceRef: {Ref}", fact.SourceReferenceId);
-                                     
-                                     if (Guid.TryParse(fact.SourceReferenceId, out var visitId))
-                                     {
-                                         await CheckAndIncrementWalkInAsync(userStats, visitId, evt.SourceId.Value);
-                                     }
-                                     else
-                                     {
-                                         _logger.LogError("[ProjectorDebug] Invalid SourceReferenceId (VisitId) in RevenueFact: {Ref}", fact.SourceReferenceId);
+                                         branchStats.PaymentsOnlineCount++;
                                      }
                                      updated = true;
                                 }
                             }
-                            else if (evt.SourceId.HasValue && evt.SourceType == "PaymentConfirmedFact")
+                            break;
+
+                        case BranchEventType.PAYMENT_VOIDED:
+                            if (evt.SourceId.HasValue && evt.SourceType == "RevenueFact")
                             {
-                                _logger.LogWarning("Projector: Ignoring PaymentConfirmedFact {EventId} (Architecture Lock).", evt.EventId);
-                                updated = true;
-                            }
-                            else if (evt.SourceId.HasValue && evt.SourceType == "Payment") 
-                            {
-                                _logger.LogWarning("Projector: Ignoring Legacy Payment Event {EventId} (Architecture Lock).", evt.EventId);
-                                updated = true;
+                                var fact = await _context.RevenueFacts.FindAsync(evt.SourceId.Value);
+                                if (fact != null)
+                                {
+                                     userStats.PaymentsTotal -= fact.Amount;
+                                     branchStats.PaymentsTotal -= fact.Amount;
+
+                                     if (fact.PaymentMode == PaymentMode.Cash || fact.PaymentMode == PaymentMode.Other) 
+                                     {
+                                         userStats.PaymentsCashTotal -= fact.Amount;
+                                         branchStats.PaymentsCashTotal -= fact.Amount;
+                                     }
+                                     else if (fact.PaymentMode == PaymentMode.UPI || fact.PaymentMode == PaymentMode.Card || fact.PaymentMode == PaymentMode.BankTransfer) {
+                                         userStats.PaymentsOnlineTotal -= fact.Amount;
+                                         branchStats.PaymentsOnlineTotal -= fact.Amount;
+                                         userStats.PaymentsOnlineCount--;
+                                         branchStats.PaymentsOnlineCount--;
+                                     }
+                                     updated = true;
+                                }
                             }
                             break;
 
@@ -203,21 +271,146 @@ namespace SynOS.Services.Operational
                                 if (fact != null)
                                 {
                                     userStats.PrepaidBillsCount++;
+                                    branchStats.PrepaidBillsCount++;
                                     userStats.PrepaidBillsTotal += fact.Amount;
-                                    
-                                    await CheckAndIncrementWalkInAsync(userStats, fact.SourceVisitId, evt.SourceId.Value);
+                                    branchStats.PrepaidBillsTotal += fact.Amount;
                                     updated = true;
                                 }
                             }
                             break;
 
+                        case BranchEventType.RECEIVABLE_VOIDED:
+                            if (evt.SourceId.HasValue)
+                            {
+                                var fact = await _context.ReceivableFacts.FindAsync(evt.SourceId.Value);
+                                if (fact != null)
+                                {
+                                    userStats.PrepaidBillsCount--;
+                                    branchStats.PrepaidBillsCount--;
+                                    userStats.PrepaidBillsTotal -= fact.Amount;
+                                    branchStats.PrepaidBillsTotal -= fact.Amount;
+                                    updated = true;
+                                }
+                            }
+                            break;
+
+                        case BranchEventType.TEST_ADDED:
+                            userStats.TestsRunningCount++;
+                            branchStats.TestsRunningCount++;
+                            if (visitState != null) visitState.TestsRunningCount++;
+                            updated = true;
+                            break;
+
+                        case BranchEventType.TEST_REMOVED:
+                        case BranchEventType.RESULT_VERIFIED:
+                            userStats.TestsRunningCount--;
+                            branchStats.TestsRunningCount--;
+                            if (visitState != null) visitState.TestsRunningCount--;
+                            updated = true;
+                            break;
+
+                        case BranchEventType.SPECIMEN_ORDERED:
+                            userStats.PendingCollectionsCount++;
+                            branchStats.PendingCollectionsCount++;
+                            if (visitState != null) visitState.PendingCollectionsCount++;
+                            updated = true;
+                            break;
+
                         case BranchEventType.SPECIMEN_COLLECTED:
+                            userStats.PendingCollectionsCount--;
+                            branchStats.PendingCollectionsCount--;
+                            if (visitState != null) visitState.PendingCollectionsCount--;
+
+                            userStats.CompletedCollectionsCount++;
+                            branchStats.CompletedCollectionsCount++;
+                            if (visitState != null) visitState.CompletedCollectionsCount++;
+                            updated = true;
+                            break;
+
+                        case BranchEventType.SPECIMEN_DELETED:
+                            userStats.PendingCollectionsCount--;
+                            branchStats.PendingCollectionsCount--;
+                            if (visitState != null) visitState.PendingCollectionsCount--;
+                            updated = true;
+                            break;
+                            
+                        case BranchEventType.SPECIMEN_REJECTED:
+                            userStats.CompletedCollectionsCount--;
+                            branchStats.CompletedCollectionsCount--;
+                            if (visitState != null) visitState.CompletedCollectionsCount--;
+                            
+                            userStats.PendingCollectionsCount++;
+                            branchStats.PendingCollectionsCount++;
+                            if (visitState != null) visitState.PendingCollectionsCount++;
+                            updated = true;
+                            break;
+
+                        case BranchEventType.REPORT_CREATED:
+                            userStats.PendingReportsCount++;
                             branchStats.PendingReportsCount++;
+                            if (visitState != null) visitState.PendingReportsCount++;
                             updated = true;
                             break;
 
                         case BranchEventType.REPORT_SIGNED:
+                            userStats.PendingReportsCount--;
                             branchStats.PendingReportsCount--;
+                            if (visitState != null) visitState.PendingReportsCount--;
+
+                            if (evt.SourceId.HasValue)
+                            {
+                                var report = await _context.Reports.FindAsync(evt.SourceId.Value);
+                                if (report != null && report.SignedAt.HasValue)
+                                {
+                                    var collectedAt = await _context.Specimens
+                                        .Where(s => s.VisitId.ToString() == evt.VisitId && s.CollectedAt.HasValue)
+                                        .Select(s => s.CollectedAt)
+                                        .FirstOrDefaultAsync();
+
+                                    if (collectedAt.HasValue)
+                                    {
+                                        var duration = (report.SignedAt.Value - collectedAt.Value).TotalMinutes;
+                                        if (duration > 0)
+                                        {
+                                            userStats.ReportTatTotalMinutes += duration;
+                                            userStats.ReportTatCount++;
+                                            branchStats.ReportTatTotalMinutes += duration;
+                                            branchStats.ReportTatCount++;
+                                        }
+                                    }
+                                }
+                            }
+                            updated = true;
+                            break;
+
+                        case BranchEventType.REPORT_REVERTED:
+                            userStats.PendingReportsCount++;
+                            branchStats.PendingReportsCount++;
+                            if (visitState != null) visitState.PendingReportsCount++;
+                            
+                            if (evt.SourceId.HasValue)
+                            {
+                                var report = await _context.Reports.FindAsync(evt.SourceId.Value);
+                                if (report != null && report.SignedAt.HasValue)
+                                {
+                                    var collectedAt = await _context.Specimens
+                                        .Where(s => s.VisitId.ToString() == evt.VisitId && s.CollectedAt.HasValue)
+                                        .Select(s => s.CollectedAt)
+                                        .FirstOrDefaultAsync();
+
+                                    if (collectedAt.HasValue)
+                                    {
+                                        var duration = (report.SignedAt.Value - collectedAt.Value).TotalMinutes;
+                                        if (duration > 0)
+                                        {
+                                            userStats.ReportTatTotalMinutes -= duration;
+                                            userStats.ReportTatCount--;
+                                            branchStats.ReportTatTotalMinutes -= duration;
+                                            branchStats.ReportTatCount--;
+                                        }
+                                    }
+                                }
+                            }
                             updated = true;
                             break;
                     }
@@ -241,9 +434,18 @@ namespace SynOS.Services.Operational
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
 
-                if (updated && userId != Guid.Empty)
+                if (updated)
                 {
                     await PushUpdateAsync(userId, branchId, date);
+                    
+                    // 5. Lifecycle Cleanup: Evict snapshot if visit is terminal (all active counters zero)
+                    if (visitState != null && 
+                        visitState.PendingReportsCount == 0 && 
+                        visitState.PendingCollectionsCount == 0 && 
+                        visitState.TestsRunningCount == 0)
+                    {
+                        _context.VisitOperationalStates.Remove(visitState);
+                    }
                 }
             }
             catch (Exception ex)
@@ -328,32 +530,31 @@ namespace SynOS.Services.Operational
             return stats;
         }
 
+        private async Task<VisitOperationalState> GetOrCreateVisitStateAsync(Guid visitId, Guid receptionistId, Guid branchId)
+        {
+            var localState = _context.VisitOperationalStates.Local.FirstOrDefault(v => v.VisitId == visitId);
+            if (localState != null) return localState;
+
+            var state = await _context.VisitOperationalStates.FirstOrDefaultAsync(v => v.VisitId == visitId);
+            if (state == null)
+            {
+                state = new VisitOperationalState
+                {
+                    VisitId = visitId,
+                    AssignedReceptionistId = receptionistId,
+                    BranchId = branchId,
+                    Date = DateTime.UtcNow.Date // Local anchor
+                };
+                _context.VisitOperationalStates.Add(state);
+            }
+            return state;
+        }
+
         private async Task PushUpdateAsync(Guid userId, Guid branchId, DateTime date)
         {
-            var uStats = await _context.UserOperationalStats.AsNoTracking()
-                .FirstOrDefaultAsync(x => x.UserId == userId && x.BranchId == branchId && x.Date == date);
-            var bStats = await _context.BranchOperationalStats.AsNoTracking()
-                .FirstOrDefaultAsync(x => x.BranchId == branchId && x.Date == date);
-
-            if (uStats == null || bStats == null) return;
-
-            var summary = new TodaysSummaryDto
-            {
-                WalkInsToday = uStats.WalkInsCount,
-                PaymentsCollected = uStats.PaymentsTotal,
-                PaymentsCashTotal = uStats.PaymentsCashTotal,
-                PaymentsOnlineTotal = uStats.PaymentsOnlineTotal,
-                PaymentsOnlineCount = uStats.PaymentsOnlineCount,
-                PrepaidBillsCount = uStats.PrepaidBillsCount,
-                PrepaidBillsTotal = uStats.PrepaidBillsTotal,
-                PendingReports = bStats.PendingReportsCount,
-                AvgReportTimeMinutes = uStats.ReportTatCount > 0 
-                    ? Math.Round(uStats.ReportTatTotalMinutes / uStats.ReportTatCount, 2) 
-                    : 0
-            };
-
-            await _notificationService.NotifyReceptionSummaryUpdateAsync(userId.ToString(), summary);
-            await _notificationService.NotifyActionQueueUpdatedAsync(userId.ToString());
+            // Trigger the global dashboard refresh using the accurate, newly saved read-models.
+            // PASS userId to ensure targeted push to private desktop
+            await _notifier.NotifyRealitySummaryUpdateAsync(branchId.ToString(), userId);
         }
     }
 }

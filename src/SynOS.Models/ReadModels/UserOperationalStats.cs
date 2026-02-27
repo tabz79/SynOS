@@ -35,6 +35,11 @@ namespace SynOS.Models.ReadModels
         public double ReportTatTotalMinutes { get; set; }
         public int ReportTatCount { get; set; }
         
+        public int PendingReportsCount { get; set; }
+        public int PendingCollectionsCount { get; set; }
+        public int CompletedCollectionsCount { get; set; }
+        public int TestsRunningCount { get; set; }
+        
         public DateTime LastUpdated { get; set; }
     }
 }

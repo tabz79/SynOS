@@ -9,7 +9,7 @@ namespace SynOS.Services.Operations
     public interface IOperationsEngine
     {
         // Read Ports (Truth)
-        Task<OperationsStatsDto> GetDailyOperationsStatsAsync(Guid branchId);
+        Task<OperationsStatsDto> GetDailyOperationsStatsAsync(Guid branchId, Guid? userId = null);
         Task<List<ActionQueueRowDto>> GetActionQueueAsync(Guid branchId, DateTime date, bool includeHistory = false); // ADDED: Action Queue Projection
         Task<ActionQueueRowDto?> ProjectActionQueueRowAsync(Guid visitId); // ADDED: Single-Row Delta Payload Projection
         

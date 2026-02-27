@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using SynOS.Data;
 using SynOS.Models.DTOs.Reception;
 using SynOS.Services.Security;
+using SynOS.Models.Enums;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -42,8 +43,15 @@ namespace SynOS.Services.Reception
                 else if (query.PatientId.HasValue)
                 {
                     // Fix: Check for Active Visit first
-                    var activeVisit = await _context.Visits
-                        .Where(v => v.PatientId == query.PatientId.Value && v.Status != "Paid" && v.Status != "Cancelled")
+                    var activeVisitQuery = _context.Visits
+                        .Where(v => v.PatientId == query.PatientId.Value && v.Status != VisitStatus.Paid && v.Status != VisitStatus.Cancelled);
+
+                    if (_userContext.CurrentRole == "Receptionist")
+                    {
+                        activeVisitQuery = activeVisitQuery.Where(v => v.AssignedReceptionistId == _userContext.CurrentUserId);
+                    }
+
+                    var activeVisit = await activeVisitQuery
                         .OrderByDescending(v => v.CreatedAt)
                         .FirstOrDefaultAsync();
 
@@ -87,6 +95,12 @@ namespace SynOS.Services.Reception
 
             if (visit == null) throw new KeyNotFoundException($"Visit {visitId} not found.");
 
+            // Ownership Check
+            if (_userContext.CurrentRole == "Receptionist" && visit.AssignedReceptionistId != _userContext.CurrentUserId)
+            {
+                throw new UnauthorizedAccessException("This visit is assigned to another receptionist. Access denied.");
+            }
+
             // Mismatch Check
             if (requestedPatientId.HasValue && visit.PatientId != requestedPatientId.Value)
             {
@@ -98,7 +112,7 @@ namespace SynOS.Services.Reception
             // If the user resumes a draft, they expect to see "Last Visit: Today" rather than "New".
             var lastVisit = await _context.Visits
                 .AsNoTracking()
-                .Where(v => v.PatientId == visit.PatientId && v.Status != "Cancelled")
+                .Where(v => v.PatientId == visit.PatientId && v.Status != VisitStatus.Cancelled)
                 .Include(v => v.Orders)
                 .OrderByDescending(v => v.TokenDate)
                 .Select(v => new { v.TokenDate, TestCodes = v.Orders.Select(o => o.TestCode).ToList() })
@@ -194,7 +208,7 @@ namespace SynOS.Services.Reception
             {
                 VisitId = visit.VisitId,
                 VisitToken = visit.Token,
-                Status = visit.Status,
+                Status = visit.Status.ToString(),
                 IsReferred = visit.IsReferred,
                 ReferralPartner = partnerInfo != null ? new IntakeReferralPartner
                 {
@@ -236,14 +250,14 @@ namespace SynOS.Services.Reception
                     PaymentMethod = invoice.Payments?.FirstOrDefault()?.Method, // Safe navigation
                     TotalPaid = invoice.Payments?.Sum(p => p.Amount) ?? 0m,
                     
-                    IsEditable = visit.Status != "Paid" && visit.Status != "Cancelled",
-                    IsLocked = visit.Status == "Paid"
+                    IsEditable = visit.Status != VisitStatus.Paid && visit.Status != VisitStatus.Cancelled,
+                    IsLocked = visit.Status == VisitStatus.Paid
                 };
             }
 
             // 3. Derived UI Hints (using logic from Billing contract)
-            bool isPaid = visit.Status == "Paid";
-            bool isCancelled = visit.Status == "Cancelled";
+            bool isPaid = visit.Status == VisitStatus.Paid;
+            bool isCancelled = visit.Status == VisitStatus.Cancelled;
             bool hasTests = snapshot.Visit.Tests.Any();
             bool hasBill = snapshot.Billing != null;
 
@@ -273,7 +287,7 @@ namespace SynOS.Services.Reception
             // 2. Fetch History Separately
             var lastVisit = await _context.Visits
                 .AsNoTracking()
-                .Where(v => v.PatientId == patient.PatientId && v.Status != "Cancelled")
+                .Where(v => v.PatientId == patient.PatientId && v.Status != VisitStatus.Cancelled)
                 .Include(v => v.Orders)
                 .OrderByDescending(v => v.TokenDate)
                 .Select(v => new { v.TokenDate, TestCodes = v.Orders.Select(o => o.TestCode).ToList() })

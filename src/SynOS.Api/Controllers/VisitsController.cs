@@ -78,7 +78,11 @@ namespace SynOS.Api.Controllers
         {
             try
             {
-                var visits = await _visitService.GetVisitsAsync(dept, status, limit);
+                if (!Enum.TryParse<SynOS.Models.Enums.VisitStatus>(status, true, out var visitStatus))
+            {
+                visitStatus = SynOS.Models.Enums.VisitStatus.Draft; // Fallback or bad request?
+            }
+            var visits = await _visitService.GetVisitsAsync(dept, visitStatus, limit);
                 return Ok(visits);
             }
             catch (Exception ex)

@@ -13,7 +13,7 @@ namespace SynOS.Services
         Task<Visit> RemoveTestFromVisitAsync(Guid visitId, string testCode, Guid actorUserId);
         Task<Visit> RemoveOrderAsync(Guid visitId, Guid orderId, Guid actorUserId);
         Task<Visit?> GetVisitDetailsAsync(Guid visitId);
-        Task<IEnumerable<Visit>> GetVisitsAsync(string department, string status, int limit);
+        Task<IEnumerable<Visit>> GetVisitsAsync(string department, Models.Enums.VisitStatus status, int limit);
         Task<VisitCancellation> CancelVisitAsync(Guid visitId, CancelRequestDto cancelDto);
         Task<VisitTokenPrintDto> GetVisitTokenForPrintingAsync(Guid visitId);
         Task ApplyDiscountToVisitAsync(Guid visitId, Guid discountMasterId, Guid actorUserId);

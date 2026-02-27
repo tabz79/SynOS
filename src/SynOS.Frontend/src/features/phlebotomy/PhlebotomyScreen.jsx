@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { cn } from "@/lib/utils"
 // Reusing Shared Canon Layout Components (Safe - No Logic within them)
 import { SystemBar } from '@/components/layout/SystemBar'
@@ -9,6 +9,8 @@ import { useTheme } from '@/context/ThemeContext'
 import { Users, TestTube2, AlertCircle, CheckCircle2, Plus } from 'lucide-react'
 import { PhlebotomyIntentPanel } from './components/PhlebotomyIntentPanel'
 import { useFlipGroup } from "@/hooks/useSynOSMotion"
+import { ReceptionApi } from '@/api/reception'
+import { SignalRService } from '@/lib/signalr'
 
 export function PhlebotomyScreen() {
     const { theme } = useTheme();
@@ -16,35 +18,143 @@ export function PhlebotomyScreen() {
     const [isIntentPanelOpen, setIsIntentPanelOpen] = useState(false);
     const [isSummaryCollapsed, setIsSummaryCollapsed] = useState(false);
 
-    // Server Time Mock (Can be hooked up to real signal later)
-    const [serverTime] = useState(new Date().toISOString());
+    // Dynamic Data
+    const [actionQueue, setActionQueue] = useState([]);
+    const [isLoadingQueue, setIsLoadingQueue] = useState(true);
+    const [summary, setSummary] = useState(null);
+    const [serverTime, setServerTime] = useState(new Date().toISOString());
+    const [connectionStatus, setConnectionStatus] = useState("Not Synced");
 
     // MOTION CANON: FLIP Group for Layout
     const summaryRef = useRef(null);
     const queueRef = useRef(null);
     useFlipGroup([summaryRef, queueRef], [isSummaryCollapsed], { scaleCompensation: true });
 
-    // REALITY TILES (Placeholder Data - Tier 1 Density)
-    const realityTiles = [
-        { value: "12", label: "Pending Samples", qualifier: "Urgent", icon: AlertCircle, color: "red" },
-        { value: "45", label: "Collected Today", icon: TestTube2, color: "emerald" },
-        { value: "8", label: "Floored Patients", icon: Users, color: "blue" },
-        { value: "98%", label: "Collection Rate", icon: CheckCircle2, color: "zinc" },
+    // Helper: Normalize Backend DTO using shared API method
+    const normalizeQueueData = ReceptionApi.normalizeQueueData;
+
+    // Filter Function for Branch-Wide Phlebotomy View
+    const isPhleboRelevant = (row) => row.operationalStatus === 'Ready for Sample' || row.operationalStatus === 'Pending Collection';
+
+    // Wiring: Initial Load + SignalR Subscription
+    useEffect(() => {
+        // 1. Initial Snapshot
+        const loadInitial = async () => {
+            try {
+                const [summaryData, queueData] = await Promise.all([
+                    ReceptionApi.getDashboardSummary(),
+                    ReceptionApi.getActionQueue(false) // Today's pending only
+                ]);
+
+                if (summaryData) setSummary(summaryData);
+                if (Array.isArray(queueData)) {
+                    // Filter for Branch-wide pending collections
+                    const phleboData = normalizeQueueData(queueData).filter(isPhleboRelevant);
+                    setActionQueue(phleboData);
+                }
+            } catch (e) {
+                console.error("Failed to fetch initial phlebotomy data", e);
+            } finally {
+                setIsLoadingQueue(false);
+            }
+        };
+
+        loadInitial();
+
+        // 2. Connect SignalR
+        const connect = async () => {
+            SignalRService.onReceptionSummaryUpdated((payload) => {
+                setSummary(payload);
+            });
+
+            SignalRService.onActionQueueDeltaReceived((deltaRow) => {
+                if (!deltaRow) return;
+
+                const normalized = normalizeQueueData([deltaRow])[0];
+
+                setActionQueue(prev => {
+                    const isRelevantNow = isPhleboRelevant(normalized);
+                    const exists = prev.some(r => r.visitId === normalized.visitId);
+
+                    if (exists) {
+                        // Update or Remove if status shifted away from Pending
+                        if (isRelevantNow) {
+                            return prev.map(r => r.visitId === normalized.visitId ? normalized : r);
+                        } else {
+                            return prev.filter(r => r.visitId !== normalized.visitId);
+                        }
+                    } else if (isRelevantNow) {
+                        // Unshift new Token to top of queue
+                        return [normalized, ...prev];
+                    }
+                    return prev;
+                });
+            });
+
+            SignalRService.onActionQueueUpdated(() => {
+                ReceptionApi.getActionQueue(false).then(data => {
+                    if (Array.isArray(data)) {
+                        setActionQueue(normalizeQueueData(data).filter(isPhleboRelevant));
+                    }
+                });
+            });
+
+            // Anchor Time & Sync Status
+            SignalRService.onReceiveServerTime((time) => {
+                setServerTime(time);
+            });
+
+            SignalRService.onConnectionStatusChanged((status) => {
+                setConnectionStatus(status);
+            });
+
+            try {
+                await SignalRService.startConnection();
+            } catch (err) {
+                setConnectionStatus("Not Synced");
+            }
+        };
+
+        connect();
+
+        // Failsafe Polling (every 5 minutes)
+        const interval = setInterval(async () => {
+            try {
+                const data = await ReceptionApi.getActionQueue(false);
+                if (Array.isArray(data)) {
+                    setActionQueue(normalizeQueueData(data).filter(isPhleboRelevant));
+                }
+            } catch (e) {
+                console.error("Queue Poll Failed", e);
+            }
+        }, 300000);
+
+        return () => clearInterval(interval);
+    }, []);
+
+    // REALITY TILES (Live Data mapping)
+    const realityTiles = summary ? [
+        { value: summary.walkInsToday?.toString() || "0", label: "Walk-Ins Today", qualifier: "Active", icon: Users, color: "blue" },
+        { value: summary.pendingCollections?.toString() || "0", label: "Pending Samples", qualifier: "Awaiting", icon: AlertCircle, color: "red" },
+        { value: summary.completedCollections?.toString() || "0", label: "Collected Today", icon: TestTube2, color: "emerald" },
+        { value: summary.testsRunning?.toString() || "0", label: "Tests Running", icon: CheckCircle2, color: "zinc" },
+    ] : [
+        { value: "-", label: "Pending Samples", qualifier: "Urgent", icon: AlertCircle, color: "red" },
+        { value: "-", label: "Collected Today", icon: TestTube2, color: "emerald" },
+        { value: "-", label: "Walk-Ins Today", icon: Users, color: "blue" },
+        { value: "-", label: "Tests Running", icon: CheckCircle2, color: "zinc" },
     ];
 
     // ACTION QUEUE COLUMNS (Phlebotomy Specific - Tier 2 Density)
     const queueColumns = [
         { header: "Token ID", accessor: "token", className: "w-32 font-bold font-mono tracking-tight" },
         { header: "Patient", accessor: "patientName", className: "min-w-[200px] font-bold" },
-        { header: "Tests", accessor: "testCount", className: "w-40 text-xs font-mono" }, // Phlebo cares about count/tubes
-        { header: "Status", accessor: "status", className: "w-40" }
-    ];
-
-    // ACTION QUEUE MOCK DATA
-    const queueData = [
-        { token: "T-1024", patientName: "Arjun Reddy", testCount: "3 Tubes (CBC, LFT)", status: "Pending Collection", dateGroup: "Today" },
-        { token: "T-1023", patientName: "Sarah Khan", testCount: "1 Tube (Glu)", status: "Pending Collection", dateGroup: "Today" },
-        { token: "T-1021", patientName: "Vihaan Das", testCount: "2 Tubes (T3, T4)", status: "Pending Collection", dateGroup: "Today" },
+        {
+            header: "Tests",
+            accessor: (row) => row.testCodes?.length > 0 ? `${row.testCodes.length} Tests (${row.testCodes.join(", ")})` : "0 Tests",
+            className: "w-64 text-xs font-mono truncate"
+        },
+        { header: "Status", accessor: "operationalStatus", className: "w-40" }
     ];
 
     return (
@@ -57,7 +167,7 @@ export function PhlebotomyScreen() {
             </div>
 
             {/* Level 1: System Bar */}
-            <SystemBar serverTime={serverTime} syncStatus="Synced" />
+            <SystemBar serverTime={serverTime} syncStatus={connectionStatus} />
 
             {/* Level 2: Workspace */}
             <div className="flex-1 p-4 overflow-hidden">
@@ -74,7 +184,7 @@ export function PhlebotomyScreen() {
                         {/* Queue Pane (Flex-1, Scroll Owner) */}
                         <div ref={queueRef} className="flex-1 flex flex-col min-h-0 relative">
                             <div className="flex items-center justify-between mb-2">
-                                <ActionQueueHeader title="Collection Queue" count={queueData.length} />
+                                <ActionQueueHeader title="Collection Queue" count={actionQueue.length} />
                                 <button
                                     onClick={() => setIsIntentPanelOpen(true)}
                                     className={cn(
@@ -88,7 +198,7 @@ export function PhlebotomyScreen() {
                                     Walk-In Collection
                                 </button>
                             </div>
-                            <ActionQueue columns={queueColumns} data={queueData} />
+                            <ActionQueue columns={queueColumns} data={actionQueue} isLoading={isLoadingQueue} />
                         </div>
 
                     </div>

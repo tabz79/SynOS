@@ -19,17 +19,19 @@ namespace SynOS.Services.Dashboard
             _userContext = userContext;
         }
 
-        public async Task<TodaysSummaryDto> GetTodaysSummaryAsync()
+        public async Task<TodaysSummaryDto> GetTodaysSummaryAsync(Guid? branchId = null, Guid? userId = null)
         {
-            var branchId = _userContext.CurrentBranchId;
-            if (branchId == Guid.Empty)
+            var effectiveBranchId = branchId ?? _userContext.CurrentBranchId;
+            if (effectiveBranchId == Guid.Empty)
             {
                 throw new UnauthorizedAccessException("Branch context is missing.");
             }
 
+            var effectiveUserId = userId ?? (_userContext.CurrentRole == "Receptionist" ? _userContext.CurrentUserId : (Guid?)null);
+
             // Orchestration: Fetch Truth from respective Engines
-            var opsStats = await _operationsEngine.GetDailyOperationsStatsAsync(branchId);
-            var revStats = await _invoiceService.GetDailyRevenueStatsAsync(branchId);
+            var opsStats = await _operationsEngine.GetDailyOperationsStatsAsync(effectiveBranchId, effectiveUserId);
+            var revStats = await _invoiceService.GetDailyRevenueStatsAsync(effectiveBranchId, effectiveUserId);
 
             return new TodaysSummaryDto
             {
@@ -45,7 +47,12 @@ namespace SynOS.Services.Dashboard
                 
                 // Mapped from Operations Engine
                 PendingReports = opsStats.PendingReports,
-                AvgReportTimeMinutes = opsStats.AvgReportTimeMinutes
+                AvgReportTimeMinutes = opsStats.AvgReportTimeMinutes,
+                
+                // Phlebotomy Stats (Operations Engine)
+                PendingCollections = opsStats.PendingCollections,
+                CompletedCollections = opsStats.CompletedCollections,
+                TestsRunning = opsStats.TestsRunning
             };
         }
     }

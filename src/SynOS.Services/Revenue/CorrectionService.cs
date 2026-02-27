@@ -259,7 +259,7 @@ namespace SynOS.Services.Revenue
             var dto = new SynOS.Models.DTOs.CorrectionContextDto
             {
                 VisitId = visitId,
-                IsCorrectionAllowed = visit.Status != "Cancelled" && visit.Status != "Archived",
+                IsCorrectionAllowed = visit.Status != VisitStatus.Cancelled,
                 RequiresAuthorization = totalPaid > 0,
                 RequiresReason = totalPaid > 0,
                 PaymentState = paymentState,

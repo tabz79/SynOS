@@ -34,27 +34,8 @@ export function ReceptionScreen() {
     const [serverTimeAnchor, setServerTimeAnchor] = useState(null);
     const [connectionStatus, setConnectionStatus] = useState("Not Synced");
 
-    // Helper: Normalize Backend DTO (PascalCase -> camelCase) using defensive mapping
-    const normalizeQueueData = (data) => {
-        if (!Array.isArray(data)) return [];
-        return data.map(row => ({
-            ...row, // Preserve originals
-            visitId: row.visitId || row.VisitId,
-            token: row.token || row.Token,
-            patientName: row.patientName || row.PatientName,
-            patientAgeGender: row.patientAgeGender || row.PatientAgeGender,
-            testCodes: row.testCodes || row.TestCodes || [],
-            paymentDisplay: row.paymentDisplay || row.PaymentDisplay, // Phase 4 Alignment
-            totalAmount: row.totalAmount || row.TotalAmount,
-            paymentMethod: row.paymentMethod || row.PaymentMethod,
-            referrerName: row.referrerName || row.ReferrerName,
-            operationalStatus: row.operationalStatus || row.OperationalStatus,
-            isFinalized: row.isFinalized || row.IsFinalized, // 🔹 TRUTH: Explicit Backend Flag
-            assignedResource: row.assignedResource || row.AssignedResource,
-            isTokenPrinted: row.isTokenPrinted ?? row.IsTokenPrinted,
-            dateGroup: row.dateGroup || row.DateGroup || "Today" // Phase 5: History Grouping
-        }));
-    };
+    // Helper: Normalize Backend DTO using shared API method
+    const normalizeQueueData = ReceptionApi.normalizeQueueData;
 
     // Wiring: Initial Load + SignalR Subscription
     useEffect(() => {
@@ -84,6 +65,7 @@ export function ReceptionScreen() {
         const connect = async () => {
             // 3. Subscribe BEFORE connecting (to catch initial push)
             SignalRService.onReceptionSummaryUpdated((payload) => {
+                console.log("ReceptionScreen: Received Reality Summary Update", payload);
                 setSummary(payload);
             });
 
@@ -91,8 +73,8 @@ export function ReceptionScreen() {
             SignalRService.onActionQueueDeltaReceived((deltaRow) => {
                 if (!deltaRow) return;
 
-                console.log("SignalR: Action Queue Delta Upsert for", deltaRow.token);
                 const normalized = normalizeQueueData([deltaRow])[0];
+                console.log("SignalR: Action Queue Delta Upsert for", normalized.token);
 
                 setActionQueue(prev => {
                     const exists = prev.some(r => r.visitId === normalized.visitId);

@@ -279,6 +279,25 @@ namespace SynOS.Api.Controllers
                 return StatusCode(500, new { message = ex.Message });
             }
         }
+
+        [HttpPost("visit/reassign")]
+        public async Task<IActionResult> ReassignVisit([FromBody] ReceptionReassignVisitRequest request)
+        {
+            try
+            {
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (!Guid.TryParse(userIdClaim, out var actorUserId)) return Unauthorized();
+
+                await _receptionFlowService.ReassignVisitAsync(request.VisitId, request.NewReceptionistId, actorUserId);
+                return Ok(new { success = true });
+            }
+            catch (KeyNotFoundException ex) { return NotFound(new { message = ex.Message }); }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to reassign visit {VisitId} to {NewUserId}", request.VisitId, request.NewReceptionistId);
+                return StatusCode(500, new { message = ex.Message });
+            }
+        }
     }
 
     public class ReceptionAddTestRequest
@@ -311,5 +330,11 @@ namespace SynOS.Api.Controllers
     {
         public Guid DraftId { get; set; }
         public Guid TargetPartnerId { get; set; }
+    }
+
+    public class ReceptionReassignVisitRequest
+    {
+        public Guid VisitId { get; set; }
+        public Guid NewReceptionistId { get; set; }
     }
 }

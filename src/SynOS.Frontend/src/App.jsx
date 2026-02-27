@@ -11,7 +11,7 @@ function RootRedirect() {
   const { isAuthenticated, user } = useAuth();
   if (!isAuthenticated) return <Navigate to="/login" replace />;
   if (user?.role === 'Receptionist') return <Navigate to="/reception" replace />;
-  if (user?.role === 'Phlebotomist') return <Navigate to="/phlebotomist" replace />;
+  if (user?.role === 'Phlebotomist' || user?.role === 'Pathologist') return <Navigate to="/phlebotomist" replace />;
   return <div className="p-10 text-white">Role {user?.role} not supported yet.</div>;
 }
 
