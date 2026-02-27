@@ -6,11 +6,12 @@ import { RealitySummary } from '@/components/layout/RealitySummary'
 import { ActionQueue, ActionQueueHeader } from '@/components/layout/ActionQueue'
 import { ActivityStream } from '@/components/layout/ActivityStream'
 import { useTheme } from '@/context/ThemeContext'
-import { Users, TestTube2, AlertCircle, CheckCircle2, Plus } from 'lucide-react'
+import { Users, TestTube2, AlertCircle, CheckCircle2, Plus, ChevronDown } from 'lucide-react'
 import { PhlebotomyIntentPanel } from './components/PhlebotomyIntentPanel'
 import { useFlipGroup } from "@/hooks/useSynOSMotion"
 import { ReceptionApi } from '@/api/reception'
 import { SignalRService } from '@/lib/signalr'
+import { TokenCell, PatientCell, StatusCell } from '@/components/layout/ActionQueueCells'
 
 export function PhlebotomyScreen() {
     const { theme } = useTheme();
@@ -145,16 +146,26 @@ export function PhlebotomyScreen() {
         { value: "-", label: "Tests Running", icon: CheckCircle2, color: "zinc" },
     ];
 
-    // ACTION QUEUE COLUMNS (Phlebotomy Specific - Tier 2 Density)
+    // ACTION QUEUE COLUMNS (Phlebotomy Canon Alignment)
     const queueColumns = [
-        { header: "Token ID", accessor: "token", className: "w-32 font-bold font-mono tracking-tight" },
-        { header: "Patient", accessor: "patientName", className: "min-w-[200px] font-bold" },
         {
-            header: "Tests",
-            accessor: (row) => row.testCodes?.length > 0 ? `${row.testCodes.length} Tests (${row.testCodes.join(", ")})` : "0 Tests",
-            className: "w-64 text-xs font-mono truncate"
+            header: "Token ID",
+            accessor: "token",
+            className: "w-32",
+            render: (row) => <TokenCell row={row} theme={theme} />
         },
-        { header: "Status", accessor: "operationalStatus", className: "w-40" }
+        {
+            header: "Patient",
+            accessor: "patientName",
+            className: "min-w-[200px]",
+            render: (row) => <PatientCell row={row} />
+        },
+        {
+            header: "Status",
+            accessor: "operationalStatus",
+            className: "w-40",
+            render: (row) => <StatusCell row={row} />
+        }
     ];
 
     return (
@@ -178,6 +189,16 @@ export function PhlebotomyScreen() {
 
                         {/* Summary Region (Shrink-0) */}
                         <div ref={summaryRef} className="mb-4 shrink-0">
+                            <div className="flex items-center justify-between mb-2 px-3 sticky top-0 dark:bg-synos-background bg-transparent z-10 py-1">
+                                <h2 className="text-lg font-bold dark:text-zinc-200 text-zinc-800">Reality Summary</h2>
+                                <button
+                                    onClick={() => setIsSummaryCollapsed(!isSummaryCollapsed)}
+                                    className="text-zinc-500 hover:text-zinc-300 transition-colors p-1 rounded-md hover:bg-white/5"
+                                    title={isSummaryCollapsed ? "Expand View" : "Collapse View"}
+                                >
+                                    <ChevronDown className={cn("w-4 h-4 transition-transform duration-300", isSummaryCollapsed && "-rotate-90")} />
+                                </button>
+                            </div>
                             <RealitySummary tiles={realityTiles} isCollapsed={isSummaryCollapsed} />
                         </div>
 
