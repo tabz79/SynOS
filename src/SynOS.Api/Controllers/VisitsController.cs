@@ -33,6 +33,7 @@ namespace SynOS.Api.Controllers
 
         [HttpPost]
         [Authorize(Policy = "ReceptionPolicy")]
+        [Authorize(Policy = "OperationalModeOnly")]
         public async Task<IActionResult> CreateVisit([FromBody] VisitCreateDto visitDto, [FromHeader(Name = "Idempotency-Key")] string? idempotencyKey = null)
         {
             try
@@ -94,6 +95,7 @@ namespace SynOS.Api.Controllers
 
         [HttpPost("{id}/payment")]
         [Authorize(Policy = "ReceptionPolicy")]
+        [Authorize(Policy = "OperationalModeOnly")]
         public async Task<IActionResult> RecordPayment(Guid id, [FromBody] PaymentRequestDto paymentDto)
         {
             try
@@ -141,6 +143,7 @@ namespace SynOS.Api.Controllers
 
         [HttpPost("{id}/cancel")]
         [Authorize(Policy = "ReceptionPolicy")]
+        [Authorize(Policy = "OperationalModeOnly")]
         public async Task<IActionResult> CancelVisit(Guid id, [FromBody] SynOS.Models.DTOs.CancelRequestDto cancelDto)
         {
             try

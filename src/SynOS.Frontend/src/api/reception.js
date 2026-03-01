@@ -1,4 +1,26 @@
+import { jwtDecode } from 'jwt-decode';
+
 export const ReceptionApi = {
+    // Helper to append branchId for oversight mode
+    withBranchId: (url) => {
+        const token = localStorage.getItem('synos_jwt');
+        if (!token) return url;
+        try {
+            const decoded = jwtDecode(token);
+            const mode = decoded.session_mode || "operational";
+            if (mode === "oversight") {
+                const branchId = localStorage.getItem('synos_oversight_branch_id');
+                if (branchId && branchId !== 'undefined') {
+                    const separator = url.includes('?') ? '&' : '?';
+                    return `${url}${separator}branchId=${branchId}`;
+                }
+            }
+        } catch (e) {
+            // Silently fail and return original URL
+        }
+        return url;
+    },
+
     // Helper to get headers
     getHeaders: () => {
         const token = localStorage.getItem('synos_jwt');
@@ -42,7 +64,7 @@ export const ReceptionApi = {
      */
     startVisit: async (payload) => {
         // PER OPTION B: POST /api/v1/reception/start-visit (Confirmed in ReceptionController.cs)
-        const response = await fetch('/api/v1/reception/start-visit', {
+        const response = await fetch(ReceptionApi.withBranchId('/api/v1/reception/start-visit'), {
             method: 'POST',
             headers: ReceptionApi.getHeaders(),
             body: JSON.stringify(payload)
@@ -71,7 +93,7 @@ export const ReceptionApi = {
      */
     searchPatients: async (query) => {
         if (!query || query.length < 3) return [];
-        const response = await fetch(`/api/v1/patients?q=${encodeURIComponent(query)}`, {
+        const response = await fetch(ReceptionApi.withBranchId(`/api/v1/patients?q=${encodeURIComponent(query)}`), {
             headers: ReceptionApi.getHeaders()
         });
         if (!response.ok) throw new Error("Failed to search patients");
@@ -83,7 +105,7 @@ export const ReceptionApi = {
      * @returns {Promise<Array>}
      */
     getTestCatalog: async () => {
-        const response = await fetch('/api/v1/admin/tests', {
+        const response = await fetch(ReceptionApi.withBranchId('/api/v1/admin/tests'), {
             headers: ReceptionApi.getHeaders()
         });
         if (!response.ok) throw new Error("Failed to load test catalog");
@@ -96,7 +118,7 @@ export const ReceptionApi = {
      */
     getDashboardSummary: async () => {
         const baseUrl = '/api/v1';
-        const response = await fetch(`${baseUrl}/dashboard/reception/summary`, {
+        const response = await fetch(ReceptionApi.withBranchId(`${baseUrl}/dashboard/reception/summary`), {
             method: 'GET',
             headers: ReceptionApi.getHeaders()
         });
@@ -120,7 +142,7 @@ export const ReceptionApi = {
         if (patientId) params.append('patientId', patientId);
         if (visitId) params.append('visitId', visitId);
 
-        const response = await fetch(`/api/v1/reception/intake/snapshot?${params.toString()}`, {
+        const response = await fetch(ReceptionApi.withBranchId(`/api/v1/reception/intake/snapshot?${params.toString()}`), {
             method: 'GET',
             headers: ReceptionApi.getHeaders()
         });
@@ -144,7 +166,7 @@ export const ReceptionApi = {
      */
     addTestToVisit: async (visitId, testCode) => {
         // PER PHASE 6.2: POST /api/v1/reception/visit/test
-        const response = await fetch('/api/v1/reception/visit/test', {
+        const response = await fetch(ReceptionApi.withBranchId('/api/v1/reception/visit/test'), {
             method: 'POST',
             headers: ReceptionApi.getHeaders(),
             // Payload aligned with IntakeAddTestRequest
@@ -165,7 +187,7 @@ export const ReceptionApi = {
      */
     removeTestFromVisit: async (visitId, testCode) => {
         // PER PHASE 6.2: DELETE /api/v1/reception/visit/test
-        const response = await fetch(`/api/v1/reception/visit/test?visitId=${visitId}&testCode=${encodeURIComponent(testCode)}`, {
+        const response = await fetch(ReceptionApi.withBranchId(`/api/v1/reception/visit/test?visitId=${visitId}&testCode=${encodeURIComponent(testCode)}`), {
             method: 'DELETE',
             headers: ReceptionApi.getHeaders()
         });
@@ -178,7 +200,7 @@ export const ReceptionApi = {
      */
     getDiscountMaster: async () => {
         // Assuming endpoint based on test catalog pattern
-        const response = await fetch('/api/v1/admin/discounts', {
+        const response = await fetch(ReceptionApi.withBranchId('/api/v1/admin/discounts'), {
             headers: ReceptionApi.getHeaders()
         });
         if (!response.ok) throw new Error("Failed to load discount catalog");
@@ -192,7 +214,7 @@ export const ReceptionApi = {
      * @returns {Promise<void>}
      */
     applyDiscountToVisit: async (visitId, discountCode) => {
-        const response = await fetch('/api/v1/reception/visit/discount', {
+        const response = await fetch(ReceptionApi.withBranchId('/api/v1/reception/visit/discount'), {
             method: 'POST',
             headers: ReceptionApi.getHeaders(),
             body: JSON.stringify({ VisitId: visitId, DiscountCode: discountCode })
@@ -206,7 +228,7 @@ export const ReceptionApi = {
      * @returns {Promise<void>}
      */
     removeDiscountFromVisit: async (visitId) => {
-        const response = await fetch(`/api/v1/reception/visit/discount?visitId=${visitId}`, {
+        const response = await fetch(ReceptionApi.withBranchId(`/api/v1/reception/visit/discount?visitId=${visitId}`), {
             method: 'DELETE',
             headers: ReceptionApi.getHeaders()
         });
@@ -219,7 +241,7 @@ export const ReceptionApi = {
      * @returns {Promise<void>}
      */
     commitVisit: async (visitId) => {
-        const response = await fetch('/api/v1/reception/visit/commit', {
+        const response = await fetch(ReceptionApi.withBranchId('/api/v1/reception/visit/commit'), {
             method: 'POST',
             headers: ReceptionApi.getHeaders(),
             body: JSON.stringify({ visitId })
@@ -236,7 +258,7 @@ export const ReceptionApi = {
             ? '/api/v1/branch/action-queue?includeHistory=true'
             : '/api/v1/branch/action-queue';
 
-        const response = await fetch(url, {
+        const response = await fetch(ReceptionApi.withBranchId(url), {
             headers: ReceptionApi.getHeaders()
         });
 
@@ -256,7 +278,8 @@ export const ReceptionApi = {
     getActivityStream: async () => {
         // FIX: Using correct Default Branch GUID provided by user
         const branchGuid = "A0000000-0000-0000-0000-000000000001";
-        const response = await fetch(`/api/v1/branch/activity?branchId=${branchGuid}`, {
+        const url = ReceptionApi.withBranchId(`/api/v1/branch/activity?branchId=${branchGuid}`);
+        const response = await fetch(url, {
             headers: ReceptionApi.getHeaders()
         });
 
@@ -289,7 +312,8 @@ export const ReceptionApi = {
      */
     getOperationalTimeline: async () => {
         const branchGuid = "A0000000-0000-0000-0000-000000000001"; // TODO: Context
-        const response = await fetch(`/api/v1/branch/activity/timeline?branchId=${branchGuid}`, {
+        const url = ReceptionApi.withBranchId(`/api/v1/branch/activity/timeline?branchId=${branchGuid}`);
+        const response = await fetch(url, {
             headers: ReceptionApi.getHeaders()
         });
 
@@ -331,7 +355,7 @@ export const ReceptionApi = {
             Gender: payload.gender
         };
 
-        const response = await fetch('/api/v1/reception/intake/register-patient', {
+        const response = await fetch(ReceptionApi.withBranchId('/api/v1/reception/intake/register-patient'), {
             method: 'POST',
             headers: ReceptionApi.getHeaders(),
             body: JSON.stringify(backendPayload)
@@ -352,7 +376,7 @@ export const ReceptionApi = {
      * @returns {Promise<Array>}
      */
     getReferralPartners: async () => {
-        const response = await fetch('/api/v1/admin/referral-partners', {
+        const response = await fetch(ReceptionApi.withBranchId('/api/v1/admin/referral-partners'), {
             headers: ReceptionApi.getHeaders()
         });
         if (!response.ok) throw new Error("Failed to load referral partners");
@@ -366,7 +390,7 @@ export const ReceptionApi = {
      * @returns {Promise<void>}
      */
     updateReferrerText: async (visitId, referrerText) => {
-        const response = await fetch('/api/v1/reception/visit/referrer-text', {
+        const response = await fetch(ReceptionApi.withBranchId('/api/v1/reception/visit/referrer-text'), {
             method: 'PATCH',
             headers: ReceptionApi.getHeaders(),
             body: JSON.stringify({ visitId, referrerText })
@@ -382,7 +406,7 @@ export const ReceptionApi = {
      */
     applyReferralToVisit: async (visitId, referralPartnerId) => {
         console.log("DEBUG: applyReferralToVisit Payload:", { visitId, referralPartnerId });
-        const response = await fetch('/api/v1/reception/visit/referral', {
+        const response = await fetch(ReceptionApi.withBranchId('/api/v1/reception/visit/referral'), {
             method: 'POST',
             headers: ReceptionApi.getHeaders(),
             body: JSON.stringify({ VisitId: visitId, ReferralPartnerId: referralPartnerId })
@@ -400,7 +424,7 @@ export const ReceptionApi = {
      * @returns {Promise<void>}
      */
     removeReferralFromVisit: async (visitId) => {
-        const response = await fetch(`/api/v1/reception/visit/referral?visitId=${visitId}`, {
+        const response = await fetch(ReceptionApi.withBranchId(`/api/v1/reception/visit/referral?visitId=${visitId}`), {
             method: 'DELETE',
             headers: ReceptionApi.getHeaders()
         });
@@ -413,7 +437,7 @@ export const ReceptionApi = {
      * @returns {Promise<void>}
      */
     markVisitAsPrepaid: async (visitId) => {
-        const response = await fetch('/api/v1/reception/visit/mark-prepaid', {
+        const response = await fetch(ReceptionApi.withBranchId('/api/v1/reception/visit/mark-prepaid'), {
             method: 'POST',
             headers: ReceptionApi.getHeaders(),
             body: JSON.stringify({ visitId })
@@ -431,7 +455,7 @@ export const ReceptionApi = {
     collectPayment: async (visitId, amount, mode = 'Cash') => {
         // PER RECEPTION CONTROLLER: POST /api/v1/reception/complete-payment
         // DTO: ReceptionCompletePaymentRequest { VisitId, Amount, Method }
-        const response = await fetch('/api/v1/reception/complete-payment', {
+        const response = await fetch(ReceptionApi.withBranchId('/api/v1/reception/complete-payment'), {
             method: 'POST',
             headers: ReceptionApi.getHeaders(),
             body: JSON.stringify({
@@ -464,7 +488,7 @@ export const ReceptionApi = {
      * @returns {Promise<void>}
      */
     addReferralDraft: async (visitId, providerName, clinicName, location) => {
-        const response = await fetch('/api/v1/reception/visit/referral-draft', {
+        const response = await fetch(ReceptionApi.withBranchId('/api/v1/reception/visit/referral-draft'), {
             method: 'POST',
             headers: ReceptionApi.getHeaders(),
             body: JSON.stringify({
@@ -497,7 +521,7 @@ export const ReceptionApi = {
      * @returns {Promise<void>}
      */
     applyCorrection: async (visitId, type, reason, targetEntityId = null, payloadJson = null) => {
-        const response = await fetch(`/api/v1/visits/${visitId}/corrections`, {
+        const response = await fetch(ReceptionApi.withBranchId(`/api/v1/visits/${visitId}/corrections`), {
             method: 'POST',
             headers: ReceptionApi.getHeaders(),
             body: JSON.stringify({
@@ -517,5 +541,17 @@ export const ReceptionApi = {
             } catch (e) { }
             throw new Error(errorMsg);
         }
+    },
+
+    /**
+     * Fetches all available branches.
+     * @returns {Promise<Array>}
+     */
+    getBranches: async () => {
+        const response = await fetch('/api/v1/admin/branches', {
+            headers: ReceptionApi.getHeaders()
+        });
+        if (!response.ok) throw new Error("Failed to load branches");
+        return response.json();
     }
 };

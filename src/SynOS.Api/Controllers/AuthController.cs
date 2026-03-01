@@ -4,7 +4,9 @@ using SynOS.Services;
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Authorization; // Add this using directive
+using Microsoft.AspNetCore.Authorization;
+using SynOS.Services.Assignment; // ADDED
+using SynOS.Services.Security; // ADDED
 
 namespace SynOS.Api.Controllers
 {
@@ -14,10 +16,14 @@ namespace SynOS.Api.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IAuthService _authService;
+        private readonly IWorkRoutingEngine _routingEngine;
+        private readonly IUserContext _userContext;
 
-        public AuthController(IAuthService authService)
+        public AuthController(IAuthService authService, IWorkRoutingEngine routingEngine, IUserContext userContext)
         {
             _authService = authService;
+            _routingEngine = routingEngine;
+            _userContext = userContext;
         }
 
         [HttpPost("login")]
@@ -85,6 +91,37 @@ namespace SynOS.Api.Controllers
             catch (Exception ex)
             {
                 return StatusCode(500, new { code = "INTERNAL_SERVER_ERROR", message = ex.Message });
+            }
+        }
+
+        public class UpdateStatusRequest
+        {
+            public bool IsOnline { get; set; }
+            public bool IsActive { get; set; }
+            public string? Station { get; set; }
+        }
+
+        [HttpPost("status")]
+        [Authorize(Policy = "OperationalModeOnly")]
+        public async Task<IActionResult> UpdateStatus([FromBody] UpdateStatusRequest request)
+        {
+            var userId = _userContext.CurrentUserId;
+            var branchId = _userContext.CurrentBranchId;
+            var sessionId = _userContext.CurrentSessionId;
+
+            if (userId == Guid.Empty || branchId == Guid.Empty || sessionId == Guid.Empty)
+            {
+                return Unauthorized(new { code = "INVALID_CONTEXT", message = "Missing context claims." });
+            }
+
+            try
+            {
+                await _routingEngine.UpdateResourceStatusAsync(userId, branchId, sessionId, request.IsOnline, request.IsActive, request.Station);
+                return Ok();
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(new { code = "SessionExpiredOperationalContext", message = ex.Message });
             }
         }
 

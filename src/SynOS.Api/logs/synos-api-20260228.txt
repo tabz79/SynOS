@@ -1,0 +1,4 @@
+2026-02-28 10:09:46.626 +05:30 [INF] Terminal web-1zy6xxtky authorized and added to Lead Print Group for Branch "a0000000-0000-0000-0000-000000000001".
+2026-02-28 10:09:48.355 +05:30 [INF] Terminal web-3nbr8lknz attempted to register Thermal80mm for Branch "a0000000-0000-0000-0000-000000000001" but lacked Lead authorization.
+2026-02-28 10:09:49.000 +05:30 [INF] Terminal web-1zy6xxtky authorized and added to Lead Print Group for Branch "a0000000-0000-0000-0000-000000000001".
+2026-02-28 10:09:50.007 +05:30 [INF] Terminal web-3nbr8lknz attempted to register Thermal80mm for Branch "a0000000-0000-0000-0000-000000000001" but lacked Lead authorization.

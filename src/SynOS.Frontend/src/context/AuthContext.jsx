@@ -7,17 +7,22 @@ export function AuthProvider({ children }) {
     const [token, setToken] = useState(localStorage.getItem('synos_jwt'));
     const [user, setUser] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
+    const [activeOversightBranchId, setActiveOversightBranchId] = useState(localStorage.getItem('synos_oversight_branch_id'));
+
+    const setOversightBranch = (branchId) => {
+        localStorage.setItem('synos_oversight_branch_id', branchId);
+        setActiveOversightBranchId(branchId);
+    };
 
     useEffect(() => {
         if (token) {
             try {
                 const decoded = jwtDecode(token);
-                // Map backend claims to frontend user object
-                // Adjust claim keys based on actual JWT structure from backend audit if needed
                 setUser({
                     role: decoded.role || decoded["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"],
-                    branchId: decoded.branch_id || decoded.branchId || "Main",
-                    branchName: decoded.branch_name || "Unknown Branch", // Bind Truth
+                    branchId: decoded.branch_id || decoded.branchId,
+                    branchName: decoded.branch_name || "Unknown Branch",
+                    sessionMode: decoded.session_mode || "operational", // Added for Phase 1B
                     name: decoded.unique_name || decoded.sub,
                 });
             } catch (error) {
@@ -30,11 +35,11 @@ export function AuthProvider({ children }) {
         setIsLoading(false);
     }, [token]);
 
-    const login = async (email, password) => {
+    const login = async (email, password, preferredMode = null, branchId = null) => {
         const response = await fetch('/api/v1/auth/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, password }),
+            body: JSON.stringify({ email, password, preferredMode, branchId }),
         });
 
         if (!response.ok) {
@@ -43,29 +48,31 @@ export function AuthProvider({ children }) {
         }
 
         const data = await response.json();
-        console.log("DEBUG: Login Response Payload:", data); // Added Debug Log
 
-        // Handle common variations
-        const tokenValue = data.token || data.accessToken || data.jwt || (typeof data === 'string' ? data : null);
+        // If the server requires more info, return the data to the caller (LoginPage)
+        if (data.requiresModeSelection || data.requiresBranchSelection) {
+            return data;
+        }
 
-        if (!tokenValue || typeof tokenValue !== 'string') {
-            console.error("CRITICAL: No string token found in response", data);
+        const tokenValue = data.accessToken || data.token;
+        if (!tokenValue) {
             throw new Error("Server response missing token");
         }
 
         localStorage.setItem('synos_jwt', tokenValue);
 
-        // FIX: Decode and set User immediately to prevent Race Condition
         try {
             const decoded = jwtDecode(tokenValue);
             const userObj = {
                 role: decoded.role || decoded["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"],
-                branchId: decoded.branch_id || decoded.branchId || "Main",
+                branchId: decoded.branch_id || decoded.branchId,
                 branchName: decoded.branch_name || "Unknown Branch",
+                sessionMode: decoded.session_mode || "operational",
                 name: decoded.unique_name || decoded.sub,
             };
             setUser(userObj);
             setToken(tokenValue);
+            return data;
         } catch (error) {
             console.error("Token Decode Failed:", error);
             throw new Error("Invalid Token received from server");
@@ -79,7 +86,16 @@ export function AuthProvider({ children }) {
     };
 
     return (
-        <AuthContext.Provider value={{ token, user, login, logout, isLoading, isAuthenticated: !!user }}>
+        <AuthContext.Provider value={{
+            token,
+            user,
+            login,
+            logout,
+            isLoading,
+            isAuthenticated: !!user,
+            activeOversightBranchId,
+            setOversightBranch
+        }}>
             {!isLoading && children}
         </AuthContext.Provider>
     );

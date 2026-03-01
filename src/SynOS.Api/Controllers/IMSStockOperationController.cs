@@ -22,6 +22,7 @@ namespace SynOS.Api.Controllers
 
         [HttpPost("lot")]
         [Authorize(Roles = "Admin")]
+        [Authorize(Policy = "OperationalModeOnly")]
         public async Task<IActionResult> AddStockLot([FromBody] LotCreateDto lotDto)
         {
             var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -33,6 +34,7 @@ namespace SynOS.Api.Controllers
 
         [HttpPost("wastage")]
         [Authorize(Roles = "Admin,LabTech")]
+        [Authorize(Policy = "OperationalModeOnly")]
         public async Task<IActionResult> RecordWastage([FromBody] WastageRequestDto dto)
         {
             var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);

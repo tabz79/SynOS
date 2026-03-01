@@ -35,6 +35,7 @@ namespace SynOS.Api.Controllers
         }
 
         [HttpPost]
+        [Authorize(Policy = "OperationalModeOnly")]
         public async Task<IActionResult> ApplyCorrection(Guid visitId, [FromBody] ApplyCorrectionCommand command)
         {
             try

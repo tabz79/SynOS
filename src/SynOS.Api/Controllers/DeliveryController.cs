@@ -10,6 +10,7 @@ namespace SynOS.Api.Controllers;
 [ApiController]
 [Route("api/v1/delivery")]
 [Authorize(Policy = "DeliveryPolicy")]
+[Authorize(Policy = "OperationalModeOnly")]
 public class DeliveryController : ControllerBase
 {
     private readonly IDeliveryService _deliveryService;

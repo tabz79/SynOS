@@ -1,24 +1,14 @@
-import { useState, useEffect, useRef } from 'react';
-import { cn } from '@/lib/utils';
-import { useAuth } from '@/context/AuthContext';
-import {
-  ChevronDown,
-  Globe,
-  Shield,
-  Wifi,
-  WifiOff,
-  Clock,
-  Moon,
-  Sun
-} from 'lucide-react';
+import { ChevronDown, Globe, Shield, Wifi, WifiOff, Clock, Moon, Sun, Monitor, Activity } from 'lucide-react';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
 import { useTheme } from '@/context/ThemeContext';
+import { ReceptionApi } from '@/api/reception';
 
 export function SystemBar({ serverTime, syncStatus = "Not Synced" }) {
-  const { user, logout } = useAuth();
+  const { user, logout, activeOversightBranchId, setOversightBranch } = useAuth();
   const { theme, setTheme } = useTheme();
   const [currentTime, setCurrentTime] = useState(new Date());
   const [activeDropdown, setActiveDropdown] = useState(null);
+  const [availableBranches, setAvailableBranches] = useState([]);
 
   const facilityRef = useRef(null);
   const roleRef = useRef(null);
@@ -37,16 +27,27 @@ export function SystemBar({ serverTime, syncStatus = "Not Synced" }) {
     return () => clearInterval(t);
   }, []);
 
+  // Fetch branches for oversight mode
+  useEffect(() => {
+    if (user?.sessionMode === 'oversight') {
+      ReceptionApi.getBranches().then(branches => {
+        setAvailableBranches(branches);
+        // Auto-select first branch if none active
+        if (!activeOversightBranchId && branches.length > 0) {
+          setOversightBranch(branches[0].id || branches[0].branchId);
+        }
+      }).catch(err => console.error("Failed to fetch branches:", err));
+    }
+  }, [user?.sessionMode]);
+
   const handleLogout = () => {
     logout();
     window.location.href = '/login';
   };
 
-  const availableBranches = [
-    { id: 'b1', name: 'Main Branch (HQ)' },
-    { id: 'b2', name: 'City Center Hub' },
-    { id: 'b3', name: 'Westside Satellite' }
-  ];
+  const currentBranchName = user?.sessionMode === 'oversight'
+    ? (availableBranches.find(b => (b.id || b.branchId) === activeOversightBranchId)?.name || "Select Branch...")
+    : (user?.branchName || "Unknown Branch");
 
   const timeDisplay = currentTime.toLocaleTimeString('en-US', {
     hour12: false,
@@ -116,21 +117,37 @@ export function SystemBar({ serverTime, syncStatus = "Not Synced" }) {
       {/* RIGHT — Controls */}
       <div className="flex items-center gap-3">
 
+        {/* Session Mode Indicator */}
+        <div className={cn(
+          "flex items-center gap-2 px-3 py-1.5 rounded-xl text-[10px] font-bold uppercase tracking-widest border transition-all",
+          user?.sessionMode === 'oversight'
+            ? "bg-amber-500/10 border-amber-500/50 text-amber-500"
+            : "bg-blue-500/10 border-blue-500/50 text-blue-500"
+        )}>
+          {user?.sessionMode === 'oversight' ? <Monitor className="w-3 h-3" /> : <Activity className="w-3 h-3" />}
+          {user?.sessionMode || 'operational'}
+        </div>
+
         {/* Branch (Fake Frost Pill) */}
         <div className="relative">
           <button
-            onClick={() => setActiveDropdown(activeDropdown === 'facility' ? null : 'facility')}
+            onClick={() => {
+              if (user?.sessionMode === 'oversight') {
+                setActiveDropdown(activeDropdown === 'facility' ? null : 'facility');
+              }
+            }}
             className={cn(
               "flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-medium transition-all",
-              ui.pill
+              ui.pill,
+              user?.sessionMode !== 'oversight' && "cursor-default hover:bg-zinc-900"
             )}
           >
             <Globe className="w-3.5 h-3.5 opacity-70" />
-            {user?.branchName || "Unknown"}
-            <ChevronDown className="w-3 h-3 opacity-50" />
+            {currentBranchName}
+            {user?.sessionMode === 'oversight' && <ChevronDown className="w-3 h-3 opacity-50" />}
           </button>
 
-          {activeDropdown === 'facility' && (
+          {activeDropdown === 'facility' && user?.sessionMode === 'oversight' && (
             <div
               ref={facilityRef}
               className={cn(
@@ -140,9 +157,16 @@ export function SystemBar({ serverTime, syncStatus = "Not Synced" }) {
             >
               {availableBranches.map(b => (
                 <button
-                  key={b.id}
-                  className="w-full px-3 py-2 text-left text-xs rounded-lg hover:bg-black/5 dark:hover:bg-white/5"
-                  onClick={() => setActiveDropdown(null)}
+                  key={b.id || b.branchId}
+                  className={cn(
+                    "w-full px-3 py-2 text-left text-xs rounded-lg hover:bg-black/5 dark:hover:bg-white/5",
+                    (b.id || b.branchId) === activeOversightBranchId && "bg-zinc-700/50 text-synos-primary font-bold"
+                  )}
+                  onClick={() => {
+                    setOversightBranch(b.id || b.branchId);
+                    setActiveDropdown(null);
+                    window.location.reload(); // Reload to refresh all data with new branch context
+                  }}
                 >
                   {b.name}
                 </button>

@@ -20,7 +20,10 @@ namespace SynOS.Api.Hubs
 
         public async Task NotifySampleUpdateAsync(SampleDto sample)
         {
-            await _hubContext.Clients.All.SendAsync("ReceiveSampleUpdate", sample);
+            if (sample.BranchId != System.Guid.Empty)
+            {
+                await _hubContext.Clients.Group($"Branch-{sample.BranchId}").SendAsync("ReceiveSampleUpdate", sample);
+            }
         }
     }
 }

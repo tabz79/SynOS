@@ -14,6 +14,7 @@ using SynOS.Api.Middleware;
 using Microsoft.Extensions.Logging;
 using SynOS.Api.BackgroundServices;
 using SynOS.Api.Hubs;
+using Microsoft.AspNetCore.SignalR;
 using System.Security.Claims;
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.OpenApi.Models; // Added for Swagger JWT configuration
@@ -156,6 +157,8 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy("DeliveryPolicy", policy =>
         policy.RequireAssertion(context =>
             context.User.IsInRole("DeliveryDesk") || context.User.IsInRole("Admin")));
+    options.AddPolicy("OperationalModeOnly", policy =>
+        policy.RequireClaim("session_mode", "operational"));
 });
 
 // Add AutoMapper
@@ -299,6 +302,7 @@ builder.Services.AddHostedService<OperationalStatsProjectionWorker>();
 
 // Add SignalR
 builder.Services.AddSignalR();
+builder.Services.AddSingleton<IHubFilter, SessionValidationHubFilter>();
 
 // Add HttpClientFactory
 builder.Services.AddHttpClient();
@@ -399,6 +403,7 @@ app.UseMiddleware<ErrorHandlerMiddleware>();
 app.UseCors("AllowFrontend");
 
 app.UseAuthentication();
+app.UseMiddleware<SessionValidationMiddleware>();
 app.UseAuthorization();
 
 app.MapControllers();

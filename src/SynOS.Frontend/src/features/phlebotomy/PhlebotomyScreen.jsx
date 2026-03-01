@@ -11,7 +11,8 @@ import { PhlebotomyIntentPanel } from './components/PhlebotomyIntentPanel'
 import { useFlipGroup } from "@/hooks/useSynOSMotion"
 import { ReceptionApi } from '@/api/reception'
 import { SignalRService } from '@/lib/signalr'
-import { TokenCell, PatientCell, StatusCell } from '@/components/layout/ActionQueueCells'
+import { TokenCell, PatientCell, StatusCell, PhlebotomistCell } from '@/components/layout/ActionQueueCells'
+import { useAuth } from '@/context/AuthContext'
 
 export function PhlebotomyScreen() {
     const { theme } = useTheme();
@@ -25,6 +26,11 @@ export function PhlebotomyScreen() {
     const [summary, setSummary] = useState(null);
     const [serverTime, setServerTime] = useState(new Date().toISOString());
     const [connectionStatus, setConnectionStatus] = useState("Not Synced");
+    const { user } = useAuth();
+
+    // Assignment Workflow State
+    const [activeAssignmentTab, setActiveAssignmentTab] = useState("available"); // available | assigned
+    const [selectedVisitId, setSelectedVisitId] = useState(null);
 
     // MOTION CANON: FLIP Group for Layout
     const summaryRef = useRef(null);
@@ -161,12 +167,41 @@ export function PhlebotomyScreen() {
             render: (row) => <PatientCell row={row} />
         },
         {
+            header: "ASSIGNED PHLEBOTOMIST",
+            accessor: "assignedPhlebotomistName",
+            className: "w-48",
+            render: (row) => <PhlebotomistCell row={row} />
+        },
+        {
             header: "Status",
             accessor: "operationalStatus",
             className: "w-40",
             render: (row) => <StatusCell row={row} />
         }
     ];
+
+    // Assignment Simulation Logic
+    const handleClaimAssignment = (visitId) => {
+        setActionQueue(prev => prev.map(row => {
+            if (row.visitId === visitId) {
+                return {
+                    ...row,
+                    assignedPhlebotomistId: user.id,
+                    assignedPhlebotomistName: user.name || user.username || "Current Phlebotomist"
+                };
+            }
+            return row;
+        }));
+    };
+
+    // Filtered Queue Data (Client-Side Simulation)
+    const filteredQueue = actionQueue.filter(row => {
+        if (activeAssignmentTab === "available") {
+            return !row.assignedPhlebotomistId;
+        } else {
+            return row.assignedPhlebotomistId === user?.id;
+        }
+    });
 
     return (
         <div className="h-screen w-screen dark:bg-synos-background bg-transparent text-foreground flex flex-col overflow-hidden font-sans selection:bg-white/20 relative">
@@ -205,7 +240,35 @@ export function PhlebotomyScreen() {
                         {/* Queue Pane (Flex-1, Scroll Owner) */}
                         <div ref={queueRef} className="flex-1 flex flex-col min-h-0 relative">
                             <div className="flex items-center justify-between mb-2">
-                                <ActionQueueHeader title="Collection Queue" count={actionQueue.length} />
+                                <div className="flex items-center gap-4">
+                                    <ActionQueueHeader title="Collection Queue" count={filteredQueue.length} />
+
+                                    {/* ASSIGNMENT TABS (Reception Canon Pattern) */}
+                                    <div className="flex items-center gap-2 dark:bg-zinc-900/50 bg-white rounded-lg p-1 border dark:border-white/5 border-zinc-200 shadow-sm">
+                                        <button
+                                            onClick={() => setActiveAssignmentTab("available")}
+                                            className={cn(
+                                                "text-[10px] uppercase font-bold px-2 py-0.5 rounded transition-all",
+                                                activeAssignmentTab === "available"
+                                                    ? "bg-zinc-800 text-white shadow-sm"
+                                                    : (theme === 'dark' ? "text-zinc-500 hover:text-zinc-300" : "text-zinc-500 hover:text-zinc-900")
+                                            )}
+                                        >
+                                            Available
+                                        </button>
+                                        <button
+                                            onClick={() => setActiveAssignmentTab("assigned")}
+                                            className={cn(
+                                                "text-[10px] uppercase font-bold px-2 py-0.5 rounded transition-all",
+                                                activeAssignmentTab === "assigned"
+                                                    ? "bg-zinc-800 text-white shadow-sm"
+                                                    : (theme === 'dark' ? "text-zinc-500 hover:text-zinc-300" : "text-zinc-500 hover:text-zinc-900")
+                                            )}
+                                        >
+                                            Assigned
+                                        </button>
+                                    </div>
+                                </div>
                                 <button
                                     onClick={() => setIsIntentPanelOpen(true)}
                                     className={cn(
@@ -219,7 +282,15 @@ export function PhlebotomyScreen() {
                                     Walk-In Collection
                                 </button>
                             </div>
-                            <ActionQueue columns={queueColumns} data={actionQueue} isLoading={isLoadingQueue} />
+                            <ActionQueue
+                                columns={queueColumns}
+                                data={filteredQueue}
+                                isLoading={isLoadingQueue}
+                                onAction={(row) => {
+                                    setSelectedVisitId(row.visitId);
+                                    setIsIntentPanelOpen(true);
+                                }}
+                            />
                         </div>
 
                     </div>
@@ -227,7 +298,15 @@ export function PhlebotomyScreen() {
                     {/* Side Column (Fixed Width) */}
                     <div className={`min-h-0 relative ${isIntentPanelOpen ? 'w-[40%]' : 'w-[25%]'}`}>
                         {isIntentPanelOpen ? (
-                            <PhlebotomyIntentPanel isOpen={true} closePanel={() => setIsIntentPanelOpen(false)} />
+                            <PhlebotomyIntentPanel
+                                isOpen={true}
+                                visitId={selectedVisitId}
+                                closePanel={() => {
+                                    setIsIntentPanelOpen(false);
+                                    setSelectedVisitId(null);
+                                }}
+                                onAssign={() => handleClaimAssignment(selectedVisitId)}
+                            />
                         ) : (
                             <ActivityStream serverTime={serverTime} />
                         )}

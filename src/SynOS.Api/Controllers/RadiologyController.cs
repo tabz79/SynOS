@@ -25,6 +25,7 @@ namespace SynOS.Api.Controllers
 
         [HttpPost("studies/create-for-visit")]
         [Authorize(Roles = "Admin,Technician,XRayTech,Receptionist")]
+        [Authorize(Policy = "OperationalModeOnly")]
         public async Task<IActionResult> CreateStudiesForVisit([FromBody] CreateRadiologyStudiesRequestDto request)
         {
             var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -44,6 +45,7 @@ namespace SynOS.Api.Controllers
 
         [HttpPost("studies/assign")]
         [Authorize(Roles = "Admin,Technician,XRayTech")]
+        [Authorize(Policy = "OperationalModeOnly")]
         public async Task<IActionResult> AssignStudy([FromBody] AssignStudyRequestDto request)
         {
             var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -55,6 +57,7 @@ namespace SynOS.Api.Controllers
 
         [HttpPost("studies/{studyId}/attachments")]
         [Authorize(Roles = "Admin,Technician,XRayTech")]
+        [Authorize(Policy = "OperationalModeOnly")]
         public async Task<IActionResult> UploadAttachment(Guid studyId, IFormFile file)
         {
             if (file == null || file.Length == 0)
@@ -92,6 +95,7 @@ namespace SynOS.Api.Controllers
 
         [HttpPost("studies/set-external-mapping")]
         [Authorize(Roles = "Admin,Technician,XRayTech")]
+        [Authorize(Policy = "OperationalModeOnly")]
         public async Task<IActionResult> SetExternalMapping([FromBody] RadiologyStudyExternalMappingDto request)
         {
             var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -103,6 +107,7 @@ namespace SynOS.Api.Controllers
 
         [HttpPost("studies/mark-imaging-completed")]
         [Authorize(Roles = "Admin,Technician,XRayTech")]
+        [Authorize(Policy = "OperationalModeOnly")]
         public async Task<IActionResult> MarkImagingCompleted([FromBody] AssignStudyRequestDto request)
         {
             var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);

@@ -18,6 +18,28 @@ namespace SynOS.Api.Hubs
             _logger = logger;
         }
 
+        public override async Task OnConnectedAsync()
+        {
+            var sessionMode = Context.User?.FindFirst("session_mode")?.Value;
+            var branchIdClaim = Context.User?.FindFirst("branch_id")?.Value;
+
+            if (sessionMode == "oversight")
+            {
+                // MANDATORY HARDENING (Requirement 4): Oversight users do not join branch groups automatically
+                await base.OnConnectedAsync();
+                return;
+            }
+
+            if (string.IsNullOrEmpty(branchIdClaim) || !Guid.TryParse(branchIdClaim, out var branchId))
+            {
+                Context.Abort();
+                return;
+            }
+
+            await Groups.AddToGroupAsync(Context.ConnectionId, $"Branch-{branchId}");
+            await base.OnConnectedAsync();
+        }
+
         /// <summary>
         /// Allows a terminal to register for specific hardware capabilities (e.g., Thermal80mm).
         /// The backend strictly enforces if the terminal is permitted to act as the Lead Printer for the branch,

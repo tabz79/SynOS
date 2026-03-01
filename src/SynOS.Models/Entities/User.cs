@@ -36,10 +36,15 @@ namespace SynOS.Models.Entities
         public int FailedLoginAttempts { get; set; } = 0;
         public DateTime? LockoutEnd { get; set; }
 
+        public Guid? DefaultBranchId { get; set; } // ADDED for Phase 1A Migration Safety
+
         // New properties for signature
         [MaxLength(500)]
         public string? SignatureImageUrl { get; set; }
         public DateTimeOffset? SignatureUpdatedAt { get; set; }
+
+        public bool CanUseOperationalMode { get; set; } = true;
+        public bool CanUseOversightMode { get; set; } = false;
 
         // RowVersion for optimistic concurrency
         [Timestamp]

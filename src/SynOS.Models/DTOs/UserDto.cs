@@ -15,5 +15,7 @@ namespace SynOS.Models.DTOs
         public string? Designation { get; set; }
         public string? Department { get; set; }
         public bool IsActive { get; set; }
+        public bool CanUseOperationalMode { get; set; }
+        public bool CanUseOversightMode { get; set; }
     }
 }

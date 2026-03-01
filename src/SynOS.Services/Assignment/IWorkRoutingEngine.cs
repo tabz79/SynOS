@@ -11,7 +11,7 @@ namespace SynOS.Services.Assignment
         /// Assigns a work item to the best available resource based on policy.
         /// If no resource is available, creates a pending assignment (NULL resource).
         /// </summary>
-        Task<WorkAssignment> AssignAsync(WorkType workType, Guid sourceId, string department, string? role = null);
+        Task<WorkAssignment> AssignAsync(WorkType workType, Guid sourceId, Guid branchId, string department, string? role = null);
 
         /// <summary>
         /// Attempts to auto-assign any pending assignments when a resource becomes available.
@@ -19,8 +19,8 @@ namespace SynOS.Services.Assignment
         Task ProcessPendingAssignmentsAsync(Guid operationalResourceId);
 
         /// <summary>
-        /// Updates the status and heartbeat of an operational resource.
+        /// Updates the status, heartbeat, and branch context of an operational resource.
         /// </summary>
-        Task UpdateResourceStatusAsync(Guid userId, bool isOnline, bool isActive, string? station = null);
+        Task UpdateResourceStatusAsync(Guid userId, Guid branchId, Guid sessionId, bool isOnline, bool isActive, string? station = null);
     }
 }

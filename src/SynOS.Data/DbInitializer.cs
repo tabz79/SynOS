@@ -207,14 +207,14 @@ namespace SynOS.Data
 
             var usersToSeed = new[]
             {
-                new { UserId = adminUserId, Email = "admin@synos.com",    Name = "System Admin",       Password = "admin123", RoleName = "Admin" },
-                new { UserId = Guid.NewGuid(), Email = "reception@lab.com",  Name = "Reception User",     Password = "Admin",    RoleName = "Receptionist" },
-                new { UserId = Guid.NewGuid(), Email = "phlebo@lab.com",     Name = "Phlebotomy User",    Password = "Admin",    RoleName = "Phlebotomist" },
-                new { UserId = Guid.NewGuid(), Email = "pathologist@lab.com",Name = "Pathologist User",   Password = "Admin",    RoleName = "Pathologist" },
-                new { UserId = Guid.NewGuid(), Email = "xray@lab.com",       Name = "X-Ray Tech User",    Password = "Admin",    RoleName = "XRayTech" },
-                new { UserId = Guid.NewGuid(), Email = "mri@lab.com",        Name = "MRI Tech User",      Password = "Admin",    RoleName = "MriTech" },
-                new { UserId = Guid.NewGuid(), Email = "radiologist@lab.com",Name = "Radiologist User",   Password = "Admin",    RoleName = "Radiologist" },
-                new { UserId = Guid.NewGuid(), Email = "delivery@lab.com",   Name = "Delivery Desk User", Password = "Admin",    RoleName = "DeliveryDesk" }
+                new { UserId = adminUserId, Email = "admin@synos.com",    Name = "System Admin",       Password = "admin123", RoleName = "Admin", CanUseOperational = true, CanUseOversight = true },
+                new { UserId = Guid.NewGuid(), Email = "reception@lab.com",  Name = "Reception User",     Password = "Admin",    RoleName = "Receptionist", CanUseOperational = true, CanUseOversight = false },
+                new { UserId = Guid.NewGuid(), Email = "phlebo@lab.com",     Name = "Phlebotomy User",    Password = "Admin",    RoleName = "Phlebotomist", CanUseOperational = true, CanUseOversight = false },
+                new { UserId = Guid.NewGuid(), Email = "pathologist@lab.com",Name = "Pathologist User",   Password = "Admin",    RoleName = "Pathologist", CanUseOperational = true, CanUseOversight = false },
+                new { UserId = Guid.NewGuid(), Email = "xray@lab.com",       Name = "X-Ray Tech User",    Password = "Admin",    RoleName = "XRayTech", CanUseOperational = true, CanUseOversight = false },
+                new { UserId = Guid.NewGuid(), Email = "mri@lab.com",        Name = "MRI Tech User",      Password = "Admin",    RoleName = "MriTech", CanUseOperational = true, CanUseOversight = false },
+                new { UserId = Guid.NewGuid(), Email = "radiologist@lab.com",Name = "Radiologist User",   Password = "Admin",    RoleName = "Radiologist", CanUseOperational = true, CanUseOversight = false },
+                new { UserId = Guid.NewGuid(), Email = "delivery@lab.com",   Name = "Delivery Desk User", Password = "Admin",    RoleName = "DeliveryDesk", CanUseOperational = true, CanUseOversight = false }
             };
 
             var existingUsers = context.Users.ToDictionary(u => u.Email, u => u);
@@ -225,6 +225,8 @@ namespace SynOS.Data
                 {
                     // Ensure password is reset for known test users
                     existingUser.PasswordHash = BCrypt.Net.BCrypt.HashPassword(userData.Password);
+                    existingUser.CanUseOperationalMode = userData.CanUseOperational;
+                    existingUser.CanUseOversightMode = userData.CanUseOversight;
                 }
                 else
                 {
@@ -234,7 +236,9 @@ namespace SynOS.Data
                         Name = userData.Name,
                         Email = userData.Email,
                         PasswordHash = BCrypt.Net.BCrypt.HashPassword(userData.Password),
-                        IsActive = true
+                        IsActive = true,
+                        CanUseOperationalMode = userData.CanUseOperational,
+                        CanUseOversightMode = userData.CanUseOversight
                     };
                     context.Users.Add(newUser);
                     existingUsers.Add(newUser.Email, newUser);

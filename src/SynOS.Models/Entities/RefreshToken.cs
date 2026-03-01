@@ -16,6 +16,7 @@ namespace SynOS.Models.Entities
         public DateTime? Revoked { get; set; }
         public string RevokedByIp { get; set; } = string.Empty;
         public string ReplacedByToken { get; set; } = string.Empty;
+        public string? SessionMode { get; set; } // ADDED for Phase 1B
         public bool IsActive => Revoked == null && !IsExpired;
 
         public Guid UserId { get; set; }

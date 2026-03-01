@@ -13,6 +13,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Security.Cryptography;
 using System.Linq;
 using BCrypt.Net;
+using SynOS.Models.Entities.Operations;
 
 namespace SynOS.Services
 {
@@ -62,39 +63,149 @@ namespace SynOS.Services
                 throw new UnauthorizedAccessException("Your account has been deactivated. Please contact your administrator.");
             }
 
-            // Context Selection Logic (Phase 1: Auto-select single branch)
-            var userBranchRoles = await _context.UserBranchRoles
-                .Include(ubr => ubr.Role)
-                .Include(ubr => ubr.Branch) // ADDED: Fetch Branch for Name
-                .Where(ubr => ubr.UserId == user.UserId)
-                .ToListAsync();
+            // Mode Resolution Logic (Phase 1B)
+            bool canOperational = user.CanUseOperationalMode;
+            bool canOversight = user.CanUseOversightMode;
 
-            Guid selectedBranchId;
-            string selectedRoleName;
-            string selectedBranchName; // ADDED
-
-            if (userBranchRoles.Count >= 1)
+            if (!canOperational && !canOversight)
             {
-                // Default to the first branch (Primary Context)
-                // In Phase 2, we will allow selecting this via a separate endpoint or login param.
-                var context = userBranchRoles.First();
-                selectedBranchId = context.BranchId;
-                selectedBranchName = context.Branch.Name;
-                selectedRoleName = context.Role.Name;
+                throw new UnauthorizedAccessException("This account has no valid session mode configured. Please contact support.");
+            }
+
+            string selectedMode;
+            if (!string.IsNullOrEmpty(request.PreferredMode))
+            {
+                selectedMode = request.PreferredMode.ToLower();
+                if (selectedMode == "operational" && !canOperational) throw new UnauthorizedAccessException("Operational mode not allowed for this user.");
+                if (selectedMode == "oversight" && !canOversight) throw new UnauthorizedAccessException("Oversight mode not allowed for this user.");
             }
             else
             {
-                // No branch assigned. Fail secure.
-                throw new UnauthorizedAccessException("No active branch assignment found for this user.");
+                if (canOperational && canOversight)
+                {
+                    return new LoginResponse
+                    {
+                        RequiresModeSelection = true,
+                        AvailableModes = new System.Collections.Generic.List<string> { "operational", "oversight" },
+                        User = _mapper.Map<UserDto>(user)
+                    };
+                }
+                selectedMode = canOperational ? "operational" : "oversight";
             }
 
-            var jwtToken = GenerateJwtToken(user, selectedBranchId, selectedBranchName, selectedRoleName);
+            Guid? selectedBranchId = null;
+            string? selectedBranchName = null;
+            string selectedRoleName = user.UserRoles.FirstOrDefault()?.Role?.Name ?? "Admin";
+
+            // Operational Mode: Require Branch and Update Resource
+            if (selectedMode == "operational")
+            {
+                var userBranchRoles = await _context.UserBranchRoles
+                    .Include(ubr => ubr.Role)
+                    .Include(ubr => ubr.Branch)
+                    .Where(ubr => ubr.UserId == user.UserId)
+                    .ToListAsync();
+
+                if (userBranchRoles.Count == 0)
+                {
+                    throw new UnauthorizedAccessException("No active branch assignment found for this operational user.");
+                }
+
+                if (request.BranchId.HasValue)
+                {
+                    var context = userBranchRoles.FirstOrDefault(ubr => ubr.BranchId == request.BranchId.Value);
+                    if (context == null) throw new UnauthorizedAccessException("Unauthorized access to selected branch.");
+
+                    selectedBranchId = context.BranchId;
+                    selectedBranchName = context.Branch.Name;
+                    selectedRoleName = context.Role.Name;
+                }
+                else if (userBranchRoles.Count == 1)
+                {
+                    var context = userBranchRoles.First();
+                    selectedBranchId = context.BranchId;
+                    selectedBranchName = context.Branch.Name;
+                    selectedRoleName = context.Role.Name;
+                }
+                else
+                {
+                    return new LoginResponse
+                    {
+                        RequiresBranchSelection = true,
+                        AvailableBranches = userBranchRoles
+                            .Select(ubr => new BranchSummaryDto { BranchId = ubr.BranchId, Name = ubr.Branch.Name })
+                            .GroupBy(b => b.BranchId)
+                            .Select(g => g.First())
+                            .ToList(),
+                        User = _mapper.Map<UserDto>(user)
+                    };
+                }
+            }
+
+            var newSessionId = Guid.NewGuid();
+            var jwtToken = GenerateJwtToken(user, selectedMode, selectedBranchId, selectedBranchName, selectedRoleName, newSessionId);
             var refreshToken = GenerateRefreshToken(ipAddress);
+            refreshToken.SessionMode = selectedMode; // PERSIST MODE
+
+            foreach (var rt in user.RefreshTokens.Where(t => t.IsActive))
+            {
+                rt.Revoked = DateTime.UtcNow;
+                rt.RevokedByIp = ipAddress ?? string.Empty;
+            }
+
             user.RefreshTokens.Add(refreshToken);
 
-            await _auditService.LogAsync(user.UserId, "Login", "User", user.UserId, new { IpAddress = ipAddress, BranchId = selectedBranchId });
+            // Operational Identity Sync
+            if (selectedMode == "operational")
+            {
+                int retries = 0;
+                bool saved = false;
+                while (!saved && retries < 2)
+                {
+                    try
+                    {
+                        var resource = await _context.OperationalResources.FirstOrDefaultAsync(r => r.UserId == user.UserId);
+                        if (resource != null)
+                        {
+                            resource.ActiveSessionId = newSessionId;
+                            resource.LastSessionIssuedAt = DateTime.UtcNow;
+                            resource.BranchId = selectedBranchId!.Value;
+                            resource.IsOnline = false;
+                        }
+                        else
+                        {
+                            resource = new OperationalResource
+                            {
+                                UserId = user.UserId,
+                                ActiveSessionId = newSessionId,
+                                LastSessionIssuedAt = DateTime.UtcNow,
+                                BranchId = selectedBranchId!.Value,
+                                Role = selectedRoleName,
+                                Department = "General",
+                                IsOnline = false,
+                                IsActive = false
+                            };
+                            _context.OperationalResources.Add(resource);
+                        }
 
-            await _context.SaveChangesAsync();
+                        await _auditService.LogAsync(user.UserId, "Login", "User", user.UserId, new { IpAddress = ipAddress, BranchId = selectedBranchId, Mode = selectedMode });
+                        await _context.SaveChangesAsync();
+                        saved = true;
+                    }
+                    catch (DbUpdateConcurrencyException)
+                    {
+                        retries++;
+                        if (retries >= 2) throw;
+                        _context.Entry(user).State = EntityState.Detached; 
+                    }
+                }
+            }
+            else
+            {
+                // Oversight simple logging
+                await _auditService.LogAsync(user.UserId, "Login", "User", user.UserId, new { IpAddress = ipAddress, Mode = selectedMode });
+                await _context.SaveChangesAsync();
+            }
 
             return new LoginResponse
             {
@@ -107,66 +218,117 @@ namespace SynOS.Services
 
         public async Task<LoginResponse> RefreshToken(string token, string? ipAddress)
         {
-            // ... (existing refresh logic needs to persist branch context? 
-            // For Phase 1, we can re-resolve or store branch in RefreshToken?
-            // RefreshToken entity doesn't have BranchId.
-            // I will re-resolve using the same logic as Login for now.
-            // This assumes role/branch assignment hasn't changed.
-            
             var user = await _context.Users
                 .Include(u => u.RefreshTokens)
-                // .Include(u => u.UserRoles) // Deprecated
                 .SingleOrDefaultAsync(u => u.RefreshTokens.Any(t => t.Token == token));
 
             if (user == null) throw new UnauthorizedAccessException("Invalid token");
-
             if (!user.IsActive) throw new UnauthorizedAccessException("Account is deactivated.");
 
             var refreshToken = user.RefreshTokens.Single(x => x.Token == token);
-
             if (!refreshToken.IsActive) throw new UnauthorizedAccessException("Invalid token");
 
-            // rotate token
+            var sessionMode = refreshToken.SessionMode ?? "operational"; // Fallback for legacy tokens
+
+            // Capability Revalidation
+            if ((sessionMode == "operational" && !user.CanUseOperationalMode) || 
+                (sessionMode == "oversight" && !user.CanUseOversightMode))
+            {
+                refreshToken.Revoked = DateTime.UtcNow;
+                refreshToken.RevokedByIp = ipAddress ?? string.Empty;
+                await _context.SaveChangesAsync();
+                throw new UnauthorizedAccessException("Session capability has been revoked.");
+            }
+
             var newRefreshToken = GenerateRefreshToken(ipAddress);
+            newRefreshToken.SessionMode = sessionMode;
             refreshToken.Revoked = DateTime.UtcNow;
-            refreshToken.RevokedByIp = ipAddress ?? string.Empty; // Handle null ipAddress
+            refreshToken.RevokedByIp = ipAddress ?? string.Empty;
             refreshToken.ReplacedByToken = newRefreshToken.Token;
+
+            foreach (var rt in user.RefreshTokens.Where(t => t.IsActive))
+            {
+                rt.Revoked = DateTime.UtcNow;
+                rt.RevokedByIp = ipAddress ?? string.Empty;
+            }
+
             user.RefreshTokens.Add(newRefreshToken);
 
-            _context.Update(user);
-            await _context.SaveChangesAsync();
+            Guid? selectedBranchId = null;
+            string? selectedBranchName = null;
+            string selectedRoleName = "User";
 
-            // Re-resolve branch context
-             var userBranchRoles = await _context.UserBranchRoles
-                .Include(ubr => ubr.Role)
-                .Include(ubr => ubr.Branch) // ADDED: Fetch Branch for Name
-                .Where(ubr => ubr.UserId == user.UserId)
-                .ToListAsync();
-
-            Guid selectedBranchId;
-            string selectedRoleName;
-            string selectedBranchName; // ADDED
-
-            if (userBranchRoles.Count == 1)
+            if (sessionMode == "operational")
             {
-                var context = userBranchRoles.First();
-                selectedBranchId = context.BranchId;
-                selectedBranchName = context.Branch.Name; // ADDED
-                selectedRoleName = context.Role.Name;
+                var userBranchRoles = await _context.UserBranchRoles
+                   .Include(ubr => ubr.Role)
+                   .Include(ubr => ubr.Branch) 
+                   .Where(ubr => ubr.UserId == user.UserId)
+                   .ToListAsync();
+
+                if (userBranchRoles.Count == 1)
+                {
+                    var context = userBranchRoles.First();
+                    selectedBranchId = context.BranchId;
+                    selectedBranchName = context.Branch.Name;
+                    selectedRoleName = context.Role.Name;
+                }
+                else
+                {
+                    if (userBranchRoles.Count > 1) throw new UnauthorizedAccessException("Multiple branches assigned. Please log in again to select a branch.");
+                    throw new UnauthorizedAccessException("No active branch assignment found for this user.");
+                }
             }
             else
             {
-                 // Fallback or Fail. For Refresh, if they became multi-branch, this might break.
-                 // Phase 1 assumption: 1 user = 1 branch.
-                 if (userBranchRoles.Count > 1) throw new UnauthorizedAccessException("Multiple branches. Please log in again.");
-                 throw new UnauthorizedAccessException("No branch assignment.");
+                selectedRoleName = user.UserRoles.FirstOrDefault()?.Role?.Name ?? "Admin";
             }
 
-            var jwtToken = GenerateJwtToken(user, selectedBranchId, selectedBranchName, selectedRoleName);
-            
-            await _auditService.LogAsync(user.UserId, "RefreshToken", "User", user.UserId, new { IpAddress = ipAddress });
-            await _context.SaveChangesAsync();
+            var newSessionId = Guid.NewGuid();
+            if (sessionMode == "operational")
+            {
+                var resource = await _context.OperationalResources.FirstOrDefaultAsync(r => r.UserId == user.UserId);
+                if (resource != null)
+                {
+                    resource.ActiveSessionId = newSessionId;
+                    resource.LastSessionIssuedAt = DateTime.UtcNow;
+                }
+                else
+                {
+                    resource = new OperationalResource
+                    {
+                        UserId = user.UserId,
+                        ActiveSessionId = newSessionId,
+                        LastSessionIssuedAt = DateTime.UtcNow,
+                        BranchId = selectedBranchId!.Value,
+                        Role = selectedRoleName,
+                        Department = "General",
+                        IsOnline = false,
+                        IsActive = false
+                    };
+                    _context.OperationalResources.Add(resource);
+                }
+            }
 
+            var jwtToken = GenerateJwtToken(user, sessionMode, selectedBranchId, selectedBranchName, selectedRoleName, newSessionId);
+            await _auditService.LogAsync(user.UserId, "RefreshToken", "User", user.UserId, new { IpAddress = ipAddress, Mode = sessionMode });
+            
+            int refreshRetries = 0;
+            bool refreshSaved = false;
+            while (!refreshSaved && refreshRetries < 2)
+            {
+                try
+                {
+                    await _context.SaveChangesAsync();
+                    refreshSaved = true;
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    refreshRetries++;
+                    if (refreshRetries >= 2) throw;
+                    _context.Entry(user).State = EntityState.Detached;
+                }
+            }
 
             return new LoginResponse
             {
@@ -195,20 +357,32 @@ namespace SynOS.Services
             return true;
         }
 
-        private string GenerateJwtToken(User user, Guid branchId, string branchName, string roleName)
+        private string GenerateJwtToken(User user, string sessionMode, Guid? branchId, string? branchName, string roleName, Guid sessionId)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
             var jwtSecret = _configuration["Jwt:Secret"] ?? throw new InvalidOperationException("Jwt:Secret not configured");
             var key = Encoding.ASCII.GetBytes(jwtSecret);
-            var claims = new ClaimsIdentity(new Claim[]
+            
+            var claimsList = new System.Collections.Generic.List<Claim>
             {
                 new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
                 new Claim(ClaimTypes.Email, user.Email),
                 new Claim(ClaimTypes.Name, user.Name),
-                new Claim("branch_id", branchId.ToString()),
-                new Claim("branch_name", branchName), // ADDED: Branch Name Claim (Truth)
+                new Claim("session_mode", sessionMode), // ADDED for Phase 1B
+                new Claim("session_id", sessionId.ToString()), 
                 new Claim(ClaimTypes.Role, roleName)
-            });
+            };
+
+            if (sessionMode == "operational" && branchId.HasValue)
+            {
+                claimsList.Add(new Claim("branch_id", branchId.Value.ToString()));
+                if (!string.IsNullOrEmpty(branchName))
+                {
+                    claimsList.Add(new Claim("branch_name", branchName));
+                }
+            }
+
+            var claimsIdentity = new ClaimsIdentity(claimsList);
 
             var jwtExpiryMinutes = _configuration.GetValue<int>("Jwt:ExpiryMinutes", 60); // Default to 60 minutes
             var jwtIssuer = _configuration["Jwt:Issuer"] ?? throw new InvalidOperationException("Jwt:Issuer not configured");
@@ -216,7 +390,7 @@ namespace SynOS.Services
 
             var tokenDescriptor = new SecurityTokenDescriptor
             {
-                Subject = claims,
+                Subject = claimsIdentity,
                 Expires = DateTime.UtcNow.AddMinutes(jwtExpiryMinutes),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature),
                 Issuer = jwtIssuer,

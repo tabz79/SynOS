@@ -23,11 +23,20 @@ namespace SynOS.Models.Entities.Operations
         [MaxLength(50)]
         public string Department { get; set; } = string.Empty; // "Pathology", "Radiology"
 
+        [Required]
+        public Guid BranchId { get; set; } // ADDED Phase 1A
+
         public bool IsOnline { get; set; }
         public bool IsActive { get; set; } // "On Duty" toggle
         public DateTime? LastHeartbeat { get; set; }
 
         [MaxLength(100)]
         public string? PhysicalStation { get; set; } // "Desk 1", "Room 302"
+
+        public Guid? ActiveSessionId { get; set; } // ADDED for Single Operational Session
+        public DateTime? LastSessionIssuedAt { get; set; } // ADDED for Single Operational Session
+
+        [Timestamp]
+        public byte[] RowVersion { get; set; } = Array.Empty<byte>();
     }
 }

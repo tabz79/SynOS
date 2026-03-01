@@ -21,13 +21,13 @@ namespace SynOS.Services.Assignment
             _logger = logger;
         }
 
-        public async Task<WorkAssignment> AssignAsync(WorkType workType, Guid sourceId, string department, string? role = null)
+        public async Task<WorkAssignment> AssignAsync(WorkType workType, Guid sourceId, Guid branchId, string department, string? role = null)
         {
-            _logger.LogInformation("Attempting to assign work {WorkType} for source {SourceId} in {Department}", workType, sourceId, department);
+            _logger.LogInformation("Attempting to assign work {WorkType} for source {SourceId} in {Department} at Branch {BranchId}", workType, sourceId, department, branchId);
 
-            // 1. Find potential resources (Online & Active)
+            // 1. Find potential resources (Online & Active & Same Branch)
             var candidates = await _db.OperationalResources
-                .Where(r => r.IsOnline && r.IsActive && r.Department == department)
+                .Where(r => r.IsOnline && r.IsActive && r.Department == department && r.BranchId == branchId)
                 .Where(r => string.IsNullOrEmpty(role) || r.Role == role)
                 .ToListAsync();
 
@@ -109,16 +109,28 @@ namespace SynOS.Services.Assignment
             }
         }
 
-        public async Task UpdateResourceStatusAsync(Guid userId, bool isOnline, bool isActive, string? station = null)
+        public async Task UpdateResourceStatusAsync(Guid userId, Guid branchId, Guid sessionId, bool isOnline, bool isActive, string? station = null)
         {
             var resource = await _db.OperationalResources.FirstOrDefaultAsync(r => r.UserId == userId);
             
             if (resource == null)
             {
-                // Auto-provision OperationalResource if it doesn't exist?
-                // Better to handle this via an Admin setup, but for now we'll throw or mock.
                 _logger.LogError("OperationalResource not found for user {UserId}", userId);
                 return;
+            }
+
+            // ENFORCE Option A: Single Operational Session
+            if (resource.ActiveSessionId.HasValue && sessionId != Guid.Empty && resource.ActiveSessionId.Value != sessionId)
+            {
+                _logger.LogWarning("Rejecting status update for User {UserId}. Multi-session conflict. Given: {GivenSession}, Active: {ActiveSession}", userId, sessionId, resource.ActiveSessionId);
+                throw new UnauthorizedAccessException("SessionExpiredOperationalContext");
+            }
+
+            // Support Staff Rotation: Update branch context if it changed
+            if (resource.BranchId != branchId)
+            {
+                _logger.LogInformation("Updating branch context for User {UserId} from {OldBranch} to {NewBranch}", userId, resource.BranchId, branchId);
+                resource.BranchId = branchId;
             }
 
             resource.IsOnline = isOnline;

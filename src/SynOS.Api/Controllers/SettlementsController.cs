@@ -8,7 +8,7 @@ namespace SynOS.Api.Controllers
 {
     [ApiController]
     [Route("api/settlements")]
-    [Authorize]
+    [Authorize(Policy = "OperationalModeOnly")]
     public class SettlementsController : ControllerBase
     {
         private readonly ISettlementService _settlementService;

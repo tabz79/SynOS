@@ -214,7 +214,11 @@ namespace SynOS.Data
             base.OnModelCreating(modelBuilder);
 
             // User entities
-            modelBuilder.Entity<User>(entity => entity.HasIndex(e => e.Email).IsUnique());
+            modelBuilder.Entity<User>(entity =>
+            {
+                entity.HasIndex(e => e.Email).IsUnique();
+                entity.HasOne<Branch>().WithMany().HasForeignKey(e => e.DefaultBranchId).OnDelete(DeleteBehavior.SetNull);
+            });
             modelBuilder.Entity<UserRole>(entity => entity.HasKey(ur => new { ur.UserId, ur.RoleId }));
 
             // Multi-branch Auth
@@ -411,7 +415,7 @@ namespace SynOS.Data
                 entity.Property(e => e.Status).HasConversion<string>().HasMaxLength(20);
                 
                 entity.HasOne(e => e.Visit)
-                      .WithMany() // Visit can have many Specimens, but we don't need a navigation property on Visit yet
+                      .WithMany(v => v.Specimens) // Map to the navigation property in Visit
                       .HasForeignKey(e => e.VisitId)
                       .OnDelete(DeleteBehavior.Cascade);
 
@@ -440,7 +444,11 @@ namespace SynOS.Data
             modelBuilder.Entity<OperationalResource>(entity =>
             {
                 entity.HasIndex(e => e.UserId).IsUnique();
+                entity.HasIndex(e => new { e.UserId, e.ActiveSessionId }); // ADDED for high-performance SessionId validation
+                entity.HasIndex(e => new { e.BranchId, e.Department }); // ADDED Phase 1A: Branch Routing Optimization
+                
                 entity.HasOne(e => e.User).WithMany().HasForeignKey(e => e.UserId).OnDelete(DeleteBehavior.Cascade);
+                entity.HasOne<Branch>().WithMany().HasForeignKey(e => e.BranchId).OnDelete(DeleteBehavior.Restrict); // FK
             });
 
             modelBuilder.Entity<WorkAssignment>(entity =>

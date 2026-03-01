@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SynOS.Data;
 
@@ -11,9 +12,11 @@ using SynOS.Data;
 namespace SynOS.Data.Migrations
 {
     [DbContext(typeof(SynOSDbContext))]
-    partial class SynOSDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260228091246_Phase1A_BranchIsolation_v2")]
+    partial class Phase1A_BranchIsolation_v2
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -2055,9 +2058,6 @@ namespace SynOS.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid?>("ActiveSessionId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<Guid>("BranchId")
                         .HasColumnType("uniqueidentifier");
 
@@ -2081,9 +2081,6 @@ namespace SynOS.Data.Migrations
                     b.Property<DateTime?>("LastHeartbeat")
                         .HasColumnType("datetime2");
 
-                    b.Property<DateTime?>("LastSessionIssuedAt")
-                        .HasColumnType("datetime2");
-
                     b.Property<string>("PhysicalStation")
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
@@ -2092,12 +2089,6 @@ namespace SynOS.Data.Migrations
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
-
-                    b.Property<byte[]>("RowVersion")
-                        .IsConcurrencyToken()
-                        .IsRequired()
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("rowversion");
 
                     b.Property<DateTimeOffset?>("UpdatedAt")
                         .HasColumnType("datetimeoffset");
@@ -2114,8 +2105,6 @@ namespace SynOS.Data.Migrations
                         .IsUnique();
 
                     b.HasIndex("BranchId", "Department");
-
-                    b.HasIndex("UserId", "ActiveSessionId");
 
                     b.ToTable("OperationalResources");
                 });
@@ -3437,9 +3426,6 @@ namespace SynOS.Data.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("SessionMode")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("Token")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -4111,6 +4097,9 @@ namespace SynOS.Data.Migrations
                     b.Property<Guid>("VisitId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<Guid?>("VisitId1")
+                        .HasColumnType("uniqueidentifier");
+
                     b.HasKey("SpecimenId");
 
                     b.HasIndex("AccessionNumber")
@@ -4119,6 +4108,8 @@ namespace SynOS.Data.Migrations
                     b.HasIndex("SpecimenTypeCode");
 
                     b.HasIndex("VisitId");
+
+                    b.HasIndex("VisitId1");
 
                     b.ToTable("Specimens");
                 });
@@ -4581,12 +4572,6 @@ namespace SynOS.Data.Migrations
                     b.Property<Guid>("UserId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
-
-                    b.Property<bool>("CanUseOperationalMode")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("CanUseOversightMode")
-                        .HasColumnType("bit");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -6064,10 +6049,14 @@ namespace SynOS.Data.Migrations
                         .IsRequired();
 
                     b.HasOne("SynOS.Models.Entities.Visit", "Visit")
-                        .WithMany("Specimens")
+                        .WithMany()
                         .HasForeignKey("VisitId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.HasOne("SynOS.Models.Entities.Visit", null)
+                        .WithMany("Specimens")
+                        .HasForeignKey("VisitId1");
 
                     b.Navigation("SpecimenType");
 

@@ -4,7 +4,7 @@ import { X, ArrowRight, TestTube2, AlertCircle } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useTheme } from '@/context/ThemeContext'
 
-export function PhlebotomyIntentPanel({ isOpen, closePanel }) {
+export function PhlebotomyIntentPanel({ isOpen, visitId, closePanel, onAssign }) {
     // Determine Theme for Style Branching
     const { theme } = useTheme();
     const isDark = theme === 'dark';
@@ -62,6 +62,20 @@ export function PhlebotomyIntentPanel({ isOpen, closePanel }) {
 
             {/* PanelBody (Scroll Owner) */}
             <div className="flex-1 min-h-0 overflow-y-auto p-4 space-y-6">
+                {/* ASSIGNMENT SCROLL TRIGGER (Phase 1) */}
+                <button
+                    onClick={() => {
+                        onAssign && onAssign();
+                    }}
+                    className={cn(
+                        "w-full py-3 rounded-xl font-bold text-sm shadow-xl transition-all active:scale-[0.98] flex items-center justify-center gap-2",
+                        ui.actionBtn.enabled
+                    )}
+                >
+                    <Users className="w-4 h-4" />
+                    Assign to Me
+                </button>
+
                 {/* Placeholder Content Area */}
                 <div className="flex flex-col items-center justify-center p-8 border-2 border-dashed border-zinc-200 dark:border-zinc-800 rounded-xl">
                     <TestTube2 className="w-8 h-8 text-zinc-300 mb-2" />

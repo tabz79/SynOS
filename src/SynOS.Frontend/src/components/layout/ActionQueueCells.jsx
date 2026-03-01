@@ -87,3 +87,17 @@ export function StatusCell({ row }) {
         </div>
     );
 }
+
+export function PhlebotomistCell({ row }) {
+    // Canon: Muted dash if unassigned, Otherwise primary body text
+    const displayValue = row.assignedPhlebotomistName || "—";
+
+    return (
+        <span className={cn(
+            "text-sm font-normal",
+            !row.assignedPhlebotomistName && "text-zinc-500/50" // Muted dash
+        )}>
+            {displayValue}
+        </span>
+    );
+}

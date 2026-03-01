@@ -659,7 +659,7 @@ namespace SynOS.Services
                     try
                     {
                         var dbVisit = await _context.Visits.FindAsync(visit.VisitId);
-                        if (dbVisit != null && !dbVisit.CurrentAssignmentId.HasValue)
+                        if (dbVisit != null && !dbVisit.CurrentAssignmentId.HasValue && dbVisit.BranchId.HasValue)
                         {
                             WorkType workType = visit.Department switch
                             {
@@ -668,7 +668,7 @@ namespace SynOS.Services
                                 _ => WorkType.AdminTask
                             };
 
-                            var assignment = await _routingEngine.AssignAsync(workType, visit.VisitId, visit.Department);
+                            var assignment = await _routingEngine.AssignAsync(workType, visit.VisitId, dbVisit.BranchId.Value, visit.Department);
                             dbVisit.CurrentAssignmentId = assignment.AssignmentId;
                             await _context.SaveChangesAsync();
                         }
