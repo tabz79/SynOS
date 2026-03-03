@@ -668,11 +668,13 @@ namespace SynOS.Services
                                 _ => WorkType.AdminTask
                             };
 
-                            var assignment = await _routingEngine.AssignAsync(workType, visit.VisitId, dbVisit.BranchId.Value, visit.Department);
+                            // REFACTOR: Use CreateUnclaimedWorkAssignmentAsync instead of auto-assigning
+                            var assignment = await _routingEngine.CreateUnclaimedWorkAssignmentAsync(workType, visit.VisitId, dbVisit.BranchId.Value, visit.Department);
                             dbVisit.CurrentAssignmentId = assignment.AssignmentId;
                             await _context.SaveChangesAsync();
                         }
                     }
+
                     catch (Exception ex)
                 {
                     _logger.LogError(ex, "Assignment Engine failed for Visit {VisitId}. Payment preserved.", visit.VisitId);
@@ -1004,50 +1006,16 @@ namespace SynOS.Services
                     // For now, let's assume valid pathology visit implies specimens.
                 }
 
-                // 4. Generate Accessions & Create Specimens
-                var branchId = visit.BranchId ?? throw new InvalidOperationException("BranchId required for Accessioning");
-                var date = DateTime.Today; // Accession sequence resets daily
+                // 4. Delegate to Work Assignment (Specimens and Accessions generated at collection)
+                var branchId = visit.BranchId ?? throw new InvalidOperationException("BranchId required for Phlebotomy Assignment");
 
-                foreach (var group in plan)
-                {
-                    // Generate Atomic Accession Number (Locks AccessionSequence Row)
-                    // Format: {BranchCode}-{YYMMDD}-{Seq:D4} (e.g. BR1-240501-0001)
-                    
-                    // We need Branch Code. AccessionService might need a small refactor or we fetch it here.
-                    // AccessionService creates the number specific to *that* service's logic? 
-                    // Wait, AccessionService.GenerateNextAccessionNumberAsync returns a long/int.
-                    // We need to Formatting logic here or in AccessionService?
-                    // The plan says: "Format Accession: {BranchCode}-{YYMMDD}-{Seq:D4}"
-                    
-                    var seq = await _accessionService.GenerateNextAccessionNumberAsync(branchId, date);
-                    
-                    // Fetch Branch Code (Ideally cached or from UserContext, but visit.BranchId is source of truth)
-                    // We added Code to Branch entity.
-                    var branch = await _context.Branches.FindAsync(branchId);
-                    var branchCode = branch?.Code ?? "UNK"; 
-
-                    var dateStr = date.ToString("yyMMdd");
-                    var accessionNumber = $"{branchCode}-{dateStr}-{seq:D4}";
-
-                    var specimen = new Specimen
-                    {
-                        SpecimenId = Guid.NewGuid(),
-                        VisitId = visit.VisitId,
-                        SpecimenTypeCode = group.SpecimenTypeCode,
-                        AccessionNumber = accessionNumber,
-                        Status = SpecimenStatus.Pending, // Initial Status
-                        CreatedAt = DateTimeOffset.UtcNow              
-                    };
-
-                    _context.Specimens.Add(specimen);
-
-                    // Link Orders to this Specimen
-                    foreach (var order in group.Orders)
-                    {
-                         order.SpecimenId = specimen.SpecimenId;
-                         // _context.Update(order); // Tracked via inclusion
-                    }
-                }
+                await _routingEngine.CreateUnclaimedWorkAssignmentAsync(
+                    WorkType.SampleCollection,
+                    visit.VisitId,
+                    branchId,
+                    "Pathology", // hardcoded department for now
+                    "Phlebotomist"
+                );
 
                 // 5. Update Visit Status
                 // visit.Status = VisitStatus.Completed; // Transition to Completed if that's the desired flow

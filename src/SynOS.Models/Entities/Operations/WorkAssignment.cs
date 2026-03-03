@@ -31,6 +31,10 @@ namespace SynOS.Models.Entities.Operations
         [Required]
         public WorkAssignmentStatus Status { get; set; }
 
+        public Guid BranchId { get; set; }
+
+        public DateTime? ClaimedAt { get; set; }
+
         public DateTime? StartedAt { get; set; }
         public DateTime? CompletedAt { get; set; }
 

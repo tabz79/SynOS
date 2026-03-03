@@ -22,5 +22,11 @@ namespace SynOS.Services.Assignment
         /// Updates the status, heartbeat, and branch context of an operational resource.
         /// </summary>
         Task UpdateResourceStatusAsync(Guid userId, Guid branchId, Guid sessionId, bool isOnline, bool isActive, string? station = null);
+
+        /// <summary>
+        /// Creates a work assignment in PendingClaim state without attempting auto-assignment.
+        /// </summary>
+        Task<WorkAssignment> CreateUnclaimedWorkAssignmentAsync(WorkType workType, Guid sourceId, Guid branchId, string department, string? role = null);
     }
 }
+

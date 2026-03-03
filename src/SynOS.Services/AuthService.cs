@@ -181,7 +181,7 @@ namespace SynOS.Services
                                 LastSessionIssuedAt = DateTime.UtcNow,
                                 BranchId = selectedBranchId!.Value,
                                 Role = selectedRoleName,
-                                Department = "General",
+                                DepartmentCode = "General",
                                 IsOnline = false,
                                 IsActive = false
                             };
@@ -302,7 +302,7 @@ namespace SynOS.Services
                         LastSessionIssuedAt = DateTime.UtcNow,
                         BranchId = selectedBranchId!.Value,
                         Role = selectedRoleName,
-                        Department = "General",
+                        DepartmentCode = "General",
                         IsOnline = false,
                         IsActive = false
                     };

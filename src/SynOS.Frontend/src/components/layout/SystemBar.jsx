@@ -1,6 +1,9 @@
+import { useState, useEffect, useRef } from 'react';
 import { ChevronDown, Globe, Shield, Wifi, WifiOff, Clock, Moon, Sun, Monitor, Activity } from 'lucide-react';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
+import { useAuth } from '@/context/AuthContext';
 import { useTheme } from '@/context/ThemeContext';
+import { cn } from '@/lib/utils';
 import { ReceptionApi } from '@/api/reception';
 
 export function SystemBar({ serverTime, syncStatus = "Not Synced" }) {

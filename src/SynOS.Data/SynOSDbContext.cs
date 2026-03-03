@@ -75,7 +75,7 @@ namespace SynOS.Data
         public DbSet<CreditNote> CreditNotes { get; set; } = null!;
         public DbSet<EditLock> EditLocks { get; set; } = null!;
 
-        public DbSet<AccessionCounter> AccessionCounters { get; set; } = null!;
+        public DbSet<SynOS.Models.Entities.Operations.AccessionCounter> AccessionCounters { get; set; } = null!;
 
         // DbSets for Operational Assignments
         public DbSet<OperationalResource> OperationalResources { get; set; } = null!;
@@ -445,7 +445,8 @@ namespace SynOS.Data
             {
                 entity.HasIndex(e => e.UserId).IsUnique();
                 entity.HasIndex(e => new { e.UserId, e.ActiveSessionId }); // ADDED for high-performance SessionId validation
-                entity.HasIndex(e => new { e.BranchId, e.Department }); // ADDED Phase 1A: Branch Routing Optimization
+                entity.HasIndex(e => new { e.BranchId, e.DepartmentCode }); // ADDED Phase 1A: Branch Routing Optimization
+                entity.Property(e => e.DepartmentCode).HasColumnName("Department"); // Preserving DB schema
                 
                 entity.HasOne(e => e.User).WithMany().HasForeignKey(e => e.UserId).OnDelete(DeleteBehavior.Cascade);
                 entity.HasOne<Branch>().WithMany().HasForeignKey(e => e.BranchId).OnDelete(DeleteBehavior.Restrict); // FK
@@ -456,10 +457,30 @@ namespace SynOS.Data
                 entity.HasIndex(e => e.SourceReferenceId);
                 entity.Property(e => e.WorkType).HasConversion<string>().HasMaxLength(50);
                 entity.Property(e => e.Status).HasConversion<string>().HasMaxLength(50);
+                entity.Property(e => e.BranchId).IsRequired();
                 entity.HasOne(e => e.AssignedResource)
                       .WithMany()
                       .HasForeignKey(e => e.AssignedResourceId)
                       .OnDelete(DeleteBehavior.SetNull);
+            });
+
+            modelBuilder.Entity<SynOS.Models.Entities.Operations.AccessionCounter>(entity =>
+            {
+                entity.HasKey(x => new { x.BranchId, x.Date });
+                entity.Property(x => x.RowVersion).IsRowVersion();
+            });
+
+            modelBuilder.Entity<Specimen>(entity =>
+            {
+                entity.HasKey(e => e.SpecimenId);
+                entity.HasIndex(e => e.AccessionNumber).IsUnique();
+                entity.HasIndex(e => e.VisitId);
+                entity.HasIndex(e => e.SpecimenTypeCode);
+                
+                entity.HasOne(e => e.Visit)
+                      .WithMany()
+                      .HasForeignKey(e => e.VisitId)
+                      .OnDelete(DeleteBehavior.Restrict);
             });
 
             // Results Module

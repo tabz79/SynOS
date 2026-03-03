@@ -27,7 +27,7 @@ namespace SynOS.Services.Assignment
 
             // 1. Find potential resources (Online & Active & Same Branch)
             var candidates = await _db.OperationalResources
-                .Where(r => r.IsOnline && r.IsActive && r.Department == department && r.BranchId == branchId)
+                .Where(r => r.IsOnline && r.IsActive && r.DepartmentCode == department && r.BranchId == branchId)
                 .Where(r => string.IsNullOrEmpty(role) || r.Role == role)
                 .ToListAsync();
 
@@ -61,6 +61,7 @@ namespace SynOS.Services.Assignment
                 Department = department,
                 RequiredRole = role,
                 AssignedResourceId = selectedResource?.OperationalResourceId,
+                BranchId = branchId,
                 Status = selectedResource != null ? WorkAssignmentStatus.Assigned : WorkAssignmentStatus.PendingAssignment,
                 CreatedAt = DateTimeOffset.UtcNow
             };
@@ -86,9 +87,11 @@ namespace SynOS.Services.Assignment
             if (resource == null || !resource.IsOnline || !resource.IsActive) return;
 
             // Find pending assignments that match this resource's profile
+            // NOTE: We only process PendingAssignment. PendingClaim is handled manually.
             var pending = await _db.WorkAssignments
                 .Where(a => a.Status == WorkAssignmentStatus.PendingAssignment)
-                .Where(a => a.Department == resource.Department)
+
+                .Where(a => a.Department == resource.DepartmentCode)
                 .Where(a => string.IsNullOrEmpty(a.RequiredRole) || a.RequiredRole == resource.Role)
                 .OrderBy(a => a.CreatedAt)
                 .ToListAsync();
@@ -145,5 +148,29 @@ namespace SynOS.Services.Assignment
                 await ProcessPendingAssignmentsAsync(resource.OperationalResourceId);
             }
         }
+
+        public async Task<WorkAssignment> CreateUnclaimedWorkAssignmentAsync(WorkType workType, Guid sourceId, Guid branchId, string department, string? role = null)
+        {
+            _logger.LogInformation("Creating unclaimed work assignment for {WorkType} ({SourceId}) in {Department}", workType, sourceId, department);
+
+            var assignment = new WorkAssignment
+            {
+                AssignmentId = Guid.NewGuid(),
+                WorkType = workType,
+                SourceReferenceId = sourceId,
+                Department = department,
+                RequiredRole = role,
+                AssignedResourceId = null,
+                BranchId = branchId,
+                Status = WorkAssignmentStatus.PendingClaim,
+                CreatedAt = DateTimeOffset.UtcNow
+            };
+
+            _db.WorkAssignments.Add(assignment);
+            await _db.SaveChangesAsync();
+
+            return assignment;
+        }
     }
 }
+

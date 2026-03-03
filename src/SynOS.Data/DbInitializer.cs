@@ -340,11 +340,12 @@ namespace SynOS.Data
                     OperationalResourceId = Guid.NewGuid(),
                     UserId = phleboUser.UserId,
                     Role = "Phlebotomist",
-                    Department = "Pathology",
+                    DepartmentCode = "Pathology",
                     IsOnline = true,
                     IsActive = true,
                     PhysicalStation = "Desk 1",
-                    LastHeartbeat = DateTime.UtcNow
+                    LastHeartbeat = DateTime.UtcNow,
+                    BranchId = DefaultBranchId
                 });
             }
 
@@ -355,11 +356,12 @@ namespace SynOS.Data
                     OperationalResourceId = Guid.NewGuid(),
                     UserId = xrayUser.UserId,
                     Role = "XRayTech",
-                    Department = "Radiology",
+                    DepartmentCode = "Radiology",
                     IsOnline = true,
                     IsActive = true,
                     PhysicalStation = "Room 302",
-                    LastHeartbeat = DateTime.UtcNow
+                    LastHeartbeat = DateTime.UtcNow,
+                    BranchId = DefaultBranchId
                 });
             }
 

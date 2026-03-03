@@ -1,0 +1,7 @@
+d:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ReceptionFlowService.cs(1013,30): error CS0117: 'WorkType' does not contain a definition for 'Phlebotomy' [d:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\SynOS.Services.csproj]
+
+Build FAILED.
+    190 Warning(s)
+    1 Error(s)
+
+Time Elapsed 00:00:11.16

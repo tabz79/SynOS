@@ -21,7 +21,7 @@ namespace SynOS.Models.Entities.Operations
 
         [Required]
         [MaxLength(50)]
-        public string Department { get; set; } = string.Empty; // "Pathology", "Radiology"
+        public string DepartmentCode { get; set; } = string.Empty; // "Pathology", "Radiology"
 
         [Required]
         public Guid BranchId { get; set; } // ADDED Phase 1A

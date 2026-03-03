@@ -349,6 +349,11 @@ namespace SynOS.Services.Operations
             }
 
             // Sample Collected
+            if (visit.Orders != null && visit.Orders.Any(o => o.SpecimenId != null))
+            {
+                return "Collected";
+            }
+
             /*
             if (sampleStatuses != null && sampleStatuses.Any())
             {

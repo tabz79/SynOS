@@ -41,6 +41,7 @@ namespace SynOS.Models.Entities
 
         public DateTime? CollectedAt { get; set; }
         public Guid? CollectedByUserId { get; set; }
+        public Guid? CollectedBy { get; set; } // OperationalResourceId
 
         public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
 

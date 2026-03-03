@@ -41,6 +41,7 @@ using SynOS.Services.Dashboard; // ADDED
 using SynOS.Services.Operations; // ADDED
 using SynOS.Api.Services; // ADDED
 using SynOS.Services.Settlements; // ADDED
+using SynOS.Services.Phlebotomy; // ADDED
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -238,6 +239,9 @@ builder.Services.AddScoped<IReceptionFlowService>(provider =>
         provider.GetRequiredService<INotifier>() // ADDED
     ));
 builder.Services.AddScoped<IResultService, ResultService>();
+builder.Services.AddScoped<IPhlebotomyService, PhlebotomyService>();
+builder.Services.AddScoped<IAccessionNumberGenerator, AccessionNumberGenerator>();
+builder.Services.AddScoped<IBranchTimeProvider, BranchTimeProvider>();
 builder.Services.AddScoped<SynOS.Services.Reception.IReceptionSnapshotService, SynOS.Services.Reception.ReceptionSnapshotService>();
 builder.Services.AddScoped<SynOS.Services.Reception.IReceptionPatientService, SynOS.Services.Reception.ReceptionPatientService>(); // ADDED
 builder.Services.AddScoped<IReportService, ReportService>();
