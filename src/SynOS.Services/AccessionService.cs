@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using SynOS.Data;
 using SynOS.Models.Entities;
+using SynOS.Models.Entities.Operations;
 
 namespace SynOS.Services
 {
@@ -29,7 +30,7 @@ namespace SynOS.Services
                 // keeping it simple for now.
             }
 
-            var datePart = date.Date;
+            var dateOnly = DateOnly.FromDateTime(date);
 
             // 1. Get Branch Code for formatting
             // We could cache this, but for now fetch it.
@@ -39,14 +40,14 @@ namespace SynOS.Services
 
             // 2. Atomic Get-Or-Create Sequence
             // First check if we already loaded or added the sequence in the current context
-            var sequence = _context.AccessionSequences.Local
-                .FirstOrDefault(s => s.BranchId == branchId && s.Date == datePart);
+            var sequence = _context.AccessionCounters.Local
+                .FirstOrDefault(s => s.BranchId == branchId && s.Date == dateOnly);
 
             // If not in local tracking, hit the database with UPDLOCK
             if (sequence == null)
             {
-                sequence = await _context.AccessionSequences
-                    .FromSqlRaw("SELECT * FROM AccessionSequences WITH (UPDLOCK, ROWLOCK) WHERE BranchId = {0} AND Date = {1}", branchId, datePart)
+                sequence = await _context.AccessionCounters
+                    .FromSqlRaw("SELECT * FROM AccessionCounters WITH (UPDLOCK, ROWLOCK) WHERE BranchId = {0} AND Date = {1}", branchId, dateOnly)
                     .SingleOrDefaultAsync();
             }
 
@@ -56,19 +57,19 @@ namespace SynOS.Services
             {
                 // Create new sequence for the day
                 nextSeq = 1;
-                sequence = new AccessionSequence
+                sequence = new AccessionCounter
                 {
                     BranchId = branchId,
-                    Date = datePart,
-                    LastSequenceNumber = nextSeq
+                    Date = dateOnly,
+                    LastSequence = nextSeq
                 };
-                _context.AccessionSequences.Add(sequence);
+                _context.AccessionCounters.Add(sequence);
             }
             else
             {
                 // Increment existing
-                sequence.LastSequenceNumber++;
-                nextSeq = sequence.LastSequenceNumber;
+                sequence.LastSequence++;
+                nextSeq = sequence.LastSequence;
                 // EF Core tracks the change automatically
             }
 

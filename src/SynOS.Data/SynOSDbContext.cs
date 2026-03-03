@@ -67,7 +67,6 @@ namespace SynOS.Data
         // Core Transactional DbSets
         public DbSet<Order> Orders { get; set; } = null!;
         public DbSet<Specimen> Specimens { get; set; } = null!; // Replaces Samples
-        public DbSet<AccessionSequence> AccessionSequences { get; set; } = null!; // Concurrency Control
         public DbSet<Invoice> Invoices { get; set; } = null!;
         public DbSet<Payment> Payments { get; set; } = null!;
         public DbSet<PartialPayment> PartialPayments { get; set; } = null!;
@@ -80,6 +79,7 @@ namespace SynOS.Data
         // DbSets for Operational Assignments
         public DbSet<OperationalResource> OperationalResources { get; set; } = null!;
         public DbSet<WorkAssignment> WorkAssignments { get; set; } = null!;
+        public DbSet<ProcessingAssignment> ProcessingAssignments { get; set; } = null!;
 
         // DbSets for Results module
         public DbSet<Result> Results { get; set; } = null!;
@@ -407,21 +407,34 @@ namespace SynOS.Data
                 entity.Property(e => e.Status).HasConversion<string>().HasMaxLength(20);
             });
 
-            // Sample and SampleRejection
             // Specimen Configuration
             modelBuilder.Entity<Specimen>(entity =>
             {
-                entity.HasIndex(e => e.AccessionNumber).IsUnique(); // Enforce Uniqueness
+                entity.HasKey(e => e.SpecimenId);
+                entity.HasIndex(e => e.AccessionNumber).IsUnique();
+                entity.HasIndex(e => e.VisitId);
+                entity.HasIndex(e => e.SpecimenTypeCode);
+                
                 entity.Property(e => e.Status).HasConversion<string>().HasMaxLength(20);
                 
                 entity.HasOne(e => e.Visit)
-                      .WithMany(v => v.Specimens) // Map to the navigation property in Visit
+                      .WithMany(v => v.Specimens)
                       .HasForeignKey(e => e.VisitId)
-                      .OnDelete(DeleteBehavior.Cascade);
+                      .OnDelete(DeleteBehavior.Restrict);
 
                 entity.HasOne(e => e.SpecimenType)
                       .WithMany()
                       .HasForeignKey(e => e.SpecimenTypeCode)
+                      .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne<User>()
+                      .WithMany()
+                      .HasForeignKey(e => e.CollectedByUserId)
+                      .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne<OperationalResource>()
+                      .WithMany()
+                      .HasForeignKey(e => e.CollectedBy)
                       .OnDelete(DeleteBehavior.Restrict);
             });
 
@@ -431,11 +444,11 @@ namespace SynOS.Data
                 entity.HasKey(e => e.Code);
             });
 
-            // AccessionSequence Configuration
-            modelBuilder.Entity<AccessionSequence>(entity =>
+            // Accession Configuration
+            modelBuilder.Entity<SynOS.Models.Entities.Operations.AccessionCounter>(entity =>
             {
-                entity.HasKey(e => new { e.BranchId, e.Date }); // Composite Key
-                entity.Property(e => e.RowVersion).IsRowVersion();
+                entity.HasKey(x => new { x.BranchId, x.Date });
+                entity.Property(x => x.RowVersion).IsRowVersion();
             });
 
 
@@ -464,24 +477,32 @@ namespace SynOS.Data
                       .OnDelete(DeleteBehavior.SetNull);
             });
 
+            modelBuilder.Entity<ProcessingAssignment>(entity =>
+            {
+                entity.HasKey(e => e.ProcessingAssignmentId);
+                entity.HasIndex(e => new { e.SpecimenId, e.DepartmentCode }).IsUnique();
+                entity.HasIndex(e => new { e.BranchId, e.DepartmentCode, e.Status });
+
+                entity.Property(e => e.Status).HasConversion<string>().HasMaxLength(50);
+                entity.Property(e => e.RowVersion).IsRowVersion();
+
+                entity.HasOne(e => e.Specimen)
+                    .WithMany()
+                    .HasForeignKey(e => e.SpecimenId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(e => e.AssignedResource)
+                    .WithMany()
+                    .HasForeignKey(e => e.AssignedResourceId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
             modelBuilder.Entity<SynOS.Models.Entities.Operations.AccessionCounter>(entity =>
             {
                 entity.HasKey(x => new { x.BranchId, x.Date });
                 entity.Property(x => x.RowVersion).IsRowVersion();
             });
 
-            modelBuilder.Entity<Specimen>(entity =>
-            {
-                entity.HasKey(e => e.SpecimenId);
-                entity.HasIndex(e => e.AccessionNumber).IsUnique();
-                entity.HasIndex(e => e.VisitId);
-                entity.HasIndex(e => e.SpecimenTypeCode);
-                
-                entity.HasOne(e => e.Visit)
-                      .WithMany()
-                      .HasForeignKey(e => e.VisitId)
-                      .OnDelete(DeleteBehavior.Restrict);
-            });
 
             // Results Module
             modelBuilder.Entity<Result>(entity =>
