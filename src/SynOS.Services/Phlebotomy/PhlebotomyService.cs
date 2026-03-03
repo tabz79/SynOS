@@ -187,6 +187,30 @@ namespace SynOS.Services.Phlebotomy
                         order.SpecimenId = specimen.SpecimenId;
                         order.Status = OrderStatus.Collected;
                     }
+
+                    // 8a. Spawn ProcessingAssignments per Department
+                    var distinctDepartments = group
+                        .Select(o => string.IsNullOrWhiteSpace(o.Department) ? "PATH" : o.Department)
+                        .Distinct();
+
+                    foreach (var deptCode in distinctDepartments)
+                    {
+                        if (deptCode == "PATH" && group.Any(o => string.IsNullOrWhiteSpace(o.Department)))
+                        {
+                             _logger.LogWarning("Specimen {SpecimenId} has orders with missing Department. Defaulting one assignment to 'PATH'.", specimen.SpecimenId);
+                        }
+
+                        var processingAssignment = new ProcessingAssignment
+                        {
+                            ProcessingAssignmentId = Guid.NewGuid(),
+                            SpecimenId = specimen.SpecimenId,
+                            DepartmentCode = deptCode,
+                            BranchId = branchInfo.BranchId.Value,
+                            Status = ProcessingAssignmentStatus.Pending,
+                            CreatedAt = DateTimeOffset.UtcNow
+                        };
+                        _db.ProcessingAssignments.Add(processingAssignment);
+                    }
                 }
 
                 // 9. Update Assignment

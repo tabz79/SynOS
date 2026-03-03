@@ -242,6 +242,7 @@ builder.Services.AddScoped<IResultService, ResultService>();
 builder.Services.AddScoped<IPhlebotomyService, PhlebotomyService>();
 builder.Services.AddScoped<IAccessionNumberGenerator, AccessionNumberGenerator>();
 builder.Services.AddScoped<IBranchTimeProvider, BranchTimeProvider>();
+builder.Services.AddScoped<IProcessingService, ProcessingService>();
 builder.Services.AddScoped<SynOS.Services.Reception.IReceptionSnapshotService, SynOS.Services.Reception.ReceptionSnapshotService>();
 builder.Services.AddScoped<SynOS.Services.Reception.IReceptionPatientService, SynOS.Services.Reception.ReceptionPatientService>(); // ADDED
 builder.Services.AddScoped<IReportService, ReportService>();
