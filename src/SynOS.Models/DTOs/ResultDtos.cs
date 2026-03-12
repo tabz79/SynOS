@@ -3,10 +3,25 @@ using System.Collections.Generic;
 
 namespace SynOS.Models.DTOs
 {
+    public class ResultEntryResponseDto
+    {
+        public ResultEntryStatus Status { get; set; }
+        public string? Message { get; set; }
+        public IEnumerable<ResultDto> Results { get; set; } = new List<ResultDto>();
+    }
+
+    public enum ResultEntryStatus
+    {
+        Success,
+        Forbidden,
+        BadRequest
+    }
+
     public class ResultEntryRequestDto
     {
         public Guid OrderId { get; set; }
         public List<ParameterResultDto> Results { get; set; } = new();
+        public string? OverrideReason { get; set; }
     }
 
     public class ParameterResultDto

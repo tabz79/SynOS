@@ -9,7 +9,7 @@ namespace SynOS.Services
     public interface IResultService
     {
         Task<IEnumerable<ResultDto>> GetResultsForOrderAsync(Guid orderId);
-        Task<IEnumerable<ResultDto>> EnterResultsAsync(Guid userId, ResultEntryRequestDto request);
+        Task<SynOS.Models.DTOs.ResultEntryResponseDto> EnterResultsAsync(Guid userId, SynOS.Models.DTOs.ResultEntryRequestDto request);
         Task AutosaveResultsAsync(Guid userId, AutosaveRequestDto autosaveRequest);
         Task<string?> RecoverAutosaveAsync(Guid userId, Guid orderId);
         Task SubmitForVerificationAsync(Guid orderId);

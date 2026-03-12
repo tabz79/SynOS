@@ -144,6 +144,12 @@ namespace SynOS.Services.Operations
                 .Select(r => new { r.VisitId, r.Status, r.SignedAt }) // Changed VerifiedAt to SignedAt
                 .ToListAsync();
 
+            var assignments = await _context.ProcessingAssignments
+                .AsNoTracking()
+                .Where(a => visitIds.Contains(a.Specimen.VisitId))
+                .Select(a => new { a.Specimen.VisitId, a.Status, a.DepartmentCode })
+                .ToListAsync();
+
             // Projection Loop
             var queue = new List<ActionQueueRowDto>();
 
@@ -181,15 +187,10 @@ namespace SynOS.Services.Operations
                     PaymentMethod = DerivePaymentMethod(visit, invoice),
                     ReferrerName = visit.ReferralPartner?.Name ?? "Self",
 
-                    OperationalStatus = DeriveOperationalStatus(visit, null /* visitSamples.Select(s => s.Status).ToList() */, visitResults.Select(r => r.Status).ToList(), visitReport?.Status),
-                    
-                    LastUpdatedAt = CalculateLastUpdatedAt(visit, new List<DateTime?>(), visitResults.Select(r => r.EnteredAt).ToList(), visitReport?.SignedAt),
-                    
-                    DateGroup = CalculateDateGroup(visit.TokenDate, today),
-
                     IsFinalized = invoice != null && (invoice.Status == "Paid" || invoice.Status == "FullPaid"),
                     AssignedToUserId = visit.AssignedReceptionistId,
-                    AssignedToName = visit.AssignedReceptionist?.Name
+                    AssignedToName = visit.AssignedReceptionist?.Name,
+                    DepartmentCode = assignments.FirstOrDefault(a => a.VisitId == visit.VisitId)?.DepartmentCode // Check entity or snapshot?
                 };
 
                 queue.Add(dto);
@@ -227,6 +228,12 @@ namespace SynOS.Services.Operations
                 .Select(r => new { r.Status, r.SignedAt }) // Changed VerifiedAt to SignedAt
                 .FirstOrDefaultAsync();
 
+            var assignments = await _context.ProcessingAssignments
+                .AsNoTracking()
+                .Where(a => a.Specimen.VisitId == visitId)
+                .Select(a => new { a.Status, a.DepartmentCode })
+                .ToListAsync();
+
             var today = DateTime.Now.Date;
 
             return new ActionQueueRowDto
@@ -251,7 +258,7 @@ namespace SynOS.Services.Operations
                 PaymentMethod = DerivePaymentMethod(visit, invoice),
                 ReferrerName = visit.ReferralPartner?.Name ?? "Self",
 
-                OperationalStatus = DeriveOperationalStatus(visit, null, results.Select(r => r.Status).ToList(), report?.Status),
+                OperationalStatus = DeriveOperationalStatus(visit, null, assignments.Select(a => a.Status).ToList(), results.Select(r => r.Status).ToList(), report?.Status),
                 
                 LastUpdatedAt = CalculateLastUpdatedAt(visit, new List<DateTime?>(), results.Select(r => r.EnteredAt).ToList(), report?.SignedAt),
                 
@@ -259,7 +266,8 @@ namespace SynOS.Services.Operations
 
                 IsFinalized = invoice != null && (invoice.Status == "Paid" || invoice.Status == "FullPaid"),
                 AssignedToUserId = visit.AssignedReceptionistId,
-                AssignedToName = visit.AssignedReceptionist?.Name
+                AssignedToName = visit.AssignedReceptionist?.Name,
+                DepartmentCode = assignments.FirstOrDefault()?.DepartmentCode
             };
         }
 
@@ -324,7 +332,7 @@ namespace SynOS.Services.Operations
         }
 
         // private string DeriveOperationalStatus(Visit visit, List<SampleStatus> sampleStatuses, List<string?> resultStatuses, string? reportStatus)
-        private string DeriveOperationalStatus(Visit visit, List<object>? sampleStatuses, List<string?> resultStatuses, string? reportStatus)
+        private string DeriveOperationalStatus(Visit visit, List<object>? sampleStatuses, List<ProcessingAssignmentStatus> processingStatuses, List<string?> resultStatuses, string? reportStatus)
         {
             // 5. Operational Status (SINGLE SOURCE OF TRUTH)
             
@@ -335,33 +343,37 @@ namespace SynOS.Services.Operations
             }
 
             // Reporting (Verification Pending)
-            // If any result is "PendingVerification" or Report exists but not signed
             if ((resultStatuses.Any(s => s == "PendingVerification" || s == "Finalized")) || (reportStatus != null && reportStatus != "Signed"))
             {
                 return "Reporting";
             }
 
             // In Lab (Drafting)
-            // If any result is entered ("Draft")
             if (resultStatuses.Any(s => s == "Draft"))
             {
                 return "In Lab";
             }
 
-            // Sample Collected
-            if (visit.Orders != null && visit.Orders.Any(o => o.SpecimenId != null))
+            // --- STEP 5: PROJECTION UPDATE ---
+            // "In Processing" logic
+            // 1. Visit has Specimens?
+            bool hasSpecimens = visit.Orders != null && visit.Orders.Any(o => o.SpecimenId != null);
+
+            if (hasSpecimens)
             {
+                // 2. Are there any INCOMPLETE ProcessingAssignments?
+                // Logic: If NO assignments exist, we assume legacy flow and bypass to "Collected".
+                // If assignments exist, ANY that are not Completed trigger "In Processing".
+                if (processingStatuses.Any() && processingStatuses.Any(s => s != ProcessingAssignmentStatus.Completed))
+                {
+                    return "In Processing";
+                }
+
+                // 3. If all complete or none exist, we are at least "Collected"
                 return "Collected";
             }
 
-            /*
-            if (sampleStatuses != null && sampleStatuses.Any())
-            {
-                 // Legacy logic disabled
-            }
-            */
-
-            // Default: Ready for Sample (since we filtered for Paid visits)
+            // Default: Ready for Sample
             return "Ready for Sample";
         }
 

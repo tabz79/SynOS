@@ -1,0 +1,150 @@
+2026-03-09 13:51:53.529 +05:30 [INF] OperationalStatsProjectionWorker is starting in Event-Driven Mode.
+2026-03-09 13:51:54.534 +05:30 [INF] Worker: Running Consistency Check and Catch-up...
+2026-03-09 13:52:01.465 +05:30 [INF] Worker: Catch-up complete. Awaiting real-time events...
+2026-03-09 13:53:15.985 +05:30 [WRN] Failed to determine the https port for redirect.
+2026-03-09 14:36:30.376 +05:30 [INF] OperationalStatsProjectionWorker is starting in Event-Driven Mode.
+2026-03-09 14:36:30.632 +05:30 [INF] Worker: Running Consistency Check and Catch-up...
+2026-03-09 14:36:36.288 +05:30 [INF] Worker: Catch-up complete. Awaiting real-time events...
+2026-03-09 14:43:48.953 +05:30 [INF] OperationalStatsProjectionWorker is starting in Event-Driven Mode.
+2026-03-09 14:43:49.386 +05:30 [INF] Worker: Running Consistency Check and Catch-up...
+2026-03-09 14:43:54.184 +05:30 [INF] Worker: Catch-up complete. Awaiting real-time events...
+2026-03-09 14:45:34.618 +05:30 [WRN] Failed to determine the https port for redirect.
+2026-03-09 14:55:33.366 +05:30 [INF] OperationalStatsProjectionWorker is starting in Event-Driven Mode.
+2026-03-09 14:55:33.753 +05:30 [INF] Worker: Running Consistency Check and Catch-up...
+2026-03-09 14:55:40.196 +05:30 [INF] Worker: Catch-up complete. Awaiting real-time events...
+2026-03-09 15:00:08.926 +05:30 [WRN] Failed to determine the https port for redirect.
+2026-03-09 15:17:51.544 +05:30 [INF] OperationalStatsProjectionWorker is starting in Event-Driven Mode.
+2026-03-09 15:17:51.851 +05:30 [INF] Worker: Running Consistency Check and Catch-up...
+2026-03-09 15:17:58.654 +05:30 [INF] Worker: Catch-up complete. Awaiting real-time events...
+2026-03-09 15:21:02.271 +05:30 [WRN] Failed to determine the https port for redirect.
+2026-03-09 15:21:51.975 +05:30 [ERR] Failed executing DbCommand (6ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT [c].[ServiceCategoryCode], [c].[CreatedAt], [c].[IsActive], [c].[ServiceCategoryName], [c].[UpdatedAt]
+FROM [Catalog_ServiceCategories] AS [c]
+2026-03-09 15:21:52.012 +05:30 [ERR] An exception occurred while iterating over the results of a query for context type 'SynOS.Data.SynOSDbContext'.
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid object name 'Catalog_ServiceCategories'.
+   at Microsoft.Data.SqlClient.SqlCommand.<>c.<ExecuteDbDataReaderAsync>b__209_0(Task`1 result)
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:033c0881-cfd7-4229-8898-79a459ef8524
+Error Number:208,State:1,Class:16
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid object name 'Catalog_ServiceCategories'.
+   at Microsoft.Data.SqlClient.SqlCommand.<>c.<ExecuteDbDataReaderAsync>b__209_0(Task`1 result)
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:033c0881-cfd7-4229-8898-79a459ef8524
+Error Number:208,State:1,Class:16
+2026-03-09 15:50:40.983 +05:30 [INF] OperationalStatsProjectionWorker is starting in Event-Driven Mode.
+2026-03-09 15:50:41.277 +05:30 [INF] Worker: Running Consistency Check and Catch-up...
+2026-03-09 15:50:45.218 +05:30 [INF] Worker: Catch-up complete. Awaiting real-time events...
+2026-03-09 15:51:16.138 +05:30 [WRN] Failed to determine the https port for redirect.
+2026-03-09 15:52:03.957 +05:30 [WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+2026-03-09 15:52:04.154 +05:30 [ERR] Failed executing DbCommand (30ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (Size = 4000), @p2='?' (Size = 4000), @p3='?' (DbType = DateTimeOffset), @p4='?' (Size = 4000), @p5='?' (DbType = Boolean), @p6='?' (DbType = Int32), @p7='?' (DbType = Int32), @p8='?' (DbType = Int32), @p9='?' (DbType = DateTimeOffset), @p10='?' (Size = 50), @p11='?' (DbType = Int32)], CommandType='"Text"', CommandTimeout='30']
+SET IMPLICIT_TRANSACTIONS OFF;
+SET NOCOUNT ON;
+INSERT INTO [CatalogProvisioningLogs] ([ProvisionId], [AffectedTestCodes], [CatalogVersionHash], [CompletedAt], [ErrorMessage], [IsDryRun], [MappingsAffected], [ParametersAffected], [PricingChanges], [StartedAt], [Status], [TestsAffected])
+VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9, @p10, @p11);
+2026-03-09 15:52:04.298 +05:30 [ERR] An exception occurred in the database while saving changes for context type 'SynOS.Data.SynOSDbContext'.
+Microsoft.EntityFrameworkCore.DbUpdateException: An error occurred while saving the entity changes. See the inner exception for details.
+ ---> Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid object name 'CatalogProvisioningLogs'.
+   at Microsoft.Data.SqlClient.SqlCommand.<>c.<ExecuteDbDataReaderAsync>b__209_0(Task`1 result)
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.ReaderModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
+ClientConnectionId:2bd64c3d-f4cb-429d-b379-808596066062
+Error Number:208,State:1,Class:16
+   --- End of inner exception stack trace ---
+   at Microsoft.EntityFrameworkCore.Update.ReaderModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Update.Internal.SqlServerModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.ChangeTracking.Internal.StateManager.SaveChangesAsync(IList`1 entriesToSave, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.ChangeTracking.Internal.StateManager.SaveChangesAsync(StateManager stateManager, Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.DbContext.SaveChangesAsync(Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
+Microsoft.EntityFrameworkCore.DbUpdateException: An error occurred while saving the entity changes. See the inner exception for details.
+ ---> Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid object name 'CatalogProvisioningLogs'.
+   at Microsoft.Data.SqlClient.SqlCommand.<>c.<ExecuteDbDataReaderAsync>b__209_0(Task`1 result)
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.ReaderModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
+ClientConnectionId:2bd64c3d-f4cb-429d-b379-808596066062
+Error Number:208,State:1,Class:16
+   --- End of inner exception stack trace ---
+   at Microsoft.EntityFrameworkCore.Update.ReaderModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Update.Internal.SqlServerModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.ChangeTracking.Internal.StateManager.SaveChangesAsync(IList`1 entriesToSave, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.ChangeTracking.Internal.StateManager.SaveChangesAsync(StateManager stateManager, Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.DbContext.SaveChangesAsync(Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
+2026-03-09 21:19:24.982 +05:30 [INF] OperationalStatsProjectionWorker is starting in Event-Driven Mode.
+2026-03-09 21:19:25.396 +05:30 [INF] Worker: Running Consistency Check and Catch-up...
+2026-03-09 21:19:31.875 +05:30 [INF] Worker: Catch-up complete. Awaiting real-time events...
+2026-03-09 21:20:58.823 +05:30 [WRN] Failed to determine the https port for redirect.
+2026-03-09 21:21:38.757 +05:30 [WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+2026-03-09 21:21:38.947 +05:30 [ERR] Provisioning failed for "b7b5eeaf-6d44-40cd-a4e1-7ea5eb511217"
+System.InvalidOperationException: The LINQ expression 'm => new string[]
+{ 
+    m.PanelTestCode, 
+    m.ChildTestCode 
+}' could not be translated. Either rewrite the query in a form that can be translated, or switch to client evaluation explicitly by inserting a call to 'AsEnumerable', 'AsAsyncEnumerable', 'ToList', or 'ToListAsync'. See https://go.microsoft.com/fwlink/?linkid=2101038 for more information.
+   at Microsoft.EntityFrameworkCore.Query.Internal.NavigationExpandingExpressionVisitor.ProcessSelectMany(NavigationExpansionExpression source, LambdaExpression collectionSelector, LambdaExpression resultSelector)
+   at Microsoft.EntityFrameworkCore.Query.Internal.NavigationExpandingExpressionVisitor.VisitMethodCall(MethodCallExpression methodCallExpression)
+   at Microsoft.EntityFrameworkCore.Query.Internal.NavigationExpandingExpressionVisitor.Expand(Expression query)
+   at Microsoft.EntityFrameworkCore.Query.QueryTranslationPreprocessor.Process(Expression query)
+   at Microsoft.EntityFrameworkCore.Query.QueryCompilationContext.CreateQueryExecutor[TResult](Expression query)
+   at Microsoft.EntityFrameworkCore.Storage.Database.CompileQuery[TResult](Expression query, Boolean async)
+   at Microsoft.EntityFrameworkCore.Query.Internal.QueryCompiler.CompileQueryCore[TResult](IDatabase database, Expression query, IModel model, Boolean async)
+   at Microsoft.EntityFrameworkCore.Query.Internal.QueryCompiler.<>c__DisplayClass12_0`1.<ExecuteAsync>b__0()
+   at Microsoft.EntityFrameworkCore.Query.Internal.CompiledQueryCache.GetOrAddQuery[TResult](Object cacheKey, Func`1 compiler)
+   at Microsoft.EntityFrameworkCore.Query.Internal.QueryCompiler.ExecuteAsync[TResult](Expression query, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.EntityQueryProvider.ExecuteAsync[TResult](Expression expression, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.EntityQueryable`1.GetAsyncEnumerator(CancellationToken cancellationToken)
+   at System.Runtime.CompilerServices.ConfiguredCancelableAsyncEnumerable`1.GetAsyncEnumerator()
+   at Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToListAsync[TSource](IQueryable`1 source, CancellationToken cancellationToken)
+   at SynOS.Services.CatalogProvisioningService.GetAffectedTestCodesAsync() in D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CatalogProvisioningService.cs:line 186
+   at SynOS.Services.CatalogProvisioningService.ProvisionAsync(Boolean dryRun, String expectedVersionHash) in D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CatalogProvisioningService.cs:line 110
+2026-03-09 21:47:56.654 +05:30 [INF] OperationalStatsProjectionWorker is starting in Event-Driven Mode.
+2026-03-09 21:47:56.981 +05:30 [INF] Worker: Running Consistency Check and Catch-up...
+2026-03-09 21:48:02.165 +05:30 [INF] Worker: Catch-up complete. Awaiting real-time events...
+2026-03-09 21:50:26.643 +05:30 [WRN] Failed to determine the https port for redirect.
+2026-03-09 21:51:12.543 +05:30 [WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+2026-03-09 21:51:13.000 +05:30 [ERR] Provisioning failed for "1de7fd72-fde2-453d-8159-3b828b36412c"
+System.InvalidOperationException: Parameter Identity Violation: Parameter 'Total Protein' for test 'TP' already exists with code 'TP_TOTAL_PROTEIN'. Catalog attempt to use 'TP' rejected.
+   at SynOS.Services.CatalogProvisioningService.ProvisionParametersAsync(List`1 testCodes, CatalogProvisioningResultDto result) in D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CatalogProvisioningService.cs:line 326
+   at SynOS.Services.CatalogProvisioningService.ProvisionAsync(Boolean dryRun, String expectedVersionHash) in D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\CatalogProvisioningService.cs:line 117
+2026-03-09 22:22:03.515 +05:30 [WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+2026-03-09 22:26:54.006 +05:30 [WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.

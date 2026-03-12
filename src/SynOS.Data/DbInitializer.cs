@@ -35,6 +35,11 @@ namespace SynOS.Data
             if (!context.OperationalResources.Any()) SeedOperationalResources(context);
 
             if (!context.ReportTemplates.Any()) SeedReportTemplates(context);
+
+            // Phase 2 & 3: Seed Catalog Masters from existing data / defaults
+            CatalogSeedService.SeedProcessingDepartmentsAsync(context).GetAwaiter().GetResult();
+            CatalogSeedService.SeedSpecimenTypesAsync(context).GetAwaiter().GetResult();
+            CatalogSeedService.SeedTubeTypesAsync(context).GetAwaiter().GetResult();
         }
 
         private static void SeedBranches(SynOSDbContext context)

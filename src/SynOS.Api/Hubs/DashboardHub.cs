@@ -28,6 +28,13 @@ namespace SynOS.Api.Hubs
             }
 
             await Groups.AddToGroupAsync(Context.ConnectionId, $"Branch-{branchId}");
+
+            var deptCode = Context.User?.FindFirst("department_code")?.Value;
+            if (!string.IsNullOrEmpty(deptCode))
+            {
+                await Groups.AddToGroupAsync(Context.ConnectionId, $"branch:{branchId}:dept:{deptCode}");
+            }
+
             await Clients.Caller.SendAsync("ReceiveServerTime", System.DateTime.UtcNow);
             await base.OnConnectedAsync();
         }

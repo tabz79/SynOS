@@ -40,8 +40,15 @@ namespace SynOS.Api.Controllers
             if (string.IsNullOrEmpty(userIdClaim)) return Unauthorized("User ID not found in token.");
             
             var userId = Guid.Parse(userIdClaim);
-            var results = await _resultService.EnterResultsAsync(userId, requestDto);
-            return Ok(results);
+            var response = await _resultService.EnterResultsAsync(userId, requestDto);
+
+            return response.Status switch
+            {
+                ResultEntryStatus.Success => Ok(response.Results),
+                ResultEntryStatus.Forbidden => StatusCode(403, response.Message),
+                ResultEntryStatus.BadRequest => BadRequest(response.Message),
+                _ => StatusCode(500, "An unexpected error occurred.")
+            };
         }
 
         [HttpPost("autosave")]

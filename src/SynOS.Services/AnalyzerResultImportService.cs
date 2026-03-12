@@ -84,8 +84,8 @@ namespace SynOS.Services
             };
 
             // Call IResultService.EnterResultsAsync
-            var updatedResults = await _resultService.EnterResultsAsync(currentUserId, request);
-            var resultId = updatedResults.FirstOrDefault(r => r.ParameterCode == inbox.ParameterCode)?.ResultId;
+            var response = await _resultService.EnterResultsAsync(currentUserId, request);
+            var resultId = response.Results.FirstOrDefault(r => r.ParameterCode == inbox.ParameterCode)?.ResultId;
 
             if (!resultId.HasValue)
             {

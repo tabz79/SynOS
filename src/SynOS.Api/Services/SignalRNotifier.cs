@@ -45,6 +45,12 @@ namespace SynOS.Api.Services
                             // 2. Target Branch Admins (Observation Desk)
                             await _hubContext.Clients.Group($"BranchAdmins-{branchId}").SendAsync("ActionQueueDeltaReceived", delta);
                             
+                            // 3. Target Department Queue (Workbench Sync)
+                            if (!string.IsNullOrEmpty(delta.DepartmentCode))
+                            {
+                                await _hubContext.Clients.Group($"branch:{branchId}:dept:{delta.DepartmentCode}").SendAsync("ActionQueueDeltaReceived", delta);
+                            }
+
                             return;
                         }
                     }
@@ -57,6 +63,27 @@ namespace SynOS.Api.Services
             {
                 Console.WriteLine($"[SignalRNotifier] Delta Push Failed: {ex.Message}");
                 try { await _hubContext.Clients.Group($"BranchAdmins-{branchId}").SendAsync("ActionQueueUpdated"); } catch { }
+            }
+        }
+
+        public async Task NotifyAssignmentUpdateAsync(string branchId, string departmentCode, Guid assignmentId, string status, string visitId)
+        {
+            if (string.IsNullOrEmpty(branchId) || string.IsNullOrEmpty(departmentCode)) return;
+
+            var payload = new
+            {
+                type = "assignment-update",
+                assignmentId = assignmentId,
+                status = status
+            };
+
+            // 1. Broadcast to specific department in branch
+            await _hubContext.Clients.Group($"branch:{branchId}:dept:{departmentCode}").SendAsync("AssignmentUpdateReceived", payload);
+
+            // 2. Also notify the general action queue delta (for receptionists/admins)
+            if (!string.IsNullOrEmpty(visitId))
+            {
+                await NotifyActionQueueDeltaAsync(branchId, visitId);
             }
         }
 

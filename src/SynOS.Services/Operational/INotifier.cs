@@ -7,5 +7,6 @@ namespace SynOS.Services.Operational
     {
         Task NotifyActionQueueDeltaAsync(string branchId, string visitId);
         Task NotifyRealitySummaryUpdateAsync(string branchId, Guid? targetUserId = null);
+        Task NotifyAssignmentUpdateAsync(string branchId, string departmentCode, Guid assignmentId, string status, string visitId);
     }
 }

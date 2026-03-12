@@ -240,6 +240,336 @@ namespace SynOS.Data.Migrations
                     b.ToTable("BranchPrinters");
                 });
 
+            modelBuilder.Entity("SynOS.Models.Entities.Catalog.CatalogPanelMapping", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ChildTestCode")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("PanelTestCode")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ChildTestCode");
+
+                    b.HasIndex("PanelTestCode", "ChildTestCode")
+                        .IsUnique();
+
+                    b.ToTable("Catalog_PanelMappings", (string)null);
+                });
+
+            modelBuilder.Entity("SynOS.Models.Entities.Catalog.CatalogParameter", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("AnalyzerCode")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("DataType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("EnumOptions")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsRequired")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("ParameterCode")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("ParameterName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("ReferenceRange")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("int");
+
+                    b.Property<string>("TestCode")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Unit")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TestCode", "ParameterCode")
+                        .IsUnique();
+
+                    b.ToTable("Catalog_Parameters", (string)null);
+                });
+
+            modelBuilder.Entity("SynOS.Models.Entities.Catalog.CatalogProcessingDepartment", b =>
+                {
+                    b.Property<string>("DepartmentCode")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("DepartmentName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("RequiresSpecimen")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("ServiceCategoryCode")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("DepartmentCode");
+
+                    b.HasIndex("ServiceCategoryCode");
+
+                    b.ToTable("Catalog_ProcessingDepartments", (string)null);
+                });
+
+            modelBuilder.Entity("SynOS.Models.Entities.Catalog.CatalogProvisioningLock", b =>
+                {
+                    b.Property<int>("LockId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("LockId"));
+
+                    b.Property<bool>("IsLocked")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTimeOffset?>("LockedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("LockedBySessionId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("LockId");
+
+                    b.ToTable("CatalogProvisioningLocks");
+                });
+
+            modelBuilder.Entity("SynOS.Models.Entities.Catalog.CatalogProvisioningLog", b =>
+                {
+                    b.Property<Guid>("ProvisionId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("AffectedTestCodes")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("CatalogVersionHash")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTimeOffset?>("CompletedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("ErrorMessage")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsDryRun")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("MappingsAffected")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ParametersAffected")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PricingChanges")
+                        .HasColumnType("int");
+
+                    b.Property<DateTimeOffset>("StartedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<int>("TestsAffected")
+                        .HasColumnType("int");
+
+                    b.HasKey("ProvisionId");
+
+                    b.ToTable("CatalogProvisioningLogs");
+                });
+
+            modelBuilder.Entity("SynOS.Models.Entities.Catalog.CatalogServiceCategory", b =>
+                {
+                    b.Property<string>("ServiceCategoryCode")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("ServiceCategoryName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("ServiceCategoryCode");
+
+                    b.ToTable("Catalog_ServiceCategories", (string)null);
+                });
+
+            modelBuilder.Entity("SynOS.Models.Entities.Catalog.CatalogSpecimenType", b =>
+                {
+                    b.Property<string>("SpecimenCode")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("SpecimenName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("SpecimenCode");
+
+                    b.ToTable("Catalog_SpecimenTypes", (string)null);
+                });
+
+            modelBuilder.Entity("SynOS.Models.Entities.Catalog.CatalogTest", b =>
+                {
+                    b.Property<string>("TestCode")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("DepartmentCode")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsPanel")
+                        .HasColumnType("bit");
+
+                    b.Property<decimal>("Price")
+                        .HasColumnType("decimal(18, 2)");
+
+                    b.Property<string>("SpecimenCode")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("TestName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("TubeCode")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("TestCode");
+
+                    b.HasIndex("DepartmentCode");
+
+                    b.HasIndex("SpecimenCode");
+
+                    b.HasIndex("TubeCode");
+
+                    b.ToTable("Catalog_Tests", (string)null);
+                });
+
+            modelBuilder.Entity("SynOS.Models.Entities.Catalog.CatalogTubeType", b =>
+                {
+                    b.Property<string>("TubeCode")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Color")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("TubeName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("TubeCode");
+
+                    b.ToTable("Catalog_TubeTypes", (string)null);
+                });
+
             modelBuilder.Entity("SynOS.Models.Entities.Compliance.StatutoryObligationFact", b =>
                 {
                     b.Property<Guid>("StatutoryObligationFactId")
@@ -2119,6 +2449,15 @@ namespace SynOS.Data.Migrations
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
+
+                    b.Property<bool>("IsOverridden")
+                        .HasColumnType("bit");
+
+                    b.Property<Guid?>("OverriddenByUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("OverrideReason")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
@@ -5160,6 +5499,72 @@ namespace SynOS.Data.Migrations
                     b.Navigation("Branch");
                 });
 
+            modelBuilder.Entity("SynOS.Models.Entities.Catalog.CatalogPanelMapping", b =>
+                {
+                    b.HasOne("SynOS.Models.Entities.Catalog.CatalogTest", "ChildTest")
+                        .WithMany("ChildMappings")
+                        .HasForeignKey("ChildTestCode")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SynOS.Models.Entities.Catalog.CatalogTest", "PanelTest")
+                        .WithMany("ParentMappings")
+                        .HasForeignKey("PanelTestCode")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("ChildTest");
+
+                    b.Navigation("PanelTest");
+                });
+
+            modelBuilder.Entity("SynOS.Models.Entities.Catalog.CatalogParameter", b =>
+                {
+                    b.HasOne("SynOS.Models.Entities.Catalog.CatalogTest", "Test")
+                        .WithMany("Parameters")
+                        .HasForeignKey("TestCode")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Test");
+                });
+
+            modelBuilder.Entity("SynOS.Models.Entities.Catalog.CatalogProcessingDepartment", b =>
+                {
+                    b.HasOne("SynOS.Models.Entities.Catalog.CatalogServiceCategory", "ServiceCategory")
+                        .WithMany("ProcessingDepartments")
+                        .HasForeignKey("ServiceCategoryCode")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("ServiceCategory");
+                });
+
+            modelBuilder.Entity("SynOS.Models.Entities.Catalog.CatalogTest", b =>
+                {
+                    b.HasOne("SynOS.Models.Entities.Catalog.CatalogProcessingDepartment", "ProcessingDepartment")
+                        .WithMany("Tests")
+                        .HasForeignKey("DepartmentCode")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SynOS.Models.Entities.Catalog.CatalogSpecimenType", "SpecimenType")
+                        .WithMany()
+                        .HasForeignKey("SpecimenCode")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("SynOS.Models.Entities.Catalog.CatalogTubeType", "TubeType")
+                        .WithMany()
+                        .HasForeignKey("TubeCode")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("ProcessingDepartment");
+
+                    b.Navigation("SpecimenType");
+
+                    b.Navigation("TubeType");
+                });
+
             modelBuilder.Entity("SynOS.Models.Entities.CostAttribution.CostAttribution_UsagePolicy", b =>
                 {
                     b.HasOne("SynOS.Models.Entities.IMS.ImsInventoryItem", "InventoryItem")
@@ -6311,6 +6716,25 @@ namespace SynOS.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("Patient");
+                });
+
+            modelBuilder.Entity("SynOS.Models.Entities.Catalog.CatalogProcessingDepartment", b =>
+                {
+                    b.Navigation("Tests");
+                });
+
+            modelBuilder.Entity("SynOS.Models.Entities.Catalog.CatalogServiceCategory", b =>
+                {
+                    b.Navigation("ProcessingDepartments");
+                });
+
+            modelBuilder.Entity("SynOS.Models.Entities.Catalog.CatalogTest", b =>
+                {
+                    b.Navigation("ChildMappings");
+
+                    b.Navigation("Parameters");
+
+                    b.Navigation("ParentMappings");
                 });
 
             modelBuilder.Entity("SynOS.Models.Entities.DeliveryLog", b =>

@@ -71,6 +71,15 @@ namespace SynOS.Services.Security
             }
         }
 
+        public string DepartmentCode
+        {
+            get
+            {
+                // Retrieve department_code claim added during login
+                return _httpContextAccessor.HttpContext?.User?.FindFirst("department_code")?.Value ?? string.Empty;
+            }
+        }
+
         public bool IsAuthenticated => _httpContextAccessor.HttpContext?.User?.Identity?.IsAuthenticated ?? false;
     }
 }

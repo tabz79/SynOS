@@ -40,5 +40,6 @@ namespace SynOS.Models.DTOs.Dashboard
         public Guid? AssignedToUserId { get; set; }
         public string? AssignedToName { get; set; }
         public bool? IsTokenPrinted { get; set; }
+        public string? DepartmentCode { get; set; } // Added for Workbench Sync
     }
 }

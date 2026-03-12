@@ -10,6 +10,8 @@ namespace SynOS.Services.Operational
         Task<IEnumerable<ProcessingQueueItemDto>> GetQueueAsync();
         Task<ProcessingResult> ClaimAssignmentAsync(Guid processingAssignmentId);
         Task<ProcessingResult> CompleteAssignmentAsync(Guid processingAssignmentId);
+        Task<ProcessingResult> ReopenAssignmentAsync(Guid assignmentId);
+        Task<ProcessingAssignmentDetailDto?> GetAssignmentDetailAsync(Guid assignmentId);
     }
 
     public enum ProcessingResult

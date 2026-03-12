@@ -43,7 +43,7 @@ namespace SynOS.Tests.Assignment
                 OperationalResourceId = Guid.NewGuid(),
                 UserId = Guid.NewGuid(),
                 BranchId = branchAId,
-                Department = "Pathology",
+                DepartmentCode = "Pathology",
                 Role = "Phlebotomist",
                 IsActive = true,
                 IsOnline = true

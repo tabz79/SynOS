@@ -2,6 +2,7 @@ using SynOS.Models.Entities.AR;
 using SynOS.Models.Entities.Payments;
 using Microsoft.EntityFrameworkCore;
 using SynOS.Models.Entities;
+using SynOS.Models.Entities.Catalog;
 using SynOS.Models.Entities.IMS;
 using SynOS.Models.Entities.CostAttribution;
 using SynOS.Models.Entities.SpendEngine;
@@ -148,6 +149,17 @@ namespace SynOS.Data
         public DbSet<ImsPurchaseOrder> ImsPurchaseOrders { get; set; } = null!;
         public DbSet<ImsPOItem> ImsPOItems { get; set; } = null!;
         public DbSet<ImsConsumable> ImsConsumables { get; set; } = null!;
+
+        // --- NEW CATALOG MASTER CONFIGURATION (Phase 3) ---
+        public DbSet<CatalogServiceCategory> CatalogServiceCategories { get; set; } = null!;
+        public DbSet<CatalogProcessingDepartment> CatalogProcessingDepartments { get; set; } = null!;
+        public DbSet<CatalogSpecimenType> CatalogSpecimenTypes { get; set; } = null!;
+        public DbSet<CatalogTubeType> CatalogTubeTypes { get; set; } = null!;
+        public DbSet<CatalogTest> CatalogTests { get; set; } = null!;
+        public DbSet<CatalogParameter> CatalogParameters { get; set; } = null!;
+        public DbSet<CatalogPanelMapping> CatalogPanelMappings { get; set; } = null!;
+        public DbSet<CatalogProvisioningLock> CatalogProvisioningLocks { get; set; } = null!;
+        public DbSet<CatalogProvisioningLog> CatalogProvisioningLogs { get; set; } = null!;
         public DbSet<ImsConsumableLot> ImsConsumableLots { get; set; } = null!;
         public DbSet<ImsTestConsumableMap> ImsTestConsumableMaps { get; set; } = null!;
         public DbSet<ImsInventoryUsageProfile> ImsInventoryUsageProfiles { get; set; } = null!;
@@ -1179,6 +1191,7 @@ modelBuilder.Entity<ReceivableFact>(entity =>
                 entity.HasIndex(x => new { x.BranchId, x.Date });
             });
 
+
             modelBuilder.Entity<ProcessedProjectionEvent>(entity =>
             {
                 entity.ToTable("ProcessedProjectionEvents");
@@ -1186,6 +1199,85 @@ modelBuilder.Entity<ReceivableFact>(entity =>
                 entity.HasKey(x => new { x.EventId, x.ProjectionName });
                 
                 entity.HasIndex(x => x.EventId);
+            });
+
+            // --- CATALOG MASTER CONFIGURATION (Phase 3) ---
+            modelBuilder.Entity<CatalogServiceCategory>(entity =>
+            {
+                entity.ToTable("Catalog_ServiceCategories");
+                entity.HasKey(e => e.ServiceCategoryCode);
+            });
+
+            modelBuilder.Entity<CatalogProcessingDepartment>(entity =>
+            {
+                entity.ToTable("Catalog_ProcessingDepartments");
+                entity.HasKey(e => e.DepartmentCode);
+                entity.HasOne(e => e.ServiceCategory)
+                      .WithMany(c => c.ProcessingDepartments)
+                      .HasForeignKey(e => e.ServiceCategoryCode)
+                      .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<CatalogSpecimenType>(entity =>
+            {
+                entity.ToTable("Catalog_SpecimenTypes");
+                entity.HasKey(e => e.SpecimenCode);
+            });
+
+            modelBuilder.Entity<CatalogTubeType>(entity =>
+            {
+                entity.ToTable("Catalog_TubeTypes");
+                entity.HasKey(e => e.TubeCode);
+            });
+
+            modelBuilder.Entity<CatalogTest>(entity =>
+            {
+                entity.ToTable("Catalog_Tests");
+                entity.HasKey(e => e.TestCode);
+                
+                entity.HasOne(e => e.ProcessingDepartment)
+                      .WithMany(d => d.Tests)
+                      .HasForeignKey(e => e.DepartmentCode)
+                      .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(e => e.SpecimenType)
+                      .WithMany()
+                      .HasForeignKey(e => e.SpecimenCode)
+                      .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(e => e.TubeType)
+                      .WithMany()
+                      .HasForeignKey(e => e.TubeCode)
+                      .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<CatalogParameter>(entity =>
+            {
+                entity.ToTable("Catalog_Parameters");
+                entity.HasKey(e => e.Id);
+                entity.HasIndex(e => new { e.TestCode, e.ParameterCode }).IsUnique(); // Correction 1
+
+                entity.HasOne(e => e.Test)
+                      .WithMany(t => t.Parameters)
+                      .HasForeignKey(e => e.TestCode)
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            modelBuilder.Entity<CatalogPanelMapping>(entity =>
+            {
+                entity.ToTable("Catalog_PanelMappings");
+                entity.HasKey(e => e.Id);
+                entity.HasIndex(e => new { e.PanelTestCode, e.ChildTestCode }).IsUnique();
+
+                entity.HasOne(e => e.PanelTest)
+                      .WithMany(t => t.ParentMappings)
+                      .HasForeignKey(e => e.PanelTestCode)
+                      .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(e => e.ChildTest)
+                      .WithMany(t => t.ChildMappings)
+                      .HasForeignKey(e => e.ChildTestCode)
+                      .OnDelete(DeleteBehavior.Restrict);
             });
         }
     }

@@ -12,10 +12,12 @@ namespace SynOS.Api.Middleware
     public class SessionValidationMiddleware
     {
         private readonly RequestDelegate _next;
+        private readonly ILogger<SessionValidationMiddleware> _logger;
 
-        public SessionValidationMiddleware(RequestDelegate next)
+        public SessionValidationMiddleware(RequestDelegate next, ILogger<SessionValidationMiddleware> logger)
         {
             _next = next;
+            _logger = logger;
         }
 
         public async Task InvokeAsync(HttpContext context)
@@ -31,9 +33,11 @@ namespace SynOS.Api.Middleware
             var sessionIdClaim = user.FindFirst("session_id")?.Value;
             var sessionModeClaim = user.FindFirst("session_mode")?.Value;
 
-            // MANDATORY HARDENING (Requirement 1): Oversight sessions bypass anchors
-            if (sessionModeClaim == "oversight")
+            // NEW: Enforce anchoring ONLY for operational mode. 
+            // Missing or non-operational claims bypass the ActiveSessionId check.
+            if (string.IsNullOrWhiteSpace(sessionModeClaim) || sessionModeClaim != "operational")
             {
+                _logger.LogDebug("Session validation bypassed for mode {Mode}", sessionModeClaim ?? "N/A");
                 await _next(context);
                 return;
             }
@@ -61,6 +65,8 @@ namespace SynOS.Api.Middleware
                     .Where(r => r.UserId == userId)
                     .Select(r => r.ActiveSessionId)
                     .FirstOrDefaultAsync();
+
+                _logger.LogDebug("Operational session validation enforced for user {UserId}", userId);
 
                 bool isValid = activeSessionId != null && activeSessionId.ToString() == sessionIdClaim;
                 context.Items["IsSessionValid"] = isValid;

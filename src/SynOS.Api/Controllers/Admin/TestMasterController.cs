@@ -16,13 +16,59 @@ namespace SynOS.Api.Controllers.Admin
     {
         private readonly ITestMasterService _testMasterService;
         private readonly ICsvService _csvService;
+        private readonly ICatalogImportService _catalogImportService;
+        private readonly ICatalogProvisioningService _provisioningService;
         private readonly IMapper _mapper;
 
-        public TestMasterController(ITestMasterService testMasterService, ICsvService csvService, IMapper mapper)
+        public TestMasterController(
+            ITestMasterService testMasterService, 
+            ICsvService csvService, 
+            ICatalogImportService catalogImportService,
+            ICatalogProvisioningService provisioningService,
+            IMapper mapper)
         {
             _testMasterService = testMasterService;
             _csvService = csvService;
+            _catalogImportService = catalogImportService;
+            _provisioningService = provisioningService;
             _mapper = mapper;
+        }
+
+        [HttpPost("catalog/import")]
+        [Authorize(Roles = "Admin")]
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> ImportCatalog([FromForm] CatalogImportRequestDto request)
+        {
+            if (request.File == null || request.File.Length == 0)
+                return BadRequest("No file uploaded");
+
+            var result = await _catalogImportService.ImportCatalogAsync(request.File, GetCurrentUserId(), request.ValidateOnly ?? false, default);
+            if (!result.Success)
+            {
+                return BadRequest(result);
+            }
+
+            // After import, generate a preview dry-run
+            var preview = await _provisioningService.ProvisionAsync(dryRun: true);
+            return Ok(new { ImportResult = result, PreviewImpact = preview });
+        }
+
+        [HttpPost("catalog/provision")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> ProvisionCatalog([FromBody] ProvisionRequestDto request)
+        {
+            var result = await _provisioningService.ProvisionAsync(dryRun: false, expectedVersionHash: request.VersionHash);
+            
+            if (result.Status == "Conflict") return Conflict(result);
+            if (result.Status == "Locked") return StatusCode(423, result);
+            if (result.Status == "Failed") return StatusCode(500, result);
+            
+            return Ok(result);
+        }
+
+        public class ProvisionRequestDto
+        {
+            public string VersionHash { get; set; } = string.Empty;
         }
 
         [HttpPost]

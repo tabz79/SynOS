@@ -38,6 +38,10 @@ namespace SynOS.Models.Entities.Operations
 
         public DateTimeOffset? CompletedAt { get; set; }
 
+        public bool IsOverridden { get; set; }
+        public Guid? OverriddenByUserId { get; set; }
+        public string? OverrideReason { get; set; }
+
         [Timestamp]
         public byte[] RowVersion { get; set; } = Array.Empty<byte>();
     }

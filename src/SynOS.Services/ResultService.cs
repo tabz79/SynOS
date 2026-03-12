@@ -52,13 +52,19 @@ namespace SynOS.Services
                 .ToListAsync();
         }
 
-        public async Task<IEnumerable<ResultDto>> EnterResultsAsync(Guid userId, ResultEntryRequestDto request)
+        public async Task<SynOS.Models.DTOs.ResultEntryResponseDto> EnterResultsAsync(Guid userId, ResultEntryRequestDto request)
         {
+            // --- STEP 5 CORRECTION: GATE FIRST ---
+            var gatingResult = await HandleProcessingGatingAsync(userId, request);
+            if (gatingResult.Status != SynOS.Models.DTOs.ResultEntryStatus.Success)
+            {
+                return gatingResult;
+            }
+
             var resultsToUpsert = new List<Result>();
 
             foreach (var resultDto in request.Results)
             {
-                // DTO only has Value + TechComments, so we stick to that
                 var existingResult = await _context.Results
                     .FirstOrDefaultAsync(r =>
                         r.OrderId == request.OrderId &&
@@ -93,15 +99,10 @@ namespace SynOS.Services
 
             await _context.SaveChangesAsync();
 
-            // Notify Operations Engine (Leak 1 Fix)
-            // We find the Visit ID from the first result (all results share same Order -> Visit)
-            // Ideally we query this once at start, but doing it safely here.
+            // Notify Operations Engine
             var firstResult = resultsToUpsert.FirstOrDefault();
             if (firstResult != null)
             {
-                // We need VisitId. Fetch lightly if not loaded.
-                // Note: resultsToUpsert are attached but might not have navigation loaded.
-                // Safest to query ID.
                 var visitId = await _context.Orders
                     .Where(o => o.OrderId == request.OrderId)
                     .Select(o => o.VisitId)
@@ -109,12 +110,11 @@ namespace SynOS.Services
 
                 if (visitId != Guid.Empty)
                 {
-                    // Fire-and-forget safe (engine handles errors/logging)
                     await _operationsEngine.RecordResultDraftStartedAsync(visitId, firstResult.ResultId, userId);
                 }
             }
 
-            // After saving, check each new/updated result for critical values
+            // After saving, check critical values
             foreach (var result in resultsToUpsert)
             {
                 try
@@ -123,22 +123,22 @@ namespace SynOS.Services
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(
-                        ex,
-                        "Error while checking critical value for ResultId {ResultId}",
-                        result.ResultId);
-                    // We deliberately do NOT fail the whole operation because of critical check
+                    _logger.LogError(ex, "Error while checking critical value for ResultId {ResultId}", result.ResultId);
                 }
             }
 
-            return resultsToUpsert.Select(r => new ResultDto
+            return new SynOS.Models.DTOs.ResultEntryResponseDto
             {
-                ResultId = r.ResultId,
-                ParameterCode = r.ParameterCode,
-                Value = r.Value,
-                Status = r.Status,
-                Flag = r.Flag
-            });
+                Status = SynOS.Models.DTOs.ResultEntryStatus.Success,
+                Results = resultsToUpsert.Select(r => new ResultDto
+                {
+                    ResultId = r.ResultId,
+                    ParameterCode = r.ParameterCode,
+                    Value = r.Value,
+                    Status = r.Status,
+                    Flag = r.Flag
+                })
+            };
         }
 
         public async Task AutosaveResultsAsync(Guid userId, AutosaveRequestDto request)
@@ -490,6 +490,74 @@ namespace SynOS.Services
             
             // 3. Proceed with report delivery logic...
             _logger.LogInformation("Report for order {OrderId} is cleared for delivery.", orderId);
+        }
+
+        private async Task<SynOS.Models.DTOs.ResultEntryResponseDto> HandleProcessingGatingAsync(Guid userId, ResultEntryRequestDto request)
+        {
+            // 1. Fetch SpecimenId associated with this Order
+            var specimenId = await _context.Orders
+                .Where(o => o.OrderId == request.OrderId)
+                .Select(o => o.SpecimenId)
+                .FirstOrDefaultAsync();
+
+            if (specimenId == null) return new SynOS.Models.DTOs.ResultEntryResponseDto { Status = SynOS.Models.DTOs.ResultEntryStatus.Success }; // Compatibility
+
+            // 2. Fetch Incomplete Assignments
+            var incompleteAssignments = await _context.ProcessingAssignments
+                .Where(a => a.SpecimenId == specimenId && a.Status != SynOS.Models.Enums.ProcessingAssignmentStatus.Completed)
+                .Select(a => new { a.ProcessingAssignmentId, a.BranchId })
+                .ToListAsync();
+
+            if (!incompleteAssignments.Any()) return new SynOS.Models.DTOs.ResultEntryResponseDto { Status = SynOS.Models.DTOs.ResultEntryStatus.Success }; // Goal met
+
+            // 3. Gating Logic
+            var userRole = _serviceProvider.GetRequiredService<SynOS.Services.Security.IUserContext>().CurrentRole;
+            bool isSupervisor = userRole == "Supervisor" || userRole == "Pathologist" || userRole == "Admin";
+
+            if (!isSupervisor)
+            {
+                return new SynOS.Models.DTOs.ResultEntryResponseDto 
+                { 
+                    Status = SynOS.Models.DTOs.ResultEntryStatus.Forbidden, 
+                    Message = "Results cannot be entered because departmental processing is not yet complete. Only a Supervisor or Pathologist can override this gate." 
+                };
+            }
+
+            // 4. Override Logic
+            if (string.IsNullOrWhiteSpace(request.OverrideReason))
+            {
+                return new SynOS.Models.DTOs.ResultEntryResponseDto 
+                { 
+                    Status = SynOS.Models.DTOs.ResultEntryStatus.BadRequest, 
+                    Message = "A reason is required to override the departmental processing gate." 
+                };
+            }
+
+            _logger.LogInformation("Audited Override: User {UserId} is bypassing processing gate for Specimen {SpecimenId}. Reason: {Reason}", userId, specimenId, request.OverrideReason);
+
+            // 5. BULK ATOMIC UPDATE
+            var utcNow = DateTimeOffset.UtcNow;
+            var branchId = incompleteAssignments.First().BranchId;
+
+            var affectedRows = await _context.ProcessingAssignments
+                .Where(a => a.SpecimenId == specimenId && a.Status != SynOS.Models.Enums.ProcessingAssignmentStatus.Completed)
+                .ExecuteUpdateAsync(setters => setters
+                    .SetProperty(a => a.Status, SynOS.Models.Enums.ProcessingAssignmentStatus.Completed)
+                    .SetProperty(a => a.CompletedAt, utcNow)
+                    .SetProperty(a => a.IsOverridden, true)
+                    .SetProperty(a => a.OverriddenByUserId, userId)
+                    .SetProperty(a => a.OverrideReason, request.OverrideReason));
+
+            if (affectedRows > 0)
+            {
+                // 6. Multi-Queue SignalR Refresh
+                var notifier = _serviceProvider.GetRequiredService<SynOS.Services.Operational.INotifier>();
+                var visitId = await _context.Orders.Where(o => o.OrderId == request.OrderId).Select(o => o.VisitId).FirstOrDefaultAsync();
+                await notifier.NotifyActionQueueDeltaAsync(branchId.ToString(), visitId.ToString());
+                await notifier.NotifyRealitySummaryUpdateAsync(branchId.ToString());
+            }
+
+            return new SynOS.Models.DTOs.ResultEntryResponseDto { Status = SynOS.Models.DTOs.ResultEntryStatus.Success };
         }
     }
 }

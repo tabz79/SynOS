@@ -4,6 +4,7 @@ namespace SynOS.Models.Enums
     {
         Pending,
         Claimed,
-        Completed
+        Completed,
+        Reopened
     }
 }

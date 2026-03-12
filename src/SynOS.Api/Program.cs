@@ -277,6 +277,8 @@ builder.Services.AddScoped<IAuditService, AuditService>(provider =>
         provider.GetRequiredService<ILogger<AuditService>>()
     ));
 builder.Services.AddScoped<ICsvService, CsvService>();
+builder.Services.AddScoped<ICatalogImportService, CatalogImportService>();
+builder.Services.AddScoped<ICatalogProvisioningService, CatalogProvisioningService>();
 builder.Services.AddScoped<ITestsCacheService, TestsCacheService>();
 builder.Services.AddSingleton<IFileStorageService, LocalStorageService>();
 builder.Services.AddMemoryCache();

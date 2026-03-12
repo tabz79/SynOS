@@ -22,8 +22,9 @@ namespace SynOS.Api.Hubs
                 var userIdClaim = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
                 var sessionModeClaim = user.FindFirst("session_mode")?.Value;
 
-                // MANDATORY HARDENING (Requirement 1): Oversight sessions bypass anchors
-                if (sessionModeClaim == "oversight")
+                // NEW: Enforce anchoring ONLY for operational mode. 
+                // Missing or non-operational claims bypass the ActiveSessionId check.
+                if (string.IsNullOrWhiteSpace(sessionModeClaim) || sessionModeClaim != "operational")
                 {
                     return await next(invocationContext);
                 }
@@ -60,8 +61,9 @@ namespace SynOS.Api.Hubs
                 var userIdClaim = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
                 var sessionModeClaim = user.FindFirst("session_mode")?.Value;
 
-                // MANDATORY HARDENING (Requirement 1): Oversight sessions bypass anchors
-                if (sessionModeClaim == "oversight")
+                // NEW: Enforce anchoring ONLY for operational mode. 
+                // Missing or non-operational claims bypass the ActiveSessionId check.
+                if (string.IsNullOrWhiteSpace(sessionModeClaim) || sessionModeClaim != "operational")
                 {
                     await next(context);
                     return;

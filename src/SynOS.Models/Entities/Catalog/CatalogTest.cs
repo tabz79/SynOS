@@ -1,0 +1,56 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace SynOS.Models.Entities.Catalog
+{
+    public class CatalogTest
+    {
+        [Key]
+        [StringLength(50)]
+        public string TestCode { get; set; } = string.Empty;
+
+        [Required]
+        [StringLength(200)]
+        public string TestName { get; set; } = string.Empty;
+
+        [Required]
+        [StringLength(50)]
+        public string DepartmentCode { get; set; } = string.Empty;
+
+        [ForeignKey("DepartmentCode")]
+        public virtual CatalogProcessingDepartment ProcessingDepartment { get; set; } = null!;
+
+        [StringLength(50)]
+        public string? SpecimenCode { get; set; }
+
+        [ForeignKey("SpecimenCode")]
+        public virtual CatalogSpecimenType? SpecimenType { get; set; }
+
+        [StringLength(50)]
+        public string? TubeCode { get; set; }
+
+        [ForeignKey("TubeCode")]
+        public virtual CatalogTubeType? TubeType { get; set; }
+
+        [Column(TypeName = "decimal(18, 2)")]
+        public decimal Price { get; set; }
+
+        public bool IsPanel { get; set; } = false;
+
+        public bool IsActive { get; set; } = true;
+
+        public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
+        public DateTimeOffset UpdatedAt { get; set; } = DateTimeOffset.UtcNow;
+
+        // Navigation
+        public virtual ICollection<CatalogParameter> Parameters { get; set; } = new List<CatalogParameter>();
+        
+        [InverseProperty("PanelTest")]
+        public virtual ICollection<CatalogPanelMapping> ParentMappings { get; set; } = new List<CatalogPanelMapping>();
+        
+        [InverseProperty("ChildTest")]
+        public virtual ICollection<CatalogPanelMapping> ChildMappings { get; set; } = new List<CatalogPanelMapping>();
+    }
+}
