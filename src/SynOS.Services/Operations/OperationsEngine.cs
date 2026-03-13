@@ -187,6 +187,9 @@ namespace SynOS.Services.Operations
                     PaymentMethod = DerivePaymentMethod(visit, invoice),
                     ReferrerName = visit.ReferralPartner?.Name ?? "Self",
 
+                    OperationalStatus = DeriveOperationalStatus(visit, null, assignments.Where(a => a.VisitId == visit.VisitId).Select(a => a.Status).ToList(), visitResults.Select(r => r.Status).ToList().Cast<string?>().ToList(), visitReport?.Status),
+                    LastUpdatedAt = CalculateLastUpdatedAt(visit, new List<DateTime?>(), visitResults.Select(r => r.EnteredAt).ToList(), visitReport?.SignedAt),
+                    DateGroup = CalculateDateGroup(visit.TokenDate, today),
                     IsFinalized = invoice != null && (invoice.Status == "Paid" || invoice.Status == "FullPaid"),
                     AssignedToUserId = visit.AssignedReceptionistId,
                     AssignedToName = visit.AssignedReceptionist?.Name,

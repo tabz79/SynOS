@@ -43,6 +43,9 @@ namespace SynOS.Tests
             var testCode = "CBC";
             var deptCode = "HEM";
 
+            userContextMock.Setup(u => u.CurrentBranchId).Returns(branchId);
+            userContextMock.Setup(u => u.DepartmentCode).Returns(deptCode);
+
             // 1. Seed Patient
             var patient = new Patient
             {

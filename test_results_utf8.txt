@@ -1,0 +1,30 @@
+﻿  Determining projects to restore...
+  All projects are up-to-date for restore.
+  SynOS.Models -> D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Models\bin\Debug\net8.0\SynOS.Models.dll
+  SynOS.Data -> D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Data\bin\Debug\net8.0\SynOS.Data.dll
+  SynOS.Services -> D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\bin\Debug\net8.0\SynOS.Services.dll
+  SynOS.Tests -> D:\Projects\SynOS-Synthesized-Lab-Intelligence\tests\SynOS.Tests\bin\Debug\net8.0\SynOS.Tests.dll
+Test run for D:\Projects\SynOS-Synthesized-Lab-Intelligence\tests\SynOS.Tests\bin\Debug\net8.0\SynOS.Tests.dll (.NETCoreApp,Version=v8.0)
+VSTest version 17.11.1 (x64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+dotnet : [xUnit.net 00:00:05.62]     SynOS.Tests.SyncedAssignmentD
+etailTests.GetAssignmentDetailAsync_ReturnsCorrectHierarchy [FAIL]
+At line:1 char:1
++ dotnet test tests/SynOS.Tests/SynOS.Tests.csproj > 
+test_results.txt 2 ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~
+    + CategoryInfo          : NotSpecified: ([xUnit.net 00:0...ie 
+   rarchy [FAIL]:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  Failed SynOS.Tests.SyncedAssignmentDetailTests.GetAssignmentDetailAsync_ReturnsCorrectHierarchy [4 s]
+  Error Message:
+   Assert.NotNull() Failure: Value is null
+  Stack Trace:
+     at SynOS.Tests.SyncedAssignmentDetailTests.GetAssignmentDetailAsync_ReturnsCorrectHierarchy() in D:\Projects\SynOS-Synthesized-Lab-Intelligence\tests\SynOS.Tests\SyncedAssignmentDetailTests.cs:line 143
+--- End of stack trace from previous location ---
+
+Failed!  - Failed:     1, Passed:     3, Skipped:     0, Total:     4, Duration: 4 s - SynOS.Tests.dll (net8.0)
