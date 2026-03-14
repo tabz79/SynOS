@@ -40,6 +40,14 @@ namespace SynOS.Api.Controllers
                 _ => StatusCode(500, "An unexpected error occurred")
             };
         }
+        [HttpGet("plan/{visitId}")]
+        public async Task<IActionResult> GetCollectionPlan(Guid visitId)
+        {
+            var plan = await _phlebotomyService.GetCollectionPlanAsync(visitId);
+            if (plan == null) return NotFound("Visit not found");
+            return Ok(plan);
+        }
+
         [HttpPost("collect")]
         public async Task<IActionResult> Collect([FromBody] CollectAssignmentRequest request)
         {

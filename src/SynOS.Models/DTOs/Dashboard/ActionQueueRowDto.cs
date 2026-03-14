@@ -39,6 +39,9 @@ namespace SynOS.Models.DTOs.Dashboard
         public string? AssignedResource { get; set; } // Phase 12 Alignment
         public Guid? AssignedToUserId { get; set; }
         public string? AssignedToName { get; set; }
+        public Guid? AssignedUserId { get; set; }
+        public string? AssignedUserName { get; set; }
+        public string? AssignedDepartmentCode { get; set; }
         public bool? IsTokenPrinted { get; set; }
         public string? DepartmentCode { get; set; } // Added for Workbench Sync
     }

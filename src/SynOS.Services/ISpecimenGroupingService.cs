@@ -19,6 +19,8 @@ namespace SynOS.Services
     public class SpecimenWrapper
     {
         public string SpecimenTypeCode { get; set; } = string.Empty;
+        public string TubeCode { get; set; } = string.Empty;
+        public int RequiredTubes { get; set; } = 1;
         public List<Order> Orders { get; set; } = new List<Order>();
     }
 }

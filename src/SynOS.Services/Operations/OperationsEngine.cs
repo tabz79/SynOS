@@ -147,7 +147,25 @@ namespace SynOS.Services.Operations
             var assignments = await _context.ProcessingAssignments
                 .AsNoTracking()
                 .Where(a => visitIds.Contains(a.Specimen.VisitId))
-                .Select(a => new { a.Specimen.VisitId, a.Status, a.DepartmentCode })
+                .Select(a => new { 
+                    VisitId = a.Specimen.VisitId, 
+                    a.Status, 
+                    a.DepartmentCode,
+                    AssignedUserId = a.AssignedResource != null ? (Guid?)a.AssignedResource.UserId : null,
+                    AssignedUserName = a.AssignedResource != null && a.AssignedResource.User != null ? a.AssignedResource.User.Name : null
+                })
+                .ToListAsync();
+
+            var workAssignments = await _context.WorkAssignments
+                .AsNoTracking()
+                .Where(wa => visitIds.Contains(wa.SourceReferenceId) && wa.WorkType == WorkType.SampleCollection)
+                .Select(wa => new {
+                    VisitId = wa.SourceReferenceId,
+                    wa.Status,
+                    wa.Department,
+                    AssignedUserId = wa.AssignedResource != null ? (Guid?)wa.AssignedResource.UserId : null,
+                    AssignedUserName = wa.AssignedResource != null && wa.AssignedResource.User != null ? wa.AssignedResource.User.Name : null
+                })
                 .ToListAsync();
 
             // Projection Loop
@@ -191,8 +209,17 @@ namespace SynOS.Services.Operations
                     LastUpdatedAt = CalculateLastUpdatedAt(visit, new List<DateTime?>(), visitResults.Select(r => r.EnteredAt).ToList(), visitReport?.SignedAt),
                     DateGroup = CalculateDateGroup(visit.TokenDate, today),
                     IsFinalized = invoice != null && (invoice.Status == "Paid" || invoice.Status == "FullPaid"),
+                    
                     AssignedToUserId = visit.AssignedReceptionistId,
                     AssignedToName = visit.AssignedReceptionist?.Name,
+                    
+                    AssignedUserId = assignments.Where(a => a.VisitId == visit.VisitId).OrderBy(a => a.Status == ProcessingAssignmentStatus.Completed ? 1 : 0).Select(a => a.AssignedUserId).FirstOrDefault()
+                                  ?? workAssignments.Where(wa => wa.VisitId == visit.VisitId).OrderBy(wa => wa.Status == WorkAssignmentStatus.Completed ? 1 : 0).Select(wa => wa.AssignedUserId).FirstOrDefault(),
+                    AssignedUserName = assignments.Where(a => a.VisitId == visit.VisitId).OrderBy(a => a.Status == ProcessingAssignmentStatus.Completed ? 1 : 0).Select(a => a.AssignedUserName).FirstOrDefault()
+                                    ?? workAssignments.Where(wa => wa.VisitId == visit.VisitId).OrderBy(wa => wa.Status == WorkAssignmentStatus.Completed ? 1 : 0).Select(wa => wa.AssignedUserName).FirstOrDefault(),
+                    AssignedDepartmentCode = assignments.Where(a => a.VisitId == visit.VisitId).OrderBy(a => a.Status == ProcessingAssignmentStatus.Completed ? 1 : 0).Select(a => a.DepartmentCode).FirstOrDefault()
+                                          ?? workAssignments.Where(wa => wa.VisitId == visit.VisitId).OrderBy(wa => wa.Status == WorkAssignmentStatus.Completed ? 1 : 0).Select(wa => wa.Department).FirstOrDefault(),
+                    
                     DepartmentCode = assignments.FirstOrDefault(a => a.VisitId == visit.VisitId)?.DepartmentCode // Check entity or snapshot?
                 };
 
@@ -234,7 +261,23 @@ namespace SynOS.Services.Operations
             var assignments = await _context.ProcessingAssignments
                 .AsNoTracking()
                 .Where(a => a.Specimen.VisitId == visitId)
-                .Select(a => new { a.Status, a.DepartmentCode })
+                .Select(a => new { 
+                    a.Status, 
+                    a.DepartmentCode,
+                    AssignedUserId = a.AssignedResource != null ? (Guid?)a.AssignedResource.UserId : null,
+                    AssignedUserName = a.AssignedResource != null && a.AssignedResource.User != null ? a.AssignedResource.User.Name : null
+                })
+                .ToListAsync();
+
+            var workAssignments = await _context.WorkAssignments
+                .AsNoTracking()
+                .Where(wa => wa.SourceReferenceId == visitId && wa.WorkType == WorkType.SampleCollection)
+                .Select(wa => new {
+                    wa.Status,
+                    wa.Department,
+                    AssignedUserId = wa.AssignedResource != null ? (Guid?)wa.AssignedResource.UserId : null,
+                    AssignedUserName = wa.AssignedResource != null && wa.AssignedResource.User != null ? wa.AssignedResource.User.Name : null
+                })
                 .ToListAsync();
 
             var today = DateTime.Now.Date;
@@ -268,8 +311,17 @@ namespace SynOS.Services.Operations
                 DateGroup = CalculateDateGroup(visit.TokenDate, today),
 
                 IsFinalized = invoice != null && (invoice.Status == "Paid" || invoice.Status == "FullPaid"),
+                
                 AssignedToUserId = visit.AssignedReceptionistId,
                 AssignedToName = visit.AssignedReceptionist?.Name,
+                
+                AssignedUserId = assignments.OrderBy(a => a.Status == ProcessingAssignmentStatus.Completed ? 1 : 0).Select(a => a.AssignedUserId).FirstOrDefault()
+                              ?? workAssignments.OrderBy(wa => wa.Status == WorkAssignmentStatus.Completed ? 1 : 0).Select(wa => wa.AssignedUserId).FirstOrDefault(),
+                AssignedUserName = assignments.OrderBy(a => a.Status == ProcessingAssignmentStatus.Completed ? 1 : 0).Select(a => a.AssignedUserName).FirstOrDefault()
+                                ?? workAssignments.OrderBy(wa => wa.Status == WorkAssignmentStatus.Completed ? 1 : 0).Select(wa => wa.AssignedUserName).FirstOrDefault(),
+                AssignedDepartmentCode = assignments.OrderBy(a => a.Status == ProcessingAssignmentStatus.Completed ? 1 : 0).Select(a => a.DepartmentCode).FirstOrDefault()
+                                      ?? workAssignments.OrderBy(wa => wa.Status == WorkAssignmentStatus.Completed ? 1 : 0).Select(wa => wa.Department).FirstOrDefault(),
+                
                 DepartmentCode = assignments.FirstOrDefault()?.DepartmentCode
             };
         }

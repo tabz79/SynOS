@@ -1,5 +1,5 @@
-using System;
 using System.Threading.Tasks;
+using SynOS.Models.DTOs.Phlebotomy;
 
 namespace SynOS.Services.Phlebotomy
 {
@@ -12,6 +12,7 @@ namespace SynOS.Services.Phlebotomy
         /// <returns>A result indicating success or failure reasons (Conflict, Forbidden, etc.)</returns>
         Task<ClaimResult> ClaimAssignmentAsync(Guid assignmentId);
         Task<CollectResult> CollectAssignmentAsync(Guid assignmentId);
+        Task<CollectionPlanDto?> GetCollectionPlanAsync(Guid visitId);
     }
 
     public enum ClaimResult

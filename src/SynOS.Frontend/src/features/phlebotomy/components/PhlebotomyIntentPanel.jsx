@@ -1,15 +1,88 @@
-import { X, ArrowRight, TestTube2, AlertCircle } from 'lucide-react'
-// import { usePhlebotomyPanelUI } from '../hooks/usePhlebotomyPanelUI' // Placeholder hook? Or local state?
-// Let's use local state for now as requested by "Skeleton" and "No Reception Alteration"
+import { useState, useEffect } from 'react'
+import { X, ArrowRight, AlertCircle, Loader2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useTheme } from '@/context/ThemeContext'
+import { PhlebotomyApi } from '@/api/phlebotomy'
+import { RichPatientCard } from '@/components/patient/RichPatientCard'
+import { CollectionInstructionList } from './CollectionInstructionList'
+import { motion, AnimatePresence } from 'framer-motion'
+import { useAuth } from '@/context/AuthContext'
 
-export function PhlebotomyIntentPanel({ isOpen, visitId, closePanel, onAssign }) {
-    // Determine Theme for Style Branching
+export function PhlebotomyIntentPanel({ isOpen, visitId, closePanel, queueItem, onUpdateLocalState }) {
     const { theme } = useTheme();
     const isDark = theme === 'dark';
+    const { user } = useAuth();
 
-    // THEME ISOLATION CONTRACT: Style Branching (From Canon v1)
+    // State 
+    const [isLoadingPlan, setIsLoadingPlan] = useState(false);
+    const [planData, setPlanData] = useState(null);
+    const [isClaiming, setIsClaiming] = useState(false);
+    const [isCollecting, setIsCollecting] = useState(false);
+    const [error, setError] = useState(null);
+
+    // Derived Status from Queue Item (as per plan adjustment)
+    const isAvailable = queueItem && !queueItem.assignedPhlebotomistId;
+    const isAssignedToMe = queueItem?.assignedPhlebotomistId === user?.id;
+
+    useEffect(() => {
+        let isMounted = true;
+        if (isOpen && visitId) {
+            const fetchPlan = async () => {
+                setIsLoadingPlan(true);
+                setError(null);
+                try {
+                    const data = await PhlebotomyApi.getCollectionPlan(visitId);
+                    if (isMounted) setPlanData(data);
+                } catch (err) {
+                    if (isMounted) setError(err.message || 'Failed to fetch collection plan.');
+                } finally {
+                    if (isMounted) setIsLoadingPlan(false);
+                }
+            };
+            fetchPlan();
+        } else {
+            // Reset state on close
+            setPlanData(null);
+            setError(null);
+        }
+        return () => { isMounted = false; };
+    }, [isOpen, visitId]);
+
+    const handleClaim = async () => {
+        if (!planData?.assignmentId) return;
+        setIsClaiming(true);
+        setError(null);
+        try {
+            await PhlebotomyApi.claimAssignment(planData.assignmentId);
+            // Optimistically update the parent's action queue so the tab switches 
+            // (or let SignalR handle it if we wait, but adjusting locally provides instant feedback)
+            if (onUpdateLocalState) {
+                onUpdateLocalState(queueItem.visitId, {
+                    assignedPhlebotomistId: user.id,
+                    assignedPhlebotomistName: user.name || user.username || 'Current User'
+                });
+            }
+        } catch (err) {
+            setError(err.message || 'Failed to claim assignment.');
+        } finally {
+            setIsClaiming(false);
+        }
+    };
+
+    const handleCollect = async () => {
+        if (!planData?.assignmentId) return;
+        setIsCollecting(true);
+        setError(null);
+        try {
+            await PhlebotomyApi.collectAssignment(planData.assignmentId);
+            closePanel(); // Close on success. SignalR updates queue.
+        } catch (err) {
+            setError(err.message || 'Failed to complete collection.');
+            setIsCollecting(false); // Reset to show error, don't close
+        }
+    };
+
+    // Style Dictionary
     const ui = isDark ? {
         panel: "bg-zinc-900 border-l border-white/10 shadow-2xl relative z-20",
         header: "bg-zinc-900 border-b border-white/5",
@@ -17,11 +90,11 @@ export function PhlebotomyIntentPanel({ isOpen, visitId, closePanel, onAssign })
         title: "text-white",
         subtitle: "text-zinc-500",
         actionBtn: {
-            enabled: "bg-white text-black hover:bg-zinc-200 shadow-lg shadow-white/5",
+            claim: "bg-white text-black hover:bg-zinc-200 shadow-lg shadow-white/5",
+            collect: "bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg",
             disabled: "bg-zinc-800 text-zinc-500"
         }
     } : {
-        // Knife-Edge Style (Canon v1)
         panel: cn(
             "bg-[linear-gradient(to_bottom,#F5FCFF_0%,#E6F2F5_50%,#D7E1E4_100%)]",
             "border-l border-white shadow-[-20px_0_50px_rgba(0,0,0,0.3)]",
@@ -31,9 +104,9 @@ export function PhlebotomyIntentPanel({ isOpen, visitId, closePanel, onAssign })
         header: "bg-[linear-gradient(to_bottom,rgba(248,253,255,0.98)_0%,rgba(238,245,248,0.98)_50%,rgba(228,235,238,0.98)_100%)] border-b border-black/[0.06]",
         footer: "bg-[#D7E1E4] border-t border-black/[0.06] shadow-[0_-4px_20px_-10px_rgba(0,0,0,0.05)]",
         title: "text-zinc-900",
-        subtitle: "text-zinc-500",
         actionBtn: {
-            enabled: "bg-zinc-900 text-white hover:bg-black shadow-lg shadow-black/20 transition-transform active:scale-95",
+            claim: "bg-zinc-900 text-white hover:bg-black shadow-lg shadow-black/20",
+            collect: "bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-500/20",
             disabled: "bg-zinc-100 text-zinc-400 border border-black/[0.05]"
         }
     };
@@ -42,13 +115,11 @@ export function PhlebotomyIntentPanel({ isOpen, visitId, closePanel, onAssign })
 
     return (
         <div className={cn("flex flex-col h-full overflow-hidden rounded-2xl", ui.panel)}>
-            {/* Header (Canon v1: h-16) */}
+            {/* Header */}
             <div className={cn("h-16 flex items-center justify-between px-4 shrink-0", ui.header)}>
-                <div>
-                    <h2 className={cn("text-xl font-bold tracking-tight flex items-baseline gap-2", ui.title)}>
-                        Sample Collection
-                    </h2>
-                </div>
+                <h2 className={cn("text-lg font-bold tracking-tight", ui.title)}>
+                    Phlebotomy Intent
+                </h2>
                 <button
                     onClick={closePanel}
                     className={cn(
@@ -60,54 +131,120 @@ export function PhlebotomyIntentPanel({ isOpen, visitId, closePanel, onAssign })
                 </button>
             </div>
 
-            {/* PanelBody (Scroll Owner) */}
-            <div className="flex-1 min-h-0 overflow-y-auto p-4 space-y-6">
-                {/* ASSIGNMENT SCROLL TRIGGER (Phase 1) */}
-                <button
-                    onClick={() => {
-                        onAssign && onAssign();
-                    }}
-                    className={cn(
-                        "w-full py-3 rounded-xl font-bold text-sm shadow-xl transition-all active:scale-[0.98] flex items-center justify-center gap-2",
-                        ui.actionBtn.enabled
-                    )}
-                >
-                    <Users className="w-4 h-4" />
-                    Assign to Me
-                </button>
+            {/* Error Banner */}
+            <AnimatePresence>
+                {error && (
+                    <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        className="bg-red-50 dark:bg-red-900/30 border-b border-red-100 dark:border-red-900 overflow-hidden"
+                    >
+                        <div className="p-3 flex items-start gap-2 text-sm text-red-600 dark:text-red-400">
+                            <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                            <span>{error}</span>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
-                {/* Placeholder Content Area */}
-                <div className="flex flex-col items-center justify-center p-8 border-2 border-dashed border-zinc-200 dark:border-zinc-800 rounded-xl">
-                    <TestTube2 className="w-8 h-8 text-zinc-300 mb-2" />
-                    <span className="text-sm font-medium text-zinc-400">Intake Process Pending</span>
-                    <span className="text-xs text-zinc-500 text-center mt-1 max-w-[200px]">
-                        This area will house the patient verification and sample collection workflow.
-                    </span>
-                </div>
+            {/* Body */}
+            <div className="flex-1 min-h-0 overflow-y-auto p-4 flex flex-col gap-4">
 
-                {/* Example Canon-Compliant Form Field Skeleton */}
-                <div className="space-y-2 opacity-50 pointer-events-none grayscale">
-                    <label className="text-xs font-medium text-zinc-500 uppercase tracking-wider">Patient Identity</label>
-                    <div className="h-10 w-full bg-white/50 border border-black/5 rounded-lg"></div>
-                </div>
-                <div className="space-y-2 opacity-50 pointer-events-none grayscale">
-                    <label className="text-xs font-medium text-zinc-500 uppercase tracking-wider">Barcode Scan</label>
-                    <div className="h-10 w-full bg-white/50 border border-black/5 rounded-lg"></div>
-                </div>
+                {/* Patient Summary Card */}
+                {isLoadingPlan ? (
+                    <div className="animate-pulse bg-zinc-800/10 dark:bg-white/5 h-24 rounded-xl" />
+                ) : planData ? (
+                    <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
+                        <RichPatientCard
+                            patient={{
+                                ...planData.patient,
+                                lastVisitTestCodes: planData.instructions?.flatMap(i => i.tests.map(t => t.testCode)) || []
+                            }}
+                            isLocked={true}
+                        />
+                    </motion.div>
+                ) : null}
+
+                {/* Instructions Section */}
+                {!isLoadingPlan && planData && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: 0.1 }}
+                        className="flex-1 flex flex-col"
+                    >
+                        <div className="flex items-center justify-between mb-3">
+                            <h3 className="text-sm font-bold uppercase tracking-wider text-zinc-500">
+                                Required Collections
+                            </h3>
+                            <span className="text-xs font-medium px-2 py-0.5 bg-black/5 dark:bg-white/10 rounded-full">
+                                {planData.instructions?.reduce((sum, inst) => sum + inst.requiredTubes, 0) || 0} Tubes Total
+                            </span>
+                        </div>
+
+                        {/* Blurring filter if available to imply "locked" state */}
+                        <div className={cn("transition-all duration-300 relative", isAvailable ? "opacity-40 pointer-events-none grayscale-[50%]" : "opacity-100")}>
+                            <CollectionInstructionList instructions={planData.instructions} />
+
+                            {/* Overlay message when available */}
+                            {isAvailable && (
+                                <div className="absolute inset-0 flex items-center justify-center -translate-y-4">
+                                    <div className="bg-black/40 backdrop-blur-md text-white text-xs font-medium px-4 py-2 rounded-full border border-white/10 shadow-xl">
+                                        Claim Assignment to View Complete Details
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </motion.div>
+                )}
             </div>
 
-            {/* Footer (Canon v1) */}
-            <div className={cn("p-4 space-y-3", ui.footer)}>
-                <button
-                    disabled
-                    className={cn(
-                        "w-full py-3 rounded-lg font-bold text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.98]",
-                        ui.actionBtn.disabled
-                    )}
-                >
-                    Confirm Collection <ArrowRight className="w-4 h-4" />
-                </button>
+            {/* Footer Actions */}
+            <div className={cn("p-4 space-y-3 shrink-0", ui.footer)}>
+                {isAvailable ? (
+                    <button
+                        onClick={handleClaim}
+                        disabled={isClaiming || isLoadingPlan}
+                        className={cn(
+                            "w-full py-3.5 rounded-xl font-bold text-sm transition-all active:scale-[0.98] flex items-center justify-center gap-2",
+                            isClaiming ? ui.actionBtn.disabled : ui.actionBtn.claim
+                        )}
+                    >
+                        {isClaiming ? <Loader2 className="w-5 h-5 animate-spin" /> : "Assign to Me"}
+                    </button>
+                ) : isAssignedToMe ? (
+                    <div className="grid grid-cols-2 gap-3">
+                        <button
+                            disabled
+                            className="py-3 rounded-lg font-bold text-sm border border-black/10 dark:border-white/10 text-zinc-500 uppercase tracking-wider bg-transparent"
+                        >
+                            Print Labels
+                        </button>
+                        <button
+                            onClick={handleCollect}
+                            disabled={isCollecting || isLoadingPlan}
+                            className={cn(
+                                "py-3 rounded-lg font-bold text-sm flex items-center justify-center gap-2 transition-transform active:scale-95",
+                                isCollecting ? ui.actionBtn.disabled : ui.actionBtn.collect
+                            )}
+                        >
+                            {isCollecting ? <Loader2 className="w-5 h-5 animate-spin" /> : "Complete"} <ArrowRight className="w-4 h-4" />
+                        </button>
+                    </div>
+                ) : (
+                    // Assigned to someone else fallback
+                     <button
+                        disabled
+                        className={cn(
+                            "w-full py-3 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2",
+                            ui.actionBtn.disabled
+                        )}
+                    >
+                       Assigned to Another Phlebotomist
+                    </button>
+                )}
             </div>
         </div>
-    )
+    );
 }

@@ -4,63 +4,74 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using SynOS.Models.Entities;
+using SynOS.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace SynOS.Services
 {
     public class SpecimenGroupingService : ISpecimenGroupingService
     {
         private readonly ILogger<SpecimenGroupingService> _logger;
+        private readonly SynOSDbContext _context;
 
-        public SpecimenGroupingService(ILogger<SpecimenGroupingService> logger)
+        public SpecimenGroupingService(ILogger<SpecimenGroupingService> logger, SynOSDbContext context)
         {
             _logger = logger;
+            _context = context;
         }
 
-        public Task<List<SpecimenWrapper>> CreateSpecimenPlanAsync(IEnumerable<Order> orders)
+        public async Task<List<SpecimenWrapper>> CreateSpecimenPlanAsync(IEnumerable<Order> orders)
         {
             var plan = new List<SpecimenWrapper>();
 
-            // TEMPORARY DEBUG LOG
-            foreach (var o in orders)
-            {
-                _logger.LogInformation($"[DebugGrouping] Order: {o.OrderId}, TestCode: {o.TestCode}, TestNavigationPresent: {o.Test != null}");
-            }
-
             // 1. Filter out cancelled orders, orders without tests, AND EXCLUDE PROFILE PARENTS
-            // Profile parents: ParentOrderId == null AND Test.IsProfile == true
-            // Included: Standalone tests OR Child tests
             var validOrders = orders.Where(o => 
                 o.Status != Models.Enums.OrderStatus.Cancelled && 
                 o.Test != null && 
                 (o.ParentOrderId != null || !o.Test.IsProfile)
             ).ToList();
 
-            if (!validOrders.Any()) return Task.FromResult(plan);
+            if (!validOrders.Any()) return plan;
 
-            // 2. Strict Validation: Every billable order MUST have a SpecimenTypeCode
-            foreach (var order in validOrders)
+            // 2. Fetch Catalog Definitions for deterministic grouping
+            var testCodes = validOrders.Select(o => o.TestCode).Distinct().ToList();
+            var catalogTests = await _context.CatalogTests
+                .Where(ct => testCodes.Contains(ct.TestCode))
+                .ToDictionaryAsync(ct => ct.TestCode);
+
+            // 3. Group by (SpecimenCode, TubeCode) from Catalog
+            var orderWithCatalog = validOrders.Select(o => new {
+                Order = o,
+                Catalog = catalogTests.TryGetValue(o.TestCode, out var ct) ? ct : null
+            }).ToList();
+
+            // Validate all have catalog definitions
+            foreach (var item in orderWithCatalog)
             {
-                if (string.IsNullOrEmpty(order.Test.SpecimenTypeCode))
+                if (item.Catalog == null)
                 {
-                    throw new InvalidOperationException($"Specimen type not configured for test {order.TestCode}. Specimen planning cannot proceed.");
+                    _logger.LogWarning($"[Grouping] No Catalog definition for test {item.Order.TestCode}. Fallback to runtime Test data.");
                 }
             }
 
-            // 3. Group by SpecimenTypeCode
-            var groups = validOrders.GroupBy(o => o.Test.SpecimenTypeCode);
+            var groups = orderWithCatalog.GroupBy(item => new {
+                SpecimenCode = item.Catalog?.SpecimenCode ?? item.Order.Test.SpecimenTypeCode ?? "UNKNOWN_SPECIMEN",
+                TubeCode = item.Catalog?.TubeCode ?? "UNKNOWN_TUBE"
+            });
 
             foreach (var group in groups)
             {
-                var typeCode = group.Key!;
                 var wrapper = new SpecimenWrapper
                 {
-                    SpecimenTypeCode = typeCode,
-                    Orders = group.ToList()
+                    SpecimenTypeCode = group.Key.SpecimenCode,
+                    TubeCode = group.Key.TubeCode,
+                    RequiredTubes = 1, // Defaulting to 1 as per user request
+                    Orders = group.Select(x => x.Order).ToList()
                 };
                 plan.Add(wrapper);
             }
 
-            return Task.FromResult(plan);
+            return plan;
         }
     }
 }

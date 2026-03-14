@@ -52,6 +52,9 @@ export const ReceptionApi = {
             operationalStatus: row.operationalStatus || row.OperationalStatus,
             isFinalized: row.isFinalized || row.IsFinalized,
             assignedResource: row.assignedResource || row.AssignedResource,
+            assignedPhlebotomistId: row.assignedPhlebotomistId || row.assignedUserId || row.AssignedUserId,
+            assignedPhlebotomistName: row.assignedPhlebotomistName || row.assignedUserName || row.AssignedUserName,
+            assignedDepartmentCode: row.assignedDepartmentCode || row.AssignedDepartmentCode,
             isTokenPrinted: row.isTokenPrinted ?? row.IsTokenPrinted,
             dateGroup: row.dateGroup || row.DateGroup || "Today"
         }));

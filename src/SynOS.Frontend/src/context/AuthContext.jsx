@@ -19,6 +19,7 @@ export function AuthProvider({ children }) {
             try {
                 const decoded = jwtDecode(token);
                 setUser({
+                    id: decoded.nameid || decoded.id,
                     role: decoded.role || decoded["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"],
                     branchId: decoded.branch_id || decoded.branchId,
                     branchName: decoded.branch_name || "Unknown Branch",
@@ -64,6 +65,7 @@ export function AuthProvider({ children }) {
         try {
             const decoded = jwtDecode(tokenValue);
             const userObj = {
+                id: decoded.nameid || decoded.id,
                 role: decoded.role || decoded["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"],
                 branchId: decoded.branch_id || decoded.branchId,
                 branchName: decoded.branch_name || "Unknown Branch",

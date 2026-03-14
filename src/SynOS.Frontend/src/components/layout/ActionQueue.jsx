@@ -134,10 +134,16 @@ export function ActionQueue({ columns, data, onAction }) {
                                 <div
                                     ref={el => rowRefs.current[rowIdx] = el}
                                     tabIndex={focusedIndex === rowIdx ? 0 : -1}
-                                    onKeyDown={(e) => handleKeyDown(e, rowIdx)}
-                                    onClick={() => setFocusedIndex(rowIdx)}
+                                    onKeyDown={(e) => {
+                                        handleKeyDown(e, rowIdx);
+                                        if (e.key === 'Enter' && onAction) onAction(row);
+                                    }}
+                                    onClick={() => {
+                                        setFocusedIndex(rowIdx);
+                                        if (onAction) onAction(row);
+                                    }}
                                     className={cn(
-                                        "rounded-lg p-3 grid grid-cols-[1fr_2fr_1fr_1fr_minmax(100px,auto)] gap-4 items-center group cursor-default",
+                                        "rounded-lg p-3 grid grid-cols-[1fr_2fr_1fr_1fr_minmax(100px,auto)] gap-4 items-center group cursor-pointer",
                                         ui.row(isHistory, focusedIndex === rowIdx)
                                     )}
                                 >

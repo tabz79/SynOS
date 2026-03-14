@@ -152,13 +152,20 @@ export function PhlebotomyScreen() {
         { value: "-", label: "Tests Running", icon: CheckCircle2, color: "zinc" },
     ];
 
+    // Intent Panel Actions
+    const handleOpenIntentPanel = (row) => {
+        if (!row || !row.visitId) return;
+        setSelectedVisitId(row.visitId);
+        setIsIntentPanelOpen(true);
+    };
+
     // ACTION QUEUE COLUMNS (Phlebotomy Canon Alignment)
     const queueColumns = [
         {
             header: "Token ID",
             accessor: "token",
             className: "w-32",
-            render: (row) => <TokenCell row={row} theme={theme} />
+            render: (row) => <TokenCell row={row} theme={theme} onAction={handleOpenIntentPanel} />
         },
         {
             header: "Patient",
@@ -180,15 +187,11 @@ export function PhlebotomyScreen() {
         }
     ];
 
-    // Assignment Simulation Logic
-    const handleClaimAssignment = (visitId) => {
+    // Assignment Simulation Logic -> Real Local State Update
+    const handleUpdateLocalState = (visitId, updates) => {
         setActionQueue(prev => prev.map(row => {
             if (row.visitId === visitId) {
-                return {
-                    ...row,
-                    assignedPhlebotomistId: user.id,
-                    assignedPhlebotomistName: user.name || user.username || "Current Phlebotomist"
-                };
+                return { ...row, ...updates };
             }
             return row;
         }));
@@ -202,6 +205,8 @@ export function PhlebotomyScreen() {
             return row.assignedPhlebotomistId === user?.id;
         }
     });
+
+    const selectedQueueItem = actionQueue.find(r => r.visitId === selectedVisitId);
 
     return (
         <div className="h-screen w-screen dark:bg-synos-background bg-transparent text-foreground flex flex-col overflow-hidden font-sans selection:bg-white/20 relative">
@@ -286,10 +291,7 @@ export function PhlebotomyScreen() {
                                 columns={queueColumns}
                                 data={filteredQueue}
                                 isLoading={isLoadingQueue}
-                                onAction={(row) => {
-                                    setSelectedVisitId(row.visitId);
-                                    setIsIntentPanelOpen(true);
-                                }}
+                                onAction={handleOpenIntentPanel}
                             />
                         </div>
 
@@ -301,11 +303,12 @@ export function PhlebotomyScreen() {
                             <PhlebotomyIntentPanel
                                 isOpen={true}
                                 visitId={selectedVisitId}
+                                queueItem={selectedQueueItem}
                                 closePanel={() => {
                                     setIsIntentPanelOpen(false);
                                     setSelectedVisitId(null);
                                 }}
-                                onAssign={() => handleClaimAssignment(selectedVisitId)}
+                                onUpdateLocalState={handleUpdateLocalState}
                             />
                         ) : (
                             <ActivityStream serverTime={serverTime} />
