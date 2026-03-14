@@ -38,6 +38,9 @@ namespace SynOS.Models.Entities.Operations
         public DateTime? StartedAt { get; set; }
         public DateTime? CompletedAt { get; set; }
 
+        // Navigation
+        public virtual ICollection<WorkAssignmentAccession> ReservedAccessions { get; set; } = new List<WorkAssignmentAccession>();
+
         [Timestamp]
         public byte[]? RowVersion { get; set; }
     }

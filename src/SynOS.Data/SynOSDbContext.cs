@@ -80,6 +80,7 @@ namespace SynOS.Data
         // DbSets for Operational Assignments
         public DbSet<OperationalResource> OperationalResources { get; set; } = null!;
         public DbSet<WorkAssignment> WorkAssignments { get; set; } = null!;
+        public DbSet<WorkAssignmentAccession> WorkAssignmentAccessions { get; set; } = null!;
         public DbSet<ProcessingAssignment> ProcessingAssignments { get; set; } = null!;
 
         // DbSets for Results module
@@ -487,6 +488,18 @@ namespace SynOS.Data
                       .WithMany()
                       .HasForeignKey(e => e.AssignedResourceId)
                       .OnDelete(DeleteBehavior.SetNull);
+            });
+
+            modelBuilder.Entity<WorkAssignmentAccession>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.HasIndex(e => e.WorkAssignmentId);
+                entity.HasIndex(e => e.AccessionNumber).IsUnique();
+
+                entity.HasOne(e => e.WorkAssignment)
+                      .WithMany(a => a.ReservedAccessions)
+                      .HasForeignKey(e => e.WorkAssignmentId)
+                      .OnDelete(DeleteBehavior.Cascade);
             });
 
             modelBuilder.Entity<ProcessingAssignment>(entity =>

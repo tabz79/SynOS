@@ -7,6 +7,8 @@ import { RichPatientCard } from '@/components/patient/RichPatientCard'
 import { CollectionInstructionList } from './CollectionInstructionList'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '@/context/AuthContext'
+import { SignalRService } from '@/lib/signalr'
+import { CheckCircle2, Printer } from 'lucide-react'
 
 export function PhlebotomyIntentPanel({ isOpen, visitId, closePanel, queueItem, onUpdateLocalState }) {
     const { theme } = useTheme();
@@ -18,7 +20,10 @@ export function PhlebotomyIntentPanel({ isOpen, visitId, closePanel, queueItem, 
     const [planData, setPlanData] = useState(null);
     const [isClaiming, setIsClaiming] = useState(false);
     const [isCollecting, setIsCollecting] = useState(false);
+    const [isPrinting, setIsPrinting] = useState(false);
     const [error, setError] = useState(null);
+    const [inventoryShortages, setInventoryShortages] = useState([]);
+    const [showPrintSuccess, setShowPrintSuccess] = useState(false);
 
     // Derived Status from Queue Item (as per plan adjustment)
     const isAvailable = queueItem && !queueItem.assignedPhlebotomistId;
@@ -48,6 +53,23 @@ export function PhlebotomyIntentPanel({ isOpen, visitId, closePanel, queueItem, 
         return () => { isMounted = false; };
     }, [isOpen, visitId]);
 
+    useEffect(() => {
+        if (isOpen) {
+            SignalRService.onInventoryShortageReceived((payload) => {
+                // Check if this shortage is relevant to current plan
+                if (planData?.instructions?.some(i => i.tubeCode === payload.tubeCode)) {
+                    setInventoryShortages(prev => {
+                        const exists = prev.find(s => s.tubeCode === payload.tubeCode);
+                        if (exists) return prev;
+                        return [...prev, payload];
+                    });
+                }
+            });
+        } else {
+            setInventoryShortages([]);
+        }
+    }, [isOpen, planData]);
+
     const handleClaim = async () => {
         if (!planData?.assignmentId) return;
         setIsClaiming(true);
@@ -74,11 +96,28 @@ export function PhlebotomyIntentPanel({ isOpen, visitId, closePanel, queueItem, 
         setIsCollecting(true);
         setError(null);
         try {
+            console.log("Completing collection for assignment:", planData.assignmentId);
             await PhlebotomyApi.collectAssignment(planData.assignmentId);
-            closePanel(); // Close on success. SignalR updates queue.
+            closePanel(); 
         } catch (err) {
             setError(err.message || 'Failed to complete collection.');
             setIsCollecting(false); // Reset to show error, don't close
+        }
+    };
+
+    const handlePrint = async () => {
+        if (!visitId) return;
+        setIsPrinting(true);
+        setError(null);
+        try {
+            console.log("Printing labels for visit:", visitId);
+            await PhlebotomyApi.printLabels(visitId);
+            setShowPrintSuccess(true);
+            setTimeout(() => setShowPrintSuccess(false), 3000);
+        } catch (err) {
+            setError(err.message || 'Failed to print labels.');
+        } finally {
+            setIsPrinting(false);
         }
     };
 
@@ -144,6 +183,27 @@ export function PhlebotomyIntentPanel({ isOpen, visitId, closePanel, queueItem, 
                             <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
                             <span>{error}</span>
                         </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* Inventory Shortage Banner */}
+            <AnimatePresence>
+                {inventoryShortages.length > 0 && (
+                    <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        className="bg-amber-50 dark:bg-amber-900/30 border-b border-amber-100 dark:border-amber-900 overflow-hidden"
+                    >
+                        {inventoryShortages.map((s, idx) => (
+                            <div key={idx} className="p-3 flex items-start gap-2 text-sm text-amber-700 dark:text-amber-400">
+                                <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                                <div>
+                                    <span className="font-bold">INVENTORY SHORTAGE:</span> {s.tubeCode} stock is low (Only {s.available} available). Required {s.required}.
+                                    <p className="text-[10px] opacity-70">Clinician notified. Proceeding as non-blocking alert.</p>
+                                </div>
+                            </div>
+                        ))}
                     </motion.div>
                 )}
             </AnimatePresence>
@@ -216,10 +276,17 @@ export function PhlebotomyIntentPanel({ isOpen, visitId, closePanel, queueItem, 
                 ) : isAssignedToMe ? (
                     <div className="grid grid-cols-2 gap-3">
                         <button
-                            disabled
-                            className="py-3 rounded-lg font-bold text-sm border border-black/10 dark:border-white/10 text-zinc-500 uppercase tracking-wider bg-transparent"
+                            onClick={handlePrint}
+                            disabled={isPrinting || !isAssignedToMe || isLoadingPlan}
+                            className={cn(
+                                "h-12 px-6 rounded-xl flex items-center gap-2 font-bold transition-all duration-200",
+                                showPrintSuccess 
+                                    ? "bg-emerald-50 text-emerald-600 border border-emerald-200"
+                                    : !isAssignedToMe || isPrinting ? ui.actionBtn.disabled : "bg-white border border-black/[0.08] hover:bg-zinc-50 text-zinc-900"
+                            )}
                         >
-                            Print Labels
+                            {showPrintSuccess ? <CheckCircle2 className="w-4 h-4" /> : isPrinting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Printer className="w-4 h-4" />}
+                            {showPrintSuccess ? "Sent to Printer" : "Print All Labels"}
                         </button>
                         <button
                             onClick={handleCollect}

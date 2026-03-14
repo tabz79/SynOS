@@ -418,4 +418,23 @@ app.MapControllers();
 app.MapHub<SynOS.Api.Hubs.DashboardHub>("/dashboardHub"); // RESTORED
 app.MapHub<SynOS.Api.Hubs.BranchOperationsHub>("/branchOperationsHub");
 
+// Validate Branch Configuration
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<SynOSDbContext>();
+    var misconfiguredBranches = context.Branches
+        .Where(b => string.IsNullOrEmpty(b.Code))
+        .ToList();
+
+    if (misconfiguredBranches.Any())
+    {
+        var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+        foreach (var branch in misconfiguredBranches)
+        {
+            logger.LogCritical("Startup Validation Failed: Branch '{BranchName}' (ID: {BranchId}) is missing Code.", branch.Name, branch.BranchId);
+        }
+        // In production, we might want to throw here. For now, we log as Critical.
+    }
+}
+
 app.Run();

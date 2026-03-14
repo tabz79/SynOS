@@ -11,7 +11,7 @@ export function TubeInstructionCard({ instruction, index }) {
 
     // Safely extract properties
     const tubeName = instruction?.tubeName || 'Unknown Tube';
-    const specimenType = instruction?.specimenType || 'Unknown Specimen';
+    const specimenName = instruction?.specimenName || instruction?.specimenType || 'Unknown Specimen';
     const requiredTubes = instruction?.requiredTubes || 1;
     const tests = instruction?.tests || [];
     const color = instruction?.color || '#94a3b8'; // Default slate gray if no color
@@ -70,8 +70,14 @@ export function TubeInstructionCard({ instruction, index }) {
                         </div>
                     </div>
                     <div className={ui.subtitle}>
-                        {specimenType}
+                        {specimenName}
                     </div>
+                    {instruction?.accessionNumber && (
+                        <div className="flex items-center gap-1.5 mt-1.5 px-2 py-0.5 bg-synos-primary/5 dark:bg-synos-primary/10 rounded border border-synos-primary/10 w-fit">
+                            <span className="text-[9px] font-mono font-bold text-synos-primary/60 uppercase tracking-tighter">Acc:</span>
+                            <span className="text-[10px] font-mono font-bold text-synos-primary tracking-tight">{instruction.accessionNumber}</span>
+                        </div>
+                    )}
                 </div>
 
                 {/* Expand Toggle */}

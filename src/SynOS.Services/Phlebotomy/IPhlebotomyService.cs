@@ -33,6 +33,7 @@ namespace SynOS.Services.Phlebotomy
         NoOperationalResource,
         Unauthorized,
         InvalidState,
-        NoOrdersFound
+        NoOrdersFound,
+        MissingBranchConfiguration
     }
 }

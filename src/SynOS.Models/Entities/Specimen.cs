@@ -32,6 +32,19 @@ namespace SynOS.Models.Entities
         [ForeignKey("SpecimenTypeCode")]
         public virtual SpecimenType? SpecimenType { get; set; }
 
+        // --- SNAPSHOT FIELDS (Clinical Integrity) ---
+        [MaxLength(50)]
+        public string? SpecimenTypeName { get; set; }
+
+        [MaxLength(50)]
+        public string? TubeCode { get; set; }
+        
+        [MaxLength(100)]
+        public string? TubeName { get; set; }
+
+        public int TubeCount { get; set; } = 1;
+        // --------------------------------------------
+
         [Required]
         [MaxLength(50)]
         public string AccessionNumber { get; set; } = string.Empty; // Unique Index

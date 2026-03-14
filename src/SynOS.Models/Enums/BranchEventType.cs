@@ -31,6 +31,7 @@ namespace SynOS.Models.Enums
         REPORT_REVERTED, // ADDED
         REPORT_DELIVERED, 
         REPORT_READY,
-        REFERRAL_CORRECTED 
+        REFERRAL_CORRECTED,
+        INVENTORY_SHORTAGE // ADDED
     }
 }

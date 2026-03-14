@@ -63,15 +63,15 @@ namespace SynOS.Api.Hubs
                             && c.TerminalIdentifier == terminalId 
                             && c.IsLeadPrintTerminal);
 
-            if (isLead && capability == "Thermal80mm")
+            if (isLead && (capability == "Thermal80mm" || capability == "BarcodeZebra"))
             {
-                // Join the Redis-ready Lead group
-                string groupName = $"Branch-{branchId}-Lead-Thermal80mm";
+                // Join the standardized capability group
+                string groupName = $"Branch-{branchId}-{capability}";
                 await Groups.AddToGroupAsync(Context.ConnectionId, groupName);
                 
-                _logger.LogInformation("Terminal {TerminalIdentifier} authorized and added to Lead Print Group for Branch {BranchId}.", terminalId, branchId);
+                _logger.LogInformation("Terminal {TerminalIdentifier} authorized and added to {Capability} group for Branch {BranchId}.", terminalId, capability, branchId);
                 
-                // Acknowledge back to the caller for UI state (e.g., showing a green "Printer Connected" icon)
+                // Acknowledge back to the caller
                 await Clients.Caller.SendAsync("CapabilityRegistered", capability, true);
             }
             else

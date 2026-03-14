@@ -117,5 +117,29 @@ namespace SynOS.Api.Services
                 Console.WriteLine($"[SignalRNotifier] Error pushing Reality Summary update to branch admins via SignalR: {ex.Message}");
             }
         }
+
+        public async Task NotifyPrintJobAsync(string branchId, string printerType, string payload)
+        {
+            if (string.IsNullOrEmpty(branchId) || string.IsNullOrEmpty(payload)) return;
+
+            // Broadcast to the standardized capability group for the branch
+            await _hubContext.Clients.Group($"Branch-{branchId}-{printerType}")
+                .SendAsync("PrintJobReceived", new { type = printerType, payload = payload });
+        }
+
+        public async Task NotifyInventoryShortageAsync(string branchId, string specimenId, string tubeCode, int required, int available)
+        {
+            if (string.IsNullOrEmpty(branchId)) return;
+
+            await _hubContext.Clients.Group($"Branch-{branchId}")
+                .SendAsync("InventoryShortageReceived", new
+                {
+                    specimenId,
+                    tubeCode,
+                    required,
+                    available,
+                    timestamp = DateTime.UtcNow
+                });
+        }
     }
 }

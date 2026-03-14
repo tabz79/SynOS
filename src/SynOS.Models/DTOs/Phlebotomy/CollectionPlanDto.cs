@@ -24,8 +24,12 @@ namespace SynOS.Models.DTOs.Phlebotomy
     {
         public string TubeCode { get; set; } = string.Empty;
         public string TubeName { get; set; } = string.Empty;
+        public string TubeColor { get; set; } = string.Empty; // ADDED
         public string SpecimenTypeCode { get; set; } = string.Empty;
+        public string SpecimenName { get; set; } = string.Empty; // ADDED
         public int RequiredTubes { get; set; } = 1;
+        public string? AccessionNumber { get; set; }
+        public int? Sequence { get; set; }
         public List<PlannedTestDto> Tests { get; set; } = new();
     }
 

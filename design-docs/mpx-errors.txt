@@ -1,206 +1,55 @@
-TestMaster
+PS D:\Projects\SynOS-Synthesized-Lab-Intelligence> dotnet run --project src\SynOS.Api\SynOS.Api.csproj --urls "http://127.0.0.1:59999"
 
-
-POST
-/api/v1/admin/tests/catalog/import
-
-Parameters
-Cancel
-Reset
-No parameters
-
-Request body
-
-multipart/form-data
-File
-string($binary)
-sample-payload7sheet.xlsx
-Send empty value
-ValidateOnly
-boolean
-
---
-Send empty value
-Execute
-Clear
-Responses
-Curl
-
-curl -X 'POST' \
-  'http://127.0.0.1:59999/api/v1/admin/tests/catalog/import' \
-  -H 'accept: */*' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiI3MjE5ODVjNy1iYmFlLTQzNjgtYTk1OC04YjcyNDA4MmY1MzIiLCJlbWFpbCI6ImFkbWluQHN5bm9zLmNvbSIsInVuaXF1ZV9uYW1lIjoiU3lzdGVtIEFkbWluIiwic2Vzc2lvbl9tb2RlIjoiYWRtaW4iLCJzZXNzaW9uX2lkIjoiYTEyMDI4MTItYjlmYS00M2Y1LThkNzItZTFhYzkzYTRiNjEwIiwicm9sZSI6IkFkbWluIiwibmJmIjoxNzczMjE4MzczLCJleHAiOjE3NzMzMDQ3NzMsImlhdCI6MTc3MzIxODM3MywiaXNzIjoiU3luT1MuQXBpIiwiYXVkIjoiU3luT1MuQXBwIn0.Vz04YUB6fr0mGqqJ6rV-kKM7zFiRth0Om1UtscGhsoQ' \
-  -H 'Content-Type: multipart/form-data' \
-  -F 'File=@sample-payload7sheet.xlsx;type=application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' \
-  -F 'ValidateOnly='
-Request URL
-http://127.0.0.1:59999/api/v1/admin/tests/catalog/import
-Server response
-Code	Details
-200	
-Response body
-Download
-{
-  "importResult": {
-    "success": true,
-    "successCount": 20,
-    "newInsertedCount": 0,
-    "updatedCount": 19,
-    "errorCount": 0,
-    "globalErrors": [],
-    "rowLevelErrors": []
-  },
-  "previewImpact": {
-    "provisionId": "e7573f88-e1f8-429b-9e21-b25ed76ebd96",
-    "isDryRun": true,
-    "versionHash": "f6dfo7l+zx/2cqMbddGJm0ytiLxjzBbuujtpoTPfNdQ=",
-    "testsAffected": 6,
-    "parametersAffected": 0,
-    "mappingsAffected": 0,
-    "pricingChanges": 0,
-    "affectedTestCodes": [
-      "ALB",
-      "BIL_I",
-      "BIL_T",
-      "GLOB",
-      "LFT",
-      "TP"
-    ],
-    "status": "DryRun",
-    "errorMessage": null
-  }
-}
-Response headers
- content-type: application/json; charset=utf-8 
- date: Wed,11 Mar 2026 08:40:40 GMT 
- server: Kestrel 
- transfer-encoding: chunked 
-Responses
-Code	Description	Links
-200	
-Success
-
-No links
-
-POST
-/api/v1/admin/tests/catalog/provision
-
-Parameters
-Cancel
-Reset
-No parameters
-
-Request body
-
-application/json
-{
-  "versionHash": "f6dfo7l+zx/2cqMbddGJm0ytiLxjzBbuujtpoTPfNdQ="
-}
-Execute
-Clear
-Responses
-Curl
-
-curl -X 'POST' \
-  'http://127.0.0.1:59999/api/v1/admin/tests/catalog/provision' \
-  -H 'accept: */*' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiI3MjE5ODVjNy1iYmFlLTQzNjgtYTk1OC04YjcyNDA4MmY1MzIiLCJlbWFpbCI6ImFkbWluQHN5bm9zLmNvbSIsInVuaXF1ZV9uYW1lIjoiU3lzdGVtIEFkbWluIiwic2Vzc2lvbl9tb2RlIjoiYWRtaW4iLCJzZXNzaW9uX2lkIjoiYTEyMDI4MTItYjlmYS00M2Y1LThkNzItZTFhYzkzYTRiNjEwIiwicm9sZSI6IkFkbWluIiwibmJmIjoxNzczMjE4MzczLCJleHAiOjE3NzMzMDQ3NzMsImlhdCI6MTc3MzIxODM3MywiaXNzIjoiU3luT1MuQXBpIiwiYXVkIjoiU3luT1MuQXBwIn0.Vz04YUB6fr0mGqqJ6rV-kKM7zFiRth0Om1UtscGhsoQ' \
-  -H 'Content-Type: application/json' \
-  -d '{
-  "versionHash": "f6dfo7l+zx/2cqMbddGJm0ytiLxjzBbuujtpoTPfNdQ="
-}'
-Request URL
-http://127.0.0.1:59999/api/v1/admin/tests/catalog/provision
-Server response
-Code	Details
-423
-Undocumented
-Error: Locked
-
-Response body
-Download
-{
-  "provisionId": "f5ea7cb9-1ddb-4d63-b664-003928813fac",
-  "isDryRun": false,
-  "versionHash": "f6dfo7l+zx/2cqMbddGJm0ytiLxjzBbuujtpoTPfNdQ=",
-  "testsAffected": 0,
-  "parametersAffected": 0,
-  "mappingsAffected": 0,
-  "pricingChanges": 0,
-  "affectedTestCodes": [],
-  "status": "Locked",
-  "errorMessage": "Another provisioning process is currently running."
-}
-Response headers
- content-type: application/json; charset=utf-8 
- date: Wed,11 Mar 2026 08:41:19 GMT 
- server: Kestrel 
- transfer-encoding: chunked 
-Responses
-Code	Description	Links
-200	
-Success
-
-No links
-
-
-backend logs:
-[14:08:53 INF] OperationalStatsProjectionWorker is starting in Event-Driven Mode.
-[14:08:55 INF] Worker: Running Consistency Check and Catch-up...
-[14:09:07 INF] Worker: Catch-up complete. Awaiting real-time events...
-[14:09:30 WRN] Failed to determine the https port for redirect.
-[14:10:40 WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
-[14:11:20 ERR] Failed executing DbCommand (11ms) [Parameters=[@p0='?' (DbType = Int32), @p1='?' (DbType = Boolean), @p2='?' (DbType = DateTimeOffset), @p3='?' (Size = 4000)], CommandType='Text', CommandTimeout='30']
-SET IMPLICIT_TRANSACTIONS OFF;
-SET NOCOUNT ON;
-INSERT INTO [CatalogProvisioningLocks] ([LockId], [IsLocked], [LockedAt], [LockedBySessionId])
-VALUES (@p0, @p1, @p2, @p3);
-[14:11:20 ERR] An exception occurred in the database while saving changes for context type 'SynOS.Data.SynOSDbContext'.
-Microsoft.EntityFrameworkCore.DbUpdateException: An error occurred while saving the entity changes. See the inner exception for details.
- ---> Microsoft.Data.SqlClient.SqlException (0x80131904): Cannot insert explicit value for identity column in table 'CatalogProvisioningLocks' when IDENTITY_INSERT is set to OFF.
-   at Microsoft.Data.SqlClient.SqlCommand.<>c.<ExecuteDbDataReaderAsync>b__209_0(Task`1 result)
-   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
-   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+[17:52:38 INF] OperationalStatsProjectionWorker is starting in Event-Driven Mode.
+[17:52:38 INF] Worker: Running Consistency Check and Catch-up...
+[17:52:39 INF] Worker: Catch-up complete. Awaiting real-time events...
+[17:52:43 WRN] Failed to determine the https port for redirect.
+[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=03/14/2026 17:52:54, Today=03/14/2026 00:00:00, Window=[03/14/2026 00:00:00 - 03/15/2026 00:00:00)
+[17:52:55 INF] Terminal web-2tj9gsyws attempted to register Thermal80mm for Branch a0000000-0000-0000-0000-000000000001 but lacked Lead authorization.
+[ActionQueue] Found 2 raw visits.
+[ActionQueue] Processing Visit DRAFT-9F5D8050. Invoice Status: Paid.
+[ActionQueue] Processing Visit DRAFT-BB4A4666. Invoice Status: Paid.
+[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=03/14/2026 17:52:55, Today=03/14/2026 00:00:00, Window=[03/14/2026 00:00:00 - 03/15/2026 00:00:00)
+[ActionQueue] Found 2 raw visits.
+[ActionQueue] Processing Visit DRAFT-9F5D8050. Invoice Status: Paid.
+[ActionQueue] Processing Visit DRAFT-BB4A4666. Invoice Status: Paid.
+[17:53:04 WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+[17:53:08 ERR] Failed to collect specimens for Assignment f18316b4-0ab1-4e89-8876-fb0dc86856fe
+System.InvalidOperationException: The connection is already in a transaction and cannot participate in another transaction.
+   at Microsoft.EntityFrameworkCore.Storage.RelationalConnection.EnsureNoTransactions()
+   at Microsoft.EntityFrameworkCore.Storage.RelationalConnection.BeginTransactionAsync(IsolationLevel isolationLevel, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalConnection.BeginTransactionAsync(CancellationToken cancellationToken)
+   at SynOS.Services.TubeConsumptionService.<>c__DisplayClass5_0.<<ConsumeStockForSpecimenAsync>b__0>d.MoveNext() in D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\TubeConsumptionService.cs:line 36
 --- End of stack trace from previous location ---
-   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
-   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+   at Microsoft.EntityFrameworkCore.ExecutionStrategyExtensions.<>c.<<ExecuteAsync>b__3_0>d.MoveNext()
 --- End of stack trace from previous location ---
-   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Update.ReaderModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
-ClientConnectionId:6a5abfc5-25c1-46fa-a794-a2ae042c7b1d
-Error Number:544,State:1,Class:16
-   --- End of inner exception stack trace ---
-   at Microsoft.EntityFrameworkCore.Update.ReaderModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.SqlServer.Update.Internal.SqlServerModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.ChangeTracking.Internal.StateManager.SaveChangesAsync(IList`1 entriesToSave, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.ChangeTracking.Internal.StateManager.SaveChangesAsync(StateManager stateManager, Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
    at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.DbContext.SaveChangesAsync(Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
-Microsoft.EntityFrameworkCore.DbUpdateException: An error occurred while saving the entity changes. See the inner exception for details.
- ---> Microsoft.Data.SqlClient.SqlException (0x80131904): Cannot insert explicit value for identity column in table 'CatalogProvisioningLocks' when IDENTITY_INSERT is set to OFF.
-   at Microsoft.Data.SqlClient.SqlCommand.<>c.<ExecuteDbDataReaderAsync>b__209_0(Task`1 result)
-   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
-   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
---- End of stack trace from previous location ---
-   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
-   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
---- End of stack trace from previous location ---
-   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Update.ReaderModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
-ClientConnectionId:6a5abfc5-25c1-46fa-a794-a2ae042c7b1d
-Error Number:544,State:1,Class:16
-   --- End of inner exception stack trace ---
-   at Microsoft.EntityFrameworkCore.Update.ReaderModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.SqlServer.Update.Internal.SqlServerModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.ChangeTracking.Internal.StateManager.SaveChangesAsync(IList`1 entriesToSave, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.ChangeTracking.Internal.StateManager.SaveChangesAsync(StateManager stateManager, Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.DbContext.SaveChangesAsync(Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
+   at SynOS.Services.TubeConsumptionService.ConsumeStockForSpecimenAsync(Guid specimenId, Guid consumedByUserId) in D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\TubeConsumptionService.cs:line 34
+   at SynOS.Services.Phlebotomy.PhlebotomyService.CollectAssignmentAsync(Guid assignmentId) in D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\Phlebotomy\PhlebotomyService.cs:line 405
+
+console logs:
+react-dom_client.js?v=bed112bb:20103 Download the React DevTools for a better development experience: https://react.dev/link/react-devtools
+@microsoft_signalr.js?v=bed112bb:301 [2026-03-14T12:22:54.861Z] Information: Normalizing '/dashboardHub' to 'http://localhost:5173/dashboardHub'.
+signalr.js:31 SignalR: Subscriber added (Total: 1)
+signalr.js:52 SignalR: Starting connection...
+signalr.js:206 SignalR(Branch): Subscriber added (Total: 1)
+@microsoft_signalr.js?v=bed112bb:301 [2026-03-14T12:22:54.865Z] Information: Normalizing '/branchOperationsHub' to 'http://localhost:5173/branchOperationsHub'.
+signalr.js:227 SignalR(Branch): Starting connection...
+signalr.js:288 SignalR(Branch): Subscriber removed (Total: 0)
+signalr.js:31 SignalR: Subscriber added (Total: 2)
+signalr.js:206 SignalR(Branch): Subscriber added (Total: 1)
+signalr.js:211 SignalR(Branch): Aborted scheduled disconnect
+@microsoft_signalr.js?v=bed112bb:301 [2026-03-14T12:22:55.029Z] Information: WebSocket connected to ws://localhost:5173/dashboardHub?access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiIyMThhMzU3Yy0zYTcwLTRjNjQtYWYzNS0yNzlkNTgwMjYxYTgiLCJlbWFpbCI6InBobGVib0BsYWIuY29tIiwidW5pcXVlX25hbWUiOiJQaGxlYm90b215IFVzZXIiLCJzZXNzaW9uX21vZGUiOiJvcGVyYXRpb25hbCIsInNlc3Npb25faWQiOiI5YjMzYjAzZS03NjkxLTRhZWUtODhkOC1kYmYxZDIzYTkxNWEiLCJyb2xlIjoiUGhsZWJvdG9taXN0IiwiYnJhbmNoX2lkIjoiYTAwMDAwMDAtMDAwMC0wMDAwLTAwMDAtMDAwMDAwMDAwMDAxIiwiYnJhbmNoX25hbWUiOiJNYWluIExhYm9yYXRvcnkiLCJuYmYiOjE3NzM0MTMyMzEsImV4cCI6MTc3MzQ5OTYzMSwiaWF0IjoxNzczNDEzMjMxLCJpc3MiOiJTeW5PUy5BcGkiLCJhdWQiOiJTeW5PUy5BcHAifQ.Rpdt8OYL45wCbIPcHC6EUDizerHPn1gbRSfOSPYBqjA.
+@microsoft_signalr.js?v=bed112bb:301 [2026-03-14T12:22:55.030Z] Information: Using HubProtocol 'json'.
+signalr.js:55 SignalR: Connected to /dashboardHub
+signalr.js:132 SignalR: ReceiveServerTime received 2026-03-14T12:22:55.0771956Z
+@microsoft_signalr.js?v=bed112bb:301 [2026-03-14T12:22:55.192Z] Information: WebSocket connected to ws://localhost:5173/branchOperationsHub?access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiIyMThhMzU3Yy0zYTcwLTRjNjQtYWYzNS0yNzlkNTgwMjYxYTgiLCJlbWFpbCI6InBobGVib0BsYWIuY29tIiwidW5pcXVlX25hbWUiOiJQaGxlYm90b215IFVzZXIiLCJzZXNzaW9uX21vZGUiOiJvcGVyYXRpb25hbCIsInNlc3Npb25faWQiOiI5YjMzYjAzZS03NjkxLTRhZWUtODhkOC1kYmYxZDIzYTkxNWEiLCJyb2xlIjoiUGhsZWJvdG9taXN0IiwiYnJhbmNoX2lkIjoiYTAwMDAwMDAtMDAwMC0wMDAwLTAwMDAtMDAwMDAwMDAwMDAxIiwiYnJhbmNoX25hbWUiOiJNYWluIExhYm9yYXRvcnkiLCJuYmYiOjE3NzM0MTMyMzEsImV4cCI6MTc3MzQ5OTYzMSwiaWF0IjoxNzczNDEzMjMxLCJpc3MiOiJTeW5PUy5BcGkiLCJhdWQiOiJTeW5PUy5BcHAifQ.Rpdt8OYL45wCbIPcHC6EUDizerHPn1gbRSfOSPYBqjA.
+@microsoft_signalr.js?v=bed112bb:301 [2026-03-14T12:22:55.193Z] Information: Using HubProtocol 'json'.
+signalr.js:230 SignalR(Branch): Connected to /branchOperationsHub
+reception.js:302 DEBUG: Activity Stream Payload: Array(12)
+reception.js:302 DEBUG: Activity Stream Payload: Array(12)
+@microsoft_signalr.js?v=bed112bb:298 [2026-03-14T12:22:55.312Z] Warning: No client method with the name 'capabilityregistered' found.
+log @ @microsoft_signalr.js?v=bed112bb:298
+PhlebotomyIntentPanel.jsx:113 Printing labels for visit: fdb333c7-94e0-4a68-82f6-cf0187a994b4
+PhlebotomyIntentPanel.jsx:99 Completing collection for assignment: f18316b4-0ab1-4e89-8876-fb0dc86856fe
+api/v1/phlebotomy/collect:1  Failed to load resource: the server responded with a status of 500 (Internal Server Error)

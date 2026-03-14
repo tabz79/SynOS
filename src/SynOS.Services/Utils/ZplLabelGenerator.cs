@@ -23,7 +23,7 @@ namespace SynOS.Services.Utils
             zplBuilder.AppendLine("^FO50,200^A0N,35,35^FDToken: " + Sanitize(data.TokenNumber) + "^FS");
 
             // Tube Type
-            // zplBuilder.AppendLine("^FO400,200^A0N,35,35^FDTube: " + Sanitize(data.TubeType) + "^FS"); // REFACTOR
+            zplBuilder.AppendLine("^FO400,200^A0N,35,35^FDTube: " + Sanitize(data.TubeType) + "^FS");
 
             // Barcode (Code 128)
             // ^BY3,2,100 -> Barcode width, ratio, height

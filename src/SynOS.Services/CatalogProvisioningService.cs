@@ -291,6 +291,14 @@ namespace SynOS.Services
                     continue;
                 }
 
+                if (string.IsNullOrWhiteSpace(catalog.TubeCode) || string.IsNullOrWhiteSpace(catalog.SpecimenCode))
+                {
+                    _logger.LogError("Catalog Validation Failed: Test {TestCode} is missing TubeCode or SpecimenCode. Import rejected.", 
+                        catalog.TestCode);
+                    throw new InvalidOperationException($"Catalog Validation Failed: Test '{catalog.TestCode}' must have both a TubeCode and SpecimenCode mapped.");
+                }
+                // -----------------------------------------------------------
+
                 var dept = depts.FirstOrDefault(d => d.Code == catalog.DepartmentCode || d.Name == catalog.DepartmentCode);
                 
                 if (test == null)

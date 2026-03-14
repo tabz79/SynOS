@@ -57,6 +57,15 @@ namespace SynOS.Services.Phlebotomy
 
             if (visit == null) return null;
 
+            // 1. Guard: Check if already collected
+            var alreadyCollected = await _db.Specimens.AnyAsync(s => s.VisitId == visitId && s.Status == SpecimenStatus.Collected);
+            if (alreadyCollected)
+            {
+                // We return null or a specific DTO state? For now, let's return null to indicate nothing to collect.
+                _logger.LogInformation("GetCollectionPlanAsync: Visit {VisitId} already has collected specimens. Returning null.", visitId);
+                return null;
+            }
+
             // Find the pending or active WorkAssignment linked to this Visit
             var assignment = await _db.WorkAssignments
                 .FirstOrDefaultAsync(a => a.SourceReferenceId == visitId && 
@@ -64,11 +73,59 @@ namespace SynOS.Services.Phlebotomy
 
             var plan = await _groupingService.CreateSpecimenPlanAsync(visit.Orders);
             
-            // Fetch Tube Names from Catalog
+            // Fetch Tube Details from Catalog
             var tubeCodes = plan.Select(p => p.TubeCode).Distinct().ToList();
             var tubeCatalog = await _db.CatalogTubeTypes
                 .Where(t => tubeCodes.Contains(t.TubeCode))
-                .ToDictionaryAsync(t => t.TubeCode, t => t.TubeName);
+                .ToDictionaryAsync(t => t.TubeCode, t => t);
+
+            // Fetch Specimen Names from Catalog
+            var specCodes = plan.Select(p => p.SpecimenTypeCode).Distinct().ToList();
+            var specCatalog = await _db.CatalogSpecimenTypes
+                .Where(s => specCodes.Contains(s.SpecimenCode))
+                .ToDictionaryAsync(s => s.SpecimenCode, s => s.SpecimenName);
+
+            // Fetch Reserved Accessions if any
+            var reservedMap = assignment != null 
+                ? await _db.WorkAssignmentAccessions
+                    .Where(ra => ra.WorkAssignmentId == assignment.AssignmentId)
+                    .ToListAsync()
+                : new List<WorkAssignmentAccession>();
+
+            // SELF-HEALING: If already assigned but no accessions reserved (likely due to migration lag or previous error)
+            if (assignment != null && assignment.Status == WorkAssignmentStatus.Assigned && !reservedMap.Any() && visit.Orders.Any())
+            {
+                _logger.LogWarning("GetCollectionPlanAsync: Self-healing missing accessions for Visit {VisitId}", visitId);
+                var branchInfo = await _db.Visits
+                    .Where(v => v.VisitId == visitId)
+                    .Select(v => new { v.BranchId, v.Branch.Code })
+                    .FirstOrDefaultAsync();
+
+                if (branchInfo?.BranchId != null)
+                {
+                    foreach (var instr in plan)
+                    {
+                        for (int i = 1; i <= instr.RequiredTubes; i++)
+                        {
+                            var accession = await _accessionGenerator.GenerateAsync(branchInfo.BranchId.Value, branchInfo.Code);
+                            var reserved = new WorkAssignmentAccession
+                            {
+                                Id = Guid.NewGuid(),
+                                WorkAssignmentId = assignment.AssignmentId,
+                                TubeCode = instr.TubeCode,
+                                SpecimenType = instr.SpecimenTypeCode,
+                                TubeCount = instr.RequiredTubes,
+                                AccessionNumber = accession,
+                                Sequence = i,
+                                CreatedAt = DateTimeOffset.UtcNow
+                            };
+                            _db.WorkAssignmentAccessions.Add(reserved);
+                            reservedMap.Add(reserved);
+                        }
+                    }
+                    await _db.SaveChangesAsync();
+                }
+            }
 
             var dto = new CollectionPlanDto
             {
@@ -82,18 +139,25 @@ namespace SynOS.Services.Phlebotomy
                     Age = visit.Patient.IsDateOfBirthKnown ? DateTime.UtcNow.Year - visit.Patient.DateOfBirth.Year : 0,
                     Sex = visit.Patient.Gender
                 },
-                Instructions = plan.Select(p => new CollectionInstructionDto
-                {
-                    TubeCode = p.TubeCode,
-                    TubeName = tubeCatalog.TryGetValue(p.TubeCode, out var name) ? name : p.TubeCode,
-                    SpecimenTypeCode = p.SpecimenTypeCode,
-                    RequiredTubes = p.RequiredTubes,
-                    Tests = p.Orders.Select(o => new PlannedTestDto
+                Instructions = plan.Select(p => {
+                    var reserved = reservedMap.Where(r => r.TubeCode == p.TubeCode && r.SpecimenType == p.SpecimenTypeCode).OrderBy(r => r.Sequence).ToList();
+                    return new CollectionInstructionDto
                     {
-                        OrderId = o.OrderId,
-                        TestCode = o.TestCode,
-                        TestName = o.Test.TestName
-                    }).ToList()
+                        TubeCode = p.TubeCode,
+                        TubeName = tubeCatalog.TryGetValue(p.TubeCode, out var tube) ? tube.TubeName : p.TubeCode,
+                        TubeColor = tubeCatalog.TryGetValue(p.TubeCode, out var tc) ? (tc.Color ?? "Grey") : "Grey",
+                        SpecimenTypeCode = p.SpecimenTypeCode,
+                        SpecimenName = specCatalog.TryGetValue(p.SpecimenTypeCode, out var sName) ? sName : p.SpecimenTypeCode,
+                        RequiredTubes = p.RequiredTubes,
+                        AccessionNumber = reserved.FirstOrDefault()?.AccessionNumber, // Primary accession for UI display
+                        Sequence = reserved.FirstOrDefault()?.Sequence,
+                        Tests = p.Orders.Select(o => new PlannedTestDto
+                        {
+                            OrderId = o.OrderId,
+                            TestCode = o.TestCode,
+                            TestName = o.Test.TestName
+                        }).ToList()
+                    };
                 }).ToList()
             };
 
@@ -142,25 +206,48 @@ namespace SynOS.Services.Phlebotomy
                 return ClaimResult.AlreadyClaimed;
             }
 
-            // 6. ATOMIC CONDITIONAL UPDATE
-            var utcNow = DateTime.UtcNow;
-            
-            var affectedRows = await _db.WorkAssignments
-                .Where(a => a.AssignmentId == assignmentId 
-                         && a.Status == WorkAssignmentStatus.PendingClaim 
-                         && a.AssignedResourceId == null)
-                .ExecuteUpdateAsync(setters => setters
-                    .SetProperty(a => a.Status, WorkAssignmentStatus.Assigned)
-                    .SetProperty(a => a.AssignedResourceId, resource.OperationalResourceId)
-                    .SetProperty(a => a.ClaimedAt, utcNow));
+            _logger.LogInformation("Assignment {AssignmentId} successfully claimed by Resource {ResourceId}. Now generating reserved accessions.", assignmentId, resource.OperationalResourceId);
 
-            if (affectedRows == 0)
+            // 6.5. PRE-GENERATE ACCESSION NUMBERS
+            // We need to load orders to generate the plan
+            var visitOrders = await _db.Orders
+                .Include(o => o.Test)
+                .Where(o => o.VisitId == snapshot.SourceReferenceId && o.SpecimenId == null && o.Status != OrderStatus.Cancelled)
+                .ToListAsync();
+
+            if (visitOrders.Any())
             {
-                _logger.LogWarning("Race condition detected for Assignment {AssignmentId}. User {UserId} failed to claim.", assignmentId, _userContext.CurrentUserId);
-                return ClaimResult.AlreadyClaimed;
-            }
+                var plan = await _groupingService.CreateSpecimenPlanAsync(visitOrders);
+                var branchInfo = await _db.Visits
+                    .Where(v => v.VisitId == snapshot.SourceReferenceId)
+                    .Select(v => new { v.BranchId, v.Branch.Code })
+                    .FirstOrDefaultAsync();
 
-            _logger.LogInformation("Assignment {AssignmentId} successfully claimed by Resource {ResourceId}", assignmentId, resource.OperationalResourceId);
+                if (branchInfo?.BranchId != null)
+                {
+                    foreach (var instr in plan)
+                    {
+                        // Some tubes might require multiple accessions (ReservedAccession per tube)
+                        for (int i = 1; i <= instr.RequiredTubes; i++)
+                        {
+                            var accession = await _accessionGenerator.GenerateAsync(branchInfo.BranchId.Value, branchInfo.Code);
+                            var reserved = new WorkAssignmentAccession
+                            {
+                                Id = Guid.NewGuid(),
+                                WorkAssignmentId = assignmentId,
+                                TubeCode = instr.TubeCode,
+                                SpecimenType = instr.SpecimenTypeCode,
+                                TubeCount = instr.RequiredTubes,
+                                AccessionNumber = accession,
+                                Sequence = i,
+                                CreatedAt = DateTimeOffset.UtcNow
+                            };
+                            _db.WorkAssignmentAccessions.Add(reserved);
+                        }
+                    }
+                    await _db.SaveChangesAsync();
+                }
+            }
 
             // 7. Emit SignalR Queue Delta (Only on success)
             await _notifier.NotifyActionQueueDeltaAsync(resource.BranchId.ToString(), snapshot.SourceReferenceId.ToString());
@@ -195,14 +282,19 @@ namespace SynOS.Services.Phlebotomy
             if (assignment.Status != WorkAssignmentStatus.Assigned) return CollectResult.InvalidState;
             if (assignment.AssignedResourceId != resource.OperationalResourceId) return CollectResult.Unauthorized;
 
-            // 4. Load Visit & Orders
+            // 4. Load Visit & Branch Info for Accession Context
             var visitId = assignment.SourceReferenceId;
             var branchInfo = await _db.Visits
                 .Where(v => v.VisitId == visitId)
                 .Select(v => new { v.BranchId, v.Branch.Code, v.Token })
                 .FirstOrDefaultAsync();
 
-            if (branchInfo?.BranchId == null || string.IsNullOrEmpty(branchInfo.Code)) return CollectResult.NotFound;
+            if (branchInfo?.BranchId == null) return CollectResult.NotFound;
+            if (string.IsNullOrEmpty(branchInfo.Code))
+            {
+                _logger.LogError("CollectAssignmentAsync: Branch Code is missing for Branch {BranchId}. Cannot proceed with collection for Visit {VisitId}.", branchInfo.BranchId, visitId);
+                return CollectResult.MissingBranchConfiguration;
+            }
 
             // Load orders using SpecimenId == null check
             var orders = await _db.Orders
@@ -227,55 +319,91 @@ namespace SynOS.Services.Phlebotomy
 
                 var utcNow = DateTime.UtcNow;
 
+                // Load Reserved Accessions
+                var reservedAccessions = await _db.WorkAssignmentAccessions
+                    .Where(ra => ra.WorkAssignmentId == assignmentId)
+                    .ToListAsync();
+
                 foreach (var instr in plan)
                 {
-                    // 6. Generate Accession
-                    var accessionNumber = await _accessionGenerator.GenerateAsync(branchInfo.BranchId.Value, branchInfo.Code);
+                    // Find reserved accessions for this instruction
+                    var reservedForInstr = reservedAccessions
+                        .Where(ra => ra.TubeCode == instr.TubeCode && ra.SpecimenType == instr.SpecimenTypeCode)
+                        .OrderBy(ra => ra.Sequence)
+                        .ToList();
 
-                    // 7. Create Specimen
-                    var specimen = new Specimen
+                    // If for some reason reservation failed or plan changed, fallback to generation (Safety Guard)
+                    // But typically we should have them.
+                    
+                    for (int i = 0; i < instr.RequiredTubes; i++)
                     {
-                        SpecimenId = Guid.NewGuid(),
-                        VisitId = visitId,
-                        SpecimenTypeCode = instr.SpecimenTypeCode,
-                        AccessionNumber = accessionNumber,
-                        Status = SpecimenStatus.Collected,
-                        CollectedAt = utcNow,
-                        CollectedByUserId = _userContext.CurrentUserId,
-                        CollectedBy = resource.OperationalResourceId,
-                        CreatedAt = DateTimeOffset.UtcNow
-                    };
-
-                    _db.Specimens.Add(specimen);
-
-                    // 8. Link Orders
-                    foreach (var order in instr.Orders)
-                    {
-                        order.SpecimenId = specimen.SpecimenId;
-                        order.Status = OrderStatus.Collected;
-                    }
-
-                    // 8a. Spawn ProcessingAssignments
-                    var distinctDepartments = instr.Orders
-                        .Select(o => string.IsNullOrWhiteSpace(o.Department) ? "PATH" : o.Department)
-                        .Distinct();
-
-                    foreach (var deptCode in distinctDepartments)
-                    {
-                        var processingAssignment = new ProcessingAssignment
+                        string accessionNumber;
+                        if (i < reservedForInstr.Count)
                         {
-                            ProcessingAssignmentId = Guid.NewGuid(),
-                            SpecimenId = specimen.SpecimenId,
-                            DepartmentCode = deptCode,
-                            BranchId = branchInfo.BranchId.Value,
-                            Status = ProcessingAssignmentStatus.Pending,
+                            accessionNumber = reservedForInstr[i].AccessionNumber;
+                        }
+                        else
+                        {
+                            _logger.LogWarning("CollectAssignmentAsync: Missing reserved accession for {TubeCode} tube {Index}. Generating new.", instr.TubeCode, i + 1);
+                            accessionNumber = await _accessionGenerator.GenerateAsync(branchInfo.BranchId.Value, branchInfo.Code);
+                        }
+
+                        // Fetch Details for Snapshot
+                        var tubeCatalog = await _db.CatalogTubeTypes.FirstOrDefaultAsync(t => t.TubeCode == instr.TubeCode);
+                        var specType = await _db.CatalogSpecimenTypes.FirstOrDefaultAsync(s => s.SpecimenCode == instr.SpecimenTypeCode);
+
+                        // 7. Create Specimen
+                        var specimen = new Specimen
+                        {
+                            SpecimenId = Guid.NewGuid(),
+                            VisitId = visitId,
+                            SpecimenTypeCode = instr.SpecimenTypeCode,
+                            SpecimenTypeName = specType?.SpecimenName ?? instr.SpecimenTypeCode,
+                            TubeCode = instr.TubeCode,
+                            TubeName = tubeCatalog?.TubeName ?? instr.TubeCode,
+                            TubeCount = instr.RequiredTubes,
+                            AccessionNumber = accessionNumber,
+                            Status = SpecimenStatus.Collected,
+                            CollectedAt = utcNow,
+                            CollectedByUserId = _userContext.CurrentUserId,
+                            CollectedBy = resource.OperationalResourceId,
                             CreatedAt = DateTimeOffset.UtcNow
                         };
-                        _db.ProcessingAssignments.Add(processingAssignment);
-                    }
 
-                    // 8b. Transactional Inventory Deduction
-                    await _tubeConsumptionService.ConsumeStockForSpecimenAsync(specimen.SpecimenId, _userContext.CurrentUserId);
+                        _db.Specimens.Add(specimen);
+
+                        // 8. Link Orders (Only once per instruction group, but handled within instr.Orders loop)
+                        if (i == 0)
+                        {
+                            foreach (var order in instr.Orders)
+                            {
+                                order.SpecimenId = specimen.SpecimenId;
+                                order.Status = OrderStatus.Collected;
+                            }
+                        }
+
+                        // 8a. Spawn ProcessingAssignments
+                        var distinctDepartments = instr.Orders
+                            .Select(o => string.IsNullOrWhiteSpace(o.Department) ? "PATH" : o.Department)
+                            .Distinct();
+
+                        foreach (var deptCode in distinctDepartments)
+                        {
+                            var processingAssignment = new ProcessingAssignment
+                            {
+                                ProcessingAssignmentId = Guid.NewGuid(),
+                                SpecimenId = specimen.SpecimenId,
+                                DepartmentCode = deptCode,
+                                BranchId = branchInfo.BranchId.Value,
+                                Status = ProcessingAssignmentStatus.Pending,
+                                CreatedAt = DateTimeOffset.UtcNow
+                            };
+                            _db.ProcessingAssignments.Add(processingAssignment);
+                        }
+
+                        // 8b. Transactional Inventory Deduction
+                        await _tubeConsumptionService.ConsumeStockForSpecimenAsync(specimen.SpecimenId, _userContext.CurrentUserId);
+                    }
                 }
 
                 // 9. Update Assignment

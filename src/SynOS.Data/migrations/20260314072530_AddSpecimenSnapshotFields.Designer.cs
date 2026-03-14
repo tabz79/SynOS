@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SynOS.Data;
 
@@ -11,9 +12,11 @@ using SynOS.Data;
 namespace SynOS.Data.Migrations
 {
     [DbContext(typeof(SynOSDbContext))]
-    partial class SynOSDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260314072530_AddSpecimenSnapshotFields")]
+    partial class AddSpecimenSnapshotFields
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -2555,49 +2558,6 @@ namespace SynOS.Data.Migrations
                     b.HasIndex("SourceReferenceId");
 
                     b.ToTable("WorkAssignments");
-                });
-
-            modelBuilder.Entity("SynOS.Models.Entities.Operations.WorkAssignmentAccession", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("AccessionNumber")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<int>("Sequence")
-                        .HasColumnType("int");
-
-                    b.Property<string>("SpecimenType")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("TubeCode")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<int>("TubeCount")
-                        .HasColumnType("int");
-
-                    b.Property<Guid>("WorkAssignmentId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AccessionNumber")
-                        .IsUnique();
-
-                    b.HasIndex("WorkAssignmentId");
-
-                    b.ToTable("WorkAssignmentAccessions");
                 });
 
             modelBuilder.Entity("SynOS.Models.Entities.Order", b =>
@@ -6089,17 +6049,6 @@ namespace SynOS.Data.Migrations
                     b.Navigation("AssignedResource");
                 });
 
-            modelBuilder.Entity("SynOS.Models.Entities.Operations.WorkAssignmentAccession", b =>
-                {
-                    b.HasOne("SynOS.Models.Entities.Operations.WorkAssignment", "WorkAssignment")
-                        .WithMany("ReservedAccessions")
-                        .HasForeignKey("WorkAssignmentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("WorkAssignment");
-                });
-
             modelBuilder.Entity("SynOS.Models.Entities.Order", b =>
                 {
                     b.HasOne("SynOS.Models.Entities.Specimen", "Specimen")
@@ -6826,11 +6775,6 @@ namespace SynOS.Data.Migrations
                     b.Navigation("PartialPayments");
 
                     b.Navigation("Payments");
-                });
-
-            modelBuilder.Entity("SynOS.Models.Entities.Operations.WorkAssignment", b =>
-                {
-                    b.Navigation("ReservedAccessions");
                 });
 
             modelBuilder.Entity("SynOS.Models.Entities.PACS.PacsSeries", b =>

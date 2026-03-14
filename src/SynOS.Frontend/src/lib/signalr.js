@@ -115,6 +115,15 @@ export const SignalRService = {
             callback(deltaRow);
         });
     },
+    
+    onInventoryShortageReceived: (callback) => {
+        const conn = SignalRService._getConnection();
+        conn.off("InventoryShortageReceived");
+        conn.on("InventoryShortageReceived", (payload) => {
+            console.log("SignalR: InventoryShortageReceived received", payload);
+            callback(payload);
+        });
+    },
 
     onReceiveServerTime: (callback) => {
         const conn = SignalRService._getConnection();
@@ -256,6 +265,11 @@ export const BranchOperationsSignalRService = {
         conn.off("CapabilityRegistered");
         conn.on("CapabilityRegistered", (capability, isAuthorized) => {
             console.log(`SignalR(Branch): Capability '${capability}' registration result: ${isAuthorized ? "AUTHORIZED" : "DENIED"}`);
+            callback(capability, isAuthorized);
+        });
+        // Also handle lowercase just in case
+        conn.on("capabilityregistered", (capability, isAuthorized) => {
+            console.log(`SignalR(Branch): lower-case capabilityregistered received`);
             callback(capability, isAuthorized);
         });
     },

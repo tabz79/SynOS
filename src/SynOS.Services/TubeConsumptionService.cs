@@ -8,131 +8,168 @@ using SynOS.Data;
 using SynOS.Models.DTOs.IMS;
 using SynOS.Models.Entities.IMS;
 using SynOS.Models.Enums.IMS;
+using SynOS.Models.Enums;
+using SynOS.Services.Operational;
 
 namespace SynOS.Services
 {
     public class TubeConsumptionService : ITubeConsumptionService
     {
         private readonly SynOSDbContext _context;
+        private readonly IOperationalEventWriter _eventWriter;
+        private readonly INotifier _notifier; // ADDED
         private readonly ILogger<TubeConsumptionService> _logger;
 
-        public TubeConsumptionService(SynOSDbContext context, ILogger<TubeConsumptionService> logger)
+        public TubeConsumptionService(SynOSDbContext context, IOperationalEventWriter eventWriter, INotifier notifier, ILogger<TubeConsumptionService> logger)
         {
             _context = context;
+            _eventWriter = eventWriter;
+            _notifier = notifier; // ADDED
             _logger = logger;
         }
 
         public async Task ConsumeStockForSpecimenAsync(Guid specimenId, Guid consumedByUserId)
         {
-             var strategy = _context.Database.CreateExecutionStrategy();
-            await strategy.ExecuteAsync(async () =>
+            if (_context.Database.CurrentTransaction != null)
             {
-                using (var transaction = await _context.Database.BeginTransactionAsync())
+                // Participate in existing transaction
+                _logger.LogInformation("ConsumeStockForSpecimenAsync: Participating in existing transaction for Specimen {SpecimenId}", specimenId);
+                await ConsumeStockInternalAsync(specimenId, consumedByUserId);
+            }
+            else
+            {
+                // Start a new transaction with execution strategy
+                var strategy = _context.Database.CreateExecutionStrategy();
+                await strategy.ExecuteAsync(async () =>
                 {
-                    try
+                    using (var transaction = await _context.Database.BeginTransactionAsync())
                     {
-                        // 1. Idempotency Check
-                        var referenceId = specimenId.ToString();
-                        if (await _context.ImsStockMovements.AnyAsync(m => m.ReferenceId == referenceId && m.MovementType == StockMovementType.Consumption))
+                        try
                         {
-                            _logger.LogInformation("Stock consumption for SpecimenId {SpecimenId} has already been processed.", specimenId);
-                            return;
+                            await ConsumeStockInternalAsync(specimenId, consumedByUserId);
+                            await transaction.CommitAsync();
                         }
-
-                        // 2. Load Specimen, Orders, Tests, Visit
-                        var specimen = await _context.Specimens
-                            .Include(s => s.Visit)
-                            .Include(s => s.Orders).ThenInclude(o => o.Test) // Need Test for Tube Map
-                            .FirstOrDefaultAsync(s => s.SpecimenId == specimenId);
-
-                        if (specimen == null || !specimen.Orders.Any())
+                        catch (Exception ex)
                         {
-                            _logger.LogError("Could not process tube consumption: Specimen {SpecimenId} not found or has no orders.", specimenId);
-                            return;
+                            _logger.LogError(ex, "Tube consumption failed for Specimen {SpecimenId}", specimenId);
+                            // Swallow to not block clinical flow
                         }
-
-                        // 3. Determine Branch
-                        Guid branchId;
-                        if (specimen.Visit?.BranchId == null || specimen.Visit.BranchId == Guid.Empty)
-                        {
-                            branchId = DbInitializer.DefaultBranchId;
-                            _logger.LogWarning("Visit BranchId for Specimen {SpecimenId} is null. Using Default {DefaultBranchId}.", specimenId, branchId);
-                        }
-                        else
-                        {
-                            branchId = specimen.Visit.BranchId.Value;
-                        }
-
-                        // 4. Resolve Tube via FIRST Test (Assumption: All tests in specimen use same/compatible tube)
-                        // In future, mapped via SpecimenType directly.
-                        var firstTest = specimen.Orders.First().Test;
-                        
-                        var tubeMap = await _context.ImsTestTubeMaps
-                            .FirstOrDefaultAsync(m => m.TestId == firstTest.TestId);
-
-                        if (tubeMap == null)
-                        {
-                            _logger.LogWarning("No tube mapping for Test {TestName} ({TestId}). Consumption skipped for Specimen {SpecimenId}.", firstTest.TestName, firstTest.TestId, specimenId);
-                            return;
-                        }
-
-                        var quantityToConsume = tubeMap.QuantityPerSample; // Usually 1
-
-                        // 5. Get active lots (FEFO)
-                        var activeLots = await _context.ImsTubeLots
-                            .Where(lot => lot.TubeId == tubeMap.TubeId &&
-                                          lot.BranchId == branchId &&
-                                          lot.CurrentQuantity > 0 &&
-                                          lot.ExpiryDate >= DateTimeOffset.UtcNow)
-                            .OrderBy(lot => lot.ExpiryDate)
-                            .ThenBy(lot => lot.ReceivedAt)
-                            .ToListAsync();
-
-                        if (!activeLots.Any() || activeLots.Sum(l => l.CurrentQuantity) < quantityToConsume)
-                        {
-                             _logger.LogWarning("Insufficient stock for Tube {TubeId} at Branch {BranchId}. Required: {Required}, Avail: {Available}. Consumption skipped.",
-                                tubeMap.TubeId, branchId, quantityToConsume, activeLots.Sum(l => l.CurrentQuantity));
-                             return;
-                        }
-
-                        // 6. FEFO Deduction
-                        var remaining = quantityToConsume;
-                        foreach (var lot in activeLots)
-                        {
-                            if (remaining <= 0) break;
-                            var deduct = Math.Min(lot.CurrentQuantity, remaining);
-                            
-                            lot.CurrentQuantity -= deduct;
-                            remaining -= deduct;
-
-                            var movement = new ImsStockMovement
-                            {
-                                MovementId = Guid.NewGuid(),
-                                TubeId = tubeMap.TubeId,
-                                TubeLotId = lot.LotId,
-                                Quantity = deduct,
-                                MovementType = StockMovementType.Consumption,
-                                ReferenceType = MovementReferenceType.Sample, // Keep enum as Sample? Or rename to Specimen? Specimen is the new Sample.
-                                ReferenceId = referenceId,
-                                RecordedByUserId = consumedByUserId,
-                                MovedAt = DateTimeOffset.UtcNow
-                            };
-                            await _context.ImsStockMovements.AddAsync(movement);
-                        }
-
-                        await _context.SaveChangesAsync();
-                        await transaction.CommitAsync();
-
-                        _logger.LogInformation("Consumed {Quantity} tubes for Specimen {SpecimenId}", quantityToConsume, specimenId);
-
                     }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "Tube consumption failed for Specimen {SpecimenId}", specimenId);
-                        // Swallow to not block clinical flow
-                    }
-                }
-            });
+                });
+            }
+        }
+
+        private async Task ConsumeStockInternalAsync(Guid specimenId, Guid consumedByUserId)
+        {
+            // 1. Idempotency Check
+            var referenceId = specimenId.ToString();
+            if (await _context.ImsStockMovements.AnyAsync(m => m.ReferenceId == referenceId && m.MovementType == StockMovementType.Consumption))
+            {
+                _logger.LogInformation("Stock consumption for SpecimenId {SpecimenId} has already been processed.", specimenId);
+                return;
+            }
+
+            // 2. Load Specimen, Orders, Tests, Visit
+            var specimen = await _context.Specimens
+                .Include(s => s.Visit)
+                .Include(s => s.Orders).ThenInclude(o => o.Test) // Need Test for Tube Map
+                .FirstOrDefaultAsync(s => s.SpecimenId == specimenId);
+
+            if (specimen == null || !specimen.Orders.Any())
+            {
+                _logger.LogError("Could not process tube consumption: Specimen {SpecimenId} not found or has no orders.", specimenId);
+                return;
+            }
+
+            // 3. Determine Branch
+            Guid branchId;
+            if (specimen.Visit?.BranchId == null || specimen.Visit.BranchId == Guid.Empty)
+            {
+                branchId = DbInitializer.DefaultBranchId;
+                _logger.LogWarning("Visit BranchId for Specimen {SpecimenId} is null. Using Default {DefaultBranchId}.", specimenId, branchId);
+            }
+            else
+            {
+                branchId = specimen.Visit.BranchId.Value;
+            }
+
+            // 4. Resolve Tube via FIRST Test (Assumption: All tests in specimen use same/compatible tube)
+            var firstTest = specimen.Orders.First().Test;
+
+            var tubeMap = await _context.ImsTestTubeMaps
+                .FirstOrDefaultAsync(m => m.TestId == firstTest.TestId);
+
+            if (tubeMap == null)
+            {
+                _logger.LogWarning("No tube mapping for Test {TestName} ({TestId}). Consumption skipped for Specimen {SpecimenId}.", firstTest.TestName, firstTest.TestId, specimenId);
+                return;
+            }
+
+            var quantityToConsume = tubeMap.QuantityPerSample; // Usually 1
+
+            // 5. Get active lots (FEFO)
+            var activeLots = await _context.ImsTubeLots
+                .Where(lot => lot.TubeId == tubeMap.TubeId &&
+                              lot.BranchId == branchId &&
+                              lot.CurrentQuantity > 0 &&
+                              lot.ExpiryDate >= DateTimeOffset.UtcNow)
+                .OrderBy(lot => lot.ExpiryDate)
+                .ThenBy(lot => lot.ReceivedAt)
+                .ToListAsync();
+
+            if (!activeLots.Any() || activeLots.Sum(l => l.CurrentQuantity) < quantityToConsume)
+            {
+                var avail = activeLots.Sum(l => l.CurrentQuantity);
+                _logger.LogWarning("Insufficient stock for Tube {TubeId} at Branch {BranchId}. Required: {Required}, Avail: {Available}. Consumption skipped.",
+                   tubeMap.TubeId, branchId, quantityToConsume, avail);
+
+                // Emit Warning Event
+                await _eventWriter.WriteEventAsync(
+                    BranchEventType.INVENTORY_SHORTAGE,
+                    branchId.ToString(),
+                    specimenId.ToString(),
+                    specimen.Visit?.Token ?? "UNKNOWN",
+                    $"INVENTORY ALERT: Insufficient stock for {tubeMap.TubeId}. Required: {quantityToConsume}, Available: {avail}",
+                    "System",
+                    null,
+                    false,
+                    specimenId,
+                    "Specimen"
+                );
+
+                // PUSH REAL-TIME ALERT
+                await _notifier.NotifyInventoryShortageAsync(branchId.ToString(), specimenId.ToString(), tubeMap.TubeId.ToString(), quantityToConsume, (int)avail);
+
+                return;
+            }
+
+            // 6. FEFO Deduction
+            var remaining = quantityToConsume;
+            foreach (var lot in activeLots)
+            {
+                if (remaining <= 0) break;
+                var deduct = Math.Min(lot.CurrentQuantity, remaining);
+
+                lot.CurrentQuantity -= deduct;
+                remaining -= deduct;
+
+                var movement = new ImsStockMovement
+                {
+                    MovementId = Guid.NewGuid(),
+                    TubeId = tubeMap.TubeId,
+                    TubeLotId = lot.LotId,
+                    Quantity = deduct,
+                    MovementType = StockMovementType.Consumption,
+                    ReferenceType = MovementReferenceType.Sample,
+                    ReferenceId = referenceId,
+                    RecordedByUserId = consumedByUserId,
+                    MovedAt = DateTimeOffset.UtcNow
+                };
+                await _context.ImsStockMovements.AddAsync(movement);
+            }
+
+            await _context.SaveChangesAsync();
+            _logger.LogInformation("Consumed {Quantity} tubes for Specimen {SpecimenId}", quantityToConsume, specimenId);
         }
         
         public async Task ConsumeStockOnSampleCollectedAsync(Guid sampleId, Guid consumedByUserId)
