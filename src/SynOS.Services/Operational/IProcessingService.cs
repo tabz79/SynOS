@@ -12,6 +12,7 @@ namespace SynOS.Services.Operational
         Task<ProcessingResult> CompleteAssignmentAsync(Guid processingAssignmentId);
         Task<ProcessingResult> ReopenAssignmentAsync(Guid assignmentId);
         Task<ProcessingAssignmentDetailDto?> GetAssignmentDetailAsync(Guid assignmentId);
+        Task<ProcessingResult> SaveAssignmentDraftAsync(Guid assignmentId, SubmitAssignmentResultsRequestDto request);
     }
 
     public enum ProcessingResult

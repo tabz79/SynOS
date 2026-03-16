@@ -209,5 +209,26 @@ namespace SynOS.Api.Controllers
                 _ => StatusCode(500, "An unexpected error occurred")
             };
         }
+
+        [HttpPost("assignment/{assignmentId}/save")]
+        public async Task<IActionResult> SaveDraft(Guid assignmentId, [FromBody] SubmitAssignmentResultsRequestDto request)
+        {
+            if (request == null) return BadRequest("Invalid request");
+
+            var result = await _processingService.SaveAssignmentDraftAsync(assignmentId, request);
+
+            return result switch
+            {
+                ProcessingResult.Success => Ok(new { success = true }),
+                ProcessingResult.NotFound => NotFound("Assignment not found"),
+                ProcessingResult.Conflict => Conflict("Assignment cannot be saved in its current state"),
+                ProcessingResult.Unauthorized => Forbid("Assignee mismatch"),
+                ProcessingResult.InvalidBranch => Forbid("Branch mismatch"),
+                ProcessingResult.InvalidDepartment => Forbid("Department mismatch"),
+                ProcessingResult.NotOperationalMode => StatusCode(403, "Not in operational mode"),
+                ProcessingResult.NoOperationalResource => Unauthorized("No operational resource found for user"),
+                _ => StatusCode(500, "An unexpected error occurred")
+            };
+        }
     }
 }

@@ -143,7 +143,14 @@ namespace SynOS.Services
             }
 
             var newSessionId = Guid.NewGuid();
-            var jwtToken = GenerateJwtToken(user, selectedMode, selectedBranchId, selectedBranchName, selectedRoleName, newSessionId);
+            var departmentCode = "General";
+            if (selectedMode == "operational")
+            {
+                var resource = await _context.OperationalResources.AsNoTracking().FirstOrDefaultAsync(r => r.UserId == user.UserId);
+                departmentCode = resource?.DepartmentCode ?? "General";
+            }
+
+            var jwtToken = GenerateJwtToken(user, selectedMode, selectedBranchId, selectedBranchName, selectedRoleName, newSessionId, departmentCode);
             var refreshToken = GenerateRefreshToken(ipAddress);
             refreshToken.SessionMode = selectedMode; // PERSIST MODE
 
@@ -310,7 +317,14 @@ namespace SynOS.Services
                 }
             }
 
-            var jwtToken = GenerateJwtToken(user, sessionMode, selectedBranchId, selectedBranchName, selectedRoleName, newSessionId);
+            var departmentCode = "General";
+            if (sessionMode == "operational")
+            {
+                var resource = await _context.OperationalResources.AsNoTracking().FirstOrDefaultAsync(r => r.UserId == user.UserId);
+                departmentCode = resource?.DepartmentCode ?? "General";
+            }
+
+            var jwtToken = GenerateJwtToken(user, sessionMode, selectedBranchId, selectedBranchName, selectedRoleName, newSessionId, departmentCode);
             await _auditService.LogAsync(user.UserId, "RefreshToken", "User", user.UserId, new { IpAddress = ipAddress, Mode = sessionMode });
             
             int refreshRetries = 0;
@@ -357,7 +371,7 @@ namespace SynOS.Services
             return true;
         }
 
-        private string GenerateJwtToken(User user, string sessionMode, Guid? branchId, string? branchName, string roleName, Guid sessionId)
+        private string GenerateJwtToken(User user, string sessionMode, Guid? branchId, string? branchName, string roleName, Guid sessionId, string departmentCode)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
             var jwtSecret = _configuration["Jwt:Secret"] ?? throw new InvalidOperationException("Jwt:Secret not configured");
@@ -370,6 +384,7 @@ namespace SynOS.Services
                 new Claim(ClaimTypes.Name, user.Name),
                 new Claim("session_mode", sessionMode), // ADDED for Phase 1B
                 new Claim("session_id", sessionId.ToString()), 
+                new Claim("department_code", departmentCode), // ADDED for Department Workbench
                 new Claim(ClaimTypes.Role, roleName)
             };
 

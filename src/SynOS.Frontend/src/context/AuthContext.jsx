@@ -24,6 +24,7 @@ export function AuthProvider({ children }) {
                     branchId: decoded.branch_id || decoded.branchId,
                     branchName: decoded.branch_name || "Unknown Branch",
                     sessionMode: decoded.session_mode || "operational", // Added for Phase 1B
+                    departmentCode: decoded.department_code || "General", // ADDED for Department Workbench
                     name: decoded.unique_name || decoded.sub,
                 });
             } catch (error) {
@@ -70,6 +71,7 @@ export function AuthProvider({ children }) {
                 branchId: decoded.branch_id || decoded.branchId,
                 branchName: decoded.branch_name || "Unknown Branch",
                 sessionMode: decoded.session_mode || "operational",
+                departmentCode: decoded.department_code || "General",
                 name: decoded.unique_name || decoded.sub,
             };
             setUser(userObj);

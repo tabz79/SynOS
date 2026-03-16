@@ -115,6 +115,15 @@ export const SignalRService = {
             callback(deltaRow);
         });
     },
+
+    onAssignmentUpdateReceived: (callback) => {
+        const conn = SignalRService._getConnection();
+        conn.off("AssignmentUpdateReceived");
+        conn.on("AssignmentUpdateReceived", (payload) => {
+            console.log("SignalR: AssignmentUpdateReceived received", payload);
+            callback(payload);
+        });
+    },
     
     onInventoryShortageReceived: (callback) => {
         const conn = SignalRService._getConnection();

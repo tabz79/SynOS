@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SynOS.Data;
+using SynOS.Models.DTOs;
 using SynOS.Models.DTOs.Processing;
 using SynOS.Models.Entities;
 using SynOS.Models.Entities.Catalog;
@@ -19,17 +20,20 @@ namespace SynOS.Services.Operational
         private readonly SynOSDbContext _db;
         private readonly IUserContext _userContext;
         private readonly INotifier _notifier;
+        private readonly IResultService _resultService;
         private readonly ILogger<ProcessingService> _logger;
 
         public ProcessingService(
             SynOSDbContext db,
             IUserContext userContext,
             INotifier notifier,
+            IResultService resultService,
             ILogger<ProcessingService> logger)
         {
             _db = db;
             _userContext = userContext;
             _notifier = notifier;
+            _resultService = resultService;
             _logger = logger;
         }
 
@@ -52,7 +56,10 @@ namespace SynOS.Services.Operational
                     ProcessingAssignmentId = a.ProcessingAssignmentId,
                     SpecimenId = a.SpecimenId,
                     AccessionNumber = a.Specimen.AccessionNumber,
+                    PatientName = a.Specimen.Visit.Patient.FirstName + " " + a.Specimen.Visit.Patient.LastName,
+                    TestName = a.Specimen.Visit.Orders.Where(o => o.Department == a.DepartmentCode).Select(o => o.TestCode).FirstOrDefault() ?? "LAB",
                     SpecimenTypeCode = a.Specimen.SpecimenTypeCode,
+                    Priority = "Routine",
                     DepartmentCode = a.DepartmentCode,
                     Status = a.Status,
                     CreatedAt = a.CreatedAt,
@@ -337,6 +344,72 @@ namespace SynOS.Services.Operational
             };
 
             return detailDto;
+        }
+        
+        public async Task<ProcessingResult> SaveAssignmentDraftAsync(Guid assignmentId, SubmitAssignmentResultsRequestDto request)
+        {
+            // 1. Validate Operational Mode
+            if (_userContext.CurrentMode != "Operational") return ProcessingResult.NotOperationalMode;
+
+            // 2. Retrieve Operational Resource
+            var resource = await _db.OperationalResources
+                .FirstOrDefaultAsync(r => r.UserId == _userContext.CurrentUserId);
+
+            if (resource == null) return ProcessingResult.NoOperationalResource;
+
+            // 3. Snapshot for Validation & Context
+            var assignment = await _db.ProcessingAssignments
+                .Where(a => a.ProcessingAssignmentId == assignmentId)
+                .Select(a => new { a.Specimen.VisitId, a.BranchId, a.DepartmentCode, a.Status, a.AssignedResourceId })
+                .FirstOrDefaultAsync();
+
+            if (assignment == null) return ProcessingResult.NotFound;
+
+            // 4. Validation
+            if (assignment.BranchId != resource.BranchId) return ProcessingResult.InvalidBranch;
+            if (assignment.DepartmentCode != resource.DepartmentCode) return ProcessingResult.InvalidDepartment;
+            if (assignment.Status != ProcessingAssignmentStatus.Claimed) return ProcessingResult.Conflict;
+            if (assignment.AssignedResourceId != resource.OperationalResourceId) return ProcessingResult.Unauthorized;
+
+            // 5. Enter Results (without completion)
+            if (request.Results != null && request.Results.Any())
+            {
+                var orderIds = request.Results.Select(r => r.OrderId).Distinct().ToList();
+
+                foreach (var orderId in orderIds)
+                {
+                    var orderResults = request.Results
+                        .Where(r => r.OrderId == orderId)
+                        .Select(r => new ParameterResultDto
+                        {
+                            OrderId = orderId,
+                            ParameterCode = r.ParameterCode,
+                            Value = r.Value
+                        }).ToList();
+
+                    var entryRequest = new ResultEntryRequestDto
+                    {
+                        OrderId = orderId,
+                        Results = orderResults
+                    };
+
+                    var entryResult = await _resultService.EnterResultsAsync(_userContext.CurrentUserId, entryRequest);
+                    if (entryResult.Status != ResultEntryStatus.Success)
+                    {
+                        return ProcessingResult.Conflict; // Simplified for draft save
+                    }
+                }
+            }
+
+            // 6. SignalR Notification (Notify that draft was saved)
+            await _notifier.NotifyAssignmentUpdateAsync(
+                resource.BranchId.ToString(),
+                assignment.DepartmentCode,
+                assignmentId,
+                "DraftSaved",
+                assignment.VisitId.ToString());
+
+            return ProcessingResult.Success;
         }
     }
 }
