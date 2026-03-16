@@ -51,15 +51,25 @@ namespace SynOS.Services.Admin
             await _context.SaveChangesAsync();
         }
 
-        public async Task AssignBranchRoleAsync(Guid userId, Guid branchId, Guid roleId)
+        public async Task AssignBranchRoleAsync(Guid userId, Guid branchId, Guid? roleId, string? roleName = null)
         {
-            // Verify user, branch, and role exist
+            // Verify user and branch exist
             if (!await _context.Users.AnyAsync(u => u.UserId == userId)) throw new KeyNotFoundException("User not found.");
             if (!await _context.Branches.AnyAsync(b => b.BranchId == branchId)) throw new KeyNotFoundException("Branch not found.");
-            if (!await _context.Roles.AnyAsync(r => r.RoleId == roleId)) throw new KeyNotFoundException("Role not found.");
+
+            // Resolve RoleId if only name is provided
+            if (!roleId.HasValue || roleId == Guid.NewGuid() || roleId == Guid.Empty)
+            {
+                if (string.IsNullOrEmpty(roleName)) throw new ArgumentException("Either RoleId or RoleName must be provided.");
+                var role = await _context.Roles.FirstOrDefaultAsync(r => r.Name.ToLower() == roleName.ToLower());
+                if (role == null) throw new KeyNotFoundException($"Role '{roleName}' not found.");
+                roleId = role.RoleId;
+            }
+
+            if (!await _context.Roles.AnyAsync(r => r.RoleId == roleId.Value)) throw new KeyNotFoundException("Role not found.");
 
             // Avoid duplicates
-            if (await _context.UserBranchRoles.AnyAsync(ubr => ubr.UserId == userId && ubr.BranchId == branchId && ubr.RoleId == roleId))
+            if (await _context.UserBranchRoles.AnyAsync(ubr => ubr.UserId == userId && ubr.BranchId == branchId && ubr.RoleId == roleId.Value))
             {
                 return; // Already assigned
             }
@@ -69,7 +79,7 @@ namespace SynOS.Services.Admin
                 UserBranchRoleId = Guid.NewGuid(),
                 UserId = userId,
                 BranchId = branchId,
-                RoleId = roleId,
+                RoleId = roleId.Value,
                 AssignedAt = DateTime.UtcNow
             };
 

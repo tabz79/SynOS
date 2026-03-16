@@ -36,7 +36,7 @@ namespace SynOS.Api.Controllers.Admin
         [HttpPost("{id}/branches")]
         public async Task<IActionResult> AssignBranchRole(Guid id, [FromBody] AssignBranchRoleRequest request)
         {
-            await _adminUserService.AssignBranchRoleAsync(id, request.BranchId, request.RoleId);
+            await _adminUserService.AssignBranchRoleAsync(id, request.BranchId, request.RoleId, request.RoleName);
             return Ok();
         }
 

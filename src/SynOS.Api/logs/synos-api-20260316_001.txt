@@ -1,0 +1,14 @@
+2026-03-16 11:31:06.465 +05:30 [INF] Database seeding completed successfully.
+2026-03-16 11:31:06.590 +05:30 [INF] Exiting after seeding because 'seed' argument was provided.
+2026-03-16 11:31:40.439 +05:30 [INF] OperationalStatsProjectionWorker is starting in Event-Driven Mode.
+2026-03-16 11:31:40.537 +05:30 [INF] Worker: Running Consistency Check and Catch-up...
+2026-03-16 11:31:40.964 +05:30 [INF] Worker: Catch-up complete. Awaiting real-time events...
+2026-03-16 11:46:00.040 +05:30 [INF] Database seeding completed successfully.
+2026-03-16 11:46:00.110 +05:30 [INF] Exiting after seeding because 'seed' argument was provided.
+2026-03-16 11:48:20.522 +05:30 [INF] Database seeding completed successfully.
+2026-03-16 11:48:20.614 +05:30 [INF] Exiting after seeding because 'seed' argument was provided.
+2026-03-16 11:49:09.380 +05:30 [INF] Database seeding completed successfully.
+2026-03-16 11:49:09.436 +05:30 [INF] Exiting after seeding because 'seed' argument was provided.
+2026-03-16 11:49:31.671 +05:30 [INF] OperationalStatsProjectionWorker is starting in Event-Driven Mode.
+2026-03-16 11:49:31.778 +05:30 [INF] Worker: Running Consistency Check and Catch-up...
+2026-03-16 11:49:32.254 +05:30 [INF] Worker: Catch-up complete. Awaiting real-time events...

@@ -10,7 +10,7 @@ namespace SynOS.Services.Admin
     {
         Task<User> CreateUserAsync(string email, string name, string password);
         Task SetUserStatusAsync(Guid userId, bool isActive);
-        Task AssignBranchRoleAsync(Guid userId, Guid branchId, Guid roleId);
+        Task AssignBranchRoleAsync(Guid userId, Guid branchId, Guid? roleId, string? roleName = null);
         Task RemoveBranchRoleAsync(Guid userId, Guid branchId, Guid roleId);
         Task<IEnumerable<UserAdminDto>> GetAllUsersAsync();
         Task<IEnumerable<BranchDto>> GetAllBranchesAsync();

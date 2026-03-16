@@ -160,6 +160,11 @@ builder.Services.AddAuthorization(options =>
             context.User.IsInRole("DeliveryDesk") || context.User.IsInRole("Admin")));
     options.AddPolicy("OperationalModeOnly", policy =>
         policy.RequireClaim("session_mode", "operational"));
+    options.AddPolicy("LabProcessingPolicy", policy =>
+        policy.RequireClaim("session_mode", "operational")
+              .RequireAssertion(context =>
+                  context.User.IsInRole("Technician") ||
+                  context.User.IsInRole("Admin")));
 });
 
 // Add AutoMapper

@@ -190,7 +190,7 @@ namespace SynOS.Data
             // --- Roles Seeding ---
             var requiredRoles = new[]
             {
-                "Admin", "Receptionist", "Phlebotomist", "Pathologist",
+                "Admin", "Receptionist", "Phlebotomist", "Pathologist", "Technician",
                 "XRayTech", "MriTech", "Radiologist", "DeliveryDesk"
             };
             var existingRoles = context.Roles.ToDictionary(r => r.Name, r => r);
@@ -202,6 +202,7 @@ namespace SynOS.Data
                     var newRole = new Role { RoleId = Guid.NewGuid(), Name = roleName };
                     context.Roles.Add(newRole);
                     existingRoles.Add(newRole.Name, newRole);
+                    Console.WriteLine($"[DbInitializer] CREATED NEW ROLE: {roleName}");
                 }
             }
             context.SaveChanges();

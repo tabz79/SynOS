@@ -206,6 +206,14 @@ namespace SynOS.Services.Phlebotomy
                 return ClaimResult.AlreadyClaimed;
             }
 
+            // --- PERSIST CLAIM STATE ---
+            var assignment = await _db.WorkAssignments.FirstOrDefaultAsync(a => a.AssignmentId == assignmentId);
+            if (assignment == null) return ClaimResult.NotFound;
+
+            assignment.Status = WorkAssignmentStatus.Assigned;
+            assignment.AssignedResourceId = resource.OperationalResourceId;
+            assignment.ClaimedAt = DateTime.UtcNow;
+
             _logger.LogInformation("Assignment {AssignmentId} successfully claimed by Resource {ResourceId}. Now generating reserved accessions.", assignmentId, resource.OperationalResourceId);
 
             // 6.5. PRE-GENERATE ACCESSION NUMBERS
@@ -245,9 +253,10 @@ namespace SynOS.Services.Phlebotomy
                             _db.WorkAssignmentAccessions.Add(reserved);
                         }
                     }
-                    await _db.SaveChangesAsync();
                 }
             }
+
+            await _db.SaveChangesAsync();
 
             // 7. Emit SignalR Queue Delta (Only on success)
             await _notifier.NotifyActionQueueDeltaAsync(resource.BranchId.ToString(), snapshot.SourceReferenceId.ToString());

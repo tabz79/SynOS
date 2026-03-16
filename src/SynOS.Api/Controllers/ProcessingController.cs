@@ -15,7 +15,7 @@ namespace SynOS.Api.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize]
+    [Authorize(Policy = "LabProcessingPolicy")]
     public class ProcessingController : ControllerBase
     {
         private readonly IProcessingService _processingService;
@@ -112,8 +112,14 @@ namespace SynOS.Api.Controllers
 
             if (assignment == null) return NotFound("Assignment not found");
 
-            // 2. SECURITY HARDENING: Auth check
-            if (assignment.BranchId != _userContext.CurrentBranchId || assignment.DepartmentCode != _userContext.DepartmentCode)
+            // 2. SECURITY HARDENING: Auth check (DB-First Department Validation)
+            var resource = await _db.OperationalResources
+                .AsNoTracking()
+                .FirstOrDefaultAsync(r => r.UserId == _userContext.CurrentUserId);
+
+            if (resource == null) return Unauthorized("No operational resource found");
+
+            if (assignment.BranchId != resource.BranchId || assignment.DepartmentCode != resource.DepartmentCode)
             {
                 return Forbid();
             }

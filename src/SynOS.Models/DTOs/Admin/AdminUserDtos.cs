@@ -17,6 +17,7 @@ namespace SynOS.Models.DTOs.Admin
     public class AssignBranchRoleRequest
     {
         public Guid BranchId { get; set; }
-        public Guid RoleId { get; set; }
+        public Guid? RoleId { get; set; }
+        public string? RoleName { get; set; }
     }
 }

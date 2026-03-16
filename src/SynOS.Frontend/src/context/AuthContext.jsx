@@ -85,8 +85,10 @@ export function AuthProvider({ children }) {
 
     const logout = () => {
         localStorage.removeItem('synos_jwt');
+        localStorage.removeItem('synos_oversight_branch_id');
         setToken(null);
         setUser(null);
+        setActiveOversightBranchId(null);
     };
 
     return (

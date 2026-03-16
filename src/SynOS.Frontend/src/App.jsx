@@ -12,12 +12,41 @@ function RootRedirect() {
   const { isAuthenticated, user } = useAuth();
   if (!isAuthenticated) return <Navigate to="/login" replace />;
   if (user?.role === 'Receptionist') return <Navigate to="/reception" replace />;
-  if (user?.role === 'Phlebotomist' || user?.role === 'Pathologist') return <Navigate to="/phlebotomist" replace />;
+  if (user?.role === 'Phlebotomist') return <Navigate to="/phlebotomist" replace />;
+  if (user?.role === 'Technician' || user?.role === 'Admin') return <Navigate to="/workbench" replace />;
+  if (user?.role === 'Pathologist') return <Navigate to="/pathologist" replace />;
   
-  const technicianRoles = ["HEM Technician", "BIO Technician", "IMM Technician", "MIC Technician", "HST Technician"];
-  if (technicianRoles.includes(user?.role)) return <Navigate to="/workbench" replace />;
-
-  return <div className="p-10 text-white">Role {user?.role} not supported yet.</div>;
+  return (
+    <div className="h-screen w-screen bg-synos-background flex items-center justify-center p-4">
+      <div className="text-center">
+        <h1 className="text-xl font-bold text-white mb-2">Access Portal</h1>
+        <p className="text-zinc-500">Workspace for role '{user?.role}' is coming soon.</p>
+        <button 
+          onClick={() => window.location.href = '/login'}
+          className="mt-4 text-synos-primary hover:underline text-sm"
+        >
+          Return to Login
+        </button>
+      </div>
+    </div>
+  );
+}
+function PathologistTerminal() {
+  const { logout } = useAuth();
+  return (
+    <div className="h-screen w-screen bg-synos-background flex items-center justify-center p-4">
+      <div className="text-center">
+        <h1 className="text-2xl font-bold text-white mb-2">Pathologist Review Terminal</h1>
+        <p className="text-zinc-500 mb-6">Diagnostic Module Coming Soon</p>
+        <button 
+          onClick={logout}
+          className="px-6 py-2 bg-white text-black font-bold rounded hover:bg-zinc-200 transition-colors"
+        >
+          Logout
+        </button>
+      </div>
+    </div>
+  );
 }
 
 function App() {
@@ -45,9 +74,13 @@ function App() {
               <Route path="/phlebotomist" element={<PhlebotomyScreen />} />
             </Route>
 
-            <Route element={<ProtectedRoute allowedRoles={["HEM Technician", "BIO Technician", "IMM Technician", "MIC Technician", "HST Technician"]} />}>
+            <Route element={<ProtectedRoute allowedRoles={['Technician', 'Admin']} />}>
               <Route path="/workbench" element={<DepartmentWorkbenchScreen />} />
             </Route>
+
+            <Route path="/pathologist" element={
+              <PathologistTerminal />
+            } />
 
             {/* Root Redirection */}
             <Route path="/" element={<RootRedirect />} />
