@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using SynOS.Data;
 using SynOS.Models.Entities;
+using SynOS.Models.Entities.Operations;
 using BCrypt.Net;
 
 namespace SynOS.Services.Admin
@@ -133,6 +134,76 @@ namespace SynOS.Services.Admin
             return await _context.Roles
                 .Select(r => new RoleDto { RoleId = r.RoleId, Name = r.Name })
                 .ToListAsync();
+        }
+
+        public async Task<IEnumerable<OperationalResourceDto>> GetOperationalResourcesAsync()
+        {
+            return await _context.OperationalResources
+                .Include(r => r.User)
+                .Select(r => new OperationalResourceDto
+                {
+                    OperationalResourceId = r.OperationalResourceId,
+                    UserName = r.User.Name,
+                    Role = r.Role,
+                    DepartmentCode = r.DepartmentCode,
+                    IsActive = r.IsActive
+                })
+                .ToListAsync();
+        }
+
+        public async Task UpdateOperationalResourceAsync(Guid resourceId, string departmentCode)
+        {
+            var resource = await _context.OperationalResources.FindAsync(resourceId);
+            if (resource == null) throw new KeyNotFoundException("Operational resource not found.");
+
+            resource.DepartmentCode = departmentCode;
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task SyncOperationalResourcesAsync()
+        {
+            // 1. Get all users who have at least one branch role
+            var branchRoles = await _context.UserBranchRoles
+                .Include(ubr => ubr.User)
+                .Include(ubr => ubr.Role)
+                .ToListAsync();
+
+            var userIdsWithRoles = branchRoles.Select(br => br.UserId).Distinct().ToList();
+            
+            // 2. Get existing resources
+            var existingResources = await _context.OperationalResources.ToListAsync();
+
+            foreach (var userId in userIdsWithRoles)
+            {
+                var resource = existingResources.FirstOrDefault(r => r.UserId == userId);
+                var primaryRole = branchRoles.FirstOrDefault(br => br.UserId == userId);
+                
+                if (primaryRole == null) continue;
+
+                if (resource == null)
+                {
+                    // PROVISION MISSING RESOURCE
+                    resource = new OperationalResource
+                    {
+                        OperationalResourceId = Guid.NewGuid(),
+                        UserId = userId,
+                        BranchId = primaryRole.BranchId,
+                        Role = primaryRole.Role.Name,
+                        DepartmentCode = "General",
+                        IsActive = true,
+                        CreatedAt = DateTimeOffset.UtcNow
+                    };
+                    _context.OperationalResources.Add(resource);
+                }
+                else
+                {
+                    // SYNC EXISTING
+                    resource.Role = primaryRole.Role.Name;
+                    resource.IsActive = true;
+                }
+            }
+
+            await _context.SaveChangesAsync();
         }
     }
 }

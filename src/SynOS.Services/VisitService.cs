@@ -909,6 +909,7 @@ namespace SynOS.Services
             public string TestName { get; set; }
             public string MacroDepartment { get; set; } // Broad operational branch
             public string Department { get; set; } // Specific specialization
+            public string DepartmentCode { get; set; } // Routing code (e.g., BIO)
             public decimal BasePrice { get; set; }
             public Guid? PriceConfigId { get; set; }
         }
@@ -950,6 +951,7 @@ namespace SynOS.Services
                     TestName = test.TestName,
                     MacroDepartment = test.DepartmentMaster?.MacroDepartment ?? "Unknown",
                     Department = test.DepartmentMaster?.Name ?? "Unknown",
+                    DepartmentCode = test.DepartmentMaster?.Code ?? "Unknown",
                     BasePrice = 0,
                     PriceConfigId = null
                 };
@@ -983,6 +985,7 @@ namespace SynOS.Services
                 TestName = test.TestName,
                 MacroDepartment = test.DepartmentMaster?.MacroDepartment ?? "Unknown",
                 Department = test.DepartmentMaster?.Name ?? "Unknown",
+                DepartmentCode = test.DepartmentMaster?.Code ?? "Unknown",
                 BasePrice = basePrice,
                 PriceConfigId = priceConfig?.PriceId
             };
@@ -1021,7 +1024,7 @@ namespace SynOS.Services
                 VisitId = visitId,
                 TestId = resolved.TestId,
                 TestCode = resolved.TestCode,
-                Department = resolved.MacroDepartment,
+                Department = resolved.DepartmentCode,
                 Status = SynOS.Models.Enums.OrderStatus.Pending,
                 Price = isChild ? 0 : resolved.BasePrice,
                 ParentOrderId = parentOrderId,

@@ -15,6 +15,18 @@ namespace SynOS.Services.Admin
         Task<IEnumerable<UserAdminDto>> GetAllUsersAsync();
         Task<IEnumerable<BranchDto>> GetAllBranchesAsync();
         Task<IEnumerable<RoleDto>> GetAllRolesAsync();
+        Task<IEnumerable<OperationalResourceDto>> GetOperationalResourcesAsync();
+        Task UpdateOperationalResourceAsync(Guid resourceId, string departmentCode);
+        Task SyncOperationalResourcesAsync();
+    }
+
+    public class OperationalResourceDto
+    {
+        public Guid OperationalResourceId { get; set; }
+        public string UserName { get; set; } = string.Empty;
+        public string Role { get; set; } = string.Empty;
+        public string DepartmentCode { get; set; } = string.Empty;
+        public bool IsActive { get; set; }
     }
 
     public class BranchDto

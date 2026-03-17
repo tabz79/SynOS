@@ -128,6 +128,10 @@ namespace SynOS.Services
                 result.AffectedTestCodes = affectedTestCodes;
                 log.AffectedTestCodes = JsonSerializer.Serialize(affectedTestCodes);
 
+                await ProvisionDepartmentsAsync(result);
+                await _context.SaveChangesAsync();
+                _logger.LogInformation("Provisioning step completed: Departments");
+
                 if (affectedTestCodes.Any())
                 {
                     await ProvisionTestsAsync(affectedTestCodes, result);
@@ -263,19 +267,51 @@ namespace SynOS.Services
                 .ToList();
         }
 
+        private async Task ProvisionDepartmentsAsync(CatalogProvisioningResultDto result)
+        {
+            var catalogs = await _context.CatalogProcessingDepartments.ToListAsync();
+            var masters = await _context.DepartmentMasters.ToListAsync();
+
+            foreach (var catalog in catalogs)
+            {
+                var master = masters.FirstOrDefault(m => m.Code == catalog.DepartmentCode);
+                if (master == null)
+                {
+                    master = new DepartmentMaster
+                    {
+                        DepartmentId = Guid.NewGuid(),
+                        Code = catalog.DepartmentCode,
+                        Name = catalog.DepartmentName,
+                        MacroDepartment = catalog.ServiceCategoryCode,
+                        IsActive = true,
+                        CreatedAt = DateTimeOffset.UtcNow
+                    };
+                    _context.DepartmentMasters.Add(master);
+                }
+                else
+                {
+                    master.Name = catalog.DepartmentName;
+                    master.MacroDepartment = catalog.ServiceCategoryCode;
+                    master.IsActive = true;
+                }
+            }
+        }
+
         private async Task ProvisionTestsAsync(List<string> testCodes, CatalogProvisioningResultDto result)
         {
+            var allTestCodes = await _context.CatalogTests.Select(c => c.TestCode).ToListAsync();
+            
             var catalogs = await _context.CatalogTests
-                .Where(c => testCodes.Contains(c.TestCode))
+                .Where(c => allTestCodes.Contains(c.TestCode))
                 .ToListAsync();
 
             var existingTests = await _context.Tests
-                .Where(t => testCodes.Contains(t.TestCode))
+                .Where(t => allTestCodes.Contains(t.TestCode))
                 .ToListAsync();
 
             var depts = await _context.DepartmentMasters.ToListAsync();
 
-            foreach (var code in testCodes)
+            foreach (var code in allTestCodes)
             {
                 var catalog = catalogs.FirstOrDefault(c => c.TestCode == code);
                 var test = existingTests.FirstOrDefault(t => t.TestCode == code);

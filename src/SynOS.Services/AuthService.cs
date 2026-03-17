@@ -147,7 +147,20 @@ namespace SynOS.Services
             if (selectedMode == "operational")
             {
                 var resource = await _context.OperationalResources.AsNoTracking().FirstOrDefaultAsync(r => r.UserId == user.UserId);
-                departmentCode = resource?.DepartmentCode ?? "General";
+                
+                // If resource exists, use its assigned department. 
+                // If it's a new resource (resource == null), we need to determine the department from the user's role/branch context.
+                if (resource != null && !string.IsNullOrEmpty(resource.DepartmentCode) && resource.DepartmentCode != "General")
+                {
+                    departmentCode = resource.DepartmentCode;
+                }
+                else
+                {
+                    // Heuristic: If they have a role like 'Biochemistry Technician', default to 'BIO'
+                    departmentCode = selectedRoleName.Contains("Biochem", StringComparison.OrdinalIgnoreCase) ? "BIO" : 
+                                     selectedRoleName.Contains("Hemat", StringComparison.OrdinalIgnoreCase) ? "HEM" : 
+                                     selectedRoleName.Contains("Path", StringComparison.OrdinalIgnoreCase) ? "PAT" : "General";
+                }
             }
 
             var jwtToken = GenerateJwtToken(user, selectedMode, selectedBranchId, selectedBranchName, selectedRoleName, newSessionId, departmentCode);
@@ -188,9 +201,9 @@ namespace SynOS.Services
                                 LastSessionIssuedAt = DateTime.UtcNow,
                                 BranchId = selectedBranchId!.Value,
                                 Role = selectedRoleName,
-                                DepartmentCode = "General",
+                                DepartmentCode = departmentCode, // Sync from context
                                 IsOnline = false,
-                                IsActive = false
+                                IsActive = true // Auto-activate for efficiency
                             };
                             _context.OperationalResources.Add(resource);
                         }
@@ -321,7 +334,16 @@ namespace SynOS.Services
             if (sessionMode == "operational")
             {
                 var resource = await _context.OperationalResources.AsNoTracking().FirstOrDefaultAsync(r => r.UserId == user.UserId);
-                departmentCode = resource?.DepartmentCode ?? "General";
+                if (resource != null && !string.IsNullOrEmpty(resource.DepartmentCode) && resource.DepartmentCode != "General")
+                {
+                    departmentCode = resource.DepartmentCode;
+                }
+                else
+                {
+                    departmentCode = selectedRoleName.Contains("Biochem", StringComparison.OrdinalIgnoreCase) ? "BIO" : 
+                                     selectedRoleName.Contains("Hemat", StringComparison.OrdinalIgnoreCase) ? "HEM" : 
+                                     selectedRoleName.Contains("Path", StringComparison.OrdinalIgnoreCase) ? "PAT" : "General";
+                }
             }
 
             var jwtToken = GenerateJwtToken(user, sessionMode, selectedBranchId, selectedBranchName, selectedRoleName, newSessionId, departmentCode);

@@ -333,6 +333,8 @@ namespace SynOS.Services.Phlebotomy
                     .Where(ra => ra.WorkAssignmentId == assignmentId)
                     .ToListAsync();
 
+                await _db.SaveChangesAsync();
+
                 foreach (var instr in plan)
                 {
                     // Find reserved accessions for this instruction
@@ -341,9 +343,6 @@ namespace SynOS.Services.Phlebotomy
                         .OrderBy(ra => ra.Sequence)
                         .ToList();
 
-                    // If for some reason reservation failed or plan changed, fallback to generation (Safety Guard)
-                    // But typically we should have them.
-                    
                     for (int i = 0; i < instr.RequiredTubes; i++)
                     {
                         string accessionNumber;
@@ -409,9 +408,33 @@ namespace SynOS.Services.Phlebotomy
                             };
                             _db.ProcessingAssignments.Add(processingAssignment);
                         }
+                    }
+                }
 
-                        // 8b. Transactional Inventory Deduction
-                        await _tubeConsumptionService.ConsumeStockForSpecimenAsync(specimen.SpecimenId, _userContext.CurrentUserId);
+                // SAVE specimens and assignments before consuming inventory
+                await _db.SaveChangesAsync();
+
+                // Now consume inventory (The specimens now exist in DB)
+                foreach (var instr in plan)
+                {
+                    var reservedForInstr = reservedAccessions
+                        .Where(ra => ra.TubeCode == instr.TubeCode && ra.SpecimenType == instr.SpecimenTypeCode)
+                        .OrderBy(ra => ra.Sequence)
+                        .ToList();
+
+                    for (int i = 0; i < instr.RequiredTubes; i++)
+                    {
+                        string accessionNumber = (i < reservedForInstr.Count) 
+                            ? reservedForInstr[i].AccessionNumber 
+                            : String.Empty; // Should be in DB now if generated above
+
+                        if (string.IsNullOrEmpty(accessionNumber)) continue;
+
+                        var specimenInstance = await _db.Specimens.FirstOrDefaultAsync(s => s.AccessionNumber == accessionNumber && s.VisitId == visitId);
+                        if (specimenInstance != null)
+                        {
+                            await _tubeConsumptionService.ConsumeStockForSpecimenAsync(specimenInstance.SpecimenId, _userContext.CurrentUserId);
+                        }
                     }
                 }
 

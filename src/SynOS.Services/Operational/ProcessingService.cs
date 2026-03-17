@@ -40,7 +40,7 @@ namespace SynOS.Services.Operational
         public async Task<IEnumerable<ProcessingQueueItemDto>> GetQueueAsync()
         {
             // 1. Validate Mode
-            if (_userContext.CurrentMode != "Operational") return Enumerable.Empty<ProcessingQueueItemDto>();
+            if (!string.Equals(_userContext.CurrentMode, "operational", StringComparison.OrdinalIgnoreCase)) return Enumerable.Empty<ProcessingQueueItemDto>();
 
             // 2. Get Resource
             var resource = await _db.OperationalResources.FirstOrDefaultAsync(r => r.UserId == _userContext.CurrentUserId);
@@ -75,7 +75,7 @@ namespace SynOS.Services.Operational
         public async Task<ProcessingResult> ClaimAssignmentAsync(Guid processingAssignmentId)
         {
             // 1. Validate Operational Mode
-            if (_userContext.CurrentMode != "Operational") return ProcessingResult.NotOperationalMode;
+            if (!string.Equals(_userContext.CurrentMode, "operational", StringComparison.OrdinalIgnoreCase)) return ProcessingResult.NotOperationalMode;
 
             // 2. Retrieve Operational Resource
             var resource = await _db.OperationalResources
@@ -129,7 +129,7 @@ namespace SynOS.Services.Operational
         public async Task<ProcessingResult> CompleteAssignmentAsync(Guid processingAssignmentId)
         {
             // 1. Validate Operational Mode
-            if (_userContext.CurrentMode != "Operational") return ProcessingResult.NotOperationalMode;
+            if (!string.Equals(_userContext.CurrentMode, "operational", StringComparison.OrdinalIgnoreCase)) return ProcessingResult.NotOperationalMode;
 
             // 2. Retrieve Operational Resource
             var resource = await _db.OperationalResources
@@ -183,7 +183,7 @@ namespace SynOS.Services.Operational
         public async Task<ProcessingResult> ReopenAssignmentAsync(Guid assignmentId)
         {
             // 1. Validate Operational Mode
-            if (_userContext.CurrentMode != "Operational") return ProcessingResult.NotOperationalMode;
+            if (!string.Equals(_userContext.CurrentMode, "operational", StringComparison.OrdinalIgnoreCase)) return ProcessingResult.NotOperationalMode;
 
             // 2. Retrieve Operational Resource
             var resource = await _db.OperationalResources
@@ -349,7 +349,7 @@ namespace SynOS.Services.Operational
         public async Task<ProcessingResult> SaveAssignmentDraftAsync(Guid assignmentId, SubmitAssignmentResultsRequestDto request)
         {
             // 1. Validate Operational Mode
-            if (_userContext.CurrentMode != "Operational") return ProcessingResult.NotOperationalMode;
+            if (!string.Equals(_userContext.CurrentMode, "operational", StringComparison.OrdinalIgnoreCase)) return ProcessingResult.NotOperationalMode;
 
             // 2. Retrieve Operational Resource
             var resource = await _db.OperationalResources
