@@ -41,7 +41,12 @@ export function PhlebotomyScreen() {
     const normalizeQueueData = ReceptionApi.normalizeQueueData;
 
     // Filter Function for Branch-Wide Phlebotomy View
-    const isPhleboRelevant = (row) => row.operationalStatus === 'Ready for Sample' || row.operationalStatus === 'Pending Collection';
+    const isPhleboRelevant = (row) => 
+        row.operationalStatus === 'Ready for Sample' || 
+        row.operationalStatus === 'Pending Collection' ||
+        row.operationalStatus === 'Collected' ||
+        row.operationalStatus === 'In Processing' ||
+        row.operationalStatus === 'Reporting';
 
     // Wiring: Initial Load + SignalR Subscription
     useEffect(() => {

@@ -66,7 +66,7 @@ namespace SynOS.Api.Services
             }
         }
 
-        public async Task NotifyAssignmentUpdateAsync(string branchId, string departmentCode, Guid assignmentId, string status, string visitId)
+        public async Task NotifyAssignmentUpdateAsync(string branchId, string departmentCode, Guid assignmentId, string status, string visitId, Guid? assignedResourceId = null, string? assignedTechnicianName = null)
         {
             if (string.IsNullOrEmpty(branchId) || string.IsNullOrEmpty(departmentCode)) return;
 
@@ -74,7 +74,9 @@ namespace SynOS.Api.Services
             {
                 type = "assignment-update",
                 assignmentId = assignmentId,
-                status = status
+                status = status,
+                assignedResourceId = assignedResourceId,
+                assignedTechnicianName = assignedTechnicianName
             };
 
             // 1. Broadcast to specific department in branch

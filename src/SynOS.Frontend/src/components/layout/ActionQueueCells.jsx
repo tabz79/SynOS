@@ -101,3 +101,17 @@ export function PhlebotomistCell({ row }) {
         </span>
     );
 }
+
+export function TechnicianCell({ row }) {
+    // Canon: Muted dash if unassigned, Otherwise primary body text
+    const displayValue = row.assignedTechnicianName || "—";
+
+    return (
+        <span className={cn(
+            "text-sm font-normal",
+            !row.assignedTechnicianName && "text-zinc-500/50" // Muted dash
+        )}>
+            {displayValue}
+        </span>
+    );
+}

@@ -23,8 +23,9 @@ export function AuthProvider({ children }) {
                     role: decoded.role || decoded["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"],
                     branchId: decoded.branch_id || decoded.branchId,
                     branchName: decoded.branch_name || "Unknown Branch",
-                    sessionMode: decoded.session_mode || "operational", // Added for Phase 1B
-                    departmentCode: decoded.department_code || "General", // ADDED for Department Workbench
+                    sessionMode: decoded.session_mode || "operational", 
+                    departmentCode: decoded.department_code || "General",
+                    resourceId: decoded.resource_id || decoded.resourceId,
                     name: decoded.unique_name || decoded.sub,
                 });
             } catch (error) {
@@ -72,6 +73,7 @@ export function AuthProvider({ children }) {
                 branchName: decoded.branch_name || "Unknown Branch",
                 sessionMode: decoded.session_mode || "operational",
                 departmentCode: decoded.department_code || "General",
+                resourceId: decoded.resource_id || decoded.resourceId,
                 name: decoded.unique_name || decoded.sub,
             };
             setUser(userObj);

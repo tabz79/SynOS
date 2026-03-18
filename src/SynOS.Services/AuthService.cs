@@ -413,6 +413,14 @@ namespace SynOS.Services
             if (sessionMode == "operational" && branchId.HasValue)
             {
                 claimsList.Add(new Claim("branch_id", branchId.Value.ToString()));
+                
+                // ADDED: Operational Resource ID
+                var resource = _context.OperationalResources.AsNoTracking().FirstOrDefault(r => r.UserId == user.UserId && r.BranchId == branchId.Value);
+                if (resource != null)
+                {
+                    claimsList.Add(new Claim("resource_id", resource.OperationalResourceId.ToString()));
+                }
+
                 if (!string.IsNullOrEmpty(branchName))
                 {
                     claimsList.Add(new Claim("branch_name", branchName));

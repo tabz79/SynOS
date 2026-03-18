@@ -2,13 +2,19 @@
 import { useState, useEffect, useRef } from 'react';
 import { cn } from "@/lib/utils";
 import { ProcessingApi } from '@/api/processing';
-import { User, Clipboard, Hash, Clock, AlertCircle } from 'lucide-react';
+import { User, Clipboard, Hash, Clock, AlertCircle, Loader2, ArrowRight } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
+import { motion, AnimatePresence } from 'framer-motion';
+import { RichPatientCard } from '@/components/patient/RichPatientCard';
 import { ResultEntryGrid } from './ResultEntryGrid';
 
-export function DepartmentWorkbenchIntentPanel({ assignmentId, onClose, onDirtyUpdate, saveTriggerRef }) {
+export function DepartmentWorkbenchIntentPanel({ assignmentId, onClose, onDirtyUpdate, onUpdateLocalState }) {
+    const { user } = useAuth();
     const [detail, setDetail] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
+    const [isClaiming, setIsClaiming] = useState(false);
+    const [error, setError] = useState(null);
     
     // Centralized results state: { [parameterCode]: value }
     const [results, setResults] = useState({});
@@ -34,6 +40,7 @@ export function DepartmentWorkbenchIntentPanel({ assignmentId, onClose, onDirtyU
                 initialResultsRef.current = initial;
             } catch (err) {
                 console.error("Failed to load assignment detail", err);
+                setError("Failed to load assignment detail.");
             } finally {
                 setIsLoading(false);
             }
@@ -41,6 +48,29 @@ export function DepartmentWorkbenchIntentPanel({ assignmentId, onClose, onDirtyU
 
         loadDetail();
     }, [assignmentId]);
+
+    const isAvailable = detail && !detail.assignedResourceId;
+    const isAssignedToMe = detail && detail.assignedResourceId === user?.resourceId;
+
+    const handleClaim = async () => {
+        if (!assignmentId) return;
+        setIsClaiming(true);
+        setError(null);
+        try {
+            await ProcessingApi.claimAssignment(assignmentId);
+            // Update detail locally
+            setDetail(prev => ({ ...prev, assignedResourceId: user.resourceId }));
+            // Notify parent to move tab
+            onUpdateLocalState?.(assignmentId, { 
+                assignedResourceId: user.resourceId,
+                assignedTechnicianName: user.name || user.username || 'Current User'
+            });
+        } catch (err) {
+            setError(err.message || "Failed to claim assignment.");
+        } finally {
+            setIsClaiming(false);
+        }
+    };
 
     const handleValueChange = (parameterCode, value) => {
         setResults(prev => {
@@ -117,36 +147,24 @@ export function DepartmentWorkbenchIntentPanel({ assignmentId, onClose, onDirtyU
         <div className="h-full dark:bg-zinc-900 bg-white rounded-xl border dark:border-white/5 border-zinc-200 shadow-2xl flex flex-col overflow-hidden animate-in fade-in slide-in-from-right-4 duration-300">
             {/* Header: Clinical Context */}
             <div className="p-4 border-b dark:border-white/10 border-zinc-200 dark:bg-zinc-950/50 bg-zinc-50/50 relative overflow-hidden">
-                <div className="flex justify-between items-start mb-4">
-                    <div>
-                        <div className="flex items-center gap-2 mb-1">
-                            <span className="text-[10px] font-black uppercase text-cyan-500 bg-cyan-500/10 px-1.5 py-0.5 rounded leading-none">
-                                {detail.specimen?.accessionNumber}
-                            </span>
-                            <span className={cn(
-                                "text-[10px] font-black uppercase px-1.5 py-0.5 rounded leading-none",
-                                detail.priority === 'Urgent' ? "bg-amber-500/20 text-amber-500" : "bg-zinc-500/10 text-zinc-500"
-                            )}>
-                                {detail.priority || 'Routine'}
-                            </span>
-                        </div>
-                        <h3 className="text-xl font-black dark:text-white text-zinc-900 tracking-tight leading-none uppercase">
-                            {detail.patient?.patientName}
-                        </h3>
-                        <div className="flex gap-4 mt-2">
-                             <div className="flex items-center gap-1.5 text-xs text-zinc-500 font-medium">
-                                <User className="w-3 h-3" />
-                                {detail.patient?.sex} / {detail.patient?.age}Y
-                            </div>
-                            <div className="flex items-center gap-1.5 text-xs text-zinc-500 font-medium whitespace-nowrap">
-                                <Clipboard className="w-3 h-3" />
-                                {detail.specimen?.specimenType}
-                            </div>
-                        </div>
+                <div className="flex justify-between items-start">
+                    <div className="flex-1 mr-4">
+                        <RichPatientCard 
+                            patient={{
+                                patientId: detail.patient?.patientId,
+                                firstName: detail.patient?.patientName.split(' ')[0],
+                                lastName: detail.patient?.patientName.split(' ').slice(1).join(' '),
+                                mrn: detail.patient?.mrn,
+                                gender: detail.patient?.sex,
+                                dateOfBirth: new Date(new Date().getFullYear() - detail.patient?.age, 0, 1).toISOString(), // Estimated
+                                lastVisitTestCodes: detail.tests?.map(t => t.testCode) || []
+                            }}
+                            isLocked={true}
+                        />
                     </div>
                     <button 
                         onClick={onClose}
-                        className="p-2 hover:bg-zinc-500/10 rounded-lg text-zinc-500 transition-colors"
+                        className="p-2 hover:bg-zinc-500/10 rounded-lg text-zinc-500 transition-colors shrink-0"
                     >
                         ✕
                     </button>
@@ -154,52 +172,85 @@ export function DepartmentWorkbenchIntentPanel({ assignmentId, onClose, onDirtyU
             </div>
 
             {/* Content: Entry Grid */}
-            <div className="flex-1 overflow-auto custom-scrollbar">
-                {detail.tests?.map((test, tIdx) => (
-                    <div key={test.orderId} className="mb-6">
-                        <div className="px-4 py-2 dark:bg-zinc-800/30 bg-zinc-100 flex items-center justify-between sticky top-0 z-10 border-b dark:border-white/5 border-zinc-200">
-                             <div className="flex items-center gap-2">
-                                <div className="w-1.5 h-1.5 rounded-full bg-cyan-500" />
-                                <span className="text-[11px] font-black uppercase tracking-wider dark:text-zinc-400 text-zinc-600">
-                                    {test.testName}
-                                </span>
-                             </div>
+            <div className="flex-1 overflow-auto custom-scrollbar relative">
+                <div className={cn(
+                    "transition-all duration-300",
+                    isAvailable ? "opacity-30 grayscale-[50%] pointer-events-none blur-sm" : "opacity-100"
+                )}>
+                    {detail.tests?.map((test, tIdx) => (
+                        <div key={test.orderId} className="mb-6">
+                            <div className="px-4 py-2 dark:bg-zinc-800/30 bg-zinc-100 flex items-center justify-between sticky top-0 z-10 border-b dark:border-white/5 border-zinc-200">
+                                 <div className="flex items-center gap-2">
+                                    <div className="w-1.5 h-1.5 rounded-full bg-cyan-500" />
+                                    <span className="text-[11px] font-black uppercase tracking-wider dark:text-zinc-400 text-zinc-600">
+                                        {test.testName}
+                                    </span>
+                                 </div>
+                            </div>
+                            <ResultEntryGrid 
+                                test={test} 
+                                results={results}
+                                onValueChange={handleValueChange}
+                                onSaveDraft={handleSaveDraft}
+                                isSaving={isSaving}
+                            />
                         </div>
-                        <ResultEntryGrid 
-                            test={test} 
-                            results={results}
-                            onValueChange={handleValueChange}
-                            onSaveDraft={handleSaveDraft}
-                            isSaving={isSaving}
-                        />
+                    ))}
+                </div>
+
+                {/* Lock Overlay */}
+                {isAvailable && (
+                    <div className="absolute inset-0 flex items-center justify-center p-8 text-center bg-black/5 dark:bg-white/0 select-none">
+                        <div className="bg-white dark:bg-zinc-800 p-6 rounded-2xl shadow-2xl border dark:border-white/10 border-zinc-200 animate-in zoom-in-95 duration-200">
+                            <div className="w-12 h-12 bg-cyan-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <Clipboard className="w-6 h-6 text-cyan-500" />
+                            </div>
+                            <h4 className="text-sm font-black uppercase tracking-widest dark:text-white text-zinc-900 mb-2">Clinical Detail Locked</h4>
+                            <p className="text-xs text-zinc-500 leading-relaxed">
+                                Please claim this assignment to access <br />
+                                laboratory parameters and result entry.
+                            </p>
+                        </div>
                     </div>
-                ))}
+                )}
             </div>
 
             {/* Footer Actions (Sticky) */}
-            <div className="p-4 border-t dark:border-white/10 border-zinc-200 dark:bg-zinc-900 bg-white flex justify-end gap-3">
-                <button 
-                    onClick={onClose}
-                    className="px-6 py-2 text-sm font-bold text-zinc-500 hover:text-zinc-700 transition-colors"
-                >
-                    Cancel
-                </button>
-                <div className="flex gap-2">
-                    <button 
-                         onClick={handleSaveDraft} 
-                         disabled={isSaving}
-                         className="px-6 py-2 rounded-lg text-sm font-bold border dark:border-white/10 border-zinc-200 dark:text-zinc-300 hover:bg-zinc-500/5 transition-all disabled:opacity-50"
+            <div className="p-4 border-t dark:border-white/10 border-zinc-200 dark:bg-zinc-900 bg-white shadow-[0_-10px_20px_rgba(0,0,0,0.02)]">
+                {isAvailable ? (
+                    <button
+                        onClick={handleClaim}
+                        disabled={isClaiming}
+                        className="w-full h-12 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 rounded-xl font-bold text-sm flex items-center justify-center gap-2 active:scale-[0.98] transition-all shadow-xl shadow-black/10 disabled:opacity-50"
                     >
-                        Save Draft
+                        {isClaiming ? <Loader2 className="w-5 h-5 animate-spin" /> : "Assign to Me"}
+                        {!isClaiming && <ArrowRight className="w-4 h-4" />}
                     </button>
-                    <button 
-                        onClick={handleComplete}
-                        className="px-6 py-2 bg-cyan-600 hover:bg-cyan-500 text-white rounded-lg text-sm font-bold shadow-lg shadow-cyan-500/20 transition-all active:scale-95 disabled:opacity-50"
-                        disabled={isSaving}
+                ) : isAssignedToMe ? (
+                    <div className="flex gap-2">
+                        <button 
+                             onClick={handleSaveDraft} 
+                             disabled={isSaving}
+                             className="flex-1 h-12 rounded-xl text-sm font-bold border dark:border-white/10 border-zinc-200 dark:text-zinc-300 hover:bg-zinc-500/5 transition-all disabled:opacity-50"
+                        >
+                            Save Draft
+                        </button>
+                        <button 
+                            onClick={handleComplete}
+                            className="flex-[1.5] h-12 bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl text-sm font-bold shadow-lg shadow-cyan-500/20 transition-all active:scale-[0.98] disabled:opacity-50"
+                            disabled={isSaving}
+                        >
+                            Complete Processing
+                        </button>
+                    </div>
+                ) : (
+                    <button
+                        disabled
+                        className="w-full h-12 bg-zinc-100 dark:bg-zinc-800 text-zinc-400 dark:text-zinc-500 rounded-xl font-bold text-sm flex items-center justify-center gap-2 border dark:border-white/5 border-zinc-200"
                     >
-                        Complete Processing
+                        Assigned to Another Technician
                     </button>
-                </div>
+                )}
             </div>
         </div>
     );

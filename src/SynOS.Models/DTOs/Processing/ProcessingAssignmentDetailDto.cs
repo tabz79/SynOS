@@ -10,6 +10,7 @@ namespace SynOS.Models.DTOs.Processing
         public Guid SpecimenId { get; set; }
         public string DepartmentCode { get; set; } = string.Empty;
         public ProcessingAssignmentStatus Status { get; set; }
+        public Guid? AssignedResourceId { get; set; }
 
         public AssignmentPatientDto Patient { get; set; } = null!;
         public AssignmentSpecimenDto Specimen { get; set; } = null!;

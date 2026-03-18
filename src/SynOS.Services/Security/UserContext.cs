@@ -13,6 +13,14 @@ namespace SynOS.Services.Security
             _httpContextAccessor = httpContextAccessor;
         }
 
+        public string UserName
+        {
+            get
+            {
+                return _httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.Name)?.Value ?? string.Empty;
+            }
+        }
+
         public Guid CurrentUserId
         {
             get

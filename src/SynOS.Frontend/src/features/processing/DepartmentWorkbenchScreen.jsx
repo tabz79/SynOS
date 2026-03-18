@@ -10,7 +10,7 @@ import { ClipboardList, AlertCircle, CheckCircle2, FlaskConical, ChevronDown, Us
 import { useFlipGroup } from "@/hooks/useSynOSMotion";
 import { useAuth } from '@/context/AuthContext';
 import { useProcessing } from './hooks/useProcessing';
-import { TokenCell, PatientCell, StatusCell } from '@/components/layout/ActionQueueCells';
+import { TokenCell, PatientCell, StatusCell, TechnicianCell } from '@/components/layout/ActionQueueCells';
 import { DepartmentWorkbenchIntentPanel } from './components/DepartmentWorkbenchIntentPanel';
 import { UnsavedChangesGuard } from './components/UnsavedChangesGuard';
 import { ProcessingApi } from '@/api/processing';
@@ -18,7 +18,7 @@ import { ProcessingApi } from '@/api/processing';
 export function DepartmentWorkbenchScreen() {
     const { theme } = useTheme();
     const { user } = useAuth();
-    const { queue, summary, isLoading } = useProcessing();
+    const { queue, summary, isLoading, updateLocalState } = useProcessing();
 
     // UI State
     const [isIntentPanelOpen, setIsIntentPanelOpen] = useState(false);
@@ -94,6 +94,12 @@ export function DepartmentWorkbenchScreen() {
             accessor: "patientName",
             className: "min-w-[200px]",
             render: (row) => <PatientCell row={row} />
+        },
+        {
+            header: "ASSIGNED TECHNICIAN",
+            accessor: "assignedTechnicianName",
+            className: "w-48",
+            render: (row) => <TechnicianCell row={row} />
         },
         {
             header: "STATUS",
@@ -179,6 +185,7 @@ export function DepartmentWorkbenchScreen() {
                                 assignmentId={selectedAssignmentId}
                                 onClose={() => setIsIntentPanelOpen(false)}
                                 onDirtyUpdate={setIsDirty}
+                                onUpdateLocalState={updateLocalState}
                             />
                         ) : (
                             <ActivityStream />

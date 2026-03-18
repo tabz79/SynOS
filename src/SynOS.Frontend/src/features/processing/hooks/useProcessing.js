@@ -44,22 +44,6 @@ export function useProcessing() {
         const connectSignalR = async () => {
             await SignalRService.startConnection();
 
-            // Handle Delta updates for the queue
-            SignalRService.onActionQueueDeltaReceived((delta) => {
-                const normalized = ProcessingApi.normalizeQueueData([delta])[0];
-                setQueue(prev => {
-                    const exists = prev.find(item => item.id === normalized.id);
-                    let newQueue;
-                    if (exists) {
-                        newQueue = prev.map(item => item.id === normalized.id ? normalized : item);
-                    } else {
-                        newQueue = [normalized, ...prev];
-                    }
-                    updateSummary(newQueue);
-                    return newQueue;
-                });
-            });
-
             // Handle status updates (Claimed, Completed, DraftSaved)
             SignalRService.onAssignmentUpdateReceived((payload) => {
                 // payload: { type: 'assignment-update', assignmentId, status }
@@ -69,7 +53,9 @@ export function useProcessing() {
                             return { 
                                 ...item, 
                                 status: getStatusEnumValue(payload.status),
-                                operationalStatus: payload.status 
+                                operationalStatus: payload.status,
+                                assignedResourceId: payload.assignedResourceId ?? item.assignedResourceId,
+                                assignedTechnicianName: payload.assignedTechnicianName ?? item.assignedTechnicianName
                             };
                         }
                         return item;
@@ -102,10 +88,20 @@ export function useProcessing() {
         return map[statusStr] ?? 0;
     };
 
+    // Optimistic / Local UI state updates
+    const updateLocalState = useCallback((assignmentId, updates) => {
+        setQueue(prev => {
+            const next = prev.map(item => item.id === assignmentId ? { ...item, ...updates } : item);
+            updateSummary(next);
+            return next;
+        });
+    }, []);
+
     return {
         queue,
         summary,
         isLoading,
-        refreshQueue: loadQueue
+        refreshQueue: loadQueue,
+        updateLocalState
     };
 }

@@ -9,6 +9,7 @@ namespace SynOS.Services.Security
         Guid CurrentSessionId { get; } // ADDED for Option A Phase 1A
         string CurrentRole { get; }
         string CurrentMode { get; } // ADDED for Phase 1B
+        string UserName { get; }
         string DepartmentCode { get; } // ADDED for Department Workbench
         bool IsAuthenticated { get; }
     }

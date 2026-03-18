@@ -42,15 +42,20 @@ namespace SynOS.Services.Operational
             // 1. Validate Mode
             if (!string.Equals(_userContext.CurrentMode, "operational", StringComparison.OrdinalIgnoreCase)) return Enumerable.Empty<ProcessingQueueItemDto>();
 
-            // 2. Get Resource
-            var resource = await _db.OperationalResources.FirstOrDefaultAsync(r => r.UserId == _userContext.CurrentUserId);
+            // 2. Get Resource (Branch-aware)
+            var resource = await _db.OperationalResources.FirstOrDefaultAsync(r => r.UserId == _userContext.CurrentUserId && r.BranchId == _userContext.CurrentBranchId);
             if (resource == null) return Enumerable.Empty<ProcessingQueueItemDto>();
 
             // 3. Query Queue
             var items = await _db.ProcessingAssignments
                 .Include(a => a.Specimen)
+                    .ThenInclude(s => s.Visit)
+                        .ThenInclude(v => v.Patient)
+                .Include(a => a.AssignedResource)
+                    .ThenInclude(r => r.User)
                 .Where(a => a.BranchId == resource.BranchId && a.DepartmentCode == resource.DepartmentCode)
-                .Where(a => a.Status == ProcessingAssignmentStatus.Pending || (a.Status == ProcessingAssignmentStatus.Claimed && a.AssignedResourceId == resource.OperationalResourceId))
+                .Where(a => a.Status == ProcessingAssignmentStatus.Pending || 
+                           ((a.Status == ProcessingAssignmentStatus.Claimed || a.Status == ProcessingAssignmentStatus.Completed) && a.AssignedResourceId == resource.OperationalResourceId))
                 .Select(a => new ProcessingQueueItemDto
                 {
                     ProcessingAssignmentId = a.ProcessingAssignmentId,
@@ -64,7 +69,8 @@ namespace SynOS.Services.Operational
                     Status = a.Status,
                     CreatedAt = a.CreatedAt,
                     StartedAt = a.StartedAt,
-                    AssignedResourceId = a.AssignedResourceId
+                    AssignedResourceId = a.AssignedResourceId,
+                    AssignedTechnicianName = a.AssignedResource != null ? a.AssignedResource.User.Name : null
                 })
                 .OrderByDescending(a => a.CreatedAt)
                 .ToListAsync();
@@ -77,9 +83,9 @@ namespace SynOS.Services.Operational
             // 1. Validate Operational Mode
             if (!string.Equals(_userContext.CurrentMode, "operational", StringComparison.OrdinalIgnoreCase)) return ProcessingResult.NotOperationalMode;
 
-            // 2. Retrieve Operational Resource
+            // 2. Retrieve Operational Resource (Branch-aware)
             var resource = await _db.OperationalResources
-                .FirstOrDefaultAsync(r => r.UserId == _userContext.CurrentUserId);
+                .FirstOrDefaultAsync(r => r.UserId == _userContext.CurrentUserId && r.BranchId == _userContext.CurrentBranchId);
 
             if (resource == null) return ProcessingResult.NoOperationalResource;
 
@@ -121,7 +127,9 @@ namespace SynOS.Services.Operational
                 snapshot.DepartmentCode,
                 processingAssignmentId,
                 ProcessingAssignmentStatus.Claimed.ToString(),
-                snapshot.VisitId.ToString());
+                snapshot.VisitId.ToString(),
+                resource.OperationalResourceId,
+                _userContext.UserName);
 
             return ProcessingResult.Success;
         }
@@ -131,9 +139,9 @@ namespace SynOS.Services.Operational
             // 1. Validate Operational Mode
             if (!string.Equals(_userContext.CurrentMode, "operational", StringComparison.OrdinalIgnoreCase)) return ProcessingResult.NotOperationalMode;
 
-            // 2. Retrieve Operational Resource
+            // 2. Retrieve Operational Resource (Branch-aware)
             var resource = await _db.OperationalResources
-                .FirstOrDefaultAsync(r => r.UserId == _userContext.CurrentUserId);
+                .FirstOrDefaultAsync(r => r.UserId == _userContext.CurrentUserId && r.BranchId == _userContext.CurrentBranchId);
 
             if (resource == null) return ProcessingResult.NoOperationalResource;
 
@@ -175,7 +183,9 @@ namespace SynOS.Services.Operational
                 snapshot.DepartmentCode,
                 processingAssignmentId,
                 ProcessingAssignmentStatus.Completed.ToString(),
-                snapshot.VisitId.ToString());
+                snapshot.VisitId.ToString(),
+                resource.OperationalResourceId,
+                _userContext.UserName);
 
             return ProcessingResult.Success;
         }
@@ -185,9 +195,9 @@ namespace SynOS.Services.Operational
             // 1. Validate Operational Mode
             if (!string.Equals(_userContext.CurrentMode, "operational", StringComparison.OrdinalIgnoreCase)) return ProcessingResult.NotOperationalMode;
 
-            // 2. Retrieve Operational Resource
+            // 2. Retrieve Operational Resource (Branch-aware)
             var resource = await _db.OperationalResources
-                .FirstOrDefaultAsync(r => r.UserId == _userContext.CurrentUserId);
+                .FirstOrDefaultAsync(r => r.UserId == _userContext.CurrentUserId && r.BranchId == _userContext.CurrentBranchId);
 
             if (resource == null) return ProcessingResult.NoOperationalResource;
 
@@ -235,6 +245,7 @@ namespace SynOS.Services.Operational
                     a.BranchId,
                     a.DepartmentCode,
                     a.Status,
+                    a.AssignedResourceId,
                     a.SpecimenId,
                     Specimen = new
                     {
@@ -299,6 +310,7 @@ namespace SynOS.Services.Operational
                 SpecimenId = snapshot.SpecimenId,
                 DepartmentCode = snapshot.DepartmentCode,
                 Status = snapshot.Status,
+                AssignedResourceId = snapshot.AssignedResourceId,
                 Patient = new AssignmentPatientDto
                 {
                     PatientId = patient.PatientId,
@@ -351,9 +363,9 @@ namespace SynOS.Services.Operational
             // 1. Validate Operational Mode
             if (!string.Equals(_userContext.CurrentMode, "operational", StringComparison.OrdinalIgnoreCase)) return ProcessingResult.NotOperationalMode;
 
-            // 2. Retrieve Operational Resource
+            // 2. Retrieve Operational Resource (Branch-aware)
             var resource = await _db.OperationalResources
-                .FirstOrDefaultAsync(r => r.UserId == _userContext.CurrentUserId);
+                .FirstOrDefaultAsync(r => r.UserId == _userContext.CurrentUserId && r.BranchId == _userContext.CurrentBranchId);
 
             if (resource == null) return ProcessingResult.NoOperationalResource;
 

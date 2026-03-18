@@ -65,6 +65,7 @@ export const ProcessingApi = {
             specimenType: item.specimenTypeCode,
             status: item.status, // ProcessingAssignmentStatus enum
             assignedResourceId: item.assignedResourceId,
+            assignedTechnicianName: item.assignedTechnicianName,
             createdAt: item.createdAt,
             // ActionQueue expected fields
             operationalStatus: item.status === 0 ? "Pending" : 

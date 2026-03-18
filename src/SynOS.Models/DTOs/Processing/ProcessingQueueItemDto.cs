@@ -17,5 +17,6 @@ namespace SynOS.Models.DTOs.Processing
         public DateTimeOffset CreatedAt { get; set; }
         public DateTimeOffset? StartedAt { get; set; }
         public Guid? AssignedResourceId { get; set; }
+        public string? AssignedTechnicianName { get; set; }
     }
 }
