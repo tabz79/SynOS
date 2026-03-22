@@ -46,7 +46,10 @@ namespace SynOS.Services.Operational
             var resource = await _db.OperationalResources.FirstOrDefaultAsync(r => r.UserId == _userContext.CurrentUserId && r.BranchId == _userContext.CurrentBranchId);
             if (resource == null) return Enumerable.Empty<ProcessingQueueItemDto>();
 
-            // 3. Query Queue
+            // 3. Query Queue (V1 Rules)
+            var today = DateTimeOffset.UtcNow.Date;
+            var window24h = DateTimeOffset.UtcNow.AddHours(-24);
+
             var items = await _db.ProcessingAssignments
                 .Include(a => a.Specimen)
                     .ThenInclude(s => s.Visit)
@@ -54,8 +57,12 @@ namespace SynOS.Services.Operational
                 .Include(a => a.AssignedResource)
                     .ThenInclude(r => r.User)
                 .Where(a => a.BranchId == resource.BranchId && a.DepartmentCode == resource.DepartmentCode)
-                .Where(a => a.Status == ProcessingAssignmentStatus.Pending || 
-                           ((a.Status == ProcessingAssignmentStatus.Claimed || a.Status == ProcessingAssignmentStatus.Completed) && a.AssignedResourceId == resource.OperationalResourceId))
+                .Where(a => 
+                    (a.Status == ProcessingAssignmentStatus.Pending && a.CreatedAt >= today) || 
+                    (a.AssignedResourceId == resource.OperationalResourceId && 
+                        (a.Status == ProcessingAssignmentStatus.Claimed || 
+                        (a.Status == ProcessingAssignmentStatus.Completed && a.CompletedAt >= window24h)))
+                )
                 .Select(a => new ProcessingQueueItemDto
                 {
                     ProcessingAssignmentId = a.ProcessingAssignmentId,

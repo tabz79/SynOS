@@ -51,6 +51,9 @@ namespace SynOS.Api.Services
                                 await _hubContext.Clients.Group($"branch:{branchId}:dept:{delta.DepartmentCode}").SendAsync("ActionQueueDeltaReceived", delta);
                             }
 
+                            // 4. Target Entire Branch Fallback (Ensures Phleb/Dept users not in specific groups still sync)
+                            await _hubContext.Clients.Group($"Branch-{branchId}").SendAsync("ActionQueueDeltaReceived", delta);
+
                             return;
                         }
                     }

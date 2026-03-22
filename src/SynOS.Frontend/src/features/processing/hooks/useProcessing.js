@@ -65,6 +65,15 @@ export function useProcessing() {
                 });
             });
             
+            // Handle new items or visit-level updates
+            SignalRService.onActionQueueDeltaReceived((delta) => {
+                // If the delta involves this department, or it's a general update, refresh
+                // Since delta projects the "current" department, we can check it
+                if (delta && (!delta.departmentCode || delta.departmentCode === user?.departmentCode)) {
+                    loadQueue();
+                }
+            });
+
             // ReceptionSummaryUpdated can also be used if the backend reflects processing stats there
             SignalRService.onReceptionSummaryUpdated((stats) => {
                 // Mapping if necessary

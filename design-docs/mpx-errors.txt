@@ -1,128 +1,107 @@
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence> dotnet run --project src\SynOS.Api\SynOS.Api.csproj --urls "http://127.0.0.1:59999"
-
-[12:49:58 INF] OperationalStatsProjectionWorker is starting in Event-Driven Mode.
-[12:49:58 INF] Worker: Running Consistency Check and Catch-up...
-[12:49:59 INF] [ProjectorDebug] Processing Event Type: SPECIMEN_ORDERED, BranchId: a0000000-0000-0000-0000-000000000001, SourceId: 3e273f2b-672e-4705-a183-92fbbf41f88a, SourceType: Visit, VisitId: 3e273f2b-672e-4705-a183-92fbbf41f88a
-[12:49:59 INF] [ProjectorDebug] Checking Fact Deduplication for SourceId: 3e273f2b-672e-4705-a183-92fbbf41f88a
-[12:49:59 WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
-[12:50:00 INF] Worker: Catch-up complete. Awaiting real-time events...
-[12:50:11 WRN] Failed to determine the https port for redirect.
-[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=03/17/2026 12:50:11, Today=03/17/2026 00:00:00, Window=[03/17/2026 00:00:00 - 03/18/2026 00:00:00)
+[15:32:08 INF] OperationalStatsProjectionWorker is starting in Event-Driven Mode.
+[15:32:08 INF] Worker: Running Consistency Check and Catch-up...
+[15:32:09 INF] [ProjectorDebug] Processing Event Type: SPECIMEN_ORDERED, BranchId: a0000000-0000-0000-0000-000000000001, SourceId: 1988cd96-a466-479f-88ec-1f525a5cbd1c, SourceType: Visit, VisitId: 1988cd96-a466-479f-88ec-1f525a5cbd1c
+[15:32:10 INF] [ProjectorDebug] Checking Fact Deduplication for SourceId: 1988cd96-a466-479f-88ec-1f525a5cbd1c
+[15:32:10 WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+[15:32:10 INF] Worker: Catch-up complete. Awaiting real-time events...
+[15:32:10 WRN] Failed to determine the https port for redirect.
+[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=03/19/2026 15:32:25, Today=03/19/2026 00:00:00, Window=[03/19/2026 00:00:00 - 03/20/2026 00:00:00)
+[15:32:25 INF] Terminal web-1zy6xxtky authorized and added to Thermal80mm group for Branch a0000000-0000-0000-0000-000000000001.
 [ActionQueue] Found 1 raw visits.
-[ActionQueue] Processing Visit DRAFT-8A02F87B. Invoice Status: Paid.
-[12:50:18 WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
-[12:50:19 WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
-[12:50:19 INF] EVENT_WRITE for VisitId 69eebf1f-ed1d-49da-9f56-510324742aaf, Context cac5d9c6-7dd6-4753-b0ff-00b36cddd54e:0
-[12:50:19 WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
-[12:50:19 INF] [ProjectorDebug] Processing Event Type: VISIT_CREATED, BranchId: a0000000-0000-0000-0000-000000000001, SourceId: null, SourceType: null, VisitId: 69eebf1f-ed1d-49da-9f56-510324742aaf
-[12:50:19 INF] EVENT_WRITE for VisitId 69eebf1f-ed1d-49da-9f56-510324742aaf, Context cac5d9c6-7dd6-4753-b0ff-00b36cddd54e:0
-[12:50:19 WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
-[12:50:19 INF] [ProjectorDebug] Processing Event Type: VISIT_STARTED, BranchId: a0000000-0000-0000-0000-000000000001, SourceId: null, SourceType: null, VisitId: 69eebf1f-ed1d-49da-9f56-510324742aaf
-[12:50:19 WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
-[12:50:20 WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
-[12:50:20 WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
-[12:50:23 INF] EVENT_WRITE for VisitId 69eebf1f-ed1d-49da-9f56-510324742aaf, Context ee29eb35-d65c-454a-8f49-1d9c8479ad47:0
-[12:50:23 INF] [ProjectorDebug] Processing Event Type: VISIT_UPDATED, BranchId: a0000000-0000-0000-0000-000000000001, SourceId: null, SourceType: null, VisitId: 69eebf1f-ed1d-49da-9f56-510324742aaf
-[12:50:23 WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
-[12:50:30 INF] TRACE: AddTestToVisitAsync called. visitId=69eebf1f-ed1d-49da-9f56-510324742aaf, testCode=LFT
-[12:50:30 WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
-[12:50:30 INF] [ExpansionDebug] Starting expansion for LFT. isChild: False, parentOrderId:
-[12:50:30 WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
-[12:50:30 WRN] [Validation] Resolving Test: LFT, IsProfile: True, HasChildren: True, SpecimenType: SERUM
-[12:50:30 INF] [ExpansionDebug] Creating Order entry: LFT, ID: a27a761a-0e8b-45ea-ae6d-6dc468eadb73, Parent:
-[12:50:30 INF] [ExpansionDebug] Order LFT added to context and local collection.
-[12:50:30 INF] [ExpansionDebug] Test LFT is a Profile. Children found in cache: 5
-[12:50:30 INF] [ExpansionDebug] Expanding child: BIL_I (ID: afe654f1-8315-4f34-be83-574a6e65ee18) for parent: LFT
-[12:50:30 INF] [ExpansionDebug] Starting expansion for BIL_I. isChild: True, parentOrderId: a27a761a-0e8b-45ea-ae6d-6dc468eadb73
-[12:50:30 WRN] [Validation] Resolving Test: BIL_I, IsProfile: False, HasChildren: False, SpecimenType: SERUM
-[12:50:30 INF] [ExpansionDebug] Creating Order entry: BIL_I, ID: 2e4c7f92-70c7-48c4-aca3-6127f67d26d2, Parent: a27a761a-0e8b-45ea-ae6d-6dc468eadb73
-[12:50:30 INF] [ExpansionDebug] Order BIL_I added to context and local collection.
-[12:50:30 INF] [ExpansionDebug] Expanding child: BIL_T (ID: 0cd1e6e5-5c90-41c4-baff-5c4b00884f9b) for parent: LFT
-[12:50:30 INF] [ExpansionDebug] Starting expansion for BIL_T. isChild: True, parentOrderId: a27a761a-0e8b-45ea-ae6d-6dc468eadb73
-[12:50:30 WRN] [Validation] Resolving Test: BIL_T, IsProfile: False, HasChildren: False, SpecimenType: SERUM
-[12:50:30 INF] [ExpansionDebug] Creating Order entry: BIL_T, ID: 2e64535c-12d0-4d40-ad84-b3851117a6fb, Parent: a27a761a-0e8b-45ea-ae6d-6dc468eadb73
-[12:50:30 INF] [ExpansionDebug] Order BIL_T added to context and local collection.
-[12:50:30 INF] [ExpansionDebug] Expanding child: GLOB (ID: 533070e2-fb65-42ab-a988-93d6a87562cf) for parent: LFT
-[12:50:30 INF] [ExpansionDebug] Starting expansion for GLOB. isChild: True, parentOrderId: a27a761a-0e8b-45ea-ae6d-6dc468eadb73
-[12:50:30 WRN] [Validation] Resolving Test: GLOB, IsProfile: False, HasChildren: False, SpecimenType: SERUM
-[12:50:30 INF] [ExpansionDebug] Creating Order entry: GLOB, ID: 4df8d0b5-6c62-4a1b-8e92-20f9759afb6d, Parent: a27a761a-0e8b-45ea-ae6d-6dc468eadb73
-[12:50:30 INF] [ExpansionDebug] Order GLOB added to context and local collection.
-[12:50:30 INF] [ExpansionDebug] Expanding child: ALB (ID: fa7c3695-9908-4802-be93-b01640d62a26) for parent: LFT
-[12:50:30 INF] [ExpansionDebug] Starting expansion for ALB. isChild: True, parentOrderId: a27a761a-0e8b-45ea-ae6d-6dc468eadb73
-[12:50:30 WRN] [Validation] Resolving Test: ALB, IsProfile: False, HasChildren: False, SpecimenType: SERUM
-[12:50:30 INF] [ExpansionDebug] Creating Order entry: ALB, ID: a5bf555d-f5e0-46c5-94ef-cdc1a457e770, Parent: a27a761a-0e8b-45ea-ae6d-6dc468eadb73
-[12:50:30 INF] [ExpansionDebug] Order ALB added to context and local collection.
-[12:50:30 INF] [ExpansionDebug] Expanding child: TP (ID: 4a44e3ac-9c64-4d52-b831-325cbce7f049) for parent: LFT
-[12:50:30 INF] [ExpansionDebug] Starting expansion for TP. isChild: True, parentOrderId: a27a761a-0e8b-45ea-ae6d-6dc468eadb73
-[12:50:30 WRN] [Validation] Resolving Test: TP, IsProfile: False, HasChildren: False, SpecimenType: SERUM
-[12:50:30 INF] [ExpansionDebug] Creating Order entry: TP, ID: fd508040-2003-4a8d-8c18-537b7c19770e, Parent: a27a761a-0e8b-45ea-ae6d-6dc468eadb73
-[12:50:30 INF] [ExpansionDebug] Order TP added to context and local collection.
-[12:50:30 INF] TRACE: SaveChangesAsync reached. Affected rows: 6
-[12:50:33 WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
-[12:50:33 WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
-[12:50:33 INF] EVENT_WRITE for VisitId 69eebf1f-ed1d-49da-9f56-510324742aaf, Context abdca02c-ca52-4619-8f2b-4f4ff74b812b:0
-[12:50:33 INF] [ProjectorDebug] Processing Event Type: PAYMENT_RECEIVED, BranchId: a0000000-0000-0000-0000-000000000001, SourceId: 6bec16e3-ae03-4dca-a912-0693ec0f4731, SourceType: RevenueFact, VisitId: 69eebf1f-ed1d-49da-9f56-510324742aaf
-[12:50:33 INF] [ProjectorDebug] Checking Fact Deduplication for SourceId: 6bec16e3-ae03-4dca-a912-0693ec0f4731
-[12:50:33 WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
-[12:50:34 INF] [DebugSpecimen] Planning for Visit 69eebf1f-ed1d-49da-9f56-510324742aaf, Active Orders: 6
-[12:50:34 INF] Creating unclaimed work assignment for SampleCollection (69eebf1f-ed1d-49da-9f56-510324742aaf) in Pathology
-[12:50:34 WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
-[12:50:34 INF] EVENT_WRITE for VisitId 69eebf1f-ed1d-49da-9f56-510324742aaf, Context abdca02c-ca52-4619-8f2b-4f4ff74b812b:0
-[12:50:34 WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
-[12:50:34 INF] TransitionToSpecimenPlanned: Successfully planned 1 specimens for Visit 69eebf1f-ed1d-49da-9f56-510324742aaf. Assignment: 6ca3e297-9af1-4a53-bc8c-15c35ba9d534
-[12:50:34 INF] EVENT_WRITE for VisitId 69eebf1f-ed1d-49da-9f56-510324742aaf, Context abdca02c-ca52-4619-8f2b-4f4ff74b812b:0
-[12:50:34 INF] [ProjectorDebug] Processing Event Type: VISIT_FINALIZED, BranchId: a0000000-0000-0000-0000-000000000001, SourceId: null, SourceType: null, VisitId: 69eebf1f-ed1d-49da-9f56-510324742aaf
-[12:50:34 WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
-[12:50:34 INF] Publishing PrintThermalReceiptEvent to Branch-a0000000-0000-0000-0000-000000000001-Lead-Thermal80mm (VisitId: 69eebf1f-ed1d-49da-9f56-510324742aaf)
-[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=03/17/2026 12:50:46, Today=03/17/2026 00:00:00, Window=[03/17/2026 00:00:00 - 03/18/2026 00:00:00)
+[ActionQueue] Processing Visit DRAFT-3AB2A507. Invoice Status: Paid.
+[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=03/19/2026 15:32:26, Today=03/19/2026 00:00:00, Window=[03/19/2026 00:00:00 - 03/20/2026 00:00:00)
+[ActionQueue] Found 1 raw visits.
+[ActionQueue] Processing Visit DRAFT-3AB2A507. Invoice Status: Paid.
+[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=03/19/2026 15:32:26, Today=03/19/2026 00:00:00, Window=[03/19/2026 00:00:00 - 03/20/2026 00:00:00)
+[ActionQueue] Found 1 raw visits.
+[ActionQueue] Processing Visit DRAFT-3AB2A507. Invoice Status: Paid.
+[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=03/19/2026 15:32:26, Today=03/19/2026 00:00:00, Window=[03/19/2026 00:00:00 - 03/20/2026 00:00:00)
+[ActionQueue] Found 1 raw visits.
+[ActionQueue] Processing Visit DRAFT-3AB2A507. Invoice Status: Paid.
+[15:32:34 INF] Terminal web-2tj9gsyws attempted to register Thermal80mm for Branch a0000000-0000-0000-0000-000000000001 but lacked Lead authorization.
+[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=03/19/2026 15:32:42, Today=03/19/2026 00:00:00, Window=[03/19/2026 00:00:00 - 03/20/2026 00:00:00)
+[15:32:42 INF] Terminal web-l5wvnyhbv attempted to register Thermal80mm for Branch a0000000-0000-0000-0000-000000000001 but lacked Lead authorization.
+[ActionQueue] Found 1 raw visits.
+[ActionQueue] Processing Visit DRAFT-3AB2A507. Invoice Status: Paid.
+[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=03/19/2026 15:32:42, Today=03/19/2026 00:00:00, Window=[03/19/2026 00:00:00 - 03/20/2026 00:00:00)
+[ActionQueue] Found 1 raw visits.
+[ActionQueue] Processing Visit DRAFT-3AB2A507. Invoice Status: Paid.
+[15:33:10 WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+[15:33:10 WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+[15:33:10 INF] EVENT_WRITE for VisitId a4d426f6-06cb-49ca-8c04-1ff99ddf6275, Context 6f2bbe70-4e16-4d29-919c-206778035bf9:0
+[15:33:10 WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+[15:33:10 INF] [ProjectorDebug] Processing Event Type: VISIT_CREATED, BranchId: a0000000-0000-0000-0000-000000000001, SourceId: null, SourceType: null, VisitId: a4d426f6-06cb-49ca-8c04-1ff99ddf6275
+[15:33:10 INF] EVENT_WRITE for VisitId a4d426f6-06cb-49ca-8c04-1ff99ddf6275, Context 6f2bbe70-4e16-4d29-919c-206778035bf9:0
+[15:33:10 WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+[15:33:11 INF] [ProjectorDebug] Processing Event Type: VISIT_STARTED, BranchId: a0000000-0000-0000-0000-000000000001, SourceId: null, SourceType: null, VisitId: a4d426f6-06cb-49ca-8c04-1ff99ddf6275
+[15:33:11 WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+[15:33:11 WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+[15:33:11 WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+[15:33:14 INF] EVENT_WRITE for VisitId a4d426f6-06cb-49ca-8c04-1ff99ddf6275, Context 9a0dc9b0-113f-43d8-b935-f06e0f104de8:0
+[15:33:14 INF] [ProjectorDebug] Processing Event Type: VISIT_UPDATED, BranchId: a0000000-0000-0000-0000-000000000001, SourceId: null, SourceType: null, VisitId: a4d426f6-06cb-49ca-8c04-1ff99ddf6275
+[15:33:14 WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+[15:33:19 INF] TRACE: AddTestToVisitAsync called. visitId=a4d426f6-06cb-49ca-8c04-1ff99ddf6275, testCode=LFT
+[15:33:19 WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+[15:33:19 INF] [ExpansionDebug] Starting expansion for LFT. isChild: False, parentOrderId:
+[15:33:19 WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+[15:33:19 WRN] [Validation] Resolving Test: LFT, IsProfile: True, HasChildren: True, SpecimenType: SERUM
+[15:33:19 INF] [ExpansionDebug] Creating Order entry: LFT, ID: f8468301-4e37-4984-8f7e-e5a8295d122b, Parent:
+[15:33:19 INF] [ExpansionDebug] Order LFT added to context and local collection.
+[15:33:19 INF] [ExpansionDebug] Test LFT is a Profile. Children found in cache: 5
+[15:33:19 INF] [ExpansionDebug] Expanding child: BIL_I (ID: afe654f1-8315-4f34-be83-574a6e65ee18) for parent: LFT
+[15:33:19 INF] [ExpansionDebug] Starting expansion for BIL_I. isChild: True, parentOrderId: f8468301-4e37-4984-8f7e-e5a8295d122b
+[15:33:19 WRN] [Validation] Resolving Test: BIL_I, IsProfile: False, HasChildren: False, SpecimenType: SERUM
+[15:33:19 INF] [ExpansionDebug] Creating Order entry: BIL_I, ID: 1881a87f-4d5a-43ce-ad9c-f494e9e31731, Parent: f8468301-4e37-4984-8f7e-e5a8295d122b
+[15:33:19 INF] [ExpansionDebug] Order BIL_I added to context and local collection.
+[15:33:19 INF] [ExpansionDebug] Expanding child: BIL_T (ID: 0cd1e6e5-5c90-41c4-baff-5c4b00884f9b) for parent: LFT
+[15:33:19 INF] [ExpansionDebug] Starting expansion for BIL_T. isChild: True, parentOrderId: f8468301-4e37-4984-8f7e-e5a8295d122b
+[15:33:19 WRN] [Validation] Resolving Test: BIL_T, IsProfile: False, HasChildren: False, SpecimenType: SERUM
+[15:33:19 INF] [ExpansionDebug] Creating Order entry: BIL_T, ID: 2f477383-3b3e-4a9e-9d01-28c3293b575a, Parent: f8468301-4e37-4984-8f7e-e5a8295d122b
+[15:33:19 INF] [ExpansionDebug] Order BIL_T added to context and local collection.
+[15:33:19 INF] [ExpansionDebug] Expanding child: GLOB (ID: 533070e2-fb65-42ab-a988-93d6a87562cf) for parent: LFT
+[15:33:19 INF] [ExpansionDebug] Starting expansion for GLOB. isChild: True, parentOrderId: f8468301-4e37-4984-8f7e-e5a8295d122b
+[15:33:19 WRN] [Validation] Resolving Test: GLOB, IsProfile: False, HasChildren: False, SpecimenType: SERUM
+[15:33:19 INF] [ExpansionDebug] Creating Order entry: GLOB, ID: 9a1949c4-3d08-4cc3-b443-0b003f7e4bd8, Parent: f8468301-4e37-4984-8f7e-e5a8295d122b
+[15:33:19 INF] [ExpansionDebug] Order GLOB added to context and local collection.
+[15:33:19 INF] [ExpansionDebug] Expanding child: ALB (ID: fa7c3695-9908-4802-be93-b01640d62a26) for parent: LFT
+[15:33:19 INF] [ExpansionDebug] Starting expansion for ALB. isChild: True, parentOrderId: f8468301-4e37-4984-8f7e-e5a8295d122b
+[15:33:19 WRN] [Validation] Resolving Test: ALB, IsProfile: False, HasChildren: False, SpecimenType: SERUM
+[15:33:19 INF] [ExpansionDebug] Creating Order entry: ALB, ID: 4970c9d8-2726-47af-a2b8-a4b3c0c275cc, Parent: f8468301-4e37-4984-8f7e-e5a8295d122b
+[15:33:19 INF] [ExpansionDebug] Order ALB added to context and local collection.
+[15:33:19 INF] [ExpansionDebug] Expanding child: TP (ID: 4a44e3ac-9c64-4d52-b831-325cbce7f049) for parent: LFT
+[15:33:19 INF] [ExpansionDebug] Starting expansion for TP. isChild: True, parentOrderId: f8468301-4e37-4984-8f7e-e5a8295d122b
+[15:33:19 WRN] [Validation] Resolving Test: TP, IsProfile: False, HasChildren: False, SpecimenType: SERUM
+[15:33:19 INF] [ExpansionDebug] Creating Order entry: TP, ID: e5611c8a-5234-484a-bcdd-a80329ab252d, Parent: f8468301-4e37-4984-8f7e-e5a8295d122b
+[15:33:19 INF] [ExpansionDebug] Order TP added to context and local collection.
+[15:33:19 INF] TRACE: SaveChangesAsync reached. Affected rows: 6
+[15:33:24 WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+[15:33:25 WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+[15:33:25 INF] EVENT_WRITE for VisitId a4d426f6-06cb-49ca-8c04-1ff99ddf6275, Context 0add0e59-d455-41d5-abc0-53a35a19d52a:0
+[15:33:25 INF] [ProjectorDebug] Processing Event Type: PAYMENT_RECEIVED, BranchId: a0000000-0000-0000-0000-000000000001, SourceId: 0d8f353f-aed8-4f6a-ac94-b289ad1446c1, SourceType: RevenueFact, VisitId: a4d426f6-06cb-49ca-8c04-1ff99ddf6275
+[15:33:25 INF] [ProjectorDebug] Checking Fact Deduplication for SourceId: 0d8f353f-aed8-4f6a-ac94-b289ad1446c1
+[15:33:25 WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+[15:33:25 INF] [DebugSpecimen] Planning for Visit a4d426f6-06cb-49ca-8c04-1ff99ddf6275, Active Orders: 6
+[15:33:26 INF] Creating unclaimed work assignment for SampleCollection (a4d426f6-06cb-49ca-8c04-1ff99ddf6275) in Pathology
+[15:33:26 WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+[15:33:26 INF] EVENT_WRITE for VisitId a4d426f6-06cb-49ca-8c04-1ff99ddf6275, Context 0add0e59-d455-41d5-abc0-53a35a19d52a:0
+[15:33:26 WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+[15:33:26 INF] TransitionToSpecimenPlanned: Successfully planned 1 specimens for Visit a4d426f6-06cb-49ca-8c04-1ff99ddf6275. Assignment: e6d36b9f-4348-4e67-916b-5a670061ae97
+[15:33:26 INF] EVENT_WRITE for VisitId a4d426f6-06cb-49ca-8c04-1ff99ddf6275, Context 0add0e59-d455-41d5-abc0-53a35a19d52a:0
+[15:33:26 INF] [ProjectorDebug] Processing Event Type: VISIT_FINALIZED, BranchId: a0000000-0000-0000-0000-000000000001, SourceId: null, SourceType: null, VisitId: a4d426f6-06cb-49ca-8c04-1ff99ddf6275
+[15:33:26 WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+[15:33:26 INF] Publishing PrintThermalReceiptEvent to Branch-a0000000-0000-0000-0000-000000000001-Lead-Thermal80mm (VisitId: a4d426f6-06cb-49ca-8c04-1ff99ddf6275)
+[15:34:04 INF] Assignment d304aaf6-23d6-4a6d-b2b0-64cf357b7e6b successfully claimed by Resource 0e34b739-d97f-445d-b488-2e5fd6b9918c. Now generating reserved accessions.
+[15:34:09 WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+[15:34:10 WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+[15:34:10 INF] ConsumeStockForSpecimenAsync: Participating in existing transaction for Specimen 23c64a2f-5262-4f09-bf08-79ee7884918f
+[15:34:10 WRN] No tube mapping for Test Globulin (533070e2-fb65-42ab-a988-93d6a87562cf). Consumption skipped for Specimen 23c64a2f-5262-4f09-bf08-79ee7884918f.
+[15:34:10 WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+[15:34:10 INF] EVENT_WRITE for VisitId 1988cd96-a466-479f-88ec-1f525a5cbd1c, Context 1dc193ba-8b36-4fd5-a358-d697d0ab2984:0
+[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=03/19/2026 15:37:25, Today=03/19/2026 00:00:00, Window=[03/19/2026 00:00:00 - 03/20/2026 00:00:00)
 [ActionQueue] Found 2 raw visits.
-[ActionQueue] Processing Visit DRAFT-997052E5. Invoice Status: Paid.
-[ActionQueue] Processing Visit DRAFT-8A02F87B. Invoice Status: Paid.
-[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=03/17/2026 12:50:46, Today=03/17/2026 00:00:00, Window=[03/17/2026 00:00:00 - 03/18/2026 00:00:00)
+[ActionQueue] Processing Visit DRAFT-CA934AD9. Invoice Status: Paid.
+[ActionQueue] Processing Visit DRAFT-3AB2A507. Invoice Status: Paid.
+[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=03/19/2026 15:37:42, Today=03/19/2026 00:00:00, Window=[03/19/2026 00:00:00 - 03/20/2026 00:00:00)
 [ActionQueue] Found 2 raw visits.
-[ActionQueue] Processing Visit DRAFT-997052E5. Invoice Status: Paid.
-[ActionQueue] Processing Visit DRAFT-8A02F87B. Invoice Status: Paid.
-[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=03/17/2026 12:50:46, Today=03/17/2026 00:00:00, Window=[03/17/2026 00:00:00 - 03/18/2026 00:00:00)
-[ActionQueue] Found 2 raw visits.
-[12:50:46 INF] Terminal web-1zy6xxtky authorized and added to Thermal80mm group for Branch [ActionQueue] Processing Visit DRAFT-997052E5. Invoice Status: Paid.
-a0000000-0000-0000-0000-000000000001[ActionQueue] Processing Visit DRAFT-8A02F87B. Invoice Status: Paid.
-.
-[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=03/17/2026 12:50:46, Today=03/17/2026 00:00:00, Window=[03/17/2026 00:00:00 - 03/18/2026 00:00:00)
-[ActionQueue] Found 2 raw visits.
-[ActionQueue] Processing Visit DRAFT-997052E5. Invoice Status: Paid.
-[ActionQueue] Processing Visit DRAFT-8A02F87B. Invoice Status: Paid.
-[12:51:10 INF] Terminal web-2tj9gsyws attempted to register Thermal80mm for Branch a0000000-0000-0000-0000-000000000001 but lacked Lead authorization.
-[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=03/17/2026 12:51:11, Today=03/17/2026 00:00:00, Window=[03/17/2026 00:00:00 - 03/18/2026 00:00:00)
-[ActionQueue] Found 2 raw visits.
-[ActionQueue] Processing Visit DRAFT-997052E5. Invoice Status: Paid.
-[ActionQueue] Processing Visit DRAFT-8A02F87B. Invoice Status: Paid.
-[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=03/17/2026 12:51:11, Today=03/17/2026 00:00:00, Window=[03/17/2026 00:00:00 - 03/18/2026 00:00:00)
-[ActionQueue] Found 2 raw visits.
-[ActionQueue] Processing Visit DRAFT-997052E5. Invoice Status: Paid.
-[ActionQueue] Processing Visit DRAFT-8A02F87B. Invoice Status: Paid.
-[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=03/17/2026 12:51:11, Today=03/17/2026 00:00:00, Window=[03/17/2026 00:00:00 - 03/18/2026 00:00:00)
-[ActionQueue] Found 2 raw visits.
-[ActionQueue] Processing Visit DRAFT-997052E5. Invoice Status: Paid.
-[ActionQueue] Processing Visit DRAFT-8A02F87B. Invoice Status: Paid.
-[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=03/17/2026 12:51:11, Today=03/17/2026 00:00:00, Window=[03/17/2026 00:00:00 - 03/18/2026 00:00:00)
-[ActionQueue] Found 2 raw visits.
-[ActionQueue] Processing Visit DRAFT-997052E5. Invoice Status: Paid.
-[ActionQueue] Processing Visit DRAFT-8A02F87B. Invoice Status: Paid.
-[12:51:16 INF] Assignment 6ca3e297-9af1-4a53-bc8c-15c35ba9d534 successfully claimed by Resource 0e34b739-d97f-445d-b488-2e5fd6b9918c. Now generating reserved accessions.
-[12:51:20 WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
-[12:51:21 WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
-[12:51:21 INF] ConsumeStockForSpecimenAsync: Participating in existing transaction for Specimen 100b2f45-8f1d-4621-9290-40557e711b18
-[12:51:21 WRN] No tube mapping for Test Globulin (533070e2-fb65-42ab-a988-93d6a87562cf). Consumption skipped for Specimen 100b2f45-8f1d-4621-9290-40557e711b18.
-[12:51:21 WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
-[12:51:21 INF] EVENT_WRITE for VisitId 69eebf1f-ed1d-49da-9f56-510324742aaf, Context 7f436691-d72d-4457-9d2f-3d77e5332d04:0
-[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=03/17/2026 12:51:25, Today=03/17/2026 00:00:00, Window=[03/17/2026 00:00:00 - 03/18/2026 00:00:00)
-[ActionQueue] Found 2 raw visits.
-[ActionQueue] Processing Visit DRAFT-997052E5. Invoice Status: Paid.
-[ActionQueue] Processing Visit DRAFT-8A02F87B. Invoice Status: Paid.
-[12:51:26[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=03/17/2026 12:51:26, Today=03/17/2026 00:00:00, Window=[03/17/2026 00:00:00 - 03/18/2026 00:00:00)
- INF] Terminal web-2tj9gsyws attempted to register Thermal80mm for Branch a0000000-0000-0000-0000-000000000001 but lacked Lead authorization.
-[ActionQueue] Found 2 raw visits.
-[ActionQueue] Processing Visit DRAFT-997052E5. Invoice Status: Paid.
-[ActionQueue] Processing Visit DRAFT-8A02F87B. Invoice Status: Paid.
-[12:52:00 INF] Terminal web-2tj9gsyws attempted to register Thermal80mm for Branch a0000000-0000-0000-0000-000000000001 but lacked Lead authorization.
-[12:52:12 INF] Terminal web-2tj9gsyws attempted to register Thermal80mm for Branch a0000000-0000-0000-0000-000000000001 but lacked Lead authorization.
+[ActionQueue] Processing Visit DRAFT-CA934AD9. Invoice Status: Paid.
+[ActionQueue] Processing Visit DRAFT-3AB2A507. Invoice Status: Paid.
