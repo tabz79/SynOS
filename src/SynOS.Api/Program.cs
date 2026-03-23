@@ -42,6 +42,7 @@ using SynOS.Services.Operations; // ADDED
 using SynOS.Api.Services; // ADDED
 using SynOS.Services.Settlements; // ADDED
 using SynOS.Services.Phlebotomy; // ADDED
+using SynOS.Services.Reporting; // ADDED
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -251,6 +252,7 @@ builder.Services.AddScoped<IProcessingService, ProcessingService>();
 builder.Services.AddScoped<SynOS.Services.Reception.IReceptionSnapshotService, SynOS.Services.Reception.ReceptionSnapshotService>();
 builder.Services.AddScoped<SynOS.Services.Reception.IReceptionPatientService, SynOS.Services.Reception.ReceptionPatientService>(); // ADDED
 builder.Services.AddScoped<IReportService, ReportService>();
+builder.Services.AddScoped<IReportingService, ReportingService>(); // New Reporting Engine
 builder.Services.AddScoped<ICriticalValueService, CriticalValueService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<ISampleNotifier, SampleNotifier>(); // Register notifier

@@ -54,6 +54,10 @@ namespace SynOS.Models.Entities
 
         public Guid? SupersededByResultId { get; set; }
         
+        public bool IsOverridden { get; set; } = false;
+
+        public string? OverrideReason { get; set; }
+
         [Timestamp]
         public byte[]? RowVersion { get; set; }
     }

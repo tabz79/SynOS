@@ -118,6 +118,7 @@ namespace SynOS.Data
         public DbSet<Referrer> Referrers { get; set; } = null!;
         public DbSet<Report> Reports { get; set; } = null!;
         public DbSet<ReportVersion> ReportVersions { get; set; } = null!;
+        public DbSet<ReportSnapshot> ReportSnapshots { get; set; } = null!;
         public DbSet<ReportTemplate> ReportTemplates { get; set; } = null!;
         public DbSet<ReportSignature> ReportSignatures { get; set; } = null!;
 
@@ -158,6 +159,7 @@ namespace SynOS.Data
         public DbSet<CatalogTubeType> CatalogTubeTypes { get; set; } = null!;
         public DbSet<CatalogTest> CatalogTests { get; set; } = null!;
         public DbSet<CatalogParameter> CatalogParameters { get; set; } = null!;
+        public DbSet<CatalogTestNote> CatalogTestNotes { get; set; } = null!;
         public DbSet<CatalogPanelMapping> CatalogPanelMappings { get; set; } = null!;
         public DbSet<CatalogProvisioningLock> CatalogProvisioningLocks { get; set; } = null!;
         public DbSet<CatalogProvisioningLog> CatalogProvisioningLogs { get; set; } = null!;
@@ -742,6 +744,24 @@ namespace SynOS.Data
                 entity.HasOne(e => e.Report).WithMany(r => r.ReportVersions).HasForeignKey(e => e.ReportId).OnDelete(DeleteBehavior.Cascade);
                 entity.HasOne(e => e.SignedBy).WithMany().HasForeignKey(e => e.SignedByUserId).OnDelete(DeleteBehavior.Restrict);
                 entity.HasIndex(e => new { e.ReportId, e.VersionNumber }).IsUnique();
+            });
+
+            modelBuilder.Entity<ReportSnapshot>(entity =>
+            {
+                entity.HasKey(e => e.ReportVersionId);
+                entity.HasOne(e => e.ReportVersion)
+                      .WithOne(rv => rv.Snapshot)
+                      .HasForeignKey<ReportSnapshot>(e => e.ReportVersionId)
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            modelBuilder.Entity<CatalogTestNote>(entity =>
+            {
+                entity.HasIndex(e => new { e.TestCode, e.NoteType });
+                entity.HasOne(e => e.Test)
+                      .WithMany(t => t.TestNotes)
+                      .HasForeignKey(e => e.TestCode)
+                      .OnDelete(DeleteBehavior.Cascade);
             });
 
             // ReportTemplate Module

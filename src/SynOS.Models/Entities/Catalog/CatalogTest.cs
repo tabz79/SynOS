@@ -41,7 +41,9 @@ namespace SynOS.Models.Entities.Catalog
 
         public bool IsActive { get; set; } = true;
 
+        public Guid CreatedBy { get; set; }
         public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
+        public Guid? UpdatedBy { get; set; }
         public DateTimeOffset UpdatedAt { get; set; } = DateTimeOffset.UtcNow;
 
         // Navigation
@@ -52,5 +54,7 @@ namespace SynOS.Models.Entities.Catalog
         
         [InverseProperty("ChildTest")]
         public virtual ICollection<CatalogPanelMapping> ChildMappings { get; set; } = new List<CatalogPanelMapping>();
+
+        public virtual ICollection<CatalogTestNote> TestNotes { get; set; } = new List<CatalogTestNote>();
     }
 }

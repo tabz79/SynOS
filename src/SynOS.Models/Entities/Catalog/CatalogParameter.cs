@@ -44,9 +44,26 @@ namespace SynOS.Models.Entities.Catalog
         [StringLength(2000)]
         public string? EnumOptions { get; set; }
 
+        [StringLength(200)]
+        public string? PrintName { get; set; }
+
+        [StringLength(100)]
+        public string? Methodology { get; set; }
+
+        [StringLength(200)]
+        public string? DisplayGroup { get; set; }
+
+        public int DisplayGroupOrder { get; set; } = 0;
+
+        public bool IsCalculated { get; set; } = false;
+
+        public int DecimalPlaces { get; set; } = 2;
+
         public bool IsActive { get; set; } = true;
 
+        public Guid CreatedBy { get; set; }
         public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
+        public Guid? UpdatedBy { get; set; }
         public DateTimeOffset UpdatedAt { get; set; } = DateTimeOffset.UtcNow;
     }
 }

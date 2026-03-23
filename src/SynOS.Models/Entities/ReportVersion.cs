@@ -27,5 +27,6 @@ namespace SynOS.Models.Entities
         public virtual User? SignedBy { get; set; }
 
         public DateTimeOffset? SignedAt { get; set; }
+        public virtual ReportSnapshot? Snapshot { get; set; }
     }
 }

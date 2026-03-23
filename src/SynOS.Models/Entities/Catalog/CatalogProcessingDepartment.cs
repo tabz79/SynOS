@@ -26,7 +26,9 @@ namespace SynOS.Models.Entities.Catalog
 
         public bool IsActive { get; set; } = true;
 
+        public Guid CreatedBy { get; set; }
         public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
+        public Guid? UpdatedBy { get; set; }
         public DateTimeOffset UpdatedAt { get; set; } = DateTimeOffset.UtcNow;
 
         // Navigation
