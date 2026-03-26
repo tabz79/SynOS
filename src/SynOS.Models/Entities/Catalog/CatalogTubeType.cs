@@ -22,5 +22,8 @@ namespace SynOS.Models.Entities.Catalog
         public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
         public Guid? UpdatedBy { get; set; }
         public DateTimeOffset UpdatedAt { get; set; } = DateTimeOffset.UtcNow;
+        
+        [Timestamp]
+        public byte[] RowVersion { get; set; } = Array.Empty<byte>();
     }
 }

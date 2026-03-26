@@ -5,6 +5,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using NCalc;
 using SynOS.Data;
 using SynOS.Models.DTOs.Reporting;
 using SynOS.Models.Entities;
@@ -178,11 +179,22 @@ namespace SynOS.Services.Reporting
                     IsCalculated = meta.IsCalculated
                 };
 
-                // V1 Manual Calculation Logic
+                // NEW: Dynamic Formula Engine (GPT-5 Approved)
                 if (paramDto.IsCalculated)
                 {
-                    var calcValue = PerformV1Calculation(paramDto.ParameterCode, results);
-                    if (calcValue != null) paramDto.Value = calcValue;
+                    // 1. Prioritize Catalog-Driven Formula
+                    if (!string.IsNullOrWhiteSpace(meta.Formula))
+                    {
+                        var resultsMap = results.ToDictionary(r => r.ParameterCode, r => (decimal?)decimal.Parse(r.Value));
+                        var calcValue = EvaluateFormula(meta.Formula, resultsMap);
+                        if (calcValue != null) paramDto.Value = FormatValue(calcValue.ToString(), meta.DecimalPlaces);
+                    }
+                    else
+                    {
+                        // 2. Legacy Fallback (Per V1 hardcoding)
+                        var calcValue = PerformV1Calculation(paramDto.ParameterCode, results);
+                        if (calcValue != null) paramDto.Value = calcValue;
+                    }
                 }
 
                 // Skip if no value and not calculated? (Usually we show all parameters in a report panel)
@@ -326,6 +338,43 @@ namespace SynOS.Services.Reporting
             var r = results.FirstOrDefault(r => r.ParameterCode == code);
             if (r != null && decimal.TryParse(r.Value, out var val)) return val;
             return null;
+        }
+
+        private decimal? EvaluateFormula(string formula, Dictionary<string, decimal?> values)
+        {
+            try
+            {
+                var expr = new Expression(formula);
+                
+                // Identify tokens and map parameters
+                foreach (var parameter in values)
+                {
+                    if (formula.Contains(parameter.Key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if (!parameter.Value.HasValue) 
+                        {
+                            _logger.LogTrace("Skipping formula {Formula} because {Token} is null", formula, parameter.Key);
+                            return null;
+                        }
+                        expr.Parameters[parameter.Key] = (double)parameter.Value.Value;
+                    }
+                }
+
+                var result = expr.Evaluate();
+                if (result == null) return null;
+                
+                return Convert.ToDecimal(result);
+            }
+            catch (DivideByZeroException)
+            {
+                _logger.LogWarning("Divide by zero in formula: {Formula}", formula);
+                return null;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to evaluate formula: {Formula}", formula);
+                return null;
+            }
         }
     }
 }

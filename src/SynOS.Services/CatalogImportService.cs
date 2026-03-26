@@ -96,11 +96,14 @@ namespace SynOS.Services
             var sheet = workbook.Worksheets.FirstOrDefault(ws => ws.Name == "ServiceCategories");
             if (sheet == null) return;
 
+            var headerMap = GetHeaderMap(sheet);
+            Console.WriteLine($"[Import] ServiceCategories Header Map: {string.Join(", ", headerMap.Select(kv => $"{kv.Key}:{kv.Value}"))}");
+
             var rows = sheet.RangeUsed().RowsUsed().Skip(1);
             foreach (IXLRangeRow row in rows)
             {
-                var code = GetCellValue(row, 1)?.Trim().ToUpperInvariant();
-                var name = GetCellValue(row, 2)?.Trim();
+                var code = GetCellValue(row, headerMap, "Code")?.ToUpperInvariant();
+                var name = GetCellValue(row, headerMap, "Name");
 
                 if (string.IsNullOrWhiteSpace(code)) continue;
 
@@ -136,13 +139,16 @@ namespace SynOS.Services
             var sheet = workbook.Worksheets.FirstOrDefault(ws => ws.Name == "ProcessingDepartments");
             if (sheet == null) return;
 
+            var headerMap = GetHeaderMap(sheet);
+            Console.WriteLine($"[Import] ProcessingDepartments Header Map: {string.Join(", ", headerMap.Select(kv => $"{kv.Key}:{kv.Value}"))}");
+
             var rows = sheet.RangeUsed().RowsUsed().Skip(1);
             foreach (IXLRangeRow row in rows)
             {
-                var code = GetCellValue(row, 1)?.Trim().ToUpperInvariant();
-                var name = GetCellValue(row, 2)?.Trim();
-                var categoryCode = GetCellValue(row, 3)?.Trim().ToUpperInvariant();
-                var requiresSpecimenString = GetCellValue(row, 4)?.Trim().ToLowerInvariant();
+                var code = GetCellValue(row, headerMap, "Code")?.ToUpperInvariant();
+                var name = GetCellValue(row, headerMap, "Name");
+                var categoryCode = GetCellValue(row, headerMap, "CategoryCode")?.ToUpperInvariant();
+                var requiresSpecimenString = GetCellValue(row, headerMap, "RequiresSpecimen")?.ToLowerInvariant();
 
                 if (string.IsNullOrWhiteSpace(code)) continue;
 
@@ -187,11 +193,14 @@ namespace SynOS.Services
             var sheet = workbook.Worksheets.FirstOrDefault(ws => ws.Name == "SpecimenTypes");
             if (sheet == null) return;
 
+            var headerMap = GetHeaderMap(sheet);
+            Console.WriteLine($"[Import] SpecimenTypes Header Map: {string.Join(", ", headerMap.Select(kv => $"{kv.Key}:{kv.Value}"))}");
+
             var rows = sheet.RangeUsed().RowsUsed().Skip(1);
             foreach (IXLRangeRow row in rows)
             {
-                var code = GetCellValue(row, 1)?.Trim().ToUpperInvariant();
-                var name = GetCellValue(row, 2)?.Trim();
+                var code = GetCellValue(row, headerMap, "Code")?.ToUpperInvariant();
+                var name = GetCellValue(row, headerMap, "Name");
 
                 if (string.IsNullOrWhiteSpace(code)) continue;
 
@@ -224,12 +233,15 @@ namespace SynOS.Services
             var sheet = workbook.Worksheets.FirstOrDefault(ws => ws.Name == "TubeTypes");
             if (sheet == null) return;
 
+            var headerMap = GetHeaderMap(sheet);
+            Console.WriteLine($"[Import] TubeTypes Header Map: {string.Join(", ", headerMap.Select(kv => $"{kv.Key}:{kv.Value}"))}");
+
             var rows = sheet.RangeUsed().RowsUsed().Skip(1);
             foreach (IXLRangeRow row in rows)
             {
-                var code = GetCellValue(row, 1)?.Trim().ToUpperInvariant();
-                var name = GetCellValue(row, 2)?.Trim();
-                var color = GetCellValue(row, 3)?.Trim();
+                var code = GetCellValue(row, headerMap, "Code")?.ToUpperInvariant();
+                var name = GetCellValue(row, headerMap, "Name");
+                var color = GetCellValue(row, headerMap, "Color");
 
                 if (string.IsNullOrWhiteSpace(code)) continue;
 
@@ -264,16 +276,19 @@ namespace SynOS.Services
             var sheet = workbook.Worksheets.FirstOrDefault(ws => ws.Name == "Tests");
             if (sheet == null) return;
 
+            var headerMap = GetHeaderMap(sheet);
+            Console.WriteLine($"[Import] Tests Header Map: {string.Join(", ", headerMap.Select(kv => $"{kv.Key}:{kv.Value}"))}");
+
             var rows = sheet.RangeUsed().RowsUsed().Skip(1);
             foreach (IXLRangeRow row in rows)
             {
-                var code = GetCellValue(row, 1)?.Trim().ToUpperInvariant();
-                var name = GetCellValue(row, 2)?.Trim();
-                var deptCode = GetCellValue(row, 3)?.Trim().ToUpperInvariant();
-                var specCode = GetCellValue(row, 4)?.Trim().ToUpperInvariant();
-                var tubeCode = GetCellValue(row, 5)?.Trim().ToUpperInvariant();
-                var priceString = GetCellValue(row, 6)?.Trim();
-                var isPanelString = GetCellValue(row, 7)?.Trim().ToLowerInvariant();
+                var code = GetCellValue(row, headerMap, "Code")?.ToUpperInvariant();
+                var name = GetCellValue(row, headerMap, "Name");
+                var deptCode = GetCellValue(row, headerMap, "DepartmentCode")?.ToUpperInvariant();
+                var specCode = GetCellValue(row, headerMap, "SpecimenCode")?.ToUpperInvariant();
+                var tubeCode = GetCellValue(row, headerMap, "TubeCode")?.ToUpperInvariant();
+                var priceString = GetCellValue(row, headerMap, "Price");
+                var isPanelString = GetCellValue(row, headerMap, "IsPanel")?.ToLowerInvariant();
 
                 if (string.IsNullOrWhiteSpace(code)) continue;
 
@@ -337,17 +352,15 @@ namespace SynOS.Services
             var sheet = workbook.Worksheets.FirstOrDefault(ws => ws.Name == "PanelMappings");
             if (sheet == null) return;
 
-            // Clear existing mappings in memory (since we are using a transaction and starting from scratch for this sheet)
-            // Note: In a production scenario, you might want to only delete what changed, but for catalog import, we often overwrite.
-            // As per instructions, "Do not delete existing rows." - wait, that's for other tables. 
-            // For PanelMappings, if they are uniquely defined in Excel, we might want to ensure they exist.
-            
+            var headerMap = GetHeaderMap(sheet);
+            Console.WriteLine($"[Import] PanelMappings Header Map: {string.Join(", ", headerMap.Select(kv => $"{kv.Key}:{kv.Value}"))}");
+
             var rows = sheet.RangeUsed().RowsUsed().Skip(1);
             foreach (IXLRangeRow row in rows)
             {
-                var panelCode = GetCellValue(row, 1)?.Trim().ToUpperInvariant();
-                var childCode = GetCellValue(row, 2)?.Trim().ToUpperInvariant();
-                var sortOrderString = GetCellValue(row, 3)?.Trim();
+                var panelCode = GetCellValue(row, headerMap, "PanelCode")?.ToUpperInvariant();
+                var childCode = GetCellValue(row, headerMap, "ChildCode")?.ToUpperInvariant();
+                var sortOrderString = GetCellValue(row, headerMap, "SortOrder");
 
                 if (string.IsNullOrWhiteSpace(panelCode) || string.IsNullOrWhiteSpace(childCode)) continue;
 
@@ -371,8 +384,6 @@ namespace SynOS.Services
                 int sortOrder = 1;
                 int.TryParse(sortOrderString, out sortOrder);
 
-                // For simplicity, we Check if mapping exists in DB or was added in this batch.
-                // Since PanelMappings don't have a unique natural key other than (Panel, Child), we check for existence.
                 var existing = _context.CatalogPanelMappings.Local.FirstOrDefault(m => m.PanelTestCode == panelCode && m.ChildTestCode == childCode)
                                ?? _context.CatalogPanelMappings.FirstOrDefault(m => m.PanelTestCode == panelCode && m.ChildTestCode == childCode);
 
@@ -403,25 +414,46 @@ namespace SynOS.Services
             var sheet = workbook.Worksheets.FirstOrDefault(ws => ws.Name == "Parameters");
             if (sheet == null) return;
 
+            var headerMap = GetHeaderMap(sheet);
+            Console.WriteLine($"[Import] Parameters Header Map: {string.Join(", ", headerMap.Select(kv => $"{kv.Key}:{kv.Value}"))}");
+
             // Tracking for SortOrder increment
             var testParamSortCounters = new Dictionary<string, int>();
 
             var rows = sheet.RangeUsed().RowsUsed().Skip(1);
             foreach (IXLRangeRow row in rows)
             {
-                var testCode = GetCellValue(row, 1)?.Trim().ToUpperInvariant();
-                var paramCode = GetCellValue(row, 2)?.Trim().ToUpperInvariant();
-                var paramName = GetCellValue(row, 3)?.Trim();
-                var dataType = GetCellValue(row, 4)?.Trim() ?? "Numeric";
-                var unit = GetCellValue(row, 5)?.Trim();
-                var range = GetCellValue(row, 6)?.Trim();
-                var sortOrderString = GetCellValue(row, 7)?.Trim();
-                var isReqString = GetCellValue(row, 8)?.Trim().ToLowerInvariant();
-                var enumOptions = GetCellValue(row, 9)?.Trim();
+                var testCode = GetCellValue(row, headerMap, "TestCode")?.ToUpperInvariant();
+                var paramCode = GetCellValue(row, headerMap, "ParamCode")?.ToUpperInvariant();
+                var paramName = GetCellValue(row, headerMap, "ParamName");
+                
+                // Fallbacks and specific logic
+                var dataType = GetCellValue(row, headerMap, "DataType") ?? "Numeric";
+                var unit = GetCellValue(row, headerMap, "Unit");
+                var range = GetCellValue(row, headerMap, "Range");
+                var sortOrderString = GetCellValue(row, headerMap, "SortOrder");
+                var isReqString = GetCellValue(row, headerMap, "IsRequired")?.ToLowerInvariant();
+                var enumOptions = GetCellValue(row, headerMap, "EnumOptions");
+                
+                // Extended Metadata
+                var printName = GetCellValue(row, headerMap, "PrintName");
+                var methodology = GetCellValue(row, headerMap, "Methodology");
+                var displayGroup = GetCellValue(row, headerMap, "DisplayGroup");
+                var displayGroupOrderString = GetCellValue(row, headerMap, "DisplayGroupOrder");
+                var isCalculatedString = GetCellValue(row, headerMap, "IsCalculated")?.ToLowerInvariant();
+                var decimalPlacesString = GetCellValue(row, headerMap, "DecimalPlaces");
+                var rawFormula = GetCellValue(row, headerMap, "Formula");
+                // Normalize formula: Uppercase and remove all internal whitespace for consistent lookup
+                var formula = rawFormula?.ToUpperInvariant()?.Replace(" ", "");
 
-                if (string.IsNullOrWhiteSpace(testCode) || string.IsNullOrWhiteSpace(paramCode)) continue;
+                // Strict Validation for Required Fields
+                if (string.IsNullOrWhiteSpace(testCode)) continue;
+                if (string.IsNullOrWhiteSpace(paramCode) || string.IsNullOrWhiteSpace(paramName))
+                {
+                    result.RowLevelErrors.Add(new RowLevelError { SheetName = "Parameters", RowNumber = row.RowNumber(), ErrorMessage = "Missing required fields: ParamCode or ParamName" });
+                    continue;
+                }
 
-                // Validation
                 if (!testCache.ContainsKey(testCode))
                 {
                     result.RowLevelErrors.Add(new RowLevelError { SheetName = "Parameters", RowNumber = row.RowNumber(), ErrorMessage = $"Unknown TestCode: {testCode}" });
@@ -434,6 +466,14 @@ namespace SynOS.Services
                     continue;
                 }
 
+                int displayGroupOrder = 0;
+                int.TryParse(displayGroupOrderString, out displayGroupOrder);
+
+                int decimalPlaces = 2;
+                int.TryParse(decimalPlacesString, out decimalPlaces);
+
+                bool isCalculated = isCalculatedString == "true" || isCalculatedString == "1" || isCalculatedString == "yes";
+
                 int sortOrder;
                 if (int.TryParse(sortOrderString, out sortOrder))
                 {
@@ -441,17 +481,8 @@ namespace SynOS.Services
                 }
                 else
                 {
-                    // Incremental SortOrder
-                    if (!testParamSortCounters.ContainsKey(testCode))
-                    {
-                        // Get max sort order for this test from cache or DB? 
-                        // For simplicity, we manage it in this import session.
-                        testParamSortCounters[testCode] = 1;
-                    }
-                    else
-                    {
-                        testParamSortCounters[testCode]++;
-                    }
+                    if (!testParamSortCounters.ContainsKey(testCode)) testParamSortCounters[testCode] = 1;
+                    else testParamSortCounters[testCode]++;
                     sortOrder = testParamSortCounters[testCode];
                 }
 
@@ -466,6 +497,29 @@ namespace SynOS.Services
                     existing.SortOrder = sortOrder;
                     existing.IsRequired = isRequired;
                     existing.EnumOptions = enumOptions;
+                    existing.Formula = formula;
+                    
+                    // Meta updates (Defensive: only update if provided in Excel)
+                    if (!string.IsNullOrWhiteSpace(printName)) existing.PrintName = printName;
+                    
+                    // Specific fix: Prevent "TRUE"/"FALSE" leakage into methodology (likely old alignment issue)
+                    if (!string.IsNullOrWhiteSpace(methodology) && 
+                        !methodology.Equals("true", StringComparison.OrdinalIgnoreCase) && 
+                        !methodology.Equals("false", StringComparison.OrdinalIgnoreCase))
+                    {
+                        existing.Methodology = methodology;
+                    }
+                    else if (methodology == null && (existing.Methodology == "TRUE" || existing.Methodology == "FALSE"))
+                    {
+                        // Clean up existing corruption if column is missing
+                        existing.Methodology = null;
+                    }
+
+                    if (!string.IsNullOrWhiteSpace(displayGroup)) existing.DisplayGroup = displayGroup;
+                    if (!string.IsNullOrWhiteSpace(displayGroupOrderString)) existing.DisplayGroupOrder = displayGroupOrder;
+                    if (!string.IsNullOrWhiteSpace(isCalculatedString)) existing.IsCalculated = isCalculated;
+                    if (!string.IsNullOrWhiteSpace(decimalPlacesString)) existing.DecimalPlaces = decimalPlaces;
+                    
                     existing.UpdatedAt = DateTimeOffset.UtcNow;
                     result.UpdatedCount++;
                 }
@@ -483,6 +537,17 @@ namespace SynOS.Services
                         SortOrder = sortOrder,
                         IsRequired = isRequired,
                         EnumOptions = enumOptions,
+                        Formula = formula,
+                        PrintName = printName,
+                        // Specific fix: Prevent "TRUE"/"FALSE" leakage into methodology
+                        Methodology = (!string.IsNullOrWhiteSpace(methodology) && 
+                                     !methodology.Equals("true", StringComparison.OrdinalIgnoreCase) && 
+                                     !methodology.Equals("false", StringComparison.OrdinalIgnoreCase)) 
+                                     ? methodology : null,
+                        DisplayGroup = displayGroup,
+                        DisplayGroupOrder = displayGroupOrder,
+                        IsCalculated = isCalculated,
+                        DecimalPlaces = decimalPlaces,
                         IsActive = true,
                         CreatedAt = DateTimeOffset.UtcNow,
                         UpdatedAt = DateTimeOffset.UtcNow
@@ -493,13 +558,72 @@ namespace SynOS.Services
                 }
                 result.SuccessCount++;
             }
+
+            // Post-Process Validation for Formulas (Dependency Check)
+            foreach (var param in cache.Values.Where(p => p.IsCalculated && !string.IsNullOrWhiteSpace(p.Formula)))
+            {
+                var tokens = System.Text.RegularExpressions.Regex.Matches(param.Formula.ToUpperInvariant(), @"[A-Z0-9_]+")
+                    .Cast<System.Text.RegularExpressions.Match>()
+                    .Select(m => m.Value)
+                    .Where(val => !decimal.TryParse(val, out _)) // Exclude numeric constants
+                    .ToList();
+
+                foreach (var token in tokens)
+                {
+                    // GPT-5 Safeguard 1: Self-reference check (e.g., GLOB = TP - GLOB)
+                    if (token == param.ParameterCode)
+                    {
+                        result.RowLevelErrors.Add(new RowLevelError 
+                        { 
+                            SheetName = "Parameters", 
+                            RowNumber = 0,
+                            ErrorMessage = $"Formula validation failed for '{param.ParameterCode}' in test '{param.TestCode}'. Self-reference is not allowed." 
+                        });
+                        continue;
+                    }
+
+                    // GPT-5 Safeguard 2: Panel existence check
+                    if (!cache.ContainsKey((param.TestCode, token)))
+                    {
+                        result.RowLevelErrors.Add(new RowLevelError 
+                        { 
+                            SheetName = "Parameters", 
+                            RowNumber = 0, 
+                            ErrorMessage = $"Formula validation failed for '{param.ParameterCode}' in test '{param.TestCode}'. Referenced parameter '{token}' does not exist in this test panel." 
+                        });
+                    }
+                }
+            }
         }
 
-        private string? GetCellValue(IXLRangeRow row, int column)
+        private Dictionary<string, int> GetHeaderMap(IXLWorksheet sheet)
         {
-            var cell = row.Cell(column);
-            if (cell.IsEmpty()) return null;
-            return cell.GetValue<string>();
+            var map = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+            var headerRow = sheet.Row(1);
+            var lastCol = sheet.LastColumnUsed()?.ColumnNumber() ?? 0;
+
+            for (int i = 1; i <= lastCol; i++)
+            {
+                var cellValue = headerRow.Cell(i).GetValue<string>()?.Trim();
+                if (!string.IsNullOrWhiteSpace(cellValue))
+                {
+                    // Normalize: remove internal spaces and hidden characters
+                    var normalized = System.Text.RegularExpressions.Regex.Replace(cellValue, @"\s+", "");
+                    map[normalized] = i;
+                }
+            }
+            return map;
+        }
+
+        private string? GetCellValue(IXLRangeRow row, Dictionary<string, int> map, string header)
+        {
+            if (map.TryGetValue(header, out int colIndex))
+            {
+                var cell = row.Cell(colIndex);
+                if (cell.IsEmpty()) return null;
+                return cell.GetValue<string>()?.Trim();
+            }
+            return null;
         }
     }
 }

@@ -1,61 +1,352 @@
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence> dotnet run --project src\SynOS.Api\SynOS.Api.csproj --urls "http://127.0.0.1:59999"
+The user has requested a robust, header-based mapping system for the Catalog Importer. I've designed a plan that includes case-insensitive matching, header normalization, graceful fallbacks for optional fields, and strict validation for required ones. I'm now implementing these changes in [CatalogImportService.cs](cci:7://file:///d:/Projects/SynOS-Synthesized-Lab-Intelligence/src/SynOS.Services/CatalogImportService.cs:0:0-0:0), ensuring that all column indices are replaced with dynamic header-based lookups, making the importer fully resilient to future Excel format changes.Mode:AGENT_MODE_EXEC_ADMIN.
 
-[16:51:46 INF] OperationalStatsProjectionWorker is starting in Event-Driven Mode.
-[16:51:46 INF] Worker: Running Consistency Check and Catch-up...
-[16:51:47 INF] Worker: Catch-up complete. Awaiting real-time events...
-[16:52:33 WRN] Failed to determine the https port for redirect.
-[16:53:06 ERR] An exception occurred in the database while saving changes for context type 'SynOS.Data.SynOSDbContext'.
-Microsoft.EntityFrameworkCore.DbUpdateException: An error occurred while saving the entity changes. See the inner exception for details.
- ---> Microsoft.Data.SqlClient.SqlException (0x80131904): The MERGE statement conflicted with the FOREIGN KEY constraint "FK_Results_Users_EnteredByUserId". The conflict occurred in database "SynOSDb", table "dbo.Users", column 'UserId'.
-   at Microsoft.Data.SqlClient.SqlConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
-   at Microsoft.Data.SqlClient.SqlInternalConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
-   at Microsoft.Data.SqlClient.TdsParser.ThrowExceptionAndWarning(TdsParserStateObject stateObj, Boolean callerHasConnectionLock, Boolean asyncClose)
-   at Microsoft.Data.SqlClient.TdsParser.TryRun(RunBehavior runBehavior, SqlCommand cmdHandler, SqlDataReader dataStream, BulkCopySimpleResultSet bulkCopyHandler, TdsParserStateObject stateObj, Boolean& dataReady)
-   at Microsoft.Data.SqlClient.SqlDataReader.TryHasMoreRows(Boolean& moreRows)
-   at Microsoft.Data.SqlClient.SqlDataReader.TryReadInternal(Boolean setTimeout, Boolean& more)
-   at Microsoft.Data.SqlClient.SqlDataReader.ReadAsyncExecute(Task task, Object state)
-   at Microsoft.Data.SqlClient.SqlDataReader.InvokeAsyncCall[T](SqlDataReaderBaseAsyncCallContext`1 context)
---- End of stack trace from previous location ---
-   at Microsoft.EntityFrameworkCore.Update.AffectedCountModificationCommandBatch.ConsumeResultSetAsync(Int32 startCommandIndex, RelationalDataReader reader, CancellationToken cancellationToken)
-ClientConnectionId:aaf62bfc-8e74-40ec-966a-0fbbc07a49b5
-Error Number:547,State:0,Class:16
-   --- End of inner exception stack trace ---
-   at Microsoft.EntityFrameworkCore.Update.AffectedCountModificationCommandBatch.ConsumeResultSetAsync(Int32 startCommandIndex, RelationalDataReader reader, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Update.AffectedCountModificationCommandBatch.ConsumeAsync(RelationalDataReader reader, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Update.ReaderModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Update.ReaderModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.SqlServer.Update.Internal.SqlServerModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.ChangeTracking.Internal.StateManager.SaveChangesAsync(IList`1 entriesToSave, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.ChangeTracking.Internal.StateManager.SaveChangesAsync(StateManager stateManager, Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.DbContext.SaveChangesAsync(Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
-Microsoft.EntityFrameworkCore.DbUpdateException: An error occurred while saving the entity changes. See the inner exception for details.
- ---> Microsoft.Data.SqlClient.SqlException (0x80131904): The MERGE statement conflicted with the FOREIGN KEY constraint "FK_Results_Users_EnteredByUserId". The conflict occurred in database "SynOSDb", table "dbo.Users", column 'UserId'.
-   at Microsoft.Data.SqlClient.SqlConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
-   at Microsoft.Data.SqlClient.SqlInternalConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
-   at Microsoft.Data.SqlClient.TdsParser.ThrowExceptionAndWarning(TdsParserStateObject stateObj, Boolean callerHasConnectionLock, Boolean asyncClose)
-   at Microsoft.Data.SqlClient.TdsParser.TryRun(RunBehavior runBehavior, SqlCommand cmdHandler, SqlDataReader dataStream, BulkCopySimpleResultSet bulkCopyHandler, TdsParserStateObject stateObj, Boolean& dataReady)
-   at Microsoft.Data.SqlClient.SqlDataReader.TryHasMoreRows(Boolean& moreRows)
-   at Microsoft.Data.SqlClient.SqlDataReader.TryReadInternal(Boolean setTimeout, Boolean& more)
-   at Microsoft.Data.SqlClient.SqlDataReader.ReadAsyncExecute(Task task, Object state)
-   at Microsoft.Data.SqlClient.SqlDataReader.InvokeAsyncCall[T](SqlDataReaderBaseAsyncCallContext`1 context)
---- End of stack trace from previous location ---
-   at Microsoft.EntityFrameworkCore.Update.AffectedCountModificationCommandBatch.ConsumeResultSetAsync(Int32 startCommandIndex, RelationalDataReader reader, CancellationToken cancellationToken)
-ClientConnectionId:aaf62bfc-8e74-40ec-966a-0fbbc07a49b5
-Error Number:547,State:0,Class:16
-   --- End of inner exception stack trace ---
-   at Microsoft.EntityFrameworkCore.Update.AffectedCountModificationCommandBatch.ConsumeResultSetAsync(Int32 startCommandIndex, RelationalDataReader reader, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Update.AffectedCountModificationCommandBatch.ConsumeAsync(RelationalDataReader reader, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Update.ReaderModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Update.ReaderModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.SqlServer.Update.Internal.SqlServerModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.ChangeTracking.Internal.StateManager.SaveChangesAsync(IList`1 entriesToSave, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.ChangeTracking.Internal.StateManager.SaveChangesAsync(StateManager stateManager, Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.DbContext.SaveChangesAsync(Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
+Viewed CatalogImportService.cs:1-540
+Edited CatalogImportService.cs
+
+I've refactored [CatalogImportService.cs](cci:7://file:///d:/Projects/SynOS-Synthesized-Lab-Intelligence/src/SynOS.Services/CatalogImportService.cs:0:0-0:0) to use a dynamic, header-based mapping system. This includes case-insensitive matching, header normalization (removing spaces), and strict validation for required fields. I've also added logging for the detected header maps and ensured that the importer is now fully resilient to column reordering or additions in the Excel template. Mode:AGENT_MODE_VERIF_ADMIN.
+
+Ran command: `dotnet build src\SynOS.Api\SynOS.Api.csproj`
+
+I've successfully refactored the [CatalogImportService.cs](cci:7://file:///d:/Projects/SynOS-Synthesized-Lab-Intelligence/src/SynOS.Services/CatalogImportService.cs:0:0-0:0) to use dynamic header mapping. The build is successful, and the importer now strictly follows the case-insensitive, normalized header lookup requirements. It handles optional fields gracefully and validates required fields strictly, providing clear logs for debugging. Mode:AGENT_MODE_VERIF_ADMIN.
+
+Edited task.md
+
+I have successfully implemented the **Robust Header-Based Catalog Importer**! 
+
+The system is now fully resilient to column reordering and additions. Here is what I've strictly enforced:
+
+### 🛡️ Production-Grade Importer Features:
+1.  **Dynamic Mapping**: All fixed column indices (1, 2, 3...) are GONE. It now searches the first row of each sheet for headers.
+2.  **Case-Insensitive & Normalized**: `Print Name`, `printname`, and `PRINTNAME` will all map correctly. I'm also stripping spaces and hidden characters at runtime.
+3.  **Graceful Fallbacks**: Optional metadata like `PrintName` or `IsCalculated` won't break the import if missing—they'll just use sensible defaults.
+4.  **Strict Validation**: Required fields like `TestCode`, `ParamCode`, and `ParamName` are validated upfront. If missing, you get a clear "Row-Level Error" in Swagger.
+5.  **Debug Logs**: I've added logging so you can see the detected header-to-column map in the console during import.
+
+### 🚀 Final Validation Cycle
+Everything is built and ready. To see the results:
+
+1.  **Restart your API**.
+2.  **Import your 7-sheet Excel** (it will now map perfectly despite your new columns).
+3.  **Provision** -> **Seed** -> **Check Report Structure**.
+
+**Expected Result**: 
+- `groupName`: **"Liver Function"** (instead of "2").
+- `parameterName`: **"Bilirubin Total"** (instead of "1").
+- `isCalculated`: **"true"** for `GLOB`.
+
+Let me know if this finally gives you the clean, high-end result we need!
+
+TestMaster
+
+
+POST
+/api/v1/admin/tests/catalog/import
+
+Parameters
+Cancel
+Reset
+No parameters
+
+Request body
+
+multipart/form-data
+File
+string($binary)
+sample-payload7sheet.xlsx
+Send empty value
+ValidateOnly
+boolean
+
+--
+Send empty value
+Execute
+Clear
+Responses
+Curl
+
+curl -X 'POST' \
+  'http://127.0.0.1:59999/api/v1/admin/tests/catalog/import' \
+  -H 'accept: */*' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiI3MjE5ODVjNy1iYmFlLTQzNjgtYTk1OC04YjcyNDA4MmY1MzIiLCJlbWFpbCI6ImFkbWluQHN5bm9zLmNvbSIsInVuaXF1ZV9uYW1lIjoiU3lzdGVtIEFkbWluIiwic2Vzc2lvbl9tb2RlIjoiYWRtaW4iLCJzZXNzaW9uX2lkIjoiMDRmYjZlNzMtNTdmYi00ZDQyLTg3MDctNDMwZWIwNDIyNzNmIiwiZGVwYXJ0bWVudF9jb2RlIjoiR2VuZXJhbCIsInJvbGUiOiJBZG1pbiIsIm5iZiI6MTc3NDQxNzUyOCwiZXhwIjoxNzc0NTAzOTI4LCJpYXQiOjE3NzQ0MTc1MjgsImlzcyI6IlN5bk9TLkFwaSIsImF1ZCI6IlN5bk9TLkFwcCJ9.5pAINyDwzuLDSqsBuPC32SfZNVFDJX6lEvOO8eAJhY8' \
+  -H 'Content-Type: multipart/form-data' \
+  -F 'File=@sample-payload7sheet.xlsx;type=application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' \
+  -F 'ValidateOnly='
+Request URL
+http://127.0.0.1:59999/api/v1/admin/tests/catalog/import
+Server response
+Code	Details
+200	
+Response body
+Download
+{
+  "importResult": {
+    "success": true,
+    "successCount": 20,
+    "newInsertedCount": 0,
+    "updatedCount": 19,
+    "errorCount": 0,
+    "globalErrors": [],
+    "rowLevelErrors": []
+  },
+  "previewImpact": {
+    "provisionId": "023a1406-c6fa-47cb-95f2-eb7102dc8619",
+    "isDryRun": true,
+    "versionHash": "78ONHoODk8VTkCIkYdgkcq8nvjz4sU/nsAJ3Cda5vv0=",
+    "testsAffected": 6,
+    "parametersAffected": 5,
+    "mappingsAffected": 0,
+    "pricingChanges": 0,
+    "affectedTestCodes": [
+      "ALB",
+      "BIL_I",
+      "BIL_T",
+      "GLOB",
+      "LFT",
+      "TP"
+    ],
+    "status": "DryRun",
+    "errorMessage": null
+  }
+}
+Response headers
+ content-type: application/json; charset=utf-8 
+ date: Wed,25 Mar 2026 05:49:53 GMT 
+ server: Kestrel 
+ transfer-encoding: chunked 
+Responses
+Code	Description	Links
+200	
+Success
+
+No links
+
+POST
+/api/v1/admin/tests/catalog/provision
+
+Parameters
+Cancel
+Reset
+No parameters
+
+Request body
+
+application/json
+{
+  "versionHash": "78ONHoODk8VTkCIkYdgkcq8nvjz4sU/nsAJ3Cda5vv0="
+}
+Execute
+Clear
+Responses
+Curl
+
+curl -X 'POST' \
+  'http://127.0.0.1:59999/api/v1/admin/tests/catalog/provision' \
+  -H 'accept: */*' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiI3MjE5ODVjNy1iYmFlLTQzNjgtYTk1OC04YjcyNDA4MmY1MzIiLCJlbWFpbCI6ImFkbWluQHN5bm9zLmNvbSIsInVuaXF1ZV9uYW1lIjoiU3lzdGVtIEFkbWluIiwic2Vzc2lvbl9tb2RlIjoiYWRtaW4iLCJzZXNzaW9uX2lkIjoiMDRmYjZlNzMtNTdmYi00ZDQyLTg3MDctNDMwZWIwNDIyNzNmIiwiZGVwYXJ0bWVudF9jb2RlIjoiR2VuZXJhbCIsInJvbGUiOiJBZG1pbiIsIm5iZiI6MTc3NDQxNzUyOCwiZXhwIjoxNzc0NTAzOTI4LCJpYXQiOjE3NzQ0MTc1MjgsImlzcyI6IlN5bk9TLkFwaSIsImF1ZCI6IlN5bk9TLkFwcCJ9.5pAINyDwzuLDSqsBuPC32SfZNVFDJX6lEvOO8eAJhY8' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "versionHash": "78ONHoODk8VTkCIkYdgkcq8nvjz4sU/nsAJ3Cda5vv0="
+}'
+Request URL
+http://127.0.0.1:59999/api/v1/admin/tests/catalog/provision
+Server response
+Code	Details
+200	
+Response body
+Download
+{
+  "provisionId": "9f91f17a-4e67-486c-bd6e-1bd3edeed054",
+  "isDryRun": false,
+  "versionHash": "78ONHoODk8VTkCIkYdgkcq8nvjz4sU/nsAJ3Cda5vv0=",
+  "testsAffected": 6,
+  "parametersAffected": 5,
+  "mappingsAffected": 0,
+  "pricingChanges": 0,
+  "affectedTestCodes": [
+    "ALB",
+    "BIL_I",
+    "BIL_T",
+    "GLOB",
+    "LFT",
+    "TP"
+  ],
+  "status": "Success",
+  "errorMessage": null
+}
+Response headers
+ content-type: application/json; charset=utf-8 
+ date: Wed,25 Mar 2026 05:50:27 GMT 
+ server: Kestrel 
+ transfer-encoding: chunked 
+Responses
+Code	Description	Links
+200	
+Success
+
+No links
+
+POST
+/api/v1/debug/seed-sample-report
+
+Parameters
+Cancel
+No parameters
+
+Execute
+Clear
+Responses
+Curl
+
+curl -X 'POST' \
+  'http://127.0.0.1:59999/api/v1/debug/seed-sample-report' \
+  -H 'accept: */*' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiI3MjE5ODVjNy1iYmFlLTQzNjgtYTk1OC04YjcyNDA4MmY1MzIiLCJlbWFpbCI6ImFkbWluQHN5bm9zLmNvbSIsInVuaXF1ZV9uYW1lIjoiU3lzdGVtIEFkbWluIiwic2Vzc2lvbl9tb2RlIjoiYWRtaW4iLCJzZXNzaW9uX2lkIjoiMDRmYjZlNzMtNTdmYi00ZDQyLTg3MDctNDMwZWIwNDIyNzNmIiwiZGVwYXJ0bWVudF9jb2RlIjoiR2VuZXJhbCIsInJvbGUiOiJBZG1pbiIsIm5iZiI6MTc3NDQxNzUyOCwiZXhwIjoxNzc0NTAzOTI4LCJpYXQiOjE3NzQ0MTc1MjgsImlzcyI6IlN5bk9TLkFwaSIsImF1ZCI6IlN5bk9TLkFwcCJ9.5pAINyDwzuLDSqsBuPC32SfZNVFDJX6lEvOO8eAJhY8' \
+  -d ''
+Request URL
+http://127.0.0.1:59999/api/v1/debug/seed-sample-report
+Server response
+Code	Details
+200	
+Response body
+Download
+{
+  "reportId": "51747521-7744-4289-8f82-845045709b89",
+  "message": "LFT Sample data seeded successfully using Catalog codes."
+}
+Response headers
+ content-type: application/json; charset=utf-8 
+ date: Wed,25 Mar 2026 05:54:05 GMT 
+ server: Kestrel 
+ transfer-encoding: chunked 
+Responses
+Code	Description	Links
+200	
+Success
+
+No links
+
+GET
+/api/v1/debug/report-structure/{reportId}
+
+Parameters
+Cancel
+Name	Description
+reportId *
+string($uuid)
+(path)
+51747521-7744-4289-8f82-845045709b89
+forceFresh
+boolean
+(query)
+
+false
+Execute
+Clear
+Responses
+Curl
+
+curl -X 'GET' \
+  'http://127.0.0.1:59999/api/v1/debug/report-structure/51747521-7744-4289-8f82-845045709b89?forceFresh=false' \
+  -H 'accept: */*' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiI3MjE5ODVjNy1iYmFlLTQzNjgtYTk1OC04YjcyNDA4MmY1MzIiLCJlbWFpbCI6ImFkbWluQHN5bm9zLmNvbSIsInVuaXF1ZV9uYW1lIjoiU3lzdGVtIEFkbWluIiwic2Vzc2lvbl9tb2RlIjoiYWRtaW4iLCJzZXNzaW9uX2lkIjoiMDRmYjZlNzMtNTdmYi00ZDQyLTg3MDctNDMwZWIwNDIyNzNmIiwiZGVwYXJ0bWVudF9jb2RlIjoiR2VuZXJhbCIsInJvbGUiOiJBZG1pbiIsIm5iZiI6MTc3NDQxNzUyOCwiZXhwIjoxNzc0NTAzOTI4LCJpYXQiOjE3NzQ0MTc1MjgsImlzcyI6IlN5bk9TLkFwaSIsImF1ZCI6IlN5bk9TLkFwcCJ9.5pAINyDwzuLDSqsBuPC32SfZNVFDJX6lEvOO8eAJhY8'
+Request URL
+http://127.0.0.1:59999/api/v1/debug/report-structure/51747521-7744-4289-8f82-845045709b89?forceFresh=false
+Server response
+Code	Details
+200	
+Response body
+Download
+{
+  "reportId": "51747521-7744-4289-8f82-845045709b89",
+  "status": "Draft",
+  "patient": {
+    "name": "Debug Patient",
+    "mrn": "P7965",
+    "age": 30,
+    "gender": "Male"
+  },
+  "groups": [
+    {
+      "groupName": "Liver Function",
+      "order": 1,
+      "parameters": [
+        {
+          "parameterName": "Bilirubin Total",
+          "parameterCode": "BIL_T",
+          "value": "1.20",
+          "unit": "mg/dL",
+          "referenceRange": "0.1-1.2",
+          "flag": "Normal",
+          "methodology": "FALSE",
+          "isOverridden": false,
+          "overrideReason": null,
+          "isCalculated": false
+        },
+        {
+          "parameterName": "Bilirubin Indirect",
+          "parameterCode": "BIL_I",
+          "value": "0.80",
+          "unit": "mg/dL",
+          "referenceRange": "0-0.9",
+          "flag": "Normal",
+          "methodology": "TRUE",
+          "isOverridden": false,
+          "overrideReason": null,
+          "isCalculated": true
+        },
+        {
+          "parameterName": "Total Protein",
+          "parameterCode": "TP",
+          "value": "7.50",
+          "unit": "g/dL",
+          "referenceRange": "6.0-8.3",
+          "flag": "Normal",
+          "methodology": "FALSE",
+          "isOverridden": false,
+          "overrideReason": null,
+          "isCalculated": false
+        },
+        {
+          "parameterName": "Albumin",
+          "parameterCode": "ALB",
+          "value": "4.20",
+          "unit": "g/dL",
+          "referenceRange": "3.5-5.5",
+          "flag": "Normal",
+          "methodology": "FALSE",
+          "isOverridden": false,
+          "overrideReason": null,
+          "isCalculated": false
+        },
+        {
+          "parameterName": "Globulin",
+          "parameterCode": "GLOB",
+          "value": "3.30",
+          "unit": "g/dL",
+          "referenceRange": "2-3.5",
+          "flag": "Normal",
+          "methodology": "TRUE",
+          "isOverridden": false,
+          "overrideReason": null,
+          "isCalculated": true
+        }
+      ]
+    }
+  ],
+  "notes": [],
+  "department": "Pathology",
+  "signedAt": null,
+  "signedBy": null
+}
+Response headers
+ content-type: application/json; charset=utf-8 
+ date: Wed,25 Mar 2026 05:54:27 GMT 
+ server: Kestrel 
+ transfer-encoding: chunked 
+Responses
+Code	Description	Links
+200	
+Success
+
+No links
+

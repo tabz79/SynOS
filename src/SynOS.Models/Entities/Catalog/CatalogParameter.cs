@@ -41,9 +41,13 @@ namespace SynOS.Models.Entities.Catalog
         [StringLength(50)]
         public string? AnalyzerCode { get; set; }
 
-        [StringLength(2000)]
-        public string? EnumOptions { get; set; }
+        [StringLength(500)]
+        public string? EnumOptions { get; set; } // e.g. "Positive,Negative,Equivocal"
 
+        [StringLength(500)]
+        public string? Formula { get; set; } // Mathematical formula using ParameterCodes, e.g. "TP - ALB"
+
+        // Extended Print Metadata
         [StringLength(200)]
         public string? PrintName { get; set; }
 
@@ -65,5 +69,8 @@ namespace SynOS.Models.Entities.Catalog
         public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
         public Guid? UpdatedBy { get; set; }
         public DateTimeOffset UpdatedAt { get; set; } = DateTimeOffset.UtcNow;
+
+        [Timestamp]
+        public byte[] RowVersion { get; set; } = Array.Empty<byte>();
     }
 }
