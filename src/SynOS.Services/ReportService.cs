@@ -28,7 +28,8 @@ namespace SynOS.Services
         private readonly IAuditService _auditService;
         private readonly IOperationalEventWriter _operationalEventWriter;
         private readonly IUserContext _userContext;
-        private readonly IOperationsEngine _operationsEngine; // ADDED
+        private readonly IOperationsEngine _operationsEngine;
+        private readonly Reporting.IReportingService _reportingService;
 
         public ReportService(
             SynOSDbContext context, 
@@ -40,7 +41,8 @@ namespace SynOS.Services
             IAuditService auditService,
             IOperationalEventWriter operationalEventWriter,
             IUserContext userContext,
-            IOperationsEngine operationsEngine) // ADDED
+            IOperationsEngine operationsEngine,
+            Reporting.IReportingService reportingService)
         {
             _context = context;
             _logger = logger;
@@ -51,7 +53,8 @@ namespace SynOS.Services
             _auditService = auditService;
             _operationalEventWriter = operationalEventWriter ?? throw new ArgumentNullException(nameof(operationalEventWriter));
             _userContext = userContext ?? throw new ArgumentNullException(nameof(userContext));
-            _operationsEngine = operationsEngine ?? throw new ArgumentNullException(nameof(operationsEngine)); // ADDED
+            _operationsEngine = operationsEngine ?? throw new ArgumentNullException(nameof(operationsEngine));
+            _reportingService = reportingService ?? throw new ArgumentNullException(nameof(reportingService));
         }
 
         public async Task<ReportSignatureResponseDto> SignReportAsync(Guid reportId, Guid signedByUserId)
@@ -77,12 +80,12 @@ namespace SynOS.Services
 
             if (order == null) throw new KeyNotFoundException($"Order with ID {report.SourceId} not found.");
 
-            // 2. Determine logical report version
-            var newVersion = report.CurrentVersion + 1;
+            // 2. Use logical report version (Frozen at Submission)
+            var currentVersion = report.CurrentVersion;
 
             // 3. Build canonical payload for hashing
             var timestamp = DateTimeOffset.UtcNow;
-            var canonicalPayload = $"{report.ReportId}:{newVersion}:{signedByUserId}:{timestamp:o}";
+            var canonicalPayload = $"{report.ReportId}:{currentVersion}:{signedByUserId}:{timestamp:o}";
             
             string signatureHash;
             using (var sha256 = System.Security.Cryptography.SHA256.Create())
@@ -100,7 +103,7 @@ namespace SynOS.Services
                 SignedAt = timestamp,
                 SignatureImageUrl = user.SignatureImageUrl,
                 SignatureHash = signatureHash,
-                ReportVersion = newVersion,
+                ReportVersion = currentVersion,
             };
             await _context.ReportSignatures.AddAsync(reportSignature);
 
@@ -109,7 +112,7 @@ namespace SynOS.Services
             await _operationsEngine.RecordReportSignedAsync(reportId, branchId, signedByUserId);
 
             // 6. Audit log
-            await _auditService.LogAsync(signedByUserId, "ReportSigned", "Report", reportId, new { NewVersion = newVersion });
+            await _auditService.LogAsync(signedByUserId, "ReportSigned", "Report", reportId, new { NewVersion = currentVersion });
 
             // Note: Engine emits REPORT_SIGNED event. We don't need to emit REPORT_READY here manually anymore, 
             // but if frontend expects "REPORT_READY" specifically, we might need to map it. 
@@ -168,19 +171,24 @@ namespace SynOS.Services
                     {
                         var templateModel = System.Text.Json.JsonSerializer.Deserialize<SynOS.Models.DTOs.ReportTemplateDsl.TemplateModel>(template.TemplateJson);
                         var pdfBytes = await _reportPdfRenderer.GeneratePdfAsync(reportData, templateModel);
-                        var fileName = $"{report.ReportId}_v{newVersion}.pdf";
+                        var fileName = $"{report.ReportId}_v{currentVersion}.pdf";
                         var relativePath = await _fileStorageService.SaveFileAsync(pdfBytes, fileName, "reports");
 
-                        var reportVersion = new ReportVersion
+                        // Find existing version created at submission and update it
+                        var reportVersion = await _context.ReportVersions
+                            .FirstOrDefaultAsync(rv => rv.ReportId == report.ReportId && rv.VersionNumber == currentVersion);
+
+                        if (reportVersion != null)
                         {
-                            ReportId = report.ReportId,
-                            VersionNumber = newVersion,
-                            PdfPath = relativePath,
-                            SignedByUserId = signedByUserId,
-                            SignedAt = timestamp
-                        };
-                        _context.ReportVersions.Add(reportVersion);
-                        await _context.SaveChangesAsync();
+                            reportVersion.PdfPath = relativePath;
+                            reportVersion.SignedByUserId = signedByUserId;
+                            reportVersion.SignedAt = timestamp;
+                            await _context.SaveChangesAsync();
+                        }
+                        else
+                        {
+                            _logger.LogWarning("Existing ReportVersion {Version} not found for report {ReportId} during sign-off.", currentVersion, report.ReportId);
+                        }
                     }
                 }
             }
@@ -195,7 +203,7 @@ namespace SynOS.Services
                 SignedByUserId = signedByUserId,
                 SignedAt = timestamp,
                 SignatureHash = signatureHash,
-                ReportVersion = newVersion
+                ReportVersion = currentVersion
             };
         }
 
@@ -354,17 +362,20 @@ namespace SynOS.Services
             var patient = order.Visit.Patient;
             var visit = order.Visit;
             
-            var results = await _context.Results
-                .Where(r => r.OrderId == order.OrderId)
-                .Select(r => new ParameterResult
+            // Refactored: Consume frozen snapshot from ReportingService
+            var structure = await _reportingService.GetReportStructureAsync(report.ReportId);
+            
+            var results = structure.Groups
+                .SelectMany(g => g.Parameters)
+                .Select(p => new ParameterResult
                 {
-                    Name = r.ParameterCode,
-                    Value = r.Value.ToString(),
-                    Unit = r.Unit,
-                    ReferenceRange = r.ReferenceRange,
-                    IsCritical = r.Flag == "C"
+                    Name = p.ParameterName,
+                    Value = p.Value ?? string.Empty,
+                    Unit = p.Unit,
+                    ReferenceRange = p.ReferenceRange,
+                    IsCritical = p.Flag?.Contains("Critical") ?? false
                 })
-                .ToListAsync();
+                .ToList();
 
             // Fetch the latest signature
             var signature = await _context.ReportSignatures

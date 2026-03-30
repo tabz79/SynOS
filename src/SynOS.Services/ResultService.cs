@@ -198,9 +198,12 @@ namespace SynOS.Services
                 }
             }
 
-            // If a report for this order doesn't exist, create one.
-            var reportExists = await _context.Reports.AnyAsync(r => r.SourceId == orderId && r.SourceType == "Order");
-            if (!reportExists)
+            // Get or create report
+            var report = await _context.Reports
+                .Include(r => r.ReportVersions)
+                .FirstOrDefaultAsync(r => r.SourceId == orderId && r.SourceType == "Order");
+
+            if (report == null)
             {
                 var order = await _context.Orders
                     .Include(o => o.Visit)
@@ -212,7 +215,7 @@ namespace SynOS.Services
                     throw new KeyNotFoundException($"Order with ID {orderId} not found when trying to create report.");
                 }
 
-                var newReport = new Report
+                report = new Report
                 {
                     ReportId = Guid.NewGuid(),
                     SourceId = orderId,
@@ -220,21 +223,52 @@ namespace SynOS.Services
                     VisitId = order.VisitId,
                     PatientId = order.Visit.Patient.PatientId,
                     Department = order.Department,
-                    Status = "ReadyForSignature", // Set initial status for the pathologist
+                    Status = "ReadyForSignature",
                     CreatedAt = DateTimeOffset.UtcNow
                 };
-                await _context.Reports.AddAsync(newReport);
-                await _context.SaveChangesAsync(); // Persist Report First (Rule 2)
+                await _context.Reports.AddAsync(report);
+                await _context.SaveChangesAsync();
 
-                // Notify Operations Engine (Leak 2 Fix)
-                await _operationsEngine.RecordReportReadyAsync(newReport.VisitId, newReport.ReportId, Guid.Empty); // Actor unknown here, using System
+                // Notify Operations Engine
+                await _operationsEngine.RecordReportReadyAsync(report.VisitId, report.ReportId, Guid.Empty);
             }
             else
             {
+                report.Status = "ReadyForSignature";
                 await _context.SaveChangesAsync();
             }
 
-            // --- BEGIN COST ATTRIBUTION WIRING (16.6 I-5 REFACTOR) ---
+            // Snapshot Management
+            using (var scope = _serviceProvider.CreateScope())
+            {
+                var reportingService = scope.ServiceProvider.GetRequiredService<Reporting.IReportingService>();
+                
+                if (report.Status == "ReadyForSignature" && report.CurrentVersion > 0)
+                {
+                    // Re-use current version if it exists and report is still in review
+                    var latestVersion = await _context.ReportVersions
+                        .Where(rv => rv.ReportId == report.ReportId && rv.VersionNumber == report.CurrentVersion)
+                        .OrderByDescending(rv => rv.CreatedAt)
+                        .FirstOrDefaultAsync();
+
+                    if (latestVersion != null)
+                    {
+                        await reportingService.CreateSnapshotAsync(latestVersion.ReportVersionId, overwrite: true);
+                    }
+                    else
+                    {
+                        // Fallback: create version if incremented but missing (sanity check)
+                        await CreateNewVersionAndSnapshotAsync(report, reportingService);
+                    }
+                }
+                else
+                {
+                    // Create brand new version
+                    await CreateNewVersionAndSnapshotAsync(report, reportingService);
+                }
+            }
+
+            // --- BEGIN COST ATTRIBUTION WIRING ---
             try
             {
                 await OrchestrateCostAttributionForOrderAsync(orderId);
@@ -242,9 +276,26 @@ namespace SynOS.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Cost attribution failed for OrderId {OrderId}", orderId);
-                // Do not block the primary workflow if cost attribution fails.
             }
             // --- END COST ATTRIBUTION WIRING ---
+        }
+
+        private async Task CreateNewVersionAndSnapshotAsync(Report report, Reporting.IReportingService reportingService)
+        {
+            var newVersionNumber = report.CurrentVersion + 1;
+            var reportVersion = new ReportVersion
+            {
+                ReportVersionId = Guid.NewGuid(),
+                ReportId = report.ReportId,
+                VersionNumber = newVersionNumber,
+                CreatedAt = DateTimeOffset.UtcNow
+            };
+
+            report.CurrentVersion = newVersionNumber;
+            _context.ReportVersions.Add(reportVersion);
+            await _context.SaveChangesAsync();
+
+            await reportingService.CreateSnapshotAsync(reportVersion.ReportVersionId, overwrite: false);
         }
 
         private async Task OrchestrateCostAttributionForOrderAsync(Guid orderId)

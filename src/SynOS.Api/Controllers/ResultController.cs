@@ -13,7 +13,7 @@ namespace SynOS.Api.Controllers
 {
     [ApiController]
     [Route("api/v1/results")]
-    [Authorize(Roles = "Pathologist,LabTech,Admin")] // Updated roles as per prompt
+    [Authorize(Roles = "Pathologist,LabTech,Technician,Admin")] // Updated roles to include Technician
     public class ResultController : ControllerBase
     {
         private readonly IResultService _resultService;

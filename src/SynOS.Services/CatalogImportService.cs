@@ -560,6 +560,8 @@ namespace SynOS.Services
             }
 
             // Post-Process Validation for Formulas (Dependency Check)
+            var allAvailableParamCodes = new HashSet<string>(cache.Keys.Select(k => k.Item2), StringComparer.OrdinalIgnoreCase);
+
             foreach (var param in cache.Values.Where(p => p.IsCalculated && !string.IsNullOrWhiteSpace(p.Formula)))
             {
                 var tokens = System.Text.RegularExpressions.Regex.Matches(param.Formula.ToUpperInvariant(), @"[A-Z0-9_]+")
@@ -582,14 +584,14 @@ namespace SynOS.Services
                         continue;
                     }
 
-                    // GPT-5 Safeguard 2: Panel existence check
-                    if (!cache.ContainsKey((param.TestCode, token)))
+                    // GPT-5 Safeguard 2: Panel existence check (Broadened to include all parameters in batch)
+                    if (!allAvailableParamCodes.Contains(token))
                     {
                         result.RowLevelErrors.Add(new RowLevelError 
                         { 
                             SheetName = "Parameters", 
                             RowNumber = 0, 
-                            ErrorMessage = $"Formula validation failed for '{param.ParameterCode}' in test '{param.TestCode}'. Referenced parameter '{token}' does not exist in this test panel." 
+                            ErrorMessage = $"Formula validation failed for '{param.ParameterCode}' in test '{param.TestCode}'. Referenced parameter '{token}' does not exist in this test panel or catalog." 
                         });
                     }
                 }

@@ -43,21 +43,38 @@ namespace SynOS.Services.Reporting
             // Get the latest version
             var latestVersion = report.ReportVersions.OrderByDescending(v => v.VersionNumber).FirstOrDefault();
             
-            // If signed and has snapshot, use snapshot
-            if (report.Status == "Signed" && latestVersion?.Snapshot != null)
+            // If a snapshot exists, it MUST be the single source of truth.
+            if (latestVersion?.Snapshot != null)
             {
+                if (string.IsNullOrWhiteSpace(latestVersion.Snapshot.SnapshotJson))
+                {
+                    throw new Models.Exceptions.SnapshotIntegrityException(
+                        $"Clinical integrity fault: Snapshot JSON is missing for ReportVersion {latestVersion.ReportVersionId}. Access blocked to prevent diagnostic dissociation.",
+                        latestVersion.ReportVersionId);
+                }
+
                 try 
                 {
                     var snapshotData = JsonSerializer.Deserialize<ReportStructureDto>(latestVersion.Snapshot.SnapshotJson);
-                    if (snapshotData != null) return snapshotData;
+                    if (snapshotData == null || snapshotData.Groups == null || !snapshotData.Groups.Any())
+                    {
+                        throw new Models.Exceptions.SnapshotIntegrityException(
+                            "Clinical integrity fault: Snapshot deserialized to an empty or invalid clinical structure.",
+                            latestVersion.ReportVersionId);
+                    }
+                    return snapshotData;
                 }
-                catch (Exception ex)
+                catch (JsonException ex)
                 {
-                    _logger.LogError(ex, "Failed to deserialize snapshot for Report {ReportId}", reportId);
+                    _logger.LogCritical(ex, "Clinical integrity fault: Corrupted snapshot JSON for ReportVersion {Id}.", latestVersion.ReportVersionId);
+                    throw new Models.Exceptions.SnapshotIntegrityException(
+                        "The clinical report snapshot is corrupted. Clinical review is blocked for diagnostic consistency.",
+                        ex,
+                        latestVersion.ReportVersionId);
                 }
             }
 
-            // Otherwise, build dynamically (Draft or Recovery mode)
+            // Fallback to dynamic build ONLY if no snapshot record exists at all (Legacy or Draft support)
             return await BuildDynamicStructureAsync(report, visit);
         }
 
@@ -74,13 +91,25 @@ namespace SynOS.Services.Reporting
             return await BuildDynamicStructureAsync(report, visit);
         }
 
-        public async Task CreateSnapshotAsync(Guid reportVersionId)
+        public async Task CreateSnapshotAsync(Guid reportVersionId, bool overwrite = false)
         {
             var version = await _context.ReportVersions
                 .Include(rv => rv.Report)
+                .Include(rv => rv.Snapshot)
                 .FirstOrDefaultAsync(rv => rv.ReportVersionId == reportVersionId);
 
             if (version == null) throw new KeyNotFoundException($"ReportVersion {reportVersionId} not found.");
+
+            // CLINICAL IMMUTABILITY GUARD
+            if (version.Report.Status == "Signed")
+            {
+                throw new InvalidOperationException("Clinical Immutability Violation: Cannot overwrite a snapshot for a signed report.");
+            }
+
+            if (version.Snapshot != null && !overwrite)
+            {
+                throw new InvalidOperationException($"Snapshot already exists for ReportVersion {reportVersionId}. Use overwrite=true if intended.");
+            }
 
             var visit = await _context.Visits
                 .Include(v => v.Patient)
@@ -90,14 +119,23 @@ namespace SynOS.Services.Reporting
             var structure = await BuildDynamicStructureAsync(version.Report, visit);
             var json = JsonSerializer.Serialize(structure);
 
-            var snapshot = new ReportSnapshot
+            if (version.Snapshot != null)
             {
-                ReportVersionId = reportVersionId,
-                SnapshotJson = json,
-                CreatedAt = DateTimeOffset.UtcNow
-            };
+                // Atomic Update (Protected by RowVersion)
+                version.Snapshot.SnapshotJson = json;
+                version.Snapshot.CreatedAt = DateTimeOffset.UtcNow;
+            }
+            else
+            {
+                var snapshot = new ReportSnapshot
+                {
+                    ReportVersionId = reportVersionId,
+                    SnapshotJson = json,
+                    CreatedAt = DateTimeOffset.UtcNow
+                };
+                _context.ReportSnapshots.Add(snapshot);
+            }
 
-            _context.ReportSnapshots.Add(snapshot);
             await _context.SaveChangesAsync();
         }
         private async Task<ReportStructureDto> BuildDynamicStructureAsync(Report report, Visit visit)
@@ -129,7 +167,22 @@ namespace SynOS.Services.Reporting
                 .Where(n => allTestCodes.Contains(n.TestCode))
                 .ToListAsync();
 
-            // 6. Assemble DTO Base
+            // 6. Build Results Map (Single Source of Truth - Hoisted out of loop for performance)
+            var resultsMap = new Dictionary<string, decimal?>();
+            foreach (var r in results)
+            {
+                if (decimal.TryParse(r.Value, out var val))
+                {
+                    resultsMap[r.ParameterCode] = val;
+                }
+                else if (!string.IsNullOrWhiteSpace(r.Value))
+                {
+                    // Intent-Aware Parsing: Log WHY a result is excluded from math
+                    _logger.LogInformation("Non-numeric result for {ParameterCode}: '{Value}'. Excluded from math evaluation.", r.ParameterCode, r.Value);
+                }
+            }
+
+            // 7. Assemble DTO Base
             var dto = new ReportStructureDto
             {
                 ReportId = report.ReportId,
@@ -145,8 +198,6 @@ namespace SynOS.Services.Reporting
                     Gender = visit.Patient.Gender
                 }
             };
-
-            // 7. Grouping & Parameter Assembly
             var groups = new Dictionary<string, ReportGroupDto>();
 
             // Iterate through catalog structure instead of flat results to support panels/placeholders
@@ -179,19 +230,36 @@ namespace SynOS.Services.Reporting
                     IsCalculated = meta.IsCalculated
                 };
 
-                // NEW: Dynamic Formula Engine (GPT-5 Approved)
+                // NEW: Dynamic Formula Engine (GPT-5 Hardened)
                 if (paramDto.IsCalculated)
                 {
                     // 1. Prioritize Catalog-Driven Formula
                     if (!string.IsNullOrWhiteSpace(meta.Formula))
                     {
-                        var resultsMap = results.ToDictionary(r => r.ParameterCode, r => (decimal?)decimal.Parse(r.Value));
-                        var calcValue = EvaluateFormula(meta.Formula, resultsMap);
-                        if (calcValue != null) paramDto.Value = FormatValue(calcValue.ToString(), meta.DecimalPlaces);
+                        try
+                        {
+                            var calcValue = EvaluateFormula(meta.Formula, resultsMap);
+                            if (calcValue != null) paramDto.Value = FormatValue(calcValue.ToString(), meta.DecimalPlaces);
+                        }
+                        catch (Exception ex)
+                        {
+                            // Surgical Failure Logging
+                            _logger.LogError(ex, "❌ Formula evaluation failed for {ParameterCode} | Formula: '{Formula}'", 
+                                paramDto.ParameterCode, meta.Formula);
+                        }
                     }
                     else
                     {
-                        // 2. Legacy Fallback (Per V1 hardcoding)
+                        // 2. Legacy Fallback (Hard-Fail Mode: Enforce Truth)
+                        _logger.LogWarning(
+                            "⚠️ FALLBACK: {ParameterCode} | Formula missing | Available Inputs: [{Inputs}]",
+                            paramDto.ParameterCode,
+                            string.Join(",", resultsMap.Keys)
+                        );
+
+                        // TO USER: Phase 2 Deprecation (Uncomment the throw below to enforce Hard-Fail)
+                        // throw new InvalidOperationException($"Missing catalog formula for calculated parameter '{meta.ParameterCode}'");
+
                         var calcValue = PerformV1Calculation(paramDto.ParameterCode, results);
                         if (calcValue != null) paramDto.Value = calcValue;
                     }
@@ -363,6 +431,13 @@ namespace SynOS.Services.Reporting
                 var result = expr.Evaluate();
                 if (result == null) return null;
                 
+                // Handle Infinity/NaN which can occur in NCalc double-precision math
+                if (result is double d && (double.IsInfinity(d) || double.IsNaN(d)))
+                {
+                    _logger.LogWarning("Math error (Infinity/NaN) in formula evaluation for: {Formula}", formula);
+                    return null;
+                }
+
                 return Convert.ToDecimal(result);
             }
             catch (DivideByZeroException)
@@ -370,10 +445,15 @@ namespace SynOS.Services.Reporting
                 _logger.LogWarning("Divide by zero in formula: {Formula}", formula);
                 return null;
             }
+            catch (OverflowException)
+            {
+                _logger.LogWarning("Numeric overflow in formula evaluation: {Formula}", formula);
+                return null;
+            }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to evaluate formula: {Formula}", formula);
-                return null;
+                // Note: The caller (BuildDynamicStructureAsync) will catch and log more context
+                throw; 
             }
         }
     }

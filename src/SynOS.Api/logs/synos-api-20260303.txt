@@ -1,6 +1,0 @@
-2026-03-03 10:12:34.135 +05:30 [INF] OperationalStatsProjectionWorker is starting in Event-Driven Mode.
-2026-03-03 10:12:34.601 +05:30 [INF] Worker: Running Consistency Check and Catch-up...
-2026-03-03 10:12:38.200 +05:30 [WRN] The foreign key property 'Specimen.VisitId1' was created in shadow state because a conflicting property with the simple name 'VisitId' exists in the entity type, but is either not mapped, is already used for another relationship, or is incompatible with the associated primary key type. See https://aka.ms/efcore-relationships for information on mapping relationships in EF Core.
-2026-03-03 10:12:42.711 +05:30 [INF] Worker: Catch-up complete. Awaiting real-time events...
-2026-03-03 10:15:34.079 +05:30 [WRN] Failed to determine the https port for redirect.
-2026-03-03 10:17:06.587 +05:30 [INF] Terminal web-1zy6xxtky authorized and added to Lead Print Group for Branch "a0000000-0000-0000-0000-000000000001".

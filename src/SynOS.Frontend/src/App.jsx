@@ -78,9 +78,9 @@ function App() {
               <Route path="/workbench" element={<DepartmentWorkbenchScreen />} />
             </Route>
 
-            <Route path="/pathologist" element={
-              <PathologistTerminal />
-            } />
+            <Route element={<ProtectedRoute allowedRoles={['Pathologist']} />}>
+              <Route path="/pathologist" element={<PathologistTerminal />} />
+            </Route>
 
             {/* Root Redirection */}
             <Route path="/" element={<RootRedirect />} />

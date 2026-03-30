@@ -22,6 +22,6 @@ namespace SynOS.Services.Reporting
         /// Captures the current state of a report and stores it as an immutable snapshot.
         /// Usually called during the "Sign" process.
         /// </summary>
-        Task CreateSnapshotAsync(Guid reportVersionId);
+        Task CreateSnapshotAsync(Guid reportVersionId, bool overwrite = false);
     }
 }

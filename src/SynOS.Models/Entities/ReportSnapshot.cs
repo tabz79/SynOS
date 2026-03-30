@@ -16,5 +16,8 @@ namespace SynOS.Models.Entities
         public string SnapshotJson { get; set; } = string.Empty;
 
         public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
+
+        [Timestamp]
+        public byte[]? RowVersion { get; set; }
     }
 }

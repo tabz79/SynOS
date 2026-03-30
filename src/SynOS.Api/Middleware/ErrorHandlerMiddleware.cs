@@ -30,6 +30,10 @@ namespace SynOS.Api.Middleware
 
                 switch (error)
                 {
+                    case Models.Exceptions.SnapshotIntegrityException e:
+                        response.StatusCode = (int)HttpStatusCode.Conflict;
+                        responseModel = new { code = e.Code, message = e.Message, correlation_id = context.TraceIdentifier };
+                        break;
                     case UnauthorizedAccessException e:
                         // custom application error
                         response.StatusCode = (int)HttpStatusCode.Unauthorized;
