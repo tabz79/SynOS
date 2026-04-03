@@ -14,6 +14,7 @@ using SynOS.Services.Operational;
 using SynOS.Models.Enums; 
 using SynOS.Services.Security; 
 using SynOS.Services.Operations; // ADDED
+using SynOS.Models.DTOs.Reporting;
 
 namespace SynOS.Services
 {
@@ -441,6 +442,50 @@ namespace SynOS.Services
                 SignatureHash = signature?.SignatureHash,
                 VerificationQrCodeContent = qrCodeContent
             };
+        }
+
+        public async Task<System.Collections.Generic.IEnumerable<ReportListItemDto>> GetReportsByStatusAsync(string status)
+        {
+            var reports = await _context.Reports
+                .Where(r => r.Status == status && r.SourceType == "Order")
+                .AsNoTracking()
+                .ToListAsync();
+
+            var orderIds = reports.Select(r => r.SourceId).ToList();
+
+            var orders = await _context.Orders
+                .Include(o => o.Test)
+                .Include(o => o.Visit).ThenInclude(v => v.Patient)
+                .Where(o => orderIds.Contains(o.OrderId))
+                .AsNoTracking()
+                .ToDictionaryAsync(o => o.OrderId);
+
+            var resultsCount = await _context.Results
+                .Where(res => orderIds.Contains(res.OrderId))
+                .GroupBy(res => res.OrderId)
+                .Select(g => new { OrderId = g.Key, AbnormalCount = g.Count(r => r.Flag != null && r.Flag != "Normal" && r.Flag != "" && r.Flag != "N") })
+                .ToDictionaryAsync(x => x.OrderId, x => x.AbnormalCount);
+
+            return reports.Select(r => {
+                orders.TryGetValue(r.SourceId, out var order);
+                resultsCount.TryGetValue(r.SourceId, out var abnormalCount);
+                
+                var patient = order?.Visit?.Patient;
+                var age = patient?.DateOfBirth == default ? 0 : (int)((DateTime.Today - patient.DateOfBirth).TotalDays / 365.25);
+
+                return new ReportListItemDto
+                {
+                    ReportId = r.ReportId,
+                    PatientName = patient != null ? $"{patient.FirstName} {patient.LastName}" : "Unknown",
+                    PatientAgeGender = patient != null ? $"{age} / {patient.Gender}" : "N/A",
+                    TestName = order?.Test?.TestName ?? order?.TestCode ?? "Unknown",
+                    Department = r.Department,
+                    CreatedAt = r.CreatedAt,
+                    Status = r.Status,
+                    IsStat = false, // Placeholder per plan
+                    AbnormalCount = abnormalCount
+                };
+            }).ToList();
         }
     }
 }

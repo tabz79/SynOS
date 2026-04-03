@@ -22,17 +22,20 @@ namespace SynOS.Api.Controllers
         private readonly IResultService _resultService;
         private readonly SynOSDbContext _db;
         private readonly IUserContext _userContext;
+        private readonly ILogger<ProcessingController> _logger;
 
         public ProcessingController(
             IProcessingService processingService,
             IResultService resultService,
             SynOSDbContext db,
-            IUserContext userContext)
+            IUserContext userContext,
+            ILogger<ProcessingController> logger)
         {
             _processingService = processingService;
             _resultService = resultService;
             _db = db;
             _userContext = userContext;
+            _logger = logger;
         }
 
         [HttpGet("queue")]
@@ -107,7 +110,7 @@ namespace SynOS.Api.Controllers
             // 1. Verify assignment exists + Snapshot for Auth/Status
             var assignment = await _db.ProcessingAssignments
                 .Where(a => a.ProcessingAssignmentId == assignmentId)
-                .Select(a => new { a.BranchId, a.DepartmentCode, a.Status })
+                .Select(a => new { a.BranchId, a.DepartmentCode, a.Status, a.SpecimenId, a.AssignedResourceId })
                 .FirstOrDefaultAsync();
 
             if (assignment == null) return NotFound("Assignment not found");
@@ -178,6 +181,7 @@ namespace SynOS.Api.Controllers
                 var entryRequest = new ResultEntryRequestDto
                 {
                     OrderId = orderId,
+                    SpecimenId = assignment.SpecimenId, // Fix: Use pre-resolved specimen context
                     Results = orderResults
                 };
 
@@ -219,6 +223,7 @@ namespace SynOS.Api.Controllers
         [HttpPost("assignment/{assignmentId}/save")]
         public async Task<IActionResult> SaveDraft(Guid assignmentId, [FromBody] SubmitAssignmentResultsRequestDto request)
         {
+            _logger.LogInformation("SaveDraft API HIT → assignmentId={AssignmentId}", assignmentId);
             if (request == null) return BadRequest("Invalid request");
 
             var result = await _processingService.SaveAssignmentDraftAsync(assignmentId, request);

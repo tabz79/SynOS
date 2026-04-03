@@ -1,0 +1,50 @@
+export const ReportsApi = {
+    getReportsByStatus: async (status) => {
+        const response = await fetch(`/api/v1/reports?status=${status}`, {
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('synos_jwt')}` }
+        });
+        if (!response.ok) throw new Error('Failed to fetch reports');
+        return await response.json();
+    },
+
+    getReportStructure: async (reportId, forceFresh = true) => {
+        const response = await fetch(`/api/v1/debug/report-structure/${reportId}?forceFresh=${forceFresh}`, {
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('synos_jwt')}` }
+        });
+        if (!response.ok) throw new Error('Failed to fetch report structure');
+        return await response.json();
+    },
+
+    getFullReport: async (reportId) => {
+        const response = await fetch(`/api/v1/reports/${reportId}/full`, {
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('synos_jwt')}` }
+        });
+        if (!response.ok) throw new Error('Failed to fetch full report');
+        return await response.json();
+    },
+
+    updateInterpretation: async (reportId, summary, notes) => {
+        const response = await fetch(`/api/v1/reports/${reportId}/interpretation`, {
+            method: 'POST',
+            headers: { 
+                'Authorization': `Bearer ${localStorage.getItem('synos_jwt')}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ summary, notes })
+        });
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.message || 'Failed to update interpretation');
+        }
+        return true;
+    },
+
+    signReport: async (reportId) => {
+        const response = await fetch(`/api/v1/reports/${reportId}/sign`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('synos_jwt')}` }
+        });
+        if (!response.ok) throw new Error('Failed to sign report');
+        return await response.json();
+    }
+};

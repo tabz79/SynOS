@@ -22,7 +22,7 @@ using SynOS.Services.Storage;
 using SynOS.Services.Stubs;
 using SynOS.Services.Revenue;
 using SynOS.Services.EconomicsIntelligence; // Add this using // Add this using
-// using SynOS.Services.CostAttribution; // 🔒 TEMPORARILY DISABLED (engine not live yet)
+using SynOS.Services.CostAttribution; // 🔒 LIVE ENGINE (RESTORED)
 using SynOS.Models.Configuration;
 using SynOS.Services.Security;
 using SynOS.Services.AnalyzerIntegration; // New
@@ -222,8 +222,8 @@ builder.Services.AddAssignmentServices(); // ADDED
 // builder.Services.AddEconomicsIntelligence();
 
 // 🔒 Cost Attribution services intentionally NOT registered yet
-// builder.Services.AddScoped<ICostAttributionPolicyResolver, CostAttributionPolicyResolver>();
-// builder.Services.AddScoped<ICostAttributionUsageFactWriter, CostAttributionUsageFactWriter>();
+builder.Services.AddScoped<ICostAttributionPolicyResolver, CostAttributionPolicyResolver>();
+builder.Services.AddScoped<ICostAttributionUsageFactWriter, CostAttributionUsageFactWriter>();
 
 builder.Services.AddScoped<IInvoiceService, InvoiceService>();
 builder.Services.AddScoped<ICorrectionService, CorrectionService>(); // ADDED
@@ -253,6 +253,7 @@ builder.Services.AddScoped<SynOS.Services.Reception.IReceptionSnapshotService, S
 builder.Services.AddScoped<SynOS.Services.Reception.IReceptionPatientService, SynOS.Services.Reception.ReceptionPatientService>(); // ADDED
 builder.Services.AddScoped<IReportService, ReportService>();
 builder.Services.AddScoped<IReportingService, ReportingService>(); // New Reporting Engine
+builder.Services.AddScoped<IInterpretationService, InterpretationService>(); // ADDED
 builder.Services.AddScoped<ICriticalValueService, CriticalValueService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<ISampleNotifier, SampleNotifier>(); // Register notifier

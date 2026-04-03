@@ -4,7 +4,11 @@ export const ProcessingApi = {
         const response = await fetch('/api/processing/queue', {
             headers: { 'Authorization': `Bearer ${localStorage.getItem('synos_jwt')}` }
         });
-        if (!response.ok) throw new Error('Failed to fetch queue');
+        if (!response.ok) {
+            const error = new Error('Failed to fetch queue');
+            error.status = response.status;
+            throw error;
+        }
         return await response.json();
     },
 
@@ -12,7 +16,11 @@ export const ProcessingApi = {
         const response = await fetch(`/api/processing/assignment/${id}`, {
             headers: { 'Authorization': `Bearer ${localStorage.getItem('synos_jwt')}` }
         });
-        if (!response.ok) throw new Error('Failed to fetch assignment detail');
+        if (!response.ok) {
+            const error = new Error('Failed to fetch assignment detail');
+            error.status = response.status;
+            throw error;
+        }
         return await response.json();
     },
 
@@ -25,7 +33,11 @@ export const ProcessingApi = {
             },
             body: JSON.stringify({ processingAssignmentId: id })
         });
-        if (!response.ok) throw new Error('Failed to claim assignment');
+        if (!response.ok) {
+            const error = new Error('Failed to claim assignment');
+            error.status = response.status;
+            throw error;
+        }
         return await response.json();
     },
 
@@ -38,7 +50,11 @@ export const ProcessingApi = {
             },
             body: JSON.stringify({ results })
         });
-        if (!response.ok) throw new Error('Failed to save draft');
+        if (!response.ok) {
+            const error = new Error('Failed to save draft');
+            error.status = response.status;
+            throw error;
+        }
         return await response.json();
     },
 
@@ -51,7 +67,11 @@ export const ProcessingApi = {
             },
             body: JSON.stringify({ processingAssignmentId: id })
         });
-        if (!response.ok) throw new Error('Failed to complete assignment');
+        if (!response.ok) {
+            const error = new Error('Failed to complete assignment');
+            error.status = response.status;
+            throw error;
+        }
         return await response.json();
     },
 

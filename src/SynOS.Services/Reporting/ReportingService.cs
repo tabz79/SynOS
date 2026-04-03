@@ -144,13 +144,16 @@ namespace SynOS.Services.Reporting
             var order = await _context.Orders.FirstOrDefaultAsync(o => o.OrderId == report.SourceId);
             if (order == null) throw new KeyNotFoundException($"Order {report.SourceId} for report {report.ReportId} not found.");
 
-            // 2. Discover ALL TestCodes in this report (Panel + Children)
-            var allTestCodes = new HashSet<string> { order.TestCode };
-            var mappings = await _context.CatalogPanelMappings
-                .Where(m => m.PanelTestCode == order.TestCode)
-                .Select(m => m.ChildTestCode)
+            // 2. Discover ALL TestCodes in this report context
+            // Fix: Instead of only looking at the triggering Order, use all active TestCodes in the Visit.
+            // This ensures sibling parameters (TP, ALB) are discovered even if the report is for GLOB.
+            var visitTestCodes = await _context.Orders
+                .Where(o => o.VisitId == order.VisitId && o.Status != SynOS.Models.Enums.OrderStatus.Cancelled)
+                .Select(o => o.TestCode)
+                .Distinct()
                 .ToListAsync();
-            foreach (var code in mappings) allTestCodes.Add(code);
+
+            var allTestCodes = new HashSet<string>(visitTestCodes);
 
             // 3. Fetch Catalog Metadata for all these tests
             var catalogParams = await _context.CatalogParameters
@@ -158,8 +161,14 @@ namespace SynOS.Services.Reporting
                 .ToListAsync();
 
             // 4. Fetch Results (only latest for each parameter)
+            // Fix: Load all results for the entire Visit context, not just the single triggered Order.
+            var visitOrderIds = await _context.Orders
+                .Where(o => o.VisitId == order.VisitId && o.Status != SynOS.Models.Enums.OrderStatus.Cancelled)
+                .Select(o => o.OrderId)
+                .ToListAsync();
+
             var results = await _context.Results
-                .Where(r => r.OrderId == report.SourceId && r.Status != "Superseded")
+                .Where(r => visitOrderIds.Contains(r.OrderId) && r.Status != "Superseded")
                 .ToListAsync();
 
             // 5. Fetch Test Notes (linked by Panel TestCode or Child TestCodes)
@@ -239,7 +248,12 @@ namespace SynOS.Services.Reporting
                         try
                         {
                             var calcValue = EvaluateFormula(meta.Formula, resultsMap);
-                            if (calcValue != null) paramDto.Value = FormatValue(calcValue.ToString(), meta.DecimalPlaces);
+                            if (calcValue != null) 
+                            {
+                                paramDto.Value = FormatValue(calcValue.ToString(), meta.DecimalPlaces);
+                                // FIX: Feed calculated result back into resultsMap for dependency chaining (e.g. AG_RATIO depending on GLOB)
+                                resultsMap[paramDto.ParameterCode] = calcValue;
+                            }
                         }
                         catch (Exception ex)
                         {
@@ -265,21 +279,68 @@ namespace SynOS.Services.Reporting
                     }
                 }
 
-                // Skip if no value and not calculated? (Usually we show all parameters in a report panel)
-                // For now, only show if we have a value OR it's a calculated field
-                if (paramDto.Value != null)
+                // Step 7: Add to Group (Minimal Fix: Always add all discovered parameters)
+                if (true) // FIX: Removed filter (paramDto.Value != null || paramDto.IsCalculated)
                 {
-                    paramDto.Flag = result != null ? await CalculateFlagAsync(result, meta, dto.Patient) : "Normal";
-                    // If calculated, we might need a dummy result for flag calculation
-                    if (result == null && paramDto.IsCalculated)
+                    // Compute Flag/Range only if we have a value
+                    if (paramDto.Value != null)
                     {
-                        var dummyResult = new Result { Value = paramDto.Value, ParameterCode = paramDto.ParameterCode };
-                        paramDto.Flag = await CalculateFlagAsync(dummyResult, meta, dto.Patient);
+                        paramDto.Flag = result != null ? await CalculateFlagAsync(result, meta, dto.Patient) : "Normal";
+                        // If calculated, we might need a dummy result for flag calculation
+                        if (result == null && paramDto.IsCalculated)
+                        {
+                            var dummyResult = new Result { Value = paramDto.Value, ParameterCode = paramDto.ParameterCode };
+                            paramDto.Flag = await CalculateFlagAsync(dummyResult, meta, dto.Patient);
+                        }
+                        
+                        paramDto.ReferenceRange = await GetFormattedRangeAsync(meta, dto.Patient);
                     }
-                    
-                    paramDto.ReferenceRange = await GetFormattedRangeAsync(meta, dto.Patient);
+                    else
+                    {
+                        paramDto.Flag = "Normal";
+                        paramDto.ReferenceRange = await GetFormattedRangeAsync(meta, dto.Patient);
+                    }
+
                     groups[groupName].Parameters.Add(paramDto);
                 }
+            }
+
+            // 8. FINAL PASS — SAFE CHAIN RESOLUTION (Max 2 Iterations)
+            // This resolves nested dependencies (e.g., AG_RATIO depending on GLOB)
+            for (int iteration = 1; iteration <= 2; iteration++)
+            {
+                bool anyComputed = false;
+                foreach (var group in groups.Values)
+                {
+                    foreach (var param in group.Parameters.Where(p => p.IsCalculated && p.Value == null))
+                    {
+                        var meta = catalogParams.FirstOrDefault(cp => cp.ParameterCode == param.ParameterCode);
+                        if (meta == null || string.IsNullOrWhiteSpace(meta.Formula)) continue;
+
+                        try
+                        {
+                            var calcValue = EvaluateFormula(meta.Formula, resultsMap);
+                            if (calcValue != null)
+                            {
+                                param.Value = FormatValue(calcValue.ToString(), meta.DecimalPlaces);
+                                resultsMap[param.ParameterCode] = calcValue;
+
+                                // Re-compute Flag / ReferenceRange for newly resolved calculation
+                                var dummyResult = new Result { Value = param.Value, ParameterCode = param.ParameterCode };
+                                param.Flag = await CalculateFlagAsync(dummyResult, meta, dto.Patient);
+                                param.ReferenceRange = await GetFormattedRangeAsync(meta, dto.Patient);
+
+                                _logger.LogInformation("FINAL PASS [{Iteration}/2] → Evaluated {ParameterCode}", iteration, param.ParameterCode);
+                                anyComputed = true;
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogWarning(ex, "Final pass evaluation failed for {ParameterCode}", param.ParameterCode);
+                        }
+                    }
+                }
+                if (!anyComputed) break; // Efficiency optimization: Stop early if nothing new was resolved
             }
 
             dto.Groups = groups.Values.OrderBy(g => g.Order).ToList();
@@ -412,19 +473,41 @@ namespace SynOS.Services.Reporting
         {
             try
             {
+                // 1. Dependency Guard: Identify all potential parameters (UPPERCASE_TOKENS)
+                // We assume parameter codes are uppercase words. We ignore NCalc built-in functions.
+                var matches = System.Text.RegularExpressions.Regex.Matches(formula, @"\b[A-Z_][A-Z0-9_]*\b");
+                var ncalcFunctions = new HashSet<string>(StringComparer.OrdinalIgnoreCase) 
+                { 
+                    "IF", "IN", "ABS", "ROUND", "MAX", "MIN", "POW", "SQRT", "LOG", "FLOOR", "CEILING", "TRUNCATE" 
+                };
+                
+                var availableKeys = string.Join(", ", values.Keys);
+                _logger.LogInformation("RESULT MAP KEYS → [{Keys}]", availableKeys);
+
+                foreach (System.Text.RegularExpressions.Match match in matches)
+                {
+                    var token = match.Value;
+                    if (ncalcFunctions.Contains(token)) continue;
+                    
+                    // If formula uses a token that isn't in our results map or has no value, we must skip.
+                    if (!values.TryGetValue(token, out var val) || !val.HasValue)
+                    {
+                        _logger.LogInformation("MISSING → {Token} | Available → [{Keys}]", token, availableKeys);
+                        return null;
+                    }
+                }
+
                 var expr = new Expression(formula);
                 
-                // Identify tokens and map parameters
+                // 2. Map parameters to NCalc
                 foreach (var parameter in values)
                 {
                     if (formula.Contains(parameter.Key, StringComparison.OrdinalIgnoreCase))
                     {
-                        if (!parameter.Value.HasValue) 
+                        if (parameter.Value.HasValue) 
                         {
-                            _logger.LogTrace("Skipping formula {Formula} because {Token} is null", formula, parameter.Key);
-                            return null;
+                            expr.Parameters[parameter.Key] = (double)parameter.Value.Value;
                         }
-                        expr.Parameters[parameter.Key] = (double)parameter.Value.Value;
                     }
                 }
 

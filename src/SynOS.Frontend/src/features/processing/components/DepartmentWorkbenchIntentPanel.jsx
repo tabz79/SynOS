@@ -73,13 +73,20 @@ export function DepartmentWorkbenchIntentPanel({ assignmentId, onClose, onDirtyU
     };
 
     const handleValueChange = (parameterCode, value) => {
-        setResults(prev => {
-            const next = { ...prev, [parameterCode]: value };
-            const isDirty = JSON.stringify(next) !== JSON.stringify(initialResultsRef.current);
-            onDirtyUpdate?.(isDirty);
-            return next;
-        });
+        setResults(prev => ({ 
+            ...prev, 
+            [parameterCode]: value 
+        }));
     };
+
+    // Safe Side-Effect: Monitor results to update isDirty state in parent
+    useEffect(() => {
+        // Skip calling parent on first mount/hydrate
+        if (isLoading) return;
+
+        const isDirty = JSON.stringify(results) !== JSON.stringify(initialResultsRef.current);
+        onDirtyUpdate?.(isDirty);
+    }, [results, isLoading, onDirtyUpdate]);
 
     const handleSaveDraft = async () => {
         try {

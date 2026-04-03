@@ -20,6 +20,7 @@ namespace SynOS.Models.DTOs
     public class ResultEntryRequestDto
     {
         public Guid OrderId { get; set; }
+        public Guid? SpecimenId { get; set; } // Surgical fix: Pass context to avoid re-resolution
         public List<ParameterResultDto> Results { get; set; } = new();
         public string? OverrideReason { get; set; }
     }

@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using SynOS.Models.DTOs;
+using SynOS.Models.DTOs.Reporting;
 
 namespace SynOS.Services
 {
@@ -11,5 +12,6 @@ namespace SynOS.Services
         Task<FinalReportDto> GetFinalReportAsync(Guid orderId);
         Task MarkReportAsDeliveredAsync(Guid orderId);
         Task<ReportDataModel?> GetReportDataForPdfAsync(Guid visitId);
+        Task<System.Collections.Generic.IEnumerable<ReportListItemDto>> GetReportsByStatusAsync(string status);
     }
 }

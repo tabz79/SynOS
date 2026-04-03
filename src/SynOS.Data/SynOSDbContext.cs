@@ -127,6 +127,7 @@ namespace SynOS.Data
         public DbSet<DeliveryAttempt> DeliveryAttempts { get; set; } = null!;
         public DbSet<DownloadLink> DownloadLinks { get; set; } = null!;
         public DbSet<NotificationQueue> NotificationQueues { get; set; } = null!;
+        public DbSet<ReportInterpretation> ReportInterpretations { get; set; } = null!;
 
         // DbSets for Lab Analyzer Integration
         public DbSet<LabAnalyzer> LabAnalyzers { get; set; } = null!;
@@ -794,6 +795,16 @@ namespace SynOS.Data
                     .WithMany() // A user can sign multiple reports
                     .HasForeignKey(e => e.SignedByUserId)
                     .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            // ReportInterpretation Module
+            modelBuilder.Entity<ReportInterpretation>(entity =>
+            {
+                entity.HasIndex(e => e.ReportId).IsUnique();
+                entity.HasOne(e => e.Report)
+                      .WithOne()
+                      .HasForeignKey<ReportInterpretation>(e => e.ReportId)
+                      .OnDelete(DeleteBehavior.Cascade);
             });
 
             // Delivery Module

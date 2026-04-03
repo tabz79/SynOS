@@ -1,90 +1,292 @@
-POST
-/api/v1/results/orders/{orderId}/submit
-
-Parameters
-Cancel
-Name	Description
-orderId *
-string($uuid)
-(path)
-c081db1f-37fd-4044-a0cf-3fb56f6421ed
-Execute
-Clear
-Responses
-Curl
-
-curl -X 'POST' \
-  'http://127.0.0.1:59999/api/v1/results/orders/c081db1f-37fd-4044-a0cf-3fb56f6421ed/submit' \
-  -H 'accept: */*' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiJhZTljNDBlOS0zZDMxLTRjOWMtOTZlYS02ZDJmYjRhMmE3ZDUiLCJlbWFpbCI6ImJpby50ZWNoQHN5bm9zLmxhYiIsInVuaXF1ZV9uYW1lIjoiQmlvY2hlbWlzdHJ5IFRlY2huaWNpYW4iLCJzZXNzaW9uX21vZGUiOiJvcGVyYXRpb25hbCIsInNlc3Npb25faWQiOiJjYWQ4ZWRiMC0xODJkLTRiMjctOWQ2Yy04OWIwZGFlYjM5YjciLCJkZXBhcnRtZW50X2NvZGUiOiJCSU8iLCJyb2xlIjoiVGVjaG5pY2lhbiIsImJyYW5jaF9pZCI6ImEwMDAwMDAwLTAwMDAtMDAwMC0wMDAwLTAwMDAwMDAwMDAwMSIsInJlc291cmNlX2lkIjoiMDZkOGY5ZTYtMmY0OC00ZWRiLTg0ZmUtZDVmMjI3ZDYyMzY3IiwiYnJhbmNoX25hbWUiOiJNYWluIExhYm9yYXRvcnkiLCJuYmYiOjE3NzQ4NDkzODIsImV4cCI6MTc3NDkzNTc4MiwiaWF0IjoxNzc0ODQ5MzgyLCJpc3MiOiJTeW5PUy5BcGkiLCJhdWQiOiJTeW5PUy5BcHAifQ.RlObfaMcrZ5C6pWTzKoS9gSAY15St6Qujaoff7_YR00' \
-  -d ''
-Request URL
-http://127.0.0.1:59999/api/v1/results/orders/c081db1f-37fd-4044-a0cf-3fb56f6421ed/submit
-Server response
-Code	Details
-500
-Undocumented
-Error: Internal Server Error
-
-Response body
-Download
-{
-  "code": "ERROR",
-  "message": "Invalid column name 'RowVersion'.",
-  "correlation_id": "0HNKE3SL1M479:00000004"
-}
-Response headers
- content-type: application/json 
- date: Mon,30 Mar 2026 05:44:29 GMT 
- server: Kestrel 
- transfer-encoding: chunked 
-Responses
-Code	Description	Links
-200	
-Success
-
-No links
-
 PS D:\Projects\SynOS-Synthesized-Lab-Intelligence> dotnet run --project src\SynOS.Api\SynOS.Api.csproj --urls "http://127.0.0.1:59999"
 
-[11:12:09 INF] OperationalStatsProjectionWorker is starting in Event-Driven Mode.
-[11:12:09 INF] Worker: Running Consistency Check and Catch-up...
-[11:12:09 INF] Worker: Catch-up complete. Awaiting real-time events...
-[11:12:59 WRN] Failed to determine the https port for redirect.
-[11:14:30 ERR] Failed executing DbCommand (8ms) [Parameters=[@__reportVersionId_0='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
-SELECT TOP(1) [r].[ReportVersionId], [r].[CreatedAt], [r].[PdfPath], [r].[ReportId], [r].[SignedAt], [r].[SignedByUserId], [r].[VersionNumber], [r0].[ReportId], [r0].[CreatedAt], [r0].[CurrentVersion], [r0].[Delivered], [r0].[DeliveredAt], [r0].[Department], [r0].[PatientId], [r0].[PdfUrl], [r0].[SignedAt], [r0].[SignedByUserId], [r0].[SourceId], [r0].[SourceType], [r0].[Status], [r0].[VisitId], [r1].[ReportVersionId], [r1].[CreatedAt], [r1].[RowVersion], [r1].[SnapshotJson]
-FROM [ReportVersions] AS [r]
-INNER JOIN [Reports] AS [r0] ON [r].[ReportId] = [r0].[ReportId]
-LEFT JOIN [ReportSnapshots] AS [r1] ON [r].[ReportVersionId] = [r1].[ReportVersionId]
-WHERE [r].[ReportVersionId] = @__reportVersionId_0
-[11:14:30 ERR] An exception occurred while iterating over the results of a query for context type 'SynOS.Data.SynOSDbContext'.
-Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'RowVersion'.
-   at Microsoft.Data.SqlClient.SqlCommand.<>c.<ExecuteDbDataReaderAsync>b__209_0(Task`1 result)
-   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
-   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
---- End of stack trace from previous location ---
-   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
-   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
---- End of stack trace from previous location ---
-   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
-ClientConnectionId:6bb2efe8-70f5-45f4-9ee1-a02414ecc5d5
-Error Number:207,State:1,Class:16
-Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'RowVersion'.
-   at Microsoft.Data.SqlClient.SqlCommand.<>c.<ExecuteDbDataReaderAsync>b__209_0(Task`1 result)
-   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
-   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
---- End of stack trace from previous location ---
-   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
-   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
---- End of stack trace from previous location ---
-   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
-ClientConnectionId:6bb2efe8-70f5-45f4-9ee1-a02414ecc5d5
-Error Number:207,State:1,Class:16
+[11:09:35 INF] OperationalStatsProjectionWorker is starting in Event-Driven Mode.
+[11:09:35 INF] Worker: Running Consistency Check and Catch-up...
+[11:09:35 INF] Worker: Catch-up complete. Awaiting real-time events...
+[11:09:39 WRN] Failed to determine the https port for redirect.
+[11:09:40 INF] Terminal web-1zy6xxtky authorized and added to Thermal80mm group for Branch a0000000-0000-0000-0000-000000000001.
+[11:09:58 INF] Terminal web-1zy6xxtky authorized and added to Thermal80mm group for Branch a0000000-0000-0000-0000-000000000001.
+[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=04/03/2026 11:09:58, Today=04/03/2026 00:00:00, Window=[04/03/2026 00:00:00 - 04/04/2026 00:00:00)
+[ActionQueue] Found 0 raw visits.
+[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=04/03/2026 11:09:59, Today=04/03/2026 00:00:00, Window=[04/03/2026 00:00:00 - 04/04/2026 00:00:00)
+[ActionQueue] Found 0 raw visits.
+[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=04/03/2026 11:09:59, Today=04/03/2026 00:00:00, Window=[04/03/2026 00:00:00 - 04/04/2026 00:00:00)
+[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=04/03/2026 11:09:59, Today=04/03/2026 00:00:00, Window=[04/03/2026 00:00:00 - 04/04/2026 00:00:00)
+[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=04/03/2026 11:09:59, Today=04/03/2026 00:00:00, Window=[04/03/2026 00:00:00 - 04/04/2026 00:00:00)
+[ActionQueue] Found 0 raw visits.
+[ActionQueue] Found 0 raw visits.
+[ActionQueue] Found 0 raw visits.
+[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=04/03/2026 11:09:59, Today=04/03/2026 00:00:00, Window=[04/03/2026 00:00:00 - 04/04/2026 00:00:00)
+[ActionQueue] Found 0 raw visits.
+[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=04/03/2026 11:09:59, Today=04/03/2026 00:00:00, Window=[04/03/2026 00:00:00 - 04/04/2026 00:00:00)
+[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=04/03/2026 11:09:59, Today=04/03/2026 00:00:00, Window=[04/03/2026 00:00:00 - 04/04/2026 00:00:00)
+[ActionQueue] Found 0 raw visits.
+[ActionQueue] Found 0 raw visits.
+[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=04/03/2026 11:14:58, Today=04/03/2026 00:00:00, Window=[04/03/2026 00:00:00 - 04/04/2026 00:00:00)
+[ActionQueue] Found 0 raw visits.
+[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=04/03/2026 11:16:12, Today=04/03/2026 00:00:00, Window=[03/27/2026 00:00:00 - 04/04/2026 00:00:00)
+[ActionQueue] Found 0 raw visits.
+[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=04/03/2026 11:16:14, Today=04/03/2026 00:00:00, Window=[04/03/2026 00:00:00 - 04/04/2026 00:00:00)
+[ActionQueue] Found 0 raw visits.
+[11:16:23 WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+[11:16:23 WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+[11:16:23 INF] EVENT_WRITE for VisitId 077334c1-6b37-4476-84f5-ad84d99664b6, Context 43470397-ce19-4e6e-a623-91f93503edc6:0
+[11:16:24 WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+[11:16:24 INF] EVENT_WRITE for VisitId 077334c1-6b37-4476-84f5-ad84d99664b6, Context 43470397-ce19-4e6e-a623-91f93503edc6:0
+[11:16:24 INF] [ProjectorDebug] Processing Event Type: VISIT_CREATED, BranchId: a0000000-0000-0000-0000-000000000001, SourceId: null, SourceType: null, VisitId: 077334c1-6b37-4476-84f5-ad84d99664b6
+[11:16:24 WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+[11:16:24 WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+[11:16:24 INF] [ProjectorDebug] Processing Event Type: VISIT_STARTED, BranchId: a0000000-0000-0000-0000-000000000001, SourceId: null, SourceType: null, VisitId: 077334c1-6b37-4476-84f5-ad84d99664b6
+[11:16:24 WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+[11:16:24 WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+[11:16:29 INF] EVENT_WRITE for VisitId 077334c1-6b37-4476-84f5-ad84d99664b6, Context 41d9b63c-7779-42b4-83db-59df55ba13ce:0
+[11:16:29 INF] [ProjectorDebug] Processing Event Type: VISIT_UPDATED, BranchId: a0000000-0000-0000-0000-000000000001, SourceId: null, SourceType: null, VisitId: 077334c1-6b37-4476-84f5-ad84d99664b6
+[11:16:29 WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+[11:16:32 INF] TRACE: AddTestToVisitAsync called. visitId=077334c1-6b37-4476-84f5-ad84d99664b6, testCode=LFT
+[11:16:32 WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+[11:16:32 INF] [ExpansionDebug] Starting expansion for LFT. isChild: False, parentOrderId:
+[11:16:33 WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+[11:16:33 WRN] [Validation] Resolving Test: LFT, IsProfile: True, HasChildren: True, SpecimenType: SERUM
+[11:16:33 INF] [ExpansionDebug] Creating Order entry: LFT, ID: 652c28c3-4464-4c12-84e5-d594012c0bc8, Parent:
+[11:16:33 INF] [ExpansionDebug] Order LFT added to context and local collection.
+[11:16:33 INF] [ExpansionDebug] Test LFT is a Profile. Children found in cache: 6
+[11:16:33 INF] [ExpansionDebug] Expanding child: BIL_I (ID: afe654f1-8315-4f34-be83-574a6e65ee18) for parent: LFT
+[11:16:33 INF] [ExpansionDebug] Starting expansion for BIL_I. isChild: True, parentOrderId: 652c28c3-4464-4c12-84e5-d594012c0bc8
+[11:16:33 WRN] [Validation] Resolving Test: BIL_I, IsProfile: False, HasChildren: False, SpecimenType: SERUM
+[11:16:33 INF] [ExpansionDebug] Creating Order entry: BIL_I, ID: d04b77cc-a1da-45a6-966f-6c82d49a2acb, Parent: 652c28c3-4464-4c12-84e5-d594012c0bc8
+[11:16:33 INF] [ExpansionDebug] Order BIL_I added to context and local collection.
+[11:16:33 INF] [ExpansionDebug] Expanding child: BIL_T (ID: 0cd1e6e5-5c90-41c4-baff-5c4b00884f9b) for parent: LFT
+[11:16:33 INF] [ExpansionDebug] Starting expansion for BIL_T. isChild: True, parentOrderId: 652c28c3-4464-4c12-84e5-d594012c0bc8
+[11:16:33 WRN] [Validation] Resolving Test: BIL_T, IsProfile: False, HasChildren: False, SpecimenType: SERUM
+[11:16:33 INF] [ExpansionDebug] Creating Order entry: BIL_T, ID: bbb1f7c7-7d46-4c01-a15d-b2cbfbb3ace3, Parent: 652c28c3-4464-4c12-84e5-d594012c0bc8
+[11:16:33 INF] [ExpansionDebug] Order BIL_T added to context and local collection.
+[11:16:33 INF] [ExpansionDebug] Expanding child: BIL_D (ID: 76b5e91f-6c2a-4633-82b7-d69503dcc0e0) for parent: LFT
+[11:16:33 INF] [ExpansionDebug] Starting expansion for BIL_D. isChild: True, parentOrderId: 652c28c3-4464-4c12-84e5-d594012c0bc8
+[11:16:33 WRN] [Validation] Resolving Test: BIL_D, IsProfile: False, HasChildren: False, SpecimenType: SERUM
+[11:16:33 INF] [ExpansionDebug] Creating Order entry: BIL_D, ID: e8f082f9-c987-4bd5-ac88-cc932a9d4e5c, Parent: 652c28c3-4464-4c12-84e5-d594012c0bc8
+[11:16:33 INF] [ExpansionDebug] Order BIL_D added to context and local collection.
+[11:16:33 INF] [ExpansionDebug] Expanding child: GLOB (ID: 533070e2-fb65-42ab-a988-93d6a87562cf) for parent: LFT
+[11:16:33 INF] [ExpansionDebug] Starting expansion for GLOB. isChild: True, parentOrderId: 652c28c3-4464-4c12-84e5-d594012c0bc8
+[11:16:33 WRN] [Validation] Resolving Test: GLOB, IsProfile: False, HasChildren: False, SpecimenType: SERUM
+[11:16:33 INF] [ExpansionDebug] Creating Order entry: GLOB, ID: ad1775d9-562f-48ca-8cbc-e3eedb70b87a, Parent: 652c28c3-4464-4c12-84e5-d594012c0bc8
+[11:16:33 INF] [ExpansionDebug] Order GLOB added to context and local collection.
+[11:16:33 INF] [ExpansionDebug] Expanding child: ALB (ID: fa7c3695-9908-4802-be93-b01640d62a26) for parent: LFT
+[11:16:33 INF] [ExpansionDebug] Starting expansion for ALB. isChild: True, parentOrderId: 652c28c3-4464-4c12-84e5-d594012c0bc8
+[11:16:33 WRN] [Validation] Resolving Test: ALB, IsProfile: False, HasChildren: False, SpecimenType: SERUM
+[11:16:33 INF] [ExpansionDebug] Creating Order entry: ALB, ID: eeb32496-2244-4c7b-88b4-af361a56373e, Parent: 652c28c3-4464-4c12-84e5-d594012c0bc8
+[11:16:33 INF] [ExpansionDebug] Order ALB added to context and local collection.
+[11:16:33 INF] [ExpansionDebug] Expanding child: TP (ID: 4a44e3ac-9c64-4d52-b831-325cbce7f049) for parent: LFT
+[11:16:33 INF] [ExpansionDebug] Starting expansion for TP. isChild: True, parentOrderId: 652c28c3-4464-4c12-84e5-d594012c0bc8
+[11:16:33 WRN] [Validation] Resolving Test: TP, IsProfile: False, HasChildren: False, SpecimenType: SERUM
+[11:16:33 INF] [ExpansionDebug] Creating Order entry: TP, ID: b2de4f29-5158-4e50-955f-2820f4db3c50, Parent: 652c28c3-4464-4c12-84e5-d594012c0bc8
+[11:16:33 INF] [ExpansionDebug] Order TP added to context and local collection.
+[11:16:33 INF] TRACE: SaveChangesAsync reached. Affected rows: 7
+[11:16:38 WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+[11:16:39 WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+[11:16:39 INF] EVENT_WRITE for VisitId 077334c1-6b37-4476-84f5-ad84d99664b6, Context 6b0c7dd6-e5cc-4475-8a79-8091f549ec43:0
+[11:16:39 INF] [ProjectorDebug] Processing Event Type: PAYMENT_RECEIVED, BranchId: a0000000-0000-0000-0000-000000000001, SourceId: adc734fb-ed2b-44c9-87a2-5e7eb05dced7, SourceType: RevenueFact, VisitId: 077334c1-6b37-4476-84f5-ad84d99664b6
+[11:16:40 INF] [ProjectorDebug] Checking Fact Deduplication for SourceId: adc734fb-ed2b-44c9-87a2-5e7eb05dced7
+[11:16:40 INF] [DebugSpecimen] Planning for Visit 077334c1-6b37-4476-84f5-ad84d99664b6, Active Orders: 7
+[11:16:40 WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+[11:16:40 INF] Creating unclaimed work assignment for SampleCollection (077334c1-6b37-4476-84f5-ad84d99664b6) in Pathology
+[11:16:40 WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+[11:16:40 INF] EVENT_WRITE for VisitId 077334c1-6b37-4476-84f5-ad84d99664b6, Context 6b0c7dd6-e5cc-4475-8a79-8091f549ec43:0
+[11:16:40 WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+[11:16:40 INF] TransitionToSpecimenPlanned: Successfully planned 1 specimens for Visit 077334c1-6b37-4476-84f5-ad84d99664b6. Assignment: 41d8ad52-b718-4757-bd2e-3507d0ca911b
+[11:16:40 INF] EVENT_WRITE for VisitId 077334c1-6b37-4476-84f5-ad84d99664b6, Context 6b0c7dd6-e5cc-4475-8a79-8091f549ec43:0
+[11:16:41 INF] Publishing PrintThermalReceiptEvent to Branch-a0000000-0000-0000-0000-000000000001-Lead-Thermal80mm (VisitId: 077334c1-6b37-4476-84f5-ad84d99664b6)
+[11:16:41 INF] [ProjectorDebug] Processing Event Type: VISIT_FINALIZED, BranchId: a0000000-0000-0000-0000-000000000001, SourceId: null, SourceType: null, VisitId: 077334c1-6b37-4476-84f5-ad84d99664b6
+[11:16:41 WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+[11:16:57 INF] Terminal web-1zy6xxtky authorized and added to Thermal80mm group for Branch a0000000-0000-0000-0000-000000000001.
+[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=04/03/2026 11:16:57, Today=04/03/2026 00:00:00, Window=[04/03/2026 00:00:00 - 04/04/2026 00:00:00)
+[ActionQueue] Found 1 raw visits.
+[ActionQueue] Processing Visit DRAFT-9404A991. Invoice Status: Paid.
+[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=04/03/2026 11:16:58, Today=04/03/2026 00:00:00, Window=[04/03/2026 00:00:00 - 04/04/2026 00:00:00)
+[ActionQueue] Found 1 raw visits.
+[ActionQueue] Processing Visit DRAFT-9404A991. Invoice Status: Paid.
+[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=04/03/2026 11:16:58, Today=04/03/2026 00:00:00, Window=[04/03/2026 00:00:00 - 04/04/2026 00:00:00)
+[ActionQueue] Found 1 raw visits.
+[ActionQueue] Processing Visit DRAFT-9404A991. Invoice Status: Paid.
+[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=04/03/2026 11:16:58, Today=04/03/2026 00:00:00, Window=[04/03/2026 00:00:00 - 04/04/2026 00:00:00)
+[ActionQueue] Found 1 raw visits.
+[ActionQueue] Processing Visit DRAFT-9404A991. Invoice Status: Paid.
+[11:17:02 INF] Assignment 41d8ad52-b718-4757-bd2e-3507d0ca911b successfully claimed by Resource 0e34b739-d97f-445d-b488-2e5fd6b9918c. Now generating reserved accessions.
+[11:17:04 WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+[11:17:05 WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+[11:17:05 INF] ConsumeStockForSpecimenAsync: Participating in existing transaction for Specimen 22671399-bdfd-4f0c-ab21-2e4653ce4ffa
+[11:17:05 WRN] No tube mapping for Test Total Protein (4a44e3ac-9c64-4d52-b831-325cbce7f049). Consumption skipped for Specimen 22671399-bdfd-4f0c-ab21-2e4653ce4ffa.
+[11:17:05 WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+[11:17:05 INF] EVENT_WRITE for VisitId 077334c1-6b37-4476-84f5-ad84d99664b6, Context d0d29dee-4719-444b-9741-a093a9c654db:0
+[11:17:18 INF] Terminal web-1zy6xxtky authorized and added to Thermal80mm group for Branch a0000000-0000-0000-0000-000000000001.
+[11:17:46 INF] SaveDraft API HIT → assignmentId=7bd764d7-3e7e-4753-b95a-f904cc5165d4
+[11:17:46 INF] ENTER SaveAssignmentDraftAsync → assignmentId=7bd764d7-3e7e-4753-b95a-f904cc5165d4, userId=ae9c40e9-3d31-4c9c-96ea-6d2fb4a2a7d5
+[11:17:46 INF] Assignment Details → Status=Claimed, Branch=a0000000-0000-0000-0000-000000000001, Dept=BIO, AssignedResource=06d8f9e6-2f48-4edb-84fe-d5f227d62367, UserResource=06d8f9e6-2f48-4edb-84fe-d5f227d62367
+[11:17:46 INF] Calling EnterResultsAsync for Order b2de4f29-5158-4e50-955f-2820f4db3c50
+[11:17:46 INF] EnterResultsAsync START → userId=ae9c40e9-3d31-4c9c-96ea-6d2fb4a2a7d5, request.OrderId=b2de4f29-5158-4e50-955f-2820f4db3c50
+[11:17:46 INF] Before HandleProcessingGatingAsync
+[11:17:46 INF] GATING CHECK HIT for Order b2de4f29-5158-4e50-955f-2820f4db3c50
+[11:17:46 INF] GATING BYPASSED → specimenId=22671399-bdfd-4f0c-ab21-2e4653ce4ffa provided by caller
+[11:17:46 INF] After HandleProcessingGatingAsync. Status=Success
+[11:17:46 INF] EVENT_WRITE for VisitId 077334c1-6b37-4476-84f5-ad84d99664b6, Context 5155ebe5-85fc-4296-9c61-3131e612d11d:0
+[11:17:46 INF] EnterResultsAsync success for Order b2de4f29-5158-4e50-955f-2820f4db3c50
+[11:17:46 INF] Calling EnterResultsAsync for Order d04b77cc-a1da-45a6-966f-6c82d49a2acb
+[11:17:46 INF] EnterResultsAsync START → userId=ae9c40e9-3d31-4c9c-96ea-6d2fb4a2a7d5, request.OrderId=d04b77cc-a1da-45a6-966f-6c82d49a2acb
+[11:17:46 INF] Before HandleProcessingGatingAsync
+[11:17:46 INF] GATING CHECK HIT for Order d04b77cc-a1da-45a6-966f-6c82d49a2acb
+[11:17:46 INF] GATING BYPASSED → specimenId=22671399-bdfd-4f0c-ab21-2e4653ce4ffa provided by caller
+[11:17:46 INF] After HandleProcessingGatingAsync. Status=Success
+[11:17:46 INF] EnterResultsAsync success for Order d04b77cc-a1da-45a6-966f-6c82d49a2acb
+[11:17:46 INF] Calling EnterResultsAsync for Order eeb32496-2244-4c7b-88b4-af361a56373e
+[11:17:46 INF] EnterResultsAsync START → userId=ae9c40e9-3d31-4c9c-96ea-6d2fb4a2a7d5, request.OrderId=eeb32496-2244-4c7b-88b4-af361a56373e
+[11:17:46 INF] Before HandleProcessingGatingAsync
+[11:17:46 INF] GATING CHECK HIT for Order eeb32496-2244-4c7b-88b4-af361a56373e
+[11:17:46 INF] GATING BYPASSED → specimenId=22671399-bdfd-4f0c-ab21-2e4653ce4ffa provided by caller
+[11:17:46 INF] After HandleProcessingGatingAsync. Status=Success
+[11:17:46 INF] EnterResultsAsync success for Order eeb32496-2244-4c7b-88b4-af361a56373e
+[11:17:46 INF] Calling EnterResultsAsync for Order bbb1f7c7-7d46-4c01-a15d-b2cbfbb3ace3
+[11:17:46 INF] EnterResultsAsync START → userId=ae9c40e9-3d31-4c9c-96ea-6d2fb4a2a7d5, request.OrderId=bbb1f7c7-7d46-4c01-a15d-b2cbfbb3ace3
+[11:17:46 INF] Before HandleProcessingGatingAsync
+[11:17:46 INF] GATING CHECK HIT for Order bbb1f7c7-7d46-4c01-a15d-b2cbfbb3ace3
+[11:17:46 INF] GATING BYPASSED → specimenId=22671399-bdfd-4f0c-ab21-2e4653ce4ffa provided by caller
+[11:17:46 INF] After HandleProcessingGatingAsync. Status=Success
+[11:17:46 INF] EnterResultsAsync success for Order bbb1f7c7-7d46-4c01-a15d-b2cbfbb3ace3
+[11:17:46 INF] Calling EnterResultsAsync for Order e8f082f9-c987-4bd5-ac88-cc932a9d4e5c
+[11:17:46 INF] EnterResultsAsync START → userId=ae9c40e9-3d31-4c9c-96ea-6d2fb4a2a7d5, request.OrderId=e8f082f9-c987-4bd5-ac88-cc932a9d4e5c
+[11:17:46 INF] Before HandleProcessingGatingAsync
+[11:17:46 INF] GATING CHECK HIT for Order e8f082f9-c987-4bd5-ac88-cc932a9d4e5c
+[11:17:46 INF] GATING BYPASSED → specimenId=22671399-bdfd-4f0c-ab21-2e4653ce4ffa provided by caller
+[11:17:46 INF] After HandleProcessingGatingAsync. Status=Success
+[11:17:46 INF] EnterResultsAsync success for Order e8f082f9-c987-4bd5-ac88-cc932a9d4e5c
+[11:17:46 INF] Calling EnterResultsAsync for Order ad1775d9-562f-48ca-8cbc-e3eedb70b87a
+[11:17:46 INF] EnterResultsAsync START → userId=ae9c40e9-3d31-4c9c-96ea-6d2fb4a2a7d5, request.OrderId=ad1775d9-562f-48ca-8cbc-e3eedb70b87a
+[11:17:46 INF] Before HandleProcessingGatingAsync
+[11:17:46 INF] GATING CHECK HIT for Order ad1775d9-562f-48ca-8cbc-e3eedb70b87a
+[11:17:46 INF] GATING BYPASSED → specimenId=22671399-bdfd-4f0c-ab21-2e4653ce4ffa provided by caller
+[11:17:46 INF] After HandleProcessingGatingAsync. Status=Success
+[11:17:46 INF] EnterResultsAsync success for Order ad1775d9-562f-48ca-8cbc-e3eedb70b87a
+[11:17:48 INF] SaveDraft API HIT → assignmentId=7bd764d7-3e7e-4753-b95a-f904cc5165d4
+[11:17:48 INF] ENTER SaveAssignmentDraftAsync → assignmentId=7bd764d7-3e7e-4753-b95a-f904cc5165d4, userId=ae9c40e9-3d31-4c9c-96ea-6d2fb4a2a7d5
+[11:17:48 INF] Assignment Details → Status=Claimed, Branch=a0000000-0000-0000-0000-000000000001, Dept=BIO, AssignedResource=06d8f9e6-2f48-4edb-84fe-d5f227d62367, UserResource=06d8f9e6-2f48-4edb-84fe-d5f227d62367
+[11:17:48 INF] Calling EnterResultsAsync for Order b2de4f29-5158-4e50-955f-2820f4db3c50
+[11:17:48 INF] EnterResultsAsync START → userId=ae9c40e9-3d31-4c9c-96ea-6d2fb4a2a7d5, request.OrderId=b2de4f29-5158-4e50-955f-2820f4db3c50
+[11:17:48 INF] Before HandleProcessingGatingAsync
+[11:17:48 INF] GATING CHECK HIT for Order b2de4f29-5158-4e50-955f-2820f4db3c50
+[11:17:48 INF] GATING BYPASSED → specimenId=22671399-bdfd-4f0c-ab21-2e4653ce4ffa provided by caller
+[11:17:48 INF] After HandleProcessingGatingAsync. Status=Success
+[11:17:48 INF] EnterResultsAsync success for Order b2de4f29-5158-4e50-955f-2820f4db3c50
+[11:17:48 INF] Calling EnterResultsAsync for Order d04b77cc-a1da-45a6-966f-6c82d49a2acb
+[11:17:48 INF] EnterResultsAsync START → userId=ae9c40e9-3d31-4c9c-96ea-6d2fb4a2a7d5, request.OrderId=d04b77cc-a1da-45a6-966f-6c82d49a2acb
+[11:17:48 INF] Before HandleProcessingGatingAsync
+[11:17:48 INF] GATING CHECK HIT for Order d04b77cc-a1da-45a6-966f-6c82d49a2acb
+[11:17:48 INF] GATING BYPASSED → specimenId=22671399-bdfd-4f0c-ab21-2e4653ce4ffa provided by caller
+[11:17:48 INF] After HandleProcessingGatingAsync. Status=Success
+[11:17:48 INF] EnterResultsAsync success for Order d04b77cc-a1da-45a6-966f-6c82d49a2acb
+[11:17:48 INF] Calling EnterResultsAsync for Order eeb32496-2244-4c7b-88b4-af361a56373e
+[11:17:48 INF] EnterResultsAsync START → userId=ae9c40e9-3d31-4c9c-96ea-6d2fb4a2a7d5, request.OrderId=eeb32496-2244-4c7b-88b4-af361a56373e
+[11:17:48 INF] Before HandleProcessingGatingAsync
+[11:17:48 INF] GATING CHECK HIT for Order eeb32496-2244-4c7b-88b4-af361a56373e
+[11:17:48 INF] GATING BYPASSED → specimenId=22671399-bdfd-4f0c-ab21-2e4653ce4ffa provided by caller
+[11:17:48 INF] After HandleProcessingGatingAsync. Status=Success
+[11:17:48 INF] EnterResultsAsync success for Order eeb32496-2244-4c7b-88b4-af361a56373e
+[11:17:48 INF] Calling EnterResultsAsync for Order bbb1f7c7-7d46-4c01-a15d-b2cbfbb3ace3
+[11:17:48 INF] EnterResultsAsync START → userId=ae9c40e9-3d31-4c9c-96ea-6d2fb4a2a7d5, request.OrderId=bbb1f7c7-7d46-4c01-a15d-b2cbfbb3ace3
+[11:17:48 INF] Before HandleProcessingGatingAsync
+[11:17:48 INF] GATING CHECK HIT for Order bbb1f7c7-7d46-4c01-a15d-b2cbfbb3ace3
+[11:17:48 INF] GATING BYPASSED → specimenId=22671399-bdfd-4f0c-ab21-2e4653ce4ffa provided by caller
+[11:17:48 INF] After HandleProcessingGatingAsync. Status=Success
+[11:17:48 INF] EnterResultsAsync success for Order bbb1f7c7-7d46-4c01-a15d-b2cbfbb3ace3
+[11:17:48 INF] Calling EnterResultsAsync for Order e8f082f9-c987-4bd5-ac88-cc932a9d4e5c
+[11:17:48 INF] EnterResultsAsync START → userId=ae9c40e9-3d31-4c9c-96ea-6d2fb4a2a7d5, request.OrderId=e8f082f9-c987-4bd5-ac88-cc932a9d4e5c
+[11:17:48 INF] Before HandleProcessingGatingAsync
+[11:17:48 INF] GATING CHECK HIT for Order e8f082f9-c987-4bd5-ac88-cc932a9d4e5c
+[11:17:48 INF] GATING BYPASSED → specimenId=22671399-bdfd-4f0c-ab21-2e4653ce4ffa provided by caller
+[11:17:48 INF] After HandleProcessingGatingAsync. Status=Success
+[11:17:48 INF] EnterResultsAsync success for Order e8f082f9-c987-4bd5-ac88-cc932a9d4e5c
+[11:17:48 INF] Calling EnterResultsAsync for Order ad1775d9-562f-48ca-8cbc-e3eedb70b87a
+[11:17:48 INF] EnterResultsAsync START → userId=ae9c40e9-3d31-4c9c-96ea-6d2fb4a2a7d5, request.OrderId=ad1775d9-562f-48ca-8cbc-e3eedb70b87a
+[11:17:48 INF] Before HandleProcessingGatingAsync
+[11:17:48 INF] GATING CHECK HIT for Order ad1775d9-562f-48ca-8cbc-e3eedb70b87a
+[11:17:48 INF] GATING BYPASSED → specimenId=22671399-bdfd-4f0c-ab21-2e4653ce4ffa provided by caller
+[11:17:48 INF] After HandleProcessingGatingAsync. Status=Success
+[11:17:48 INF] EnterResultsAsync success for Order ad1775d9-562f-48ca-8cbc-e3eedb70b87a
+[11:17:49 INF] EVENT_WRITE for VisitId 077334c1-6b37-4476-84f5-ad84d99664b6, Context db7da2c4-080e-447e-b95d-326ffc3b129a:0
+[11:17:49 WRN] ⚠️ FALLBACK: BIL_I | Formula missing | Available Inputs: [BIL_T,BIL_D,GLOB,BIL_I,ALB,TP]
+[11:17:50 INF] RESULT MAP KEYS → [BIL_T, BIL_D, GLOB, BIL_I, ALB, TP]
+[11:17:50 INF] EVENT_WRITE for VisitId 077334c1-6b37-4476-84f5-ad84d99664b6, Context db7da2c4-080e-447e-b95d-326ffc3b129a:0
+[11:17:50 WRN] ⚠️ FALLBACK: BIL_I | Formula missing | Available Inputs: [BIL_T,BIL_D,GLOB,BIL_I,ALB,TP]
+[11:17:50 INF] RESULT MAP KEYS → [BIL_T, BIL_D, GLOB, BIL_I, ALB, TP]
+[11:17:50 INF] EVENT_WRITE for VisitId 077334c1-6b37-4476-84f5-ad84d99664b6, Context db7da2c4-080e-447e-b95d-326ffc3b129a:0
+[11:17:51 WRN] ⚠️ FALLBACK: BIL_I | Formula missing | Available Inputs: [BIL_T,BIL_D,GLOB,BIL_I,ALB,TP]
+[11:17:51 INF] RESULT MAP KEYS → [BIL_T, BIL_D, GLOB, BIL_I, ALB, TP]
+[11:17:51 INF] EVENT_WRITE for VisitId 077334c1-6b37-4476-84f5-ad84d99664b6, Context db7da2c4-080e-447e-b95d-326ffc3b129a:0
+[11:17:51 WRN] ⚠️ FALLBACK: BIL_I | Formula missing | Available Inputs: [BIL_T,BIL_D,GLOB,BIL_I,ALB,TP]
+[11:17:51 INF] RESULT MAP KEYS → [BIL_T, BIL_D, GLOB, BIL_I, ALB, TP]
+[11:17:51 INF] EVENT_WRITE for VisitId 077334c1-6b37-4476-84f5-ad84d99664b6, Context db7da2c4-080e-447e-b95d-326ffc3b129a:0
+[11:17:51 WRN] ⚠️ FALLBACK: BIL_I | Formula missing | Available Inputs: [BIL_T,BIL_D,GLOB,BIL_I,ALB,TP]
+[11:17:51 INF] RESULT MAP KEYS → [BIL_T, BIL_D, GLOB, BIL_I, ALB, TP]
+[11:17:51 INF] EVENT_WRITE for VisitId 077334c1-6b37-4476-84f5-ad84d99664b6, Context db7da2c4-080e-447e-b95d-326ffc3b129a:0
+[11:17:51 WRN] ⚠️ FALLBACK: BIL_I | Formula missing | Available Inputs: [BIL_T,BIL_D,GLOB,BIL_I,ALB,TP]
+[11:17:51 INF] RESULT MAP KEYS → [BIL_T, BIL_D, GLOB, BIL_I, ALB, TP]
+
+console logs:
+react-dom_client.js?v=bed112bb:20103 Download the React DevTools for a better development experience: https://react.dev/link/react-devtools
+signalr.js:215 SignalR(Branch): Subscriber added (Total: 1)
+@microsoft_signalr.js?v=bed112bb:301 [2026-04-03T05:47:18.829Z] Information: Normalizing '/branchOperationsHub' to 'http://localhost:5173/branchOperationsHub'.
+signalr.js:236 SignalR(Branch): Starting connection...
+signalr.js:297 SignalR(Branch): Subscriber removed (Total: 0)
+signalr.js:215 SignalR(Branch): Subscriber added (Total: 1)
+signalr.js:220 SignalR(Branch): Aborted scheduled disconnect
+@microsoft_signalr.js?v=bed112bb:301 [2026-04-03T05:47:18.916Z] Information: WebSocket connected to ws://localhost:5173/branchOperationsHub?access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiJhZTljNDBlOS0zZDMxLTRjOWMtOTZlYS02ZDJmYjRhMmE3ZDUiLCJlbWFpbCI6ImJpby50ZWNoQHN5bm9zLmxhYiIsInVuaXF1ZV9uYW1lIjoiQmlvY2hlbWlzdHJ5IFRlY2huaWNpYW4iLCJzZXNzaW9uX21vZGUiOiJvcGVyYXRpb25hbCIsInNlc3Npb25faWQiOiJiMWQ0ZmQ5Ny0zZGRmLTQyNmYtOGQ3NC1kMDFjNWYwYmIwYjYiLCJkZXBhcnRtZW50X2NvZGUiOiJCSU8iLCJyb2xlIjoiVGVjaG5pY2lhbiIsImJyYW5jaF9pZCI6ImEwMDAwMDAwLTAwMDAtMDAwMC0wMDAwLTAwMDAwMDAwMDAwMSIsInJlc291cmNlX2lkIjoiMDZkOGY5ZTYtMmY0OC00ZWRiLTg0ZmUtZDVmMjI3ZDYyMzY3IiwiYnJhbmNoX25hbWUiOiJNYWluIExhYm9yYXRvcnkiLCJuYmYiOjE3NzUxOTUyMzgsImV4cCI6MTc3NTI4MTYzOCwiaWF0IjoxNzc1MTk1MjM4LCJpc3MiOiJTeW5PUy5BcGkiLCJhdWQiOiJTeW5PUy5BcHAifQ.qaD5sl_grtVvpUWrOFJqHwi_tjx5sNQ4oMtypACX_Cg.
+@microsoft_signalr.js?v=bed112bb:301 [2026-04-03T05:47:18.917Z] Information: Using HubProtocol 'json'.
+signalr.js:239 SignalR(Branch): Connected to /branchOperationsHub
+@microsoft_signalr.js?v=bed112bb:298 [2026-04-03T05:47:18.946Z] Warning: No client method with the name 'capabilityregistered' found.
+log @ @microsoft_signalr.js?v=bed112bb:298
+signalr.js:31 SignalR: Subscriber added (Total: 1)
+@microsoft_signalr.js?v=bed112bb:301 [2026-04-03T05:47:18.999Z] Information: Normalizing '/dashboardHub' to 'http://localhost:5173/dashboardHub'.
+signalr.js:52 SignalR: Starting connection...
+signalr.js:163 SignalR: Subscriber removed (Total: 0)
+signalr.js:31 SignalR: Subscriber added (Total: 1)
+signalr.js:36 SignalR: Aborted scheduled disconnect
+signalr.js:163 SignalR: Subscriber removed (Total: 0)
+@microsoft_signalr.js?v=bed112bb:301 [2026-04-03T05:47:19.119Z] Information: WebSocket connected to ws://localhost:5173/dashboardHub?access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiJhZTljNDBlOS0zZDMxLTRjOWMtOTZlYS02ZDJmYjRhMmE3ZDUiLCJlbWFpbCI6ImJpby50ZWNoQHN5bm9zLmxhYiIsInVuaXF1ZV9uYW1lIjoiQmlvY2hlbWlzdHJ5IFRlY2huaWNpYW4iLCJzZXNzaW9uX21vZGUiOiJvcGVyYXRpb25hbCIsInNlc3Npb25faWQiOiJiMWQ0ZmQ5Ny0zZGRmLTQyNmYtOGQ3NC1kMDFjNWYwYmIwYjYiLCJkZXBhcnRtZW50X2NvZGUiOiJCSU8iLCJyb2xlIjoiVGVjaG5pY2lhbiIsImJyYW5jaF9pZCI6ImEwMDAwMDAwLTAwMDAtMDAwMC0wMDAwLTAwMDAwMDAwMDAwMSIsInJlc291cmNlX2lkIjoiMDZkOGY5ZTYtMmY0OC00ZWRiLTg0ZmUtZDVmMjI3ZDYyMzY3IiwiYnJhbmNoX25hbWUiOiJNYWluIExhYm9yYXRvcnkiLCJuYmYiOjE3NzUxOTUyMzgsImV4cCI6MTc3NTI4MTYzOCwiaWF0IjoxNzc1MTk1MjM4LCJpc3MiOiJTeW5PUy5BcGkiLCJhdWQiOiJTeW5PUy5BcHAifQ.qaD5sl_grtVvpUWrOFJqHwi_tjx5sNQ4oMtypACX_Cg.
+@microsoft_signalr.js?v=bed112bb:301 [2026-04-03T05:47:19.120Z] Information: Using HubProtocol 'json'.
+@microsoft_signalr.js?v=bed112bb:298 [2026-04-03T05:47:19.134Z] Warning: No client method with the name 'receiveservertime' found.
+log @ @microsoft_signalr.js?v=bed112bb:298
+signalr.js:55 SignalR: Connected to /dashboardHub
+signalr.js:31 SignalR: Subscriber added (Total: 1)
+signalr.js:36 SignalR: Aborted scheduled disconnect
+signalr.js:163 SignalR: Subscriber removed (Total: 0)
+signalr.js:31 SignalR: Subscriber added (Total: 1)
+signalr.js:36 SignalR: Aborted scheduled disconnect
+reception.js:302 DEBUG: Activity Stream Payload: Array(6)
+reception.js:302 DEBUG: Activity Stream Payload: Array(6)
+reception.js:302 DEBUG: Activity Stream Payload: Array(6)
+reception.js:302 DEBUG: Activity Stream Payload: Array(6)
+signalr.js:123 SignalR: AssignmentUpdateReceived received Object
+signalr.js:114 SignalR: ActionQueueDeltaReceived received DRAFT-9404A991
+signalr.js:114 SignalR: ActionQueueDeltaReceived received DRAFT-9404A991
+signalr.js:123 SignalR: AssignmentUpdateReceived received Object
+signalr.js:114 SignalR: ActionQueueDeltaReceived received DRAFT-9404A991
+signalr.js:114 SignalR: ActionQueueDeltaReceived received DRAFT-9404A991
+signalr.js:123 SignalR: AssignmentUpdateReceived received Object
+signalr.js:114 SignalR: ActionQueueDeltaReceived received DRAFT-9404A991
+signalr.js:114 SignalR: ActionQueueDeltaReceived received DRAFT-9404A991
+signalr.js:123 SignalR: AssignmentUpdateReceived received Object
+signalr.js:114 SignalR: ActionQueueDeltaReceived received DRAFT-9404A991
+signalr.js:114 SignalR: ActionQueueDeltaReceived received DRAFT-9404A991
+reception.js:302 DEBUG: Activity Stream Payload: Array(13)
+reception.js:302 DEBUG: Activity Stream Payload: Array(13)
+reception.js:302 DEBUG: Activity Stream Payload: (13) [{…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}]
+reception.js:302 DEBUG: Activity Stream Payload: (13) [{…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}]
+reception.js:302 DEBUG: Activity Stream Payload: (13) [{…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}]
+reception.js:302 DEBUG: Activity Stream Payload: (13) [{…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}]
+reception.js:302 DEBUG: Activity Stream Payload: (13) [{…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}]
+reception.js:302 DEBUG: Activity Stream Payload: (13) [{…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}]
+reception.js:302 DEBUG: Activity Stream Payload: (13) [{…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}]
+reception.js:302 DEBUG: Activity Stream Payload: (13) [{…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}]
+reception.js:302 DEBUG: Activity Stream Payload: (13) [{…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}]
+reception.js:302 DEBUG: Activity Stream Payload: (13) [{…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}]
+reception.js:302 DEBUG: Activity Stream Payload: (13) [{…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}]
+reception.js:302 DEBUG: Activity Stream Payload: (13) [{…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}]
+reception.js:302 DEBUG: Activity Stream Payload: (13) [{…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}]
+reception.js:302 DEBUG: Activity Stream Payload: (13) [{…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}]

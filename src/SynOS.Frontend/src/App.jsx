@@ -6,6 +6,7 @@ import { ReceptionScreen } from '@/features/reception/ReceptionScreen'
 import { PhlebotomyScreen } from '@/features/phlebotomy/PhlebotomyScreen'
 import { DepartmentWorkbenchScreen } from '@/features/processing/DepartmentWorkbenchScreen'
 import { LoginPage } from '@/pages/LoginPage'
+import { PathologistTerminal } from '@/features/pathology/PathologistTerminal'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 
 function RootRedirect() {
@@ -26,23 +27,6 @@ function RootRedirect() {
           className="mt-4 text-synos-primary hover:underline text-sm"
         >
           Return to Login
-        </button>
-      </div>
-    </div>
-  );
-}
-function PathologistTerminal() {
-  const { logout } = useAuth();
-  return (
-    <div className="h-screen w-screen bg-synos-background flex items-center justify-center p-4">
-      <div className="text-center">
-        <h1 className="text-2xl font-bold text-white mb-2">Pathologist Review Terminal</h1>
-        <p className="text-zinc-500 mb-6">Diagnostic Module Coming Soon</p>
-        <button 
-          onClick={logout}
-          className="px-6 py-2 bg-white text-black font-bold rounded hover:bg-zinc-200 transition-colors"
-        >
-          Logout
         </button>
       </div>
     </div>

@@ -54,8 +54,13 @@ namespace SynOS.Services
 
         public async Task<SynOS.Models.DTOs.ResultEntryResponseDto> EnterResultsAsync(Guid userId, ResultEntryRequestDto request)
         {
+            _logger.LogInformation("EnterResultsAsync START → userId={UserId}, request.OrderId={OrderId}", userId, request.OrderId);
+            
             // --- STEP 5 CORRECTION: GATE FIRST ---
+            _logger.LogInformation("Before HandleProcessingGatingAsync");
             var gatingResult = await HandleProcessingGatingAsync(userId, request);
+            _logger.LogInformation("After HandleProcessingGatingAsync. Status={Status}", gatingResult.Status);
+
             if (gatingResult.Status != SynOS.Models.DTOs.ResultEntryStatus.Success)
             {
                 return gatingResult;
@@ -198,75 +203,100 @@ namespace SynOS.Services
                 }
             }
 
-            // Get or create report
+            // 1. Resolve Root Order (Climb the hierarchy)
+            var currentOrder = await _context.Orders
+                .Include(o => o.Visit)
+                    .ThenInclude(v => v.Patient)
+                .FirstOrDefaultAsync(o => o.OrderId == orderId);
+
+            if (currentOrder == null)
+            {
+                throw new KeyNotFoundException($"Order with ID {orderId} not found when trying to create report.");
+            }
+
+            var rootOrder = currentOrder;
+            while (rootOrder.ParentOrderId != null)
+            {
+                var parent = await _context.Orders.FindAsync(rootOrder.ParentOrderId);
+                if (parent == null) break;
+                rootOrder = parent;
+            }
+
+            // 2. Visit-Scoped Lookup for existing report
             var report = await _context.Reports
                 .Include(r => r.ReportVersions)
-                .FirstOrDefaultAsync(r => r.SourceId == orderId && r.SourceType == "Order");
+                .FirstOrDefaultAsync(r => 
+                    r.SourceId == rootOrder.OrderId && 
+                    r.VisitId == currentOrder.VisitId && 
+                    r.SourceType == "Order");
+
+            // CLINICAL SAFETY GUARD: If report is already Signed, do not touch status or snapshot
+            if (report != null && string.Equals(report.Status, "Signed", StringComparison.OrdinalIgnoreCase))
+            {
+                _logger.LogInformation("Submission skipped for RootOrderId {RootOrderId} because report {ReportId} is already Signed.", 
+                    rootOrder.OrderId, report.ReportId);
+                await _context.SaveChangesAsync();
+                return;
+            }
 
             if (report == null)
             {
-                var order = await _context.Orders
-                    .Include(o => o.Visit)
-                        .ThenInclude(v => v.Patient)
-                    .FirstOrDefaultAsync(o => o.OrderId == orderId);
+                // Ensure we have visit/patient context for the root order if it's different
+                var finalRootOrder = rootOrder.OrderId == currentOrder.OrderId 
+                    ? currentOrder 
+                    : await _context.Orders
+                        .Include(o => o.Visit)
+                            .ThenInclude(v => v.Patient)
+                        .FirstOrDefaultAsync(o => o.OrderId == rootOrder.OrderId);
 
-                if (order == null)
-                {
-                    throw new KeyNotFoundException($"Order with ID {orderId} not found when trying to create report.");
-                }
+                if (finalRootOrder == null) throw new KeyNotFoundException("Root order context lost.");
 
                 report = new Report
                 {
                     ReportId = Guid.NewGuid(),
-                    SourceId = orderId,
+                    SourceId = finalRootOrder.OrderId,
                     SourceType = "Order",
-                    VisitId = order.VisitId,
-                    PatientId = order.Visit.Patient.PatientId,
-                    Department = order.Department,
+                    VisitId = finalRootOrder.VisitId,
+                    PatientId = finalRootOrder.Visit.Patient.PatientId,
+                    Department = finalRootOrder.Department,
                     Status = "ReadyForSignature",
                     CreatedAt = DateTimeOffset.UtcNow
                 };
                 await _context.Reports.AddAsync(report);
-                await _context.SaveChangesAsync();
-
-                // Notify Operations Engine
-                await _operationsEngine.RecordReportReadyAsync(report.VisitId, report.ReportId, Guid.Empty);
             }
             else
             {
                 report.Status = "ReadyForSignature";
-                await _context.SaveChangesAsync();
             }
 
-            // Snapshot Management
+            await _context.SaveChangesAsync();
+
+            // 3. Snapshot Management (Idempotent & Scoped)
             using (var scope = _serviceProvider.CreateScope())
             {
                 var reportingService = scope.ServiceProvider.GetRequiredService<Reporting.IReportingService>();
                 
-                if (report.Status == "ReadyForSignature" && report.CurrentVersion > 0)
+                // For "Draft" visibility before signing, we ensure a version exists and has a snapshot
+                if (report.CurrentVersion == 0)
                 {
-                    // Re-use current version if it exists and report is still in review
+                    await CreateNewVersionAndSnapshotAsync(report, reportingService);
+                }
+                else
+                {
+                    // Update the existing latest snapshot (since it's not signed yet)
                     var latestVersion = await _context.ReportVersions
                         .Where(rv => rv.ReportId == report.ReportId && rv.VersionNumber == report.CurrentVersion)
-                        .OrderByDescending(rv => rv.CreatedAt)
                         .FirstOrDefaultAsync();
-
+                    
                     if (latestVersion != null)
                     {
                         await reportingService.CreateSnapshotAsync(latestVersion.ReportVersionId, overwrite: true);
                     }
-                    else
-                    {
-                        // Fallback: create version if incremented but missing (sanity check)
-                        await CreateNewVersionAndSnapshotAsync(report, reportingService);
-                    }
-                }
-                else
-                {
-                    // Create brand new version
-                    await CreateNewVersionAndSnapshotAsync(report, reportingService);
                 }
             }
+
+            // Notify Operations Engine
+            await _operationsEngine.RecordReportReadyAsync(report.VisitId, report.ReportId, Guid.Empty);
 
             // --- BEGIN COST ATTRIBUTION WIRING ---
             try
@@ -545,37 +575,62 @@ namespace SynOS.Services
 
         private async Task<SynOS.Models.DTOs.ResultEntryResponseDto> HandleProcessingGatingAsync(Guid userId, ResultEntryRequestDto request)
         {
+            _logger.LogInformation("GATING CHECK HIT for Order {OrderId}", request.OrderId);
+            
+            // SURGICAL FIX: If caller already resolved specimen, bypass redundant lookups and re-computation
+            if (request.SpecimenId.HasValue && request.SpecimenId != Guid.Empty)
+            {
+                _logger.LogInformation("GATING BYPASSED → specimenId={SpecimenId} provided by caller", request.SpecimenId);
+                return new SynOS.Models.DTOs.ResultEntryResponseDto { Status = SynOS.Models.DTOs.ResultEntryStatus.Success };
+            }
+
             // 1. Fetch SpecimenId associated with this Order
             var specimenId = await _context.Orders
                 .Where(o => o.OrderId == request.OrderId)
-                .Select(o => o.SpecimenId)
+                .Select(o => (Guid?)o.SpecimenId) // Cast to nullable Guid for safety
                 .FirstOrDefaultAsync();
 
             if (specimenId == null) return new SynOS.Models.DTOs.ResultEntryResponseDto { Status = SynOS.Models.DTOs.ResultEntryStatus.Success }; // Compatibility
 
-            // 2. Fetch Incomplete Assignments
+            // 2. Fetch Incomplete Assignments (Including Assignee Context)
             var incompleteAssignments = await _context.ProcessingAssignments
                 .Where(a => a.SpecimenId == specimenId && a.Status != SynOS.Models.Enums.ProcessingAssignmentStatus.Completed)
-                .Select(a => new { a.ProcessingAssignmentId, a.BranchId })
+                .Select(a => new { 
+                    a.ProcessingAssignmentId, 
+                    a.BranchId, 
+                    a.Status, 
+                    AssignedUserId = a.AssignedResource != null ? (Guid?)a.AssignedResource.UserId : null 
+                })
                 .ToListAsync();
+
+            // LOG ATTEMPT
+            var firstAssignment = incompleteAssignments.FirstOrDefault();
+            _logger.LogInformation("SaveDraft attempt → userId={UserId}, specimenId={SpecimenId}, status={Status}, assignedTo={AssignedTo}", 
+                userId, specimenId, firstAssignment?.Status, firstAssignment?.AssignedUserId);
 
             if (!incompleteAssignments.Any()) return new SynOS.Models.DTOs.ResultEntryResponseDto { Status = SynOS.Models.DTOs.ResultEntryStatus.Success }; // Goal met
 
             // 3. Gating Logic
             var userRole = _serviceProvider.GetRequiredService<SynOS.Services.Security.IUserContext>().CurrentRole;
             bool isSupervisor = userRole == "Supervisor" || userRole == "Pathologist" || userRole == "Admin";
+            
+            // FIX: Allow entry if user is the assigned technician for an active (Claimed) assignment for this specimen
+            bool isAssignee = incompleteAssignments.Any(a => a.AssignedUserId == userId && a.Status == SynOS.Models.Enums.ProcessingAssignmentStatus.Claimed);
 
-            if (!isSupervisor)
+            if (!isSupervisor && !isAssignee)
             {
+                _logger.LogWarning("GATING REJECTED → reason=GateViolation, userId={UserId}, isSupervisor={IsSupervisor}, isAssignee={IsAssignee}, incompleteCount={Count}",
+                    userId, isSupervisor, isAssignee, incompleteAssignments.Count);
+                
                 return new SynOS.Models.DTOs.ResultEntryResponseDto 
                 { 
                     Status = SynOS.Models.DTOs.ResultEntryStatus.Forbidden, 
-                    Message = "Results cannot be entered because departmental processing is not yet complete. Only a Supervisor or Pathologist can override this gate." 
+                    Message = "Results cannot be entered because departmental processing is not yet complete. Only the assigned technician or a supervisor can override this gate." 
                 };
             }
 
-            // 4. Override Logic
-            if (string.IsNullOrWhiteSpace(request.OverrideReason))
+            // 4. Override Logic (for Supervisors/Pathologists)
+            if (!isAssignee && string.IsNullOrWhiteSpace(request.OverrideReason))
             {
                 return new SynOS.Models.DTOs.ResultEntryResponseDto 
                 { 

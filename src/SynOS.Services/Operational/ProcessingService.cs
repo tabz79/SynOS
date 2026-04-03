@@ -155,7 +155,7 @@ namespace SynOS.Services.Operational
             // 3. Snapshot for Validation & Context
             var snapshot = await _db.ProcessingAssignments
                 .Where(a => a.ProcessingAssignmentId == processingAssignmentId)
-                .Select(a => new { a.Specimen.VisitId, a.BranchId, a.DepartmentCode, a.Status, a.AssignedResourceId })
+                .Select(a => new { a.Specimen.VisitId, a.BranchId, a.DepartmentCode, a.Status, a.AssignedResourceId, a.SpecimenId })
                 .FirstOrDefaultAsync();
 
             if (snapshot == null) return ProcessingResult.NotFound;
@@ -184,7 +184,26 @@ namespace SynOS.Services.Operational
                 return ProcessingResult.Conflict;
             }
 
-            // 6. Emit SignalR (Only on success)
+            // 6. Trace Order(s) and Trigger Verification
+            try
+            {
+                var ordersToVerify = await _db.Orders
+                    .Where(o => o.SpecimenId == snapshot.SpecimenId && o.Department == snapshot.DepartmentCode)
+                    .Select(o => o.OrderId)
+                    .ToListAsync();
+
+                foreach (var orderId in ordersToVerify)
+                {
+                    await _resultService.SubmitForVerificationAsync(orderId);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to trigger automatic verification for assignment {AssignmentId}", processingAssignmentId);
+                // We don't fail the whole operation since the atomic update succeeded
+            }
+
+            // 7. Emit SignalR (Only on success)
             await _notifier.NotifyAssignmentUpdateAsync(
                 resource.BranchId.ToString(),
                 snapshot.DepartmentCode,
@@ -367,68 +386,122 @@ namespace SynOS.Services.Operational
         
         public async Task<ProcessingResult> SaveAssignmentDraftAsync(Guid assignmentId, SubmitAssignmentResultsRequestDto request)
         {
-            // 1. Validate Operational Mode
-            if (!string.Equals(_userContext.CurrentMode, "operational", StringComparison.OrdinalIgnoreCase)) return ProcessingResult.NotOperationalMode;
-
-            // 2. Retrieve Operational Resource (Branch-aware)
-            var resource = await _db.OperationalResources
-                .FirstOrDefaultAsync(r => r.UserId == _userContext.CurrentUserId && r.BranchId == _userContext.CurrentBranchId);
-
-            if (resource == null) return ProcessingResult.NoOperationalResource;
-
-            // 3. Snapshot for Validation & Context
-            var assignment = await _db.ProcessingAssignments
-                .Where(a => a.ProcessingAssignmentId == assignmentId)
-                .Select(a => new { a.Specimen.VisitId, a.BranchId, a.DepartmentCode, a.Status, a.AssignedResourceId })
-                .FirstOrDefaultAsync();
-
-            if (assignment == null) return ProcessingResult.NotFound;
-
-            // 4. Validation
-            if (assignment.BranchId != resource.BranchId) return ProcessingResult.InvalidBranch;
-            if (assignment.DepartmentCode != resource.DepartmentCode) return ProcessingResult.InvalidDepartment;
-            if (assignment.Status != ProcessingAssignmentStatus.Claimed) return ProcessingResult.Conflict;
-            if (assignment.AssignedResourceId != resource.OperationalResourceId) return ProcessingResult.Unauthorized;
-
-            // 5. Enter Results (without completion)
-            if (request.Results != null && request.Results.Any())
+            try 
             {
-                var orderIds = request.Results.Select(r => r.OrderId).Distinct().ToList();
+                _logger.LogInformation("ENTER SaveAssignmentDraftAsync → assignmentId={AssignmentId}, userId={UserId}", assignmentId, _userContext.CurrentUserId);
 
-                foreach (var orderId in orderIds)
+                // 1. Validate Operational Mode
+                if (!string.Equals(_userContext.CurrentMode, "operational", StringComparison.OrdinalIgnoreCase)) 
                 {
-                    var orderResults = request.Results
-                        .Where(r => r.OrderId == orderId)
-                        .Select(r => new ParameterResultDto
+                    _logger.LogWarning("RETURNING NotOperationalMode for assignment {AssignmentId}. CurrentMode={Mode}", assignmentId, _userContext.CurrentMode);
+                    return ProcessingResult.NotOperationalMode;
+                }
+
+                // 2. Retrieve Operational Resource (Branch-aware)
+                var resource = await _db.OperationalResources
+                    .FirstOrDefaultAsync(r => r.UserId == _userContext.CurrentUserId && r.BranchId == _userContext.CurrentBranchId);
+
+                if (resource == null) 
+                {
+                    _logger.LogWarning("RETURNING NoOperationalResource for user {UserId} on Branch {BranchId}", _userContext.CurrentUserId, _userContext.CurrentBranchId);
+                    return ProcessingResult.NoOperationalResource;
+                }
+
+                // 3. Snapshot for Validation & Context
+                var assignment = await _db.ProcessingAssignments
+                    .Where(a => a.ProcessingAssignmentId == assignmentId)
+                    .Select(a => new { a.Specimen.VisitId, a.BranchId, a.DepartmentCode, a.Status, a.AssignedResourceId, a.SpecimenId })
+                    .FirstOrDefaultAsync();
+
+                if (assignment == null) 
+                {
+                    _logger.LogWarning("RETURNING NotFound for assignment {AssignmentId}", assignmentId);
+                    return ProcessingResult.NotFound;
+                }
+
+                _logger.LogInformation("Assignment Details → Status={Status}, Branch={Branch}, Dept={Dept}, AssignedResource={AssignedResource}, UserResource={UserResource}", 
+                    assignment.Status, assignment.BranchId, assignment.DepartmentCode, assignment.AssignedResourceId, resource.OperationalResourceId);
+
+                // 4. Validation
+                if (assignment.BranchId != resource.BranchId) 
+                {
+                    _logger.LogWarning("RETURNING InvalidBranch for assignment {AssignmentId}. SnapshotBranch:{SnapshotBranch} vs ResourceBranch:{ResourceBranch}", 
+                        assignmentId, assignment.BranchId, resource.BranchId);
+                    return ProcessingResult.InvalidBranch;
+                }
+                if (assignment.DepartmentCode != resource.DepartmentCode) 
+                {
+                    _logger.LogWarning("RETURNING InvalidDepartment for assignment {AssignmentId}. SnapshotDept:{SnapshotDept} vs ResourceDept:{ResourceDept}", 
+                        assignmentId, assignment.DepartmentCode, resource.DepartmentCode);
+                    return ProcessingResult.InvalidDepartment;
+                }
+                
+                // CRITICAL 409 CHECK: Status
+                if (assignment.Status != ProcessingAssignmentStatus.Claimed) 
+                {
+                    _logger.LogWarning("RETURNING 409 FROM HERE → reason=Assignment is {Status}, not Claimed", assignment.Status);
+                    return ProcessingResult.Conflict;
+                }
+                
+                // CRITICAL AUTH CHECK: Ownership
+                if (assignment.AssignedResourceId != resource.OperationalResourceId) 
+                {
+                    _logger.LogWarning("RETURNING Unauthorized for assignment {AssignmentId}. reason=Ownership mismatch. Assigned:{Assigned} vs Resource:{Resource}", 
+                        assignmentId, assignment.AssignedResourceId, resource.OperationalResourceId);
+                    return ProcessingResult.Unauthorized;
+                }
+
+                // 5. Enter Results (without completion)
+                if (request.Results != null && request.Results.Any())
+                {
+                    var orderIds = request.Results.Select(r => r.OrderId).Distinct().ToList();
+
+                    foreach (var orderId in orderIds)
+                    {
+                        var orderResults = request.Results
+                            .Where(r => r.OrderId == orderId)
+                            .Select(r => new ParameterResultDto
+                            {
+                                OrderId = orderId,
+                                ParameterCode = r.ParameterCode,
+                                Value = r.Value
+                            }).ToList();
+
+                        var entryRequest = new ResultEntryRequestDto
                         {
                             OrderId = orderId,
-                            ParameterCode = r.ParameterCode,
-                            Value = r.Value
-                        }).ToList();
+                            SpecimenId = assignment.SpecimenId, // Fix: Use pre-resolved specimen context
+                            Results = orderResults
+                        };
 
-                    var entryRequest = new ResultEntryRequestDto
-                    {
-                        OrderId = orderId,
-                        Results = orderResults
-                    };
-
-                    var entryResult = await _resultService.EnterResultsAsync(_userContext.CurrentUserId, entryRequest);
-                    if (entryResult.Status != ResultEntryStatus.Success)
-                    {
-                        return ProcessingResult.Conflict; // Simplified for draft save
+                        _logger.LogInformation("Calling EnterResultsAsync for Order {OrderId}", orderId);
+                        var entryResult = await _resultService.EnterResultsAsync(_userContext.CurrentUserId, entryRequest);
+                        
+                        if (entryResult.Status != ResultEntryStatus.Success)
+                        {
+                            _logger.LogWarning("RETURNING 409 FROM HERE → reason=ResultService rejected entry. Status={Status}, Message={Message}", 
+                                entryResult.Status, entryResult.Message);
+                            return ProcessingResult.Conflict; 
+                        }
+                        _logger.LogInformation("EnterResultsAsync success for Order {OrderId}", orderId);
                     }
                 }
+
+                // 6. SignalR Notification (Notify that draft was saved)
+                await _notifier.NotifyAssignmentUpdateAsync(
+                    resource.BranchId.ToString(),
+                    assignment.DepartmentCode,
+                    assignmentId,
+                    "DraftSaved",
+                    assignment.VisitId.ToString());
+
+                return ProcessingResult.Success;
             }
-
-            // 6. SignalR Notification (Notify that draft was saved)
-            await _notifier.NotifyAssignmentUpdateAsync(
-                resource.BranchId.ToString(),
-                assignment.DepartmentCode,
-                assignmentId,
-                "DraftSaved",
-                assignment.VisitId.ToString());
-
-            return ProcessingResult.Success;
+            catch (Exception ex)
+            {
+                _logger.LogCritical(ex, "EXCEPTION in SaveAssignmentDraftAsync for assignment {AssignmentId}. Message: {Message}", assignmentId, ex.Message);
+                throw;
+            }
         }
     }
 }
