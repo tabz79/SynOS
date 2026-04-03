@@ -3,6 +3,8 @@ import { cn } from "@/lib/utils";
 import { SystemBar } from '@/components/layout/SystemBar';
 import { useAuth } from '@/context/AuthContext';
 import { ReportsApi } from '@/api/reports';
+import { useTheme } from '@/context/ThemeContext';
+import { PathologistWorklistCard } from './components/PathologistWorklistCard';
 import { 
     ClipboardList, 
     Search, 
@@ -18,6 +20,8 @@ import {
 
 export function PathologistTerminal() {
     const { user } = useAuth();
+    const { theme } = useTheme();
+    const isDark = theme === 'dark';
     
     // State
     const [reports, setReports] = useState([]);
@@ -117,31 +121,41 @@ export function PathologistTerminal() {
     );
 
     return (
-        <div className="h-screen w-screen bg-[#F1F5F9] text-slate-800 flex flex-col overflow-hidden font-sans">
-            <SystemBar syncStatus="Synced" />
+        <div className="h-screen w-screen dark:bg-synos-background bg-transparent text-foreground flex flex-col overflow-hidden font-sans selection:bg-white/20 relative">
+            {/* Atmospheric Background Layers (Common SynOS Canon) */}
+            <div className="fixed inset-0 pointer-events-none overflow-hidden z-[-1] dark:hidden">
+                <div className="absolute inset-0 opacity-[0.03] mix-blend-overlay" style={{ backgroundImage: `url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyBAMAAADsEZWCAAAAGFBMVEUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAt66YlAAAAB3RSTlMAo7S066u0v76zAAABJklEQVQ4jXWSwW7DIAyGvRNoV9HeIdp7B2nvHaK9d7D27lX836VpY6t0p8oHicDHP4Z99qGf96HvX+h7NfSmX8U8z9M0z6+P/m8X6fB6L78XpX4X5X4O6fc8l7e8n+T9KO87ed+m77pP33Wfvuu6T991nb7rum/ed5+87z55333yvvvkfffJ++6T990n77pP33Wfvus6fdd13rrvu67rvXXfd13ne+u+77rO99Z933Wdt67rtnXdt67rtnWdt67rtjW999Y9ve9997mPu8997uPus9fZZ6+zz15nn73OPnudvU9f0+v0Nb1OX9Pr9DW9Tm9O9vTmaE5vjua09f7o/db7rff7f9H3v6XvP9TzL/X+U8+/1fMv9fw7fQ==")` }} />
+                <div className="absolute top-[-15%] left-[-5%] w-[50%] h-[55%] animate-pulse" style={{ background: 'radial-gradient(circle at 40% 40%, rgba(6, 182, 212, 0.07) 0%, rgba(6, 182, 212, 0.02) 45%, rgba(6, 182, 212, 0) 85%)', animationDuration: '10s' }} />
+                <div className="absolute top-[-10%] right-[10%] w-[45%] h-[50%]" style={{ background: 'radial-gradient(circle at center, rgba(37, 99, 235, 0.05) 0%, rgba(37, 99, 235, 0.01) 50%, rgba(37, 99, 235, 0) 90%)' }} />
+                <div className="absolute top-[5%] left-[35%] w-[25%] h-[25%]" style={{ background: 'radial-gradient(circle at center, rgba(39, 39, 42, 0.04) 0%, rgba(39, 39, 42, 0) 75%)' }} />
+                <div className="absolute top-[-25%] right-[-10%] w-[60%] h-[65%]" style={{ background: 'radial-gradient(circle at 60% 30%, rgba(52, 211, 153, 0.06) 0%, rgba(52, 211, 153, 0.01) 40%, rgba(52, 211, 153, 0) 80%)' }} />
+                <div className="absolute top-[10%] left-[15%] w-[30%] h-[30%]" style={{ background: 'radial-gradient(circle at center, rgba(251, 191, 36, 0.03) 0%, rgba(251, 191, 36, 0) 70%)' }} />
+            </div>
+
+            <SystemBar serverTime={null} syncStatus="Synced" />
 
             <div className="flex-1 flex flex-row gap-4 p-4 overflow-hidden">
                 
                 {/* LEFT PANEL: Worklist (20%) */}
                 <div className="w-[20%] flex flex-col gap-4 min-h-0">
-                    <div className="bg-white shadow-sm rounded-2xl p-4 flex flex-col gap-3 shrink-0">
+                    <div className="dark:bg-zinc-900 bg-white dark:border-white/5 border-black/[0.1] shadow-[0_4px_20px_rgba(0,0,0,0.05)] rounded-xl p-4 flex flex-col gap-3 shrink-0">
                         <div className="flex items-center justify-between">
-                            <h2 className="text-lg font-bold flex items-center gap-2">
+                            <h2 className="text-lg font-bold flex items-center gap-2 dark:text-zinc-200">
                                 <ClipboardList className="w-5 h-5 text-indigo-500" />
                                 Worklist
                             </h2>
-                            <span className="bg-indigo-50 text-indigo-600 text-xs font-bold px-2 py-0.5 rounded-full">
+                            <span className="bg-indigo-500/10 text-indigo-500 dark:text-indigo-400 text-xs font-bold px-2 py-0.5 rounded-full">
                                 {reports.length}
                             </span>
                         </div>
                         <div className="relative">
-                            <Search className="absolute left-3 top-2.5 w-4 h-4 text-slate-400" />
+                            <Search className="absolute left-3 top-2.5 w-4 h-4 text-zinc-500" />
                             <input 
                                 type="text"
                                 placeholder="Search reports..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                                className="w-full dark:bg-zinc-950/50 bg-zinc-50 border dark:border-white/10 border-zinc-200 rounded-xl pl-9 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 dark:text-zinc-200 transition-all"
                             />
                         </div>
                     </div>
@@ -153,91 +167,57 @@ export function PathologistTerminal() {
                                 <span className="text-sm font-medium">Loading reports...</span>
                             </div>
                         ) : filteredReports.length === 0 ? (
-                            <div className="text-center py-12 bg-white/50 rounded-2xl border border-dashed border-slate-300">
-                                <p className="text-slate-400 text-sm">No reports to sign</p>
+                            <div className="text-center py-12 dark:bg-zinc-900/50 bg-white/50 rounded-xl border border-dashed dark:border-white/10 border-zinc-300">
+                                <p className="dark:text-zinc-500 text-zinc-400 text-sm italic">No reports to sign</p>
                             </div>
                         ) : filteredReports.map(report => (
-                            <button
+                            <PathologistWorklistCard
                                 key={report.reportId}
+                                report={report}
+                                isSelected={selectedReportId === report.reportId}
                                 onClick={() => setSelectedReportId(report.reportId)}
-                                className={cn(
-                                    "w-full text-left bg-white p-4 rounded-2xl shadow-sm border-2 transition-all group",
-                                    selectedReportId === report.reportId 
-                                        ? "border-indigo-500 ring-4 ring-indigo-500/10" 
-                                        : "border-transparent hover:border-slate-200"
-                                )}
-                            >
-                                <div className="flex justify-between items-start mb-2">
-                                    <h3 className="font-bold text-sm group-hover:text-indigo-600 transition-colors truncate pr-2">
-                                        {report.patientName}
-                                    </h3>
-                                    {report.isStat && (
-                                        <span className="shrink-0 bg-red-100 text-red-700 text-[10px] font-black uppercase px-1.5 py-0.5 rounded">
-                                            STAT
-                                        </span>
-                                    )}
-                                </div>
-                                <p className="text-xs text-slate-500 font-medium mb-3">
-                                    {report.testName}
-                                </p>
-                                <div className="flex items-center justify-between mt-auto pt-2 border-t border-slate-50">
-                                    <div className="flex items-center gap-1.5 text-slate-400">
-                                        <Calendar className="w-3 h-3" />
-                                        <span className="text-[10px] font-medium">
-                                            {new Date(report.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                        </span>
-                                    </div>
-                                    {report.abnormalCount > 0 && (
-                                        <div className="flex items-center gap-1 text-amber-600">
-                                            <AlertCircle className="w-3 h-3" />
-                                            <span className="text-[10px] font-bold">
-                                                {report.abnormalCount} Abnormal
-                                            </span>
-                                        </div>
-                                    )}
-                                </div>
-                            </button>
+                            />
                         ))}
                     </div>
                 </div>
 
                 {/* CENTER PANEL: Report Editor (55%) */}
                 <div className="w-[55%] flex flex-col gap-4 min-h-0">
-                    <div className="bg-white shadow-sm rounded-2xl p-6 flex-1 flex flex-col min-h-0">
+                    <div className="dark:bg-zinc-900 bg-white dark:border-white/5 border-black/[0.1] shadow-[0_4px_20px_rgba(0,0,0,0.05)] rounded-xl p-6 flex-1 flex flex-col min-h-0">
                         {isLoadingDetail ? (
                             <div className="flex-1 flex flex-col items-center justify-center opacity-50">
                                 <Loader2 className="w-10 h-10 animate-spin mb-4 text-indigo-500" />
-                                <h3 className="text-lg font-bold">Fetching report structure...</h3>
-                                <p className="text-slate-500">Assembling parameters and calculations</p>
+                                <h3 className="text-lg font-bold dark:text-zinc-200">Fetching report structure...</h3>
+                                <p className="dark:text-zinc-500 text-zinc-500">Assembling parameters and calculations</p>
                             </div>
                         ) : !selectedReportId ? (
                             <div className="flex-1 flex flex-col items-center justify-center text-center opacity-40">
-                                <FileText className="w-20 h-20 mb-6 text-slate-300" />
-                                <h3 className="text-2xl font-bold text-slate-400">Select a Report</h3>
-                                <p className="text-slate-400 max-w-xs">
+                                <FileText className="w-20 h-20 mb-6 dark:text-zinc-700 text-zinc-300" />
+                                <h3 className="text-2xl font-bold dark:text-zinc-500 text-zinc-400">Select a Report</h3>
+                                <p className="dark:text-zinc-600 text-zinc-400 max-w-xs">
                                     Choose a record from the worklist to start interpretation and signing.
                                 </p>
                             </div>
                         ) : (
                             <div className="flex flex-col h-full min-h-0">
                                 {/* Header */}
-                                <div className="flex items-center justify-between mb-8 pb-6 border-b border-slate-100 shrink-0">
+                                <div className="flex items-center justify-between mb-8 pb-6 border-b dark:border-white/5 border-zinc-100 shrink-0">
                                     <div className="flex items-center gap-4">
-                                        <div className="w-12 h-12 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600">
+                                        <div className="w-12 h-12 dark:bg-zinc-800 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-500">
                                             <User className="w-6 h-6" />
                                         </div>
                                         <div>
-                                            <h2 className="text-2xl font-black tracking-tight">{reportStructure?.patientName}</h2>
-                                            <div className="flex items-center gap-2 text-slate-500 text-sm font-medium">
+                                            <h2 className="text-2xl font-black tracking-tight dark:text-zinc-200">{reportStructure?.patientName}</h2>
+                                            <div className="flex items-center gap-2 dark:text-zinc-500 text-zinc-500 text-sm font-medium">
                                                 <span>{reportStructure?.patientAgeGender}</span>
-                                                <span className="w-1 h-1 bg-slate-300 rounded-full" />
-                                                <span>{reportStructure?.token}</span>
+                                                <span className="w-1 h-1 dark:bg-zinc-700 bg-zinc-300 rounded-full" />
+                                                <span className="font-mono">{reportStructure?.token}</span>
                                             </div>
                                         </div>
                                     </div>
                                     <div className="text-right">
-                                        <span className="text-[10px] uppercase font-black text-slate-400 block mb-1 tracking-widest">Department</span>
-                                        <span className="bg-slate-100 px-3 py-1 rounded-full text-xs font-bold">{reportStructure?.modality}</span>
+                                        <span className="text-[10px] uppercase font-black dark:text-zinc-600 text-zinc-400 block mb-1 tracking-widest">Department</span>
+                                        <span className="dark:bg-zinc-800 bg-zinc-100 dark:text-zinc-300 text-zinc-700 px-3 py-1 rounded-full text-xs font-bold">{reportStructure?.modality}</span>
                                     </div>
                                 </div>
 
@@ -245,7 +225,7 @@ export function PathologistTerminal() {
                                 <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar -mx-2 px-2">
                                     <table className="w-full border-separate border-spacing-y-2">
                                         <thead>
-                                            <tr className="text-[10px] uppercase font-black tracking-widest text-slate-400">
+                                            <tr className="text-[10px] uppercase font-black tracking-widest dark:text-zinc-600 text-zinc-400">
                                                 <th className="text-left px-4 pb-2">Parameter</th>
                                                 <th className="text-right px-4 pb-2">Value</th>
                                                 <th className="text-left px-4 pb-2">Unit</th>
@@ -306,13 +286,13 @@ export function PathologistTerminal() {
                                 </div>
 
                                  {/* Interpretation Area */}
-                                <div className="mt-8 border-t border-slate-100 pt-6 shrink-0 space-y-6">
+                                <div className="mt-8 border-t dark:border-white/5 border-zinc-100 pt-6 shrink-0 space-y-6">
                                     <div>
-                                        <label className="text-xs font-black uppercase tracking-widest text-slate-400 block mb-3">
+                                        <label className="text-[10px] uppercase font-black tracking-widest dark:text-zinc-600 text-zinc-400 block mb-3">
                                             Clinical Summary (Required)
                                         </label>
                                         <textarea 
-                                            className="w-full bg-slate-50 border border-slate-200 rounded-2xl p-4 text-sm focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all min-h-[100px] disabled:opacity-60 disabled:cursor-not-allowed"
+                                            className="w-full dark:bg-zinc-950/50 bg-zinc-50 border dark:border-white/10 border-zinc-200 rounded-2xl p-4 text-sm focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 dark:text-zinc-200 transition-all min-h-[100px] disabled:opacity-60 disabled:cursor-not-allowed"
                                             placeholder="Enter core clinical findings..."
                                             value={interpretation.summary}
                                             onChange={(e) => setInterpretation(prev => ({ ...prev, summary: e.target.value }))}
@@ -370,7 +350,7 @@ export function PathologistTerminal() {
 
                 {/* RIGHT PANEL: Live Preview (25%) */}
                 <div className="w-[25%] flex flex-col min-h-0">
-                    <div className="bg-slate-200/50 rounded-2xl p-8 flex-1 overflow-y-auto custom-scrollbar flex flex-col items-center">
+                    <div className="dark:bg-zinc-950/30 bg-zinc-100/50 dark:border-white/5 border-black/[0.05] border rounded-xl p-8 flex-1 overflow-y-auto custom-scrollbar flex flex-col items-center">
                         <div className="w-full bg-white shadow-2xl min-h-[800px] p-8 flex flex-col gap-6 relative">
                             {/* Watermark for draft? */}
                             <div className="absolute top-0 left-0 w-full h-1 bg-indigo-500" />

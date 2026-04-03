@@ -1,143 +1,195 @@
-Alright — now this is tight. You’ve closed the major holes.
+Good — now you’re asking the **right question**. This is not UI anymore, this is **operational design**.
 
-I’ll be direct:
+And I’m going to be blunt:
 
-👉 **Yes, you have approval to execute.**
-But I’m adding **2 final constraints** before you touch the code — don’t ignore these.
-
----
-
-## ⚠️ Final Gaps (small, but dangerous if missed)
-
-### 1. Status handling (you didn’t define this clearly)
-
-Your plan says:
-
-> “If report exists → reuse it”
-
-👉 Reuse is not enough. You must also control **status transitions**
+👉 **Your current card is visually fine, but operationally weak.**
 
 ---
 
-### ❌ What can go wrong
+## 🧠 What I see in your current card
 
-If existing report is:
+You show:
+
+* Patient Name ✅
+* Test Name ✅
+* Time ✅
+
+But missing:
+
+* ❌ Age / Sex
+* ❌ Token / Accession ID
+* ❌ Specimen reference
+* ❌ Any cross-department identifier
+
+---
+
+## 💥 Why this is a serious problem
+
+Right now, if something goes wrong:
+
+> Pathologist sees “Test Patient9”
+
+Now imagine:
+
+* Same patient comes twice
+* Same test repeated
+* Multiple departments involved
+
+👉 You’re blind.
+
+---
+
+## 🎯 Core principle (burn this in your head)
 
 ```text
-VERIFIED
+Every screen must carry a traceable identity
 ```
 
-And someone re-triggers complete:
+Not just display info.
 
-👉 Your logic might:
+---
+
+## 🧠 What SHOULD be the tracking anchor?
+
+In a lab system, tracking is NOT by:
+
+❌ Name
+❌ Test
+
+---
+
+### ✅ It is ALWAYS:
 
 ```text
-Set it back to ReadyForSignature ❌
-```
-
-That’s a **clinical disaster**
-
----
-
-### ✅ Fix this explicitly
-
-When report exists:
-
-```text
-IF status == VERIFIED → DO NOTHING
-ELSE → update snapshot + keep ReadyForSignature
-```
-
----
-
-## ⚠️ 2. Snapshot overwrite rule
-
-Right now you said:
-
-> “update snapshot”
-
-👉 That’s vague and risky
-
----
-
-### ❌ Problem
-
-If pathologist has already:
-
-* reviewed report
-* or partially signed
-
-And you overwrite snapshot:
-
-👉 You lose audit integrity
-
----
-
-### ✅ Rule you need
-
-```text
-IF report is NOT VERIFIED:
-    allow snapshot update
-ELSE:
-    lock snapshot
+TOKEN / ACCESSION ID
 ```
 
 ---
 
-## 🧠 Why I’m pushing this
+## 🧪 Your system already has it
 
-You’re not building:
+From your Workbench:
 
-> a CRUD app
+```text
+MAIN26040300002
+```
 
-You’re building:
-
-> a **medical reporting system**
-
-That means:
-
-* history matters
-* immutability matters
-* audit trail matters
+👉 That is your **primary tracking key**
 
 ---
 
-## ✅ What is now solid in your plan
+## 🧠 Think of it like this
 
-* Root-level grouping ✅
-* Visit-level isolation ✅
-* Idempotency ✅
-* Minimal blast radius ✅
+That ID is:
 
-Now with above 2 rules:
-👉 It becomes **clinically safe**
+* Reception → creates it
+* Phlebo → collects under it
+* Workbench → processes under it
+* Pathologist → signs under it
 
----
-
-## 🧪 Execution checklist (don’t skip)
-
-After implementing:
-
-1. LFT → 1 report ✅
-2. LFT + Sugar → 2 reports ✅
-3. Same visit → no duplicates ✅
-4. Two visits → separate reports ✅
-5. Re-complete after VERIFIED → NO change ✅ ← critical
+👉 That’s your **spine of the system**
 
 ---
 
-## 🧨 Final reality check
+## ⚠️ Right now your mistake
 
-If this works:
+You built UI around:
 
-👉 You’ve solved:
+```text
+patient-centric display
+```
 
-* visibility
-* fragmentation
-* duplication
-* data integrity
+But system actually runs on:
 
-That’s **core DLMS architecture done right**
+```text
+visit / accession-centric flow
+```
 
 ---
+
+## 🎯 What your card MUST show (minimum)
+
+Don’t overdesign. Just include:
+
+### Line 1 (Primary)
+
+👉 Patient Name + Age/Sex
+
+---
+
+### Line 2 (Secondary)
+
+👉 Test/Profile Name
+
+---
+
+### Line 3 (Critical)
+
+👉 **Accession / Token ID**
+
+---
+
+### Optional (small, right aligned)
+
+👉 Time
+
+---
+
+## ⚡ Example (correct mental model)
+
+```text
+Test Patient2 (44 / F)
+Liver Function Test
+MAIN26040300002
+```
+
+---
+
+## 🧨 Why this matters
+
+Now any user can:
+
+* Call reception → “check MAIN26040300002”
+* Ask phlebo → “sample for this ID?”
+* Check logs → same ID
+
+👉 Full traceability
+
+---
+
+## 🚀 What you should do (ONE step)
+
+👉 Update `PathologistWorklistCard`
+
+Add:
+
+```text
+- accessionId (or token)
+- age / gender
+```
+
+Do NOT redesign layout — just **fit it cleanly**
+
+---
+
+## ⚠️ One warning
+
+Don’t make it cluttered.
+
+👉 This is still a **scan list**, not a report.
+
+---
+
+## 🧠 Final truth
+
+Right now your UI is:
+
+> visually polished
+
+But after this fix it becomes:
+
+> **operationally reliable**
+
+---
+
 
