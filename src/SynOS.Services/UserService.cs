@@ -75,6 +75,16 @@ namespace SynOS.Services
             return await _context.Users.Include(u => u.UserRoles).ThenInclude(ur => ur.Role).AsNoTracking().ToListAsync();
         }
 
+        public async Task<IReadOnlyList<User>> GetPathologistsAsync()
+        {
+            return await _context.Users
+                .Include(u => u.UserRoles)
+                    .ThenInclude(ur => ur.Role)
+                .Where(u => u.UserRoles.Any(ur => ur.Role.Name == "Pathologist"))
+                .AsNoTracking()
+                .ToListAsync();
+        }
+
         public async Task<User> CreateUserAsync(CreateUserDto dto, Guid actorUserId)
         {
             var user = new User

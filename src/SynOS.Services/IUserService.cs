@@ -19,6 +19,7 @@ namespace SynOS.Services
 
         // New User Management methods
         Task<IReadOnlyList<User>> GetUsersAsync();
+        Task<IReadOnlyList<User>> GetPathologistsAsync();
         Task<User> CreateUserAsync(CreateUserDto dto, Guid actorUserId);
         Task<User> UpdateUserAsync(Guid userId, UpdateUserDto dto, Guid actorUserId);
         Task DeleteUserAsync(Guid userId, Guid actorUserId);

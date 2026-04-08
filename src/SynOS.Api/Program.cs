@@ -153,14 +153,19 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy("PathologyPolicy", policy =>
         policy.RequireAssertion(context =>
             context.User.IsInRole("Pathologist") || context.User.IsInRole("Admin")));
-    options.AddPolicy("RadiologyPolicy", policy =>
+    options.AddPolicy("TypistPolicy", policy =>
         policy.RequireAssertion(context =>
-            context.User.IsInRole("Radiologist") || context.User.IsInRole("XRayTech") || context.User.IsInRole("MriTech") || context.User.IsInRole("Admin")));
+            context.User.IsInRole("Typist") || context.User.IsInRole("Admin")));
     options.AddPolicy("DeliveryPolicy", policy =>
         policy.RequireAssertion(context =>
             context.User.IsInRole("DeliveryDesk") || context.User.IsInRole("Admin")));
     options.AddPolicy("OperationalModeOnly", policy =>
         policy.RequireClaim("session_mode", "operational"));
+    options.AddPolicy("ReportingPolicy", policy =>
+        policy.RequireAssertion(context =>
+            context.User.IsInRole("Pathologist") || 
+            context.User.IsInRole("Typist") || 
+            context.User.IsInRole("Admin")));
     options.AddPolicy("LabProcessingPolicy", policy =>
         policy.RequireClaim("session_mode", "operational")
               .RequireAssertion(context =>
@@ -381,7 +386,7 @@ if (app.Environment.IsDevelopment())
             new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
         };
 
-        var roleList = roles?.Split(',', StringSplitOptions.RemoveEmptyEntries) ?? ["Admin", "PathTech", "Reception"];
+        var roleList = roles?.Split(',', StringSplitOptions.RemoveEmptyEntries) ?? ["Admin", "PathTech", "Reception", "Typist"];
         foreach (var role in roleList)
         {
             claims.Add(new Claim(ClaimTypes.Role, role.Trim()));

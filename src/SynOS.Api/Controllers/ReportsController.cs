@@ -13,21 +13,23 @@ namespace SynOS.Api.Controllers
 {
     [ApiController]
     [Route("api/v1/reports")]
-    [Authorize(Policy = "PathologyPolicy")]
     public class ReportsController : ControllerBase
     {
         private readonly IReportService _reportService;
         private readonly IInterpretationService _interpretationService;
         private readonly IReportingService _reportingService;
+        private readonly IUserService _userService;
 
         public ReportsController(
             IReportService reportService,
             IInterpretationService interpretationService,
-            IReportingService reportingService)
+            IReportingService reportingService,
+            IUserService userService)
         {
             _reportService = reportService;
             _interpretationService = interpretationService;
             _reportingService = reportingService;
+            _userService = userService;
         }
 
         [HttpPost("{reportId}/sign")]
@@ -35,25 +37,65 @@ namespace SynOS.Api.Controllers
         public async Task<IActionResult> SignReport(Guid reportId)
         {
             var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (!Guid.TryParse(userIdString, out var userId))
-            {
-                return Unauthorized();
-            }
+            if (!Guid.TryParse(userIdString, out var userId)) return Unauthorized();
 
             try
             {
                 var result = await _reportService.SignReportAsync(reportId, userId);
                 return Ok(result);
             }
-            catch (KeyNotFoundException ex)
+            catch (Exception ex)
             {
-                return NotFound(new { message = ex.Message });
+                return BadRequest(new { message = ex.Message });
             }
-            catch (InvalidOperationException ex)
+        }
+
+        [HttpPost("{reportId}/submit")]
+        [Authorize(Policy = "TypistPolicy")]
+        public async Task<IActionResult> SubmitReport(Guid reportId)
+        {
+            var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!Guid.TryParse(userIdString, out var userId)) return Unauthorized();
+
+            try
             {
-                return Conflict(new { message = ex.Message });
+                await _reportService.SubmitForVerificationAsync(reportId, userId);
+                return Ok();
             }
-            catch (BadHttpRequestException ex)
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        [HttpPost("{reportId}/reopen")]
+        [Authorize(Policy = "PathologyPolicy")]
+        public async Task<IActionResult> ReopenReport(Guid reportId)
+        {
+            var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!Guid.TryParse(userIdString, out var userId)) return Unauthorized();
+
+            try
+            {
+                await _reportService.ReopenReportAsync(reportId, userId);
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        [HttpPost("{reportId}/verify-manual")]
+        [Authorize(Policy = "DeliveryPolicy")]
+        public async Task<IActionResult> VerifyManual(Guid reportId, [FromQuery] Guid pathologistId)
+        {
+            try
+            {
+                await _reportService.MarkManuallyVerifiedAsync(reportId, pathologistId);
+                return Ok();
+            }
+            catch (Exception ex)
             {
                 return BadRequest(new { message = ex.Message });
             }
@@ -61,6 +103,7 @@ namespace SynOS.Api.Controllers
 
 
         [HttpPost("{orderId}/results")]
+        [Authorize(Policy = "ReportingPolicy")]
         public async Task<IActionResult> SaveFinalResults(Guid orderId, [FromBody] SaveFinalResultsRequestDto request)
         {
             try
@@ -75,6 +118,7 @@ namespace SynOS.Api.Controllers
         }
 
         [HttpGet("{orderId}")]
+        [Authorize(Policy = "ReportingPolicy")]
         public async Task<IActionResult> GetFinalReport(Guid orderId)
         {
             try
@@ -89,6 +133,7 @@ namespace SynOS.Api.Controllers
         }
 
         [HttpPost("{orderId}/delivered")]
+        [Authorize(Policy = "DeliveryPolicy")]
         public async Task<IActionResult> MarkReportAsDelivered(Guid orderId)
         {
             try
@@ -103,7 +148,7 @@ namespace SynOS.Api.Controllers
         }
 
         [HttpGet]
-        [Authorize(Policy = "PathologyPolicy")]
+        [Authorize(Policy = "ReportingPolicy")]
         public async Task<IActionResult> GetReports([FromQuery] string status)
         {
             if (string.IsNullOrEmpty(status))
@@ -116,6 +161,7 @@ namespace SynOS.Api.Controllers
         }
 
         [HttpGet("{reportId}/interpretation")]
+        [Authorize(Policy = "ReportingPolicy")]
         public async Task<IActionResult> GetInterpretation(Guid reportId)
         {
             var interpretation = await _interpretationService.GetInterpretationAsync(reportId);
@@ -133,6 +179,7 @@ namespace SynOS.Api.Controllers
         }
 
         [HttpPost("{reportId}/interpretation")]
+        [Authorize(Policy = "ReportingPolicy")]
         public async Task<IActionResult> SaveInterpretation(Guid reportId, [FromBody] SaveInterpretationRequestDto request)
         {
             var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -154,6 +201,7 @@ namespace SynOS.Api.Controllers
         }
 
         [HttpGet("{reportId}/full")]
+        [Authorize(Policy = "ReportingPolicy")]
         public async Task<IActionResult> GetFullReport(Guid reportId)
         {
             try
@@ -179,6 +227,13 @@ namespace SynOS.Api.Controllers
             {
                 return BadRequest(new { message = ex.Message });
             }
+        }
+        [HttpGet("pathologists")]
+        [Authorize(Policy = "ReportingPolicy")]
+        public async Task<IActionResult> GetPathologists()
+        {
+            var users = await _userService.GetPathologistsAsync();
+            return Ok(users.Select(u => new { u.UserId, u.Name }));
         }
     }
 }

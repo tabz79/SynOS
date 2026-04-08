@@ -7,6 +7,8 @@ import { PhlebotomyScreen } from '@/features/phlebotomy/PhlebotomyScreen'
 import { DepartmentWorkbenchScreen } from '@/features/processing/DepartmentWorkbenchScreen'
 import { LoginPage } from '@/pages/LoginPage'
 import { PathologistTerminal } from '@/features/pathology/PathologistTerminal'
+import { TypistTerminal } from '@/features/typing/TypistTerminal'
+import { DeliveryTerminal } from '@/features/delivery/DeliveryTerminal'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 
 function RootRedirect() {
@@ -16,6 +18,8 @@ function RootRedirect() {
   if (user?.role === 'Phlebotomist') return <Navigate to="/phlebotomist" replace />;
   if (user?.role === 'Technician' || user?.role === 'Admin') return <Navigate to="/workbench" replace />;
   if (user?.role === 'Pathologist') return <Navigate to="/pathologist" replace />;
+  if (user?.role === 'Typist') return <Navigate to="/typist" replace />;
+  if (user?.role === 'DeliveryDesk') return <Navigate to="/delivery" replace />;
   
   return (
     <div className="h-screen w-screen bg-synos-background flex items-center justify-center p-4">
@@ -64,6 +68,14 @@ function App() {
 
             <Route element={<ProtectedRoute allowedRoles={['Pathologist']} />}>
               <Route path="/pathologist" element={<PathologistTerminal />} />
+            </Route>
+
+            <Route element={<ProtectedRoute allowedRoles={['Typist']} />}>
+              <Route path="/typist" element={<TypistTerminal />} />
+            </Route>
+
+            <Route element={<ProtectedRoute allowedRoles={['DeliveryDesk']} />}>
+              <Route path="/delivery" element={<DeliveryTerminal />} />
             </Route>
 
             {/* Root Redirection */}

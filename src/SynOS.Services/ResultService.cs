@@ -230,13 +230,12 @@ namespace SynOS.Services
                     r.VisitId == currentOrder.VisitId && 
                     r.SourceType == "Order");
 
-            // CLINICAL SAFETY GUARD: If report is already Signed, do not touch status or snapshot
-            if (report != null && string.Equals(report.Status, "Signed", StringComparison.OrdinalIgnoreCase))
+            // SURGICAL FIX: Status Shield (GPT-5 Rule)
+            if (report != null && (report.Status == "Signed" || report.Status == "ManualVerified"))
             {
-                _logger.LogInformation("Submission skipped for RootOrderId {RootOrderId} because report {ReportId} is already Signed.", 
-                    rootOrder.OrderId, report.ReportId);
-                await _context.SaveChangesAsync();
-                return;
+                _logger.LogWarning("Blocking lab update for RootOrderId {RootOrderId} because report {ReportId} is already FINALIZED ({Status}).", 
+                    rootOrder.OrderId, report.ReportId, report.Status);
+                throw new InvalidOperationException($"Cannot update results for a finalized report ({report.Status}). Please contact a supervisor to reopen the case.");
             }
 
             if (report == null)
@@ -259,14 +258,21 @@ namespace SynOS.Services
                     VisitId = finalRootOrder.VisitId,
                     PatientId = finalRootOrder.Visit.Patient.PatientId,
                     Department = finalRootOrder.Department,
-                    Status = "ReadyForSignature",
-                    CreatedAt = DateTimeOffset.UtcNow
+                    Status = "Draft", // Corrected per GPT-5: Lab submits to Draft, Typist pushes to Ready
+                    CreatedAt = DateTimeOffset.UtcNow,
+                    UpdatedAt = DateTimeOffset.UtcNow
                 };
                 await _context.Reports.AddAsync(report);
             }
             else
             {
-                report.Status = "ReadyForSignature";
+                // MAINTAIN STATUS: If already Draft or NULL, keep Draft. If already ReadyForVerification, keep it.
+                if (string.IsNullOrEmpty(report.Status) || report.Status == "Draft")
+                {
+                    report.Status = "Draft";
+                }
+                // Do not downgrade status if it's e.g. ReadyForVerification
+                report.UpdatedAt = DateTimeOffset.UtcNow;
             }
 
             await _context.SaveChangesAsync();

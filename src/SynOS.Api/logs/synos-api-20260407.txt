@@ -1,0 +1,513 @@
+2026-04-07 12:01:06.124 +05:30 [INF] OperationalStatsProjectionWorker is starting in Event-Driven Mode.
+2026-04-07 12:01:06.270 +05:30 [INF] Worker: Running Consistency Check and Catch-up...
+2026-04-07 12:01:07.380 +05:30 [INF] [ProjectorDebug] Processing Event Type: SPECIMEN_ORDERED, BranchId: "a0000000-0000-0000-0000-000000000001", SourceId: "edc676b5-7913-473e-a384-c645cbfa422c", SourceType: Visit, VisitId: edc676b5-7913-473e-a384-c645cbfa422c
+2026-04-07 12:01:07.879 +05:30 [INF] [ProjectorDebug] Checking Fact Deduplication for SourceId: "edc676b5-7913-473e-a384-c645cbfa422c"
+2026-04-07 12:01:08.109 +05:30 [WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+2026-04-07 12:01:08.435 +05:30 [INF] [ProjectorDebug] Processing Event Type: RESULT_DRAFT_STARTED, BranchId: "a0000000-0000-0000-0000-000000000001", SourceId: "492f5409-f984-4bc8-82da-1ebf69c001f3", SourceType: Result, VisitId: edc676b5-7913-473e-a384-c645cbfa422c
+2026-04-07 12:01:08.449 +05:30 [INF] [ProjectorDebug] Checking Fact Deduplication for SourceId: "492f5409-f984-4bc8-82da-1ebf69c001f3"
+2026-04-07 12:01:08.454 +05:30 [WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+2026-04-07 12:01:08.465 +05:30 [INF] [ProjectorDebug] Processing Event Type: REPORT_READY_FOR_VERIFICATION, BranchId: "a0000000-0000-0000-0000-000000000001", SourceId: "1940f81e-d4a8-4e87-b98e-f86ba25cf257", SourceType: Report, VisitId: edc676b5-7913-473e-a384-c645cbfa422c
+2026-04-07 12:01:08.471 +05:30 [INF] [ProjectorDebug] Checking Fact Deduplication for SourceId: "1940f81e-d4a8-4e87-b98e-f86ba25cf257"
+2026-04-07 12:01:08.480 +05:30 [WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+2026-04-07 12:01:08.484 +05:30 [INF] Worker: Catch-up complete. Awaiting real-time events...
+2026-04-07 12:23:30.932 +05:30 [WRN] Failed to determine the https port for redirect.
+2026-04-07 12:23:34.449 +05:30 [INF] Terminal web-1zy6xxtky authorized and added to Thermal80mm group for Branch "a0000000-0000-0000-0000-000000000001".
+2026-04-07 12:23:35.270 +05:30 [ERR] Failed executing DbCommand (12ms) [Parameters=[@__statusList_0='?' (Size = 4000)], CommandType='"Text"', CommandTimeout='30']
+SELECT [r].[ReportId], [r].[CreatedAt], [r].[CurrentVersion], [r].[Delivered], [r].[DeliveredAt], [r].[Department], [r].[DraftSnapshotJson], [r].[FinalSnapshotJson], [r].[PatientId], [r].[PdfUrl], [r].[SignedAt], [r].[SignedByUserId], [r].[SourceId], [r].[SourceType], [r].[Status], [r].[TypedByUserId], [r].[UpdatedAt], [r].[VerificationMode], [r].[VerifiedAt], [r].[VerifiedByUserId], [r].[VisitId], [u].[UserId], [u].[CanUseOperationalMode], [u].[CanUseOversightMode], [u].[CreatedAt], [u].[DefaultBranchId], [u].[Designation], [u].[Email], [u].[FailedLoginAttempts], [u].[IsActive], [u].[LockoutEnd], [u].[Name], [u].[PasswordHash], [u].[RowVersion], [u].[SignatureImageUrl], [u].[SignatureUpdatedAt], [u].[UpdatedAt], [u0].[UserId], [u0].[CanUseOperationalMode], [u0].[CanUseOversightMode], [u0].[CreatedAt], [u0].[DefaultBranchId], [u0].[Designation], [u0].[Email], [u0].[FailedLoginAttempts], [u0].[IsActive], [u0].[LockoutEnd], [u0].[Name], [u0].[PasswordHash], [u0].[RowVersion], [u0].[SignatureImageUrl], [u0].[SignatureUpdatedAt], [u0].[UpdatedAt]
+FROM [Reports] AS [r]
+LEFT JOIN [Users] AS [u] ON [r].[TypedByUserId] = [u].[UserId]
+LEFT JOIN [Users] AS [u0] ON [r].[VerifiedByUserId] = [u0].[UserId]
+WHERE [r].[Status] IN (
+    SELECT [s].[value]
+    FROM OPENJSON(@__statusList_0) WITH ([value] nvarchar(50) '$') AS [s]
+) AND [r].[SourceType] = N'Order'
+ORDER BY COALESCE([r].[UpdatedAt], [r].[CreatedAt]) DESC
+2026-04-07 12:23:35.314 +05:30 [ERR] An exception occurred while iterating over the results of a query for context type 'SynOS.Data.SynOSDbContext'.
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'UpdatedAt'.
+Invalid column name 'UpdatedAt'.
+Invalid column name 'UpdatedAt'.
+   at Microsoft.Data.SqlClient.SqlCommand.<>c.<ExecuteDbDataReaderAsync>b__209_0(Task`1 result)
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:4a916f40-f9d9-4ed8-96ba-861f14f377ca
+Error Number:207,State:1,Class:16
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'UpdatedAt'.
+Invalid column name 'UpdatedAt'.
+Invalid column name 'UpdatedAt'.
+   at Microsoft.Data.SqlClient.SqlCommand.<>c.<ExecuteDbDataReaderAsync>b__209_0(Task`1 result)
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:4a916f40-f9d9-4ed8-96ba-861f14f377ca
+Error Number:207,State:1,Class:16
+2026-04-07 12:23:35.383 +05:30 [ERR] Failed executing DbCommand (2ms) [Parameters=[@__statusList_0='?' (Size = 4000)], CommandType='"Text"', CommandTimeout='30']
+SELECT [r].[ReportId], [r].[CreatedAt], [r].[CurrentVersion], [r].[Delivered], [r].[DeliveredAt], [r].[Department], [r].[DraftSnapshotJson], [r].[FinalSnapshotJson], [r].[PatientId], [r].[PdfUrl], [r].[SignedAt], [r].[SignedByUserId], [r].[SourceId], [r].[SourceType], [r].[Status], [r].[TypedByUserId], [r].[UpdatedAt], [r].[VerificationMode], [r].[VerifiedAt], [r].[VerifiedByUserId], [r].[VisitId], [u].[UserId], [u].[CanUseOperationalMode], [u].[CanUseOversightMode], [u].[CreatedAt], [u].[DefaultBranchId], [u].[Designation], [u].[Email], [u].[FailedLoginAttempts], [u].[IsActive], [u].[LockoutEnd], [u].[Name], [u].[PasswordHash], [u].[RowVersion], [u].[SignatureImageUrl], [u].[SignatureUpdatedAt], [u].[UpdatedAt], [u0].[UserId], [u0].[CanUseOperationalMode], [u0].[CanUseOversightMode], [u0].[CreatedAt], [u0].[DefaultBranchId], [u0].[Designation], [u0].[Email], [u0].[FailedLoginAttempts], [u0].[IsActive], [u0].[LockoutEnd], [u0].[Name], [u0].[PasswordHash], [u0].[RowVersion], [u0].[SignatureImageUrl], [u0].[SignatureUpdatedAt], [u0].[UpdatedAt]
+FROM [Reports] AS [r]
+LEFT JOIN [Users] AS [u] ON [r].[TypedByUserId] = [u].[UserId]
+LEFT JOIN [Users] AS [u0] ON [r].[VerifiedByUserId] = [u0].[UserId]
+WHERE [r].[Status] IN (
+    SELECT [s].[value]
+    FROM OPENJSON(@__statusList_0) WITH ([value] nvarchar(50) '$') AS [s]
+) AND [r].[SourceType] = N'Order'
+ORDER BY COALESCE([r].[UpdatedAt], [r].[CreatedAt]) DESC
+2026-04-07 12:23:35.391 +05:30 [ERR] An exception occurred while iterating over the results of a query for context type 'SynOS.Data.SynOSDbContext'.
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'UpdatedAt'.
+Invalid column name 'UpdatedAt'.
+Invalid column name 'UpdatedAt'.
+   at Microsoft.Data.SqlClient.SqlCommand.<>c.<ExecuteDbDataReaderAsync>b__209_0(Task`1 result)
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:4a916f40-f9d9-4ed8-96ba-861f14f377ca
+Error Number:207,State:1,Class:16
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'UpdatedAt'.
+Invalid column name 'UpdatedAt'.
+Invalid column name 'UpdatedAt'.
+   at Microsoft.Data.SqlClient.SqlCommand.<>c.<ExecuteDbDataReaderAsync>b__209_0(Task`1 result)
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:4a916f40-f9d9-4ed8-96ba-861f14f377ca
+Error Number:207,State:1,Class:16
+2026-04-07 12:24:48.467 +05:30 [INF] Terminal web-1zy6xxtky authorized and added to Thermal80mm group for Branch "a0000000-0000-0000-0000-000000000001".
+2026-04-07 12:25:00.222 +05:30 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2026-04-07 12:25:00.519 +05:30 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2026-04-07 12:25:00.611 +05:30 [INF] EVENT_WRITE for VisitId 704ce814-0fa0-4794-9aac-348a253a8020, Context adc6b00f-a613-43ef-b78c-53cb739db89e:0
+2026-04-07 12:25:00.668 +05:30 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2026-04-07 12:25:00.830 +05:30 [INF] [ProjectorDebug] Processing Event Type: VISIT_CREATED, BranchId: "a0000000-0000-0000-0000-000000000001", SourceId: null, SourceType: null, VisitId: 704ce814-0fa0-4794-9aac-348a253a8020
+2026-04-07 12:25:00.845 +05:30 [INF] EVENT_WRITE for VisitId 704ce814-0fa0-4794-9aac-348a253a8020, Context adc6b00f-a613-43ef-b78c-53cb739db89e:0
+2026-04-07 12:25:00.862 +05:30 [WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+2026-04-07 12:25:00.902 +05:30 [INF] [ProjectorDebug] Processing Event Type: VISIT_STARTED, BranchId: "a0000000-0000-0000-0000-000000000001", SourceId: null, SourceType: null, VisitId: 704ce814-0fa0-4794-9aac-348a253a8020
+2026-04-07 12:25:00.930 +05:30 [WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+2026-04-07 12:25:01.128 +05:30 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2026-04-07 12:25:01.412 +05:30 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2026-04-07 12:25:07.304 +05:30 [INF] EVENT_WRITE for VisitId 704ce814-0fa0-4794-9aac-348a253a8020, Context bd5a084d-e3f1-4b65-a953-205a326a2c3c:0
+2026-04-07 12:25:07.355 +05:30 [INF] [ProjectorDebug] Processing Event Type: VISIT_UPDATED, BranchId: "a0000000-0000-0000-0000-000000000001", SourceId: null, SourceType: null, VisitId: 704ce814-0fa0-4794-9aac-348a253a8020
+2026-04-07 12:25:07.370 +05:30 [WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+2026-04-07 12:25:12.124 +05:30 [INF] TRACE: AddTestToVisitAsync called. visitId="704ce814-0fa0-4794-9aac-348a253a8020", testCode=LFT
+2026-04-07 12:25:12.171 +05:30 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2026-04-07 12:25:12.212 +05:30 [INF] [ExpansionDebug] Starting expansion for LFT. isChild: False, parentOrderId: 
+2026-04-07 12:25:12.280 +05:30 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2026-04-07 12:25:12.328 +05:30 [WRN] [Validation] Resolving Test: LFT, IsProfile: True, HasChildren: True, SpecimenType: SERUM
+2026-04-07 12:25:12.337 +05:30 [INF] [ExpansionDebug] Creating Order entry: LFT, ID: a7226309-a7f7-40bf-a9f4-08ccd83430ed, Parent: 
+2026-04-07 12:25:12.397 +05:30 [INF] [ExpansionDebug] Order LFT added to context and local collection.
+2026-04-07 12:25:12.404 +05:30 [INF] [ExpansionDebug] Test LFT is a Profile. Children found in cache: 6
+2026-04-07 12:25:12.406 +05:30 [INF] [ExpansionDebug] Expanding child: BIL_I (ID: afe654f1-8315-4f34-be83-574a6e65ee18) for parent: LFT
+2026-04-07 12:25:12.409 +05:30 [INF] [ExpansionDebug] Starting expansion for BIL_I. isChild: True, parentOrderId: a7226309-a7f7-40bf-a9f4-08ccd83430ed
+2026-04-07 12:25:12.411 +05:30 [WRN] [Validation] Resolving Test: BIL_I, IsProfile: False, HasChildren: False, SpecimenType: SERUM
+2026-04-07 12:25:12.414 +05:30 [INF] [ExpansionDebug] Creating Order entry: BIL_I, ID: 80e9661d-eb2e-4493-a9cb-729f42cb538a, Parent: a7226309-a7f7-40bf-a9f4-08ccd83430ed
+2026-04-07 12:25:12.421 +05:30 [INF] [ExpansionDebug] Order BIL_I added to context and local collection.
+2026-04-07 12:25:12.424 +05:30 [INF] [ExpansionDebug] Expanding child: BIL_T (ID: 0cd1e6e5-5c90-41c4-baff-5c4b00884f9b) for parent: LFT
+2026-04-07 12:25:12.426 +05:30 [INF] [ExpansionDebug] Starting expansion for BIL_T. isChild: True, parentOrderId: a7226309-a7f7-40bf-a9f4-08ccd83430ed
+2026-04-07 12:25:12.428 +05:30 [WRN] [Validation] Resolving Test: BIL_T, IsProfile: False, HasChildren: False, SpecimenType: SERUM
+2026-04-07 12:25:12.430 +05:30 [INF] [ExpansionDebug] Creating Order entry: BIL_T, ID: 555b480f-6a2c-4c11-9fdb-d99380e2ea5e, Parent: a7226309-a7f7-40bf-a9f4-08ccd83430ed
+2026-04-07 12:25:12.438 +05:30 [INF] [ExpansionDebug] Order BIL_T added to context and local collection.
+2026-04-07 12:25:12.441 +05:30 [INF] [ExpansionDebug] Expanding child: BIL_D (ID: 76b5e91f-6c2a-4633-82b7-d69503dcc0e0) for parent: LFT
+2026-04-07 12:25:12.444 +05:30 [INF] [ExpansionDebug] Starting expansion for BIL_D. isChild: True, parentOrderId: a7226309-a7f7-40bf-a9f4-08ccd83430ed
+2026-04-07 12:25:12.446 +05:30 [WRN] [Validation] Resolving Test: BIL_D, IsProfile: False, HasChildren: False, SpecimenType: SERUM
+2026-04-07 12:25:12.448 +05:30 [INF] [ExpansionDebug] Creating Order entry: BIL_D, ID: 8d8d6424-c0fe-4c9d-9677-eb23648890c9, Parent: a7226309-a7f7-40bf-a9f4-08ccd83430ed
+2026-04-07 12:25:12.456 +05:30 [INF] [ExpansionDebug] Order BIL_D added to context and local collection.
+2026-04-07 12:25:12.459 +05:30 [INF] [ExpansionDebug] Expanding child: GLOB (ID: 533070e2-fb65-42ab-a988-93d6a87562cf) for parent: LFT
+2026-04-07 12:25:12.461 +05:30 [INF] [ExpansionDebug] Starting expansion for GLOB. isChild: True, parentOrderId: a7226309-a7f7-40bf-a9f4-08ccd83430ed
+2026-04-07 12:25:12.463 +05:30 [WRN] [Validation] Resolving Test: GLOB, IsProfile: False, HasChildren: False, SpecimenType: SERUM
+2026-04-07 12:25:12.468 +05:30 [INF] [ExpansionDebug] Creating Order entry: GLOB, ID: 687109a8-25fa-466b-a6a3-542c32a19466, Parent: a7226309-a7f7-40bf-a9f4-08ccd83430ed
+2026-04-07 12:25:12.474 +05:30 [INF] [ExpansionDebug] Order GLOB added to context and local collection.
+2026-04-07 12:25:12.476 +05:30 [INF] [ExpansionDebug] Expanding child: ALB (ID: fa7c3695-9908-4802-be93-b01640d62a26) for parent: LFT
+2026-04-07 12:25:12.478 +05:30 [INF] [ExpansionDebug] Starting expansion for ALB. isChild: True, parentOrderId: a7226309-a7f7-40bf-a9f4-08ccd83430ed
+2026-04-07 12:25:12.480 +05:30 [WRN] [Validation] Resolving Test: ALB, IsProfile: False, HasChildren: False, SpecimenType: SERUM
+2026-04-07 12:25:12.487 +05:30 [INF] [ExpansionDebug] Creating Order entry: ALB, ID: 64b60804-cf64-448c-80c5-8c9373934e0e, Parent: a7226309-a7f7-40bf-a9f4-08ccd83430ed
+2026-04-07 12:25:12.490 +05:30 [INF] [ExpansionDebug] Order ALB added to context and local collection.
+2026-04-07 12:25:12.492 +05:30 [INF] [ExpansionDebug] Expanding child: TP (ID: 4a44e3ac-9c64-4d52-b831-325cbce7f049) for parent: LFT
+2026-04-07 12:25:12.495 +05:30 [INF] [ExpansionDebug] Starting expansion for TP. isChild: True, parentOrderId: a7226309-a7f7-40bf-a9f4-08ccd83430ed
+2026-04-07 12:25:12.497 +05:30 [WRN] [Validation] Resolving Test: TP, IsProfile: False, HasChildren: False, SpecimenType: SERUM
+2026-04-07 12:25:12.504 +05:30 [INF] [ExpansionDebug] Creating Order entry: TP, ID: 72dd6acb-d80e-4889-88ec-882058e6621e, Parent: a7226309-a7f7-40bf-a9f4-08ccd83430ed
+2026-04-07 12:25:12.507 +05:30 [INF] [ExpansionDebug] Order TP added to context and local collection.
+2026-04-07 12:25:12.562 +05:30 [INF] TRACE: SaveChangesAsync reached. Affected rows: 7
+2026-04-07 12:25:20.182 +05:30 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2026-04-07 12:25:20.332 +05:30 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2026-04-07 12:25:20.683 +05:30 [INF] EVENT_WRITE for VisitId 704ce814-0fa0-4794-9aac-348a253a8020, Context ddb12297-ce3d-485d-a71b-5f1813814197:0
+2026-04-07 12:25:20.718 +05:30 [INF] [ProjectorDebug] Processing Event Type: PAYMENT_RECEIVED, BranchId: "a0000000-0000-0000-0000-000000000001", SourceId: "39ef3555-317a-42e8-b49f-f4fc3730e8bf", SourceType: RevenueFact, VisitId: 704ce814-0fa0-4794-9aac-348a253a8020
+2026-04-07 12:25:20.734 +05:30 [INF] [ProjectorDebug] Checking Fact Deduplication for SourceId: "39ef3555-317a-42e8-b49f-f4fc3730e8bf"
+2026-04-07 12:25:20.791 +05:30 [WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+2026-04-07 12:25:20.936 +05:30 [INF] [DebugSpecimen] Planning for Visit 704ce814-0fa0-4794-9aac-348a253a8020, Active Orders: 7
+2026-04-07 12:25:21.099 +05:30 [INF] Creating unclaimed work assignment for "SampleCollection" ("704ce814-0fa0-4794-9aac-348a253a8020") in Pathology
+2026-04-07 12:25:21.219 +05:30 [WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+2026-04-07 12:25:21.237 +05:30 [INF] EVENT_WRITE for VisitId 704ce814-0fa0-4794-9aac-348a253a8020, Context ddb12297-ce3d-485d-a71b-5f1813814197:0
+2026-04-07 12:25:21.246 +05:30 [WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+2026-04-07 12:25:21.254 +05:30 [INF] TransitionToSpecimenPlanned: Successfully planned 1 specimens for Visit "704ce814-0fa0-4794-9aac-348a253a8020". Assignment: "1ccbc79d-87fa-4724-aaaa-eb84e824999c"
+2026-04-07 12:25:21.309 +05:30 [INF] EVENT_WRITE for VisitId 704ce814-0fa0-4794-9aac-348a253a8020, Context ddb12297-ce3d-485d-a71b-5f1813814197:0
+2026-04-07 12:25:21.337 +05:30 [INF] [ProjectorDebug] Processing Event Type: VISIT_FINALIZED, BranchId: "a0000000-0000-0000-0000-000000000001", SourceId: null, SourceType: null, VisitId: 704ce814-0fa0-4794-9aac-348a253a8020
+2026-04-07 12:25:21.353 +05:30 [WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+2026-04-07 12:25:21.368 +05:30 [INF] Publishing PrintThermalReceiptEvent to Branch-a0000000-0000-0000-0000-000000000001-Lead-Thermal80mm (VisitId: "704ce814-0fa0-4794-9aac-348a253a8020")
+2026-04-07 12:26:08.171 +05:30 [INF] Terminal web-1zy6xxtky authorized and added to Thermal80mm group for Branch "a0000000-0000-0000-0000-000000000001".
+2026-04-07 12:26:16.478 +05:30 [INF] Assignment "1ccbc79d-87fa-4724-aaaa-eb84e824999c" successfully claimed by Resource "0e34b739-d97f-445d-b488-2e5fd6b9918c". Now generating reserved accessions.
+2026-04-07 12:26:17.979 +05:30 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2026-04-07 12:26:19.078 +05:30 [WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+2026-04-07 12:26:19.127 +05:30 [INF] ConsumeStockForSpecimenAsync: Participating in existing transaction for Specimen "7a0aac1a-a948-441d-ae28-bcf2a6913961"
+2026-04-07 12:26:19.199 +05:30 [WRN] No tube mapping for Test Globulin ("533070e2-fb65-42ab-a988-93d6a87562cf"). Consumption skipped for Specimen "7a0aac1a-a948-441d-ae28-bcf2a6913961".
+2026-04-07 12:26:19.208 +05:30 [WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+2026-04-07 12:26:19.215 +05:30 [INF] EVENT_WRITE for VisitId 704ce814-0fa0-4794-9aac-348a253a8020, Context 8891d577-7cbe-4a10-b744-97d238f2af8c:0
+2026-04-07 12:26:36.825 +05:30 [INF] Terminal web-1zy6xxtky authorized and added to Thermal80mm group for Branch "a0000000-0000-0000-0000-000000000001".
+2026-04-07 12:27:47.160 +05:30 [INF] SaveDraft API HIT → assignmentId="a33a4fd3-05e5-4632-b152-ecaaf77d263f"
+2026-04-07 12:27:47.174 +05:30 [INF] ENTER SaveAssignmentDraftAsync → assignmentId="a33a4fd3-05e5-4632-b152-ecaaf77d263f", userId="ae9c40e9-3d31-4c9c-96ea-6d2fb4a2a7d5"
+2026-04-07 12:27:47.193 +05:30 [INF] Assignment Details → Status="Claimed", Branch="a0000000-0000-0000-0000-000000000001", Dept=BIO, AssignedResource="06d8f9e6-2f48-4edb-84fe-d5f227d62367", UserResource="06d8f9e6-2f48-4edb-84fe-d5f227d62367"
+2026-04-07 12:27:47.204 +05:30 [INF] Calling EnterResultsAsync for Order "687109a8-25fa-466b-a6a3-542c32a19466"
+2026-04-07 12:27:47.213 +05:30 [INF] EnterResultsAsync START → userId="ae9c40e9-3d31-4c9c-96ea-6d2fb4a2a7d5", request.OrderId="687109a8-25fa-466b-a6a3-542c32a19466"
+2026-04-07 12:27:47.218 +05:30 [INF] Before HandleProcessingGatingAsync
+2026-04-07 12:27:47.229 +05:30 [INF] GATING CHECK HIT for Order "687109a8-25fa-466b-a6a3-542c32a19466"
+2026-04-07 12:27:47.235 +05:30 [INF] GATING BYPASSED → specimenId="7a0aac1a-a948-441d-ae28-bcf2a6913961" provided by caller
+2026-04-07 12:27:47.238 +05:30 [INF] After HandleProcessingGatingAsync. Status="Success"
+2026-04-07 12:27:47.397 +05:30 [INF] EVENT_WRITE for VisitId 704ce814-0fa0-4794-9aac-348a253a8020, Context 1ba57785-bdc3-4e59-bb13-c034a8f07c06:0
+2026-04-07 12:27:47.468 +05:30 [INF] EnterResultsAsync success for Order "687109a8-25fa-466b-a6a3-542c32a19466"
+2026-04-07 12:27:47.471 +05:30 [INF] Calling EnterResultsAsync for Order "80e9661d-eb2e-4493-a9cb-729f42cb538a"
+2026-04-07 12:27:47.474 +05:30 [INF] EnterResultsAsync START → userId="ae9c40e9-3d31-4c9c-96ea-6d2fb4a2a7d5", request.OrderId="80e9661d-eb2e-4493-a9cb-729f42cb538a"
+2026-04-07 12:27:47.477 +05:30 [INF] Before HandleProcessingGatingAsync
+2026-04-07 12:27:47.480 +05:30 [INF] GATING CHECK HIT for Order "80e9661d-eb2e-4493-a9cb-729f42cb538a"
+2026-04-07 12:27:47.482 +05:30 [INF] GATING BYPASSED → specimenId="7a0aac1a-a948-441d-ae28-bcf2a6913961" provided by caller
+2026-04-07 12:27:47.486 +05:30 [INF] After HandleProcessingGatingAsync. Status="Success"
+2026-04-07 12:27:47.504 +05:30 [INF] EnterResultsAsync success for Order "80e9661d-eb2e-4493-a9cb-729f42cb538a"
+2026-04-07 12:27:47.507 +05:30 [INF] Calling EnterResultsAsync for Order "72dd6acb-d80e-4889-88ec-882058e6621e"
+2026-04-07 12:27:47.509 +05:30 [INF] EnterResultsAsync START → userId="ae9c40e9-3d31-4c9c-96ea-6d2fb4a2a7d5", request.OrderId="72dd6acb-d80e-4889-88ec-882058e6621e"
+2026-04-07 12:27:47.512 +05:30 [INF] Before HandleProcessingGatingAsync
+2026-04-07 12:27:47.514 +05:30 [INF] GATING CHECK HIT for Order "72dd6acb-d80e-4889-88ec-882058e6621e"
+2026-04-07 12:27:47.516 +05:30 [INF] GATING BYPASSED → specimenId="7a0aac1a-a948-441d-ae28-bcf2a6913961" provided by caller
+2026-04-07 12:27:47.520 +05:30 [INF] After HandleProcessingGatingAsync. Status="Success"
+2026-04-07 12:27:47.531 +05:30 [INF] EnterResultsAsync success for Order "72dd6acb-d80e-4889-88ec-882058e6621e"
+2026-04-07 12:27:47.534 +05:30 [INF] Calling EnterResultsAsync for Order "64b60804-cf64-448c-80c5-8c9373934e0e"
+2026-04-07 12:27:47.537 +05:30 [INF] EnterResultsAsync START → userId="ae9c40e9-3d31-4c9c-96ea-6d2fb4a2a7d5", request.OrderId="64b60804-cf64-448c-80c5-8c9373934e0e"
+2026-04-07 12:27:47.541 +05:30 [INF] Before HandleProcessingGatingAsync
+2026-04-07 12:27:47.544 +05:30 [INF] GATING CHECK HIT for Order "64b60804-cf64-448c-80c5-8c9373934e0e"
+2026-04-07 12:27:47.547 +05:30 [INF] GATING BYPASSED → specimenId="7a0aac1a-a948-441d-ae28-bcf2a6913961" provided by caller
+2026-04-07 12:27:47.552 +05:30 [INF] After HandleProcessingGatingAsync. Status="Success"
+2026-04-07 12:27:47.563 +05:30 [INF] EnterResultsAsync success for Order "64b60804-cf64-448c-80c5-8c9373934e0e"
+2026-04-07 12:27:47.565 +05:30 [INF] Calling EnterResultsAsync for Order "555b480f-6a2c-4c11-9fdb-d99380e2ea5e"
+2026-04-07 12:27:47.570 +05:30 [INF] EnterResultsAsync START → userId="ae9c40e9-3d31-4c9c-96ea-6d2fb4a2a7d5", request.OrderId="555b480f-6a2c-4c11-9fdb-d99380e2ea5e"
+2026-04-07 12:27:47.573 +05:30 [INF] Before HandleProcessingGatingAsync
+2026-04-07 12:27:47.576 +05:30 [INF] GATING CHECK HIT for Order "555b480f-6a2c-4c11-9fdb-d99380e2ea5e"
+2026-04-07 12:27:47.578 +05:30 [INF] GATING BYPASSED → specimenId="7a0aac1a-a948-441d-ae28-bcf2a6913961" provided by caller
+2026-04-07 12:27:47.581 +05:30 [INF] After HandleProcessingGatingAsync. Status="Success"
+2026-04-07 12:27:47.595 +05:30 [INF] EnterResultsAsync success for Order "555b480f-6a2c-4c11-9fdb-d99380e2ea5e"
+2026-04-07 12:27:47.598 +05:30 [INF] Calling EnterResultsAsync for Order "8d8d6424-c0fe-4c9d-9677-eb23648890c9"
+2026-04-07 12:27:47.603 +05:30 [INF] EnterResultsAsync START → userId="ae9c40e9-3d31-4c9c-96ea-6d2fb4a2a7d5", request.OrderId="8d8d6424-c0fe-4c9d-9677-eb23648890c9"
+2026-04-07 12:27:47.607 +05:30 [INF] Before HandleProcessingGatingAsync
+2026-04-07 12:27:47.609 +05:30 [INF] GATING CHECK HIT for Order "8d8d6424-c0fe-4c9d-9677-eb23648890c9"
+2026-04-07 12:27:47.611 +05:30 [INF] GATING BYPASSED → specimenId="7a0aac1a-a948-441d-ae28-bcf2a6913961" provided by caller
+2026-04-07 12:27:47.614 +05:30 [INF] After HandleProcessingGatingAsync. Status="Success"
+2026-04-07 12:27:47.645 +05:30 [INF] EnterResultsAsync success for Order "8d8d6424-c0fe-4c9d-9677-eb23648890c9"
+2026-04-07 12:27:51.223 +05:30 [INF] SaveDraft API HIT → assignmentId="a33a4fd3-05e5-4632-b152-ecaaf77d263f"
+2026-04-07 12:27:51.226 +05:30 [INF] ENTER SaveAssignmentDraftAsync → assignmentId="a33a4fd3-05e5-4632-b152-ecaaf77d263f", userId="ae9c40e9-3d31-4c9c-96ea-6d2fb4a2a7d5"
+2026-04-07 12:27:51.233 +05:30 [INF] Assignment Details → Status="Claimed", Branch="a0000000-0000-0000-0000-000000000001", Dept=BIO, AssignedResource="06d8f9e6-2f48-4edb-84fe-d5f227d62367", UserResource="06d8f9e6-2f48-4edb-84fe-d5f227d62367"
+2026-04-07 12:27:51.244 +05:30 [INF] Calling EnterResultsAsync for Order "687109a8-25fa-466b-a6a3-542c32a19466"
+2026-04-07 12:27:51.247 +05:30 [INF] EnterResultsAsync START → userId="ae9c40e9-3d31-4c9c-96ea-6d2fb4a2a7d5", request.OrderId="687109a8-25fa-466b-a6a3-542c32a19466"
+2026-04-07 12:27:51.251 +05:30 [INF] Before HandleProcessingGatingAsync
+2026-04-07 12:27:51.256 +05:30 [INF] GATING CHECK HIT for Order "687109a8-25fa-466b-a6a3-542c32a19466"
+2026-04-07 12:27:51.258 +05:30 [INF] GATING BYPASSED → specimenId="7a0aac1a-a948-441d-ae28-bcf2a6913961" provided by caller
+2026-04-07 12:27:51.261 +05:30 [INF] After HandleProcessingGatingAsync. Status="Success"
+2026-04-07 12:27:51.281 +05:30 [INF] EnterResultsAsync success for Order "687109a8-25fa-466b-a6a3-542c32a19466"
+2026-04-07 12:27:51.284 +05:30 [INF] Calling EnterResultsAsync for Order "80e9661d-eb2e-4493-a9cb-729f42cb538a"
+2026-04-07 12:27:51.289 +05:30 [INF] EnterResultsAsync START → userId="ae9c40e9-3d31-4c9c-96ea-6d2fb4a2a7d5", request.OrderId="80e9661d-eb2e-4493-a9cb-729f42cb538a"
+2026-04-07 12:27:51.293 +05:30 [INF] Before HandleProcessingGatingAsync
+2026-04-07 12:27:51.296 +05:30 [INF] GATING CHECK HIT for Order "80e9661d-eb2e-4493-a9cb-729f42cb538a"
+2026-04-07 12:27:51.298 +05:30 [INF] GATING BYPASSED → specimenId="7a0aac1a-a948-441d-ae28-bcf2a6913961" provided by caller
+2026-04-07 12:27:51.301 +05:30 [INF] After HandleProcessingGatingAsync. Status="Success"
+2026-04-07 12:27:51.313 +05:30 [INF] EnterResultsAsync success for Order "80e9661d-eb2e-4493-a9cb-729f42cb538a"
+2026-04-07 12:27:51.315 +05:30 [INF] Calling EnterResultsAsync for Order "72dd6acb-d80e-4889-88ec-882058e6621e"
+2026-04-07 12:27:51.318 +05:30 [INF] EnterResultsAsync START → userId="ae9c40e9-3d31-4c9c-96ea-6d2fb4a2a7d5", request.OrderId="72dd6acb-d80e-4889-88ec-882058e6621e"
+2026-04-07 12:27:51.322 +05:30 [INF] Before HandleProcessingGatingAsync
+2026-04-07 12:27:51.325 +05:30 [INF] GATING CHECK HIT for Order "72dd6acb-d80e-4889-88ec-882058e6621e"
+2026-04-07 12:27:51.327 +05:30 [INF] GATING BYPASSED → specimenId="7a0aac1a-a948-441d-ae28-bcf2a6913961" provided by caller
+2026-04-07 12:27:51.330 +05:30 [INF] After HandleProcessingGatingAsync. Status="Success"
+2026-04-07 12:27:51.342 +05:30 [INF] EnterResultsAsync success for Order "72dd6acb-d80e-4889-88ec-882058e6621e"
+2026-04-07 12:27:51.345 +05:30 [INF] Calling EnterResultsAsync for Order "64b60804-cf64-448c-80c5-8c9373934e0e"
+2026-04-07 12:27:51.348 +05:30 [INF] EnterResultsAsync START → userId="ae9c40e9-3d31-4c9c-96ea-6d2fb4a2a7d5", request.OrderId="64b60804-cf64-448c-80c5-8c9373934e0e"
+2026-04-07 12:27:51.351 +05:30 [INF] Before HandleProcessingGatingAsync
+2026-04-07 12:27:51.357 +05:30 [INF] GATING CHECK HIT for Order "64b60804-cf64-448c-80c5-8c9373934e0e"
+2026-04-07 12:27:51.360 +05:30 [INF] GATING BYPASSED → specimenId="7a0aac1a-a948-441d-ae28-bcf2a6913961" provided by caller
+2026-04-07 12:27:51.363 +05:30 [INF] After HandleProcessingGatingAsync. Status="Success"
+2026-04-07 12:27:51.378 +05:30 [INF] EnterResultsAsync success for Order "64b60804-cf64-448c-80c5-8c9373934e0e"
+2026-04-07 12:27:51.381 +05:30 [INF] Calling EnterResultsAsync for Order "555b480f-6a2c-4c11-9fdb-d99380e2ea5e"
+2026-04-07 12:27:51.383 +05:30 [INF] EnterResultsAsync START → userId="ae9c40e9-3d31-4c9c-96ea-6d2fb4a2a7d5", request.OrderId="555b480f-6a2c-4c11-9fdb-d99380e2ea5e"
+2026-04-07 12:27:51.391 +05:30 [INF] Before HandleProcessingGatingAsync
+2026-04-07 12:27:51.393 +05:30 [INF] GATING CHECK HIT for Order "555b480f-6a2c-4c11-9fdb-d99380e2ea5e"
+2026-04-07 12:27:51.396 +05:30 [INF] GATING BYPASSED → specimenId="7a0aac1a-a948-441d-ae28-bcf2a6913961" provided by caller
+2026-04-07 12:27:51.399 +05:30 [INF] After HandleProcessingGatingAsync. Status="Success"
+2026-04-07 12:27:51.412 +05:30 [INF] EnterResultsAsync success for Order "555b480f-6a2c-4c11-9fdb-d99380e2ea5e"
+2026-04-07 12:27:51.415 +05:30 [INF] Calling EnterResultsAsync for Order "8d8d6424-c0fe-4c9d-9677-eb23648890c9"
+2026-04-07 12:27:51.418 +05:30 [INF] EnterResultsAsync START → userId="ae9c40e9-3d31-4c9c-96ea-6d2fb4a2a7d5", request.OrderId="8d8d6424-c0fe-4c9d-9677-eb23648890c9"
+2026-04-07 12:27:51.423 +05:30 [INF] Before HandleProcessingGatingAsync
+2026-04-07 12:27:51.426 +05:30 [INF] GATING CHECK HIT for Order "8d8d6424-c0fe-4c9d-9677-eb23648890c9"
+2026-04-07 12:27:51.429 +05:30 [INF] GATING BYPASSED → specimenId="7a0aac1a-a948-441d-ae28-bcf2a6913961" provided by caller
+2026-04-07 12:27:51.432 +05:30 [INF] After HandleProcessingGatingAsync. Status="Success"
+2026-04-07 12:27:51.444 +05:30 [INF] EnterResultsAsync success for Order "8d8d6424-c0fe-4c9d-9677-eb23648890c9"
+2026-04-07 12:27:51.692 +05:30 [ERR] Failed executing DbCommand (2ms) [Parameters=[@__rootOrder_OrderId_0='?' (DbType = Guid), @__currentOrder_VisitId_1='?' (DbType = Guid)], CommandType='"Text"', CommandTimeout='30']
+SELECT [t].[ReportId], [t].[CreatedAt], [t].[CurrentVersion], [t].[Delivered], [t].[DeliveredAt], [t].[Department], [t].[DraftSnapshotJson], [t].[FinalSnapshotJson], [t].[PatientId], [t].[PdfUrl], [t].[SignedAt], [t].[SignedByUserId], [t].[SourceId], [t].[SourceType], [t].[Status], [t].[TypedByUserId], [t].[UpdatedAt], [t].[VerificationMode], [t].[VerifiedAt], [t].[VerifiedByUserId], [t].[VisitId], [r0].[ReportVersionId], [r0].[CreatedAt], [r0].[PdfPath], [r0].[ReportId], [r0].[SignedAt], [r0].[SignedByUserId], [r0].[VersionNumber]
+FROM (
+    SELECT TOP(1) [r].[ReportId], [r].[CreatedAt], [r].[CurrentVersion], [r].[Delivered], [r].[DeliveredAt], [r].[Department], [r].[DraftSnapshotJson], [r].[FinalSnapshotJson], [r].[PatientId], [r].[PdfUrl], [r].[SignedAt], [r].[SignedByUserId], [r].[SourceId], [r].[SourceType], [r].[Status], [r].[TypedByUserId], [r].[UpdatedAt], [r].[VerificationMode], [r].[VerifiedAt], [r].[VerifiedByUserId], [r].[VisitId]
+    FROM [Reports] AS [r]
+    WHERE [r].[SourceId] = @__rootOrder_OrderId_0 AND [r].[VisitId] = @__currentOrder_VisitId_1 AND [r].[SourceType] = N'Order'
+) AS [t]
+LEFT JOIN [ReportVersions] AS [r0] ON [t].[ReportId] = [r0].[ReportId]
+ORDER BY [t].[ReportId]
+2026-04-07 12:27:51.700 +05:30 [ERR] An exception occurred while iterating over the results of a query for context type 'SynOS.Data.SynOSDbContext'.
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'UpdatedAt'.
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:4a916f40-f9d9-4ed8-96ba-861f14f377ca
+Error Number:207,State:1,Class:16
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'UpdatedAt'.
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:4a916f40-f9d9-4ed8-96ba-861f14f377ca
+Error Number:207,State:1,Class:16
+2026-04-07 12:27:51.712 +05:30 [ERR] Failed to trigger automatic verification for assignment "a33a4fd3-05e5-4632-b152-ecaaf77d263f"
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'UpdatedAt'.
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+   at Microsoft.EntityFrameworkCore.Query.ShapedQueryCompilingExpressionVisitor.SingleOrDefaultAsync[TSource](IAsyncEnumerable`1 asyncEnumerable, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.ShapedQueryCompilingExpressionVisitor.SingleOrDefaultAsync[TSource](IAsyncEnumerable`1 asyncEnumerable, CancellationToken cancellationToken)
+   at SynOS.Services.ResultService.SubmitForVerificationAsync(Guid orderId) in D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ResultService.cs:line 226
+   at SynOS.Services.Operational.ProcessingService.CompleteAssignmentAsync(Guid processingAssignmentId) in D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\Operational\ProcessingService.cs:line 197
+ClientConnectionId:4a916f40-f9d9-4ed8-96ba-861f14f377ca
+Error Number:207,State:1,Class:16
+2026-04-07 12:28:05.365 +05:30 [INF] Terminal web-1zy6xxtky authorized and added to Thermal80mm group for Branch "a0000000-0000-0000-0000-000000000001".
+2026-04-07 12:28:05.369 +05:30 [ERR] Failed executing DbCommand (5ms) [Parameters=[@__statusList_0='?' (Size = 4000)], CommandType='"Text"', CommandTimeout='30']
+SELECT [r].[ReportId], [r].[CreatedAt], [r].[CurrentVersion], [r].[Delivered], [r].[DeliveredAt], [r].[Department], [r].[DraftSnapshotJson], [r].[FinalSnapshotJson], [r].[PatientId], [r].[PdfUrl], [r].[SignedAt], [r].[SignedByUserId], [r].[SourceId], [r].[SourceType], [r].[Status], [r].[TypedByUserId], [r].[UpdatedAt], [r].[VerificationMode], [r].[VerifiedAt], [r].[VerifiedByUserId], [r].[VisitId], [u].[UserId], [u].[CanUseOperationalMode], [u].[CanUseOversightMode], [u].[CreatedAt], [u].[DefaultBranchId], [u].[Designation], [u].[Email], [u].[FailedLoginAttempts], [u].[IsActive], [u].[LockoutEnd], [u].[Name], [u].[PasswordHash], [u].[RowVersion], [u].[SignatureImageUrl], [u].[SignatureUpdatedAt], [u].[UpdatedAt], [u0].[UserId], [u0].[CanUseOperationalMode], [u0].[CanUseOversightMode], [u0].[CreatedAt], [u0].[DefaultBranchId], [u0].[Designation], [u0].[Email], [u0].[FailedLoginAttempts], [u0].[IsActive], [u0].[LockoutEnd], [u0].[Name], [u0].[PasswordHash], [u0].[RowVersion], [u0].[SignatureImageUrl], [u0].[SignatureUpdatedAt], [u0].[UpdatedAt]
+FROM [Reports] AS [r]
+LEFT JOIN [Users] AS [u] ON [r].[TypedByUserId] = [u].[UserId]
+LEFT JOIN [Users] AS [u0] ON [r].[VerifiedByUserId] = [u0].[UserId]
+WHERE [r].[Status] IN (
+    SELECT [s].[value]
+    FROM OPENJSON(@__statusList_0) WITH ([value] nvarchar(50) '$') AS [s]
+) AND [r].[SourceType] = N'Order'
+ORDER BY COALESCE([r].[UpdatedAt], [r].[CreatedAt]) DESC
+2026-04-07 12:28:05.399 +05:30 [ERR] An exception occurred while iterating over the results of a query for context type 'SynOS.Data.SynOSDbContext'.
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'UpdatedAt'.
+Invalid column name 'UpdatedAt'.
+Invalid column name 'UpdatedAt'.
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:4a916f40-f9d9-4ed8-96ba-861f14f377ca
+Error Number:207,State:1,Class:16
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'UpdatedAt'.
+Invalid column name 'UpdatedAt'.
+Invalid column name 'UpdatedAt'.
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:4a916f40-f9d9-4ed8-96ba-861f14f377ca
+Error Number:207,State:1,Class:16
+2026-04-07 12:28:05.462 +05:30 [ERR] Failed executing DbCommand (3ms) [Parameters=[@__statusList_0='?' (Size = 4000)], CommandType='"Text"', CommandTimeout='30']
+SELECT [r].[ReportId], [r].[CreatedAt], [r].[CurrentVersion], [r].[Delivered], [r].[DeliveredAt], [r].[Department], [r].[DraftSnapshotJson], [r].[FinalSnapshotJson], [r].[PatientId], [r].[PdfUrl], [r].[SignedAt], [r].[SignedByUserId], [r].[SourceId], [r].[SourceType], [r].[Status], [r].[TypedByUserId], [r].[UpdatedAt], [r].[VerificationMode], [r].[VerifiedAt], [r].[VerifiedByUserId], [r].[VisitId], [u].[UserId], [u].[CanUseOperationalMode], [u].[CanUseOversightMode], [u].[CreatedAt], [u].[DefaultBranchId], [u].[Designation], [u].[Email], [u].[FailedLoginAttempts], [u].[IsActive], [u].[LockoutEnd], [u].[Name], [u].[PasswordHash], [u].[RowVersion], [u].[SignatureImageUrl], [u].[SignatureUpdatedAt], [u].[UpdatedAt], [u0].[UserId], [u0].[CanUseOperationalMode], [u0].[CanUseOversightMode], [u0].[CreatedAt], [u0].[DefaultBranchId], [u0].[Designation], [u0].[Email], [u0].[FailedLoginAttempts], [u0].[IsActive], [u0].[LockoutEnd], [u0].[Name], [u0].[PasswordHash], [u0].[RowVersion], [u0].[SignatureImageUrl], [u0].[SignatureUpdatedAt], [u0].[UpdatedAt]
+FROM [Reports] AS [r]
+LEFT JOIN [Users] AS [u] ON [r].[TypedByUserId] = [u].[UserId]
+LEFT JOIN [Users] AS [u0] ON [r].[VerifiedByUserId] = [u0].[UserId]
+WHERE [r].[Status] IN (
+    SELECT [s].[value]
+    FROM OPENJSON(@__statusList_0) WITH ([value] nvarchar(50) '$') AS [s]
+) AND [r].[SourceType] = N'Order'
+ORDER BY COALESCE([r].[UpdatedAt], [r].[CreatedAt]) DESC
+2026-04-07 12:28:05.473 +05:30 [ERR] An exception occurred while iterating over the results of a query for context type 'SynOS.Data.SynOSDbContext'.
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'UpdatedAt'.
+Invalid column name 'UpdatedAt'.
+Invalid column name 'UpdatedAt'.
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:4a916f40-f9d9-4ed8-96ba-861f14f377ca
+Error Number:207,State:1,Class:16
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'UpdatedAt'.
+Invalid column name 'UpdatedAt'.
+Invalid column name 'UpdatedAt'.
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:4a916f40-f9d9-4ed8-96ba-861f14f377ca
+Error Number:207,State:1,Class:16
+2026-04-07 12:28:05.554 +05:30 [ERR] Failed executing DbCommand (3ms) [Parameters=[@__statusList_0='?' (Size = 4000)], CommandType='"Text"', CommandTimeout='30']
+SELECT [r].[ReportId], [r].[CreatedAt], [r].[CurrentVersion], [r].[Delivered], [r].[DeliveredAt], [r].[Department], [r].[DraftSnapshotJson], [r].[FinalSnapshotJson], [r].[PatientId], [r].[PdfUrl], [r].[SignedAt], [r].[SignedByUserId], [r].[SourceId], [r].[SourceType], [r].[Status], [r].[TypedByUserId], [r].[UpdatedAt], [r].[VerificationMode], [r].[VerifiedAt], [r].[VerifiedByUserId], [r].[VisitId], [u].[UserId], [u].[CanUseOperationalMode], [u].[CanUseOversightMode], [u].[CreatedAt], [u].[DefaultBranchId], [u].[Designation], [u].[Email], [u].[FailedLoginAttempts], [u].[IsActive], [u].[LockoutEnd], [u].[Name], [u].[PasswordHash], [u].[RowVersion], [u].[SignatureImageUrl], [u].[SignatureUpdatedAt], [u].[UpdatedAt], [u0].[UserId], [u0].[CanUseOperationalMode], [u0].[CanUseOversightMode], [u0].[CreatedAt], [u0].[DefaultBranchId], [u0].[Designation], [u0].[Email], [u0].[FailedLoginAttempts], [u0].[IsActive], [u0].[LockoutEnd], [u0].[Name], [u0].[PasswordHash], [u0].[RowVersion], [u0].[SignatureImageUrl], [u0].[SignatureUpdatedAt], [u0].[UpdatedAt]
+FROM [Reports] AS [r]
+LEFT JOIN [Users] AS [u] ON [r].[TypedByUserId] = [u].[UserId]
+LEFT JOIN [Users] AS [u0] ON [r].[VerifiedByUserId] = [u0].[UserId]
+WHERE [r].[Status] IN (
+    SELECT [s].[value]
+    FROM OPENJSON(@__statusList_0) WITH ([value] nvarchar(50) '$') AS [s]
+) AND [r].[SourceType] = N'Order'
+ORDER BY COALESCE([r].[UpdatedAt], [r].[CreatedAt]) DESC
+2026-04-07 12:28:05.567 +05:30 [ERR] An exception occurred while iterating over the results of a query for context type 'SynOS.Data.SynOSDbContext'.
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'UpdatedAt'.
+Invalid column name 'UpdatedAt'.
+Invalid column name 'UpdatedAt'.
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:4a916f40-f9d9-4ed8-96ba-861f14f377ca
+Error Number:207,State:1,Class:16
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'UpdatedAt'.
+Invalid column name 'UpdatedAt'.
+Invalid column name 'UpdatedAt'.
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:4a916f40-f9d9-4ed8-96ba-861f14f377ca
+Error Number:207,State:1,Class:16
+2026-04-07 12:28:05.602 +05:30 [ERR] Failed executing DbCommand (7ms) [Parameters=[@__statusList_0='?' (Size = 4000)], CommandType='"Text"', CommandTimeout='30']
+SELECT [r].[ReportId], [r].[CreatedAt], [r].[CurrentVersion], [r].[Delivered], [r].[DeliveredAt], [r].[Department], [r].[DraftSnapshotJson], [r].[FinalSnapshotJson], [r].[PatientId], [r].[PdfUrl], [r].[SignedAt], [r].[SignedByUserId], [r].[SourceId], [r].[SourceType], [r].[Status], [r].[TypedByUserId], [r].[UpdatedAt], [r].[VerificationMode], [r].[VerifiedAt], [r].[VerifiedByUserId], [r].[VisitId], [u].[UserId], [u].[CanUseOperationalMode], [u].[CanUseOversightMode], [u].[CreatedAt], [u].[DefaultBranchId], [u].[Designation], [u].[Email], [u].[FailedLoginAttempts], [u].[IsActive], [u].[LockoutEnd], [u].[Name], [u].[PasswordHash], [u].[RowVersion], [u].[SignatureImageUrl], [u].[SignatureUpdatedAt], [u].[UpdatedAt], [u0].[UserId], [u0].[CanUseOperationalMode], [u0].[CanUseOversightMode], [u0].[CreatedAt], [u0].[DefaultBranchId], [u0].[Designation], [u0].[Email], [u0].[FailedLoginAttempts], [u0].[IsActive], [u0].[LockoutEnd], [u0].[Name], [u0].[PasswordHash], [u0].[RowVersion], [u0].[SignatureImageUrl], [u0].[SignatureUpdatedAt], [u0].[UpdatedAt]
+FROM [Reports] AS [r]
+LEFT JOIN [Users] AS [u] ON [r].[TypedByUserId] = [u].[UserId]
+LEFT JOIN [Users] AS [u0] ON [r].[VerifiedByUserId] = [u0].[UserId]
+WHERE [r].[Status] IN (
+    SELECT [s].[value]
+    FROM OPENJSON(@__statusList_0) WITH ([value] nvarchar(50) '$') AS [s]
+) AND [r].[SourceType] = N'Order'
+ORDER BY COALESCE([r].[UpdatedAt], [r].[CreatedAt]) DESC
+2026-04-07 12:28:05.611 +05:30 [ERR] An exception occurred while iterating over the results of a query for context type 'SynOS.Data.SynOSDbContext'.
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'UpdatedAt'.
+Invalid column name 'UpdatedAt'.
+Invalid column name 'UpdatedAt'.
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:4a916f40-f9d9-4ed8-96ba-861f14f377ca
+Error Number:207,State:1,Class:16
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'UpdatedAt'.
+Invalid column name 'UpdatedAt'.
+Invalid column name 'UpdatedAt'.
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:4a916f40-f9d9-4ed8-96ba-861f14f377ca
+Error Number:207,State:1,Class:16
+2026-04-07 12:35:38.931 +05:30 [INF] OperationalStatsProjectionWorker is starting in Event-Driven Mode.
+2026-04-07 12:35:39.057 +05:30 [INF] Worker: Running Consistency Check and Catch-up...
+2026-04-07 12:35:39.981 +05:30 [INF] [ProjectorDebug] Processing Event Type: SPECIMEN_ORDERED, BranchId: "a0000000-0000-0000-0000-000000000001", SourceId: "704ce814-0fa0-4794-9aac-348a253a8020", SourceType: Visit, VisitId: 704ce814-0fa0-4794-9aac-348a253a8020
+2026-04-07 12:35:40.439 +05:30 [INF] [ProjectorDebug] Checking Fact Deduplication for SourceId: "704ce814-0fa0-4794-9aac-348a253a8020"
+2026-04-07 12:35:40.645 +05:30 [WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+2026-04-07 12:35:40.995 +05:30 [INF] [ProjectorDebug] Processing Event Type: RESULT_DRAFT_STARTED, BranchId: "a0000000-0000-0000-0000-000000000001", SourceId: "a586052a-9884-4379-8aaf-42f34335b152", SourceType: Result, VisitId: 704ce814-0fa0-4794-9aac-348a253a8020
+2026-04-07 12:35:41.000 +05:30 [INF] [ProjectorDebug] Checking Fact Deduplication for SourceId: "a586052a-9884-4379-8aaf-42f34335b152"
+2026-04-07 12:35:41.004 +05:30 [WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+2026-04-07 12:35:41.010 +05:30 [INF] Worker: Catch-up complete. Awaiting real-time events...

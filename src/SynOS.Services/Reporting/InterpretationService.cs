@@ -20,7 +20,6 @@ namespace SynOS.Services.Reporting
         {
             // 1. Sign Lock: Fetch report and check status
             var report = await _dbContext.Reports
-                .AsNoTracking()
                 .FirstOrDefaultAsync(r => r.ReportId == reportId);
 
             if (report == null)
@@ -33,11 +32,14 @@ namespace SynOS.Services.Reporting
                 throw new InvalidOperationException("Update rejected: The report has already been signed or finalized and cannot be modified.");
             }
 
-            // 2. Upsert Logic
+            var now = DateTime.UtcNow;
+            
+            // 2. Refresh Report Timestamp for LIFO Sorting
+            report.UpdatedAt = now;
+
+            // 3. Upsert Logic
             var existing = await _dbContext.ReportInterpretations
                 .FirstOrDefaultAsync(ri => ri.ReportId == reportId);
-
-            var now = DateTime.UtcNow;
 
             if (existing != null)
             {

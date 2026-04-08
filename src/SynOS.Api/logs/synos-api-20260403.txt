@@ -440,3 +440,17 @@
 2026-04-03 18:09:26.064 +05:30 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
 2026-04-03 18:09:26.552 +05:30 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
 2026-04-03 18:27:35.134 +05:30 [INF] Terminal web-rqelen47i attempted to register Thermal80mm for Branch "a0000000-0000-0000-0000-000000000001" but lacked Lead authorization.
+2026-04-03 18:28:33.317 +05:30 [INF] OperationalStatsProjectionWorker is starting in Event-Driven Mode.
+2026-04-03 18:28:33.574 +05:30 [INF] Worker: Running Consistency Check and Catch-up...
+2026-04-03 18:28:34.226 +05:30 [INF] Worker: Catch-up complete. Awaiting real-time events...
+2026-04-03 18:28:53.211 +05:30 [WRN] Failed to determine the https port for redirect.
+2026-04-03 18:28:53.747 +05:30 [INF] Terminal web-1zy6xxtky authorized and added to Thermal80mm group for Branch "a0000000-0000-0000-0000-000000000001".
+2026-04-03 18:29:36.960 +05:30 [INF] Terminal web-1zy6xxtky authorized and added to Thermal80mm group for Branch "a0000000-0000-0000-0000-000000000001".
+2026-04-03 18:29:54.744 +05:30 [INF] Terminal web-1zy6xxtky authorized and added to Thermal80mm group for Branch "a0000000-0000-0000-0000-000000000001".
+2026-04-03 19:08:55.710 +05:30 [INF] OperationalStatsProjectionWorker is starting in Event-Driven Mode.
+2026-04-03 19:08:55.811 +05:30 [INF] Worker: Running Consistency Check and Catch-up...
+2026-04-03 19:08:56.439 +05:30 [INF] Worker: Catch-up complete. Awaiting real-time events...
+2026-04-03 19:09:14.061 +05:30 [WRN] Failed to determine the https port for redirect.
+2026-04-03 19:09:14.583 +05:30 [INF] Terminal web-1zy6xxtky authorized and added to Thermal80mm group for Branch "a0000000-0000-0000-0000-000000000001".
+2026-04-03 19:10:01.889 +05:30 [INF] Terminal web-1zy6xxtky authorized and added to Thermal80mm group for Branch "a0000000-0000-0000-0000-000000000001".
+2026-04-03 22:57:19.261 +05:30 [INF] Terminal web-1zy6xxtky authorized and added to Thermal80mm group for Branch "a0000000-0000-0000-0000-000000000001".

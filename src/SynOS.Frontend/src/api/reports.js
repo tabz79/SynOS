@@ -46,5 +46,40 @@ export const ReportsApi = {
         });
         if (!response.ok) throw new Error('Failed to sign report');
         return await response.json();
+    },
+
+    submitReport: async (reportId) => {
+        const response = await fetch(`/api/v1/reports/${reportId}/submit`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('synos_jwt')}` }
+        });
+        if (!response.ok) throw new Error('Failed to submit report for verification');
+        return true;
+    },
+
+    reopenReport: async (reportId) => {
+        const response = await fetch(`/api/v1/reports/${reportId}/reopen`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('synos_jwt')}` }
+        });
+        if (!response.ok) throw new Error('Failed to reopen report');
+        return true;
+    },
+
+    verifyManual: async (reportId, pathologistId) => {
+        const response = await fetch(`/api/v1/reports/${reportId}/verify-manual?pathologistId=${pathologistId}`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('synos_jwt')}` }
+        });
+        if (!response.ok) throw new Error('Failed to mark as manually verified');
+        return true;
+    },
+
+    getPathologists: async () => {
+        const response = await fetch('/api/v1/reports/pathologists', {
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('synos_jwt')}` }
+        });
+        if (!response.ok) throw new Error('Failed to fetch pathologists');
+        return await response.json();
     }
 };

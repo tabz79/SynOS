@@ -8,6 +8,9 @@ namespace SynOS.Services
     public interface IReportService
     {
         Task<ReportSignatureResponseDto> SignReportAsync(Guid reportId, Guid signedByUserId);
+        Task SubmitForVerificationAsync(Guid reportId, Guid typistId); // NEW
+        Task ReopenReportAsync(Guid reportId, Guid pathologistId); // NEW
+        Task MarkManuallyVerifiedAsync(Guid reportId, Guid pathologistId); // NEW
         Task SaveFinalResultsAsync(Guid orderId, SaveFinalResultsRequestDto request);
         Task<FinalReportDto> GetFinalReportAsync(Guid orderId);
         Task MarkReportAsDeliveredAsync(Guid orderId);

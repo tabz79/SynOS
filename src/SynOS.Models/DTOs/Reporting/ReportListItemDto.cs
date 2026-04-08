@@ -13,5 +13,8 @@ namespace SynOS.Models.DTOs.Reporting
         public string Status { get; set; } = string.Empty;
         public bool IsStat { get; set; }
         public int AbnormalCount { get; set; }
+        public string Token { get; set; } = string.Empty;
+        public string? TypedByUserName { get; set; }
+        public string? VerifiedByUserName { get; set; }
     }
 }

@@ -58,6 +58,86 @@ namespace SynOS.Services
             _reportingService = reportingService ?? throw new ArgumentNullException(nameof(reportingService));
         }
 
+        public async Task SubmitForVerificationAsync(Guid reportId, Guid typistId)
+        {
+            var report = await _context.Reports.FindAsync(reportId);
+            if (report == null) throw new KeyNotFoundException("Report not found.");
+
+            if (report.Status != "Draft")
+                throw new BadHttpRequestException($"Cannot submit report with status {report.Status}. Must be Draft.");
+
+            // 1. Capture PDF Data Snapshot (Frozen state for final reports)
+            var reportData = await GetReportDataForPdfAsync(report.VisitId);
+            if (reportData != null)
+            {
+                report.DraftSnapshotJson = System.Text.Json.JsonSerializer.Serialize(reportData);
+            }
+
+            // 2. Capture Formal Version & Structure Snapshot (Frozen state for Editor/Detail view)
+            if (report.CurrentVersion == 0) report.CurrentVersion = 1;
+            
+            var reportVersion = await _context.ReportVersions
+                .FirstOrDefaultAsync(rv => rv.ReportId == report.ReportId && rv.VersionNumber == report.CurrentVersion);
+
+            if (reportVersion == null)
+            {
+                reportVersion = new ReportVersion
+                {
+                    ReportId = report.ReportId,
+                    VersionNumber = report.CurrentVersion,
+                    CreatedAt = DateTimeOffset.UtcNow
+                };
+                _context.ReportVersions.Add(reportVersion);
+                await _context.SaveChangesAsync(); // Commit version so Snapshot can link to it
+            }
+
+            // Create formal structure snapshot for Detail View consistency
+            await _reportingService.CreateSnapshotAsync(reportVersion.ReportVersionId, overwrite: true);
+
+            // 3. Update Status & Audit
+            report.Status = "ReadyForVerification";
+            report.TypedByUserId = typistId;
+            report.UpdatedAt = DateTimeOffset.UtcNow;
+            
+            await _context.SaveChangesAsync();
+            await _auditService.LogAsync(typistId, "ReportSubmitted", "Report", reportId, null);
+        }
+
+        public async Task ReopenReportAsync(Guid reportId, Guid pathologistId)
+        {
+            var report = await _context.Reports.FindAsync(reportId);
+            if (report == null) throw new KeyNotFoundException("Report not found.");
+
+            if (report.Status != "ReadyForVerification")
+                throw new BadHttpRequestException("Only reports in 'ReadyForVerification' status can be reopened.");
+
+            report.Status = "Draft";
+            report.UpdatedAt = DateTimeOffset.UtcNow;
+            await _context.SaveChangesAsync();
+            await _auditService.LogAsync(pathologistId, "ReportReopened", "Report", reportId, null);
+        }
+
+        public async Task MarkManuallyVerifiedAsync(Guid reportId, Guid pathologistId)
+        {
+            var report = await _context.Reports.FindAsync(reportId);
+            if (report == null) throw new KeyNotFoundException("Report not found.");
+
+            if (report.Status != "ReadyForVerification")
+                throw new BadHttpRequestException($"Manual verification only allowed for reports in 'ReadyForVerification' status. Current: {report.Status}");
+
+            // 1. Finalize State
+            report.Status = "ManualVerified";
+            report.VerificationMode = "Manual";
+            report.VerifiedByUserId = pathologistId;
+            report.VerifiedAt = DateTimeOffset.UtcNow;
+
+            // 2. Sync Final Snapshot from Draft (GPT-5 Rule)
+            report.FinalSnapshotJson = report.DraftSnapshotJson;
+
+            await _context.SaveChangesAsync();
+            await _auditService.LogAsync(pathologistId, "ReportManualVerified", "Report", reportId, null);
+        }
+
         public async Task<ReportSignatureResponseDto> SignReportAsync(Guid reportId, Guid signedByUserId)
         {
             // 1. Precondition checks
@@ -71,6 +151,9 @@ namespace SynOS.Services
                 .FirstOrDefaultAsync(r => r.ReportId == reportId);
 
             if (report == null) throw new KeyNotFoundException("Report not found.");
+
+            if (report.Status != "ReadyForVerification")
+                throw new BadHttpRequestException($"Digital signing only allowed for reports in 'ReadyForVerification' status. Current: {report.Status}");
 
             // Branch Context Check via Engine happens downstream, but we need Order/Visit for logic below
             var order = await _context.Orders
@@ -111,6 +194,19 @@ namespace SynOS.Services
             // 5. DELEGATE LIFECYCLE TRUTH TO ENGINE
             var branchId = _userContext.CurrentBranchId;
             await _operationsEngine.RecordReportSignedAsync(reportId, branchId, signedByUserId);
+
+            // 5b. Finalize Lifecycle State & Snapshot
+            report.Status = "Signed";
+            report.VerificationMode = "Digital";
+            report.VerifiedByUserId = signedByUserId;
+            report.VerifiedAt = timestamp;
+            report.UpdatedAt = timestamp;
+            
+            var finalData = await GetReportDataForPdfAsync(order.Visit.VisitId);
+            if (finalData != null)
+            {
+                report.FinalSnapshotJson = System.Text.Json.JsonSerializer.Serialize(finalData);
+            }
 
             // 6. Audit log
             await _auditService.LogAsync(signedByUserId, "ReportSigned", "Report", reportId, new { NewVersion = currentVersion });
@@ -253,7 +349,9 @@ namespace SynOS.Services
         public async Task<FinalReportDto> GetFinalReportAsync(Guid orderId)
         {
             var report = await _context.Reports
-                .Include(r => r.PathologyReport) // Include PathologyReport for specific fields
+                .Include(r => r.PathologyReport)
+                .Include(r => r.TypedByUser)
+                .Include(r => r.VerifiedByUser)
                 .FirstOrDefaultAsync(r => r.SourceId == orderId && r.SourceType == "Order");
 
             if (report == null)
@@ -280,6 +378,27 @@ namespace SynOS.Services
             }
 
 
+            // 1. If FinalSnapshot exists (Signed/Manual), prioritize it.
+            if (!string.IsNullOrEmpty(report.FinalSnapshotJson))
+            {
+                var snapshot = System.Text.Json.JsonSerializer.Deserialize<ReportDataModel>(report.FinalSnapshotJson);
+                if (snapshot != null)
+                {
+                    return MapSnapshotToFinalReportDto(report, order, snapshot);
+                }
+            }
+
+            // 2. If DraftSnapshot exists (ReadyForVerification), prioritize it.
+            if (report.Status == "ReadyForVerification" && !string.IsNullOrEmpty(report.DraftSnapshotJson))
+            {
+                var snapshot = System.Text.Json.JsonSerializer.Deserialize<ReportDataModel>(report.DraftSnapshotJson);
+                if (snapshot != null)
+                {
+                    return MapSnapshotToFinalReportDto(report, order, snapshot);
+                }
+            }
+
+            // 2. Fallback to live data (for Drafts/Unsigned)
             var results = await _context.Results
                 .Where(r => r.OrderId == orderId)
                 .ToListAsync();
@@ -290,14 +409,14 @@ namespace SynOS.Services
                 .Select(g => new TestResultDto
                 {
                     TestCode = g.Key,
-                    TestName = g.First().Order.Test.TestName ?? g.Key, // Corrected to o.Test.TestName
+                    TestName = g.First().Order.Test?.TestName ?? g.Key,
                     Parameters = g.Select(r => new ReportParameterResultDto
                     {
                         ParameterCode = r.ParameterCode,
-                        ParameterName = r.ParameterCode, // Assuming parameter name is same as code if not explicitly stored
+                        ParameterName = r.ParameterCode,
                         Value = r.Value,
-                        Unit = r.Unit, // Assuming Unit is available on Result entity
-                        ReferenceRange = r.ReferenceRange, // Assuming ReferenceRange is available on Result entity
+                        Unit = r.Unit,
+                        ReferenceRange = r.ReferenceRange,
                         Remarks = r.TechComments,
                         Flag = r.Flag
                     }).ToList()
@@ -320,12 +439,16 @@ namespace SynOS.Services
                     Token = order.Visit.Token
                 },
                 Status = report.Status,
+                VerificationMode = report.VerificationMode,
                 SignedAt = report.SignedAt,
+                VerifiedAt = report.VerifiedAt,
                 Delivered = report.Delivered,
                 DeliveredAt = report.DeliveredAt,
-                PathologistComments = report.PathologyReport?.PathologistComments, // Access through PathologyReport
-                Interpretation = report.PathologyReport?.Interpretation, // Access through PathologyReport
-                Recommendations = report.PathologyReport?.Recommendations, // Access through PathologyReport
+                PathologistComments = report.PathologyReport?.PathologistComments,
+                Interpretation = report.PathologyReport?.Interpretation,
+                Recommendations = report.PathologyReport?.Recommendations,
+                TypedByUserName = report.TypedByUser?.Name,
+                VerifiedByUserName = report.VerifiedByUser?.Name,
                 TestResults = testResults
             };
         }
@@ -360,10 +483,22 @@ namespace SynOS.Services
                 throw new UnauthorizedAccessException("Access to this report PDF is restricted.");
             }
 
+            // 1. If FinalSnapshot exists (Signed/Manual), prioritize it.
+            if (!string.IsNullOrEmpty(report.FinalSnapshotJson))
+            {
+                var snapshot = System.Text.Json.JsonSerializer.Deserialize<ReportDataModel>(report.FinalSnapshotJson);
+                if (snapshot != null) return snapshot;
+            }
+
+            // 2. If DraftSnapshot exists (ReadyForVerification), prioritize it.
+            if (!string.IsNullOrEmpty(report.DraftSnapshotJson))
+            {
+                var snapshot = System.Text.Json.JsonSerializer.Deserialize<ReportDataModel>(report.DraftSnapshotJson);
+                if (snapshot != null) return snapshot;
+            }
+
+            // 3. Fallback to Live Construction
             var patient = order.Visit.Patient;
-            var visit = order.Visit;
-            
-            // Refactored: Consume frozen snapshot from ReportingService
             var structure = await _reportingService.GetReportStructureAsync(report.ReportId);
             
             var results = structure.Groups
@@ -444,10 +579,63 @@ namespace SynOS.Services
             };
         }
 
+        private FinalReportDto MapSnapshotToFinalReportDto(Report report, Order order, ReportDataModel snapshot)
+        {
+            return new FinalReportDto
+            {
+                ReportId = report.ReportId,
+                OrderId = order.OrderId,
+                Patient = new PatientSummaryDto
+                {
+                    PatientId = order.Visit.Patient.PatientId,
+                    Name = snapshot.Patient.Name,
+                    Mrn = snapshot.Patient.PatientId
+                },
+                Visit = new VisitSummaryDto
+                {
+                    Id = order.Visit.VisitId,
+                    Token = order.Visit.Token
+                },
+                Status = report.Status,
+                VerificationMode = report.VerificationMode,
+                SignedAt = report.SignedAt,
+                VerifiedAt = report.VerifiedAt,
+                Delivered = report.Delivered,
+                DeliveredAt = report.DeliveredAt,
+                TypedByUserName = report.TypedByUser?.Name,
+                VerifiedByUserName = report.VerifiedByUser?.Name,
+                PathologistComments = snapshot.Comments,
+                Interpretation = snapshot.Interpretation,
+                Recommendations = snapshot.Recommendations,
+                TestResults = new System.Collections.Generic.List<TestResultDto>
+                {
+                    new TestResultDto
+                    {
+                        TestCode = order.TestCode,
+                        TestName = snapshot.ReportTitle,
+                        Parameters = snapshot.Parameters.Select(p => new ReportParameterResultDto
+                        {
+                            ParameterName = p.Name,
+                            Value = p.Value,
+                            Unit = p.Unit,
+                            ReferenceRange = p.ReferenceRange,
+                            Flag = p.IsCritical ? "High" : "" 
+                        }).ToList()
+                    }
+                }
+            };
+        }
+
         public async Task<System.Collections.Generic.IEnumerable<ReportListItemDto>> GetReportsByStatusAsync(string status)
         {
+            // Support comma-separated statuses for multi-state queues (e.g. "Draft,ReadyForVerification")
+            var statusList = status.Split(',').Select(s => s.Trim()).ToList();
+
             var reports = await _context.Reports
-                .Where(r => r.Status == status && r.SourceType == "Order")
+                .Include(r => r.TypedByUser)
+                .Include(r => r.VerifiedByUser)
+                .Where(r => statusList.Contains(r.Status) && r.SourceType == "Order")
+                .OrderByDescending(r => r.UpdatedAt ?? r.CreatedAt)
                 .AsNoTracking()
                 .ToListAsync();
 
@@ -470,8 +658,9 @@ namespace SynOS.Services
                 orders.TryGetValue(r.SourceId, out var order);
                 resultsCount.TryGetValue(r.SourceId, out var abnormalCount);
                 
+                // Defensive guard for orphaned reports (where order is null)
                 var patient = order?.Visit?.Patient;
-                var age = patient?.DateOfBirth == default ? 0 : (int)((DateTime.Today - patient.DateOfBirth).TotalDays / 365.25);
+                var age = (patient == null || patient.DateOfBirth == default) ? 0 : (int)((DateTime.Today - patient.DateOfBirth).TotalDays / 365.25);
 
                 return new ReportListItemDto
                 {
@@ -483,7 +672,10 @@ namespace SynOS.Services
                     CreatedAt = r.CreatedAt,
                     Status = r.Status,
                     IsStat = false, // Placeholder per plan
-                    AbnormalCount = abnormalCount
+                    AbnormalCount = abnormalCount,
+                    Token = order?.Visit?.Token ?? "---",
+                    TypedByUserName = r.TypedByUser?.Name,
+                    VerifiedByUserName = r.VerifiedByUser?.Name
                 };
             }).ToList();
         }

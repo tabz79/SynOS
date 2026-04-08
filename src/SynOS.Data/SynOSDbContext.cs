@@ -736,6 +736,8 @@ namespace SynOS.Data
             {
                 entity.HasIndex(e => new { e.SourceType, e.SourceId }).IsUnique(); // New unique index
                 entity.HasOne(e => e.SignedBy).WithMany().HasForeignKey(e => e.SignedByUserId).OnDelete(DeleteBehavior.Restrict);
+                entity.HasOne(e => e.TypedByUser).WithMany().HasForeignKey(e => e.TypedByUserId).OnDelete(DeleteBehavior.Restrict);
+                entity.HasOne(e => e.VerifiedByUser).WithMany().HasForeignKey(e => e.VerifiedByUserId).OnDelete(DeleteBehavior.Restrict);
                 entity.HasOne<Visit>().WithMany().HasForeignKey(e => e.VisitId).OnDelete(DeleteBehavior.Restrict); // FK for VisitId
                 entity.HasOne<Patient>().WithMany().HasForeignKey(e => e.PatientId).OnDelete(DeleteBehavior.Restrict); // FK for PatientId
             });

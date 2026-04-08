@@ -10,9 +10,13 @@ namespace SynOS.Models.DTOs
         public PatientSummaryDto Patient { get; set; }
         public VisitSummaryDto Visit { get; set; }
         public string Status { get; set; }
+        public string? VerificationMode { get; set; }
         public DateTimeOffset? SignedAt { get; set; }
+        public DateTimeOffset? VerifiedAt { get; set; }
         public bool Delivered { get; set; }
         public DateTimeOffset? DeliveredAt { get; set; }
+        public string? TypedByUserName { get; set; }
+        public string? VerifiedByUserName { get; set; }
         public string? PathologistComments { get; set; }
         public string? Interpretation { get; set; }
         public string? Recommendations { get; set; }
