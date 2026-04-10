@@ -15,8 +15,11 @@ import {
     Loader2,
     Calendar,
     User,
-    Signature
+    Signature,
+    Printer,
+    Send
 } from 'lucide-react';
+import { ReportA4 } from '../documents/templates/ReportA4';
 
 export function PathologistTerminal() {
     const { user } = useAuth();
@@ -29,10 +32,14 @@ export function PathologistTerminal() {
     const [reportStructure, setReportStructure] = useState(null);
     const [isLoadingList, setIsLoadingList] = useState(false);
     const [isLoadingDetail, setIsLoadingDetail] = useState(false);
-    const [interpretation, setInterpretation] = useState({ summary: "", notes: "" });
+    const [interpretation, setInterpretation] = useState({ interpretation: "", comments: "" });
+    const [reportData, setReportData] = useState(null);
     const [isSaving, setIsSaving] = useState(false);
+    const [lastSavedAt, setLastSavedAt] = useState(null);
     const [isSigning, setIsSigning] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
+
+    const requestCounter = useRef(0);
 
     // Initial Fetch
     useEffect(() => {
@@ -45,7 +52,9 @@ export function PathologistTerminal() {
             fetchReportDetail(selectedReportId);
         } else {
             setReportStructure(null);
-            setInterpretation({ summary: "", notes: "" });
+            setReportData(null);
+            setInterpretation({ interpretation: "", comments: "" });
+            setLastSavedAt(null);
         }
     }, [selectedReportId]);
 
@@ -65,12 +74,18 @@ export function PathologistTerminal() {
     const fetchReportDetail = async (reportId) => {
         setIsLoadingDetail(true);
         try {
-            const data = await ReportsApi.getFullReport(reportId);
-            setReportStructure(data.report);
+            const [fullRes, dataRes] = await Promise.all([
+                ReportsApi.getFullReport(reportId),
+                ReportsApi.getReportData(reportId, true) // Force live for verification phase
+            ]);
+
+            setReportStructure(fullRes.report);
+            setReportData(dataRes);
             setInterpretation({
-                summary: data.interpretation?.summary || "",
-                notes: data.interpretation?.notes || ""
+                interpretation: fullRes.interpretation?.summary || "",
+                comments: fullRes.interpretation?.notes || ""
             });
+            setLastSavedAt(null);
         } catch (err) {
             console.error("Failed to fetch report detail:", err);
         } finally {
@@ -79,17 +94,31 @@ export function PathologistTerminal() {
     };
 
     const handleSaveInterpretation = async () => {
-        if (!selectedReportId) return;
+        if (!selectedReportId || isSaving) return;
+        
         setIsSaving(true);
+        const currentRequestId = ++requestCounter.current;
+
         try {
+            // 1. Save
             await ReportsApi.updateInterpretation(
                 selectedReportId, 
-                interpretation.summary, 
-                interpretation.notes
+                interpretation.interpretation, 
+                interpretation.comments
             );
+
+            // 2. Hard Re-fetch (Force Live to bypass snapshot during verification)
+            const freshData = await ReportsApi.getReportData(selectedReportId, true);
+
+            // 3. Guard
+            if (currentRequestId === requestCounter.current) {
+                setReportData(freshData);
+                setLastSavedAt(new Date());
+                setTimeout(() => setLastSavedAt(null), 3000);
+            }
         } catch (err) {
             console.error("Save failed:", err);
-            alert(err.message);
+            alert("Verification Context Sync Failed: " + err.message);
         } finally {
             setIsSaving(false);
         }
@@ -124,6 +153,11 @@ export function PathologistTerminal() {
         } finally {
             setIsSigning(false);
         }
+    };
+
+    const handlePrint = () => {
+        if (!selectedReportId) return;
+        window.open(`/print/report/${selectedReportId}`, '_blank');
     };
 
     const isReadOnly = reportStructure?.status === 'Signed' || reportStructure?.status === 'ManualVerified' || reportStructure?.status === 'Finalized';
@@ -311,54 +345,63 @@ export function PathologistTerminal() {
                                     </table>
                                 </div>
 
-                                 {/* Interpretation Area */}
-                                <div className="mt-8 border-t dark:border-white/5 border-zinc-100 pt-6 shrink-0 space-y-6">
-                                    <div>
-                                        <label className="text-[10px] uppercase font-black tracking-widest dark:text-zinc-600 text-zinc-400 block mb-3">
-                                            Clinical Summary (Required)
-                                        </label>
-                                        <textarea 
-                                            className="w-full dark:bg-zinc-950/50 bg-zinc-50 border dark:border-white/10 border-zinc-200 rounded-2xl p-4 text-sm focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 dark:text-zinc-200 transition-all min-h-[100px] disabled:opacity-60 disabled:cursor-not-allowed"
-                                            placeholder="Enter core clinical findings..."
-                                            value={interpretation.summary}
-                                            onChange={(e) => setInterpretation(prev => ({ ...prev, summary: e.target.value }))}
-                                            disabled={isReadOnly || isSaving}
-                                        />
-                                    </div>
+                                 <div className="mt-8 border-t dark:border-white/5 border-zinc-100 pt-6 shrink-0 space-y-6">
+                                    <div className="space-y-4">
+                                        <div>
+                                            <label className="text-[10px] uppercase font-black dark:text-zinc-600 text-zinc-400 block mb-2 tracking-widest">
+                                                Clinical Summary (Ready for Verification)
+                                            </label>
+                                            <textarea 
+                                                className="w-full dark:bg-zinc-950/50 bg-zinc-50 border dark:border-white/10 border-zinc-200 rounded-2xl p-4 text-sm focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 dark:text-zinc-200 transition-all min-h-[100px] disabled:opacity-60 disabled:cursor-not-allowed"
+                                                placeholder="Verify core clinical findings..."
+                                                value={interpretation.interpretation}
+                                                onChange={(e) => setInterpretation(prev => ({ ...prev, interpretation: e.target.value }))}
+                                                disabled={isReadOnly || isSaving}
+                                            />
+                                        </div>
 
-                                    <div>
-                                        <label className="text-xs font-black uppercase tracking-widest text-slate-400 block mb-3">
-                                            Internal Notes / Follow-up
-                                        </label>
-                                        <textarea 
-                                            className="w-full bg-slate-50 border border-slate-200 rounded-2xl p-4 text-sm focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all min-h-[80px] disabled:opacity-60 disabled:cursor-not-allowed"
-                                            placeholder="Additional notes (not for patient)..."
-                                            value={interpretation.notes}
-                                            onChange={(e) => setInterpretation(prev => ({ ...prev, notes: e.target.value }))}
-                                            disabled={isReadOnly || isSaving}
-                                        />
+                                        <div>
+                                            <label className="text-[10px] uppercase font-black dark:text-zinc-600 text-zinc-400 block mb-2 tracking-widest">
+                                                Pathologist Remarks / Additional Insights
+                                            </label>
+                                            <textarea 
+                                                className="w-full dark:bg-zinc-950/50 bg-zinc-50 border dark:border-white/10 border-zinc-200 rounded-2xl p-4 text-sm focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all min-h-[80px] disabled:opacity-60 disabled:cursor-not-allowed"
+                                                placeholder="Append final pathologist notes..."
+                                                value={interpretation.comments}
+                                                onChange={(e) => setInterpretation(prev => ({ ...prev, comments: e.target.value }))}
+                                                disabled={isReadOnly || isSaving}
+                                            />
+                                        </div>
                                     </div>
                                     
                                     <div className="flex items-center justify-between mt-6">
                                         <div className="flex items-center gap-2">
                                             {!isReadOnly ? (
-                                                <>
-                                                    <button 
-                                                        onClick={handleSaveInterpretation}
-                                                        disabled={isSaving || !interpretation.summary}
-                                                        className="bg-zinc-100 text-zinc-600 hover:bg-zinc-200 font-bold text-xs px-6 py-2.5 rounded-xl transition-all active:scale-95 disabled:opacity-40"
-                                                    >
-                                                        {isSaving ? "Saving..." : "Save Draft"}
-                                                    </button>
-                                                    {reportStructure?.status === 'ReadyForVerification' && (
-                                                        <button 
-                                                            onClick={handleReopen}
-                                                            className="text-red-500 hover:bg-red-50 font-bold text-xs px-6 py-2.5 rounded-xl transition-all border border-transparent hover:border-red-100"
-                                                        >
-                                                            Reject to Typist
-                                                        </button>
+                                                <div className="flex flex-col gap-2">
+                                                    {lastSavedAt && (
+                                                        <span className="text-[9px] font-bold text-green-500 uppercase tracking-widest flex items-center gap-1.5 self-start">
+                                                            <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
+                                                            Live Preview Synced
+                                                        </span>
                                                     )}
-                                                </>
+                                                    <div className="flex items-center gap-3">
+                                                        <button 
+                                                            onClick={handleSaveInterpretation}
+                                                            disabled={isSaving || (!interpretation.interpretation && !interpretation.comments)}
+                                                            className="bg-zinc-100 text-zinc-600 hover:bg-zinc-200 font-bold text-xs px-6 py-2.5 rounded-xl transition-all active:scale-95 disabled:opacity-40"
+                                                        >
+                                                            {isSaving ? "Syncing..." : "Update Preview"}
+                                                        </button>
+                                                        {reportStructure?.status === 'ReadyForVerification' && (
+                                                            <button 
+                                                                onClick={handleReopen}
+                                                                className="text-red-500 hover:bg-red-50 font-bold text-xs px-6 py-2.5 rounded-xl transition-all border border-transparent hover:border-red-100"
+                                                            >
+                                                                Reject to Typist
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                </div>
                                             ) : (
                                                 <div className="flex items-center gap-3 text-emerald-600 bg-emerald-500/10 px-5 py-3 rounded-2xl text-[11px] font-black uppercase tracking-widest border border-emerald-500/20">
                                                     <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
@@ -367,13 +410,31 @@ export function PathologistTerminal() {
                                             )}
                                         </div>
                                         {reportStructure?.status === 'ReadyForVerification' && !isReadOnly && (
+                                            <div className="flex gap-4">
+                                                <button 
+                                                    onClick={handlePrint}
+                                                    className="bg-zinc-100 hover:bg-zinc-200 text-zinc-900 px-6 py-3 rounded-2xl font-bold text-sm transition-all active:scale-95 flex items-center gap-2"
+                                                >
+                                                    <Printer className="w-4 h-4" />
+                                                    Print Review
+                                                </button>
+                                                <button 
+                                                    onClick={handleSign}
+                                                    disabled={isSigning || !selectedReportId}
+                                                    className="bg-slate-900 text-white hover:bg-black px-8 py-3 rounded-2xl font-bold text-sm shadow-xl shadow-black/10 transition-all active:scale-95 flex items-center gap-2 disabled:bg-slate-300 disabled:shadow-none"
+                                                >
+                                                    {isSigning ? <Loader2 className="w-4 h-4 animate-spin" /> : <Signature className="w-4 h-4" />}
+                                                    Verify & Sign Digitally
+                                                </button>
+                                            </div>
+                                        )}
+                                        {isReadOnly && (
                                             <button 
-                                                onClick={handleSign}
-                                                disabled={isSigning || !selectedReportId}
-                                                className="bg-slate-900 text-white hover:bg-black px-8 py-3 rounded-2xl font-bold text-sm shadow-xl shadow-black/10 transition-all active:scale-95 flex items-center gap-2 disabled:bg-slate-300 disabled:shadow-none"
+                                                onClick={handlePrint}
+                                                className="bg-synos-primary text-white hover:opacity-90 px-8 py-3 rounded-2xl font-bold text-sm shadow-xl shadow-synos-primary/20 transition-all active:scale-95 flex items-center gap-2"
                                             >
-                                                {isSigning ? <Loader2 className="w-4 h-4 animate-spin" /> : <Signature className="w-4 h-4" />}
-                                                Verify & Sign Digitally
+                                                <Printer className="w-4 h-4" />
+                                                Print Final Report
                                             </button>
                                         )}
                                     </div>
@@ -383,72 +444,52 @@ export function PathologistTerminal() {
                     </div>
                 </div>
 
-                {/* RIGHT PANEL: Live Preview (25%) */}
+                {/* RIGHT PANEL: Pure Live Render (25%) */}
                 <div className="w-[25%] flex flex-col min-h-0">
-                    <div className="dark:bg-zinc-950/30 bg-zinc-100/50 dark:border-white/5 border-black/[0.05] border rounded-xl p-8 flex-1 overflow-y-auto custom-scrollbar flex flex-col items-center">
-                        <div className="w-full bg-white shadow-2xl min-h-[800px] p-8 flex flex-col gap-6 relative">
-                            {/* Watermark for draft? */}
-                            <div className="absolute top-0 left-0 w-full h-1 bg-indigo-500" />
-                            
-                            {/* Simple Preview Stub - Mirrors report structure */}
-                            <div className="flex justify-between items-start border-b-2 border-slate-800 pb-4">
-                                <div className="text-2xl font-black italic tracking-tighter">SynOS</div>
-                                <div className="text-right">
-                                    <h4 className="font-bold text-sm uppercase">Medical Report</h4>
-                                    <p className="text-[10px] text-slate-500">#{reportStructure?.token || "---"}</p>
+                    <div className="dark:bg-zinc-900 bg-zinc-200 shadow-inner rounded-xl flex-1 flex flex-col min-h-0 overflow-hidden border dark:border-white/5 border-black/5">
+                        <div className="bg-white/80 dark:bg-zinc-950/80 backdrop-blur-md px-6 py-3 border-b dark:border-white/5 border-black/5 flex items-center justify-between z-10 shrink-0">
+                             <div className="flex items-center gap-2">
+                                <FileText className="w-4 h-4 text-synos-primary" />
+                                <span className="text-[10px] font-black uppercase tracking-widest dark:text-zinc-400 text-zinc-600">
+                                    {isReadOnly ? "Audit Evidence" : "Live Preview"}
+                                </span>
+                             </div>
+                             {reportData && (
+                                <div className="flex items-center gap-1.5">
+                                    <div className={cn(
+                                        "w-1.2 h-1.2 rounded-full",
+                                        isReadOnly ? "bg-amber-500" : "bg-green-500 animate-pulse"
+                                    )} />
+                                    <span className={cn(
+                                        "text-[8px] font-black uppercase tracking-tighter",
+                                        isReadOnly ? "text-amber-600" : "text-green-600"
+                                    )}>
+                                        {isReadOnly ? "LOCKED" : "SYNCED"}
+                                    </span>
                                 </div>
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-4 bg-slate-50 p-4 rounded-lg">
-                                <div className="space-y-1">
-                                    <p className="text-[10px] uppercase font-bold text-slate-400">Patient</p>
-                                    <p className="font-bold text-sm">{reportStructure?.patientName || "---"}</p>
+                             )}
+                        </div>
+                        
+                        <div className="flex-1 overflow-auto bg-zinc-300/50 dark:bg-zinc-900/50 p-4 custom-scrollbar">
+                            {isLoadingDetail ? (
+                                <div className="h-full flex flex-col items-center justify-center opacity-30">
+                                    <Loader2 className="w-6 h-6 animate-spin mb-4" />
+                                    <span className="text-[8px] font-black uppercase tracking-[0.2em]">Assembling Preview...</span>
                                 </div>
-                                <div className="space-y-1">
-                                    <p className="text-[10px] uppercase font-bold text-slate-400">Date</p>
-                                    <p className="font-bold text-sm">{new Date().toLocaleDateString()}</p>
-                                </div>
-                            </div>
-
-                            <div className="flex-1">
-                                <table className="w-full text-[12px]">
-                                    <thead className="border-b border-slate-100">
-                                        <tr className="text-slate-400">
-                                            <th className="text-left pb-2">Analysis</th>
-                                            <th className="text-right pb-2">Result</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-slate-50">
-                                        {reportStructure?.groups?.map(g => g.parameters.map((p, i) => (
-                                            <tr key={i}>
-                                                <td className="py-2 text-slate-600">{p.parameterName}</td>
-                                                <td className="py-2 text-right font-bold">{p.value || "-"} {p.unit}</td>
-                                            </tr>
-                                        )))}
-                                    </tbody>
-                                </table>
-                            </div>
-
-                            {interpretation.summary && (
-                                <div className="border-t pt-4">
-                                    <h5 className="text-[10px] uppercase font-bold text-slate-400 mb-2">Interpretation</h5>
-                                    <p className="text-xs italic leading-relaxed text-slate-600">
-                                        {interpretation.summary}
+                            ) : !reportData ? (
+                                <div className="h-full flex flex-col items-center justify-center text-center opacity-20 p-8">
+                                    <Printer className="w-12 h-12 mb-4" />
+                                    <p className="text-[9px] font-black uppercase tracking-widest leading-relaxed">
+                                        Select record for high-fidelity render
                                     </p>
-                                    {interpretation.notes && (
-                                        <p className="text-[10px] mt-2 text-slate-400 italic">
-                                            Note: {interpretation.notes}
-                                        </p>
-                                    )}
+                                </div>
+                            ) : (
+                                <div className="p-4 origin-top scale-[0.65] mt-[-150px] flex justify-center">
+                                    <div className="bg-white shadow-[0_20px_50px_rgba(0,0,0,0.1)] rounded-sm overflow-hidden min-w-[800px]">
+                                        <ReportA4 reportData={reportData} />
+                                    </div>
                                 </div>
                             )}
-
-                            <div className="mt-auto pt-8 flex justify-between items-end opacity-20">
-                                <div>
-                                    <p className="text-[8px] font-bold tracking-widest text-slate-400">SYSTEM GENERATED PREVIEW</p>
-                                </div>
-                                <div className="w-24 h-8 border-b-2 border-slate-200" />
-                            </div>
                         </div>
                     </div>
                 </div>

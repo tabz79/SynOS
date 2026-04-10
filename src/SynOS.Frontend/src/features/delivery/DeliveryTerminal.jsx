@@ -13,7 +13,8 @@ import {
     Loader2,
     User,
     ShieldCheck,
-    FileText
+    FileText,
+    Printer
 } from 'lucide-react';
 
 export function DeliveryTerminal() {
@@ -94,6 +95,11 @@ export function DeliveryTerminal() {
         } finally {
             setIsVerifying(false);
         }
+    };
+
+    const handlePrint = () => {
+        if (!selectedReportId) return;
+        window.open(`/print/report/${selectedReportId}`, '_blank');
     };
 
     const filteredReports = reports.filter(r => 
@@ -207,7 +213,11 @@ export function DeliveryTerminal() {
                                                         Verified By: <span className="text-zinc-600 dark:text-zinc-200">{reportStructure?.verifiedByUserName || 'System'}</span>
                                                     </div>
                                                 </div>
-                                                <button className="bg-synos-primary text-white px-8 py-3 rounded-xl font-black text-sm uppercase tracking-widest shadow-lg shadow-synos-primary/20 active:scale-95 transition-all">
+                                                <button 
+                                                    onClick={handlePrint}
+                                                    className="bg-synos-primary text-white px-8 py-3 rounded-xl font-black text-sm uppercase tracking-widest shadow-lg shadow-synos-primary/20 active:scale-95 transition-all flex items-center gap-2"
+                                                >
+                                                    <Printer className="w-4 h-4" />
                                                     Print & Mark Delivered
                                                 </button>
                                             </div>

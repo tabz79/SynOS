@@ -23,6 +23,15 @@ export const ReportsApi = {
         return await response.json();
     },
 
+    getReportData: async (reportId, forceLive = false) => {
+        const url = `/api/v1/reports/${reportId}/data${forceLive ? '?forceLive=true' : ''}`;
+        const response = await fetch(url, {
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('synos_jwt')}` }
+        });
+        if (!response.ok) throw new Error('Failed to fetch report data contract');
+        return await response.json();
+    },
+
     updateInterpretation: async (reportId, summary, notes) => {
         const response = await fetch(`/api/v1/reports/${reportId}/interpretation`, {
             method: 'POST',
@@ -30,7 +39,7 @@ export const ReportsApi = {
                 'Authorization': `Bearer ${localStorage.getItem('synos_jwt')}`,
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ summary, notes })
+            body: JSON.stringify({ Summary: summary, Notes: notes })
         });
         if (!response.ok) {
             const error = await response.json();

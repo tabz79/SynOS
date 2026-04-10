@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { cn } from "@/lib/utils";
 import { SystemBar } from '@/components/layout/SystemBar';
 import { useAuth } from '@/context/AuthContext';
@@ -15,6 +15,8 @@ import {
     Clock,
     Printer
 } from 'lucide-react';
+import { ReportA4 } from '../documents/templates/ReportA4';
+
 
 export function TypistTerminal() {
     const { user } = useAuth();
@@ -25,12 +27,17 @@ export function TypistTerminal() {
     const [reports, setReports] = useState([]);
     const [selectedReportId, setSelectedReportId] = useState(null);
     const [reportStructure, setReportStructure] = useState(null);
+    const [reportData, setReportData] = useState(null);
     const [isLoadingList, setIsLoadingList] = useState(false);
     const [isLoadingDetail, setIsLoadingDetail] = useState(false);
-    const [interpretation, setInterpretation] = useState({ summary: "", notes: "" });
+    const [interpretation, setInterpretation] = useState({ interpretation: "", comments: "" });
     const [isSaving, setIsSaving] = useState(false);
+    const [lastSavedAt, setLastSavedAt] = useState(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
+
+    const requestCounter = useRef(0);
+
 
     // Initial Fetch
     useEffect(() => {
@@ -43,7 +50,8 @@ export function TypistTerminal() {
             fetchReportDetail(selectedReportId);
         } else {
             setReportStructure(null);
-            setInterpretation({ summary: "", notes: "" });
+            setInterpretation({ interpretation: "", comments: "" });
+            setLastSavedAt(null);
         }
     }, [selectedReportId]);
 
@@ -63,12 +71,20 @@ export function TypistTerminal() {
     const fetchReportDetail = async (reportId) => {
         setIsLoadingDetail(true);
         try {
-            const data = await ReportsApi.getFullReport(reportId);
-            setReportStructure(data.report);
+            // Fetch both structures in parallel for seamless mapping
+            const [structureRes, dataRes] = await Promise.all([
+                ReportsApi.getFullReport(reportId),
+                ReportsApi.getReportData(reportId, true) // forceLive=true for Typist Preview
+            ]);
+
+            setReportStructure(structureRes.report);
+            setReportData(dataRes);
+            
             setInterpretation({
-                summary: data.interpretation?.summary || "",
-                notes: data.interpretation?.notes || ""
+                interpretation: structureRes.interpretation?.summary || "",
+                comments: structureRes.interpretation?.notes || ""
             });
+            setLastSavedAt(null);
         } catch (err) {
             console.error("Failed to fetch report detail:", err);
         } finally {
@@ -76,18 +92,34 @@ export function TypistTerminal() {
         }
     };
 
+
     const handleSaveInterpretation = async () => {
-        if (!selectedReportId) return;
+        if (!selectedReportId || isSaving) return;
+        
         setIsSaving(true);
+        const currentRequestId = ++requestCounter.current;
+
         try {
+            // 1. Save to Backend
             await ReportsApi.updateInterpretation(
                 selectedReportId, 
-                interpretation.summary, 
-                interpretation.notes
+                interpretation.interpretation, 
+                interpretation.comments
             );
+
+            // 2. Hard Re-fetch (Rule 1: Backend is Truth, bypass snapshot in Draft)
+            const freshData = await ReportsApi.getReportData(selectedReportId, true);
+
+            // 3. Race Condition Guard (GPT-5 Safeguard)
+            if (currentRequestId === requestCounter.current) {
+                setReportData(freshData);
+                setLastSavedAt(new Date());
+                // Auto-clear success message after 3s
+                setTimeout(() => setLastSavedAt(null), 3000);
+            }
         } catch (err) {
             console.error("Save failed:", err);
-            alert(err.message);
+            alert("Clinical Sync Failed: " + err.message);
         } finally {
             setIsSaving(false);
         }
@@ -115,7 +147,8 @@ export function TypistTerminal() {
     };
 
     const handlePrint = () => {
-        window.print();
+        if (!selectedReportId) return;
+        window.open(`/print/report/${selectedReportId}`, '_blank');
     };
 
     const isLocked = reportStructure?.status === 'ReadyForVerification' || reportStructure?.status === 'Signed' || reportStructure?.status === 'ManualVerified';
@@ -128,7 +161,7 @@ export function TypistTerminal() {
     return (
         <div className="h-screen w-screen dark:bg-synos-background bg-transparent text-foreground flex flex-col overflow-hidden font-sans selection:bg-white/20 relative">
             <div className="fixed inset-0 pointer-events-none overflow-hidden z-[-1] dark:hidden no-print">
-                <div className="absolute inset-0 opacity-[0.03] mix-blend-overlay" style={{ backgroundImage: `url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyBAMAAADsEZWCAAAAGFBMVEUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAt66YlAAAAB3RSTlMAo7S066u0v76zAAABJklEQVQ4jXWSwW7DIAyGvRNoV9HeIdp7B2nvHaK9d7D27lX836VpY6t0p8oHicDHP4Z99qGf96HvX+h7NfSmX8U8z9M0z6+P/m8X6fB6L78XpX4X5X4O6fc8l7e8n+T9KO87ed+m77pP33Wfvuu6T991nb7rum/ed5+87z55333yvvvkfffJ++6T990n77pP33Wfvus6fdd13rrvu67rvXXfd13ne+u+77rO99Z933Wdt67rtnXdt67rtnWdt67rtjW999Y9ve9997mPu8997uPus9fZZ6+zz15nn73OPnudvU9f0+v0Nb1OX9Pr9DW9Tm9O9vTmaE5vjua09f7o/db7rff7f9H3v6XvP9TzL/X+U8+/1fMv9fw7fQ==")` }} />
+                <div className="absolute inset-0 opacity-[0.03] mix-blend-overlay" style={{ backgroundImage: `url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyBAMAAADsEZWCAAAAGFBMVEUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAt66YlAAAAB3RSTlMAo7S066u0v76zAAABJklEQVQ4jXWSwW7DIAyGvRNoV9HeIdp7B2nvHaK9d7D27lX836VpY6t0p8oHicDHP4Z99qGf96HvX+h7NfSmX8U8z9M0z6+P/m8X6fB6L78XpX4X5X4O6fc8l7e8n+T9KO87ed+m77pP33Wfvuu6T991nb7rum/ed5+87z55333yvvvkfffJ++6T990n77pP33Wfvus6fdd13rrvu67rvXXfd13ne+u+77rO99Z933Wdt67rtnWdt67rtjW999Y9ve9997mPu8997uPus9fZZ6+zz15nn73OPnudvU9f0+v0Nb1OX9Pr9DW9Tm9O9vTmaE5vjua09f7o/db7rff7f9H3v6XvP9TzL/X+U8+/1fMv9fw7fQ==")` }} />
                 <div className="absolute top-[-15%] left-[-5%] w-[50%] h-[55%] animate-pulse" style={{ background: 'radial-gradient(circle at 40% 40%, rgba(6, 182, 212, 0.07) 0%, rgba(6, 182, 212, 0.02) 45%, rgba(6, 182, 212, 0) 85%)', animationDuration: '10s' }} />
                 <div className="absolute top-[-10%] right-[10%] w-[45%] h-[50%]" style={{ background: 'radial-gradient(circle at center, rgba(37, 99, 235, 0.05) 0%, rgba(37, 99, 235, 0.01) 50%, rgba(37, 99, 235, 0) 90%)' }} />
             </div>
@@ -138,7 +171,7 @@ export function TypistTerminal() {
             </div>
 
             <div className="flex-1 flex flex-row gap-4 p-4 overflow-hidden">
-                <div className="w-[20%] flex flex-col gap-4 min-h-0 no-print">
+                <div className="w-[15%] flex flex-col gap-4 min-h-0 no-print">
                     <div className="dark:bg-zinc-900 bg-white dark:border-white/5 border-black/[0.1] shadow-[0_4px_20px_rgba(0,0,0,0.05)] rounded-xl p-4 flex flex-col gap-3 shrink-0">
                         <div className="flex items-center justify-between">
                             <h2 className="text-lg font-bold flex items-center gap-2 dark:text-zinc-200">
@@ -182,7 +215,7 @@ export function TypistTerminal() {
                     </div>
                 </div>
 
-                <div className="w-[55%] flex flex-col gap-4 min-h-0 no-print">
+                <div className="w-[35%] flex flex-col gap-4 min-h-0 no-print">
                     <div className="dark:bg-zinc-900 bg-white dark:border-white/5 border-black/[0.1] shadow-[0_4px_20px_rgba(0,0,0,0.05)] rounded-xl p-6 flex-1 flex flex-col min-h-0">
                         {isLoadingDetail ? (
                             <div className="flex-1 flex flex-col items-center justify-center opacity-50">
@@ -234,8 +267,6 @@ export function TypistTerminal() {
                                                 <th className="text-left px-4 pb-2">Analysis</th>
                                                 <th className="text-right px-4 pb-2">Result</th>
                                                 <th className="text-left px-4 pb-2">Unit</th>
-                                                <th className="text-left px-4 pb-2">Reference</th>
-                                                <th className="text-left px-4 pb-2">Flag</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -243,7 +274,7 @@ export function TypistTerminal() {
                                                 <React.Fragment key={gIdx}>
                                                     {group.groupName && (
                                                         <tr className="contents">
-                                                            <td colSpan={5} className="pt-4 pb-1">
+                                                            <td colSpan={3} className="pt-4 pb-1">
                                                                 <span className="text-[10px] font-black text-synos-primary uppercase tracking-widest bg-synos-primary/5 px-2 py-0.5 rounded">
                                                                     {group.groupName}
                                                                 </span>
@@ -263,23 +294,8 @@ export function TypistTerminal() {
                                                                 <td className="px-4 py-3 text-sm font-mono font-bold text-right dark:text-zinc-100 text-zinc-900 border-y border-transparent">
                                                                     {param.value || "-"}
                                                                 </td>
-                                                                <td className="px-4 py-3 text-[11px] font-medium text-zinc-500 border-y border-transparent">
+                                                                <td className="px-4 py-3 text-[11px] font-medium text-zinc-500 border-y border-transparent last:rounded-r-xl">
                                                                     {param.unit}
-                                                                </td>
-                                                                <td className="px-4 py-3 text-[11px] font-medium text-zinc-500 border-y border-transparent">
-                                                                    {param.referenceRange}
-                                                                </td>
-                                                                <td className="px-4 py-3 last:rounded-r-xl border-y border-transparent">
-                                                                    {isAbnormal && (
-                                                                        <span className={cn(
-                                                                            "text-[9px] font-black uppercase px-2 py-0.5 rounded-full tracking-tighter",
-                                                                            param.flag?.includes("Critical") 
-                                                                                ? "bg-red-500/10 text-red-500 border border-red-500/20" 
-                                                                                : "bg-amber-500/10 text-amber-500 border border-amber-500/20"
-                                                                        )}>
-                                                                            {param.flag}
-                                                                        </span>
-                                                                    )}
                                                                 </td>
                                                             </tr>
                                                         );
@@ -291,64 +307,71 @@ export function TypistTerminal() {
                                 </div>
 
                                 <div className="mt-8 border-t dark:border-white/5 border-zinc-100 pt-6 shrink-0 space-y-6">
-                                    <div>
-                                        <label className="text-[10px] uppercase font-black tracking-widest dark:text-zinc-600 text-zinc-400 block mb-3">
-                                            Clinical Interpretation / Summary
-                                        </label>
-                                        <textarea 
-                                            className="w-full dark:bg-zinc-950/50 bg-zinc-50 border dark:border-white/10 border-zinc-200 rounded-2xl p-4 text-sm focus:outline-none focus:ring-4 focus:ring-synos-primary/10 focus:border-synos-primary dark:text-zinc-200 transition-all min-h-[120px] disabled:opacity-60 disabled:cursor-not-allowed"
-                                            placeholder="Translate clinical data into descriptive summary..."
-                                            value={interpretation.summary}
-                                            onChange={(e) => setInterpretation(prev => ({ ...prev, summary: e.target.value }))}
-                                            disabled={isLocked || isSaving}
-                                        />
-                                    </div>
+                                    <div className="space-y-4">
+                                        <div>
+                                            <label className="text-[10px] uppercase font-black dark:text-zinc-600 text-zinc-400 block mb-2 tracking-widest">
+                                                Clinical Interpretation
+                                            </label>
+                                            <textarea 
+                                                className="w-full dark:bg-zinc-950/50 bg-zinc-50 border dark:border-white/10 border-zinc-200 rounded-2xl p-4 text-sm focus:outline-none focus:ring-4 focus:ring-synos-primary/10 focus:border-synos-primary dark:text-zinc-200 transition-all min-h-[120px] disabled:opacity-60 disabled:cursor-not-allowed"
+                                                placeholder="Translate clinical data into descriptive summary..."
+                                                value={interpretation.interpretation}
+                                                onChange={(e) => setInterpretation(prev => ({ ...prev, interpretation: e.target.value }))}
+                                                disabled={isLocked || isSaving}
+                                            />
+                                        </div>
 
-                                    <div>
-                                        <label className="text-[10px] uppercase font-black tracking-widest dark:text-zinc-600 text-zinc-400 block mb-3">
-                                            Internal Lab Metadata
-                                        </label>
-                                        <textarea 
-                                            className="w-full dark:bg-zinc-950/50 bg-zinc-50 border dark:border-white/10 border-zinc-200 rounded-2xl p-4 text-sm focus:outline-none focus:ring-4 focus:ring-synos-primary/10 focus:border-synos-primary dark:text-zinc-200 transition-all min-h-[80px] disabled:opacity-60 disabled:cursor-not-allowed"
-                                            placeholder="Internal technical notes (not visible to patient)..."
-                                            value={interpretation.notes}
-                                            onChange={(e) => setInterpretation(prev => ({ ...prev, notes: e.target.value }))}
-                                            disabled={isLocked || isSaving}
-                                        />
+                                        <div>
+                                            <label className="text-[10px] uppercase font-black dark:text-zinc-600 text-zinc-400 block mb-2 tracking-widest">
+                                                Pathologist Remarks / Comments
+                                            </label>
+                                            <textarea 
+                                                className="w-full dark:bg-zinc-950/50 bg-zinc-50 border dark:border-white/10 border-zinc-200 rounded-2xl p-4 text-sm focus:outline-none focus:ring-4 focus:ring-synos-primary/10 focus:border-synos-primary dark:text-zinc-200 transition-all min-h-[80px] disabled:opacity-60 disabled:cursor-not-allowed"
+                                                placeholder="Internal notes or additional pathologist remarks..."
+                                                value={interpretation.comments}
+                                                onChange={(e) => setInterpretation(prev => ({ ...prev, comments: e.target.value }))}
+                                                disabled={isLocked || isSaving}
+                                            />
+                                        </div>
                                     </div>
                                     
                                     <div className="flex items-center justify-between mt-6">
-                                        <button 
-                                            onClick={handlePrint}
-                                            className="dark:bg-zinc-800 bg-zinc-100 dark:text-zinc-300 text-zinc-600 hover:dark:bg-zinc-700 hover:bg-zinc-200 font-bold text-xs px-6 py-2.5 rounded-xl transition-all active:scale-95 flex items-center gap-2"
-                                        >
-                                            <Printer className="w-4 h-4" />
-                                            Print Report
-                                        </button>
-
                                         {!isLocked ? (
-                                            <div className="flex items-center gap-3">
-                                                <button 
-                                                    onClick={handleSaveInterpretation}
-                                                    disabled={isSaving || !interpretation.summary}
-                                                    className="dark:bg-zinc-800 bg-zinc-100 dark:text-zinc-300 text-zinc-600 hover:dark:bg-zinc-700 hover:bg-zinc-200 font-bold text-xs px-6 py-2.5 rounded-xl transition-all active:scale-95 disabled:opacity-40"
-                                                >
-                                                    {isSaving ? "Auto-saving..." : "Save Draft"}
-                                                </button>
-                                                <button 
-                                                    onClick={handleSubmit}
-                                                    disabled={isSubmitting || !interpretation.summary}
-                                                    className="bg-synos-primary text-white hover:opacity-90 px-8 py-3 rounded-2xl font-black text-sm shadow-xl shadow-synos-primary/20 transition-all active:scale-95 flex items-center gap-2 disabled:bg-zinc-300 dark:disabled:bg-zinc-800 disabled:shadow-none"
-                                                >
-                                                    {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-                                                    Submit for Verification
-                                                </button>
+                                            <div className="flex flex-col gap-3 w-full">
+                                                {lastSavedAt && (
+                                                    <div className="text-[10px] font-bold text-green-500 uppercase tracking-widest animate-pulse flex items-center gap-1.5 self-end">
+                                                        <div className="w-1.5 h-1.5 bg-green-500 rounded-full" />
+                                                        Preview Updated via Backend
+                                                    </div>
+                                                )}
+                                                <div className="flex items-center gap-3 w-full">
+                                                    <button 
+                                                        onClick={handleSaveInterpretation}
+                                                        disabled={isSaving || (!interpretation.interpretation && !interpretation.comments)}
+                                                        className="flex-1 dark:bg-zinc-800 bg-zinc-100 dark:text-zinc-300 text-zinc-600 hover:dark:bg-zinc-700 hover:bg-zinc-200 font-bold text-xs px-6 py-2.5 rounded-xl transition-all active:scale-95 disabled:opacity-40"
+                                                    >
+                                                        {isSaving ? (
+                                                            <div className="flex items-center justify-center gap-2">
+                                                                <Loader2 className="w-3 h-3 animate-spin" />
+                                                                Saving Truth...
+                                                            </div>
+                                                        ) : "Save Draft"}
+                                                    </button>
+                                                    <button 
+                                                        onClick={handleSubmit}
+                                                        disabled={isSubmitting || isSaving || !interpretation.interpretation}
+                                                        className="flex-1 bg-synos-primary text-white hover:opacity-90 px-4 py-3 rounded-2xl font-black text-xs shadow-xl shadow-synos-primary/20 transition-all active:scale-95 flex items-center justify-center gap-2 disabled:bg-zinc-300 dark:disabled:bg-zinc-800 disabled:shadow-none"
+                                                    >
+                                                        {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                                                        Submit to Pathologist
+                                                    </button>
+                                                </div>
                                             </div>
                                         ) : (
-                                            <div className="flex-1 max-w-sm flex items-center justify-center p-3 dark:bg-amber-500/10 bg-amber-50 rounded-2xl border border-amber-500/20 gap-3 ml-4">
+                                            <div className="flex-1 flex items-center justify-center p-3 dark:bg-amber-500/10 bg-amber-50 rounded-2xl border border-amber-500/20 gap-3">
                                                 <Clock className="w-4 h-4 text-amber-500" />
                                                 <span className="text-[10px] font-black uppercase tracking-widest text-amber-700 dark:text-amber-500">
-                                                    Locked: Pending Pathologist Review
+                                                    Pending Pathologist
                                                 </span>
                                             </div>
                                         )}
@@ -359,69 +382,42 @@ export function TypistTerminal() {
                     </div>
                 </div>
 
-                <div className="w-[25%] flex flex-col min-h-0">
-                    <div className="dark:bg-zinc-950/30 bg-zinc-100/50 dark:border-white/5 border-black/[0.05] border rounded-xl p-8 flex-1 overflow-y-auto custom-scrollbar flex flex-col items-center">
-                        <div id="printable-report" className="w-full bg-white shadow-2xl min-h-[800px] p-8 flex flex-col gap-6 relative">
-                            <div className="absolute top-0 left-0 w-full h-1 bg-synos-primary" />
-                            <div className="flex justify-between items-start border-b-2 border-slate-800 pb-4">
-                                <div className="text-2xl font-black italic tracking-tighter">SynOS</div>
-                                <div className="text-right">
-                                    <h4 className="font-bold text-sm uppercase">Draft Report</h4>
-                                    <p className="text-[10px] text-slate-500">PROVISIONAL DATA</p>
+                {/* RIGHT PANEL: Pure Live Render (50%) */}
+                <div className="w-[50%] flex flex-col min-h-0 no-print">
+                    <div className="dark:bg-zinc-900 bg-zinc-200 shadow-inner rounded-xl flex-1 flex flex-col min-h-0 overflow-hidden border dark:border-white/5 border-black/5">
+                        <div className="bg-white/80 dark:bg-zinc-950/80 backdrop-blur-md px-6 py-3 border-b dark:border-white/5 border-black/5 flex items-center justify-between z-10">
+                             <div className="flex items-center gap-2">
+                                <FileText className="w-4 h-4 text-synos-primary" />
+                                <span className="text-[10px] font-black uppercase tracking-widest dark:text-zinc-400 text-zinc-600">Draft Preview</span>
+                             </div>
+                             {reportData && (
+                                <div className="flex items-center gap-1.5">
+                                    <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
+                                    <span className="text-[8px] font-black uppercase tracking-tighter text-green-600">Synced</span>
                                 </div>
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-4 bg-zinc-50 p-4 rounded-lg">
-                                <div className="space-y-1">
-                                    <p className="text-[9px] font-black uppercase text-zinc-400 tracking-widest">Patient Identity</p>
-                                    <p className="font-bold text-sm uppercase underline decoration-synos-primary decoration-2 underline-offset-4">{reportStructure?.patientName || "---"}</p>
+                             )}
+                        </div>
+                        
+                        <div className="flex-1 overflow-auto bg-zinc-300/50 dark:bg-zinc-900/50 p-4 custom-scrollbar">
+                            {isLoadingDetail ? (
+                                <div className="h-full flex flex-col items-center justify-center opacity-30">
+                                    <Loader2 className="w-6 h-6 animate-spin mb-4" />
+                                    <span className="text-[8px] font-black uppercase tracking-[0.2em]">Synchronizing Context...</span>
                                 </div>
-                                <div className="space-y-1 text-right">
-                                    <p className="text-[9px] font-black uppercase text-zinc-400 tracking-widest">System Spine</p>
-                                    <p className="font-bold text-sm font-mono">{reportStructure?.token || "---"}</p>
-                                </div>
-                            </div>
-
-                            <div className="flex-1">
-                                <table className="w-full text-[11px]">
-                                    <thead className="border-b border-zinc-100">
-                                        <tr className="text-zinc-400 font-black uppercase tracking-widest">
-                                            <th className="text-left pb-2">Analysis</th>
-                                            <th className="text-right pb-2">Value</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-zinc-50">
-                                        {reportStructure?.groups?.map(g => g.parameters.map((p, i) => (
-                                            <tr key={i}>
-                                                <td className="py-2.5 text-zinc-600 font-semibold">{p.parameterName}</td>
-                                                <td className="py-2.5 text-right font-bold text-zinc-900">{p.value || "-"} {p.unit}</td>
-                                            </tr>
-                                        )))}
-                                    </tbody>
-                                </table>
-                            </div>
-
-                            {interpretation.summary && (
-                                <div className="border-t border-zinc-100 pt-6">
-                                    <h5 className="text-[9px] uppercase font-black text-zinc-400 mb-3 tracking-widest">Clinical Summary</h5>
-                                    <p className="text-xs leading-relaxed text-zinc-700 italic border-l-2 border-synos-primary pl-4">
-                                        {interpretation.summary}
+                            ) : !reportData ? (
+                                <div className="h-full flex flex-col items-center justify-center text-center opacity-20 p-8">
+                                    <Printer className="w-12 h-12 mb-4" />
+                                    <p className="text-[9px] font-black uppercase tracking-widest leading-relaxed">
+                                        Select a record to initialize high-fidelity render
                                     </p>
                                 </div>
-                            )}
-
-                            <div className="mt-auto pt-8 border-t border-dashed border-zinc-200">
-                                <div className="flex justify-between items-end opacity-30">
-                                    <div className="space-y-1">
-                                        <p className="text-[7px] font-black tracking-[0.2em] text-zinc-500 uppercase">Provisional Capture</p>
-                                        <p className="text-[8px] font-bold text-zinc-400 font-mono tracking-tighter">TYPIST: {user?.name?.toUpperCase()}</p>
-                                    </div>
-                                    <div className="text-right">
-                                        <div className="w-24 h-10 border-b-2 border-zinc-200 mb-1" />
-                                        <p className="text-[7px] font-black text-zinc-400 uppercase tracking-widest">Technician Sign</p>
+                            ) : (
+                                <div className="p-4 origin-top min-w-max flex justify-center">
+                                    <div className="bg-white shadow-[0_20px_50px_rgba(0,0,0,0.1)] rounded-sm overflow-hidden">
+                                        <ReportA4 reportData={reportData} />
                                     </div>
                                 </div>
-                            </div>
+                            )}
                         </div>
                     </div>
                 </div>

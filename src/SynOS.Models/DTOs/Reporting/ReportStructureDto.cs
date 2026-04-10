@@ -42,6 +42,7 @@ namespace SynOS.Models.DTOs.Reporting
         public bool IsOverridden { get; set; }
         public string? OverrideReason { get; set; }
         public bool IsCalculated { get; set; }
+        public bool IsAbnormal { get; set; }
     }
 
     public class ReportNoteDto

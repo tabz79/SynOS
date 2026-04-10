@@ -9,6 +9,7 @@ import { LoginPage } from '@/pages/LoginPage'
 import { PathologistTerminal } from '@/features/pathology/PathologistTerminal'
 import { TypistTerminal } from '@/features/typing/TypistTerminal'
 import { DeliveryTerminal } from '@/features/delivery/DeliveryTerminal'
+import { DocumentPrinter } from '@/features/documents/DocumentPrinter'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 
 function RootRedirect() {
@@ -45,6 +46,9 @@ function App() {
           <Routes>
             {/* Public Route */}
             <Route path="/login" element={<LoginPage />} />
+
+            {/* Document Engine (Decoupled Print Pipeline) */}
+            <Route path="/print/report/:id" element={<DocumentPrinter />} />
 
             {/* Protected Routes */}
             <Route element={<ProtectedRoute allowedRoles={['Receptionist']} />}>

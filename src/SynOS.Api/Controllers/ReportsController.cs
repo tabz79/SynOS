@@ -228,6 +228,22 @@ namespace SynOS.Api.Controllers
                 return BadRequest(new { message = ex.Message });
             }
         }
+
+        [HttpGet("{reportId}/data")]
+        [Authorize(Policy = "ReportingPolicy")]
+        public async Task<IActionResult> GetReportData(Guid reportId, [FromQuery] bool forceLive = false)
+        {
+            try
+            {
+                var data = await _reportService.GetReportDataForPdfAsync(reportId, forceLive);
+                if (data == null) return NotFound(new { message = "Report data not found." });
+                return Ok(data);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
         [HttpGet("pathologists")]
         [Authorize(Policy = "ReportingPolicy")]
         public async Task<IActionResult> GetPathologists()

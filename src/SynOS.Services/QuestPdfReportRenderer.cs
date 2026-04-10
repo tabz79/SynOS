@@ -173,13 +173,29 @@ namespace SynOS.Services
                         header.Cell().BorderBottom(1).Text("Reference Range").SemiBold();
                     });
 
-                    foreach (var parameter in data.Parameters)
+                    foreach (var group in data.Results)
                     {
-                        table.Cell().BorderBottom(0.5f).BorderColor(Colors.Grey.Lighten3).PaddingVertical(3).Text(parameter.Name);
-                        table.Cell().BorderBottom(0.5f).BorderColor(Colors.Grey.Lighten3).PaddingVertical(3)
-                              .Text(parameter.Value).FontColor(parameter.IsCritical && config.HighlightCriticalValues ? Colors.Red.Medium : Colors.Black);
-                        table.Cell().BorderBottom(0.5f).BorderColor(Colors.Grey.Lighten3).PaddingVertical(3).Text(parameter.Unit);
-                        table.Cell().BorderBottom(0.5f).BorderColor(Colors.Grey.Lighten3).PaddingVertical(3).Text(parameter.ReferenceRange);
+                        // Group Heading
+                        table.Cell().ColumnSpan(4).Background(Colors.Grey.Lighten4).PaddingVertical(2).PaddingHorizontal(5)
+                             .Text(group.GroupName).SemiBold().FontSize(11);
+
+                        foreach (var parameter in group.Parameters)
+                        {
+                            table.Cell().BorderBottom(0.5f).BorderColor(Colors.Grey.Lighten3).PaddingVertical(3).Text(parameter.Name);
+                            
+                            var valueCell = table.Cell().BorderBottom(0.5f).BorderColor(Colors.Grey.Lighten3).PaddingVertical(3);
+                            if (parameter.IsAbnormal)
+                            {
+                                valueCell.Text(parameter.DisplayValue ?? parameter.Value).FontColor(Colors.Red.Medium).SemiBold();
+                            }
+                            else
+                            {
+                                valueCell.Text(parameter.DisplayValue ?? parameter.Value);
+                            }
+
+                            table.Cell().BorderBottom(0.5f).BorderColor(Colors.Grey.Lighten3).PaddingVertical(3).Text(parameter.Unit);
+                            table.Cell().BorderBottom(0.5f).BorderColor(Colors.Grey.Lighten3).PaddingVertical(3).Text(parameter.ReferenceRangeText);
+                        }
                     }
                 });
             });
@@ -227,38 +243,42 @@ namespace SynOS.Services
 
             column.Item().PaddingTop(20).AlignRight().Column(sigCol =>
             {
-                if (data.Signature?.SignatureImage != null)
+                if (data.Signatures != null && data.Signatures.Any())
                 {
-                    if (config.ShowDigitalSignatureImage)
+                    foreach (var sig in data.Signatures)
                     {
-                        sigCol.Item().Height(50).Width(150).Image(data.Signature.SignatureImage);
-                    }
-                    if (config.ShowDoctorName)
-                    {
-                        sigCol.Item().Text(data.Signature.DoctorName).SemiBold();
-                    }
-                    if (config.ShowCredentials)
-                    {
-                        sigCol.Item().Text(data.Signature.Credentials);
-                    }
-                    if (data.SignedAt.HasValue)
-                    {
-                        sigCol.Item().Text($"Signed at: {data.SignedAt.Value:yyyy-MM-dd HH:mm:ss 'UTC'}");
+                        if (sig.SignatureImage != null && config.ShowDigitalSignatureImage)
+                        {
+                            sigCol.Item().Height(50).Width(150).Image(sig.SignatureImage);
+                        }
+                        if (config.ShowDoctorName)
+                        {
+                            sigCol.Item().Text(sig.DoctorName).SemiBold();
+                        }
+                        if (config.ShowCredentials)
+                        {
+                            sigCol.Item().Text(sig.Credentials).FontSize(9);
+                        }
+                        if (sig.SignedAt.HasValue)
+                        {
+                            sigCol.Item().Text($"Signed at: {sig.SignedAt.Value:yyyy-MM-dd HH:mm:ss 'UTC'}").FontSize(8).FontColor(Colors.Grey.Medium);
+                        }
+                        sigCol.Item().PaddingBottom(10);
                     }
                 }
                 else
                 {
-                    sigCol.Item().Text("Not signed");
+                    sigCol.Item().Text("Not signed").Italic().FontColor(Colors.Grey.Medium);
                 }
             });
         }
 
         private void RenderQRCode(ColumnDescriptor column, ReportDataModel data, QRCodeConfig? config)
         {
-            if (config == null || string.IsNullOrWhiteSpace(data.VerificationQrCodeContent)) return;
+            if (config == null || string.IsNullOrWhiteSpace(data.Verification?.QrCodeContent)) return;
 
             var qrGenerator = new QRCodeGenerator();
-            var qrCodeData = qrGenerator.CreateQrCode(data.VerificationQrCodeContent, QRCodeGenerator.ECCLevel.Q);
+            var qrCodeData = qrGenerator.CreateQrCode(data.Verification.QrCodeContent, QRCodeGenerator.ECCLevel.Q);
             var qrCode = new PngByteQRCode(qrCodeData);
             var qrCodeImage = qrCode.GetGraphic(20);
 

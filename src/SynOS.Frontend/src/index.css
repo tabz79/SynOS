@@ -218,10 +218,16 @@
   }
 }
 @media print {
+  @page {
+    size: A4;
+    margin: 0; /* Let React component handle margins for precise control */
+  }
+
   /* Hide UI junk */
   .no-print {
     display: none !important;
   }
+
   /* Let document flow naturally */
   html, body, #root {
     height: auto !important;
@@ -239,14 +245,29 @@
   .overflow-hidden {
     overflow: visible !important;
   }
+
   /* Printable report content */
   #printable-report {
     position: relative !important;
-    width: 100% !important;
+    width: 210mm !important; /* Force A4 Width */
     display: block !important;
     visibility: visible !important;
     box-shadow: none !important;
     border: none !important;
+    margin: 0 auto !important;
   }
+
+  /* Prevent row splitting and group orphans */
+  tr {
+    break-inside: avoid;
+    break-after: auto;
+  }
+
+  /* Signatures MUST be together */
+  .no-break {
+    break-inside: avoid !important;
+  }
+
   * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
 }
+

@@ -249,3 +249,4 @@
 2026-04-08 11:08:53.652 +05:30 [WRN] Failed to determine the https port for redirect.
 2026-04-08 11:08:55.998 +05:30 [INF] Terminal web-1zy6xxtky authorized and added to Thermal80mm group for Branch "a0000000-0000-0000-0000-000000000001".
 2026-04-08 11:09:09.801 +05:30 [INF] Terminal web-1zy6xxtky authorized and added to Thermal80mm group for Branch "a0000000-0000-0000-0000-000000000001".
+2026-04-08 13:37:12.836 +05:30 [INF] Terminal web-1zy6xxtky authorized and added to Thermal80mm group for Branch "a0000000-0000-0000-0000-000000000001".

@@ -489,7 +489,14 @@ namespace SynOS.Services
 
             var reportData = new ReportDataModel
             {
-                ReportTitle = $"Radiology Report - {studyEntity.Order.Test.TestName}", // Corrected to Test.TestName
+                Metadata = new ReportMetadata
+                {
+                    ContractVersion = 2,
+                    GeneratedFrom = "live",
+                    GeneratedAt = DateTimeOffset.UtcNow,
+                    ReferenceDoctor = result.visit.Referrer?.ProviderName ?? "Self / Walk-in"
+                },
+                ReportTitle = $"Radiology Report - {studyEntity.Order.Test.TestName}",
                 Modality = studyEntity.Modality,
                 Patient = new PatientInfo
                 {
@@ -499,17 +506,40 @@ namespace SynOS.Services
                     Gender = studyEntity.Patient.Gender.ToString(),
                     ContactInfo = studyEntity.Patient.CurrentPhoneNumber
                 },
+                Results = new List<ResultGroup>
+                {
+                    new ResultGroup
+                    {
+                        GroupName = "Findings",
+                        Parameters = new List<ParameterResult>
+                        {
+                            new ParameterResult
+                            {
+                                Name = "Clinical Findings",
+                                Value = report.RadiologyReport.Findings,
+                                DisplayValue = report.RadiologyReport.Findings
+                            }
+                        }
+                    }
+                },
                 Comments = report.RadiologyReport.Findings,
                 Interpretation = report.RadiologyReport.Impression,
                 Recommendations = report.RadiologyReport.AdditionalNotes,
-                Signature = new SignatureDetails
+                Signatures = new List<ReportSignatureDetails>
                 {
-                    DoctorName = signingUser.Name,
-                    Credentials = signingUser.Designation,
+                    new ReportSignatureDetails
+                    {
+                        DoctorName = signingUser.Name,
+                        Credentials = signingUser.Designation,
+                        SignedAt = DateTimeOffset.UtcNow,
+                        Role = "Radiologist"
+                    }
                 },
-                VerificationQrCodeContent = $"SynOS Report: {report.ReportId}",
-                SignedAt = DateTimeOffset.UtcNow,
-                ReportVersion = 1
+                Verification = new VerificationInfo
+                {
+                    QrCodeContent = $"SynOS Report: {report.ReportId}",
+                    ReportVersion = 1
+                }
             };
 
             var defaultTemplate = await _templateService.GetTemplatesAsync(studyEntity.Modality, false);

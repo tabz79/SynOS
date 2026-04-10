@@ -14,7 +14,7 @@ namespace SynOS.Services
         Task SaveFinalResultsAsync(Guid orderId, SaveFinalResultsRequestDto request);
         Task<FinalReportDto> GetFinalReportAsync(Guid orderId);
         Task MarkReportAsDeliveredAsync(Guid orderId);
-        Task<ReportDataModel?> GetReportDataForPdfAsync(Guid visitId);
-        Task<System.Collections.Generic.IEnumerable<ReportListItemDto>> GetReportsByStatusAsync(string status);
+        Task<ReportDataModel?> GetReportDataForPdfAsync(Guid reportId, bool forceLive = false);
+        Task<IEnumerable<ReportListItemDto>> GetReportsByStatusAsync(string status);
     }
 }
