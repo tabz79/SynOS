@@ -134,6 +134,9 @@ namespace SynOS.Data
         public DbSet<LabAnalyzerResultInbox> LabAnalyzerResultInbox { get; set; } = null!;
         public DbSet<LabAnalyzerTestMapping> LabAnalyzerTestMappings { get; set; } = null!;
 
+        // NEW: Branding & Identity (GPT-5 Mandate)
+        public DbSet<LabProfile> LabProfiles { get; set; } = null!;
+
         // DbSets for Referral System
         public DbSet<ReferralPartner> ReferralPartners { get; set; } = null!;
         public DbSet<ReferralCommissionRule> ReferralCommissionRules { get; set; } = null!;

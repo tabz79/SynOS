@@ -20,6 +20,7 @@ namespace SynOS.Data
             
             SeedBranches(context); // Seed branches first
             SeedRolesAndUsers(context);
+            SeedLabProfile(context);
 
             SeedSpecimenTypes(context);
             SeedTubes(context);
@@ -243,6 +244,8 @@ namespace SynOS.Data
                         Email = userData.Email,
                         PasswordHash = BCrypt.Net.BCrypt.HashPassword(userData.Password),
                         IsActive = true,
+                        Designation = userData.Email == "admin@synos.com" ? "Chief Pathologist" : null,
+                        IsDefaultSignatory = userData.Email == "admin@synos.com",
                         CanUseOperationalMode = userData.CanUseOperational,
                         CanUseOversightMode = userData.CanUseOversight
                     };
@@ -419,6 +422,27 @@ namespace SynOS.Data
                     context.ImsTubeMasters.Add(tube);
                 }
             }
+            context.SaveChanges();
+        }
+
+        private static void SeedLabProfile(SynOSDbContext context)
+        {
+            if (context.LabProfiles.Any()) return;
+
+            context.LabProfiles.Add(new LabProfile
+            {
+                Name = "SRI DIVYA DIAGNOSTIC CENTRE",
+                Tagline = "AN ISO 9001:2015 CERTIFIED DIAGNOSTIC CENTRE",
+                Address = "H.No. 8-1-162, Near Old Bus Station, Old Municipal office Road, KHAMMAM - 507001",
+                Phone = "Cell : 7032996647",
+                Email = "sridivyadiagnostics@gmail.com",
+                Website = "https://www.sridivya.in",
+                Accreditation = "AN ISO 9001:2015 CERTIFIED DIAGNOSTIC CENTRE",
+                FooterDisclaimer = "* Clinical correlation of findings. If necessary Discuss / Repeat.",
+                HeaderLogoUrl = "/branding/logo_placeholder.png", // Skeleton mode will ignore this but model requires it
+                UpdatedAt = DateTimeOffset.UtcNow
+            });
+
             context.SaveChanges();
         }
     }

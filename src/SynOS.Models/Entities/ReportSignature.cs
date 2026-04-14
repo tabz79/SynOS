@@ -38,6 +38,13 @@ namespace SynOS.Models.Entities
         [Required]
         public int ReportVersion { get; set; } = 1;
 
+        // GPT-5 Rule: Immutable snapshots
+        [MaxLength(200)]
+        public string DoctorName { get; set; } = string.Empty;
+        
+        [MaxLength(200)]
+        public string DoctorDesignation { get; set; } = string.Empty;
+
         public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
     }
 }

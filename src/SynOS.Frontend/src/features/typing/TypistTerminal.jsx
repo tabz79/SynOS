@@ -344,26 +344,29 @@ export function TypistTerminal() {
                                                         Preview Updated via Backend
                                                     </div>
                                                 )}
-                                                <div className="flex items-center gap-3 w-full">
+                                                <div className="grid grid-cols-3 gap-3 w-full">
                                                     <button 
                                                         onClick={handleSaveInterpretation}
                                                         disabled={isSaving || (!interpretation.interpretation && !interpretation.comments)}
-                                                        className="flex-1 dark:bg-zinc-800 bg-zinc-100 dark:text-zinc-300 text-zinc-600 hover:dark:bg-zinc-700 hover:bg-zinc-200 font-bold text-xs px-6 py-2.5 rounded-xl transition-all active:scale-95 disabled:opacity-40"
+                                                        className="dark:bg-zinc-800 bg-zinc-100 dark:text-zinc-300 text-zinc-600 hover:dark:bg-zinc-700 hover:bg-zinc-200 font-bold text-[10px] px-2 py-2.5 rounded-xl transition-all active:scale-95 disabled:opacity-40 uppercase tracking-tight"
                                                     >
-                                                        {isSaving ? (
-                                                            <div className="flex items-center justify-center gap-2">
-                                                                <Loader2 className="w-3 h-3 animate-spin" />
-                                                                Saving Truth...
-                                                            </div>
-                                                        ) : "Save Draft"}
+                                                        {isSaving ? "Saving..." : "Save Draft"}
+                                                    </button>
+                                                    <button 
+                                                        onClick={() => window.print()}
+                                                        disabled={!selectedReportId}
+                                                        className="dark:bg-zinc-800 bg-zinc-900 dark:text-zinc-200 text-white hover:opacity-90 font-bold text-[10px] px-2 py-2.5 rounded-xl transition-all active:scale-95 flex items-center justify-center gap-2 uppercase tracking-tight"
+                                                    >
+                                                        <Printer className="w-3 h-3" />
+                                                        Print
                                                     </button>
                                                     <button 
                                                         onClick={handleSubmit}
                                                         disabled={isSubmitting || isSaving || !interpretation.interpretation}
-                                                        className="flex-1 bg-synos-primary text-white hover:opacity-90 px-4 py-3 rounded-2xl font-black text-xs shadow-xl shadow-synos-primary/20 transition-all active:scale-95 flex items-center justify-center gap-2 disabled:bg-zinc-300 dark:disabled:bg-zinc-800 disabled:shadow-none"
+                                                        className="bg-synos-primary text-white hover:opacity-90 px-2 py-2.5 rounded-xl font-black text-[10px] shadow-xl shadow-synos-primary/20 transition-all active:scale-95 flex items-center justify-center gap-1.5 disabled:bg-zinc-300 dark:disabled:bg-zinc-800 disabled:shadow-none uppercase tracking-tight"
                                                     >
-                                                        {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-                                                        Submit to Pathologist
+                                                        {isSubmitting ? <Loader2 className="w-3 h-3 animate-spin" /> : <Send className="w-3 h-3" />}
+                                                        Submit for Review
                                                     </button>
                                                 </div>
                                             </div>
@@ -383,9 +386,9 @@ export function TypistTerminal() {
                 </div>
 
                 {/* RIGHT PANEL: Pure Live Render (50%) */}
-                <div className="w-[50%] flex flex-col min-h-0 no-print">
+                <div className="w-[50%] flex flex-col min-h-0">
                     <div className="dark:bg-zinc-900 bg-zinc-200 shadow-inner rounded-xl flex-1 flex flex-col min-h-0 overflow-hidden border dark:border-white/5 border-black/5">
-                        <div className="bg-white/80 dark:bg-zinc-950/80 backdrop-blur-md px-6 py-3 border-b dark:border-white/5 border-black/5 flex items-center justify-between z-10">
+                        <div className="bg-white/80 dark:bg-zinc-950/80 backdrop-blur-md px-6 py-3 border-b dark:border-white/5 border-black/5 flex items-center justify-between z-10 no-print">
                              <div className="flex items-center gap-2">
                                 <FileText className="w-4 h-4 text-synos-primary" />
                                 <span className="text-[10px] font-black uppercase tracking-widest dark:text-zinc-400 text-zinc-600">Draft Preview</span>
@@ -398,22 +401,22 @@ export function TypistTerminal() {
                              )}
                         </div>
                         
-                        <div className="flex-1 overflow-auto bg-zinc-300/50 dark:bg-zinc-900/50 p-4 custom-scrollbar">
+                        <div className="flex-1 overflow-auto bg-zinc-300/50 dark:bg-zinc-900/50 p-4 custom-scrollbar print:overflow-visible print:bg-white print:p-0">
                             {isLoadingDetail ? (
-                                <div className="h-full flex flex-col items-center justify-center opacity-30">
+                                <div className="h-full flex flex-col items-center justify-center opacity-30 no-print">
                                     <Loader2 className="w-6 h-6 animate-spin mb-4" />
                                     <span className="text-[8px] font-black uppercase tracking-[0.2em]">Synchronizing Context...</span>
                                 </div>
                             ) : !reportData ? (
-                                <div className="h-full flex flex-col items-center justify-center text-center opacity-20 p-8">
+                                <div className="h-full flex flex-col items-center justify-center text-center opacity-20 p-8 no-print">
                                     <Printer className="w-12 h-12 mb-4" />
                                     <p className="text-[9px] font-black uppercase tracking-widest leading-relaxed">
                                         Select a record to initialize high-fidelity render
                                     </p>
                                 </div>
                             ) : (
-                                <div className="p-4 origin-top min-w-max flex justify-center">
-                                    <div className="bg-white shadow-[0_20px_50px_rgba(0,0,0,0.1)] rounded-sm overflow-hidden">
+                                <div className="p-4 origin-top min-w-max flex justify-center print:p-0 print:block">
+                                    <div className="bg-white shadow-[0_20px_50px_rgba(0,0,0,0.1)] rounded-sm overflow-hidden print:shadow-none print:rounded-none">
                                         <ReportA4 reportData={reportData} />
                                     </div>
                                 </div>

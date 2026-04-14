@@ -42,6 +42,7 @@ namespace SynOS.Models.Entities
         [MaxLength(500)]
         public string? SignatureImageUrl { get; set; }
         public DateTimeOffset? SignatureUpdatedAt { get; set; }
+        public bool IsDefaultSignatory { get; set; } = false; // GPT-5 Rule: Role-based identity selection
 
         public bool CanUseOperationalMode { get; set; } = true;
         public bool CanUseOversightMode { get; set; } = false;

@@ -34,6 +34,10 @@ namespace SynOS.Services
         public DateTimeOffset? SampleReceivedAt { get; set; }
         public string? SampleReceivedAtFormatted { get; set; }
         public string? ReferenceDoctor { get; set; }
+        
+        // NEW: Production Metadata (Resolution from Photo)
+        public string? BillingDateFormatted { get; set; }
+        public string? PreparedBy { get; set; } // Typist Initial
     }
 
     public class LabDetails
@@ -44,6 +48,12 @@ namespace SynOS.Services
         public string Contact { get; set; } = string.Empty;
         public string Accreditation { get; set; } = string.Empty;
         public string? LogoUrl { get; set; }
+        
+        // NEW: Branding Extensions (GPT-5 Rule)
+        public string? Website { get; set; }
+        public string? Email { get; set; }
+        public string? Phone { get; set; }
+        public string? FooterDisclaimer { get; set; }
     }
 
     public class ResultGroup

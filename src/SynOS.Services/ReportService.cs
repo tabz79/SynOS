@@ -188,6 +188,9 @@ namespace SynOS.Services
                 SignatureImageUrl = user.SignatureImageUrl,
                 SignatureHash = signatureHash,
                 ReportVersion = currentVersion,
+                // GPT-5 Rule: Immutable snapshots
+                DoctorName = user.Name,
+                DoctorDesignation = user.Designation ?? "Consultant Pathologist"
             };
             await _context.ReportSignatures.AddAsync(reportSignature);
 
@@ -540,38 +543,98 @@ namespace SynOS.Services
                 .AsNoTracking()
                 .FirstOrDefaultAsync(ri => ri.ReportId == report.ReportId);
             
-            // Fetch Signatures
-            var signatures = await _context.ReportSignatures
+            // Fetch Signatures (GPT-5 Rule: Immutable snapshots)
+            var signatureEntities = await _context.ReportSignatures
                 .Include(s => s.SignedByUser)
                 .Where(s => s.ReportId == report.ReportId)
                 .OrderBy(s => s.SignedAt)
-                .Select(s => new ReportSignatureDetails
+                .ToListAsync();
+
+            var signatures = new List<ReportSignatureDetails>();
+            foreach (var s in signatureEntities)
+            {
+                var sigDetail = new ReportSignatureDetails
                 {
-                    DoctorName = s.SignedByUser!.Name,
-                    Credentials = "Pathologist", // Expand in metadata if needed
+                    DoctorName = !string.IsNullOrEmpty(s.DoctorName) ? s.DoctorName : s.SignedByUser!.Name,
+                    Credentials = !string.IsNullOrEmpty(s.DoctorDesignation) ? s.DoctorDesignation : "Pathologist",
                     Role = "Consultant Pathologist",
                     SignedAt = s.SignedAt,
-                    Hash = s.SignatureHash,
-                    SignatureImage = !string.IsNullOrEmpty(s.SignatureImageUrl) ? File.ReadAllBytes(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "wwwroot", s.SignatureImageUrl)) : null,
-                    SignatureImageBase64 = !string.IsNullOrEmpty(s.SignatureImageUrl) ? Convert.ToBase64String(File.ReadAllBytes(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "wwwroot", s.SignatureImageUrl))) : null
-                })
-                .ToListAsync();
+                    Hash = s.SignatureHash
+                };
+
+                // Safe File Loading
+                if (!string.IsNullOrEmpty(s.SignatureImageUrl))
+                {
+                    var fullPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "wwwroot", s.SignatureImageUrl.TrimStart('/'));
+                    if (File.Exists(fullPath))
+                    {
+                        try
+                        {
+                            var bytes = await File.ReadAllBytesAsync(fullPath);
+                            sigDetail.SignatureImage = bytes;
+                            sigDetail.SignatureImageBase64 = Convert.ToBase64String(bytes);
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogWarning(ex, "Failed to read signature image at {Path}", fullPath);
+                        }
+                    }
+                }
+                signatures.Add(sigDetail);
+            }
+
+            // RULE #1: Baseline Identity (Inject Lab Owner/Director if no signatures exist)
+            if (!signatures.Any())
+            {
+                var director = await _context.Users
+                    .FirstOrDefaultAsync(u => u.IsDefaultSignatory); // System Default Identity Resolved via Flag
+
+                if (director != null)
+                {
+                    signatures.Add(new ReportSignatureDetails
+                    {
+                        DoctorName = director.Name,
+                        Credentials = director.Designation ?? "Chief Pathologist",
+                        Role = "Lab Director (Identity)",
+                        SignedAt = report.CreatedAt,
+                        Hash = "IDENTITY_ONLY",
+                        SignatureImage = null, // Will render text-based default if missing
+                        SignatureImageBase64 = null
+                    });
+                }
+            }
 
             // Fetch Specimen for collection timestamps
             var specimen = await _context.Specimens
                 .FirstOrDefaultAsync(s => s.SpecimenId == order.SpecimenId);
+
+            // Fetch Lab Identity (GPT-5 Dynamic Branding Mandate)
+            var labProfile = await _context.LabProfiles.AsNoTracking().FirstOrDefaultAsync();
+            if (labProfile == null)
+            {
+                // Safety fallback if seed hasn't run yet
+                labProfile = new LabProfile 
+                { 
+                    Name = "SynOS Laboratory", 
+                    Address = "Default Address",
+                    FooterDisclaimer = "* Clinical correlation required."
+                };
+            }
 
             var now = DateTimeOffset.UtcNow;
             var model = new ReportDataModel
             {
                 Lab = new LabDetails
                 {
-                    Name = "SynOS Laboratory",
-                    Subtitle = "Enterprise Lab Intelligence System",
-                    Address = "123 Diagnostic Street, Suite 100, Ahmedabad - 380001, GL, India",
-                    Contact = "Ph: +91 98765 43210 | info@synoslab.com",
-                    Accreditation = "NABL ACCREDITED LAB (MC-1234)",
-                    LogoUrl = null // Placeholder for future expansion
+                    Name = labProfile.Name,
+                    Subtitle = labProfile.Tagline ?? "Enterprise Lab Intelligence System",
+                    Address = labProfile.Address,
+                    Email = labProfile.Email,
+                    Website = labProfile.Website,
+                    Phone = labProfile.Phone,
+                    Accreditation = labProfile.Accreditation ?? string.Empty,
+                    FooterDisclaimer = labProfile.FooterDisclaimer,
+                    LogoUrl = labProfile.HeaderLogoUrl
                 },
                 Metadata = new ReportMetadata
                 {
@@ -588,7 +651,9 @@ namespace SynOS.Services
                     SampleReceivedAtFormatted = specimen != null 
                         ? specimen.CreatedAt.ToString("dd MMM yyyy, hh:mm tt") 
                         : "N/A",
-                    ReferenceDoctor = order.Visit.Referrer?.ProviderName ?? "Self / Walk-in"
+                    ReferenceDoctor = order.Visit?.Referrer?.ProviderName ?? "Self / Walk-in",
+                    BillingDateFormatted = order.Visit?.CreatedAt.ToString("dd-MMM-yyyy") ?? "N/A",
+                    PreparedBy = report.TypedByUser?.Name ?? "N/A"
                 },
                 Modality = order.Department,
                 ReportTitle = $"{order.Department} Diagnostic Report",
