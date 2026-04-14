@@ -183,8 +183,8 @@ export function PathologistTerminal() {
 
             <div className="flex-1 flex flex-row gap-4 p-4 overflow-hidden">
                 
-                {/* LEFT PANEL: Worklist (20%) */}
-                <div className="w-[20%] flex flex-col gap-4 min-h-0">
+                {/* LEFT PANEL: Worklist (15%) */}
+                <div className="w-[15%] flex flex-col gap-4 min-h-0">
                     <div className="dark:bg-zinc-900 bg-white dark:border-white/5 border-black/[0.1] shadow-[0_4px_20px_rgba(0,0,0,0.05)] rounded-xl p-4 flex flex-col gap-3 shrink-0">
                         <div className="flex items-center justify-between">
                             <h2 className="text-lg font-bold flex items-center gap-2 dark:text-zinc-200">
@@ -228,8 +228,8 @@ export function PathologistTerminal() {
                     </div>
                 </div>
 
-                {/* CENTER PANEL: Report Editor (55%) */}
-                <div className="w-[55%] flex flex-col gap-4 min-h-0">
+                {/* CENTER PANEL: Report Editor (35%) */}
+                <div className="w-[35%] flex flex-col gap-4 min-h-0">
                     <div className="dark:bg-zinc-900 bg-white dark:border-white/5 border-black/[0.1] shadow-[0_4px_20px_rgba(0,0,0,0.05)] rounded-xl p-6 flex-1 flex flex-col min-h-0">
                         {isLoadingDetail ? (
                             <div className="flex-1 flex flex-col items-center justify-center opacity-50">
@@ -444,8 +444,8 @@ export function PathologistTerminal() {
                     </div>
                 </div>
 
-                {/* RIGHT PANEL: Pure Live Render (25%) */}
-                <div className="w-[25%] flex flex-col min-h-0">
+                {/* RIGHT PANEL: Pure Live Render (50%) */}
+                <div className="w-[50%] flex flex-col min-h-0">
                     <div className="dark:bg-zinc-900 bg-zinc-200 shadow-inner rounded-xl flex-1 flex flex-col min-h-0 overflow-hidden border dark:border-white/5 border-black/5">
                         <div className="bg-white/80 dark:bg-zinc-950/80 backdrop-blur-md px-6 py-3 border-b dark:border-white/5 border-black/5 flex items-center justify-between z-10 shrink-0">
                              <div className="flex items-center gap-2">
@@ -484,8 +484,8 @@ export function PathologistTerminal() {
                                     </p>
                                 </div>
                             ) : (
-                                <div className="p-4 origin-top scale-[0.65] mt-[-150px] flex justify-center">
-                                    <div className="bg-white shadow-[0_20px_50px_rgba(0,0,0,0.1)] rounded-sm overflow-hidden min-w-[800px]">
+                                <div className="p-4 origin-top min-w-max flex justify-center">
+                                    <div className="bg-white shadow-[0_20px_50px_rgba(0,0,0,0.1)] rounded-sm overflow-hidden">
                                         <ReportA4 reportData={reportData} />
                                     </div>
                                 </div>
