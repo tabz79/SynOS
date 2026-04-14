@@ -360,3 +360,25 @@ Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid object name 'LabProf
    at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
 ClientConnectionId:4504d2d3-e29f-4c2e-bf3b-e6706d667d7d
 Error Number:208,State:1,Class:16
+2026-04-14 11:06:55.316 +05:30 [INF] OperationalStatsProjectionWorker is starting in Event-Driven Mode.
+2026-04-14 11:06:55.385 +05:30 [INF] Worker: Running Consistency Check and Catch-up...
+2026-04-14 11:06:55.937 +05:30 [INF] [ProjectorDebug] Processing Event Type: SPECIMEN_ORDERED, BranchId: "a0000000-0000-0000-0000-000000000001", SourceId: "0550a508-9bce-4643-a164-3aa594640b93", SourceType: Visit, VisitId: 0550a508-9bce-4643-a164-3aa594640b93
+2026-04-14 11:06:56.275 +05:30 [INF] [ProjectorDebug] Checking Fact Deduplication for SourceId: "0550a508-9bce-4643-a164-3aa594640b93"
+2026-04-14 11:06:56.443 +05:30 [WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+2026-04-14 11:06:56.682 +05:30 [INF] [ProjectorDebug] Processing Event Type: RESULT_DRAFT_STARTED, BranchId: "a0000000-0000-0000-0000-000000000001", SourceId: "34238039-d846-4422-9f60-fd4fd428651f", SourceType: Result, VisitId: 0550a508-9bce-4643-a164-3aa594640b93
+2026-04-14 11:06:56.695 +05:30 [INF] [ProjectorDebug] Checking Fact Deduplication for SourceId: "34238039-d846-4422-9f60-fd4fd428651f"
+2026-04-14 11:06:56.702 +05:30 [WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+2026-04-14 11:06:56.714 +05:30 [INF] [ProjectorDebug] Processing Event Type: REPORT_READY_FOR_VERIFICATION, BranchId: "a0000000-0000-0000-0000-000000000001", SourceId: "df24b834-8725-4d6f-9aa2-b41d31e196a2", SourceType: Report, VisitId: 0550a508-9bce-4643-a164-3aa594640b93
+2026-04-14 11:06:56.726 +05:30 [INF] [ProjectorDebug] Checking Fact Deduplication for SourceId: "df24b834-8725-4d6f-9aa2-b41d31e196a2"
+2026-04-14 11:06:56.733 +05:30 [WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+2026-04-14 11:06:56.737 +05:30 [INF] Worker: Catch-up complete. Awaiting real-time events...
+2026-04-14 11:11:16.456 +05:30 [WRN] Failed to determine the https port for redirect.
+2026-04-14 11:11:16.963 +05:30 [INF] Terminal web-1zy6xxtky authorized and added to Thermal80mm group for Branch "a0000000-0000-0000-0000-000000000001".
+2026-04-14 11:11:20.133 +05:30 [WRN] The query uses the 'First'/'FirstOrDefault' operator without 'OrderBy' and filter operators. This may lead to unpredictable results.
+2026-04-14 11:22:00.771 +05:30 [INF] Terminal web-1zy6xxtky authorized and added to Thermal80mm group for Branch "a0000000-0000-0000-0000-000000000001".
+2026-04-14 11:23:55.367 +05:30 [INF] Terminal web-1zy6xxtky authorized and added to Thermal80mm group for Branch "a0000000-0000-0000-0000-000000000001".
+2026-04-14 11:26:56.450 +05:30 [INF] Terminal web-1zy6xxtky authorized and added to Thermal80mm group for Branch "a0000000-0000-0000-0000-000000000001".
+2026-04-14 11:27:03.598 +05:30 [INF] Terminal web-1zy6xxtky authorized and added to Thermal80mm group for Branch "a0000000-0000-0000-0000-000000000001".
+2026-04-14 11:27:28.755 +05:30 [INF] Terminal web-1zy6xxtky authorized and added to Thermal80mm group for Branch "a0000000-0000-0000-0000-000000000001".
+2026-04-14 11:29:05.991 +05:30 [INF] Terminal web-1zy6xxtky authorized and added to Thermal80mm group for Branch "a0000000-0000-0000-0000-000000000001".
+2026-04-14 11:35:14.668 +05:30 [INF] Terminal web-1zy6xxtky authorized and added to Thermal80mm group for Branch "a0000000-0000-0000-0000-000000000001".

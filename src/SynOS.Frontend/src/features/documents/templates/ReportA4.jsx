@@ -169,9 +169,6 @@ export const ReportA4 = ({ reportData }) => {
         </div>
 
       </div>
-
-    </div>
-
     </div>
   );
 };
