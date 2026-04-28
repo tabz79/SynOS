@@ -148,7 +148,8 @@ export function TypistTerminal() {
 
     const handlePrint = () => {
         if (!selectedReportId) return;
-        window.open(`/print/report/${selectedReportId}`, '_blank');
+        // GPT-5 Rule: Draft phase MUST use forceLive to prevent stale snapshot 'Legacy' leak
+        window.open(`/print/report/${selectedReportId}?forceLive=true`, '_blank');
     };
 
     const isLocked = reportStructure?.status === 'ReadyForVerification' || reportStructure?.status === 'Signed' || reportStructure?.status === 'ManualVerified';

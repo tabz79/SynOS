@@ -99,7 +99,8 @@ export function DeliveryTerminal() {
 
     const handlePrint = () => {
         if (!selectedReportId) return;
-        window.open(`/print/report/${selectedReportId}`, '_blank');
+        // GPT-5 Rule: Terminal reviews SHOULD use forceLive to ensure what you see is what you get
+        window.open(`/print/report/${selectedReportId}?forceLive=true`, '_blank');
     };
 
     const filteredReports = reports.filter(r => 

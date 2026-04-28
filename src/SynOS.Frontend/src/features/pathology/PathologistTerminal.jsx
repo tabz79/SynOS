@@ -262,7 +262,8 @@ export function PathologistTerminal() {
 
     const handlePrint = () => {
         if (!selectedReportId) return;
-        window.open(`/print/report/${selectedReportId}`, '_blank');
+        // GPT-5 Rule: Review phase MUST use forceLive to prevent stale snapshot 'Legacy' leak
+        window.open(`/print/report/${selectedReportId}?forceLive=true`, '_blank');
     };
 
     const isReadOnly = reportStructure?.status === 'Signed' || reportStructure?.status === 'ManualVerified' || reportStructure?.status === 'Finalized';

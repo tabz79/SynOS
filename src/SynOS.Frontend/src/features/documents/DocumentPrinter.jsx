@@ -22,7 +22,11 @@ export const DocumentPrinter = () => {
       
       try {
         setLoading(true);
-        const reportData = await ReportsApi.getReportData(id);
+        // GPT-5 Rule: Respect forceLive from URL to ensure preview integrity
+        const urlParams = new URLSearchParams(window.location.search);
+        const forceLive = urlParams.get('forceLive') === 'true';
+        
+        const reportData = await ReportsApi.getReportData(id, forceLive);
         setData(reportData);
         setError(null);
       } catch (err) {
