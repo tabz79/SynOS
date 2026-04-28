@@ -41,29 +41,29 @@ export const ReportA4 = ({ reportData }) => {
       <div className="px-[12mm] grid grid-cols-2 gap-x-12 text-[12px] leading-relaxed mb-4">
         <div className="space-y-1">
            <div className="flex">
-              <span className="w-24 opacity-0">Patient Name:</span> {/* Label is pre-printed */}
+              <span className="w-24 font-bold text-zinc-600 uppercase text-[10px]">Patient Name</span>
               <span className="font-bold">: {patient?.name}</span>
            </div>
            <div className="flex">
-              <span className="w-24 opacity-0">Ref. by Dr.:</span>
+              <span className="w-24 font-bold text-zinc-600 uppercase text-[10px]">Ref. by Dr.</span>
               <span className="font-medium">: {metadata?.referenceDoctor}</span>
            </div>
            <div className="flex">
-              <span className="w-24 opacity-0">Age / Sex:</span>
+              <span className="w-24 font-bold text-zinc-600 uppercase text-[10px]">Age / Sex</span>
               <span className="font-medium">: {patient?.dateOfBirth?.split(' ')[0]} Yrs / {patient?.gender}</span>
            </div>
         </div>
         <div className="space-y-1 pl-4 uppercase">
            <div className="flex">
-              <span className="w-20 opacity-0">ID No:</span>
+              <span className="w-20 font-bold text-zinc-600 uppercase text-[10px]">Patient ID</span>
               <span className="font-bold">: {patient?.patientId}</span>
            </div>
            <div className="flex">
-              <span className="w-20 opacity-0">Bill Date:</span>
+              <span className="w-20 font-bold text-zinc-600 uppercase text-[10px]">Bill Date</span>
               <span className="font-medium">: {metadata?.billingDateFormatted}</span>
            </div>
            <div className="flex">
-              <span className="w-20 opacity-0">Report Date:</span>
+              <span className="w-20 font-bold text-zinc-600 uppercase text-[10px]">Report Date</span>
               <span className="font-medium">: {metadata?.generatedAtFormatted?.split(',')[0]}</span>
            </div>
         </div>
