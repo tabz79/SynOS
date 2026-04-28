@@ -473,5 +473,57 @@ namespace SynOS.Services.Phlebotomy
                 throw;
             }
         }
+        public async Task<CollectionSummaryDto?> GetCollectionSummaryAsync(Guid visitId)
+        {
+            var visit = await _db.Visits
+                .Include(v => v.Patient)
+                .Include(v => v.Specimens)
+                .FirstOrDefaultAsync(v => v.VisitId == visitId);
+
+            if (visit == null) return null;
+
+            // Load specimens with orders and tests for detail
+            var specimens = await _db.Specimens
+                .Where(s => s.VisitId == visitId)
+                .ToListAsync();
+
+            var specimenIds = specimens.Select(s => s.SpecimenId).ToList();
+            var orders = await _db.Orders
+                .Include(o => o.Test)
+                .Where(o => specimenIds.Contains(o.SpecimenId ?? Guid.Empty))
+                .ToListAsync();
+
+            var collectedBy = specimens.FirstOrDefault()?.CollectedByUserId;
+            string collectedByName = "System";
+            if (collectedBy.HasValue)
+            {
+                var user = await _db.Users.FirstOrDefaultAsync(u => u.UserId == collectedBy.Value);
+                collectedByName = user?.Name ?? "Unknown";
+            }
+
+            return new CollectionSummaryDto
+            {
+                VisitId = visitId,
+                Patient = new PhlebotomyPatientDto
+                {
+                    PatientId = visit.PatientId,
+                    MRN = visit.Patient.MRN,
+                    Name = !string.IsNullOrEmpty(visit.Patient.DisplayName) ? visit.Patient.DisplayName : $"{visit.Patient.FirstName} {visit.Patient.LastName}",
+                    Age = visit.Patient.IsDateOfBirthKnown ? DateTime.UtcNow.Year - visit.Patient.DateOfBirth.Year : 0,
+                    Sex = visit.Patient.Gender
+                },
+                Specimens = specimens.Select(s => new CollectedSpecimenDto
+                {
+                    SpecimenId = s.SpecimenId,
+                    AccessionNumber = s.AccessionNumber,
+                    TubeName = s.TubeName ?? "Unknown",
+                    SpecimenTypeName = s.SpecimenTypeName ?? "Unknown",
+                    Status = s.Status.ToString(),
+                    Tests = orders.Where(o => o.SpecimenId == s.SpecimenId).Select(o => o.Test.TestName).ToList()
+                }).ToList(),
+                CollectedAt = specimens.OrderByDescending(s => s.CollectedAt).FirstOrDefault()?.CollectedAt,
+                CollectedByName = collectedByName
+            };
+        }
     }
 }

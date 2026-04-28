@@ -14,10 +14,11 @@ import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 
 function RootRedirect() {
   const { isAuthenticated, user } = useAuth();
+  console.log('[RootRedirect] Auth state:', { isAuthenticated, role: user?.role, user });
   if (!isAuthenticated) return <Navigate to="/login" replace />;
   if (user?.role === 'Receptionist') return <Navigate to="/reception" replace />;
   if (user?.role === 'Phlebotomist') return <Navigate to="/phlebotomist" replace />;
-  if (user?.role === 'Technician' || user?.role === 'Admin') return <Navigate to="/workbench" replace />;
+  if (user?.role === 'Technician' || user?.role === 'Admin' || user?.role === 'LabTech') return <Navigate to="/workbench" replace />;
   if (user?.role === 'Pathologist') return <Navigate to="/pathologist" replace />;
   if (user?.role === 'Typist') return <Navigate to="/typist" replace />;
   if (user?.role === 'DeliveryDesk') return <Navigate to="/delivery" replace />;
@@ -25,7 +26,7 @@ function RootRedirect() {
   return (
     <div className="h-screen w-screen bg-synos-background flex items-center justify-center p-4">
       <div className="text-center">
-        <h1 className="text-xl font-bold text-white mb-2">Access Portal</h1>
+        <h1 className="text-xl font-bold dark:text-white text-zinc-900 mb-2">Access Portal</h1>
         <p className="text-zinc-500">Workspace for role '{user?.role}' is coming soon.</p>
         <button 
           onClick={() => window.location.href = '/login'}
@@ -66,7 +67,7 @@ function App() {
               <Route path="/phlebotomist" element={<PhlebotomyScreen />} />
             </Route>
 
-            <Route element={<ProtectedRoute allowedRoles={['Technician', 'Admin']} />}>
+            <Route element={<ProtectedRoute allowedRoles={['Technician', 'Admin', 'LabTech']} />}>
               <Route path="/workbench" element={<DepartmentWorkbenchScreen />} />
             </Route>
 

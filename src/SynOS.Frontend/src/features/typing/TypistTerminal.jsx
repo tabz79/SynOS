@@ -292,7 +292,9 @@ export function TypistTerminal() {
                                                                     {param.parameterName}
                                                                 </td>
                                                                 <td className="px-4 py-3 text-sm font-mono font-bold text-right dark:text-zinc-100 text-zinc-900 border-y border-transparent">
-                                                                    {param.value || "-"}
+                                                                    <span className={cn(isAbnormal && "font-black text-red-600 underline decoration-red-200 underline-offset-4")}>
+                                                                        {param.value || "-"}
+                                                                    </span>
                                                                 </td>
                                                                 <td className="px-4 py-3 text-[11px] font-medium text-zinc-500 border-y border-transparent last:rounded-r-xl">
                                                                     {param.unit}

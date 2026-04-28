@@ -10,7 +10,7 @@ namespace SynOS.Services.Reporting
         /// Generates a fully assembled report structure for rendering or debugging.
         /// Honors snapshots if the report is signed.
         /// </summary>
-        Task<ReportStructureDto> GetReportStructureAsync(Guid reportId);
+        Task<ReportStructureDto> GetReportStructureAsync(Guid reportId, bool forceFresh = false);
         
         /// <summary>
         /// Forces a fresh generation from current catalog (ignoring snapshots).

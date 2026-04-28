@@ -17,5 +17,7 @@ namespace SynOS.Models.DTOs
         public bool IsActive { get; set; }
         public bool CanUseOperationalMode { get; set; }
         public bool CanUseOversightMode { get; set; }
+        public string? SignatureImageUrl { get; set; }
+        public DateTimeOffset? SignatureUpdatedAt { get; set; }
     }
 }

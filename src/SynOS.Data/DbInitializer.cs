@@ -45,19 +45,26 @@ namespace SynOS.Data
 
         private static void SeedBranches(SynOSDbContext context)
         {
-            if (context.Branches.Any())
+            // We no longer return early here. We check individual records to allow updates/missing data.
+            var defaultBranch = context.Branches.FirstOrDefault(b => b.BranchId == DefaultBranchId);
+            if (defaultBranch == null)
             {
-                return; // DB has been seeded with branches
+                defaultBranch = new Branch
+                {
+                    BranchId = DefaultBranchId,
+                    Code = "MAIN",
+                    Name = "Main Laboratory",
+                    IsActive = true
+                };
+                context.Branches.Add(defaultBranch);
+                Console.WriteLine("[DbInitializer] SEEDED DEFAULT BRANCH");
             }
-
-            var defaultBranch = new Branch
+            else if (string.IsNullOrEmpty(defaultBranch.Code))
             {
-                BranchId = DefaultBranchId,
-                Name = "Main Laboratory",
-                IsActive = true
-            };
+                defaultBranch.Code = "MAIN";
+                Console.WriteLine("[DbInitializer] UPDATED DEFAULT BRANCH WITH CODE 'MAIN'");
+            }
             
-            context.Branches.Add(defaultBranch);
             context.SaveChanges();
         }
 
@@ -192,7 +199,7 @@ namespace SynOS.Data
             var requiredRoles = new[]
             {
                 "Admin", "Receptionist", "Phlebotomist", "Pathologist", "Technician",
-                "XRayTech", "MriTech", "Radiologist", "DeliveryDesk"
+                "XRayTech", "MriTech", "Radiologist", "DeliveryDesk", "Typist", "LabTech"
             };
             var existingRoles = context.Roles.ToDictionary(r => r.Name, r => r);
 
@@ -217,23 +224,42 @@ namespace SynOS.Data
                 new { UserId = adminUserId, Email = "admin@synos.com",    Name = "System Admin",       Password = "admin123", RoleName = "Admin", CanUseOperational = true, CanUseOversight = true },
                 new { UserId = Guid.NewGuid(), Email = "reception@lab.com",  Name = "Reception User",     Password = "Admin",    RoleName = "Receptionist", CanUseOperational = true, CanUseOversight = false },
                 new { UserId = Guid.NewGuid(), Email = "phlebo@lab.com",     Name = "Phlebotomy User",    Password = "Admin",    RoleName = "Phlebotomist", CanUseOperational = true, CanUseOversight = false },
-                new { UserId = Guid.NewGuid(), Email = "pathologist@lab.com",Name = "Pathologist User",   Password = "Admin",    RoleName = "Pathologist", CanUseOperational = true, CanUseOversight = false },
+                new { UserId = Guid.Parse("A30F52D6-60E5-4834-9BF1-8C4E56AB3956"), Email = "pathologist@lab.com",Name = "Pathologist User",   Password = "Admin",    RoleName = "Pathologist", CanUseOperational = true, CanUseOversight = false },
                 new { UserId = Guid.NewGuid(), Email = "xray@lab.com",       Name = "X-Ray Tech User",    Password = "Admin",    RoleName = "XRayTech", CanUseOperational = true, CanUseOversight = false },
                 new { UserId = Guid.NewGuid(), Email = "mri@lab.com",        Name = "MRI Tech User",      Password = "Admin",    RoleName = "MriTech", CanUseOperational = true, CanUseOversight = false },
                 new { UserId = Guid.NewGuid(), Email = "radiologist@lab.com",Name = "Radiologist User",   Password = "Admin",    RoleName = "Radiologist", CanUseOperational = true, CanUseOversight = false },
-                new { UserId = Guid.NewGuid(), Email = "delivery@lab.com",   Name = "Delivery Desk User", Password = "Admin",    RoleName = "DeliveryDesk", CanUseOperational = true, CanUseOversight = false }
+                new { UserId = Guid.NewGuid(), Email = "delivery@lab.com",   Name = "Delivery Desk User", Password = "Admin",    RoleName = "DeliveryDesk", CanUseOperational = true, CanUseOversight = false },
+                
+                // Simulator Specific Users (GPT-5 Mandatory: Role Purity)
+                new { UserId = Guid.NewGuid(), Email = "typist1@lab.com",    Name = "Simulator Typist",   Password = "Admin",    RoleName = "Typist", CanUseOperational = true, CanUseOversight = false },
+                new { UserId = Guid.NewGuid(), Email = "bio.tech@synos.lab", Name = "Simulator Bio Tech", Password = "Admin",    RoleName = "LabTech", CanUseOperational = true, CanUseOversight = false },
+                new { UserId = Guid.NewGuid(), Email = "hemtech@synos.lab",  Name = "Simulator Hem Tech", Password = "Admin",    RoleName = "LabTech", CanUseOperational = true, CanUseOversight = false }
             };
 
-            var existingUsers = context.Users.ToDictionary(u => u.Email, u => u);
+            var existingUsers = context.Users.ToDictionary(u => u.Email, u => u, StringComparer.OrdinalIgnoreCase);
 
             foreach (var userData in usersToSeed)
             {
-                if (existingUsers.TryGetValue(userData.Email, out var existingUser))
+                // Try to find user by Email (case-insensitive) OR by UserId
+                var user = existingUsers.TryGetValue(userData.Email, out var matchByEmail) 
+                    ? matchByEmail 
+                    : context.Users.Local.FirstOrDefault(u => u.UserId == userData.UserId) ?? context.Users.FirstOrDefault(u => u.UserId == userData.UserId);
+
+                if (user != null)
                 {
-                    // Ensure password is reset for known test users
-                    existingUser.PasswordHash = BCrypt.Net.BCrypt.HashPassword(userData.Password);
-                    existingUser.CanUseOperationalMode = userData.CanUseOperational;
-                    existingUser.CanUseOversightMode = userData.CanUseOversight;
+                    // Update existing user
+                    user.Name = userData.Name; // Sync Name to clear any stale identity artifacts
+                    user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(userData.Password);
+                    user.CanUseOperationalMode = userData.CanUseOperational;
+                    user.CanUseOversightMode = userData.CanUseOversight;
+                    
+                    // Force designation if missing or if it's one of our seeded users
+                    if (string.IsNullOrEmpty(user.Designation) || userData.Email.Contains("@lab.com") || userData.Email == "admin@synos.com")
+                    {
+                        user.Designation = userData.Email == "admin@synos.com" ? "Chief Pathologist" :
+                                           userData.Email == "pathologist@lab.com" ? "Consultant Pathologist" :
+                                           userData.Email == "radiologist@lab.com" ? "Consultant Radiologist" : user.Designation;
+                    }
                 }
                 else
                 {
@@ -244,7 +270,9 @@ namespace SynOS.Data
                         Email = userData.Email,
                         PasswordHash = BCrypt.Net.BCrypt.HashPassword(userData.Password),
                         IsActive = true,
-                        Designation = userData.Email == "admin@synos.com" ? "Chief Pathologist" : null,
+                        Designation = userData.Email == "admin@synos.com" ? "Chief Pathologist" :
+                                      userData.Email == "pathologist@lab.com" ? "Consultant Pathologist" :
+                                      userData.Email == "radiologist@lab.com" ? "Consultant Radiologist" : null,
                         IsDefaultSignatory = userData.Email == "admin@synos.com",
                         CanUseOperationalMode = userData.CanUseOperational,
                         CanUseOversightMode = userData.CanUseOversight
@@ -341,6 +369,7 @@ namespace SynOS.Data
         {
             var phleboUser = context.Users.FirstOrDefault(u => u.Email == "phlebo@lab.com");
             var xrayUser = context.Users.FirstOrDefault(u => u.Email == "xray@lab.com");
+            var pathUser = context.Users.FirstOrDefault(u => u.Email == "pathologist@lab.com");
 
             if (phleboUser != null)
             {
@@ -353,6 +382,22 @@ namespace SynOS.Data
                     IsOnline = true,
                     IsActive = true,
                     PhysicalStation = "Desk 1",
+                    LastHeartbeat = DateTime.UtcNow,
+                    BranchId = DefaultBranchId
+                });
+            }
+
+            if (pathUser != null)
+            {
+                context.OperationalResources.Add(new OperationalResource
+                {
+                    OperationalResourceId = Guid.NewGuid(),
+                    UserId = pathUser.UserId,
+                    Role = "Pathologist",
+                    DepartmentCode = "Pathology",
+                    IsOnline = true,
+                    IsActive = true,
+                    PhysicalStation = "Consultation 1",
                     LastHeartbeat = DateTime.UtcNow,
                     BranchId = DefaultBranchId
                 });

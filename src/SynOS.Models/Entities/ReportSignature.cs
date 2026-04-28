@@ -45,6 +45,9 @@ namespace SynOS.Models.Entities
         [MaxLength(200)]
         public string DoctorDesignation { get; set; } = string.Empty;
 
+        [Required]
+        public string ContentHash { get; set; } = string.Empty;
+
         public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
     }
 }

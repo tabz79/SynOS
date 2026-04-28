@@ -54,8 +54,16 @@ namespace SynOS.Api.Controllers
         public async Task<IActionResult> GetCollectionPlan(Guid visitId)
         {
             var plan = await _phlebotomyService.GetCollectionPlanAsync(visitId);
-            if (plan == null) return NotFound("Visit not found");
+            if (plan == null) return NotFound("Visit not found or already collected");
             return Ok(plan);
+        }
+
+        [HttpGet("collection-summary/{visitId}")]
+        public async Task<IActionResult> GetCollectionSummary(Guid visitId)
+        {
+            var summary = await _phlebotomyService.GetCollectionSummaryAsync(visitId);
+            if (summary == null) return NotFound("Visit not found");
+            return Ok(summary);
         }
 
         [HttpPost("collect")]

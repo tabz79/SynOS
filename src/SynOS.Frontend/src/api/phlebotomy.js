@@ -5,7 +5,14 @@ export const PhlebotomyApi = {
         const response = await fetch(ReceptionApi.withBranchId(`/api/v1/phlebotomy/plan/${visitId}`), {
             headers: ReceptionApi.getHeaders()
         });
-        if (!response.ok) throw new Error('Failed to fetch collection plan');
+        if (!response.ok) throw new Error(`Failed to fetch collection plan: ${response.status}`);
+        return response.json();
+    },
+    getCollectionSummary: async (visitId) => {
+        const response = await fetch(ReceptionApi.withBranchId(`/api/v1/phlebotomy/collection-summary/${visitId}`), {
+            headers: ReceptionApi.getHeaders()
+        });
+        if (!response.ok) throw new Error(`Failed to fetch collection summary: ${response.status}`);
         return response.json();
     },
 

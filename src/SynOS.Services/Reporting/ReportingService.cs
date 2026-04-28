@@ -24,7 +24,7 @@ namespace SynOS.Services.Reporting
             _logger = logger;
         }
 
-        public async Task<ReportStructureDto> GetReportStructureAsync(Guid reportId)
+        public async Task<ReportStructureDto> GetReportStructureAsync(Guid reportId, bool forceFresh = false)
         {
             var report = await _context.Reports
                 .Include(r => r.ReportVersions)
@@ -42,9 +42,14 @@ namespace SynOS.Services.Reporting
 
             // Get the latest version
             var latestVersion = report.ReportVersions.OrderByDescending(v => v.VersionNumber).FirstOrDefault();
+
+            // 1. DETERMINE TRUTH SOURCE (State-Aware Logic)
+            // GPT-5 Rule: Drafts/ReadyForVerification MUST use LIVE data to reflect edits.
+            // Signed reports MUST use SNAPSHOT for forensic integrity.
+            bool isFinalized = report.Status == "Signed" || report.Status == "ManualVerified";
             
-            // If a snapshot exists, it MUST be the single source of truth.
-            if (latestVersion?.Snapshot != null)
+            // 2. Honors snapshot ONLY if report is finalized AND we aren't forcing fresh.
+            if (isFinalized && !forceFresh && latestVersion?.Snapshot != null)
             {
                 if (string.IsNullOrWhiteSpace(latestVersion.Snapshot.SnapshotJson))
                 {
@@ -88,7 +93,9 @@ namespace SynOS.Services.Reporting
                 .FirstOrDefaultAsync(v => v.VisitId == report.VisitId);
             if (visit == null) throw new KeyNotFoundException($"Visit {report.VisitId} not found.");
 
-            return await BuildDynamicStructureAsync(report, visit);
+            var structure = await BuildDynamicStructureAsync(report, visit);
+            structure.CanEditValues = true;
+            return structure;
         }
 
         public async Task CreateSnapshotAsync(Guid reportVersionId, bool overwrite = false)
@@ -195,10 +202,12 @@ namespace SynOS.Services.Reporting
             var dto = new ReportStructureDto
             {
                 ReportId = report.ReportId,
+                SourceId = report.SourceId,
                 Status = report.Status,
                 Department = report.Department,
                 SignedAt = report.SignedAt,
                 SignedBy = report.SignedByUserId?.ToString(),
+                CanEditValues = false, // Default to false
                 Patient = new PatientHeaderDto
                 {
                     Name = $"{visit.Patient.FirstName} {visit.Patient.LastName}",
@@ -229,6 +238,7 @@ namespace SynOS.Services.Reporting
 
                 var paramDto = new ReportParameterDto
                 {
+                    ResultId = result?.ResultId,
                     ParameterName = meta.PrintName ?? meta.ParameterName,
                     ParameterCode = meta.ParameterCode,
                     Value = result != null ? FormatValue(result.Value, meta.DecimalPlaces) : null,
@@ -285,19 +295,15 @@ namespace SynOS.Services.Reporting
                     // Compute Flag/Range only if we have a value
                     if (paramDto.Value != null)
                     {
-                        paramDto.Flag = result != null ? await CalculateFlagAsync(result, meta, dto.Patient) : "Normal";
-                        // If calculated, we might need a dummy result for flag calculation
-                        if (result == null && paramDto.IsCalculated)
-                        {
-                            var dummyResult = new Result { Value = paramDto.Value, ParameterCode = paramDto.ParameterCode };
-                            paramDto.Flag = await CalculateFlagAsync(dummyResult, meta, dto.Patient);
-                        }
-                        
+                        var resultObj = result ?? new Result { Value = paramDto.Value, ParameterCode = paramDto.ParameterCode };
+                        paramDto.Flag = await CalculateFlagAsync(resultObj, meta, dto.Patient);
+                        paramDto.IsAbnormal = paramDto.Flag != "Normal";
                         paramDto.ReferenceRange = await GetFormattedRangeAsync(meta, dto.Patient);
                     }
                     else
                     {
                         paramDto.Flag = "Normal";
+                        paramDto.IsAbnormal = false;
                         paramDto.ReferenceRange = await GetFormattedRangeAsync(meta, dto.Patient);
                     }
 
@@ -373,6 +379,40 @@ namespace SynOS.Services.Reporting
                     if (range.CriticalHigh.HasValue && val >= range.CriticalHigh.Value) return "CriticalHigh";
                     if (range.RefLow.HasValue && val < range.RefLow.Value) return "Low";
                     if (range.RefHigh.HasValue && val > range.RefHigh.Value) return "High";
+                }
+                else if (!string.IsNullOrEmpty(meta.ReferenceRange))
+                {
+                    // SAFE STRING PARSER FALLBACK
+                    try 
+                    {
+                        var rangeStr = meta.ReferenceRange.Trim();
+                        // 1. Handle "MIN - MAX"
+                        if (rangeStr.Contains('-'))
+                        {
+                            var parts = rangeStr.Split('-');
+                            if (parts.Length == 2 && 
+                                decimal.TryParse(parts[0].Trim(), out var rLow) && 
+                                decimal.TryParse(parts[1].Trim(), out var rHigh))
+                            {
+                                if (val < rLow) return "Low";
+                                if (val > rHigh) return "High";
+                            }
+                        }
+                        // 2. Handle "< VALUE"
+                        else if (rangeStr.StartsWith('<'))
+                        {
+                            if (decimal.TryParse(rangeStr.Substring(1).Trim(), out var rHigh) && val >= rHigh) return "High";
+                        }
+                        // 3. Handle "> VALUE"
+                        else if (rangeStr.StartsWith('>'))
+                        {
+                            if (decimal.TryParse(rangeStr.Substring(1).Trim(), out var rLow) && val <= rLow) return "Low";
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning(ex, "Failed to parse range string '{Range}' for {ParameterCode}", meta.ReferenceRange, meta.ParameterCode);
+                    }
                 }
             }
             return "Normal";

@@ -63,7 +63,9 @@ builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
         options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
-        options.JsonSerializerOptions.MaxDepth = 256; // Increased max depth
+        options.JsonSerializerOptions.MaxDepth = 256;
+        options.JsonSerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
+        options.JsonSerializerOptions.DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;
     });
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(option =>
@@ -170,6 +172,7 @@ builder.Services.AddAuthorization(options =>
         policy.RequireClaim("session_mode", "operational")
               .RequireAssertion(context =>
                   context.User.IsInRole("Technician") ||
+                  context.User.IsInRole("LabTech") ||
                   context.User.IsInRole("Admin")));
 });
 
@@ -340,6 +343,13 @@ builder.Services.AddCors(options =>
                   .AllowCredentials();
         });
 });
+
+// DEV-ONLY: Workflow Simulator Wiring
+if (builder.Environment.IsDevelopment())
+{
+    builder.Services.AddScoped<SynOS.Services.Dev.ISimulatedUserScopeFactory, SynOS.Services.Dev.SimulatedUserScopeFactory>();
+    builder.Services.AddScoped<SynOS.Services.Dev.IDevWorkflowSimulator, SynOS.Services.Dev.DevWorkflowSimulator>();
+}
 
 var app = builder.Build();
 

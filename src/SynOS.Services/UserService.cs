@@ -43,7 +43,7 @@ namespace SynOS.Services
             return _mapper.Map<UserDto>(user);
         }
 
-        public async Task<UserSignatureDto> UpdateUserSignatureAsync(Guid userId, IFormFile signatureFile)
+        public async Task<UserSignatureDto> UpdateUserSignatureAsync(Guid userId, IFormFile signatureFile, Guid actorUserId)
         {
             var user = await _context.Users.FindAsync(userId);
             if (user == null)
@@ -54,13 +54,45 @@ namespace SynOS.Services
             var allowedMimeTypes = new List<string> { "image/jpeg", "image/png" };
             var maxFileSize = 512 * 1024; // 512 KB
 
-            var signatureUrl = await _fileStorageService.SaveFileAsync(signatureFile, allowedMimeTypes, maxFileSize, "signatures");
+            // Capture old URL for cleanup and audit
+            var oldSignatureUrl = user.SignatureImageUrl;
 
-            user.SignatureImageUrl = signatureUrl;
-            user.SignatureUpdatedAt = DateTimeOffset.UtcNow; // This property is DateTimeOffset
+            // GPT-5: Collision-proof and Cache-busting naming
+            var timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+            var guidFragment = Guid.NewGuid().ToString("N").Substring(0, 4);
+            var extension = Path.GetExtension(signatureFile.FileName);
+            var newFileName = $"{userId}_{timestamp}_{guidFragment}{extension}";
+
+            // Step 1: Save new file first
+            byte[] fileBytes;
+            using (var ms = new MemoryStream())
+            {
+                await signatureFile.OpenReadStream().CopyToAsync(ms);
+                fileBytes = ms.ToArray();
+            }
+            var newSignatureUrl = await _fileStorageService.SaveFileAsync(fileBytes, newFileName, "signatures");
+
+            // Step 2: Update Database
+            user.SignatureImageUrl = newSignatureUrl;
+            user.SignatureUpdatedAt = DateTimeOffset.UtcNow;
 
             _context.Users.Update(user);
             await _context.SaveChangesAsync();
+
+            // Step 3: Cleanup old file (Selective/Elective)
+            if (!string.IsNullOrEmpty(oldSignatureUrl) && oldSignatureUrl != newSignatureUrl)
+            {
+                await _fileStorageService.DeleteFileAsync(oldSignatureUrl);
+            }
+
+            // Step 4: Enriched Audit Log
+            await _auditService.LogAsync(actorUserId, "SIGNATURE_UPDATED", "UserSignature", userId, new 
+            { 
+                OldSignatureUrl = oldSignatureUrl,
+                NewSignatureUrl = newSignatureUrl,
+                UserId = userId,
+                Timestamp = DateTimeOffset.UtcNow
+            });
 
             return new UserSignatureDto
             {
@@ -123,6 +155,7 @@ namespace SynOS.Services
 
             user.Email = dto.Email;
             user.Name = dto.Name;
+            user.Designation = dto.Designation;
             user.IsActive = dto.IsActive;
             user.UpdatedAt = DateTime.UtcNow; // Corrected to DateTime.UtcNow
 
@@ -161,6 +194,26 @@ namespace SynOS.Services
             await _context.SaveChangesAsync();
 
             await _auditService.LogAsync(actorUserId, "ResetPassword", "User", userId, new { userId });
+        }
+
+        public async Task<UserDto> UpdateProfileAsync(Guid userId, UpdateProfileDto dto)
+        {
+            var user = await _context.Users
+                .Include(u => u.UserRoles)
+                    .ThenInclude(ur => ur.Role)
+                .FirstOrDefaultAsync(u => u.UserId == userId);
+
+            if (user == null) throw new KeyNotFoundException("User not found");
+
+            user.Name = dto.Name;
+            user.Designation = dto.Designation;
+            user.UpdatedAt = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+
+            await _auditService.LogAsync(userId, "UPDATE_PROFILE", "User", userId, new { Name = user.Name, Designation = user.Designation });
+
+            return _mapper.Map<UserDto>(user);
         }
 
         private string HashPassword(string password)

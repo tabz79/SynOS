@@ -90,5 +90,21 @@ export const ReportsApi = {
         });
         if (!response.ok) throw new Error('Failed to fetch pathologists');
         return await response.json();
+    },
+    
+    saveResults: async (orderId, results) => {
+        const response = await fetch(`/api/v1/reports/${orderId}/results`, {
+            method: 'POST',
+            headers: { 
+                'Authorization': `Bearer ${localStorage.getItem('synos_jwt')}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ Results: results })
+        });
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.message || 'Failed to save final results');
+        }
+        return true;
     }
 };

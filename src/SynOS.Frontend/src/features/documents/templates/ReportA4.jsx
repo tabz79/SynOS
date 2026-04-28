@@ -102,7 +102,7 @@ export const ReportA4 = ({ reportData }) => {
                        <span className="font-medium uppercase">{param.name}</span>
                        {param.method && <div className="text-[9px] text-zinc-500 italic lowercase print:hidden">Method: {param.method}</div>}
                     </td>
-                    <td className={`py-1 text-center ${param.isAbnormal ? 'font-black text-[13px]' : 'font-bold'}`}>
+                    <td className={`py-1 text-center ${param.isAbnormal ? 'font-black text-[13px] border-b border-zinc-200' : 'font-semibold'}`}>
                       {param.displayValue} {param.unit}
                     </td>
                     <td className="py-1 text-right font-medium">
@@ -137,16 +137,28 @@ export const ReportA4 = ({ reportData }) => {
         </div>
 
         {/* 🖋️ SIGNATURE QUAD (Row of 4 at the very bottom) */}
-        {/* We use print:fixed to push this to the bottom of the last page area */}
         <div className="mt-12 pt-8 break-inside-avoid">
           <div className="grid grid-cols-4 gap-2">
             {[0, 1, 2, 3].map((slotIdx) => {
               const sig = signatures[slotIdx];
+              const isTampered = sig?.isTampered;
+              const isSuperseded = sig?.isSuperseded;
+
               return (
-                <div key={slotIdx} className="text-center min-h-[40mm] flex flex-col justify-end">
+                <div key={slotIdx} className="text-center min-h-[40mm] flex flex-col justify-end relative">
                    {sig ? (
                      <>
-                        <div className="h-10 flex items-center justify-center mb-1">
+                        {/* 🚨 FORENSIC WATERMARKS */}
+                        {isTampered && (
+                          <div className="absolute inset-0 flex items-center justify-center -rotate-12 pointer-events-none z-20">
+                            <div className="border-4 border-red-600 text-red-600 font-black text-[12px] px-2 py-1 bg-white/90 shadow-lg animate-pulse uppercase tracking-tighter">
+                              DATA TAMPERED
+                            </div>
+                          </div>
+                        )}
+                        {/* Superseded stamp removed as per user request */}
+
+                        <div className={`h-10 flex items-center justify-center mb-1 ${isTampered ? 'opacity-30 grayscale blur-[1px]' : ''}`}>
                           {sig.signatureImage && (
                             <img 
                               src={`data:image/png;base64,${sig.signatureImage}`} 
@@ -155,12 +167,14 @@ export const ReportA4 = ({ reportData }) => {
                             />
                           )}
                         </div>
-                        <div className="font-bold text-[10px] leading-tight mb-0.5">{sig.doctorName}</div>
+                        <div className={`font-bold text-[10px] leading-tight mb-0.5 ${isTampered ? 'line-through text-red-900' : ''}`}>
+                          {sig.doctorName}
+                        </div>
                         <div className="text-[9px] font-medium leading-tight">{sig.credentials}</div>
                         <div className="font-bold text-[9px] uppercase mt-0.5">{sig.role?.split(' ')[1] || 'Pathologist'}</div>
                      </>
                    ) : (
-                     <div className="h-[40mm] opacity-0">Empty Signature Slot</div>
+                     <div className="h-[40mm] opacity-0 text-[1px]">Empty Slot</div>
                    )}
                 </div>
               );

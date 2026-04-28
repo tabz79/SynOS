@@ -19,17 +19,20 @@ namespace SynOS.Api.Controllers
         private readonly IInterpretationService _interpretationService;
         private readonly IReportingService _reportingService;
         private readonly IUserService _userService;
+        private readonly ILogger<ReportsController> _logger;
 
         public ReportsController(
             IReportService reportService,
             IInterpretationService interpretationService,
             IReportingService reportingService,
-            IUserService userService)
+            IUserService userService,
+            ILogger<ReportsController> _logger)
         {
             _reportService = reportService;
             _interpretationService = interpretationService;
             _reportingService = reportingService;
             _userService = userService;
+            this._logger = _logger;
         }
 
         [HttpPost("{reportId}/sign")]
@@ -44,9 +47,24 @@ namespace SynOS.Api.Controllers
                 var result = await _reportService.SignReportAsync(reportId, userId);
                 return Ok(result);
             }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (FileNotFoundException ex)
+            {
+                // GPT-5: Forensic file missing is a 404 Not Found at the resource level
+                return NotFound(new { message = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                // GPT-5: Missing identity data is 422 Unprocessable Entity
+                return UnprocessableEntity(new { message = ex.Message });
+            }
             catch (Exception ex)
             {
-                return BadRequest(new { message = ex.Message });
+                _logger.LogError(ex, "Unexpected failure during digital sign-off for report {ReportId}", reportId);
+                return StatusCode(500, new { message = ex.Message });
             }
         }
 

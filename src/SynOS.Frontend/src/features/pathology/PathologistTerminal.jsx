@@ -3,6 +3,7 @@ import { cn } from "@/lib/utils";
 import { SystemBar } from '@/components/layout/SystemBar';
 import { useAuth } from '@/context/AuthContext';
 import { ReportsApi } from '@/api/reports';
+import { UsersApi } from '@/api/users';
 import { useTheme } from '@/context/ThemeContext';
 import { PathologistWorklistCard } from './components/PathologistWorklistCard';
 import { 
@@ -17,7 +18,13 @@ import {
     User,
     Signature,
     Printer,
-    Send
+    Send,
+    X,
+    Upload,
+    Check,
+    ShieldAlert,
+    ShieldCheck,
+    AlertTriangle
 } from 'lucide-react';
 import { ReportA4 } from '../documents/templates/ReportA4';
 
@@ -38,13 +45,38 @@ export function PathologistTerminal() {
     const [lastSavedAt, setLastSavedAt] = useState(null);
     const [isSigning, setIsSigning] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
+    const [resultsState, setResultsState] = useState({}); // { paramCode: value }
+    const [userProfile, setUserProfile] = useState(null);
+    const [showSignatureModal, setShowSignatureModal] = useState(false);
+    const [isUploading, setIsUploading] = useState(false);
+    const [isSessionExpired, setIsSessionExpired] = useState(false);
+    const [tempProfile, setTempProfile] = useState({ name: "", designation: "" });
 
     const requestCounter = useRef(0);
 
     // Initial Fetch
     useEffect(() => {
         fetchWorklist();
+        fetchProfile();
     }, []);
+
+    const fetchProfile = async () => {
+        try {
+            const profile = await UsersApi.getProfile();
+            setUserProfile(profile);
+            setTempProfile({ name: profile.name, designation: profile.designation || "" });
+        } catch (err) {
+            handleApiError(err, "Failed to fetch profile");
+        }
+    };
+
+    const handleApiError = (err, context) => {
+        console.error(`${context}:`, err);
+        // Catch both Axios (err.response) and Fetch (err.message) 401s
+        if (err.response?.status === 401 || err.message?.includes('401') || err.message?.includes('Unauthorized')) {
+            setIsSessionExpired(true);
+        }
+    };
 
     // Selection Fetch
     useEffect(() => {
@@ -65,7 +97,7 @@ export function PathologistTerminal() {
             const data = await ReportsApi.getReportsByStatus('ReadyForVerification,Signed,ManualVerified');
             setReports(data);
         } catch (err) {
-            console.error("Failed to fetch worklist:", err);
+            handleApiError(err, "Failed to fetch worklist");
         } finally {
             setIsLoadingList(false);
         }
@@ -85,9 +117,19 @@ export function PathologistTerminal() {
                 interpretation: fullRes.interpretation?.summary || "",
                 comments: fullRes.interpretation?.notes || ""
             });
+            
+            // Initialize results state for editing
+            const initialResults = {};
+            fullRes.report.groups.forEach(g => {
+                g.parameters.forEach(p => {
+                    initialResults[p.parameterCode] = p.value;
+                });
+            });
+            setResultsState(initialResults);
+            
             setLastSavedAt(null);
         } catch (err) {
-            console.error("Failed to fetch report detail:", err);
+            handleApiError(err, "Failed to fetch report detail");
         } finally {
             setIsLoadingDetail(false);
         }
@@ -100,18 +142,32 @@ export function PathologistTerminal() {
         const currentRequestId = ++requestCounter.current;
 
         try {
-            // 1. Save
+            // 1. Save Interpretation
             await ReportsApi.updateInterpretation(
                 selectedReportId, 
                 interpretation.interpretation, 
                 interpretation.comments
             );
 
-            // 2. Hard Re-fetch (Force Live to bypass snapshot during verification)
-            const freshData = await ReportsApi.getReportData(selectedReportId, true);
+            // 2. Save Numerical Results (Pathologist Privileged)
+            if (reportStructure?.canEditValues && Object.keys(resultsState).length > 0) {
+                const resultsPayload = Object.entries(resultsState).map(([code, val]) => ({
+                    ParameterCode: code,
+                    Value: val
+                }));
+                await ReportsApi.saveResults(reportStructure.sourceId, resultsPayload);
+            }
+
+            // 3. Hard Re-fetch (Force Live to bypass snapshot during verification)
+            // We fetch both the full structure (to refresh flags) and the PDF data
+            const [fullRes, freshData] = await Promise.all([
+                ReportsApi.getFullReport(selectedReportId),
+                ReportsApi.getReportData(selectedReportId, true)
+            ]);
 
             // 3. Guard
             if (currentRequestId === requestCounter.current) {
+                setReportStructure(fullRes.report);
                 setReportData(freshData);
                 setLastSavedAt(new Date());
                 setTimeout(() => setLastSavedAt(null), 3000);
@@ -138,20 +194,69 @@ export function PathologistTerminal() {
     };
 
     const handleSign = async () => {
-        if (!selectedReportId) return;
+        if (!selectedReportId || isSigning) return;
+
+        // Proactive Guard: Check if signature exists
+        if (!userProfile?.signatureImageUrl) {
+            setShowSignatureModal(true);
+            return;
+        }
+
         if (!window.confirm("Are you sure you want to sign this report? This action is irreversible.")) return;
 
         setIsSigning(true);
+        const reportId = selectedReportId; // Lock ID before async
+
         try {
-            await ReportsApi.signReport(selectedReportId);
-            // Refresh list and clear selection
+            await ReportsApi.signReport(reportId);
             await fetchWorklist();
-            setSelectedReportId(null);
+            // UX Fix: Don't clear selection. Re-fetch current report to show SIGNED state.
+            await fetchReportDetail(reportId);
         } catch (err) {
             console.error("Signing failed:", err);
-            alert("Failed to sign report: " + err.message);
+            alert("Digital Signature Protocol Failed: " + (err.response?.data?.message || err.message));
         } finally {
             setIsSigning(false);
+        }
+    };
+
+    const handleSignatureUpload = async (event) => {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        setIsUploading(true);
+        try {
+            // First update name/designation if they were changed
+            await UsersApi.updateProfile({
+                name: tempProfile.name,
+                designation: tempProfile.designation
+            });
+            
+            // Then upload signature
+            await UsersApi.uploadSignature(user.id, file);
+            await fetchProfile(); // Authoritative server-side sync
+            setShowSignatureModal(false);
+        } catch (err) {
+            console.error("Upload failed:", err);
+            alert("Identity Setup Failed: " + (err.response?.data?.message || err.response?.data || err.message));
+        } finally {
+            setIsUploading(false);
+        }
+    };
+
+    const handleSaveProfileOnly = async () => {
+        setIsUploading(true);
+        try {
+            await UsersApi.updateProfile({
+                name: tempProfile.name,
+                designation: tempProfile.designation
+            });
+            await fetchProfile();
+            if (isIdentityComplete) setShowSignatureModal(false);
+        } catch (err) {
+            handleApiError(err, "Failed to update profile");
+        } finally {
+            setIsUploading(false);
         }
     };
 
@@ -161,6 +266,15 @@ export function PathologistTerminal() {
     };
 
     const isReadOnly = reportStructure?.status === 'Signed' || reportStructure?.status === 'ManualVerified' || reportStructure?.status === 'Finalized';
+
+    // GPT-5: Data-driven investigative identity guard
+    const isValid = (v) => v && v.trim().length > 0;
+    const missingIdentityFields = [];
+    if (!isValid(userProfile?.name)) missingIdentityFields.push("Full Name");
+    if (!isValid(userProfile?.designation)) missingIdentityFields.push("Professional Designation");
+    if (!userProfile?.signatureImageUrl) missingIdentityFields.push("Digital Signature Image");
+
+    const isIdentityComplete = missingIdentityFields.length === 0;
 
     const filteredReports = reports.filter(r => 
         r.patientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -247,6 +361,28 @@ export function PathologistTerminal() {
                             </div>
                         ) : (
                             <div className="flex flex-col h-full min-h-0">
+                                {(!isIdentityComplete) && (
+                                    <div className="mb-6 bg-red-500/10 border border-red-500/20 rounded-2xl p-4 flex items-center justify-between animate-in slide-in-from-top-2 duration-300">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-10 h-10 bg-red-500 rounded-xl flex items-center justify-center text-white shrink-0">
+                                                <AlertCircle className="w-5 h-5" />
+                                            </div>
+                                            <div>
+                                                <h4 className="text-sm font-black text-red-600 uppercase tracking-tight">Identity Guard Blocked</h4>
+                                                <p className="text-[10px] text-red-500 font-bold uppercase tracking-wider">
+                                                    Missing: {missingIdentityFields.join(" • ")}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <button 
+                                            onClick={() => setShowSignatureModal(true)}
+                                            className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest shadow-lg shadow-red-500/20 transition-all active:scale-95"
+                                        >
+                                            Complete Profile
+                                        </button>
+                                    </div>
+                                )}
+
                                 {/* Header */}
                                 <div className="flex items-center justify-between mb-8 pb-6 border-b dark:border-white/5 border-zinc-100 shrink-0">
                                     <div className="flex items-center gap-4">
@@ -316,7 +452,18 @@ export function PathologistTerminal() {
                                                                     {param.parameterName}
                                                                 </td>
                                                                 <td className="px-4 py-3 text-sm font-mono font-bold text-right text-slate-900 border-y border-transparent">
-                                                                    {param.value || "-"}
+                                                                    {reportStructure?.canEditValues && !isReadOnly ? (
+                                                                        <input 
+                                                                            type="text"
+                                                                            value={resultsState[param.parameterCode] || ""}
+                                                                            onChange={(e) => setResultsState(prev => ({ ...prev, [param.parameterCode]: e.target.value }))}
+                                                                            className="w-24 text-right bg-indigo-50/50 border-b border-indigo-200 focus:outline-none focus:border-indigo-500 font-bold px-1"
+                                                                        />
+                                                                    ) : (
+                                                                        <span className={cn(isAbnormal && "font-black text-red-600 underline decoration-red-200 underline-offset-4")}>
+                                                                            {param.value || "-"}
+                                                                        </span>
+                                                                    )}
                                                                 </td>
                                                                 <td className="px-4 py-3 text-xs font-medium text-slate-500 border-y border-transparent">
                                                                     {param.unit}
@@ -390,7 +537,7 @@ export function PathologistTerminal() {
                                                             disabled={isSaving || (!interpretation.interpretation && !interpretation.comments)}
                                                             className="bg-zinc-100 text-zinc-600 hover:bg-zinc-200 font-bold text-xs px-6 py-2.5 rounded-xl transition-all active:scale-95 disabled:opacity-40"
                                                         >
-                                                            {isSaving ? "Syncing..." : "Update Preview"}
+                                                            {isSaving ? "Syncing..." : "Update Report"}
                                                         </button>
                                                         {reportStructure?.status === 'ReadyForVerification' && (
                                                             <button 
@@ -420,8 +567,8 @@ export function PathologistTerminal() {
                                                 </button>
                                                 <button 
                                                     onClick={handleSign}
-                                                    disabled={isSigning || !selectedReportId}
-                                                    className="bg-slate-900 text-white hover:bg-black px-8 py-3 rounded-2xl font-bold text-sm shadow-xl shadow-black/10 transition-all active:scale-95 flex items-center gap-2 disabled:bg-slate-300 disabled:shadow-none"
+                                                    disabled={isSigning || !selectedReportId || !isIdentityComplete}
+                                                    className="bg-slate-900 text-white hover:bg-black px-8 py-3 rounded-2xl font-bold text-sm shadow-xl shadow-black/10 transition-all active:scale-95 flex items-center gap-2 disabled:bg-slate-200 disabled:text-slate-400 disabled:shadow-none"
                                                 >
                                                     {isSigning ? <Loader2 className="w-4 h-4 animate-spin" /> : <Signature className="w-4 h-4" />}
                                                     Verify & Sign Digitally
@@ -495,6 +642,115 @@ export function PathologistTerminal() {
                 </div>
 
             </div>
+            {/* Signature Onboarding Modal */}
+            {showSignatureModal && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-zinc-950/60 backdrop-blur-sm p-4">
+                    <div className="bg-white dark:bg-zinc-900 w-full max-w-md rounded-3xl shadow-2xl overflow-hidden border dark:border-white/5 border-zinc-200 animate-in fade-in zoom-in duration-200">
+                        <div className="px-6 py-6 border-b dark:border-white/5 border-zinc-100 flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 bg-indigo-500 rounded-xl flex items-center justify-center text-white">
+                                    <Signature className="w-5 h-5" />
+                                </div>
+                                <div>
+                                    <h3 className="text-lg font-black dark:text-zinc-200 uppercase tracking-tight">Identity Setup</h3>
+                                    <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest leading-none">Digital Signature Verification</p>
+                                </div>
+                            </div>
+                            <button 
+                                onClick={() => setShowSignatureModal(false)}
+                                className="w-8 h-8 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 flex items-center justify-center transition-colors"
+                            >
+                                <X className="w-4 h-4 text-zinc-400" />
+                            </button>
+                        </div>
+                        <div className="p-8 space-y-6">
+                            <div className="space-y-4">
+                                <div className="space-y-1.5">
+                                    <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest ml-1">Full Professional Name</label>
+                                    <input 
+                                        type="text"
+                                        value={tempProfile.name}
+                                        onChange={(e) => setTempProfile({...tempProfile, name: e.target.value})}
+                                        className="w-full bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-white/5 rounded-2xl px-4 py-3 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all"
+                                        placeholder="Dr. John Doe"
+                                    />
+                                </div>
+                                <div className="space-y-1.5">
+                                    <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest ml-1">Professional Designation</label>
+                                    <input 
+                                        type="text"
+                                        value={tempProfile.designation}
+                                        onChange={(e) => setTempProfile({...tempProfile, designation: e.target.value})}
+                                        className="w-full bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-white/5 rounded-2xl px-4 py-3 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all"
+                                        placeholder="Consultant Pathologist"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="relative pt-2">
+                                <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-zinc-200 dark:via-white/5 to-transparent"></div>
+                                <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest ml-1 mb-4 block pt-4 text-center">Digital Signature</label>
+                                
+                                <label className="block w-full cursor-pointer group">
+                                    <div className={cn(
+                                        "border-2 border-dashed rounded-[2rem] p-8 flex flex-col items-center justify-center transition-all min-h-[160px]",
+                                        isUploading ? "border-indigo-500 bg-indigo-500/5" : "border-zinc-200 hover:border-indigo-500 hover:bg-indigo-50 dark:border-zinc-800 dark:hover:bg-indigo-500/5 group-hover:border-indigo-500"
+                                    )}>
+                                    <input 
+                                        type="file" 
+                                        className="hidden" 
+                                        accept="image/png, image/jpeg"
+                                        onChange={handleSignatureUpload}
+                                        disabled={isUploading}
+                                    />
+                                    {isUploading ? (
+                                        <>
+                                            <Loader2 className="w-12 h-12 text-indigo-500 animate-spin mb-4" />
+                                            <span className="text-sm font-black text-indigo-500 uppercase tracking-widest">Uploading Identity...</span>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <div className="w-16 h-16 bg-zinc-100 dark:bg-zinc-800 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                                                <Upload className="w-8 h-8 text-zinc-400 group-hover:text-indigo-500" />
+                                            </div>
+                                            <span className="text-sm font-black dark:text-zinc-300 text-zinc-600 uppercase tracking-widest mb-1">Click to Upload</span>
+                                            <span className="text-[10px] text-zinc-400 font-medium">Clear PNG or JPG (Cursive Ink preferred)</span>
+                                        </>
+                                    )}
+                                </div>
+                            </label>
+                            
+                            {!userProfile?.signatureImageUrl && (
+                                <p className="text-center text-[10px] text-amber-600 font-black uppercase tracking-tighter mt-4 animate-pulse">
+                                    Please select a signature image to complete activation
+                                </p>
+                            )}
+
+                            {userProfile?.signatureImageUrl && (
+                                <button 
+                                    onClick={handleSaveProfileOnly}
+                                    disabled={isUploading}
+                                    className="w-full mt-6 bg-zinc-900 dark:bg-white dark:text-zinc-900 text-white py-4 rounded-2xl font-black uppercase tracking-widest text-xs shadow-xl active:scale-95 transition-all disabled:opacity-50"
+                                >
+                                    Update Identity Details
+                                </button>
+                            )}
+                            </div>
+
+                            <div className="mt-8 space-y-3">
+                                <div className="flex gap-3 items-start opacity-70">
+                                    <Check className="w-4 h-4 text-emerald-500 mt-0.5" />
+                                    <p className="text-[11px] text-zinc-500 font-medium leading-relaxed">Your signature will be baked into the final clinical reports as a legal evidence of verification.</p>
+                                </div>
+                                <div className="flex gap-3 items-start opacity-70">
+                                    <Check className="w-4 h-4 text-emerald-500 mt-0.5" />
+                                    <p className="text-[11px] text-zinc-500 font-medium leading-relaxed">This setup is required once to enable the digital signing protocol.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             <style dangerouslySetInnerHTML={{ __html: `
                 .custom-scrollbar::-webkit-scrollbar { width: 4px; }
@@ -502,6 +758,36 @@ export function PathologistTerminal() {
                 .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 10px; }
                 .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,0.2); }
             `}} />
+            {/* Session Expired Overlay */}
+            {isSessionExpired && (
+                <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-md flex items-center justify-center p-4">
+                    <div className={cn(
+                        "max-w-md w-full rounded-2xl p-8 border shadow-2xl flex flex-col items-center text-center space-y-6 animate-in fade-in zoom-in duration-300",
+                        isDark ? "bg-slate-900 border-slate-800" : "bg-white border-slate-200"
+                    )}>
+                        <div className="w-16 h-16 rounded-full bg-red-500/10 flex items-center justify-center">
+                            <ShieldAlert className="w-8 h-8 text-red-500" />
+                        </div>
+                        <div className="space-y-2">
+                            <h2 className={cn("text-2xl font-bold", isDark ? "text-white" : "text-slate-900")}>
+                                Session Expired
+                            </h2>
+                            <p className={cn("text-sm", isDark ? "text-slate-400" : "text-slate-500")}>
+                                Your secure operational session has expired or was terminated due to a server restart. Please log in again to continue.
+                            </p>
+                        </div>
+                        <button
+                            onClick={() => {
+                                localStorage.removeItem('synos_jwt');
+                                window.location.href = '/login';
+                            }}
+                            className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-medium transition-all shadow-lg shadow-blue-500/25 active:scale-[0.98]"
+                        >
+                            Return to Login
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

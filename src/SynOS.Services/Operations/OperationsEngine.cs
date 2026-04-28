@@ -149,10 +149,10 @@ namespace SynOS.Services.Operations
 
             var assignments = await _context.ProcessingAssignments
                 .AsNoTracking()
-                .Where(a => visitIds.Contains(a.Specimen.VisitId))
+                .Where(a => a.Specimen != null && visitIds.Contains(a.Specimen.VisitId))
                 .Where(a => a.Status != ProcessingAssignmentStatus.Completed || a.CompletedAt >= last24HoursOffset)
                 .Select(a => new { 
-                    VisitId = a.Specimen.VisitId, 
+                    VisitId = a.Specimen != null ? a.Specimen.VisitId : Guid.Empty, 
                     a.Status, 
                     a.DepartmentCode,
                     AssignedUserId = a.AssignedResource != null ? (Guid?)a.AssignedResource.UserId : null,
@@ -183,7 +183,7 @@ namespace SynOS.Services.Operations
                 Console.WriteLine($"[ActionQueue] Processing Visit {visit.Token}. Invoice Status: {invoice?.Status ?? "None"}.");
                 
                 // var visitSamples = samples.Where(s => s.VisitId == visit.VisitId).ToList();
-                var visitSamples = new List<string>(); // Stubbed
+                var visitSamples = new List<object>(); // Stubbed
                 var visitResults = results.Where(r => r.VisitId == visit.VisitId).ToList();
                 var visitReport = reports.FirstOrDefault(r => r.VisitId == visit.VisitId);
 
@@ -210,7 +210,8 @@ namespace SynOS.Services.Operations
                     PaymentMethod = DerivePaymentMethod(visit, invoice),
                     ReferrerName = visit.ReferralPartner?.Name ?? "Self",
 
-                    OperationalStatus = DeriveOperationalStatus(visit, null, assignments.Where(a => a.VisitId == visit.VisitId).Select(a => a.Status).ToList(), visitResults.Select(r => r.Status.ToString()).ToList().Cast<string?>().ToList(), visitReport?.Status),
+                    // FIXED: Pass empty list instead of null to prevent NRE in DeriveOperationalStatus
+                    OperationalStatus = DeriveOperationalStatus(visit, new List<object>(), assignments.Where(a => a.VisitId == visit.VisitId).Select(a => a.Status).ToList(), visitResults.Select(r => r.Status?.ToString()).ToList().Cast<string?>().ToList(), visitReport?.Status),
                     LastUpdatedAt = CalculateLastUpdatedAt(visit, new List<DateTime?>(), visitResults.Select(r => r.EnteredAt).ToList(), visitReport?.SignedAt),
                     DateGroup = CalculateDateGroup(visit.TokenDate, DateTime.UtcNow.Date),
                     IsFinalized = invoice != null && (invoice.Status == "Paid" || invoice.Status == "FullPaid"),
@@ -298,10 +299,10 @@ namespace SynOS.Services.Operations
             var last24HoursOffset = DateTimeOffset.UtcNow.AddHours(-24);
             var assignments = await _context.ProcessingAssignments
                 .AsNoTracking()
-                .Where(a => a.Specimen.VisitId == visitId)
+                .Where(a => a.Specimen != null && a.Specimen.VisitId == visitId)
                 .Where(a => a.Status != ProcessingAssignmentStatus.Completed || a.CompletedAt >= last24HoursOffset)
                 .Select(a => new { 
-                    VisitId = a.Specimen.VisitId,
+                    VisitId = a.Specimen != null ? a.Specimen.VisitId : Guid.Empty,
                     a.Status, 
                     a.DepartmentCode,
                     AssignedUserId = a.AssignedResource != null ? (Guid?)a.AssignedResource.UserId : null,
@@ -333,7 +334,7 @@ namespace SynOS.Services.Operations
                 PaymentMethod = DerivePaymentMethod(visit, invoice),
                 ReferrerName = visit.ReferralPartner?.Name ?? "Self",
 
-                OperationalStatus = DeriveOperationalStatus(visit, null, assignments.Select(a => a.Status).ToList(), results.Select(r => r.Status.ToString()).ToList().Cast<string?>().ToList(), report?.Status),
+                OperationalStatus = DeriveOperationalStatus(visit, new List<object>(), assignments.Select(a => a.Status).ToList(), results.Select(r => r.Status.ToString()).ToList().Cast<string?>().ToList(), report?.Status),
                 
                 LastUpdatedAt = CalculateLastUpdatedAt(visit, new List<DateTime?>(), results.Select(r => r.EnteredAt).ToList(), report?.SignedAt),
                 
@@ -434,7 +435,6 @@ namespace SynOS.Services.Operations
             return "Due";
         }
 
-        // private string DeriveOperationalStatus(Visit visit, List<SampleStatus> sampleStatuses, List<string?> resultStatuses, string? reportStatus)
         private string DeriveOperationalStatus(Visit visit, List<object>? sampleStatuses, List<ProcessingAssignmentStatus> processingStatuses, List<string?> resultStatuses, string? reportStatus)
         {
             // 5. Operational Status (SINGLE SOURCE OF TRUTH)
@@ -719,7 +719,8 @@ namespace SynOS.Services.Operations
             report.Status = "Signed";
             report.SignedAt = DateTime.UtcNow;
             report.SignedByUserId = actorId;
-            report.CurrentVersion++; // Increment version on sign-off
+            // GPT-5 Note: Version increment should be handled by the initiating service 
+            // to ensure signature alignment. Engine records the fact.
 
             // Emit Event
             await EmitEventAsync(

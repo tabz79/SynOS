@@ -77,6 +77,12 @@ namespace SynOS.Services
 
                 if (existingResult != null)
                 {
+                    // GPT-5: Clinical Flag Update
+                    var catalogParam = await _context.CatalogParameters.FirstOrDefaultAsync(p => p.ParameterCode == resultDto.ParameterCode);
+                    existingResult.Flag = CalculateFlag(resultDto.Value, catalogParam?.ReferenceRange);
+                    existingResult.ReferenceRange = catalogParam?.ReferenceRange;
+                    existingResult.Unit = catalogParam?.Unit;
+
                     existingResult.Value = resultDto.Value;
                     existingResult.TechComments = resultDto.TechComments;
                     existingResult.EnteredAt = DateTime.UtcNow;
@@ -85,12 +91,19 @@ namespace SynOS.Services
                 }
                 else
                 {
+                    // GPT-5: Clinical Flag Calculation
+                    var catalogParam = await _context.CatalogParameters.FirstOrDefaultAsync(p => p.ParameterCode == resultDto.ParameterCode);
+                    var flag = CalculateFlag(resultDto.Value, catalogParam?.ReferenceRange);
+
                     var newResult = new Result
                     {
                         ResultId = Guid.NewGuid(),
                         OrderId = request.OrderId,
                         ParameterCode = resultDto.ParameterCode,
                         Value = resultDto.Value,
+                        Flag = flag,
+                        ReferenceRange = catalogParam?.ReferenceRange,
+                        Unit = catalogParam?.Unit,
                         TechComments = resultDto.TechComments,
                         EnteredByUserId = userId,
                         EnteredAt = DateTime.UtcNow,
@@ -671,5 +684,25 @@ namespace SynOS.Services
 
             return new SynOS.Models.DTOs.ResultEntryResponseDto { Status = SynOS.Models.DTOs.ResultEntryStatus.Success };
         }
+
+        private string? CalculateFlag(string value, string? referenceRange)
+        {
+            if (string.IsNullOrEmpty(value) || string.IsNullOrEmpty(referenceRange)) return null;
+
+            // Simple range parser: "0.1-1.2" or "0.1 - 1.2"
+            var parts = referenceRange.Split('-', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            if (parts.Length != 2) return null;
+
+            if (decimal.TryParse(value, out decimal val) &&
+                decimal.TryParse(parts[0], out decimal min) &&
+                decimal.TryParse(parts[1], out decimal max))
+            {
+                if (val < min) return "L";
+                if (val > max) return "H";
+            }
+
+            return null;
+        }
+
     }
 }

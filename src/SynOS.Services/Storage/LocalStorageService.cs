@@ -101,5 +101,26 @@ namespace SynOS.Services.Storage
             // Return the path relative to _basePath
             return Path.Combine(subDirectory, fileName).Replace('\\', '/');
         }
+
+        public Task DeleteFileAsync(string relativePath)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(relativePath)) return Task.CompletedTask;
+
+                var fullPath = Path.Combine(_basePath, relativePath);
+                if (File.Exists(fullPath))
+                {
+                    File.Delete(fullPath);
+                }
+            }
+            catch (Exception ex)
+            {
+                // Deletion is elective cleanup; we log but don't fail the main process
+                // _logger.LogWarning(ex, "Failed to delete file at {Path}", relativePath);
+            }
+
+            return Task.CompletedTask;
+        }
     }
 }

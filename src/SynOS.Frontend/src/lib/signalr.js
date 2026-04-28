@@ -141,6 +141,9 @@ export const SignalRService = {
             console.log("SignalR: ReceiveServerTime received", serverTime);
             callback(serverTime);
         });
+        // Aliases for casing
+        conn.on("receiveservertime", (st) => callback(st));
+        conn.on("receiveServerTime", (st) => callback(st));
     },
 
     onConnectionStatusChanged: (callback) => {
@@ -276,11 +279,9 @@ export const BranchOperationsSignalRService = {
             console.log(`SignalR(Branch): Capability '${capability}' registration result: ${isAuthorized ? "AUTHORIZED" : "DENIED"}`);
             callback(capability, isAuthorized);
         });
-        // Also handle lowercase just in case
-        conn.on("capabilityregistered", (capability, isAuthorized) => {
-            console.log(`SignalR(Branch): lower-case capabilityregistered received`);
-            callback(capability, isAuthorized);
-        });
+        // Aliases for casing
+        conn.on("capabilityregistered", (cap, auth) => callback(cap, auth));
+        conn.on("capabilityRegistered", (cap, auth) => callback(cap, auth));
     },
 
     onPrintThermalReceipt: (callback) => {

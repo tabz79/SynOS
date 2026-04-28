@@ -41,5 +41,11 @@ namespace SynOS.Services.Storage
         /// <param name="subDirectory">A subdirectory to store the file in.</param>
         /// <returns>The relative path of the stored file.</returns>
         Task<string> SaveFileAsync(byte[] data, string fileName, string subDirectory);
+
+        /// <summary>
+        /// Deletes a file from storage.
+        /// </summary>
+        /// <param name="relativePath">The relative path of the file to delete.</param>
+        Task DeleteFileAsync(string relativePath);
     }
 }

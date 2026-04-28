@@ -125,14 +125,14 @@ export const RichPatientCard = ({ patient, onAction, actionLabel, isLocked }) =>
                 {/* ROW 4: TEST CODES (Full Width, Compact) */}
                 {lastVisitTestCodes && lastVisitTestCodes.length > 0 && (
                     <div className="col-span-3 flex flex-wrap gap-1 mt-0.5 pt-1.5 border-t border-black/5">
-                        {lastVisitTestCodes.slice(0, 5).map(code => (
-                            <span key={code} className={cn(
+                        {lastVisitTestCodes.slice(0, 5).map((code, idx) => (
+                            <span key={`${code}-${idx}`} className={cn(
                                 "px-1.5 py-[1px] rounded border type-code text-[10px] font-medium uppercase tracking-wide",
                                 isLocked
                                     ? "bg-black/40 text-synos-primary/80 border-synos-primary/20"
                                     : (isDark ? "bg-zinc-700/50 text-zinc-400 border-white/5" : "bg-zinc-200/50 text-zinc-900 border-zinc-300/50 shadow-sm")
                             )}>
-                                {code}
+                                {code || 'Test'}
                             </span>
                         ))}
                         {lastVisitTestCodes.length > 5 && (

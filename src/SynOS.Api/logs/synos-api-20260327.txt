@@ -1,2 +1,0 @@
-2026-03-27 12:34:04.949 +05:30 [INF] Terminal web-1zy6xxtky authorized and added to Thermal80mm group for Branch "a0000000-0000-0000-0000-000000000001".
-2026-03-27 12:34:07.655 +05:30 [INF] Terminal web-1zy6xxtky authorized and added to Thermal80mm group for Branch "a0000000-0000-0000-0000-000000000001".

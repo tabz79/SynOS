@@ -1,3 +1,4 @@
+logs:
 PS D:\Projects\SynOS-Synthesized-Lab-Intelligence> dotnet build
   Determining projects to restore...
   All projects are up-to-date for restore.
@@ -14,190 +15,29 @@ Build succeeded.
     0 Warning(s)
     0 Error(s)
 
-Time Elapsed 00:00:06.29
+Time Elapsed 00:00:10.99
 PS D:\Projects\SynOS-Synthesized-Lab-Intelligence> dotnet run --project src\SynOS.Api\SynOS.Api.csproj --urls "http://127.0.0.1:59999"
 
-[10:52:56 INF] OperationalStatsProjectionWorker is starting in Event-Driven Mode.
-[10:52:56 INF] Worker: Running Consistency Check and Catch-up...
-[10:52:56 INF] Worker: Catch-up complete. Awaiting real-time events...
-[10:53:31 WRN] Failed to determine the https port for redirect.
-[10:53:37 INF] Terminal web-1zy6xxtky authorized and added to Thermal80mm group for Branch a0000000-0000-0000-0000-000000000001.
-[10:53:44 WRN] The query uses the 'First'/'FirstOrDefault' operator without 'OrderBy' and filter operators. This may lead to unpredictable results.
-[10:53:44 ERR] Failed executing DbCommand (5ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
-SELECT TOP(1) [l].[LabProfileId], [l].[Accreditation], [l].[Address], [l].[Email], [l].[FooterDisclaimer], [l].[HeaderLogoUrl], [l].[Name], [l].[Phone], [l].[Tagline], [l].[UpdatedAt], [l].[WatermarkUrl], [l].[Website]
-FROM [LabProfiles] AS [l]
-[10:53:44 ERR] An exception occurred while iterating over the results of a query for context type 'SynOS.Data.SynOSDbContext'.
-Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid object name 'LabProfiles'.
-   at Microsoft.Data.SqlClient.SqlCommand.<>c.<ExecuteDbDataReaderAsync>b__209_0(Task`1 result)
-   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
-   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
---- End of stack trace from previous location ---
-   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
-   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
---- End of stack trace from previous location ---
-   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
-ClientConnectionId:25547510-9326-4aea-8839-0703dbdf5ab1
-Error Number:208,State:1,Class:16
-Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid object name 'LabProfiles'.
-   at Microsoft.Data.SqlClient.SqlCommand.<>c.<ExecuteDbDataReaderAsync>b__209_0(Task`1 result)
-   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
-   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
---- End of stack trace from previous location ---
-   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
-   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
---- End of stack trace from previous location ---
-   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
-ClientConnectionId:25547510-9326-4aea-8839-0703dbdf5ab1
-Error Number:208,State:1,Class:16
-
+[10:20:31 INF] OperationalStatsProjectionWorker is starting in Event-Driven Mode.
+[10:20:31 INF] Worker: Running Consistency Check and Catch-up...
+[10:20:32 INF] Worker: Catch-up complete. Awaiting real-time events...
+[10:22:43 WRN] Failed to determine the https port for redirect.
+[10:22:49 INF] Terminal web-1zy6xxtky authorized and added to Thermal80mm group for Branch a0000000-0000-0000-0000-000000000001.
 
 console logs:
-react-dom_client.js?v=b4ab93d1:20103 Download the React DevTools for a better development experience: https://react.dev/link/react-devtools
-signalr.js:215 SignalR(Branch): Subscriber added (Total: 1)
-signalr.js:208 [2026-04-14T05:23:34.033Z] Information: Normalizing '/branchOperationsHub' to 'http://localhost:5173/branchOperationsHub'.
-signalr.js:236 SignalR(Branch): Starting connection...
-signalr.js:297 SignalR(Branch): Subscriber removed (Total: 0)
-signalr.js:215 SignalR(Branch): Subscriber added (Total: 1)
-signalr.js:220 SignalR(Branch): Aborted scheduled disconnect
-@microsoft_signalr.js?v=b4ab93d1:301 [2026-04-14T05:23:37.196Z] Information: WebSocket connected to ws://localhost:5173/branchOperationsHub?access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiJjZDM4ZTFlOS03NmZiLTQyNDEtYTVhYy05ZmNlMWU4YjE2ZjYiLCJlbWFpbCI6InR5cGlzdDFAbGFiLmNvbSIsInVuaXF1ZV9uYW1lIjoiVHlwaXN0IFVzZXIiLCJzZXNzaW9uX21vZGUiOiJvcGVyYXRpb25hbCIsInNlc3Npb25faWQiOiJlMDc4NGVjYi04MTliLTQzNjctYTFhOC00ZGQ5NjcyNDdhMDMiLCJkZXBhcnRtZW50X2NvZGUiOiJHZW5lcmFsIiwicm9sZSI6IlR5cGlzdCIsImJyYW5jaF9pZCI6ImEwMDAwMDAwLTAwMDAtMDAwMC0wMDAwLTAwMDAwMDAwMDAwMSIsInJlc291cmNlX2lkIjoiODFlNWM5NzQtOGU1Mi00NmRjLWE2MWQtMDhkZTkzMDRhZjEwIiwiYnJhbmNoX25hbWUiOiJNYWluIExhYm9yYXRvcnkiLCJuYmYiOjE3NzYwODA5OTgsImV4cCI6MTc3NjE2NzM5OCwiaWF0IjoxNzc2MDgwOTk4LCJpc3MiOiJTeW5PUy5BcGkiLCJhdWQiOiJTeW5PUy5BcHAifQ.KRij81UVuLaQ3t3rE3YcoWtkzZGMzPvxj647JAG7MfY.
-@microsoft_signalr.js?v=b4ab93d1:301 [2026-04-14T05:23:37.198Z] Information: Using HubProtocol 'json'.
-signalr.js:239 SignalR(Branch): Connected to /branchOperationsHub
-@microsoft_signalr.js?v=b4ab93d1:298 [2026-04-14T05:23:37.568Z] Warning: No client method with the name 'capabilityregistered' found.
-log @ @microsoft_signalr.js?v=b4ab93d1:298
-_invokeClientMethod @ @microsoft_signalr.js?v=b4ab93d1:1374
-_processIncomingData @ @microsoft_signalr.js?v=b4ab93d1:1264
-connection.onreceive @ @microsoft_signalr.js?v=b4ab93d1:914
-webSocket.onmessage @ @microsoft_signalr.js?v=b4ab93d1:2092
-reports.js:28  GET http://localhost:5173/api/v1/reports/8c29a30c-d80a-4a74-bfb7-ab1ab9668f6b/data?forceLive=true 400 (Bad Request)
-getReportData @ reports.js:28
-fetchReportDetail @ TypistTerminal.jsx:77
-(anonymous) @ TypistTerminal.jsx:50
-react_stack_bottom_frame @ react-dom_client.js?v=b4ab93d1:18567
-runWithFiberInDEV @ react-dom_client.js?v=b4ab93d1:997
-commitHookEffectListMount @ react-dom_client.js?v=b4ab93d1:9411
-commitHookPassiveMountEffects @ react-dom_client.js?v=b4ab93d1:9465
-commitPassiveMountOnFiber @ react-dom_client.js?v=b4ab93d1:11040
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=b4ab93d1:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=b4ab93d1:11201
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=b4ab93d1:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=b4ab93d1:11033
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=b4ab93d1:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=b4ab93d1:11201
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=b4ab93d1:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=b4ab93d1:11033
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=b4ab93d1:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=b4ab93d1:11033
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=b4ab93d1:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=b4ab93d1:11201
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=b4ab93d1:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=b4ab93d1:11033
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=b4ab93d1:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=b4ab93d1:11033
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=b4ab93d1:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=b4ab93d1:11201
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=b4ab93d1:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=b4ab93d1:11201
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=b4ab93d1:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=b4ab93d1:11033
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=b4ab93d1:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=b4ab93d1:11033
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=b4ab93d1:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=b4ab93d1:11201
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=b4ab93d1:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=b4ab93d1:11033
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=b4ab93d1:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=b4ab93d1:11201
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=b4ab93d1:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=b4ab93d1:11033
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=b4ab93d1:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=b4ab93d1:11033
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=b4ab93d1:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=b4ab93d1:11201
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=b4ab93d1:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=b4ab93d1:11033
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=b4ab93d1:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=b4ab93d1:11201
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=b4ab93d1:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=b4ab93d1:11066
-flushPassiveEffects @ react-dom_client.js?v=b4ab93d1:13150
-flushPendingEffects @ react-dom_client.js?v=b4ab93d1:13088
-flushSpawnedWork @ react-dom_client.js?v=b4ab93d1:13062
-commitRoot @ react-dom_client.js?v=b4ab93d1:12804
-commitRootWhenReady @ react-dom_client.js?v=b4ab93d1:12016
-performWorkOnRoot @ react-dom_client.js?v=b4ab93d1:11950
-performSyncWorkOnRoot @ react-dom_client.js?v=b4ab93d1:13517
-flushSyncWorkAcrossRoots_impl @ react-dom_client.js?v=b4ab93d1:13414
-processRootScheduleInMicrotask @ react-dom_client.js?v=b4ab93d1:13437
-(anonymous) @ react-dom_client.js?v=b4ab93d1:13531
-TypistTerminal.jsx:89 Failed to fetch report detail: Error: Failed to fetch report data contract
-    at Object.getReportData (reports.js:31:33)
-    at async Promise.all (index 1)
-    at async fetchReportDetail (TypistTerminal.jsx:75:45)
-fetchReportDetail @ TypistTerminal.jsx:89
-await in fetchReportDetail
-(anonymous) @ TypistTerminal.jsx:50
-react_stack_bottom_frame @ react-dom_client.js?v=b4ab93d1:18567
-runWithFiberInDEV @ react-dom_client.js?v=b4ab93d1:997
-commitHookEffectListMount @ react-dom_client.js?v=b4ab93d1:9411
-commitHookPassiveMountEffects @ react-dom_client.js?v=b4ab93d1:9465
-commitPassiveMountOnFiber @ react-dom_client.js?v=b4ab93d1:11040
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=b4ab93d1:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=b4ab93d1:11201
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=b4ab93d1:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=b4ab93d1:11033
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=b4ab93d1:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=b4ab93d1:11201
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=b4ab93d1:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=b4ab93d1:11033
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=b4ab93d1:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=b4ab93d1:11033
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=b4ab93d1:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=b4ab93d1:11201
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=b4ab93d1:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=b4ab93d1:11033
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=b4ab93d1:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=b4ab93d1:11033
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=b4ab93d1:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=b4ab93d1:11201
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=b4ab93d1:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=b4ab93d1:11201
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=b4ab93d1:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=b4ab93d1:11033
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=b4ab93d1:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=b4ab93d1:11033
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=b4ab93d1:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=b4ab93d1:11201
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=b4ab93d1:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=b4ab93d1:11033
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=b4ab93d1:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=b4ab93d1:11201
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=b4ab93d1:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=b4ab93d1:11033
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=b4ab93d1:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=b4ab93d1:11033
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=b4ab93d1:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=b4ab93d1:11201
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=b4ab93d1:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=b4ab93d1:11033
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=b4ab93d1:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=b4ab93d1:11201
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=b4ab93d1:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=b4ab93d1:11066
-flushPassiveEffects @ react-dom_client.js?v=b4ab93d1:13150
-flushPendingEffects @ react-dom_client.js?v=b4ab93d1:13088
-flushSpawnedWork @ react-dom_client.js?v=b4ab93d1:13062
-commitRoot @ react-dom_client.js?v=b4ab93d1:12804
-commitRootWhenReady @ react-dom_client.js?v=b4ab93d1:12016
-performWorkOnRoot @ react-dom_client.js?v=b4ab93d1:11950
-performSyncWorkOnRoot @ react-dom_client.js?v=b4ab93d1:13517
-flushSyncWorkAcrossRoots_impl @ react-dom_client.js?v=b4ab93d1:13414
-processRootScheduleInMicrotask @ react-dom_client.js?v=b4ab93d1:13437
-(anonymous) @ react-dom_client.js?v=b4ab93d1:13531
+react-dom_client.js?v=40b2952c:20103 Download the React DevTools for a better development experience: https://react.dev/link/react-devtools
+signalr.js:218 SignalR(Branch): Subscriber added (Total: 1)
+@microsoft_signalr.js?v=40b2952c:301 [2026-04-28T04:52:49.226Z] Information: Normalizing '/branchOperationsHub' to 'http://localhost:5173/branchOperationsHub'.
+signalr.js:239 SignalR(Branch): Starting connection...
+signalr.js:298 SignalR(Branch): Subscriber removed (Total: 0)
+signalr.js:218 SignalR(Branch): Subscriber added (Total: 1)
+signalr.js:223 SignalR(Branch): Aborted scheduled disconnect
+App.jsx:17 [RootRedirect] Auth state: Object
+App.jsx:17 [RootRedirect] Auth state: Object
+App.jsx:17 [RootRedirect] Auth state: Object
+App.jsx:17 [RootRedirect] Auth state: Object
+@microsoft_signalr.js?v=40b2952c:301 [2026-04-28T04:52:49.767Z] Information: WebSocket connected to ws://localhost:5173/branchOperationsHub?access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiJhMzBmNTJkNi02MGU1LTQ4MzQtOWJmMS04YzRlNTZhYjM5NTYiLCJlbWFpbCI6InBhdGhvbG9naXN0QGxhYi5jb20iLCJ1bmlxdWVfbmFtZSI6IkRyLiBUYWJyZXogQWhtZWQiLCJzZXNzaW9uX21vZGUiOiJvcGVyYXRpb25hbCIsInNlc3Npb25faWQiOiJmMWRjNDBmZC1hNDI4LTQ2ODYtOWZjNS04ZWJkOGM0MDU0N2QiLCJkZXBhcnRtZW50X2NvZGUiOiJQQVQiLCJyb2xlIjoiUGF0aG9sb2dpc3QiLCJicmFuY2hfaWQiOiJhMDAwMDAwMC0wMDAwLTAwMDAtMDAwMC0wMDAwMDAwMDAwMDEiLCJyZXNvdXJjZV9pZCI6ImNmMGI2MDZiLTAxODYtNDI3OS04NzkwLTA4YTE1OTA1NzhiMCIsImJyYW5jaF9uYW1lIjoiTWFpbiBMYWJvcmF0b3J5IiwibmJmIjoxNzc3MzUxOTY4LCJleHAiOjE3Nzc0MzgzNjgsImlhdCI6MTc3NzM1MTk2OCwiaXNzIjoiU3luT1MuQXBpIiwiYXVkIjoiU3luT1MuQXBwIn0.KGpqWZNmKeBm1R2lzxH6aDbdW41S9B9u1sghifdx7Mo.
+@microsoft_signalr.js?v=40b2952c:301 [2026-04-28T04:52:49.769Z] Information: Using HubProtocol 'json'.
+signalr.js:242 SignalR(Branch): Connected to /branchOperationsHub
+@microsoft_signalr.js?v=40b2952c:298 [2026-04-28T04:52:50.018Z] Warning: No client method with the name 'capabilityregistered' found.
+log @ @microsoft_signalr.js?v=40b2952c:298

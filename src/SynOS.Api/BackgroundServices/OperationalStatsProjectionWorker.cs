@@ -40,6 +40,10 @@ namespace SynOS.Api.BackgroundServices
                     await projector.ProjectPendingEventsAsync(stoppingToken); // Catch up on any events missed while offline
                 }
             }
+            catch (OperationCanceledException)
+            {
+                // Expected during shutdown
+            }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error occurred during Worker consistency catch-up.");
@@ -57,6 +61,10 @@ namespace SynOS.Api.BackgroundServices
                         var projector = scope.ServiceProvider.GetRequiredService<IOperationalStatsProjector>();
                         await projector.ProjectSingleEventAsync(eventId, stoppingToken);
                     }
+                }
+                catch (OperationCanceledException)
+                {
+                    // Expected during shutdown
                 }
                 catch (Exception ex)
                 {

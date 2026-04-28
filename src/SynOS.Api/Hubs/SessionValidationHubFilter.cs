@@ -6,11 +6,20 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using SynOS.Data;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Hosting;
 
 namespace SynOS.Api.Hubs
 {
     public class SessionValidationHubFilter : IHubFilter
     {
+        private readonly IWebHostEnvironment _env;
+
+        public SessionValidationHubFilter(IWebHostEnvironment env)
+        {
+            _env = env;
+        }
+
         public async ValueTask<object?> InvokeMethodAsync(
             HubInvocationContext invocationContext, 
             Func<HubInvocationContext, ValueTask<object?>> next)
@@ -40,6 +49,12 @@ namespace SynOS.Api.Hubs
                         .FirstOrDefaultAsync();
 
                     bool isValid = activeSessionId != null && activeSessionId.ToString() == sessionIdClaim;
+
+                    // DEV BYPASS: Allow missing records in Development
+                    if (_env.IsDevelopment() && activeSessionId == null)
+                    {
+                        isValid = true;
+                    }
 
                     if (!isValid)
                     {
@@ -79,6 +94,12 @@ namespace SynOS.Api.Hubs
                         .FirstOrDefaultAsync();
 
                     bool isValid = activeSessionId != null && activeSessionId.ToString() == sessionIdClaim;
+
+                    // DEV BYPASS: Allow missing records in Development
+                    if (_env.IsDevelopment() && activeSessionId == null)
+                    {
+                        isValid = true;
+                    }
 
                     if (!isValid)
                     {

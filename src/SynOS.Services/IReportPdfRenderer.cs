@@ -146,7 +146,11 @@ namespace SynOS.Services
         public byte[]? SignatureImage { get; set; }
         public string? SignatureImageBase64 { get; set; }
         public DateTimeOffset? SignedAt { get; set; }
-        public string? Hash { get; set; }
+        public string? Hash { get; set; } // Legacy or Signature Image Hash
+        public string? ContentHash { get; set; } // Forensic Content Hash (V3)
+        public bool IsTampered { get; set; }
+        public bool IsSuperseded { get; set; }
+        public int Version { get; set; }
     }
 
 

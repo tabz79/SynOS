@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using SynOS.Data;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Hosting;
 
 namespace SynOS.Api.Middleware
 {
@@ -13,11 +15,13 @@ namespace SynOS.Api.Middleware
     {
         private readonly RequestDelegate _next;
         private readonly ILogger<SessionValidationMiddleware> _logger;
+        private readonly IWebHostEnvironment _env;
 
-        public SessionValidationMiddleware(RequestDelegate next, ILogger<SessionValidationMiddleware> logger)
+        public SessionValidationMiddleware(RequestDelegate next, ILogger<SessionValidationMiddleware> logger, IWebHostEnvironment env)
         {
             _next = next;
             _logger = logger;
+            _env = env;
         }
 
         public async Task InvokeAsync(HttpContext context)
@@ -69,6 +73,15 @@ namespace SynOS.Api.Middleware
                 _logger.LogDebug("Operational session validation enforced for user {UserId}", userId);
 
                 bool isValid = activeSessionId != null && activeSessionId.ToString() == sessionIdClaim;
+                
+                // DEV BYPASS: If in development and no session record exists at all, allow the request
+                // This prevents 401 loops when DB is re-seeded but JWT is still in browser.
+                if (_env.IsDevelopment() && activeSessionId == null)
+                {
+                    _logger.LogWarning("DEV BYPASS: Operational session missing for user {UserId}. Allowing request in Development mode.", userId);
+                    isValid = true;
+                }
+
                 context.Items["IsSessionValid"] = isValid;
                 
                 if (!isValid)

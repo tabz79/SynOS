@@ -15,7 +15,7 @@ namespace SynOS.Services
     public interface IUserService
     {
         Task<UserDto?> GetUserByIdAsync(Guid userId);
-        Task<UserSignatureDto> UpdateUserSignatureAsync(Guid userId, IFormFile signatureFile);
+        Task<UserSignatureDto> UpdateUserSignatureAsync(Guid userId, IFormFile signatureFile, Guid actorUserId);
 
         // New User Management methods
         Task<IReadOnlyList<User>> GetUsersAsync();
@@ -24,5 +24,6 @@ namespace SynOS.Services
         Task<User> UpdateUserAsync(Guid userId, UpdateUserDto dto, Guid actorUserId);
         Task DeleteUserAsync(Guid userId, Guid actorUserId);
         Task ResetPasswordAsync(Guid userId, ResetPasswordDto dto, Guid actorUserId);
+        Task<UserDto> UpdateProfileAsync(Guid userId, UpdateProfileDto dto);
     }
 }

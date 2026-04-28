@@ -1,0 +1,70 @@
+2026-04-25 18:55:53.599 +05:30 [INF] OperationalStatsProjectionWorker is starting in Event-Driven Mode.
+2026-04-25 18:55:53.689 +05:30 [INF] Worker: Running Consistency Check and Catch-up...
+2026-04-25 18:55:53.970 +05:30 [ERR] Hosting failed to start
+System.IO.IOException: Failed to bind to address http://127.0.0.1:59999: address already in use.
+ ---> Microsoft.AspNetCore.Connections.AddressInUseException: Only one usage of each socket address (protocol/network address/port) is normally permitted.
+ ---> System.Net.Sockets.SocketException (10048): Only one usage of each socket address (protocol/network address/port) is normally permitted.
+   at System.Net.Sockets.Socket.UpdateStatusAfterSocketErrorAndThrowException(SocketError error, Boolean disconnectOnFailure, String callerName)
+   at System.Net.Sockets.Socket.DoBind(EndPoint endPointSnapshot, SocketAddress socketAddress)
+   at System.Net.Sockets.Socket.Bind(EndPoint localEP)
+   at Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketTransportOptions.CreateDefaultBoundListenSocket(EndPoint endpoint)
+   at Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionListener.Bind()
+   --- End of inner exception stack trace ---
+   at Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionListener.Bind()
+   at Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketTransportFactory.BindAsync(EndPoint endpoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.TransportManager.BindAsync(EndPoint endPoint, ConnectionDelegate connectionDelegate, EndpointConfig endpointConfig, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerImpl.<>c__DisplayClass28_0`1.<<StartAsync>g__OnBind|0>d.MoveNext()
+--- End of stack trace from previous location ---
+   at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.AddressBinder.BindEndpointAsync(ListenOptions endpoint, AddressBindContext context, CancellationToken cancellationToken)
+   --- End of inner exception stack trace ---
+   at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.AddressBinder.BindEndpointAsync(ListenOptions endpoint, AddressBindContext context, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions.BindAsync(AddressBindContext context, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.AddressBinder.AddressesStrategy.BindAsync(AddressBindContext context, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.AddressBinder.BindAsync(ListenOptions[] listenOptions, AddressBindContext context, Func`2 useHttps, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerImpl.BindAsync(CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerImpl.StartAsync[TContext](IHttpApplication`1 application, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Hosting.GenericWebHostService.StartAsync(CancellationToken cancellationToken)
+   at Microsoft.Extensions.Hosting.Internal.Host.<StartAsync>b__15_1(IHostedService service, CancellationToken token)
+   at Microsoft.Extensions.Hosting.Internal.Host.ForeachService[T](IEnumerable`1 services, CancellationToken token, Boolean concurrent, Boolean abortOnFirstException, List`1 exceptions, Func`3 operation)
+2026-04-25 18:55:54.088 +05:30 [ERR] Error occurred during Worker consistency catch-up.
+System.Threading.Tasks.TaskCanceledException: A task was canceled.
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+   at Microsoft.EntityFrameworkCore.Query.ShapedQueryCompilingExpressionVisitor.SingleOrDefaultAsync[TSource](IAsyncEnumerable`1 asyncEnumerable, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.ShapedQueryCompilingExpressionVisitor.SingleOrDefaultAsync[TSource](IAsyncEnumerable`1 asyncEnumerable, CancellationToken cancellationToken)
+   at SynOS.Services.Operational.OperationalStatsProjector.EnsureStateConsistencyAsync(CancellationToken cancellationToken) in D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\Operational\OperationalStatsProjector.cs:line 47
+   at SynOS.Api.BackgroundServices.OperationalStatsProjectionWorker.ExecuteAsync(CancellationToken stoppingToken) in D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\BackgroundServices\OperationalStatsProjectionWorker.cs:line 39
+2026-04-25 18:55:54.141 +05:30 [INF] Worker: Catch-up complete. Awaiting real-time events...
+2026-04-25 18:55:54.158 +05:30 [ERR] BackgroundService failed
+System.Threading.Tasks.TaskCanceledException: A task was canceled.
+   at System.Threading.Channels.ChannelReader`1.ReadAllAsync(CancellationToken cancellationToken)+MoveNext()
+   at System.Threading.Channels.ChannelReader`1.ReadAllAsync(CancellationToken cancellationToken)+System.Threading.Tasks.Sources.IValueTaskSource<System.Boolean>.GetResult()
+   at SynOS.Api.BackgroundServices.OperationalStatsProjectionWorker.ExecuteAsync(CancellationToken stoppingToken) in D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\BackgroundServices\OperationalStatsProjectionWorker.cs:line 51
+   at SynOS.Api.BackgroundServices.OperationalStatsProjectionWorker.ExecuteAsync(CancellationToken stoppingToken) in D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\BackgroundServices\OperationalStatsProjectionWorker.cs:line 51
+   at Microsoft.Extensions.Hosting.Internal.Host.TryExecuteBackgroundServiceAsync(BackgroundService backgroundService)
+2026-04-25 18:55:54.175 +05:30 [FTL] The HostOptions.BackgroundServiceExceptionBehavior is configured to StopHost. A BackgroundService has thrown an unhandled exception, and the IHost instance is stopping. To avoid this behavior, configure this to Ignore; however the BackgroundService will not be restarted.
+System.Threading.Tasks.TaskCanceledException: A task was canceled.
+   at System.Threading.Channels.ChannelReader`1.ReadAllAsync(CancellationToken cancellationToken)+MoveNext()
+   at System.Threading.Channels.ChannelReader`1.ReadAllAsync(CancellationToken cancellationToken)+System.Threading.Tasks.Sources.IValueTaskSource<System.Boolean>.GetResult()
+   at SynOS.Api.BackgroundServices.OperationalStatsProjectionWorker.ExecuteAsync(CancellationToken stoppingToken) in D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\BackgroundServices\OperationalStatsProjectionWorker.cs:line 51
+   at SynOS.Api.BackgroundServices.OperationalStatsProjectionWorker.ExecuteAsync(CancellationToken stoppingToken) in D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\BackgroundServices\OperationalStatsProjectionWorker.cs:line 51
+   at Microsoft.Extensions.Hosting.Internal.Host.TryExecuteBackgroundServiceAsync(BackgroundService backgroundService)
+2026-04-25 19:03:10.298 +05:30 [INF] OperationalStatsProjectionWorker is starting in Event-Driven Mode.
+2026-04-25 19:03:10.394 +05:30 [INF] Worker: Running Consistency Check and Catch-up...
+2026-04-25 19:03:11.413 +05:30 [INF] [ProjectorDebug] Processing Event Type: SPECIMEN_ORDERED, BranchId: "a0000000-0000-0000-0000-000000000001", SourceId: "a8d6b111-ac0e-4c42-9178-1e116339e5bc", SourceType: Visit, VisitId: a8d6b111-ac0e-4c42-9178-1e116339e5bc
+2026-04-25 19:03:11.889 +05:30 [INF] [ProjectorDebug] Checking Fact Deduplication for SourceId: "a8d6b111-ac0e-4c42-9178-1e116339e5bc"
+2026-04-25 19:03:12.092 +05:30 [WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+2026-04-25 19:03:12.349 +05:30 [INF] [ProjectorDebug] Processing Event Type: SPECIMEN_COLLECTED, BranchId: "a0000000-0000-0000-0000-000000000001", SourceId: "a8d6b111-ac0e-4c42-9178-1e116339e5bc", SourceType: Visit, VisitId: a8d6b111-ac0e-4c42-9178-1e116339e5bc
+2026-04-25 19:03:12.359 +05:30 [INF] [ProjectorDebug] Checking Fact Deduplication for SourceId: "a8d6b111-ac0e-4c42-9178-1e116339e5bc"
+2026-04-25 19:03:12.365 +05:30 [WRN] Projector: Duplicate Event for Fact "a8d6b111-ac0e-4c42-9178-1e116339e5bc" detected. Skipping Logic, marking as Processed. EventId: "eecc0733-bcce-4160-b5da-50f64e56d948"
+2026-04-25 19:03:12.370 +05:30 [WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+2026-04-25 19:03:12.397 +05:30 [INF] [ProjectorDebug] Processing Event Type: RESULT_DRAFT_STARTED, BranchId: "a0000000-0000-0000-0000-000000000001", SourceId: "7145048c-3df9-46ed-a019-02ef3ca83dca", SourceType: Result, VisitId: a8d6b111-ac0e-4c42-9178-1e116339e5bc
+2026-04-25 19:03:12.405 +05:30 [INF] [ProjectorDebug] Checking Fact Deduplication for SourceId: "7145048c-3df9-46ed-a019-02ef3ca83dca"
+2026-04-25 19:03:12.415 +05:30 [WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+2026-04-25 19:03:12.425 +05:30 [INF] [ProjectorDebug] Processing Event Type: REPORT_READY_FOR_VERIFICATION, BranchId: "a0000000-0000-0000-0000-000000000001", SourceId: "dbee7bbb-fd27-4849-912b-f0f9545ab00a", SourceType: Report, VisitId: a8d6b111-ac0e-4c42-9178-1e116339e5bc
+2026-04-25 19:03:12.436 +05:30 [INF] [ProjectorDebug] Checking Fact Deduplication for SourceId: "dbee7bbb-fd27-4849-912b-f0f9545ab00a"
+2026-04-25 19:03:12.447 +05:30 [WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+2026-04-25 19:03:12.453 +05:30 [INF] [ProjectorDebug] Processing Event Type: REPORT_SIGNED, BranchId: "a0000000-0000-0000-0000-000000000001", SourceId: "dbee7bbb-fd27-4849-912b-f0f9545ab00a", SourceType: Report, VisitId: a8d6b111-ac0e-4c42-9178-1e116339e5bc
+2026-04-25 19:03:12.464 +05:30 [INF] [ProjectorDebug] Checking Fact Deduplication for SourceId: "dbee7bbb-fd27-4849-912b-f0f9545ab00a"
+2026-04-25 19:03:12.469 +05:30 [WRN] Projector: Duplicate Event for Fact "dbee7bbb-fd27-4849-912b-f0f9545ab00a" detected. Skipping Logic, marking as Processed. EventId: "0095e1f1-8c21-469b-bf62-379175556694"
+2026-04-25 19:03:12.476 +05:30 [WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+2026-04-25 19:03:12.515 +05:30 [INF] Worker: Catch-up complete. Awaiting real-time events...

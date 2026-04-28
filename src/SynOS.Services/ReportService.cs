@@ -15,6 +15,7 @@ using SynOS.Services.Operational;
 using SynOS.Services.Operations;
 using SynOS.Services.Security;
 using SynOS.Services.Storage;
+using SynOS.Services.Forensic;
 
 namespace SynOS.Services
 {
@@ -70,12 +71,23 @@ namespace SynOS.Services
 
             if (reportData != null)
             {
-                report.DraftSnapshotJson = System.Text.Json.JsonSerializer.Serialize(reportData);
+                var jsonOptions = new System.Text.Json.JsonSerializerOptions
+                {
+                    PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase,
+                    DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
+                };
+                report.DraftSnapshotJson = System.Text.Json.JsonSerializer.Serialize(reportData, jsonOptions);
             }
 
             // 2. Capture Formal Version & Structure Snapshot (Frozen state for Editor/Detail view)
             if (report.CurrentVersion == 0) report.CurrentVersion = 1;
             
+            // 3. Update Status & Commit FIRST (to avoid race in snapshot status)
+            report.Status = "ReadyForVerification";
+            report.TypedByUserId = userId;
+            report.UpdatedAt = DateTimeOffset.UtcNow;
+            await _context.SaveChangesAsync();
+
             var reportVersion = await _context.ReportVersions
                 .FirstOrDefaultAsync(rv => rv.ReportId == report.ReportId && rv.VersionNumber == report.CurrentVersion);
 
@@ -93,13 +105,7 @@ namespace SynOS.Services
 
             // Create formal structure snapshot for Detail View consistency
             await _reportingService.CreateSnapshotAsync(reportVersion.ReportVersionId, overwrite: true);
-
-            // 3. Update Status & Audit
-            report.Status = "ReadyForVerification";
-            report.TypedByUserId = userId;
-            report.UpdatedAt = DateTimeOffset.UtcNow;
             
-            await _context.SaveChangesAsync();
             await _auditService.LogAsync(userId, "ReportSubmitted", "Report", reportId, null);
         }
 
@@ -142,9 +148,44 @@ namespace SynOS.Services
         {
             // 1. Precondition checks
             var user = await _context.Users.FindAsync(signedByUserId);
-            if (user == null || string.IsNullOrEmpty(user.SignatureImageUrl))
+            if (user == null) throw new KeyNotFoundException("User not found.");
+
+            // GPT-5 Rule: Zero Fallback Identity
+            if (string.IsNullOrWhiteSpace(user.Name))
             {
-                throw new BadHttpRequestException("User has no signature image configured.");
+                _logger.LogWarning("Sign-off blocked: Doctor name missing for user {UserId}", signedByUserId);
+                throw new InvalidOperationException("Doctor name missing. Please update your profile before signing clinical reports.");
+            }
+
+            if (string.IsNullOrWhiteSpace(user.Designation))
+            {
+                _logger.LogWarning("Sign-off blocked: Professional designation missing for user {UserId}", signedByUserId);
+                throw new InvalidOperationException("Professional designation missing. Please update your profile before signing clinical reports.");
+            }
+
+            if (string.IsNullOrEmpty(user.SignatureImageUrl))
+            {
+                throw new InvalidOperationException("Digital signature not uploaded. Please complete your profile setup.");
+            }
+
+            // GPT-5: Pre-Mutation Integrity Check (Hard-Fail if identity file is missing)
+            byte[] signatureImageBytes;
+            try
+            {
+                using var stream = await _fileStorageService.GetFileStreamAsync(user.SignatureImageUrl);
+                using var ms = new MemoryStream();
+                await stream.CopyToAsync(ms);
+                signatureImageBytes = ms.ToArray();
+            }
+            catch (FileNotFoundException ex)
+            {
+                _logger.LogError(ex, "Forensic identity breach: Signature file missing for user {UserId}", signedByUserId);
+                throw new FileNotFoundException("Digital signature file not found in storage. Please re-upload your signature.");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Storage failure: Unable to read signature file for user {UserId}", signedByUserId);
+                throw new Exception("Unable to access diagnostic identity storage. Please contact the administrator.");
             }
 
             var report = await _context.Reports
@@ -164,56 +205,114 @@ namespace SynOS.Services
 
             if (order == null) throw new KeyNotFoundException($"Order with ID {report.SourceId} not found.");
 
-            // 2. Use logical report version (Frozen at Submission)
-            var currentVersion = report.CurrentVersion;
-
-            // 3. Build canonical payload for hashing
+            // GPT-5 Rule: Version Lock enforcement
+            // Signing version must match the current report version to prevent stale signatures
+            var requestedVersion = report.CurrentVersion == 0 ? 1 : report.CurrentVersion;
             var timestamp = DateTimeOffset.UtcNow;
-            var canonicalPayload = $"{report.ReportId}:{currentVersion}:{signedByUserId}:{timestamp:o}";
-            
-            string signatureHash;
-            using (var sha256 = System.Security.Cryptography.SHA256.Create())
+            string? contentHash = null;
+            string? signatureImageHash = null;
+
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
             {
-                var bytes = System.Text.Encoding.UTF8.GetBytes(canonicalPayload);
-                var hashBytes = sha256.ComputeHash(bytes);
-                signatureHash = BitConverter.ToString(hashBytes).Replace("-", "").ToLowerInvariant();
+                // 1. Build Forensic Payload (Spec V3)
+                var structure = await _reportingService.GetReportStructureAsync(reportId);
+                var interpretation = await _context.ReportInterpretations
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(ri => ri.ReportId == reportId);
+
+                var forensicPayload = new ForensicPayload
+                {
+                    Ancillary = new AncillaryData
+                    {
+                        LabId = order.Visit?.BranchId.ToString() ?? "GLOBAL",
+                        Mrn = order.Visit?.Patient?.MRN ?? "UNKNOWN",
+                        PatientId = report.PatientId.ToString()
+                    },
+                    Diagnostics = new DiagnosticData
+                    {
+                        Interpretation = ForensicHasher.NormalizeText(interpretation?.Summary),
+                        Notes = ForensicHasher.NormalizeText(interpretation?.Notes)
+                    },
+                    Lineage = new LineageData
+                    {
+                        ReportVersion = requestedVersion
+                    },
+                    Results = structure.Groups.SelectMany(g => g.Parameters.Select(p => new ForensicResult
+                    {
+                        ResultId = p.ResultId?.ToString() ?? p.ParameterCode, 
+                        TestCode = order.Test?.TestCode ?? "UNKNOWN",
+                        ParameterCode = p.ParameterCode,
+                        Value = p.Value ?? string.Empty, // Strict Byte Truth (Forensic Lock)
+                        Unit = (p.Unit ?? string.Empty).ToUpperInvariant(),
+                        Range = (p.ReferenceRange ?? string.Empty).Trim(),
+                        Flag = (p.Flag ?? string.Empty).ToUpperInvariant(),
+                        Method = (p.Methodology ?? string.Empty).ToUpperInvariant()
+                    })).OrderBy(r => r.ParameterCode).ThenBy(r => r.ResultId).ToList()
+                };
+
+                contentHash = ForensicHasher.GenerateHash(forensicPayload);
+                
+                // Keep legacy signatureImageHash for compatibility with image validation
+                using (var sha256 = System.Security.Cryptography.SHA256.Create())
+                {
+                    var hashBytes = sha256.ComputeHash(signatureImageBytes);
+                    signatureImageHash = BitConverter.ToString(hashBytes).Replace("-", "").ToLowerInvariant();
+                }
+
+                var reportSignature = new ReportSignature
+                {
+                    ReportSignatureId = Guid.NewGuid(),
+                    ReportId = reportId,
+                    SignedByUserId = signedByUserId,
+                    SignedAt = timestamp,
+                    SignatureImageUrl = user.SignatureImageUrl,
+                    SignatureHash = signatureImageHash,
+                    ReportVersion = requestedVersion,
+                    ContentHash = contentHash,
+                    // GPT-5 Rule: Immutable snapshots (Strict - No Fallbacks)
+                    DoctorName = user.Name,
+                    DoctorDesignation = user.Designation
+                };
+
+                await _context.ReportSignatures.AddAsync(reportSignature);
+                await _context.SaveChangesAsync();
+
+                // 2. DELEGATE LIFECYCLE TRUTH TO ENGINE
+                var branchId = _userContext.CurrentBranchId;
+                await _operationsEngine.RecordReportSignedAsync(reportId, branchId, signedByUserId);
+
+                // 3. Finalize Lifecycle State & Snapshot
+                report.Status = "Signed";
+                report.VerificationMode = "Digital";
+                if (report.CurrentVersion == 0) report.CurrentVersion = 1;
+                report.SignedByUserId = signedByUserId;
+                report.SignedAt = timestamp;
+
+                // Sync Final Snapshot for PDF consistency
+                var jsonOptions = new System.Text.Json.JsonSerializerOptions
+                {
+                    PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase,
+                    DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
+                };
+
+                var finalData = await GetReportDataForPdfAsync(report.ReportId, forceLive: true);
+                if (finalData != null)
+                {
+                    report.FinalSnapshotJson = System.Text.Json.JsonSerializer.Serialize(finalData, jsonOptions);
+                }
+
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                await _auditService.LogAsync(signedByUserId, "ReportDigitallySigned", "Report", reportId, new { NewVersion = requestedVersion, Hash = contentHash });
             }
-
-            // 4. Insert a row into ReportSignatures (Document History)
-            var reportSignature = new ReportSignature
+            catch (Exception ex)
             {
-                ReportId = reportId,
-                SignedByUserId = signedByUserId,
-                SignedAt = timestamp,
-                SignatureImageUrl = user.SignatureImageUrl,
-                SignatureHash = signatureHash,
-                ReportVersion = currentVersion,
-                // GPT-5 Rule: Immutable snapshots
-                DoctorName = user.Name,
-                DoctorDesignation = user.Designation ?? "Consultant Pathologist"
-            };
-            await _context.ReportSignatures.AddAsync(reportSignature);
-
-            // 5. DELEGATE LIFECYCLE TRUTH TO ENGINE
-            var branchId = _userContext.CurrentBranchId;
-            await _operationsEngine.RecordReportSignedAsync(reportId, branchId, signedByUserId);
-
-            // 5b. Finalize Lifecycle State & Snapshot
-            report.Status = "Signed";
-            report.VerificationMode = "Digital";
-            report.SignedByUserId = signedByUserId;
-            report.SignedAt = timestamp;
-            report.Status = "Signed";
-
-            // Always pull fresh truth for final snapshots
-            var finalData = await GetReportDataForPdfAsync(report.ReportId, forceLive: true);
-            if (finalData != null)
-            {
-                report.FinalSnapshotJson = System.Text.Json.JsonSerializer.Serialize(finalData);
+                await transaction.RollbackAsync();
+                _logger.LogError(ex, "Forensic integrity rollback: Sign-off failed for report {ReportId}", reportId);
+                throw;
             }
-
-            // 6. Audit log
-            await _auditService.LogAsync(signedByUserId, "ReportSigned", "Report", reportId, new { NewVersion = currentVersion });
 
             // Note: Engine emits REPORT_SIGNED event. We don't need to emit REPORT_READY here manually anymore, 
             // but if frontend expects "REPORT_READY" specifically, we might need to map it. 
@@ -273,12 +372,12 @@ namespace SynOS.Services
                     {
                         var templateModel = System.Text.Json.JsonSerializer.Deserialize<SynOS.Models.DTOs.ReportTemplateDsl.TemplateModel>(template.TemplateJson);
                         var pdfBytes = await _reportPdfRenderer.GeneratePdfAsync(reportData, templateModel);
-                        var fileName = $"{report.ReportId}_v{currentVersion}.pdf";
+                        var fileName = $"{report.ReportId}_v{requestedVersion}.pdf";
                         var relativePath = await _fileStorageService.SaveFileAsync(pdfBytes, fileName, "reports");
 
                         // Find existing version created at submission and update it
                         var reportVersion = await _context.ReportVersions
-                            .FirstOrDefaultAsync(rv => rv.ReportId == report.ReportId && rv.VersionNumber == currentVersion);
+                            .FirstOrDefaultAsync(rv => rv.ReportId == report.ReportId && rv.VersionNumber == requestedVersion);
 
                         if (reportVersion != null)
                         {
@@ -289,7 +388,7 @@ namespace SynOS.Services
                         }
                         else
                         {
-                            _logger.LogWarning("Existing ReportVersion {Version} not found for report {ReportId} during sign-off.", currentVersion, report.ReportId);
+                            _logger.LogWarning("Existing ReportVersion {Version} not found for report {ReportId} during sign-off.", requestedVersion, report.ReportId);
                         }
                     }
                 }
@@ -304,8 +403,10 @@ namespace SynOS.Services
                 ReportId = report.ReportId,
                 SignedByUserId = signedByUserId,
                 SignedAt = timestamp,
-                SignatureHash = signatureHash,
-                ReportVersion = currentVersion
+                SignatureHash = signatureImageHash,
+                ContentHash = contentHash,
+                Status = "Signed",
+                ReportVersion = requestedVersion
             };
         }
 
@@ -383,15 +484,6 @@ namespace SynOS.Services
             }
 
 
-            // 1. If FinalSnapshot exists (Signed/Manual), prioritize it.
-            if (!string.IsNullOrEmpty(report.FinalSnapshotJson))
-            {
-                var snapshot = System.Text.Json.JsonSerializer.Deserialize<ReportDataModel>(report.FinalSnapshotJson);
-                if (snapshot != null)
-                {
-                    return MapSnapshotToFinalReportDto(report, order, snapshot);
-                }
-            }
 
             // 2. If DraftSnapshot exists (ReadyForVerification), prioritize it.
             if (report.Status == "ReadyForVerification" && !string.IsNullOrEmpty(report.DraftSnapshotJson))
@@ -479,13 +571,11 @@ namespace SynOS.Services
             // 1. DETERMINE DATA SOURCE (GPT-5 Rule: Lifecycle-Aware Truth)
             bool isLocked = report.Status == "Signed" || report.Status == "ManualVerified";
             
-            // Snapshot Prioritization Logic
+            // Snapshot Prioritization Logic (GPT-5 Rule: forceLive ALWAYS wins)
             string? snapshotJson = null;
-
-            // If locked, ALWAYS prefer snapshot (Audit Integrity)
-            // If NOT forceLive, we prefer snapshots for efficiency
-            if (isLocked || !forceLive)
+            if (!forceLive)
             {
+                // If NOT forceLive, we prefer snapshots for efficiency or forensic integrity
                 snapshotJson = !string.IsNullOrEmpty(report.FinalSnapshotJson) ? report.FinalSnapshotJson : 
                               (!string.IsNullOrEmpty(report.DraftSnapshotJson) ? report.DraftSnapshotJson : null);
             }
@@ -494,15 +584,24 @@ namespace SynOS.Services
             {
                 try
                 {
-                    // Peek version
+                    // Peek version (Lenient GPT-5 Detection: If it looks like V2, it IS V2)
                     using var doc = JsonDocument.Parse(snapshotJson);
-                    bool isV2 = doc.RootElement.TryGetProperty("Metadata", out var meta) && 
-                               meta.TryGetProperty("ContractVersion", out var version) && 
-                               version.GetInt32() >= 2;
+                    bool isV2 = doc.RootElement.TryGetProperty("Metadata", out _) || 
+                                doc.RootElement.TryGetProperty("metadata", out _) ||
+                                doc.RootElement.TryGetProperty("Results", out _) ||
+                                doc.RootElement.TryGetProperty("results", out _);
+                    
+                    var jsonOptions = new System.Text.Json.JsonSerializerOptions
+                    {
+                        PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase,
+                        PropertyNameCaseInsensitive = true,
+                        DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
+                    };
 
                     if (isV2)
                     {
-                        var v2Data = JsonSerializer.Deserialize<ReportDataModel>(snapshotJson);
+                        // CASE-AWARE DESERIALIZATION: Handles both legacy Pascal and modern camelCase
+                        var v2Data = System.Text.Json.JsonSerializer.Deserialize<ReportDataModel>(snapshotJson, jsonOptions);
                         if (v2Data != null)
                         {
                             v2Data.Metadata.GeneratedFrom = "snapshot";
@@ -522,7 +621,7 @@ namespace SynOS.Services
                 }
             }
 
-            if (report.Status == "Signed")
+            if (report.Status == "Signed" && !forceLive)
             {
                 _logger.LogCritical("CLINICAL INTEGRITY FAULT: Signed report {Id} is missing a valid snapshot. Access blocked to prevent diagnostic dissociation.", report.ReportId);
                 // In production, we throw. For verification, we return null to signal failure.
@@ -530,13 +629,13 @@ namespace SynOS.Services
             }
 
             // 2. LIVE TRUTH FACTORY (For Drafts or Corrupted Snapshots)
-            return await BuildReportDataModelV2Async(report, order);
+            return await BuildReportDataModelV2Async(report, order, forceLive);
         }
 
-        private async Task<ReportDataModel> BuildReportDataModelV2Async(Report report, Order order)
+        private async Task<ReportDataModel> BuildReportDataModelV2Async(Report report, Order order, bool forceLive = false)
         {
             var patient = order.Visit!.Patient;
-            var structure = await _reportingService.GetReportStructureAsync(report.ReportId);
+            var structure = await _reportingService.GetReportStructureAsync(report.ReportId, forceLive);
             
             // SINGLE TRUTH: Human input comes exclusively from ReportInterpretations
             var interpretationData = await _context.ReportInterpretations
@@ -551,55 +650,152 @@ namespace SynOS.Services
                 .ToListAsync();
 
             var signatures = new List<ReportSignatureDetails>();
+            
+            // Build current forensic context for tamper verification
+            var currentPayload = new ForensicPayload
+            {
+                Ancillary = new AncillaryData
+                {
+                    LabId = order.Visit?.BranchId.ToString() ?? "GLOBAL",
+                    Mrn = order.Visit?.Patient?.MRN ?? "UNKNOWN",
+                    PatientId = report.PatientId.ToString()
+                },
+                Diagnostics = new DiagnosticData
+                {
+                    Interpretation = ForensicHasher.NormalizeText(interpretationData?.Summary),
+                    Notes = ForensicHasher.NormalizeText(interpretationData?.Notes)
+                },
+                Lineage = new LineageData
+                {
+                    ReportVersion = report.CurrentVersion
+                },
+                Results = structure.Groups.SelectMany(g => g.Parameters.Select(p => new ForensicResult
+                {
+                    ResultId = p.ResultId?.ToString() ?? p.ParameterCode,
+                    TestCode = order.Test?.TestCode ?? "UNKNOWN",
+                    ParameterCode = p.ParameterCode,
+                    Value = p.Value,
+                    Unit = p.Unit.ToUpperInvariant(),
+                    Range = p.ReferenceRange,
+                    Flag = (p.Flag ?? string.Empty).ToUpperInvariant(),
+                    Method = (p.Methodology ?? string.Empty).ToUpperInvariant()
+                })).OrderBy(r => r.ParameterCode).ThenBy(r => r.ResultId).ToList()
+            };
+
             foreach (var s in signatureEntities)
             {
+                // GPT-5: Version Lineage Verification
+                bool isSuperseded = s.ReportVersion < report.CurrentVersion;
+                
+                // GPT-5: Forensic Content Integrity Verification
+                // We re-calculate the hash of the version recorded in the signature to compare
+                // Since this is V2 data model loop, we compare the LIVE hash only if version matches
+                bool isTampered = false;
+                if (!isSuperseded)
+                {
+                    var liveHash = ForensicHasher.GenerateHash(currentPayload);
+                    isTampered = !string.IsNullOrEmpty(s.ContentHash) && s.ContentHash != liveHash;
+                }
+
                 var sigDetail = new ReportSignatureDetails
                 {
                     DoctorName = !string.IsNullOrEmpty(s.DoctorName) ? s.DoctorName : s.SignedByUser!.Name,
                     Credentials = !string.IsNullOrEmpty(s.DoctorDesignation) ? s.DoctorDesignation : "Pathologist",
                     Role = "Consultant Pathologist",
                     SignedAt = s.SignedAt,
-                    Hash = s.SignatureHash
+                    Hash = s.SignatureHash,
+                    ContentHash = s.ContentHash,
+                    IsTampered = isTampered,
+                    IsSuperseded = isSuperseded,
+                    Version = s.ReportVersion
                 };
 
                 // Safe File Loading
                 if (!string.IsNullOrEmpty(s.SignatureImageUrl))
                 {
-                    var fullPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "wwwroot", s.SignatureImageUrl.TrimStart('/'));
-                    if (File.Exists(fullPath))
+                    try
                     {
-                        try
-                        {
-                            var bytes = await File.ReadAllBytesAsync(fullPath);
-                            sigDetail.SignatureImage = bytes;
-                            sigDetail.SignatureImageBase64 = Convert.ToBase64String(bytes);
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.LogWarning(ex, "Failed to read signature image at {Path}", fullPath);
-                        }
+                        using var stream = await _fileStorageService.GetFileStreamAsync(s.SignatureImageUrl);
+                        using var ms = new MemoryStream();
+                        await stream.CopyToAsync(ms);
+                        var bytes = ms.ToArray();
+                        sigDetail.SignatureImage = bytes;
+                        sigDetail.SignatureImageBase64 = Convert.ToBase64String(bytes);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning(ex, "Failed to read signature image from storage: {Path}", s.SignatureImageUrl);
                     }
                 }
                 signatures.Add(sigDetail);
             }
 
-            // RULE #1: Baseline Identity (Inject Lab Owner/Director if no signatures exist)
-            if (!signatures.Any())
-            {
-                var director = await _context.Users
-                    .FirstOrDefaultAsync(u => u.IsDefaultSignatory); // System Default Identity Resolved via Flag
+            // RULE #1: Baseline Clinical Identity (Always Inject Lab Owner/Director)
+            // Ensure Lab Director is ALWAYS present to satisfy forensic letterhead requirements.
+            var director = await _context.Users
+                .AsNoTracking()
+                .FirstOrDefaultAsync(u => u.IsDefaultSignatory && u.IsActive);
 
-                if (director != null)
+            if (director != null)
+            {
+                // GPT-5: Advanced Deduplication (UserId OR Name-based guard)
+                var alreadyPresent = signatures.Any(s => 
+                    s.DoctorName == director.Name || 
+                    (director.UserId != Guid.Empty && signatureEntities.Any(se => se.SignedByUserId == director.UserId)));
+
+                if (!alreadyPresent)
                 {
-                    signatures.Add(new ReportSignatureDetails
+                    var directorSig = new ReportSignatureDetails
                     {
                         DoctorName = director.Name,
                         Credentials = director.Designation ?? "Chief Pathologist",
-                        Role = "Lab Director (Identity)",
-                        SignedAt = report.CreatedAt,
-                        Hash = "IDENTITY_ONLY",
-                        SignatureImage = null, // Will render text-based default if missing
-                        SignatureImageBase64 = null
+                        Role = "Chief Pathologist / Director",
+                        SignedAt = null, // Baseline presence, not necessarily an active sign-off
+                        Hash = "BASELINE_IDENTITY",
+                        Version = 0
+                    };
+
+                    // Load Director's Signature Image (Forensic Integrity)
+                    if (!string.IsNullOrEmpty(director.SignatureImageUrl))
+                    {
+                        try
+                        {
+                            using var stream = await _fileStorageService.GetFileStreamAsync(director.SignatureImageUrl);
+                            using var ms = new MemoryStream();
+                            await stream.CopyToAsync(ms);
+                            var bytes = ms.ToArray();
+                            directorSig.SignatureImage = bytes;
+                            directorSig.SignatureImageBase64 = Convert.ToBase64String(bytes);
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogWarning(ex, "Failed to load Lab Director identity image from storage: {Path}", director.SignatureImageUrl);
+                        }
+                    }
+
+                    signatures.Insert(0, directorSig); // Lab Director always comes first as the Baseline Identity
+                }
+            }
+
+            // GPT-5 Mandatory: Pathologist Registry (Letterhead Mode)
+            // Fetch ALL authorized pathologists to populate the clinical registry slots
+            var allPathologists = await _context.Users
+                .AsNoTracking()
+                .Where(u => u.UserRoles.Any(ur => ur.Role.Name == "Pathologist") && u.IsActive && !u.IsDefaultSignatory)
+                .ToListAsync();
+
+            foreach (var path in allPathologists)
+            {
+                if (!signatures.Any(s => s.DoctorName == path.Name))
+                {
+                    signatures.Add(new ReportSignatureDetails
+                    {
+                        DoctorName = path.Name,
+                        Credentials = path.Designation ?? string.Empty,
+                        Role = "Pathologist",
+                        SignedAt = null,
+                        Hash = "REGISTRY",
+                        Version = 0
                     });
                 }
             }

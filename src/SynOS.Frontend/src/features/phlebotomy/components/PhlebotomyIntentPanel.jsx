@@ -36,10 +36,44 @@ export function PhlebotomyIntentPanel({ isOpen, visitId, closePanel, queueItem, 
                 setIsLoadingPlan(true);
                 setError(null);
                 try {
-                    const data = await PhlebotomyApi.getCollectionPlan(visitId);
-                    if (isMounted) setPlanData(data);
+                    try {
+                        const data = await PhlebotomyApi.getCollectionPlan(visitId);
+                        if (isMounted) setPlanData(data);
+                        } catch (err) {
+                        // If plan is not found (already collected), try summary
+                        if (err.message.includes('404') || err.message.includes('not found') || err.message.includes('collected')) {
+                            console.info(`[Phlebotomy] Plan not found (404), attempting to fetch collection summary for ${visitId}`);
+                            const summary = await PhlebotomyApi.getCollectionSummary(visitId);
+                            // Normalize summary to plan schema for UI consistency
+                            const normalizedData = {
+                                visitId: summary.visitId,
+                                patient: summary.patient,
+                                isHistory: true,
+                                instructions: summary.specimens.map(s => ({
+                                    tubeName: s.tubeName,
+                                    specimenName: s.specimenTypeName,
+                                    accessionNumber: s.accessionNumber,
+                                    status: s.status,
+                                    tests: s.tests.map(t => ({ testName: t, testCode: 'TEST' })), // Fallback code for summary
+                                    requiredTubes: 1, 
+                                    isCollected: true
+                                }))
+                            };
+                            
+                            // Deduplicate test codes for the patient card
+                            if (normalizedData.patient) {
+                                normalizedData.patient.lastVisitTestCodes = Array.from(new Set(
+                                    normalizedData.instructions.flatMap(i => i.tests.map(t => t.testName.substring(0, 4).toUpperCase()))
+                                ));
+                            }
+
+                            if (isMounted) setPlanData(normalizedData);
+                        } else {
+                            throw err;
+                        }
+                    }
                 } catch (err) {
-                    if (isMounted) setError(err.message || 'Failed to fetch collection plan.');
+                    if (isMounted) setError(err.message || 'Failed to fetch collection details.');
                 } finally {
                     if (isMounted) setIsLoadingPlan(false);
                 }
@@ -299,6 +333,15 @@ export function PhlebotomyIntentPanel({ isOpen, visitId, closePanel, queueItem, 
                             {isCollecting ? <Loader2 className="w-5 h-5 animate-spin" /> : "Complete"} <ArrowRight className="w-4 h-4" />
                         </button>
                     </div>
+                ) : planData?.isHistory ? (
+                     <button
+                        disabled
+                        className={cn(
+                            "w-full py-3 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 bg-emerald-50 text-emerald-700 border border-emerald-100"
+                        )}
+                    >
+                       <CheckCircle2 className="w-4 h-4" /> Collection Completed
+                    </button>
                 ) : (
                     // Assigned to someone else fallback
                      <button

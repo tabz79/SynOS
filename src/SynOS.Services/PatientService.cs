@@ -358,11 +358,18 @@ namespace SynOS.Services
         // small helper: MRN generator (very simple placeholder)
         private async Task<string> GenerateNextMrnAsync()
         {
-            // very simple MRN: numeric sequence padded to 6
+            // improved MRN: find last and increment numeric part
             var last = await _context.Patients.OrderByDescending(p => p.CreatedAt).FirstOrDefaultAsync();
-            int lastNumber = 0;
-            if (last != null && int.TryParse(last.MRN, out var n)) lastNumber = n;
-            return (lastNumber + 1).ToString().PadLeft(6, '0');
+            if (last == null) return "000001";
+
+            var numericPart = new string(last.MRN.Where(char.IsDigit).ToArray());
+            if (int.TryParse(numericPart, out var n))
+            {
+                return (n + 1).ToString().PadLeft(6, '0');
+            }
+            
+            // If parsing fails (e.g. no digits), fallback to a high number or timestamp-based
+            return DateTime.UtcNow.Ticks.ToString().Substring(10).PadLeft(6, '0');
         }
     }
 }

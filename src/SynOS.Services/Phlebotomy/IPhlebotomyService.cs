@@ -13,6 +13,7 @@ namespace SynOS.Services.Phlebotomy
         Task<ClaimResult> ClaimAssignmentAsync(Guid assignmentId);
         Task<CollectResult> CollectAssignmentAsync(Guid assignmentId);
         Task<CollectionPlanDto?> GetCollectionPlanAsync(Guid visitId);
+        Task<CollectionSummaryDto?> GetCollectionSummaryAsync(Guid visitId);
     }
 
     public enum ClaimResult

@@ -6,6 +6,7 @@ namespace SynOS.Models.DTOs.Reporting
     public class ReportStructureDto
     {
         public Guid ReportId { get; set; }
+        public Guid SourceId { get; set; }
         public string Status { get; set; } = string.Empty;
         public PatientHeaderDto Patient { get; set; } = new();
         public List<ReportGroupDto> Groups { get; set; } = new();
@@ -13,6 +14,7 @@ namespace SynOS.Models.DTOs.Reporting
         public string Department { get; set; } = string.Empty;
         public DateTimeOffset? SignedAt { get; set; }
         public string? SignedBy { get; set; }
+        public bool CanEditValues { get; set; }
     }
 
     public class PatientHeaderDto
@@ -32,6 +34,7 @@ namespace SynOS.Models.DTOs.Reporting
 
     public class ReportParameterDto
     {
+        public Guid? ResultId { get; set; }
         public string ParameterName { get; set; } = string.Empty;
         public string ParameterCode { get; set; } = string.Empty;
         public string Value { get; set; } = string.Empty;
