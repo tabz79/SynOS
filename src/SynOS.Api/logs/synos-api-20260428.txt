@@ -59,3 +59,25 @@
 2026-04-28 15:10:49.641 +05:30 [WRN] ⚠️ FALLBACK: BIL_I | Formula missing | Available Inputs: [BIL_D,ALB,TP,BIL_I,GLOB,BIL_T]
 2026-04-28 15:10:49.656 +05:30 [INF] RESULT MAP KEYS → [BIL_D, ALB, TP, BIL_I, GLOB, BIL_T]
 2026-04-28 15:10:50.222 +05:30 [INF] Terminal web-1zy6xxtky authorized and added to Thermal80mm group for Branch "a0000000-0000-0000-0000-000000000001".
+2026-04-28 15:27:27.404 +05:30 [INF] OperationalStatsProjectionWorker is starting in Event-Driven Mode.
+2026-04-28 15:27:27.479 +05:30 [INF] Worker: Running Consistency Check and Catch-up...
+2026-04-28 15:27:27.973 +05:30 [INF] Worker: Catch-up complete. Awaiting real-time events...
+2026-04-28 15:27:38.333 +05:30 [WRN] Failed to determine the https port for redirect.
+2026-04-28 15:27:41.024 +05:30 [INF] Terminal web-1zy6xxtky authorized and added to Thermal80mm group for Branch "a0000000-0000-0000-0000-000000000001".
+2026-04-28 15:27:45.380 +05:30 [WRN] ⚠️ FALLBACK: BIL_I | Formula missing | Available Inputs: [BIL_D,ALB,TP,BIL_I,GLOB,BIL_T]
+2026-04-28 15:27:45.993 +05:30 [INF] RESULT MAP KEYS → [BIL_D, ALB, TP, BIL_I, GLOB, BIL_T]
+2026-04-28 15:27:47.031 +05:30 [WRN] The query uses the 'First'/'FirstOrDefault' operator without 'OrderBy' and filter operators. This may lead to unpredictable results.
+2026-04-28 16:13:33.681 +05:30 [INF] Terminal web-1zy6xxtky authorized and added to Thermal80mm group for Branch "a0000000-0000-0000-0000-000000000001".
+2026-04-28 16:13:35.859 +05:30 [INF] Terminal web-1zy6xxtky authorized and added to Thermal80mm group for Branch "a0000000-0000-0000-0000-000000000001".
+2026-04-28 18:07:58.966 +05:30 [INF] Terminal web-1zy6xxtky authorized and added to Thermal80mm group for Branch "a0000000-0000-0000-0000-000000000001".
+2026-04-28 18:08:01.427 +05:30 [INF] Terminal web-1zy6xxtky authorized and added to Thermal80mm group for Branch "a0000000-0000-0000-0000-000000000001".
+2026-04-28 18:22:38.053 +05:30 [WRN] ⚠️ FALLBACK: BIL_I | Formula missing | Available Inputs: [BIL_D,ALB,TP,BIL_I,GLOB,BIL_T]
+2026-04-28 18:22:38.083 +05:30 [INF] RESULT MAP KEYS → [BIL_D, ALB, TP, BIL_I, GLOB, BIL_T]
+2026-04-28 18:51:17.616 +05:30 [INF] Terminal web-1zy6xxtky authorized and added to Thermal80mm group for Branch "a0000000-0000-0000-0000-000000000001".
+2026-04-28 19:52:29.003 +05:30 [INF] Terminal web-1zy6xxtky authorized and added to Thermal80mm group for Branch "a0000000-0000-0000-0000-000000000001".
+2026-04-28 19:58:47.116 +05:30 [INF] Terminal web-1zy6xxtky authorized and added to Thermal80mm group for Branch "a0000000-0000-0000-0000-000000000001".
+2026-04-28 19:58:51.283 +05:30 [WRN] ⚠️ FALLBACK: BIL_I | Formula missing | Available Inputs: [BIL_D,ALB,TP,BIL_I,GLOB,BIL_T]
+2026-04-28 19:58:51.299 +05:30 [INF] RESULT MAP KEYS → [BIL_D, ALB, TP, BIL_I, GLOB, BIL_T]
+2026-04-28 20:32:24.833 +05:30 [INF] Terminal web-1zy6xxtky authorized and added to Thermal80mm group for Branch "a0000000-0000-0000-0000-000000000001".
+2026-04-28 20:32:27.064 +05:30 [INF] Terminal web-1zy6xxtky authorized and added to Thermal80mm group for Branch "a0000000-0000-0000-0000-000000000001".
+2026-04-28 21:16:47.863 +05:30 [INF] Terminal web-1zy6xxtky authorized and added to Thermal80mm group for Branch "a0000000-0000-0000-0000-000000000001".

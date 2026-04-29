@@ -22,6 +22,135 @@ public class SecureDownloadController : ControllerBase
         _logger = logger;
     }
 
+    [HttpGet("/r/{token}")]
+    public async Task<IActionResult> LandingPage(string token)
+    {
+        // Simple HTML landing page (Premium look)
+        var html = $@"
+        <!DOCTYPE html>
+        <html lang='en'>
+        <head>
+            <meta charset='UTF-8'>
+            <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+            <title>Secure Report Download | SynOS</title>
+            <link href='https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap' rel='stylesheet'>
+            <style>
+                body {{ 
+                    font-family: 'Inter', sans-serif; 
+                    background: #09090b; 
+                    color: white; 
+                    display: flex; 
+                    align-items: center; 
+                    justify-content: center; 
+                    height: 100vh; 
+                    margin: 0; 
+                    overflow: hidden;
+                }}
+                .card {{
+                    background: rgba(255,255,255,0.03);
+                    border: 1px solid rgba(255,255,255,0.05);
+                    padding: 3rem;
+                    border-radius: 2rem;
+                    text-align: center;
+                    max-width: 400px;
+                    width: 100%;
+                    backdrop-filter: blur(20px);
+                    box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+                }}
+                .logo {{ 
+                    color: #4f46e5; 
+                    font-weight: 900; 
+                    font-size: 1.5rem; 
+                    letter-spacing: -0.05em; 
+                    margin-bottom: 2rem;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 0.5rem;
+                }}
+                h1 {{ font-size: 1.5rem; font-weight: 900; letter-spacing: -0.025em; margin-bottom: 0.5rem; }}
+                p {{ color: #71717a; font-size: 0.875rem; margin-bottom: 2rem; line-height: 1.5; }}
+                .input-group {{ text-align: left; margin-bottom: 1.5rem; }}
+                label {{ font-size: 0.65rem; font-weight: 900; text-transform: uppercase; color: #52525b; letter-spacing: 0.1em; margin-left: 0.5rem; }}
+                input {{
+                    width: 100%;
+                    background: #18181b;
+                    border: none;
+                    border-radius: 1rem;
+                    padding: 1rem;
+                    color: white;
+                    font-family: monospace;
+                    font-size: 1.25rem;
+                    margin-top: 0.5rem;
+                    box-sizing: border-box;
+                    text-align: center;
+                    letter-spacing: 0.2em;
+                }}
+                input:focus {{ outline: 2px solid #4f46e5; }}
+                button {{
+                    width: 100%;
+                    background: #4f46e5;
+                    color: white;
+                    border: none;
+                    border-radius: 1rem;
+                    padding: 1rem;
+                    font-weight: 900;
+                    text-transform: uppercase;
+                    letter-spacing: 0.05em;
+                    cursor: pointer;
+                    transition: all 0.2s;
+                }}
+                button:hover {{ background: #4338ca; transform: translateY(-1px); }}
+                button:active {{ transform: translateY(0); }}
+                .footer {{ margin-top: 2rem; font-size: 0.75rem; color: #3f3f46; }}
+            </style>
+        </head>
+        <body>
+            <div class='card'>
+                <div class='logo'>
+                    <svg width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'><path d='M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10'/></svg>
+                    SynOS Secure
+                </div>
+                <h1>Download Report</h1>
+                <p>For security, please enter the 10-digit mobile number registered at the lab.</p>
+                
+                <form id='downloadForm'>
+                    <div class='input-group'>
+                        <label>Registered Mobile</label>
+                        <input type='tel' id='phone' placeholder='98XXXXXXXX' maxlength='10' required>
+                    </div>
+                    <button type='submit' id='submitBtn'>Verify & Download</button>
+                </form>
+
+                <div class='footer'>
+                    &copy; {DateTime.UtcNow.Year} SynOS Lab Intelligence
+                </div>
+            </div>
+
+            <script>
+                document.getElementById('downloadForm').onsubmit = function(e) {{
+                    e.preventDefault();
+                    const phone = document.getElementById('phone').value;
+                    const btn = document.getElementById('submitBtn');
+                    btn.innerText = 'Downloading...';
+                    btn.disabled = true;
+                    
+                    // Trigger download
+                    window.location.href = `/api/v1/public/reports/download/{token}?phone=` + phone;
+                    
+                    // Reset after delay
+                    setTimeout(() => {{
+                        btn.innerText = 'Verify & Download';
+                        btn.disabled = false;
+                    }}, 3000);
+                }};
+            </script>
+        </body>
+        </html>";
+        
+        return Content(html, "text/html");
+    }
+
     [HttpGet("verify/{token}")]
     [ProducesResponseType(typeof(SecureLinkVerificationDto), 200)]
     [ProducesResponseType(401)]

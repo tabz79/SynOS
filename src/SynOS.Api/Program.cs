@@ -167,6 +167,7 @@ builder.Services.AddAuthorization(options =>
         policy.RequireAssertion(context =>
             context.User.IsInRole("Pathologist") || 
             context.User.IsInRole("Typist") || 
+            context.User.IsInRole("DeliveryDesk") || 
             context.User.IsInRole("Admin")));
     options.AddPolicy("LabProcessingPolicy", policy =>
         policy.RequireClaim("session_mode", "operational")

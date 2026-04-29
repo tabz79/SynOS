@@ -315,8 +315,8 @@ public class DeliveryService : IDeliveryService
             throw new InvalidOperationException($"Unsupported Report SourceType: {report.SourceType}");
         }
 
-        // Build message text
-        var message = $"Dear {patientName}, your lab report (including images) for {tests} is ready. Download your complete report package here: {secureLinkDto.PackageLink} This link is valid for {secureLinkDto.ExpiresAt:dd-MM-yyyy HH:mm} and can be downloaded {secureLinkDto.MaxDownloads} times. - SynOS Lab";
+        // Build message text (GPT-5 Rule: Secure link based, no fluff)
+        var message = $"✨ *Lab Report Ready* ✨\n\nDear {patientName},\nYour diagnostic results for *{tests}* are now available for secure download.\n\n🔗 *Access Link:* {secureLinkDto.Link}\n\n_Note: This link is secure and requires your registered mobile number for verification._\n\n- SynOS Lab Intelligence";
 
         // Create DeliveryLog
         var deliveryLog = new DeliveryLog
@@ -555,8 +555,8 @@ public class DeliveryService : IDeliveryService
         _context.DownloadLinks.Add(downloadLink);
         await _context.SaveChangesAsync();
 
-        var linkUrl = $"{_secureLinkBaseUrl}/download/{token}";
-        var packageLinkUrl = $"{_secureLinkBaseUrl}/download-package/{token}";
+        var linkUrl = $"{_secureLinkBaseUrl}/r/{token}";
+        var packageLinkUrl = $"{_secureLinkBaseUrl}/r/{token}?pkg=1";
         
         return new SecureLinkDto(token, linkUrl, packageLinkUrl, expiresAt, maxDownloads, maxDownloads);
     }
@@ -636,6 +636,19 @@ public class DeliveryService : IDeliveryService
         }
         await _context.SaveChangesAsync();
         _logger.LogInformation("Secure download successful for token {Token} by phone {Phone}. DownloadCount: {DownloadCount}", token, phone, downloadLink.DownloadCount);
+
+        // Update DeliveryLog (True Delivery Signal)
+        var deliveryLog = await _context.DeliveryLogs
+            .Where(dl => dl.ReportId == downloadLink.ReportId && dl.RecipientPhone == phone && dl.Status != DeliveryStatus.Delivered)
+            .OrderByDescending(dl => dl.CreatedAt)
+            .FirstOrDefaultAsync();
+
+        if (deliveryLog != null)
+        {
+            deliveryLog.Status = DeliveryStatus.Delivered;
+            deliveryLog.DeliveredAt = DateTimeOffset.UtcNow;
+            await _context.SaveChangesAsync();
+        }
 
         // Fetch the report’s PDF as a Stream
         var latestReportVersion = downloadLink.Report.ReportVersions.OrderByDescending(rv => rv.VersionNumber).FirstOrDefault();

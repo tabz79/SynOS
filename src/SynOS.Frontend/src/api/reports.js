@@ -106,5 +106,31 @@ export const ReportsApi = {
             throw new Error(error.message || 'Failed to save final results');
         }
         return true;
+    },
+
+    deliverViaWhatsApp: async (reportId, phone) => {
+        const response = await fetch(`/api/v1/delivery/whatsapp`, {
+            method: 'POST',
+            headers: { 
+                'Authorization': `Bearer ${localStorage.getItem('synos_jwt')}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ ReportId: reportId, Phone: phone })
+        });
+        if (!response.ok) throw new Error('Failed to send WhatsApp');
+        return await response.json();
+    },
+
+    deliverViaPrint: async (reportId) => {
+        const response = await fetch(`/api/v1/delivery/print`, {
+            method: 'POST',
+            headers: { 
+                'Authorization': `Bearer ${localStorage.getItem('synos_jwt')}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ ReportId: reportId })
+        });
+        if (!response.ok) throw new Error('Failed to mark as printed');
+        return await response.json();
     }
 };

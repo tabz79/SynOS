@@ -1,0 +1,318 @@
+2026-04-29 11:47:24.150 +05:30 [INF] Terminal web-1zy6xxtky authorized and added to Thermal80mm group for Branch "a0000000-0000-0000-0000-000000000001".
+2026-04-29 11:54:04.432 +05:30 [INF] Terminal web-1zy6xxtky authorized and added to Thermal80mm group for Branch "a0000000-0000-0000-0000-000000000001".
+2026-04-29 12:12:54.400 +05:30 [INF] Terminal web-1zy6xxtky authorized and added to Thermal80mm group for Branch "a0000000-0000-0000-0000-000000000001".
+2026-04-29 12:12:55.496 +05:30 [INF] Terminal web-1zy6xxtky authorized and added to Thermal80mm group for Branch "a0000000-0000-0000-0000-000000000001".
+2026-04-29 12:37:06.459 +05:30 [INF] OperationalStatsProjectionWorker is starting in Event-Driven Mode.
+2026-04-29 12:37:06.613 +05:30 [INF] Worker: Running Consistency Check and Catch-up...
+2026-04-29 12:37:07.416 +05:30 [INF] Worker: Catch-up complete. Awaiting real-time events...
+2026-04-29 12:37:32.352 +05:30 [WRN] Failed to determine the https port for redirect.
+2026-04-29 12:37:38.931 +05:30 [INF] Terminal web-1zy6xxtky authorized and added to Thermal80mm group for Branch "a0000000-0000-0000-0000-000000000001".
+2026-04-29 12:37:39.522 +05:30 [ERR] Failed executing DbCommand (60ms) [Parameters=[@__statusList_0='?' (Size = 4000)], CommandType='"Text"', CommandTimeout='30']
+SELECT [r].[ReportId], [r].[CreatedAt], [r].[CurrentVersion], [r].[Delivered], [r].[DeliveredAt], [r].[Department], [r].[DraftSnapshotJson], [r].[FinalSnapshotJson], [r].[IsPhysicallyVerified], [r].[PatientId], [r].[PdfUrl], [r].[SignedAt], [r].[SignedByUserId], [r].[SourceId], [r].[SourceType], [r].[Status], [r].[TypedByUserId], [r].[UpdatedAt], [r].[VerificationMode], [r].[VerifiedAt], [r].[VerifiedByUserId], [r].[VisitId], [u].[UserId], [u].[CanUseOperationalMode], [u].[CanUseOversightMode], [u].[CreatedAt], [u].[DefaultBranchId], [u].[Designation], [u].[Email], [u].[FailedLoginAttempts], [u].[IsActive], [u].[IsDefaultSignatory], [u].[LockoutEnd], [u].[Name], [u].[PasswordHash], [u].[RowVersion], [u].[SignatureImageUrl], [u].[SignatureUpdatedAt], [u].[UpdatedAt], [u0].[UserId], [u0].[CanUseOperationalMode], [u0].[CanUseOversightMode], [u0].[CreatedAt], [u0].[DefaultBranchId], [u0].[Designation], [u0].[Email], [u0].[FailedLoginAttempts], [u0].[IsActive], [u0].[IsDefaultSignatory], [u0].[LockoutEnd], [u0].[Name], [u0].[PasswordHash], [u0].[RowVersion], [u0].[SignatureImageUrl], [u0].[SignatureUpdatedAt], [u0].[UpdatedAt]
+FROM [Reports] AS [r]
+LEFT JOIN [Users] AS [u] ON [r].[TypedByUserId] = [u].[UserId]
+LEFT JOIN [Users] AS [u0] ON [r].[VerifiedByUserId] = [u0].[UserId]
+WHERE [r].[Status] IN (
+    SELECT [s].[value]
+    FROM OPENJSON(@__statusList_0) WITH ([value] nvarchar(50) '$') AS [s]
+) AND [r].[SourceType] = N'Order'
+ORDER BY COALESCE([r].[UpdatedAt], [r].[CreatedAt]) DESC
+2026-04-29 12:37:39.623 +05:30 [ERR] An exception occurred while iterating over the results of a query for context type 'SynOS.Data.SynOSDbContext'.
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'IsPhysicallyVerified'.
+   at Microsoft.Data.SqlClient.SqlCommand.<>c.<ExecuteDbDataReaderAsync>b__209_0(Task`1 result)
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:1bab3e85-6e46-45e5-aa56-f404a71b49be
+Error Number:207,State:1,Class:16
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'IsPhysicallyVerified'.
+   at Microsoft.Data.SqlClient.SqlCommand.<>c.<ExecuteDbDataReaderAsync>b__209_0(Task`1 result)
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:1bab3e85-6e46-45e5-aa56-f404a71b49be
+Error Number:207,State:1,Class:16
+2026-04-29 12:37:40.202 +05:30 [ERR] Failed executing DbCommand (14ms) [Parameters=[@__statusList_0='?' (Size = 4000)], CommandType='"Text"', CommandTimeout='30']
+SELECT [r].[ReportId], [r].[CreatedAt], [r].[CurrentVersion], [r].[Delivered], [r].[DeliveredAt], [r].[Department], [r].[DraftSnapshotJson], [r].[FinalSnapshotJson], [r].[IsPhysicallyVerified], [r].[PatientId], [r].[PdfUrl], [r].[SignedAt], [r].[SignedByUserId], [r].[SourceId], [r].[SourceType], [r].[Status], [r].[TypedByUserId], [r].[UpdatedAt], [r].[VerificationMode], [r].[VerifiedAt], [r].[VerifiedByUserId], [r].[VisitId], [u].[UserId], [u].[CanUseOperationalMode], [u].[CanUseOversightMode], [u].[CreatedAt], [u].[DefaultBranchId], [u].[Designation], [u].[Email], [u].[FailedLoginAttempts], [u].[IsActive], [u].[IsDefaultSignatory], [u].[LockoutEnd], [u].[Name], [u].[PasswordHash], [u].[RowVersion], [u].[SignatureImageUrl], [u].[SignatureUpdatedAt], [u].[UpdatedAt], [u0].[UserId], [u0].[CanUseOperationalMode], [u0].[CanUseOversightMode], [u0].[CreatedAt], [u0].[DefaultBranchId], [u0].[Designation], [u0].[Email], [u0].[FailedLoginAttempts], [u0].[IsActive], [u0].[IsDefaultSignatory], [u0].[LockoutEnd], [u0].[Name], [u0].[PasswordHash], [u0].[RowVersion], [u0].[SignatureImageUrl], [u0].[SignatureUpdatedAt], [u0].[UpdatedAt]
+FROM [Reports] AS [r]
+LEFT JOIN [Users] AS [u] ON [r].[TypedByUserId] = [u].[UserId]
+LEFT JOIN [Users] AS [u0] ON [r].[VerifiedByUserId] = [u0].[UserId]
+WHERE [r].[Status] IN (
+    SELECT [s].[value]
+    FROM OPENJSON(@__statusList_0) WITH ([value] nvarchar(50) '$') AS [s]
+) AND [r].[SourceType] = N'Order'
+ORDER BY COALESCE([r].[UpdatedAt], [r].[CreatedAt]) DESC
+2026-04-29 12:37:40.239 +05:30 [ERR] An exception occurred while iterating over the results of a query for context type 'SynOS.Data.SynOSDbContext'.
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'IsPhysicallyVerified'.
+   at Microsoft.Data.SqlClient.SqlCommand.<>c.<ExecuteDbDataReaderAsync>b__209_0(Task`1 result)
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:d722b69e-3a89-44a4-ae09-a753820c91b0
+Error Number:207,State:1,Class:16
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'IsPhysicallyVerified'.
+   at Microsoft.Data.SqlClient.SqlCommand.<>c.<ExecuteDbDataReaderAsync>b__209_0(Task`1 result)
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:d722b69e-3a89-44a4-ae09-a753820c91b0
+Error Number:207,State:1,Class:16
+2026-04-29 12:38:19.229 +05:30 [INF] Terminal web-1zy6xxtky authorized and added to Thermal80mm group for Branch "a0000000-0000-0000-0000-000000000001".
+2026-04-29 12:38:25.258 +05:30 [INF] Terminal web-1zy6xxtky authorized and added to Thermal80mm group for Branch "a0000000-0000-0000-0000-000000000001".
+2026-04-29 12:43:08.196 +05:30 [INF] OperationalStatsProjectionWorker is starting in Event-Driven Mode.
+2026-04-29 12:43:08.289 +05:30 [INF] Worker: Running Consistency Check and Catch-up...
+2026-04-29 12:43:08.783 +05:30 [INF] Worker: Catch-up complete. Awaiting real-time events...
+2026-04-29 12:43:37.516 +05:30 [WRN] Failed to determine the https port for redirect.
+2026-04-29 12:43:38.794 +05:30 [INF] Terminal web-1zy6xxtky authorized and added to Thermal80mm group for Branch "a0000000-0000-0000-0000-000000000001".
+2026-04-29 12:43:39.707 +05:30 [ERR] Failed executing DbCommand (248ms) [Parameters=[@__statusList_0='?' (Size = 4000)], CommandType='"Text"', CommandTimeout='30']
+SELECT [r].[ReportId], [r].[CreatedAt], [r].[CurrentVersion], [r].[Delivered], [r].[DeliveredAt], [r].[Department], [r].[DraftSnapshotJson], [r].[FinalSnapshotJson], [r].[IsPhysicallyVerified], [r].[PatientId], [r].[PdfUrl], [r].[SignedAt], [r].[SignedByUserId], [r].[SourceId], [r].[SourceType], [r].[Status], [r].[TypedByUserId], [r].[UpdatedAt], [r].[VerificationMode], [r].[VerifiedAt], [r].[VerifiedByUserId], [r].[VisitId], [u].[UserId], [u].[CanUseOperationalMode], [u].[CanUseOversightMode], [u].[CreatedAt], [u].[DefaultBranchId], [u].[Designation], [u].[Email], [u].[FailedLoginAttempts], [u].[IsActive], [u].[IsDefaultSignatory], [u].[LockoutEnd], [u].[Name], [u].[PasswordHash], [u].[RowVersion], [u].[SignatureImageUrl], [u].[SignatureUpdatedAt], [u].[UpdatedAt], [u0].[UserId], [u0].[CanUseOperationalMode], [u0].[CanUseOversightMode], [u0].[CreatedAt], [u0].[DefaultBranchId], [u0].[Designation], [u0].[Email], [u0].[FailedLoginAttempts], [u0].[IsActive], [u0].[IsDefaultSignatory], [u0].[LockoutEnd], [u0].[Name], [u0].[PasswordHash], [u0].[RowVersion], [u0].[SignatureImageUrl], [u0].[SignatureUpdatedAt], [u0].[UpdatedAt]
+FROM [Reports] AS [r]
+LEFT JOIN [Users] AS [u] ON [r].[TypedByUserId] = [u].[UserId]
+LEFT JOIN [Users] AS [u0] ON [r].[VerifiedByUserId] = [u0].[UserId]
+WHERE [r].[Status] IN (
+    SELECT [s].[value]
+    FROM OPENJSON(@__statusList_0) WITH ([value] nvarchar(50) '$') AS [s]
+) AND [r].[SourceType] = N'Order'
+ORDER BY COALESCE([r].[UpdatedAt], [r].[CreatedAt]) DESC
+2026-04-29 12:43:39.792 +05:30 [ERR] An exception occurred while iterating over the results of a query for context type 'SynOS.Data.SynOSDbContext'.
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'IsPhysicallyVerified'.
+   at Microsoft.Data.SqlClient.SqlCommand.<>c.<ExecuteDbDataReaderAsync>b__209_0(Task`1 result)
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:acb861d3-bc03-4e29-9be9-a1557b061d71
+Error Number:207,State:1,Class:16
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'IsPhysicallyVerified'.
+   at Microsoft.Data.SqlClient.SqlCommand.<>c.<ExecuteDbDataReaderAsync>b__209_0(Task`1 result)
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:acb861d3-bc03-4e29-9be9-a1557b061d71
+Error Number:207,State:1,Class:16
+2026-04-29 12:43:40.136 +05:30 [ERR] Failed executing DbCommand (23ms) [Parameters=[@__statusList_0='?' (Size = 4000)], CommandType='"Text"', CommandTimeout='30']
+SELECT [r].[ReportId], [r].[CreatedAt], [r].[CurrentVersion], [r].[Delivered], [r].[DeliveredAt], [r].[Department], [r].[DraftSnapshotJson], [r].[FinalSnapshotJson], [r].[IsPhysicallyVerified], [r].[PatientId], [r].[PdfUrl], [r].[SignedAt], [r].[SignedByUserId], [r].[SourceId], [r].[SourceType], [r].[Status], [r].[TypedByUserId], [r].[UpdatedAt], [r].[VerificationMode], [r].[VerifiedAt], [r].[VerifiedByUserId], [r].[VisitId], [u].[UserId], [u].[CanUseOperationalMode], [u].[CanUseOversightMode], [u].[CreatedAt], [u].[DefaultBranchId], [u].[Designation], [u].[Email], [u].[FailedLoginAttempts], [u].[IsActive], [u].[IsDefaultSignatory], [u].[LockoutEnd], [u].[Name], [u].[PasswordHash], [u].[RowVersion], [u].[SignatureImageUrl], [u].[SignatureUpdatedAt], [u].[UpdatedAt], [u0].[UserId], [u0].[CanUseOperationalMode], [u0].[CanUseOversightMode], [u0].[CreatedAt], [u0].[DefaultBranchId], [u0].[Designation], [u0].[Email], [u0].[FailedLoginAttempts], [u0].[IsActive], [u0].[IsDefaultSignatory], [u0].[LockoutEnd], [u0].[Name], [u0].[PasswordHash], [u0].[RowVersion], [u0].[SignatureImageUrl], [u0].[SignatureUpdatedAt], [u0].[UpdatedAt]
+FROM [Reports] AS [r]
+LEFT JOIN [Users] AS [u] ON [r].[TypedByUserId] = [u].[UserId]
+LEFT JOIN [Users] AS [u0] ON [r].[VerifiedByUserId] = [u0].[UserId]
+WHERE [r].[Status] IN (
+    SELECT [s].[value]
+    FROM OPENJSON(@__statusList_0) WITH ([value] nvarchar(50) '$') AS [s]
+) AND [r].[SourceType] = N'Order'
+ORDER BY COALESCE([r].[UpdatedAt], [r].[CreatedAt]) DESC
+2026-04-29 12:43:40.167 +05:30 [ERR] An exception occurred while iterating over the results of a query for context type 'SynOS.Data.SynOSDbContext'.
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'IsPhysicallyVerified'.
+   at Microsoft.Data.SqlClient.SqlCommand.<>c.<ExecuteDbDataReaderAsync>b__209_0(Task`1 result)
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:acb861d3-bc03-4e29-9be9-a1557b061d71
+Error Number:207,State:1,Class:16
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'IsPhysicallyVerified'.
+   at Microsoft.Data.SqlClient.SqlCommand.<>c.<ExecuteDbDataReaderAsync>b__209_0(Task`1 result)
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:acb861d3-bc03-4e29-9be9-a1557b061d71
+Error Number:207,State:1,Class:16
+2026-04-29 12:43:46.027 +05:30 [ERR] Failed executing DbCommand (93ms) [Parameters=[@__statusList_0='?' (Size = 4000)], CommandType='"Text"', CommandTimeout='30']
+SELECT [r].[ReportId], [r].[CreatedAt], [r].[CurrentVersion], [r].[Delivered], [r].[DeliveredAt], [r].[Department], [r].[DraftSnapshotJson], [r].[FinalSnapshotJson], [r].[IsPhysicallyVerified], [r].[PatientId], [r].[PdfUrl], [r].[SignedAt], [r].[SignedByUserId], [r].[SourceId], [r].[SourceType], [r].[Status], [r].[TypedByUserId], [r].[UpdatedAt], [r].[VerificationMode], [r].[VerifiedAt], [r].[VerifiedByUserId], [r].[VisitId], [u].[UserId], [u].[CanUseOperationalMode], [u].[CanUseOversightMode], [u].[CreatedAt], [u].[DefaultBranchId], [u].[Designation], [u].[Email], [u].[FailedLoginAttempts], [u].[IsActive], [u].[IsDefaultSignatory], [u].[LockoutEnd], [u].[Name], [u].[PasswordHash], [u].[RowVersion], [u].[SignatureImageUrl], [u].[SignatureUpdatedAt], [u].[UpdatedAt], [u0].[UserId], [u0].[CanUseOperationalMode], [u0].[CanUseOversightMode], [u0].[CreatedAt], [u0].[DefaultBranchId], [u0].[Designation], [u0].[Email], [u0].[FailedLoginAttempts], [u0].[IsActive], [u0].[IsDefaultSignatory], [u0].[LockoutEnd], [u0].[Name], [u0].[PasswordHash], [u0].[RowVersion], [u0].[SignatureImageUrl], [u0].[SignatureUpdatedAt], [u0].[UpdatedAt]
+FROM [Reports] AS [r]
+LEFT JOIN [Users] AS [u] ON [r].[TypedByUserId] = [u].[UserId]
+LEFT JOIN [Users] AS [u0] ON [r].[VerifiedByUserId] = [u0].[UserId]
+WHERE [r].[Status] IN (
+    SELECT [s].[value]
+    FROM OPENJSON(@__statusList_0) WITH ([value] nvarchar(50) '$') AS [s]
+) AND [r].[SourceType] = N'Order'
+ORDER BY COALESCE([r].[UpdatedAt], [r].[CreatedAt]) DESC
+2026-04-29 12:43:46.209 +05:30 [INF] Terminal web-1zy6xxtky authorized and added to Thermal80mm group for Branch "a0000000-0000-0000-0000-000000000001".
+2026-04-29 12:43:46.240 +05:30 [ERR] An exception occurred while iterating over the results of a query for context type 'SynOS.Data.SynOSDbContext'.
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'IsPhysicallyVerified'.
+   at Microsoft.Data.SqlClient.SqlCommand.<>c.<ExecuteDbDataReaderAsync>b__209_0(Task`1 result)
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:b64f0de1-949e-45f2-b47e-118c9b2eae40
+Error Number:207,State:1,Class:16
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'IsPhysicallyVerified'.
+   at Microsoft.Data.SqlClient.SqlCommand.<>c.<ExecuteDbDataReaderAsync>b__209_0(Task`1 result)
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:b64f0de1-949e-45f2-b47e-118c9b2eae40
+Error Number:207,State:1,Class:16
+2026-04-29 12:43:47.045 +05:30 [ERR] Failed executing DbCommand (62ms) [Parameters=[@__statusList_0='?' (Size = 4000)], CommandType='"Text"', CommandTimeout='30']
+SELECT [r].[ReportId], [r].[CreatedAt], [r].[CurrentVersion], [r].[Delivered], [r].[DeliveredAt], [r].[Department], [r].[DraftSnapshotJson], [r].[FinalSnapshotJson], [r].[IsPhysicallyVerified], [r].[PatientId], [r].[PdfUrl], [r].[SignedAt], [r].[SignedByUserId], [r].[SourceId], [r].[SourceType], [r].[Status], [r].[TypedByUserId], [r].[UpdatedAt], [r].[VerificationMode], [r].[VerifiedAt], [r].[VerifiedByUserId], [r].[VisitId], [u].[UserId], [u].[CanUseOperationalMode], [u].[CanUseOversightMode], [u].[CreatedAt], [u].[DefaultBranchId], [u].[Designation], [u].[Email], [u].[FailedLoginAttempts], [u].[IsActive], [u].[IsDefaultSignatory], [u].[LockoutEnd], [u].[Name], [u].[PasswordHash], [u].[RowVersion], [u].[SignatureImageUrl], [u].[SignatureUpdatedAt], [u].[UpdatedAt], [u0].[UserId], [u0].[CanUseOperationalMode], [u0].[CanUseOversightMode], [u0].[CreatedAt], [u0].[DefaultBranchId], [u0].[Designation], [u0].[Email], [u0].[FailedLoginAttempts], [u0].[IsActive], [u0].[IsDefaultSignatory], [u0].[LockoutEnd], [u0].[Name], [u0].[PasswordHash], [u0].[RowVersion], [u0].[SignatureImageUrl], [u0].[SignatureUpdatedAt], [u0].[UpdatedAt]
+FROM [Reports] AS [r]
+LEFT JOIN [Users] AS [u] ON [r].[TypedByUserId] = [u].[UserId]
+LEFT JOIN [Users] AS [u0] ON [r].[VerifiedByUserId] = [u0].[UserId]
+WHERE [r].[Status] IN (
+    SELECT [s].[value]
+    FROM OPENJSON(@__statusList_0) WITH ([value] nvarchar(50) '$') AS [s]
+) AND [r].[SourceType] = N'Order'
+ORDER BY COALESCE([r].[UpdatedAt], [r].[CreatedAt]) DESC
+2026-04-29 12:43:47.165 +05:30 [ERR] An exception occurred while iterating over the results of a query for context type 'SynOS.Data.SynOSDbContext'.
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'IsPhysicallyVerified'.
+   at Microsoft.Data.SqlClient.SqlCommand.<>c.<ExecuteDbDataReaderAsync>b__209_0(Task`1 result)
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:b64f0de1-949e-45f2-b47e-118c9b2eae40
+Error Number:207,State:1,Class:16
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'IsPhysicallyVerified'.
+   at Microsoft.Data.SqlClient.SqlCommand.<>c.<ExecuteDbDataReaderAsync>b__209_0(Task`1 result)
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:b64f0de1-949e-45f2-b47e-118c9b2eae40
+Error Number:207,State:1,Class:16
+2026-04-29 12:52:46.651 +05:30 [INF] OperationalStatsProjectionWorker is starting in Event-Driven Mode.
+2026-04-29 12:52:46.734 +05:30 [INF] Worker: Running Consistency Check and Catch-up...
+2026-04-29 12:52:47.140 +05:30 [INF] Worker: Catch-up complete. Awaiting real-time events...
+2026-04-29 12:54:25.882 +05:30 [WRN] Failed to determine the https port for redirect.
+2026-04-29 12:54:26.982 +05:30 [INF] Terminal web-1zy6xxtky authorized and added to Thermal80mm group for Branch "a0000000-0000-0000-0000-000000000001".
+2026-04-29 12:58:14.198 +05:30 [INF] Terminal web-1zy6xxtky authorized and added to Thermal80mm group for Branch "a0000000-0000-0000-0000-000000000001".
+2026-04-29 12:58:17.868 +05:30 [WRN] ⚠️ FALLBACK: BIL_I | Formula missing | Available Inputs: [BIL_D,ALB,TP,BIL_I,GLOB,BIL_T]
+2026-04-29 12:58:18.741 +05:30 [INF] RESULT MAP KEYS → [BIL_D, ALB, TP, BIL_I, GLOB, BIL_T]
+2026-04-29 12:58:20.156 +05:30 [WRN] The query uses the 'First'/'FirstOrDefault' operator without 'OrderBy' and filter operators. This may lead to unpredictable results.
+2026-04-29 12:58:52.680 +05:30 [INF] Terminal web-1zy6xxtky authorized and added to Thermal80mm group for Branch "a0000000-0000-0000-0000-000000000001".
+2026-04-29 12:58:57.435 +05:30 [WRN] ⚠️ FALLBACK: BIL_I | Formula missing | Available Inputs: [TP,GLOB,BIL_I,BIL_D,BIL_T,ALB]
+2026-04-29 12:58:57.448 +05:30 [WRN] ⚠️ FALLBACK: BIL_I | Formula missing | Available Inputs: [TP,GLOB,BIL_I,BIL_D,BIL_T,ALB]
+2026-04-29 12:58:57.468 +05:30 [INF] RESULT MAP KEYS → [TP, GLOB, BIL_I, BIL_D, BIL_T, ALB]
+2026-04-29 12:58:57.478 +05:30 [INF] RESULT MAP KEYS → [TP, GLOB, BIL_I, BIL_D, BIL_T, ALB]
+2026-04-29 13:05:15.955 +05:30 [INF] OperationalStatsProjectionWorker is starting in Event-Driven Mode.
+2026-04-29 13:05:16.064 +05:30 [INF] Worker: Running Consistency Check and Catch-up...
+2026-04-29 13:05:16.567 +05:30 [INF] Worker: Catch-up complete. Awaiting real-time events...
+2026-04-29 13:05:37.434 +05:30 [WRN] Failed to determine the https port for redirect.
+2026-04-29 13:05:38.110 +05:30 [INF] Terminal web-1zy6xxtky authorized and added to Thermal80mm group for Branch "a0000000-0000-0000-0000-000000000001".
+2026-04-29 13:07:04.358 +05:30 [INF] Terminal web-1zy6xxtky authorized and added to Thermal80mm group for Branch "a0000000-0000-0000-0000-000000000001".
+2026-04-29 13:07:07.301 +05:30 [WRN] ⚠️ FALLBACK: BIL_I | Formula missing | Available Inputs: [BIL_D,ALB,TP,BIL_I,GLOB,BIL_T]
+2026-04-29 13:07:07.338 +05:30 [INF] RESULT MAP KEYS → [BIL_D, ALB, TP, BIL_I, GLOB, BIL_T]
+2026-04-29 13:07:08.304 +05:30 [WRN] The query uses the 'First'/'FirstOrDefault' operator without 'OrderBy' and filter operators. This may lead to unpredictable results.
+2026-04-29 13:07:55.109 +05:30 [INF] Terminal web-1zy6xxtky authorized and added to Thermal80mm group for Branch "a0000000-0000-0000-0000-000000000001".
+2026-04-29 13:07:57.512 +05:30 [WRN] ⚠️ FALLBACK: BIL_I | Formula missing | Available Inputs: [BIL_D,ALB,TP,BIL_I,GLOB,BIL_T]
+2026-04-29 13:08:01.646 +05:30 [INF] RESULT MAP KEYS → [BIL_D, ALB, TP, BIL_I, GLOB, BIL_T]
+2026-04-29 13:25:16.553 +05:30 [INF] Database seeding completed successfully.
+2026-04-29 13:25:16.661 +05:30 [INF] Exiting after seeding because 'seed' argument was provided.
+2026-04-29 13:30:14.995 +05:30 [INF] OperationalStatsProjectionWorker is starting in Event-Driven Mode.
+2026-04-29 13:30:15.098 +05:30 [INF] Worker: Running Consistency Check and Catch-up...
+2026-04-29 13:30:15.471 +05:30 [INF] Worker: Catch-up complete. Awaiting real-time events...
+2026-04-29 13:31:12.362 +05:30 [WRN] Failed to determine the https port for redirect.
+2026-04-29 13:31:15.873 +05:30 [INF] Terminal web-1zy6xxtky authorized and added to Thermal80mm group for Branch "a0000000-0000-0000-0000-000000000001".
+2026-04-29 13:31:26.713 +05:30 [WRN] ⚠️ FALLBACK: BIL_I | Formula missing | Available Inputs: [BIL_D,BIL_T,GLOB,TP,BIL_I,ALB]
+2026-04-29 13:31:26.713 +05:30 [WRN] ⚠️ FALLBACK: BIL_I | Formula missing | Available Inputs: [BIL_D,BIL_T,GLOB,TP,BIL_I,ALB]
+2026-04-29 13:31:26.770 +05:30 [INF] RESULT MAP KEYS → [BIL_D, BIL_T, GLOB, TP, BIL_I, ALB]
+2026-04-29 13:31:26.770 +05:30 [INF] RESULT MAP KEYS → [BIL_D, BIL_T, GLOB, TP, BIL_I, ALB]
+2026-04-29 13:31:27.423 +05:30 [WRN] The query uses the 'First'/'FirstOrDefault' operator without 'OrderBy' and filter operators. This may lead to unpredictable results.
+2026-04-29 13:34:38.699 +05:30 [WRN] ⚠️ FALLBACK: BIL_I | Formula missing | Available Inputs: [BIL_D,BIL_T,GLOB,TP,BIL_I,ALB]
+2026-04-29 13:34:38.710 +05:30 [WRN] ⚠️ FALLBACK: BIL_I | Formula missing | Available Inputs: [BIL_D,BIL_T,GLOB,TP,BIL_I,ALB]
+2026-04-29 13:34:38.733 +05:30 [INF] RESULT MAP KEYS → [BIL_D, BIL_T, GLOB, TP, BIL_I, ALB]
+2026-04-29 13:34:38.744 +05:30 [INF] RESULT MAP KEYS → [BIL_D, BIL_T, GLOB, TP, BIL_I, ALB]
+2026-04-29 13:34:50.689 +05:30 [WRN] ⚠️ FALLBACK: BIL_I | Formula missing | Available Inputs: [BIL_D,BIL_T,GLOB,TP,BIL_I,ALB]
+2026-04-29 13:34:50.705 +05:30 [INF] RESULT MAP KEYS → [BIL_D, BIL_T, GLOB, TP, BIL_I, ALB]
+2026-04-29 13:34:51.210 +05:30 [WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+2026-04-29 13:34:51.242 +05:30 [INF] EVENT_WRITE for VisitId beae0e9c-84d0-4e78-90fb-52fd0949f12f, Context d4299f80-a070-475f-93fc-29b4e5f2015e:0
+2026-04-29 13:34:51.328 +05:30 [WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+2026-04-29 13:34:51.374 +05:30 [WRN] ⚠️ FALLBACK: BIL_I | Formula missing | Available Inputs: [BIL_D,BIL_T,GLOB,TP,BIL_I,ALB]
+2026-04-29 13:34:51.391 +05:30 [INF] RESULT MAP KEYS → [BIL_D, BIL_T, GLOB, TP, BIL_I, ALB]
+2026-04-29 13:34:51.475 +05:30 [WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+2026-04-29 13:34:53.141 +05:30 [WRN] ⚠️ FALLBACK: BIL_I | Formula missing | Available Inputs: [BIL_D,BIL_T,GLOB,TP,BIL_I,ALB]
+2026-04-29 13:34:53.159 +05:30 [INF] RESULT MAP KEYS → [BIL_D, BIL_T, GLOB, TP, BIL_I, ALB]
+2026-04-29 13:35:33.306 +05:30 [INF] Terminal web-1zy6xxtky authorized and added to Thermal80mm group for Branch "a0000000-0000-0000-0000-000000000001".
+2026-04-29 13:35:35.760 +05:30 [WRN] ⚠️ FALLBACK: BIL_I | Formula missing | Available Inputs: [BIL_D,BIL_T,GLOB,TP,BIL_I,ALB]
+2026-04-29 13:35:35.803 +05:30 [INF] RESULT MAP KEYS → [BIL_D, BIL_T, GLOB, TP, BIL_I, ALB]

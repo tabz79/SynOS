@@ -15,6 +15,7 @@ namespace SynOS.Models.DTOs.Reporting
         public DateTimeOffset? SignedAt { get; set; }
         public string? SignedBy { get; set; }
         public bool CanEditValues { get; set; }
+        public bool IsPhysicallyVerified { get; set; }
     }
 
     public class PatientHeaderDto

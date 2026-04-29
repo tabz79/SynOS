@@ -136,11 +136,48 @@ namespace SynOS.Services
             report.VerificationMode = "Manual";
             report.VerifiedByUserId = pathologistId;
             report.VerifiedAt = DateTimeOffset.UtcNow;
+            report.IsPhysicallyVerified = true;
 
             // 2. Sync Final Snapshot from Draft (GPT-5 Rule)
             report.FinalSnapshotJson = report.DraftSnapshotJson;
 
             await _context.SaveChangesAsync();
+
+            // 3. Generate PDF for Physical Delivery
+            try
+            {
+                var reportData = await GetReportDataForPdfAsync(report.ReportId, forceLive: true);
+                if (reportData != null)
+                {
+                    // Fetch template (Assume default for modality)
+                    var order = await _context.Orders.FirstOrDefaultAsync(o => o.OrderId == report.SourceId);
+                    var template = await _context.ReportTemplates.FirstOrDefaultAsync(t => t.Modality == (order != null ? order.Department : "General") && t.IsDefault);
+                    
+                    if (template != null)
+                    {
+                        var templateModel = System.Text.Json.JsonSerializer.Deserialize<SynOS.Models.DTOs.ReportTemplateDsl.TemplateModel>(template.TemplateJson);
+                        var pdfBytes = await _reportPdfRenderer.GeneratePdfAsync(reportData, templateModel);
+                        var fileName = $"{report.ReportId}_manual.pdf";
+                        var relativePath = await _fileStorageService.SaveFileAsync(pdfBytes, fileName, "reports");
+
+                        // Update current version with PDF path
+                        var reportVersion = await _context.ReportVersions
+                            .OrderByDescending(rv => rv.VersionNumber)
+                            .FirstOrDefaultAsync(rv => rv.ReportId == report.ReportId);
+
+                        if (reportVersion != null)
+                        {
+                            reportVersion.PdfPath = relativePath;
+                            await _context.SaveChangesAsync();
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to generate PDF for manual verification of report {ReportId}", reportId);
+            }
+
             await _auditService.LogAsync(pathologistId, "ReportManualVerified", "Report", reportId, null);
         }
 
@@ -1023,9 +1060,18 @@ namespace SynOS.Services
                 .Select(g => new { OrderId = g.Key, AbnormalCount = g.Count(r => r.Flag != null && r.Flag != "Normal" && r.Flag != "" && r.Flag != "N") })
                 .ToDictionaryAsync(x => x.OrderId, x => x.AbnormalCount);
 
+            var reportIds = reports.Select(r => r.ReportId).ToList();
+            
+            var signatureCounts = await _context.ReportSignatures
+                .Where(s => reportIds.Contains(s.ReportId))
+                .GroupBy(s => s.ReportId)
+                .Select(g => new { ReportId = g.Key, Count = g.Count() })
+                .ToDictionaryAsync(x => x.ReportId, x => x.Count);
+
             return reports.Select(r => {
                 orders.TryGetValue(r.SourceId, out var order);
                 resultsCount.TryGetValue(r.SourceId, out var abnormalCount);
+                signatureCounts.TryGetValue(r.ReportId, out var sigCount);
                 
                 // Defensive guard for orphaned reports (where order is null)
                 var patient = order?.Visit?.Patient;
@@ -1044,7 +1090,10 @@ namespace SynOS.Services
                     AbnormalCount = abnormalCount,
                     Token = order?.Visit?.Token ?? "---",
                     TypedByUserName = r.TypedByUser?.Name,
-                    VerifiedByUserName = r.VerifiedByUser?.Name
+                    VerifiedByUserName = r.VerifiedByUser?.Name,
+                    IsPhysicallyVerified = r.IsPhysicallyVerified,
+                    SignaturesCount = sigCount,
+                    Delivered = r.Delivered
                 };
             }).ToList();
         }

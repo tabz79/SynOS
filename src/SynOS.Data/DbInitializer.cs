@@ -229,6 +229,7 @@ namespace SynOS.Data
                 new { UserId = Guid.NewGuid(), Email = "mri@lab.com",        Name = "MRI Tech User",      Password = "Admin",    RoleName = "MriTech", CanUseOperational = true, CanUseOversight = false },
                 new { UserId = Guid.NewGuid(), Email = "radiologist@lab.com",Name = "Radiologist User",   Password = "Admin",    RoleName = "Radiologist", CanUseOperational = true, CanUseOversight = false },
                 new { UserId = Guid.NewGuid(), Email = "delivery@lab.com",   Name = "Delivery Desk User", Password = "Admin",    RoleName = "DeliveryDesk", CanUseOperational = true, CanUseOversight = false },
+                new { UserId = Guid.NewGuid(), Email = "pathologist2@lab.com", Name = "Dr. Sarah Williams", Password = "Admin", RoleName = "Pathologist", CanUseOperational = true, CanUseOversight = false },
                 
                 // Simulator Specific Users (GPT-5 Mandatory: Role Purity)
                 new { UserId = Guid.NewGuid(), Email = "typist1@lab.com",    Name = "Simulator Typist",   Password = "Admin",    RoleName = "Typist", CanUseOperational = true, CanUseOversight = false },

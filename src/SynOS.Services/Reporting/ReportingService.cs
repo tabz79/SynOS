@@ -208,6 +208,7 @@ namespace SynOS.Services.Reporting
                 SignedAt = report.SignedAt,
                 SignedBy = report.SignedByUserId?.ToString(),
                 CanEditValues = false, // Default to false
+                IsPhysicallyVerified = report.IsPhysicallyVerified,
                 Patient = new PatientHeaderDto
                 {
                     Name = $"{visit.Patient.FirstName} {visit.Patient.LastName}",
