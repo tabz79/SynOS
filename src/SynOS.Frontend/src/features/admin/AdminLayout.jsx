@@ -87,19 +87,7 @@ export function AdminLayout() {
                     {/* Interior Highlighting (Edge Refraction) */}
                     <div className="absolute inset-0 border-r border-white/40 pointer-events-none" />
                     
-                    <div className="p-6 border-b dark:border-zinc-900 border-zinc-200 relative z-10">
-                        <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 bg-synos-primary rounded-lg flex items-center justify-center shadow-lg shadow-synos-primary/20">
-                                <span className="text-black font-black text-xs italic">S</span>
-                            </div>
-                            <div>
-                                <h1 className="type-page-title !text-sm leading-none mb-1">SynOS</h1>
-                                <p className="type-meta uppercase tracking-widest leading-none">Admin Panel</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <nav className="flex-1 overflow-y-auto p-4 space-y-8">
+                    <nav className="flex-1 overflow-y-auto p-4 pt-8 space-y-8 relative z-10">
                         {sidebarGroups.map((group, idx) => (
                             <div key={idx} className="space-y-2">
                                 <div className="px-3 flex items-center justify-between group cursor-default">
