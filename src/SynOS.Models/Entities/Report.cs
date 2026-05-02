@@ -58,6 +58,7 @@ namespace SynOS.Models.Entities
         public bool Delivered { get; set; } = false;
         public DateTimeOffset? DeliveredAt { get; set; }
         public bool IsPhysicallyVerified { get; set; } = false;
+        public bool IsManualFlow { get; set; } = false;
 
         public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
         public DateTimeOffset? UpdatedAt { get; set; }

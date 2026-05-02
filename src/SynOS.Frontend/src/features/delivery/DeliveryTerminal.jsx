@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { cn } from "@/lib/utils";
 import { SystemBar } from '@/components/layout/SystemBar';
+import { useAuth } from '@/context/AuthContext';
 import { ReportsApi } from '@/api/reports';
 import { DeliveryWorklistCard } from './components/DeliveryWorklistCard';
 import { 
@@ -18,6 +19,7 @@ import {
 import { ReportA4 } from '../documents/templates/ReportA4';
 
 export function DeliveryTerminal() {
+    const { user } = useAuth();
     const [reports, setReports] = useState([]);
     const [selectedReportId, setSelectedReportId] = useState(null);
     const [reportStructure, setReportStructure] = useState(null);
@@ -70,7 +72,7 @@ export function DeliveryTerminal() {
             ]);
             setReportStructure(fullRes.report);
             setReportData(dataRes);
-            setDeliveryPhone(fullRes.report.patientPhone || "");
+            setDeliveryPhone(fullRes.report.patient?.phone || "");
         } catch (err) {
             console.error("Failed to fetch report detail:", err);
         } finally {
@@ -92,13 +94,15 @@ export function DeliveryTerminal() {
         if (!selectedReportId) return;
         setIsVerifying(true);
         try {
-            // GPT-5: Pass a system/null user as the desk operator just marks it seen
-            await ReportsApi.verifyManual(selectedReportId, "00000000-0000-0000-0000-000000000000");
+            // GPT-5: Record the desk operator's ID as the verifier for the manual flow audit trail
+            await ReportsApi.verifyManual(selectedReportId, user?.id || "00000000-0000-0000-0000-000000000000");
+        } catch (err) {
+            // If it's already verified or has another non-critical issue, we still want to refresh the UI
+            console.warn("Verification API note:", err.message);
+        } finally {
+            // ALWAYS refresh state to ensure UI is in sync with DB truth
             await fetchReportDetail(selectedReportId);
             await fetchWorklist();
-        } catch (err) {
-            alert("Verification failed: " + err.message);
-        } finally {
             setIsVerifying(false);
         }
     };
@@ -134,7 +138,11 @@ export function DeliveryTerminal() {
     );
 
     const isDigital = (reportData?.signatures?.length || 0) > 0;
-    const isVerified = reportStructure?.isPhysicallyVerified || isDigital;
+    // GPT-5: For manual flow reports, digital signatures do NOT satisfy the verification gate.
+    // The operator must physically verify the paper signature.
+    const isVerified = reportStructure?.isManualFlow 
+        ? reportStructure?.isPhysicallyVerified 
+        : (reportStructure?.isPhysicallyVerified || isDigital);
 
     return (
         <div className="h-screen w-screen dark:bg-synos-background bg-zinc-50 text-foreground flex flex-col overflow-hidden font-sans selection:bg-synos-primary/20 relative">
@@ -218,11 +226,13 @@ export function DeliveryTerminal() {
                                         </div>
                                         <div>
                                             <h4 className="text-lg font-black tracking-tight dark:text-white text-zinc-900">
-                                                {isVerified ? "Verification Complete" : "Physical Verification Needed"}
+                                                {isVerified ? "Verification Complete" : 
+                                                 reportStructure?.isManualFlow ? "Awaiting Manual Signature" : "Physical Verification Needed"}
                                             </h4>
                                             <p className="text-xs text-zinc-500 font-medium">
-                                                {isDigital ? "Digital signature detected. System trust verified." : 
-                                                 isVerified ? "Manually verified by desk operator." : 
+                                                {isVerified ? "Manually verified by desk operator." : 
+                                                 isDigital && !reportStructure?.isManualFlow ? "Digital signature detected. System trust verified." : 
+                                                 reportStructure?.isManualFlow ? "Typist requested manual sign-off on paper report. Please check hardcopy." :
                                                  "Requires manual signature on hardcopy before release."}
                                             </p>
                                         </div>
@@ -278,35 +288,65 @@ export function DeliveryTerminal() {
                             <Smartphone className="w-8 h-8" />
                         </div>
                         <h3 className="text-3xl font-black uppercase tracking-tighter mb-4 dark:text-white">WhatsApp Softcopy</h3>
-                        <p className="text-lg text-zinc-500 mb-10 font-medium leading-tight">Confirm the recipient's mobile number. A secure download link will be sent instantly.</p>
+                        <p className="text-lg text-zinc-500 mb-10 font-medium leading-tight">Send secure report link to patient.</p>
                         
                         <div className="space-y-6">
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400 ml-2">Mobile Number</label>
-                                <input 
-                                    type="text"
-                                    value={deliveryPhone}
-                                    onChange={(e) => setDeliveryPhone(e.target.value)}
-                                    className="w-full bg-zinc-100 dark:bg-zinc-800 border-none rounded-3xl px-8 py-6 font-mono text-3xl focus:ring-4 ring-emerald-500/20 transition-all text-center tracking-widest"
-                                    placeholder="10-digit number"
-                                />
+                            {/* Option 1: Registered Number */}
+                            {reportStructure?.patient?.phone ? (
+                                <button 
+                                    onClick={() => {
+                                        setDeliveryPhone(reportStructure.patient.phone);
+                                        handleWhatsApp();
+                                    }}
+                                    disabled={isDelivering}
+                                    className="w-full bg-emerald-500 hover:bg-emerald-600 text-white p-6 rounded-[2rem] flex flex-col items-center gap-1 group transition-all active:scale-95 shadow-xl shadow-emerald-500/20 disabled:opacity-50"
+                                >
+                                    <span className="text-[10px] font-black uppercase tracking-[0.2em] opacity-80 italic">Registered Number</span>
+                                    <span className="text-2xl font-black tracking-tighter flex items-center gap-2">
+                                        {isDelivering ? <Loader2 className="w-6 h-6 animate-spin" /> : <MessageSquare className="w-6 h-6" />}
+                                        {reportStructure.patient.phone}
+                                    </span>
+                                </button>
+                            ) : (
+                                <div className="bg-zinc-100 dark:bg-zinc-800 p-6 rounded-[2rem] text-center border-2 border-dashed border-zinc-200 dark:border-zinc-700">
+                                    <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">No Registered Number Found</p>
+                                </div>
+                            )}
+
+                            {/* Divider */}
+                            <div className="flex items-center gap-4 text-zinc-300 dark:text-zinc-700 py-2">
+                                <div className="h-[1px] flex-1 bg-current" />
+                                <span className="text-[8px] font-black uppercase tracking-widest">or send to alternative</span>
+                                <div className="h-[1px] flex-1 bg-current" />
                             </div>
-                            
-                            <div className="flex gap-4 pt-4">
-                                <button 
-                                    onClick={handleWhatsApp}
-                                    disabled={isDelivering || deliveryPhone.length < 10}
-                                    className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white py-6 rounded-[2rem] font-black uppercase tracking-widest shadow-2xl shadow-emerald-500/30 active:scale-95 transition-all disabled:opacity-50 flex items-center justify-center gap-3"
-                                >
-                                    {isDelivering ? <Loader2 className="w-6 h-6 animate-spin" /> : <CheckCircle2 className="w-6 h-6" />}
-                                    Send Now
-                                </button>
-                                <button 
-                                    onClick={() => setShowWhatsAppPrompt(false)}
-                                    className="px-8 py-6 rounded-[2rem] font-black uppercase tracking-widest text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 transition-colors"
-                                >
-                                    Cancel
-                                </button>
+
+                            {/* Option 2: Manual Entry */}
+                            <div className="space-y-4">
+                                <div className="relative">
+                                    <input 
+                                        type="text"
+                                        value={deliveryPhone}
+                                        onChange={(e) => setDeliveryPhone(e.target.value)}
+                                        className="w-full bg-zinc-100 dark:bg-zinc-800 border-none rounded-3xl px-8 py-5 font-mono text-xl focus:ring-4 ring-emerald-500/20 transition-all text-center tracking-[0.3em] dark:text-white"
+                                        placeholder="NEW NUMBER"
+                                    />
+                                </div>
+                                <div className="flex gap-4">
+                                    <button 
+                                        onClick={() => setShowWhatsAppPrompt(false)}
+                                        className="flex-1 bg-zinc-100 dark:bg-zinc-800 text-zinc-500 py-5 rounded-2xl font-black text-xs uppercase tracking-widest active:scale-95 transition-all hover:bg-zinc-200 dark:hover:bg-zinc-700"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button 
+                                        onClick={handleWhatsApp}
+                                        disabled={isDelivering || !deliveryPhone || deliveryPhone.length < 10}
+                                        className="flex-[2] bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 py-5 rounded-2xl font-black text-xs uppercase tracking-widest active:scale-95 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                                    >
+                                        {isDelivering ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
+                                        Send to This Number
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>

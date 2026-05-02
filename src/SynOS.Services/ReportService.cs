@@ -59,7 +59,7 @@ namespace SynOS.Services
             _reportingService = reportingService ?? throw new ArgumentNullException(nameof(reportingService));
         }
 
-        public async Task SubmitForVerificationAsync(Guid reportId, Guid userId)
+        public async Task SubmitForVerificationAsync(Guid reportId, Guid userId, bool isManualFlow = false)
         {
             var report = await _context.Reports.FirstOrDefaultAsync(r => r.ReportId == reportId);
             if (report == null) throw new KeyNotFoundException();
@@ -84,6 +84,7 @@ namespace SynOS.Services
             
             // 3. Update Status & Commit FIRST (to avoid race in snapshot status)
             report.Status = "ReadyForVerification";
+            report.IsManualFlow = isManualFlow;
             report.TypedByUserId = userId;
             report.UpdatedAt = DateTimeOffset.UtcNow;
             await _context.SaveChangesAsync();
@@ -128,13 +129,15 @@ namespace SynOS.Services
             var report = await _context.Reports.FindAsync(reportId);
             if (report == null) throw new KeyNotFoundException("Report not found.");
 
+            if (report.Status == "ManualVerified") return;
+
             if (report.Status != "ReadyForVerification")
                 throw new BadHttpRequestException($"Manual verification only allowed for reports in 'ReadyForVerification' status. Current: {report.Status}");
 
             // 1. Finalize State
             report.Status = "ManualVerified";
             report.VerificationMode = "Manual";
-            report.VerifiedByUserId = pathologistId;
+            report.VerifiedByUserId = pathologistId == Guid.Empty ? null : pathologistId;
             report.VerifiedAt = DateTimeOffset.UtcNow;
             report.IsPhysicallyVerified = true;
 
@@ -149,9 +152,12 @@ namespace SynOS.Services
                 var reportData = await GetReportDataForPdfAsync(report.ReportId, forceLive: true);
                 if (reportData != null)
                 {
-                    // Fetch template (Assume default for modality)
                     var order = await _context.Orders.FirstOrDefaultAsync(o => o.OrderId == report.SourceId);
-                    var template = await _context.ReportTemplates.FirstOrDefaultAsync(t => t.Modality == (order != null ? order.Department : "General") && t.IsDefault);
+                    var modality = order?.Department ?? "General";
+                    
+                    // GPT-5: Robust template discovery with fallback
+                    var template = await _context.ReportTemplates.FirstOrDefaultAsync(t => t.Modality == modality && t.IsDefault)
+                                ?? await _context.ReportTemplates.FirstOrDefaultAsync(t => t.IsDefault);
                     
                     if (template != null)
                     {
@@ -1032,7 +1038,7 @@ namespace SynOS.Services
             };
         }
 
-        public async Task<System.Collections.Generic.IEnumerable<ReportListItemDto>> GetReportsByStatusAsync(string status)
+        public async Task<System.Collections.Generic.IEnumerable<ReportListItemDto>> GetReportsByStatusAsync(string status, bool excludeManualFlow = false)
         {
             // Support comma-separated statuses for multi-state queues (e.g. "Draft,ReadyForVerification")
             var statusList = status.Split(',').Select(s => s.Trim()).ToList();
@@ -1041,6 +1047,7 @@ namespace SynOS.Services
                 .Include(r => r.TypedByUser)
                 .Include(r => r.VerifiedByUser)
                 .Where(r => statusList.Contains(r.Status) && r.SourceType == "Order")
+                .Where(r => !excludeManualFlow || !r.IsManualFlow)
                 .OrderByDescending(r => r.UpdatedAt ?? r.CreatedAt)
                 .AsNoTracking()
                 .ToListAsync();
@@ -1093,7 +1100,8 @@ namespace SynOS.Services
                     VerifiedByUserName = r.VerifiedByUser?.Name,
                     IsPhysicallyVerified = r.IsPhysicallyVerified,
                     SignaturesCount = sigCount,
-                    Delivered = r.Delivered
+                    Delivered = r.Delivered,
+                    IsManualFlow = r.IsManualFlow
                 };
             }).ToList();
         }

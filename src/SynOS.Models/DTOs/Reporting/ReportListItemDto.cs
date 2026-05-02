@@ -21,5 +21,6 @@ namespace SynOS.Models.DTOs.Reporting
         public bool IsPhysicallyVerified { get; set; }
         public int SignaturesCount { get; set; }
         public bool Delivered { get; set; }
+        public bool IsManualFlow { get; set; }
     }
 }

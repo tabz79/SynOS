@@ -1,0 +1,35 @@
+2026-05-01 11:23:01.671 +05:30 [INF] Notification Worker Service running.
+2026-05-01 11:23:02.163 +05:30 [INF] OperationalStatsProjectionWorker is starting in Event-Driven Mode.
+2026-05-01 11:23:02.169 +05:30 [INF] Worker: Running Consistency Check and Catch-up...
+2026-05-01 11:23:03.016 +05:30 [INF] [ProjectorDebug] Processing Event Type: SPECIMEN_ORDERED, BranchId: "a0000000-0000-0000-0000-000000000001", SourceId: "d8f691d3-f129-4b93-92a0-d714dd922d92", SourceType: Visit, VisitId: d8f691d3-f129-4b93-92a0-d714dd922d92
+2026-05-01 11:23:03.647 +05:30 [INF] [ProjectorDebug] Checking Fact Deduplication for SourceId: "d8f691d3-f129-4b93-92a0-d714dd922d92"
+2026-05-01 11:23:03.926 +05:30 [WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+2026-05-01 11:23:04.716 +05:30 [INF] [ProjectorDebug] Processing Event Type: SPECIMEN_ORDERED, BranchId: "a0000000-0000-0000-0000-000000000001", SourceId: "ee246d22-28cb-4498-a0f6-9d3585d1a3c6", SourceType: Visit, VisitId: ee246d22-28cb-4498-a0f6-9d3585d1a3c6
+2026-05-01 11:23:04.833 +05:30 [INF] [ProjectorDebug] Checking Fact Deduplication for SourceId: "ee246d22-28cb-4498-a0f6-9d3585d1a3c6"
+2026-05-01 11:23:04.858 +05:30 [WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+2026-05-01 11:23:05.011 +05:30 [INF] Worker: Catch-up complete. Awaiting real-time events...
+2026-05-01 11:23:17.495 +05:30 [WRN] Failed to determine the https port for redirect.
+2026-05-01 11:23:23.400 +05:30 [INF] Terminal web-1zy6xxtky authorized and added to Thermal80mm group for Branch "a0000000-0000-0000-0000-000000000001".
+2026-05-01 11:25:24.409 +05:30 [INF] Terminal web-1zy6xxtky authorized and added to Thermal80mm group for Branch "a0000000-0000-0000-0000-000000000001".
+2026-05-01 11:25:50.942 +05:30 [INF] Terminal web-1zy6xxtky authorized and added to Thermal80mm group for Branch "a0000000-0000-0000-0000-000000000001".
+2026-05-01 11:32:17.937 +05:30 [INF] Notification Worker Service stopping gracefully.
+2026-05-01 11:33:40.330 +05:30 [INF] Notification Worker Service running.
+2026-05-01 11:33:40.883 +05:30 [INF] OperationalStatsProjectionWorker is starting in Event-Driven Mode.
+2026-05-01 11:33:41.008 +05:30 [INF] Worker: Running Consistency Check and Catch-up...
+2026-05-01 11:33:41.677 +05:30 [INF] Worker: Catch-up complete. Awaiting real-time events...
+2026-05-01 11:34:13.189 +05:30 [WRN] Failed to determine the https port for redirect.
+2026-05-01 11:35:10.502 +05:30 [INF] Terminal web-1zy6xxtky authorized and added to Thermal80mm group for Branch "a0000000-0000-0000-0000-000000000001".
+2026-05-01 11:39:37.939 +05:30 [WRN] ⚠️ FALLBACK: BIL_I | Formula missing | Available Inputs: [BIL_T,GLOB,BIL_I,ALB,BIL_D,TP]
+2026-05-01 11:39:39.288 +05:30 [INF] RESULT MAP KEYS → [BIL_T, GLOB, BIL_I, ALB, BIL_D, TP]
+2026-05-01 11:39:40.703 +05:30 [WRN] The query uses the 'First'/'FirstOrDefault' operator without 'OrderBy' and filter operators. This may lead to unpredictable results.
+2026-05-01 12:04:39.893 +05:30 [INF] Notification Worker Service stopping gracefully.
+2026-05-01 12:05:08.938 +05:30 [INF] Notification Worker Service running.
+2026-05-01 12:05:09.226 +05:30 [INF] OperationalStatsProjectionWorker is starting in Event-Driven Mode.
+2026-05-01 12:05:09.230 +05:30 [INF] Worker: Running Consistency Check and Catch-up...
+2026-05-01 12:05:09.634 +05:30 [INF] Worker: Catch-up complete. Awaiting real-time events...
+2026-05-01 12:19:38.389 +05:30 [WRN] Failed to determine the https port for redirect.
+2026-05-01 12:45:09.160 +05:30 [INF] Notification Worker Service stopping gracefully.
+2026-05-01 12:45:46.947 +05:30 [INF] Notification Worker Service running.
+2026-05-01 12:45:47.236 +05:30 [INF] OperationalStatsProjectionWorker is starting in Event-Driven Mode.
+2026-05-01 12:45:47.241 +05:30 [INF] Worker: Running Consistency Check and Catch-up...
+2026-05-01 12:45:47.588 +05:30 [INF] Worker: Catch-up complete. Awaiting real-time events...

@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SynOS.Models.DTOs;
+using SynOS.Models.DTOs.Reporting;
 using SynOS.Services;
 using SynOS.Services.Reporting;
 
@@ -70,14 +71,14 @@ namespace SynOS.Api.Controllers
 
         [HttpPost("{reportId}/submit")]
         [Authorize(Policy = "TypistPolicy")]
-        public async Task<IActionResult> SubmitReport(Guid reportId)
+        public async Task<IActionResult> SubmitReport(Guid reportId, [FromBody] SubmitReportRequestDto request)
         {
             var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (!Guid.TryParse(userIdString, out var userId)) return Unauthorized();
 
             try
             {
-                await _reportService.SubmitForVerificationAsync(reportId, userId);
+                await _reportService.SubmitForVerificationAsync(reportId, userId, request.IsManualFlow);
                 return Ok();
             }
             catch (Exception ex)
@@ -115,7 +116,11 @@ namespace SynOS.Api.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(new { message = ex.Message });
+                // GPT-5: Explicit error propagation for clinical workflow troubleshooting
+                return BadRequest(new { 
+                    message = ex.Message, 
+                    details = ex.ToString() 
+                });
             }
         }
 
@@ -174,7 +179,10 @@ namespace SynOS.Api.Controllers
                 return BadRequest(new { message = "Status parameter is required." });
             }
 
-            var reports = await _reportService.GetReportsByStatusAsync(status);
+            // GPT-5: Pathologists should only see reports intended for digital sign-off.
+            // Manual sign-off reports bypass the Pathologist digital queue.
+            bool isPathologist = User.IsInRole("Pathologist");
+            var reports = await _reportService.GetReportsByStatusAsync(status, excludeManualFlow: isPathologist);
             return Ok(reports);
         }
 

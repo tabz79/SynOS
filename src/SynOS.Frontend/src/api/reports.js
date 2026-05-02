@@ -57,10 +57,14 @@ export const ReportsApi = {
         return await response.json();
     },
 
-    submitReport: async (reportId) => {
+    submitReport: async (reportId, isManualFlow = false) => {
         const response = await fetch(`/api/v1/reports/${reportId}/submit`, {
             method: 'POST',
-            headers: { 'Authorization': `Bearer ${localStorage.getItem('synos_jwt')}` }
+            headers: { 
+                'Authorization': `Bearer ${localStorage.getItem('synos_jwt')}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ isManualFlow })
         });
         if (!response.ok) throw new Error('Failed to submit report for verification');
         return true;
@@ -80,7 +84,10 @@ export const ReportsApi = {
             method: 'POST',
             headers: { 'Authorization': `Bearer ${localStorage.getItem('synos_jwt')}` }
         });
-        if (!response.ok) throw new Error('Failed to mark as manually verified');
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.message || 'Failed to mark as manually verified');
+        }
         return true;
     },
 

@@ -26,6 +26,7 @@ export function LoginPage() {
                 navigate('/');
             }
         } catch (err) {
+            localStorage.removeItem('synos_jwt'); // Clear stale session
             setError(err.message);
         } finally {
             setIsSubmitting(false);

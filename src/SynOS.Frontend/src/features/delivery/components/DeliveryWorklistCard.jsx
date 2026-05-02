@@ -25,6 +25,14 @@ export function DeliveryWorklistCard({ report, isSelected, onClick }) {
                 </span>
             );
         }
+        if (report.isManualFlow && !isVerified) {
+            return (
+                <span className="flex items-center gap-1 text-[8px] font-black uppercase px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-500 border border-amber-500/20 tracking-tighter">
+                    <Clock className="w-2 h-2" />
+                    Manual
+                </span>
+            );
+        }
         if (!isVerified) {
             return (
                 <span className="flex items-center gap-1 text-[8px] font-black uppercase px-2 py-0.5 rounded-full bg-orange-500/10 text-orange-500 border border-orange-500/20 tracking-tighter">

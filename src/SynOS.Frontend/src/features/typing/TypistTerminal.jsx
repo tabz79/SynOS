@@ -13,7 +13,8 @@ import {
     Loader2,
     User,
     Clock,
-    Printer
+    Printer,
+    ShieldCheck
 } from 'lucide-react';
 import { ReportA4 } from '../documents/templates/ReportA4';
 
@@ -125,16 +126,21 @@ export function TypistTerminal() {
         }
     };
 
-    const handleSubmit = async () => {
+    const handleSubmit = async (isManual = false) => {
         if (!selectedReportId) return;
-        if (!window.confirm("Submit for Pathologist verification? This will lock the report for editing.")) return;
+        
+        const message = isManual 
+            ? "Submit for PHYSICAL verification? You should have printed the report for manual signature. This will bypass the Pathologist digital queue."
+            : "Submit for DIGITAL Pathologist verification? This will lock the report for editing.";
+
+        if (!window.confirm(message)) return;
 
         setIsSubmitting(true);
         try {
             // 1. Save current work first
             await handleSaveInterpretation();
-            // 2. Submit
-            await ReportsApi.submitReport(selectedReportId);
+            // 2. Submit with intent
+            await ReportsApi.submitReport(selectedReportId, isManual);
             // 3. Refresh
             await fetchWorklist();
             setSelectedReportId(null);
@@ -347,29 +353,42 @@ export function TypistTerminal() {
                                                         Preview Updated via Backend
                                                     </div>
                                                 )}
-                                                <div className="grid grid-cols-3 gap-3 w-full">
+                                                <div className="grid grid-cols-2 gap-3 w-full">
                                                     <button 
                                                         onClick={handleSaveInterpretation}
                                                         disabled={isSaving || (!interpretation.interpretation && !interpretation.comments)}
-                                                        className="dark:bg-zinc-800 bg-zinc-100 dark:text-zinc-300 text-zinc-600 hover:dark:bg-zinc-700 hover:bg-zinc-200 font-bold text-[10px] px-2 py-2.5 rounded-xl transition-all active:scale-95 disabled:opacity-40 uppercase tracking-tight"
+                                                        className="dark:bg-zinc-800 bg-zinc-100 dark:text-zinc-300 text-zinc-600 hover:dark:bg-zinc-700 hover:bg-zinc-200 font-bold text-[10px] px-2 py-3 rounded-xl transition-all active:scale-95 disabled:opacity-40 uppercase tracking-tight"
                                                     >
                                                         {isSaving ? "Saving..." : "Save Draft"}
                                                     </button>
                                                     <button 
                                                         onClick={() => window.print()}
                                                         disabled={!selectedReportId}
-                                                        className="dark:bg-zinc-800 bg-zinc-900 dark:text-zinc-200 text-white hover:opacity-90 font-bold text-[10px] px-2 py-2.5 rounded-xl transition-all active:scale-95 flex items-center justify-center gap-2 uppercase tracking-tight"
+                                                        className="dark:bg-zinc-800 bg-zinc-100 dark:text-zinc-300 text-zinc-600 hover:dark:bg-zinc-700 hover:bg-zinc-200 font-bold text-[10px] px-2 py-3 rounded-xl transition-all active:scale-95 flex items-center justify-center gap-2 uppercase tracking-tight"
                                                     >
                                                         <Printer className="w-3 h-3" />
-                                                        Print
+                                                        Quick Print
                                                     </button>
+                                                    
                                                     <button 
-                                                        onClick={handleSubmit}
+                                                        onClick={() => handleSubmit(false)}
                                                         disabled={isSubmitting || isSaving || !interpretation.interpretation}
-                                                        className="bg-synos-primary text-white hover:opacity-90 px-2 py-2.5 rounded-xl font-black text-[10px] shadow-xl shadow-synos-primary/20 transition-all active:scale-95 flex items-center justify-center gap-1.5 disabled:bg-zinc-300 dark:disabled:bg-zinc-800 disabled:shadow-none uppercase tracking-tight"
+                                                        className="col-span-2 bg-synos-primary text-white hover:opacity-90 px-4 py-3 rounded-xl font-black text-[10px] shadow-xl shadow-synos-primary/20 transition-all active:scale-95 flex items-center justify-center gap-1.5 disabled:bg-zinc-300 dark:disabled:bg-zinc-800 disabled:shadow-none uppercase tracking-tight"
                                                     >
-                                                        {isSubmitting ? <Loader2 className="w-3 h-3 animate-spin" /> : <Send className="w-3 h-3" />}
-                                                        Submit for Review
+                                                        {isSubmitting ? <Loader2 className="w-3 h-3 animate-spin" /> : <ShieldCheck className="w-3 h-3" />}
+                                                        Submit for Digital Sign
+                                                    </button>
+
+                                                    <button 
+                                                        onClick={() => {
+                                                            window.print();
+                                                            handleSubmit(true);
+                                                        }}
+                                                        disabled={isSubmitting || isSaving || !interpretation.interpretation}
+                                                        className="col-span-2 border-2 border-amber-500/50 text-amber-600 hover:bg-amber-500/5 px-4 py-3 rounded-xl font-black text-[10px] transition-all active:scale-95 flex items-center justify-center gap-1.5 disabled:opacity-40 uppercase tracking-tight"
+                                                    >
+                                                        <Printer className="w-3 h-3" />
+                                                        Print & Submit for Manual Sign
                                                     </button>
                                                 </div>
                                             </div>

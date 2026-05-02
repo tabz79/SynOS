@@ -10,18 +10,32 @@ import { PathologistTerminal } from '@/features/pathology/PathologistTerminal'
 import { TypistTerminal } from '@/features/typing/TypistTerminal'
 import { DeliveryTerminal } from '@/features/delivery/DeliveryTerminal'
 import { DocumentPrinter } from '@/features/documents/DocumentPrinter'
+import { AdminLayout } from '@/features/admin/AdminLayout'
+import { ControlTowerDashboard } from '@/features/admin/ControlTowerDashboard'
+import { RoleTakeoverBanner } from '@/features/admin/components/RoleTakeoverBanner'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 
 function RootRedirect() {
   const { isAuthenticated, user } = useAuth();
-  console.log('[RootRedirect] Auth state:', { isAuthenticated, role: user?.role, user });
+  const role = user?.role;
+  const isAdmin = Array.isArray(role) ? role.includes('Admin') : role === 'Admin';
+
+  console.info('[RootRedirect] Evaluating redirect:', { 
+    isAuthenticated, 
+    role, 
+    isAdmin,
+    sessionMode: user?.sessionMode 
+  });
+
   if (!isAuthenticated) return <Navigate to="/login" replace />;
-  if (user?.role === 'Receptionist') return <Navigate to="/reception" replace />;
-  if (user?.role === 'Phlebotomist') return <Navigate to="/phlebotomist" replace />;
-  if (user?.role === 'Technician' || user?.role === 'Admin' || user?.role === 'LabTech') return <Navigate to="/workbench" replace />;
-  if (user?.role === 'Pathologist') return <Navigate to="/pathologist" replace />;
-  if (user?.role === 'Typist') return <Navigate to="/typist" replace />;
-  if (user?.role === 'DeliveryDesk') return <Navigate to="/delivery" replace />;
+  
+  if (isAdmin) return <Navigate to="/admin" replace />;
+  if (role === 'Receptionist') return <Navigate to="/reception" replace />;
+  if (role === 'Phlebotomist') return <Navigate to="/phlebotomist" replace />;
+  if (role === 'Technician' || role === 'LabTech') return <Navigate to="/workbench" replace />;
+  if (role === 'Pathologist') return <Navigate to="/pathologist" replace />;
+  if (role === 'Typist') return <Navigate to="/typist" replace />;
+  if (role === 'DeliveryDesk') return <Navigate to="/delivery" replace />;
   
   return (
     <div className="h-screen w-screen bg-synos-background flex items-center justify-center p-4">
@@ -39,6 +53,20 @@ function RootRedirect() {
   );
 }
 
+function AdminProtectedWrapper({ children, roleName }) {
+  const { user } = useAuth();
+  const isAdmin = Array.isArray(user?.role) ? user.role.includes('Admin') : user?.role === 'Admin';
+  
+  return (
+    <>
+      {isAdmin && <RoleTakeoverBanner roleName={roleName} />}
+      <div className={isAdmin ? 'pt-10 h-full w-full' : 'h-full w-full'}>
+        {children}
+      </div>
+    </>
+  );
+}
+
 function App() {
   return (
     <AuthProvider>
@@ -52,35 +80,63 @@ function App() {
             <Route path="/print/report/:id" element={<DocumentPrinter />} />
 
             {/* Protected Routes */}
-            <Route element={<ProtectedRoute allowedRoles={['Receptionist']} />}>
+            <Route element={<ProtectedRoute allowedRoles={['Receptionist', 'Admin']} />}>
               <Route
                 path="/reception"
                 element={
-                  <ReceptionProvider>
-                    <ReceptionScreen />
-                  </ReceptionProvider>
+                  <AdminProtectedWrapper roleName="Reception">
+                    <ReceptionProvider>
+                      <ReceptionScreen />
+                    </ReceptionProvider>
+                  </AdminProtectedWrapper>
                 }
               />
             </Route>
 
-            <Route element={<ProtectedRoute allowedRoles={['Phlebotomist', 'Receptionist']} />}>
-              <Route path="/phlebotomist" element={<PhlebotomyScreen />} />
+            <Route element={<ProtectedRoute allowedRoles={['Phlebotomist', 'Receptionist', 'Admin']} />}>
+              <Route path="/phlebotomist" element={
+                <AdminProtectedWrapper roleName="Phlebotomy">
+                  <PhlebotomyScreen />
+                </AdminProtectedWrapper>
+              } />
             </Route>
 
             <Route element={<ProtectedRoute allowedRoles={['Technician', 'Admin', 'LabTech']} />}>
-              <Route path="/workbench" element={<DepartmentWorkbenchScreen />} />
+              <Route path="/workbench" element={
+                <AdminProtectedWrapper roleName="Lab Workbench">
+                  <DepartmentWorkbenchScreen />
+                </AdminProtectedWrapper>
+              } />
             </Route>
 
-            <Route element={<ProtectedRoute allowedRoles={['Pathologist']} />}>
-              <Route path="/pathologist" element={<PathologistTerminal />} />
+            <Route element={<ProtectedRoute allowedRoles={['Pathologist', 'Admin']} />}>
+              <Route path="/pathologist" element={
+                <AdminProtectedWrapper roleName="Pathologist">
+                  <PathologistTerminal />
+                </AdminProtectedWrapper>
+              } />
             </Route>
 
-            <Route element={<ProtectedRoute allowedRoles={['Typist']} />}>
-              <Route path="/typist" element={<TypistTerminal />} />
+            <Route element={<ProtectedRoute allowedRoles={['Typist', 'Admin']} />}>
+              <Route path="/typist" element={
+                <AdminProtectedWrapper roleName="Reports Typing">
+                  <TypistTerminal />
+                </AdminProtectedWrapper>
+              } />
             </Route>
 
-            <Route element={<ProtectedRoute allowedRoles={['DeliveryDesk']} />}>
-              <Route path="/delivery" element={<DeliveryTerminal />} />
+            <Route element={<ProtectedRoute allowedRoles={['DeliveryDesk', 'Admin']} />}>
+              <Route path="/delivery" element={
+                <AdminProtectedWrapper roleName="Delivery Desk">
+                  <DeliveryTerminal />
+                </AdminProtectedWrapper>
+              } />
+            </Route>
+
+            <Route element={<ProtectedRoute allowedRoles={['Admin']} />}>
+              <Route element={<AdminLayout />}>
+                <Route path="/admin" element={<ControlTowerDashboard />} />
+              </Route>
             </Route>
 
             {/* Root Redirection */}

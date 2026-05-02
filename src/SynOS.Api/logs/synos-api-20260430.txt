@@ -1,0 +1,204 @@
+2026-04-30 10:49:26.607 +05:30 [INF] Notification Worker Service running.
+2026-04-30 10:49:26.992 +05:30 [INF] OperationalStatsProjectionWorker is starting in Event-Driven Mode.
+2026-04-30 10:49:26.997 +05:30 [INF] Worker: Running Consistency Check and Catch-up...
+2026-04-30 10:49:27.263 +05:30 [INF] Worker: Catch-up complete. Awaiting real-time events...
+2026-04-30 12:29:51.209 +05:30 [INF] Notification Worker Service stopping gracefully.
+2026-04-30 12:30:40.065 +05:30 [INF] Notification Worker Service running.
+2026-04-30 12:30:40.413 +05:30 [INF] OperationalStatsProjectionWorker is starting in Event-Driven Mode.
+2026-04-30 12:30:40.420 +05:30 [INF] Worker: Running Consistency Check and Catch-up...
+2026-04-30 12:30:40.746 +05:30 [INF] Worker: Catch-up complete. Awaiting real-time events...
+2026-04-30 12:32:41.468 +05:30 [WRN] Failed to determine the https port for redirect.
+2026-04-30 12:35:29.712 +05:30 [INF] Terminal web-1zy6xxtky authorized and added to Thermal80mm group for Branch "a0000000-0000-0000-0000-000000000001".
+2026-04-30 12:45:12.470 +05:30 [INF] Terminal web-1zy6xxtky authorized and added to Thermal80mm group for Branch "a0000000-0000-0000-0000-000000000001".
+2026-04-30 13:03:56.186 +05:30 [INF] Notification Worker Service stopping gracefully.
+2026-04-30 13:15:46.640 +05:30 [INF] Notification Worker Service running.
+2026-04-30 13:15:46.972 +05:30 [INF] OperationalStatsProjectionWorker is starting in Event-Driven Mode.
+2026-04-30 13:15:46.979 +05:30 [INF] Worker: Running Consistency Check and Catch-up...
+2026-04-30 13:15:47.382 +05:30 [INF] Worker: Catch-up complete. Awaiting real-time events...
+2026-04-30 13:16:26.003 +05:30 [WRN] Failed to determine the https port for redirect.
+2026-04-30 13:29:08.085 +05:30 [INF] Terminal web-1zy6xxtky authorized and added to Thermal80mm group for Branch "a0000000-0000-0000-0000-000000000001".
+2026-04-30 13:34:05.207 +05:30 [INF] Terminal web-1zy6xxtky authorized and added to Thermal80mm group for Branch "a0000000-0000-0000-0000-000000000001".
+2026-04-30 14:00:28.944 +05:30 [INF] Terminal web-1zy6xxtky authorized and added to Thermal80mm group for Branch "a0000000-0000-0000-0000-000000000001".
+2026-04-30 14:00:41.774 +05:30 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2026-04-30 14:00:42.295 +05:30 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2026-04-30 14:00:42.431 +05:30 [INF] EVENT_WRITE for VisitId d8f691d3-f129-4b93-92a0-d714dd922d92, Context 6e67ddb2-c5ed-4ca4-8677-4f3c63e84b42:0
+2026-04-30 14:00:42.660 +05:30 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2026-04-30 14:00:42.957 +05:30 [INF] EVENT_WRITE for VisitId d8f691d3-f129-4b93-92a0-d714dd922d92, Context 6e67ddb2-c5ed-4ca4-8677-4f3c63e84b42:0
+2026-04-30 14:00:42.979 +05:30 [INF] [ProjectorDebug] Processing Event Type: VISIT_CREATED, BranchId: "a0000000-0000-0000-0000-000000000001", SourceId: null, SourceType: null, VisitId: d8f691d3-f129-4b93-92a0-d714dd922d92
+2026-04-30 14:00:43.230 +05:30 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2026-04-30 14:00:43.443 +05:30 [WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+2026-04-30 14:00:43.609 +05:30 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2026-04-30 14:00:43.613 +05:30 [INF] [ProjectorDebug] Processing Event Type: VISIT_STARTED, BranchId: "a0000000-0000-0000-0000-000000000001", SourceId: null, SourceType: null, VisitId: d8f691d3-f129-4b93-92a0-d714dd922d92
+2026-04-30 14:00:43.662 +05:30 [WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+2026-04-30 14:00:46.916 +05:30 [INF] EVENT_WRITE for VisitId d8f691d3-f129-4b93-92a0-d714dd922d92, Context 2e79efdb-f5d1-4151-b523-4b6f3b912474:0
+2026-04-30 14:00:46.982 +05:30 [INF] [ProjectorDebug] Processing Event Type: VISIT_UPDATED, BranchId: "a0000000-0000-0000-0000-000000000001", SourceId: null, SourceType: null, VisitId: d8f691d3-f129-4b93-92a0-d714dd922d92
+2026-04-30 14:00:47.001 +05:30 [WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+2026-04-30 14:00:50.774 +05:30 [INF] TRACE: AddTestToVisitAsync called. visitId="d8f691d3-f129-4b93-92a0-d714dd922d92", testCode=LFT
+2026-04-30 14:00:50.837 +05:30 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2026-04-30 14:00:50.898 +05:30 [INF] [ExpansionDebug] Starting expansion for LFT. isChild: False, parentOrderId: 
+2026-04-30 14:00:50.971 +05:30 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2026-04-30 14:00:51.030 +05:30 [WRN] [Validation] Resolving Test: LFT, IsProfile: True, HasChildren: True, SpecimenType: SERUM
+2026-04-30 14:00:51.035 +05:30 [INF] [ExpansionDebug] Creating Order entry: LFT, ID: e974b341-1ef8-414a-a54f-7a6d0309be05, Parent: 
+2026-04-30 14:00:51.109 +05:30 [INF] [ExpansionDebug] Order LFT added to context and local collection.
+2026-04-30 14:00:51.115 +05:30 [INF] [ExpansionDebug] Test LFT is a Profile. Children found in cache: 6
+2026-04-30 14:00:51.118 +05:30 [INF] [ExpansionDebug] Expanding child: BIL_I (ID: afe654f1-8315-4f34-be83-574a6e65ee18) for parent: LFT
+2026-04-30 14:00:51.120 +05:30 [INF] [ExpansionDebug] Starting expansion for BIL_I. isChild: True, parentOrderId: e974b341-1ef8-414a-a54f-7a6d0309be05
+2026-04-30 14:00:51.122 +05:30 [WRN] [Validation] Resolving Test: BIL_I, IsProfile: False, HasChildren: False, SpecimenType: SERUM
+2026-04-30 14:00:51.131 +05:30 [INF] [ExpansionDebug] Creating Order entry: BIL_I, ID: 78af48b5-45d7-46c7-ae70-ea43edd16b15, Parent: e974b341-1ef8-414a-a54f-7a6d0309be05
+2026-04-30 14:00:51.134 +05:30 [INF] [ExpansionDebug] Order BIL_I added to context and local collection.
+2026-04-30 14:00:51.137 +05:30 [INF] [ExpansionDebug] Expanding child: BIL_T (ID: 0cd1e6e5-5c90-41c4-baff-5c4b00884f9b) for parent: LFT
+2026-04-30 14:00:51.139 +05:30 [INF] [ExpansionDebug] Starting expansion for BIL_T. isChild: True, parentOrderId: e974b341-1ef8-414a-a54f-7a6d0309be05
+2026-04-30 14:00:51.148 +05:30 [WRN] [Validation] Resolving Test: BIL_T, IsProfile: False, HasChildren: False, SpecimenType: SERUM
+2026-04-30 14:00:51.151 +05:30 [INF] [ExpansionDebug] Creating Order entry: BIL_T, ID: 2ae2ce91-c29a-4c48-9bb0-ea421612a9d5, Parent: e974b341-1ef8-414a-a54f-7a6d0309be05
+2026-04-30 14:00:51.153 +05:30 [INF] [ExpansionDebug] Order BIL_T added to context and local collection.
+2026-04-30 14:00:51.156 +05:30 [INF] [ExpansionDebug] Expanding child: BIL_D (ID: 76b5e91f-6c2a-4633-82b7-d69503dcc0e0) for parent: LFT
+2026-04-30 14:00:51.164 +05:30 [INF] [ExpansionDebug] Starting expansion for BIL_D. isChild: True, parentOrderId: e974b341-1ef8-414a-a54f-7a6d0309be05
+2026-04-30 14:00:51.167 +05:30 [WRN] [Validation] Resolving Test: BIL_D, IsProfile: False, HasChildren: False, SpecimenType: SERUM
+2026-04-30 14:00:51.169 +05:30 [INF] [ExpansionDebug] Creating Order entry: BIL_D, ID: 2be17d25-a079-490e-a2aa-57f4a4e60a4d, Parent: e974b341-1ef8-414a-a54f-7a6d0309be05
+2026-04-30 14:00:51.172 +05:30 [INF] [ExpansionDebug] Order BIL_D added to context and local collection.
+2026-04-30 14:00:51.181 +05:30 [INF] [ExpansionDebug] Expanding child: GLOB (ID: 533070e2-fb65-42ab-a988-93d6a87562cf) for parent: LFT
+2026-04-30 14:00:51.184 +05:30 [INF] [ExpansionDebug] Starting expansion for GLOB. isChild: True, parentOrderId: e974b341-1ef8-414a-a54f-7a6d0309be05
+2026-04-30 14:00:51.186 +05:30 [WRN] [Validation] Resolving Test: GLOB, IsProfile: False, HasChildren: False, SpecimenType: SERUM
+2026-04-30 14:00:51.189 +05:30 [INF] [ExpansionDebug] Creating Order entry: GLOB, ID: 754fb3ed-3848-4e77-bf49-d859ca2d51e3, Parent: e974b341-1ef8-414a-a54f-7a6d0309be05
+2026-04-30 14:00:51.199 +05:30 [INF] [ExpansionDebug] Order GLOB added to context and local collection.
+2026-04-30 14:00:51.201 +05:30 [INF] [ExpansionDebug] Expanding child: ALB (ID: fa7c3695-9908-4802-be93-b01640d62a26) for parent: LFT
+2026-04-30 14:00:51.204 +05:30 [INF] [ExpansionDebug] Starting expansion for ALB. isChild: True, parentOrderId: e974b341-1ef8-414a-a54f-7a6d0309be05
+2026-04-30 14:00:51.206 +05:30 [WRN] [Validation] Resolving Test: ALB, IsProfile: False, HasChildren: False, SpecimenType: SERUM
+2026-04-30 14:00:51.216 +05:30 [INF] [ExpansionDebug] Creating Order entry: ALB, ID: a426c6a0-8e9d-4ef3-8f27-1fda1c9264fb, Parent: e974b341-1ef8-414a-a54f-7a6d0309be05
+2026-04-30 14:00:51.218 +05:30 [INF] [ExpansionDebug] Order ALB added to context and local collection.
+2026-04-30 14:00:51.221 +05:30 [INF] [ExpansionDebug] Expanding child: TP (ID: 4a44e3ac-9c64-4d52-b831-325cbce7f049) for parent: LFT
+2026-04-30 14:00:51.223 +05:30 [INF] [ExpansionDebug] Starting expansion for TP. isChild: True, parentOrderId: e974b341-1ef8-414a-a54f-7a6d0309be05
+2026-04-30 14:00:51.232 +05:30 [WRN] [Validation] Resolving Test: TP, IsProfile: False, HasChildren: False, SpecimenType: SERUM
+2026-04-30 14:00:51.234 +05:30 [INF] [ExpansionDebug] Creating Order entry: TP, ID: 05ec512f-98fc-4bcb-add9-9234f584d028, Parent: e974b341-1ef8-414a-a54f-7a6d0309be05
+2026-04-30 14:00:51.237 +05:30 [INF] [ExpansionDebug] Order TP added to context and local collection.
+2026-04-30 14:00:51.318 +05:30 [INF] TRACE: SaveChangesAsync reached. Affected rows: 7
+2026-04-30 14:00:55.821 +05:30 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2026-04-30 14:00:56.038 +05:30 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2026-04-30 14:00:56.437 +05:30 [INF] EVENT_WRITE for VisitId d8f691d3-f129-4b93-92a0-d714dd922d92, Context fab5b575-8c92-4e9a-9850-cd28e6d0057a:0
+2026-04-30 14:00:56.475 +05:30 [INF] [ProjectorDebug] Processing Event Type: PAYMENT_RECEIVED, BranchId: "a0000000-0000-0000-0000-000000000001", SourceId: "468ef984-124b-49b9-8451-cfa54dcc04f1", SourceType: RevenueFact, VisitId: d8f691d3-f129-4b93-92a0-d714dd922d92
+2026-04-30 14:00:56.518 +05:30 [INF] [ProjectorDebug] Checking Fact Deduplication for SourceId: "468ef984-124b-49b9-8451-cfa54dcc04f1"
+2026-04-30 14:00:56.569 +05:30 [WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+2026-04-30 14:00:56.724 +05:30 [INF] [DebugSpecimen] Planning for Visit d8f691d3-f129-4b93-92a0-d714dd922d92, Active Orders: 7
+2026-04-30 14:00:56.908 +05:30 [INF] Creating unclaimed work assignment for "SampleCollection" ("d8f691d3-f129-4b93-92a0-d714dd922d92") in Pathology
+2026-04-30 14:00:57.091 +05:30 [WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+2026-04-30 14:00:57.118 +05:30 [INF] EVENT_WRITE for VisitId d8f691d3-f129-4b93-92a0-d714dd922d92, Context fab5b575-8c92-4e9a-9850-cd28e6d0057a:0
+2026-04-30 14:00:57.126 +05:30 [WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+2026-04-30 14:00:57.155 +05:30 [INF] TransitionToSpecimenPlanned: Successfully planned 1 specimens for Visit "d8f691d3-f129-4b93-92a0-d714dd922d92". Assignment: "2c8e27df-b340-48e7-9773-c1048ba5ef30"
+2026-04-30 14:00:57.248 +05:30 [INF] EVENT_WRITE for VisitId d8f691d3-f129-4b93-92a0-d714dd922d92, Context fab5b575-8c92-4e9a-9850-cd28e6d0057a:0
+2026-04-30 14:00:57.305 +05:30 [INF] [ProjectorDebug] Processing Event Type: VISIT_FINALIZED, BranchId: "a0000000-0000-0000-0000-000000000001", SourceId: null, SourceType: null, VisitId: d8f691d3-f129-4b93-92a0-d714dd922d92
+2026-04-30 14:00:57.339 +05:30 [INF] Publishing PrintThermalReceiptEvent to Branch-a0000000-0000-0000-0000-000000000001-Lead-Thermal80mm (VisitId: "d8f691d3-f129-4b93-92a0-d714dd922d92")
+2026-04-30 14:00:57.344 +05:30 [WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+2026-04-30 14:01:04.892 +05:30 [INF] EVENT_WRITE for VisitId ee246d22-28cb-4498-a0f6-9d3585d1a3c6, Context 63c3c008-b5d9-4fce-8ef4-562e9c7b9b0b:0
+2026-04-30 14:01:04.933 +05:30 [INF] EVENT_WRITE for VisitId ee246d22-28cb-4498-a0f6-9d3585d1a3c6, Context 63c3c008-b5d9-4fce-8ef4-562e9c7b9b0b:0
+2026-04-30 14:01:04.934 +05:30 [INF] [ProjectorDebug] Processing Event Type: VISIT_CREATED, BranchId: "a0000000-0000-0000-0000-000000000001", SourceId: null, SourceType: null, VisitId: ee246d22-28cb-4498-a0f6-9d3585d1a3c6
+2026-04-30 14:01:04.967 +05:30 [WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+2026-04-30 14:01:04.993 +05:30 [INF] [ProjectorDebug] Processing Event Type: VISIT_STARTED, BranchId: "a0000000-0000-0000-0000-000000000001", SourceId: null, SourceType: null, VisitId: ee246d22-28cb-4498-a0f6-9d3585d1a3c6
+2026-04-30 14:01:05.009 +05:30 [WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+2026-04-30 14:01:08.557 +05:30 [INF] EVENT_WRITE for VisitId ee246d22-28cb-4498-a0f6-9d3585d1a3c6, Context b902b51c-a13d-4681-a856-b837dae4db95:0
+2026-04-30 14:01:08.615 +05:30 [INF] [ProjectorDebug] Processing Event Type: VISIT_UPDATED, BranchId: "a0000000-0000-0000-0000-000000000001", SourceId: null, SourceType: null, VisitId: ee246d22-28cb-4498-a0f6-9d3585d1a3c6
+2026-04-30 14:01:08.635 +05:30 [WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+2026-04-30 14:01:13.590 +05:30 [INF] TRACE: AddTestToVisitAsync called. visitId="ee246d22-28cb-4498-a0f6-9d3585d1a3c6", testCode=LFT
+2026-04-30 14:01:13.629 +05:30 [INF] [ExpansionDebug] Starting expansion for LFT. isChild: False, parentOrderId: 
+2026-04-30 14:01:13.675 +05:30 [WRN] [Validation] Resolving Test: LFT, IsProfile: True, HasChildren: True, SpecimenType: SERUM
+2026-04-30 14:01:13.681 +05:30 [INF] [ExpansionDebug] Creating Order entry: LFT, ID: ff03f0bc-539c-45ab-824c-fa846864ad6c, Parent: 
+2026-04-30 14:01:13.685 +05:30 [INF] [ExpansionDebug] Order LFT added to context and local collection.
+2026-04-30 14:01:13.687 +05:30 [INF] [ExpansionDebug] Test LFT is a Profile. Children found in cache: 6
+2026-04-30 14:01:13.690 +05:30 [INF] [ExpansionDebug] Expanding child: BIL_I (ID: afe654f1-8315-4f34-be83-574a6e65ee18) for parent: LFT
+2026-04-30 14:01:13.695 +05:30 [INF] [ExpansionDebug] Starting expansion for BIL_I. isChild: True, parentOrderId: ff03f0bc-539c-45ab-824c-fa846864ad6c
+2026-04-30 14:01:13.699 +05:30 [WRN] [Validation] Resolving Test: BIL_I, IsProfile: False, HasChildren: False, SpecimenType: SERUM
+2026-04-30 14:01:13.702 +05:30 [INF] [ExpansionDebug] Creating Order entry: BIL_I, ID: c48bbb91-359c-4d0b-9b00-bf04d6eb25ce, Parent: ff03f0bc-539c-45ab-824c-fa846864ad6c
+2026-04-30 14:01:13.705 +05:30 [INF] [ExpansionDebug] Order BIL_I added to context and local collection.
+2026-04-30 14:01:13.707 +05:30 [INF] [ExpansionDebug] Expanding child: BIL_T (ID: 0cd1e6e5-5c90-41c4-baff-5c4b00884f9b) for parent: LFT
+2026-04-30 14:01:13.716 +05:30 [INF] [ExpansionDebug] Starting expansion for BIL_T. isChild: True, parentOrderId: ff03f0bc-539c-45ab-824c-fa846864ad6c
+2026-04-30 14:01:13.719 +05:30 [WRN] [Validation] Resolving Test: BIL_T, IsProfile: False, HasChildren: False, SpecimenType: SERUM
+2026-04-30 14:01:13.721 +05:30 [INF] [ExpansionDebug] Creating Order entry: BIL_T, ID: a5ca16b9-ef22-4615-8105-ef1b5323be95, Parent: ff03f0bc-539c-45ab-824c-fa846864ad6c
+2026-04-30 14:01:13.724 +05:30 [INF] [ExpansionDebug] Order BIL_T added to context and local collection.
+2026-04-30 14:01:13.736 +05:30 [INF] [ExpansionDebug] Expanding child: BIL_D (ID: 76b5e91f-6c2a-4633-82b7-d69503dcc0e0) for parent: LFT
+2026-04-30 14:01:13.738 +05:30 [INF] [ExpansionDebug] Starting expansion for BIL_D. isChild: True, parentOrderId: ff03f0bc-539c-45ab-824c-fa846864ad6c
+2026-04-30 14:01:13.751 +05:30 [WRN] [Validation] Resolving Test: BIL_D, IsProfile: False, HasChildren: False, SpecimenType: SERUM
+2026-04-30 14:01:13.754 +05:30 [INF] [ExpansionDebug] Creating Order entry: BIL_D, ID: 040ee2a8-402a-4511-84f6-7f11ab2d8616, Parent: ff03f0bc-539c-45ab-824c-fa846864ad6c
+2026-04-30 14:01:13.757 +05:30 [INF] [ExpansionDebug] Order BIL_D added to context and local collection.
+2026-04-30 14:01:13.771 +05:30 [INF] [ExpansionDebug] Expanding child: GLOB (ID: 533070e2-fb65-42ab-a988-93d6a87562cf) for parent: LFT
+2026-04-30 14:01:13.774 +05:30 [INF] [ExpansionDebug] Starting expansion for GLOB. isChild: True, parentOrderId: ff03f0bc-539c-45ab-824c-fa846864ad6c
+2026-04-30 14:01:13.786 +05:30 [WRN] [Validation] Resolving Test: GLOB, IsProfile: False, HasChildren: False, SpecimenType: SERUM
+2026-04-30 14:01:13.788 +05:30 [INF] [ExpansionDebug] Creating Order entry: GLOB, ID: 20853672-2268-47e4-9368-61e38dbd9f0a, Parent: ff03f0bc-539c-45ab-824c-fa846864ad6c
+2026-04-30 14:01:13.790 +05:30 [INF] [ExpansionDebug] Order GLOB added to context and local collection.
+2026-04-30 14:01:13.805 +05:30 [INF] [ExpansionDebug] Expanding child: ALB (ID: fa7c3695-9908-4802-be93-b01640d62a26) for parent: LFT
+2026-04-30 14:01:13.807 +05:30 [INF] [ExpansionDebug] Starting expansion for ALB. isChild: True, parentOrderId: ff03f0bc-539c-45ab-824c-fa846864ad6c
+2026-04-30 14:01:13.820 +05:30 [WRN] [Validation] Resolving Test: ALB, IsProfile: False, HasChildren: False, SpecimenType: SERUM
+2026-04-30 14:01:13.822 +05:30 [INF] [ExpansionDebug] Creating Order entry: ALB, ID: 14f1e8b5-5dbe-4df3-95fd-509a6faee8b1, Parent: ff03f0bc-539c-45ab-824c-fa846864ad6c
+2026-04-30 14:01:13.835 +05:30 [INF] [ExpansionDebug] Order ALB added to context and local collection.
+2026-04-30 14:01:13.837 +05:30 [INF] [ExpansionDebug] Expanding child: TP (ID: 4a44e3ac-9c64-4d52-b831-325cbce7f049) for parent: LFT
+2026-04-30 14:01:13.840 +05:30 [INF] [ExpansionDebug] Starting expansion for TP. isChild: True, parentOrderId: ff03f0bc-539c-45ab-824c-fa846864ad6c
+2026-04-30 14:01:13.852 +05:30 [WRN] [Validation] Resolving Test: TP, IsProfile: False, HasChildren: False, SpecimenType: SERUM
+2026-04-30 14:01:13.855 +05:30 [INF] [ExpansionDebug] Creating Order entry: TP, ID: 7baf5d40-22ee-405a-80c7-6db3b2da6741, Parent: ff03f0bc-539c-45ab-824c-fa846864ad6c
+2026-04-30 14:01:13.866 +05:30 [INF] [ExpansionDebug] Order TP added to context and local collection.
+2026-04-30 14:01:13.923 +05:30 [INF] TRACE: SaveChangesAsync reached. Affected rows: 7
+2026-04-30 14:01:17.093 +05:30 [INF] EVENT_WRITE for VisitId ee246d22-28cb-4498-a0f6-9d3585d1a3c6, Context a18b0499-eeb4-4a3b-98c8-86618ea39332:0
+2026-04-30 14:01:17.240 +05:30 [INF] [ProjectorDebug] Processing Event Type: PAYMENT_RECEIVED, BranchId: "a0000000-0000-0000-0000-000000000001", SourceId: "0bf380c3-ff55-43da-b59f-8ef58ef10437", SourceType: RevenueFact, VisitId: ee246d22-28cb-4498-a0f6-9d3585d1a3c6
+2026-04-30 14:01:17.291 +05:30 [INF] [DebugSpecimen] Planning for Visit ee246d22-28cb-4498-a0f6-9d3585d1a3c6, Active Orders: 7
+2026-04-30 14:01:17.306 +05:30 [INF] [ProjectorDebug] Checking Fact Deduplication for SourceId: "0bf380c3-ff55-43da-b59f-8ef58ef10437"
+2026-04-30 14:01:17.319 +05:30 [INF] Creating unclaimed work assignment for "SampleCollection" ("ee246d22-28cb-4498-a0f6-9d3585d1a3c6") in Pathology
+2026-04-30 14:01:17.337 +05:30 [WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+2026-04-30 14:01:17.355 +05:30 [WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+2026-04-30 14:01:17.369 +05:30 [INF] EVENT_WRITE for VisitId ee246d22-28cb-4498-a0f6-9d3585d1a3c6, Context a18b0499-eeb4-4a3b-98c8-86618ea39332:0
+2026-04-30 14:01:17.391 +05:30 [WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+2026-04-30 14:01:17.420 +05:30 [INF] TransitionToSpecimenPlanned: Successfully planned 1 specimens for Visit "ee246d22-28cb-4498-a0f6-9d3585d1a3c6". Assignment: "b8bafacc-8b7b-4d2c-8875-01c388d93288"
+2026-04-30 14:01:17.482 +05:30 [INF] EVENT_WRITE for VisitId ee246d22-28cb-4498-a0f6-9d3585d1a3c6, Context a18b0499-eeb4-4a3b-98c8-86618ea39332:0
+2026-04-30 14:01:17.521 +05:30 [INF] Publishing PrintThermalReceiptEvent to Branch-a0000000-0000-0000-0000-000000000001-Lead-Thermal80mm (VisitId: "ee246d22-28cb-4498-a0f6-9d3585d1a3c6")
+2026-04-30 14:01:17.522 +05:30 [INF] [ProjectorDebug] Processing Event Type: VISIT_FINALIZED, BranchId: "a0000000-0000-0000-0000-000000000001", SourceId: null, SourceType: null, VisitId: ee246d22-28cb-4498-a0f6-9d3585d1a3c6
+2026-04-30 14:01:17.543 +05:30 [WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+2026-04-30 14:01:23.738 +05:30 [INF] EVENT_WRITE for VisitId 72c3dd02-5e0c-4690-ac87-f8246d5ba171, Context 6b23cf11-f913-4e52-9e6d-5a3649c06ae5:0
+2026-04-30 14:01:23.781 +05:30 [INF] [ProjectorDebug] Processing Event Type: VISIT_CREATED, BranchId: "a0000000-0000-0000-0000-000000000001", SourceId: null, SourceType: null, VisitId: 72c3dd02-5e0c-4690-ac87-f8246d5ba171
+2026-04-30 14:01:23.797 +05:30 [INF] EVENT_WRITE for VisitId 72c3dd02-5e0c-4690-ac87-f8246d5ba171, Context 6b23cf11-f913-4e52-9e6d-5a3649c06ae5:0
+2026-04-30 14:01:23.940 +05:30 [WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+2026-04-30 14:01:24.059 +05:30 [INF] [ProjectorDebug] Processing Event Type: VISIT_STARTED, BranchId: "a0000000-0000-0000-0000-000000000001", SourceId: null, SourceType: null, VisitId: 72c3dd02-5e0c-4690-ac87-f8246d5ba171
+2026-04-30 14:01:24.199 +05:30 [WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+2026-04-30 14:01:29.648 +05:30 [INF] EVENT_WRITE for VisitId 72c3dd02-5e0c-4690-ac87-f8246d5ba171, Context be0de1a7-2ffc-4fd1-aac8-48d4d0ae979a:0
+2026-04-30 14:01:29.713 +05:30 [INF] [ProjectorDebug] Processing Event Type: VISIT_UPDATED, BranchId: "a0000000-0000-0000-0000-000000000001", SourceId: null, SourceType: null, VisitId: 72c3dd02-5e0c-4690-ac87-f8246d5ba171
+2026-04-30 14:01:29.735 +05:30 [WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+2026-04-30 14:01:32.864 +05:30 [INF] TRACE: AddTestToVisitAsync called. visitId="72c3dd02-5e0c-4690-ac87-f8246d5ba171", testCode=LFT
+2026-04-30 14:01:32.934 +05:30 [INF] [ExpansionDebug] Starting expansion for LFT. isChild: False, parentOrderId: 
+2026-04-30 14:01:33.004 +05:30 [WRN] [Validation] Resolving Test: LFT, IsProfile: True, HasChildren: True, SpecimenType: SERUM
+2026-04-30 14:01:33.016 +05:30 [INF] [ExpansionDebug] Creating Order entry: LFT, ID: 5476c7d2-5238-4525-8a91-0b687ebc0863, Parent: 
+2026-04-30 14:01:33.019 +05:30 [INF] [ExpansionDebug] Order LFT added to context and local collection.
+2026-04-30 14:01:33.021 +05:30 [INF] [ExpansionDebug] Test LFT is a Profile. Children found in cache: 6
+2026-04-30 14:01:33.036 +05:30 [INF] [ExpansionDebug] Expanding child: BIL_I (ID: afe654f1-8315-4f34-be83-574a6e65ee18) for parent: LFT
+2026-04-30 14:01:33.051 +05:30 [INF] [ExpansionDebug] Starting expansion for BIL_I. isChild: True, parentOrderId: 5476c7d2-5238-4525-8a91-0b687ebc0863
+2026-04-30 14:01:33.053 +05:30 [WRN] [Validation] Resolving Test: BIL_I, IsProfile: False, HasChildren: False, SpecimenType: SERUM
+2026-04-30 14:01:33.064 +05:30 [INF] [ExpansionDebug] Creating Order entry: BIL_I, ID: b29f9424-2e4b-493a-9c05-28015c04f489, Parent: 5476c7d2-5238-4525-8a91-0b687ebc0863
+2026-04-30 14:01:33.067 +05:30 [INF] [ExpansionDebug] Order BIL_I added to context and local collection.
+2026-04-30 14:01:33.070 +05:30 [INF] [ExpansionDebug] Expanding child: BIL_T (ID: 0cd1e6e5-5c90-41c4-baff-5c4b00884f9b) for parent: LFT
+2026-04-30 14:01:33.078 +05:30 [INF] [ExpansionDebug] Starting expansion for BIL_T. isChild: True, parentOrderId: 5476c7d2-5238-4525-8a91-0b687ebc0863
+2026-04-30 14:01:33.082 +05:30 [WRN] [Validation] Resolving Test: BIL_T, IsProfile: False, HasChildren: False, SpecimenType: SERUM
+2026-04-30 14:01:33.084 +05:30 [INF] [ExpansionDebug] Creating Order entry: BIL_T, ID: 36375c8a-87ee-40dc-b29c-034677df5a0e, Parent: 5476c7d2-5238-4525-8a91-0b687ebc0863
+2026-04-30 14:01:33.087 +05:30 [INF] [ExpansionDebug] Order BIL_T added to context and local collection.
+2026-04-30 14:01:33.096 +05:30 [INF] [ExpansionDebug] Expanding child: BIL_D (ID: 76b5e91f-6c2a-4633-82b7-d69503dcc0e0) for parent: LFT
+2026-04-30 14:01:33.100 +05:30 [INF] [ExpansionDebug] Starting expansion for BIL_D. isChild: True, parentOrderId: 5476c7d2-5238-4525-8a91-0b687ebc0863
+2026-04-30 14:01:33.102 +05:30 [WRN] [Validation] Resolving Test: BIL_D, IsProfile: False, HasChildren: False, SpecimenType: SERUM
+2026-04-30 14:01:33.105 +05:30 [INF] [ExpansionDebug] Creating Order entry: BIL_D, ID: 482e5b95-a318-45d4-8160-87bfae0d534a, Parent: 5476c7d2-5238-4525-8a91-0b687ebc0863
+2026-04-30 14:01:33.115 +05:30 [INF] [ExpansionDebug] Order BIL_D added to context and local collection.
+2026-04-30 14:01:33.118 +05:30 [INF] [ExpansionDebug] Expanding child: GLOB (ID: 533070e2-fb65-42ab-a988-93d6a87562cf) for parent: LFT
+2026-04-30 14:01:33.120 +05:30 [INF] [ExpansionDebug] Starting expansion for GLOB. isChild: True, parentOrderId: 5476c7d2-5238-4525-8a91-0b687ebc0863
+2026-04-30 14:01:33.122 +05:30 [WRN] [Validation] Resolving Test: GLOB, IsProfile: False, HasChildren: False, SpecimenType: SERUM
+2026-04-30 14:01:33.131 +05:30 [INF] [ExpansionDebug] Creating Order entry: GLOB, ID: 6608ffa5-6b82-4ba9-a5dd-8d6eadb052d4, Parent: 5476c7d2-5238-4525-8a91-0b687ebc0863
+2026-04-30 14:01:33.134 +05:30 [INF] [ExpansionDebug] Order GLOB added to context and local collection.
+2026-04-30 14:01:33.136 +05:30 [INF] [ExpansionDebug] Expanding child: ALB (ID: fa7c3695-9908-4802-be93-b01640d62a26) for parent: LFT
+2026-04-30 14:01:33.139 +05:30 [INF] [ExpansionDebug] Starting expansion for ALB. isChild: True, parentOrderId: 5476c7d2-5238-4525-8a91-0b687ebc0863
+2026-04-30 14:01:33.149 +05:30 [WRN] [Validation] Resolving Test: ALB, IsProfile: False, HasChildren: False, SpecimenType: SERUM
+2026-04-30 14:01:33.151 +05:30 [INF] [ExpansionDebug] Creating Order entry: ALB, ID: f72cb2e0-6100-4834-9d76-1ee1c884d28b, Parent: 5476c7d2-5238-4525-8a91-0b687ebc0863
+2026-04-30 14:01:33.154 +05:30 [INF] [ExpansionDebug] Order ALB added to context and local collection.
+2026-04-30 14:01:33.166 +05:30 [INF] [ExpansionDebug] Expanding child: TP (ID: 4a44e3ac-9c64-4d52-b831-325cbce7f049) for parent: LFT
+2026-04-30 14:01:33.168 +05:30 [INF] [ExpansionDebug] Starting expansion for TP. isChild: True, parentOrderId: 5476c7d2-5238-4525-8a91-0b687ebc0863
+2026-04-30 14:01:33.171 +05:30 [WRN] [Validation] Resolving Test: TP, IsProfile: False, HasChildren: False, SpecimenType: SERUM
+2026-04-30 14:01:33.184 +05:30 [INF] [ExpansionDebug] Creating Order entry: TP, ID: 4dec6ac8-b1ab-40c3-880a-bbbc49bd00ab, Parent: 5476c7d2-5238-4525-8a91-0b687ebc0863
+2026-04-30 14:01:33.187 +05:30 [INF] [ExpansionDebug] Order TP added to context and local collection.
+2026-04-30 14:01:33.202 +05:30 [INF] TRACE: SaveChangesAsync reached. Affected rows: 7
+2026-04-30 14:01:35.540 +05:30 [INF] EVENT_WRITE for VisitId 72c3dd02-5e0c-4690-ac87-f8246d5ba171, Context 52325754-8b94-4bb2-9e3d-b88409d4dbaa:0
+2026-04-30 14:01:35.584 +05:30 [INF] [ProjectorDebug] Processing Event Type: VISIT_FINALIZED, BranchId: "a0000000-0000-0000-0000-000000000001", SourceId: null, SourceType: null, VisitId: 72c3dd02-5e0c-4690-ac87-f8246d5ba171
+2026-04-30 14:01:35.605 +05:30 [WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+2026-04-30 14:01:35.766 +05:30 [INF] EVENT_WRITE for VisitId 72c3dd02-5e0c-4690-ac87-f8246d5ba171, Context 52325754-8b94-4bb2-9e3d-b88409d4dbaa:0
+2026-04-30 14:01:35.806 +05:30 [INF] [ProjectorDebug] Processing Event Type: RECEIVABLE_CREATED, BranchId: "a0000000-0000-0000-0000-000000000001", SourceId: "9d90054a-be0a-4322-b017-bacd1b532e2f", SourceType: ReceivableFact, VisitId: 72c3dd02-5e0c-4690-ac87-f8246d5ba171
+2026-04-30 14:01:35.829 +05:30 [INF] [ProjectorDebug] Checking Fact Deduplication for SourceId: "9d90054a-be0a-4322-b017-bacd1b532e2f"
+2026-04-30 14:01:35.852 +05:30 [WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+2026-04-30 17:35:31.176 +05:30 [INF] Terminal web-1zy6xxtky authorized and added to Thermal80mm group for Branch "a0000000-0000-0000-0000-000000000001".

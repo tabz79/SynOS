@@ -185,6 +185,7 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IAdminUserService, AdminUserService>(); 
 builder.Services.AddScoped<IOperationsEngine, OperationsEngine>(); // ADDED
 builder.Services.AddScoped<IDashboardService, DashboardService>(); // Auto-wired OK
+builder.Services.AddScoped<IControlTowerService, ControlTowerService>();
 builder.Services.AddScoped<IDashboardNotificationService, SignalRDashboardNotificationService>(); // ADDED: Phase 2
 builder.Services.AddScoped<INotifier, SignalRNotifier>(); // ADDED: Action Queue Refresh
 builder.Services.AddSingleton<SynOS.Services.Operational.IOperationalEventChannel, SynOS.Services.Operational.OperationalEventChannel>(); // ADDED: Event-Driven Projection
@@ -320,7 +321,7 @@ builder.Services.AddScoped<IPrintService, StubPrintService>();
 // Register Domain Event Publishing
 builder.Services.AddScoped<IEventPublishingService, SynOS.Api.Services.EventPublishingService>();
 
-// builder.Services.AddHostedService<NotificationWorkerService>();
+builder.Services.AddHostedService<NotificationWorkerService>();
 // builder.Services.AddHostedService<ExpiredLockCleanupService>();
 // builder.Services.AddHostedService<AnalyzerTcpListenerService>();
 builder.Services.AddHostedService<OperationalStatsProjectionWorker>();

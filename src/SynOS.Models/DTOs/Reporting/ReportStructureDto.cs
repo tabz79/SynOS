@@ -16,6 +16,7 @@ namespace SynOS.Models.DTOs.Reporting
         public string? SignedBy { get; set; }
         public bool CanEditValues { get; set; }
         public bool IsPhysicallyVerified { get; set; }
+        public bool IsManualFlow { get; set; }
     }
 
     public class PatientHeaderDto
@@ -24,6 +25,7 @@ namespace SynOS.Models.DTOs.Reporting
         public string MRN { get; set; } = string.Empty;
         public int Age { get; set; }
         public string Gender { get; set; } = string.Empty;
+        public string? Phone { get; set; }
     }
 
     public class ReportGroupDto

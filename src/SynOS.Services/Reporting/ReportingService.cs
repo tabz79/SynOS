@@ -67,6 +67,12 @@ namespace SynOS.Services.Reporting
                             "Clinical integrity fault: Snapshot deserialized to an empty or invalid clinical structure.",
                             latestVersion.ReportVersionId);
                     }
+
+                    // GPT-5: Overlay live delivery status onto immutable clinical snapshot
+                    snapshotData.IsPhysicallyVerified = report.IsPhysicallyVerified;
+                    snapshotData.IsManualFlow = report.IsManualFlow;
+                    snapshotData.Status = report.Status;
+                    
                     return snapshotData;
                 }
                 catch (JsonException ex)
@@ -209,12 +215,14 @@ namespace SynOS.Services.Reporting
                 SignedBy = report.SignedByUserId?.ToString(),
                 CanEditValues = false, // Default to false
                 IsPhysicallyVerified = report.IsPhysicallyVerified,
+                IsManualFlow = report.IsManualFlow,
                 Patient = new PatientHeaderDto
                 {
                     Name = $"{visit.Patient.FirstName} {visit.Patient.LastName}",
                     MRN = visit.Patient.MRN,
                     Age = CalculateAge(visit.Patient.DateOfBirth),
-                    Gender = visit.Patient.Gender
+                    Gender = visit.Patient.Gender,
+                    Phone = visit.Patient.CurrentPhoneNumber
                 }
             };
             var groups = new Dictionary<string, ReportGroupDto>();
