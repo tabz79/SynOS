@@ -737,12 +737,12 @@ namespace SynOS.Data
             // Report Module
             modelBuilder.Entity<Report>(entity =>
             {
-                entity.HasIndex(e => new { e.SourceType, e.SourceId }).IsUnique(); // New unique index
+                entity.HasIndex(e => new { e.SourceType, e.SourceId }).IsUnique();
                 entity.HasOne(e => e.SignedBy).WithMany().HasForeignKey(e => e.SignedByUserId).OnDelete(DeleteBehavior.Restrict);
                 entity.HasOne(e => e.TypedByUser).WithMany().HasForeignKey(e => e.TypedByUserId).OnDelete(DeleteBehavior.Restrict);
                 entity.HasOne(e => e.VerifiedByUser).WithMany().HasForeignKey(e => e.VerifiedByUserId).OnDelete(DeleteBehavior.Restrict);
-                entity.HasOne<Visit>().WithMany().HasForeignKey(e => e.VisitId).OnDelete(DeleteBehavior.Restrict); // FK for VisitId
-                entity.HasOne<Patient>().WithMany().HasForeignKey(e => e.PatientId).OnDelete(DeleteBehavior.Restrict); // FK for PatientId
+                entity.HasOne(e => e.Visit).WithMany().HasForeignKey(e => e.VisitId).OnDelete(DeleteBehavior.Restrict);
+                entity.HasOne<Patient>().WithMany().HasForeignKey(e => e.PatientId).OnDelete(DeleteBehavior.Restrict);
             });
 
             modelBuilder.Entity<ReportVersion>(entity =>

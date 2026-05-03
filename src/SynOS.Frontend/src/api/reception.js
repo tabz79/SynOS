@@ -11,6 +11,9 @@ export const ReceptionApi = {
             if (mode === "oversight") {
                 const branchId = localStorage.getItem('synos_oversight_branch_id');
                 if (branchId && branchId !== 'undefined') {
+                    // Prevent duplication: Check if branchId or BranchId is already in the URL
+                    if (url.toLowerCase().includes('branchid=')) return url;
+                    
                     const separator = url.includes('?') ? '&' : '?';
                     return `${url}${separator}branchId=${branchId}`;
                 }
@@ -279,9 +282,8 @@ export const ReceptionApi = {
      * @returns {Promise<Array>}
      */
     getActivityStream: async () => {
-        // FIX: Using correct Default Branch GUID provided by user
-        const branchGuid = "A0000000-0000-0000-0000-000000000001";
-        const url = ReceptionApi.withBranchId(`/api/v1/branch/activity?branchId=${branchGuid}`);
+        // PER CANON: Helper withBranchId handles the context dynamically
+        const url = ReceptionApi.withBranchId('/api/v1/branch/activity');
         const response = await fetch(url, {
             headers: ReceptionApi.getHeaders()
         });
@@ -314,8 +316,7 @@ export const ReceptionApi = {
      * @returns {Promise<Array>}
      */
     getOperationalTimeline: async () => {
-        const branchGuid = "A0000000-0000-0000-0000-000000000001"; // TODO: Context
-        const url = ReceptionApi.withBranchId(`/api/v1/branch/activity/timeline?branchId=${branchGuid}`);
+        const url = ReceptionApi.withBranchId('/api/v1/branch/activity/timeline');
         const response = await fetch(url, {
             headers: ReceptionApi.getHeaders()
         });
@@ -551,7 +552,7 @@ export const ReceptionApi = {
      * @returns {Promise<Array>}
      */
     getBranches: async () => {
-        const response = await fetch('/api/v1/admin/branches', {
+        const response = await fetch('/api/v1/admin/users/branches', {
             headers: ReceptionApi.getHeaders()
         });
         if (!response.ok) throw new Error("Failed to load branches");

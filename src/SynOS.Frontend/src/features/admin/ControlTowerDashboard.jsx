@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { cn } from "@/lib/utils";
 import { useTheme } from "@/context/ThemeContext";
+import { ReceptionApi } from "@/api/reception";
 
 export function ControlTowerDashboard() {
     const { theme } = useTheme();
@@ -37,12 +38,15 @@ export function ControlTowerDashboard() {
     const fetchSummary = async () => {
         try {
             const token = localStorage.getItem('synos_jwt');
-            const response = await fetch('/api/v1/dashboard/control-tower/summary', {
+            const url = ReceptionApi.withBranchId('/api/v1/dashboard/control-tower/summary');
+            const response = await fetch(url, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             if (response.ok) {
                 const data = await response.json();
                 setSummary(data);
+            } else {
+                console.error("Dashboard fetch failed:", response.status);
             }
         } catch (error) {
             console.error("Failed to fetch summary:", error);
@@ -68,8 +72,8 @@ export function ControlTowerDashboard() {
     const cards = [
         { title: "Reception", subtitle: "Registration & Billing", icon: UserPlus, data: summary?.reception, path: "/reception", btnText: "Open Reception" },
         { title: "Phlebotomy", subtitle: "Sample Collection", icon: Syringe, data: summary?.phlebotomy, path: "/phlebotomist", btnText: "Open Phlebotomy" },
-        { title: "Lab Workbench", subtitle: "Processing & Testing", icon: Beaker, data: summary?.workbench, path: "/workbench", btnText: "Open Workbench" },
-        { title: "Reports Typing", subtitle: "Data Entry & Review", icon: Keyboard, data: summary?.typist, path: "/typist", btnText: "Open Typing" },
+        { title: "Lab Workbench", subtitle: "Processing & Testing", icon: Beaker, data: summary?.labWorkbench, path: "/workbench", btnText: "Open Workbench" },
+        { title: "Reports Typing", subtitle: "Data Entry & Review", icon: Keyboard, data: summary?.reportsTyping, path: "/typist", btnText: "Open Typing" },
         { title: "Pathologist", subtitle: "Final Validation", icon: UserCheck, data: summary?.pathologist, path: "/pathologist", btnText: "Open Pathologist" },
         { title: "Delivery Desk", subtitle: "Report Dispatch", icon: Truck, data: summary?.delivery, path: "/delivery", btnText: "Open Delivery" },
     ];

@@ -63,6 +63,8 @@ namespace SynOS.Models.Entities
         public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
         public DateTimeOffset? UpdatedAt { get; set; }
 
+        public virtual Visit? Visit { get; set; }
+
         // Navigation property for Radiology-specific report details (1-1 relationship)
         public virtual RadiologyReport? RadiologyReport { get; set; }
         public virtual PathologyReport? PathologyReport { get; set; }

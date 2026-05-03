@@ -1,116 +1,878 @@
 backend logs:
 PS D:\Projects\SynOS-Synthesized-Lab-Intelligence> dotnet run --project src\SynOS.Api\SynOS.Api.csproj --urls "http://127.0.0.1:59999"
-[17:30:30 INF] OperationalStatsProjectionWorker is starting in Event-Driven Mode.
-[17:30:30 INF] Worker: Running Consistency Check and Catch-up...
-[17:30:30 INF] Worker: Catch-up complete. Awaiting real-time events...
-[17:31:28 WRN] Failed to determine the https port for redirect.
-[17:31:31 INF] Terminal web-1zy6xxtky authorized and added to Thermal80mm group for Branch a0000000-0000-0000-0000-000000000001.
-[17:31:37 WRN] ⚠️ FALLBACK: BIL_I | Formula missing | Available Inputs: [BIL_T,GLOB,BIL_I,ALB,BIL_D,TP]
-[17:31:37 WRN] ⚠️ FALLBACK: BIL_I | Formula missing | Available Inputs: [BIL_T,GLOB,BIL_I,ALB,BIL_D,TP]
-[17:31:38 INF] RESULT MAP KEYS → [BIL_T, GLOB, BIL_I, ALB, BIL_D, TP]
-[17:31:38 INF] RESULT MAP KEYS → [BIL_T, GLOB, BIL_I, ALB, BIL_D, TP]
-[17:31:39 WRN] The query uses the 'First'/'FirstOrDefault' operator without 'OrderBy' and filter operators. This may lead to unpredictable results.
-[17:32:53 INF] Terminal web-1zy6xxtky authorized and added to Thermal80mm group for Branch a0000000-0000-0000-0000-000000000001.
-[17:32:53 WRN] ⚠️ FALLBACK: BIL_I | Formula missing | Available Inputs: [BIL_T,GLOB,BIL_I,ALB,BIL_D,TP]
-[17:32:53 INF] RESULT MAP KEYS → [BIL_T, GLOB, BIL_I, ALB, BIL_D, TP]
-[17:32:54 WRN] ⚠️ FALLBACK: BIL_I | Formula missing | Available Inputs: [BIL_T,GLOB,BIL_I,ALB,BIL_D,TP]
-[17:32:54 INF] RESULT MAP KEYS → [BIL_T, GLOB, BIL_I, ALB, BIL_D, TP]
-[17:32:54 WRN] ⚠️ FALLBACK: BIL_I | Formula missing | Available Inputs: [BIL_T,GLOB,BIL_I,ALB,BIL_D,TP]
-[17:32:54 INF] RESULT MAP KEYS → [BIL_T, GLOB, BIL_I, ALB, BIL_D, TP]
-[17:33:18 INF] Terminal web-1zy6xxtky authorized and added to Thermal80mm group for Branch a0000000-0000-0000-0000-000000000001.
-[17:33:19 WRN] ⚠️ FALLBACK: BIL_I | Formula missing | Available Inputs: [BIL_T,GLOB,BIL_I,ALB,BIL_D,TP]
-[17:33:19 WRN] ⚠️ FALLBACK: BIL_I | Formula missing | Available Inputs: [BIL_T,GLOB,BIL_I,ALB,BIL_D,TP]
-[17:33:19 INF] RESULT MAP KEYS → [BIL_T, GLOB, BIL_I, ALB, BIL_D, TP]
-[17:33:19 INF] RESULT MAP KEYS → [BIL_T, GLOB, BIL_I, ALB, BIL_D, TP]
-[17:47:16 WRN] ⚠️ FALLBACK: BIL_I | Formula missing | Available Inputs: [BIL_D,BIL_T,GLOB,TP,BIL_I,ALB]
-[17:47:16 INF] RESULT MAP KEYS → [BIL_D, BIL_T, GLOB, TP, BIL_I, ALB]
-[17:47:27 WRN] ⚠️ FALLBACK: BIL_I | Formula missing | Available Inputs: [BIL_T,GLOB,BIL_I,ALB,BIL_D,TP]
-[17:47:27 WRN] ⚠️ FALLBACK: BIL_I | Formula missing | Available Inputs: [BIL_T,GLOB,BIL_I,ALB,BIL_D,TP]
-[17:47:27 INF] RESULT MAP KEYS → [BIL_T, GLOB, BIL_I, ALB, BIL_D, TP]
-[17:47:27 INF] RESULT MAP KEYS → [BIL_T, GLOB, BIL_I, ALB, BIL_D, TP]
-[17:48:04 ERR] An exception occurred in the database while saving changes for context type 'SynOS.Data.SynOSDbContext'.
-Microsoft.EntityFrameworkCore.DbUpdateException: An error occurred while saving the entity changes. See the inner exception for details.
- ---> Microsoft.Data.SqlClient.SqlException (0x80131904): The UPDATE statement conflicted with the FOREIGN KEY constraint "FK_Reports_Users_VerifiedByUserId". The conflict occurred in database "SynOSDb", table "dbo.Users", column 'UserId'.
-   at Microsoft.Data.SqlClient.SqlConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
-   at Microsoft.Data.SqlClient.SqlInternalConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
-   at Microsoft.Data.SqlClient.TdsParser.ThrowExceptionAndWarning(TdsParserStateObject stateObj, Boolean callerHasConnectionLock, Boolean asyncClose)
-   at Microsoft.Data.SqlClient.TdsParser.TryRun(RunBehavior runBehavior, SqlCommand cmdHandler, SqlDataReader dataStream, BulkCopySimpleResultSet bulkCopyHandler, TdsParserStateObject stateObj, Boolean& dataReady)
-   at Microsoft.Data.SqlClient.SqlDataReader.TryHasMoreRows(Boolean& moreRows)
-   at Microsoft.Data.SqlClient.SqlDataReader.TryReadInternal(Boolean setTimeout, Boolean& more)
-   at Microsoft.Data.SqlClient.SqlDataReader.ReadAsyncExecute(Task task, Object state)
-   at Microsoft.Data.SqlClient.SqlDataReader.InvokeAsyncCall[T](SqlDataReaderBaseAsyncCallContext`1 context)
+[17:12:23 WRN] The foreign key property 'Report.VisitId1' was created in shadow state because a conflicting property with the simple name 'VisitId' exists in the entity type, but is either not mapped, is already used for another relationship, or is incompatible with the associated primary key type. See https://aka.ms/efcore-relationships for information on mapping relationships in EF Core.
+[17:12:25 INF] Notification Worker Service running.
+[17:12:25 INF] OperationalStatsProjectionWorker is starting in Event-Driven Mode.
+[17:12:25 INF] Worker: Running Consistency Check and Catch-up...
+[17:12:26 INF] Worker: Catch-up complete. Awaiting real-time events...
+[17:12:46 WRN] Failed to determine the https port for redirect.
+[17:12:50 ERR] Failed executing DbCommand (16ms) [Parameters=[@__branchId_0='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+SELECT COUNT(*)
+FROM [Reports] AS [r]
+LEFT JOIN [Visits] AS [v] ON [r].[VisitId1] = [v].[VisitId]
+WHERE [v].[VisitId] IS NOT NULL AND [v].[BranchId] = @__branchId_0 AND [r].[Status] = N'Draft'
+[17:12:50 ERR] An exception occurred while iterating over the results of a query for context type 'SynOS.Data.SynOSDbContext'.
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'VisitId1'.
+   at Microsoft.Data.SqlClient.SqlCommand.<>c.<ExecuteDbDataReaderAsync>b__209_0(Task`1 result)
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
 --- End of stack trace from previous location ---
-   at Microsoft.EntityFrameworkCore.Update.AffectedCountModificationCommandBatch.ConsumeResultSetWithRowsAffectedOnlyAsync(Int32 commandIndex, RelationalDataReader reader, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Update.AffectedCountModificationCommandBatch.ConsumeAsync(RelationalDataReader reader, CancellationToken cancellationToken)
-ClientConnectionId:84a6a3e7-e988-444b-b5fa-43db3ffe5488
-Error Number:547,State:0,Class:16
-   --- End of inner exception stack trace ---
-   at Microsoft.EntityFrameworkCore.Update.AffectedCountModificationCommandBatch.ConsumeAsync(RelationalDataReader reader, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Update.ReaderModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Update.ReaderModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.SqlServer.Update.Internal.SqlServerModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.ChangeTracking.Internal.StateManager.SaveChangesAsync(IList`1 entriesToSave, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.ChangeTracking.Internal.StateManager.SaveChangesAsync(StateManager stateManager, Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.DbContext.SaveChangesAsync(Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
-Microsoft.EntityFrameworkCore.DbUpdateException: An error occurred while saving the entity changes. See the inner exception for details.
- ---> Microsoft.Data.SqlClient.SqlException (0x80131904): The UPDATE statement conflicted with the FOREIGN KEY constraint "FK_Reports_Users_VerifiedByUserId". The conflict occurred in database "SynOSDb", table "dbo.Users", column 'UserId'.
-   at Microsoft.Data.SqlClient.SqlConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
-   at Microsoft.Data.SqlClient.SqlInternalConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
-   at Microsoft.Data.SqlClient.TdsParser.ThrowExceptionAndWarning(TdsParserStateObject stateObj, Boolean callerHasConnectionLock, Boolean asyncClose)
-   at Microsoft.Data.SqlClient.TdsParser.TryRun(RunBehavior runBehavior, SqlCommand cmdHandler, SqlDataReader dataStream, BulkCopySimpleResultSet bulkCopyHandler, TdsParserStateObject stateObj, Boolean& dataReady)
-   at Microsoft.Data.SqlClient.SqlDataReader.TryHasMoreRows(Boolean& moreRows)
-   at Microsoft.Data.SqlClient.SqlDataReader.TryReadInternal(Boolean setTimeout, Boolean& more)
-   at Microsoft.Data.SqlClient.SqlDataReader.ReadAsyncExecute(Task task, Object state)
-   at Microsoft.Data.SqlClient.SqlDataReader.InvokeAsyncCall[T](SqlDataReaderBaseAsyncCallContext`1 context)
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
 --- End of stack trace from previous location ---
-   at Microsoft.EntityFrameworkCore.Update.AffectedCountModificationCommandBatch.ConsumeResultSetWithRowsAffectedOnlyAsync(Int32 commandIndex, RelationalDataReader reader, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Update.AffectedCountModificationCommandBatch.ConsumeAsync(RelationalDataReader reader, CancellationToken cancellationToken)
-ClientConnectionId:84a6a3e7-e988-444b-b5fa-43db3ffe5488
-Error Number:547,State:0,Class:16
-   --- End of inner exception stack trace ---
-   at Microsoft.EntityFrameworkCore.Update.AffectedCountModificationCommandBatch.ConsumeAsync(RelationalDataReader reader, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Update.ReaderModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Update.ReaderModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.SqlServer.Update.Internal.SqlServerModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.ChangeTracking.Internal.StateManager.SaveChangesAsync(IList`1 entriesToSave, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.ChangeTracking.Internal.StateManager.SaveChangesAsync(StateManager stateManager, Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
    at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.DbContext.SaveChangesAsync(Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
-[17:48:34 INF] Terminal web-1zy6xxtky authorized and added to Thermal80mm group for Branch a0000000-0000-0000-0000-000000000001.
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:231072eb-6e6d-4186-bd99-631a64579287
+Error Number:207,State:1,Class:16
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'VisitId1'.
+   at Microsoft.Data.SqlClient.SqlCommand.<>c.<ExecuteDbDataReaderAsync>b__209_0(Task`1 result)
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:231072eb-6e6d-4186-bd99-631a64579287
+Error Number:207,State:1,Class:16
+[17:12:50 ERR] Failed executing DbCommand (2ms) [Parameters=[@__branchId_0='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+SELECT COUNT(*)
+FROM [Reports] AS [r]
+LEFT JOIN [Visits] AS [v] ON [r].[VisitId1] = [v].[VisitId]
+WHERE [v].[VisitId] IS NOT NULL AND [v].[BranchId] = @__branchId_0 AND [r].[Status] = N'Draft'
+[17:12:50 ERR] An exception occurred while iterating over the results of a query for context type 'SynOS.Data.SynOSDbContext'.
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'VisitId1'.
+   at Microsoft.Data.SqlClient.SqlCommand.<>c.<ExecuteDbDataReaderAsync>b__209_0(Task`1 result)
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:231072eb-6e6d-4186-bd99-631a64579287
+Error Number:207,State:1,Class:16
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'VisitId1'.
+   at Microsoft.Data.SqlClient.SqlCommand.<>c.<ExecuteDbDataReaderAsync>b__209_0(Task`1 result)
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:231072eb-6e6d-4186-bd99-631a64579287
+Error Number:207,State:1,Class:16
+
 console logs:
 react-dom_client.js?v=40b2952c:20103 Download the React DevTools for a better development experience: https://react.dev/link/react-devtools
-signalr.js:218 SignalR(Branch): Subscriber added (Total: 1)
-@microsoft_signalr.js?v=40b2952c:301 [2026-04-29T12:03:17.946Z] Information: Normalizing '/branchOperationsHub' to 'http://localhost:5173/branchOperationsHub'.
-signalr.js:239 SignalR(Branch): Starting connection...
-signalr.js:298 SignalR(Branch): Subscriber removed (Total: 0)
-signalr.js:218 SignalR(Branch): Subscriber added (Total: 1)
-signalr.js:223 SignalR(Branch): Aborted scheduled disconnect
-App.jsx:17 [RootRedirect] Auth state: Object
-App.jsx:17 [RootRedirect] Auth state: Object
-@microsoft_signalr.js?v=40b2952c:301 [2026-04-29T12:03:18.121Z] Information: WebSocket connected to ws://localhost:5173/branchOperationsHub?access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiIzYmI0ZWIwZS03YjdiLTQ0NzEtOTBiYS0zNjBlZTI3NGExM2UiLCJlbWFpbCI6ImRlbGl2ZXJ5QGxhYi5jb20iLCJ1bmlxdWVfbmFtZSI6IkRlbGl2ZXJ5IERlc2sgVXNlciIsInNlc3Npb25fbW9kZSI6Im9wZXJhdGlvbmFsIiwic2Vzc2lvbl9pZCI6IjNiYmUxZGUxLWY2NGMtNDJhNy05ZTFlLTI1ZjhkMjdhYzMwNSIsImRlcGFydG1lbnRfY29kZSI6IkdlbmVyYWwiLCJyb2xlIjoiRGVsaXZlcnlEZXNrIiwiYnJhbmNoX2lkIjoiYTAwMDAwMDAtMDAwMC0wMDAwLTAwMDAtMDAwMDAwMDAwMDAxIiwicmVzb3VyY2VfaWQiOiIzZWFlNjFkNS02ZWNlLTRhOGYtYWRiYi0yMjk0MGRlZTc3ZmQiLCJicmFuY2hfbmFtZSI6Ik1haW4gTGFib3JhdG9yeSIsIm5iZiI6MTc3NzQ2NDE5NywiZXhwIjoxNzc3NTUwNTk3LCJpYXQiOjE3Nzc0NjQxOTcsImlzcyI6IlN5bk9TLkFwaSIsImF1ZCI6IlN5bk9TLkFwcCJ9.gfRyKaNUyxyaWMcAQldB7SaAHGqJ4aPtMiUAvlyKVWg.
-@microsoft_signalr.js?v=40b2952c:301 [2026-04-29T12:03:18.122Z] Information: Using HubProtocol 'json'.
-App.jsx:17 [RootRedirect] Auth state: Object
-App.jsx:17 [RootRedirect] Auth state: Object
-signalr.js:242 SignalR(Branch): Connected to /branchOperationsHub
-@microsoft_signalr.js?v=40b2952c:298 [2026-04-29T12:03:18.248Z] Warning: No client method with the name 'capabilityregistered' found.
-log @ @microsoft_signalr.js?v=40b2952c:298
-api/v1/reports/90584e70-50cf-4a10-a8a7-4afe3d6cb56c/verify-manual?pathologistId=00000000-0000-0000-0000-000000000000:1  Failed to load resource: the server responded with a status of 400 (Bad Request)
-@microsoft_signalr.js?v=40b2952c:301 [2026-04-29T12:18:34.068Z] Information: Close message received from server.
-@microsoft_signalr.js?v=40b2952c:295 [2026-04-29T12:18:34.069Z] Error: Connection disconnected with error 'Error: Server returned an error on close: Connection closed with an error.'.
-log @ @microsoft_signalr.js?v=40b2952c:295
-@microsoft_signalr.js?v=40b2952c:301 [2026-04-29T12:18:34.070Z] Information: Connection reconnecting because of error 'Error: Server returned an error on close: Connection closed with an error.'.
-signalr.js:255 SignalR(Branch): Reconnecting...
-@microsoft_signalr.js?v=40b2952c:301 [2026-04-29T12:18:34.070Z] Information: Reconnect attempt number 1 will start in 0 ms.
-@microsoft_signalr.js?v=40b2952c:301 [2026-04-29T12:18:34.101Z] Information: WebSocket connected to ws://localhost:5173/branchOperationsHub?access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiIzYmI0ZWIwZS03YjdiLTQ0NzEtOTBiYS0zNjBlZTI3NGExM2UiLCJlbWFpbCI6ImRlbGl2ZXJ5QGxhYi5jb20iLCJ1bmlxdWVfbmFtZSI6IkRlbGl2ZXJ5IERlc2sgVXNlciIsInNlc3Npb25fbW9kZSI6Im9wZXJhdGlvbmFsIiwic2Vzc2lvbl9pZCI6IjNiYmUxZGUxLWY2NGMtNDJhNy05ZTFlLTI1ZjhkMjdhYzMwNSIsImRlcGFydG1lbnRfY29kZSI6IkdlbmVyYWwiLCJyb2xlIjoiRGVsaXZlcnlEZXNrIiwiYnJhbmNoX2lkIjoiYTAwMDAwMDAtMDAwMC0wMDAwLTAwMDAtMDAwMDAwMDAwMDAxIiwicmVzb3VyY2VfaWQiOiIzZWFlNjFkNS02ZWNlLTRhOGYtYWRiYi0yMjk0MGRlZTc3ZmQiLCJicmFuY2hfbmFtZSI6Ik1haW4gTGFib3JhdG9yeSIsIm5iZiI6MTc3NzQ2NDE5NywiZXhwIjoxNzc3NTUwNTk3LCJpYXQiOjE3Nzc0NjQxOTcsImlzcyI6IlN5bk9TLkFwaSIsImF1ZCI6IlN5bk9TLkFwcCJ9.gfRyKaNUyxyaWMcAQldB7SaAHGqJ4aPtMiUAvlyKVWg.
-@microsoft_signalr.js?v=40b2952c:301 [2026-04-29T12:18:34.103Z] Information: Using HubProtocol 'json'.
-@microsoft_signalr.js?v=40b2952c:301 [2026-04-29T12:18:34.114Z] Information: HubConnection reconnected successfully.
-signalr.js:257 SignalR(Branch): Reconnected. Re-registering capabilities...
-@microsoft_signalr.js?v=40b2952c:298 [2026-04-29T12:18:34.145Z] Warning: No client method with the name 'capabilityregistered' found.
-log @ @microsoft_signalr.js?v=40b2952c:298
+ControlTowerDashboard.jsx:42  GET http://localhost:5173/api/v1/dashboard/control-tower/summary?branchId=a0000000-0000-0000-0000-000000000001 500 (Internal Server Error)
+(anonymous) @ ControlTowerDashboard.jsx:42
+(anonymous) @ ControlTowerDashboard.jsx:33
+react_stack_bottom_frame @ react-dom_client.js?v=40b2952c:18567
+runWithFiberInDEV @ react-dom_client.js?v=40b2952c:997
+commitHookEffectListMount @ react-dom_client.js?v=40b2952c:9411
+commitHookPassiveMountEffects @ react-dom_client.js?v=40b2952c:9465
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11040
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11066
+flushPassiveEffects @ react-dom_client.js?v=40b2952c:13150
+(anonymous) @ react-dom_client.js?v=40b2952c:12776
+performWorkUntilDeadline @ react-dom_client.js?v=40b2952c:36
+<ControlTowerDashboard>
+exports.jsxDEV @ react_jsx-dev-runtime.js?v=40b2952c:247
+App @ App.jsx:138
+react_stack_bottom_frame @ react-dom_client.js?v=40b2952c:18509
+renderWithHooksAgain @ react-dom_client.js?v=40b2952c:5729
+renderWithHooks @ react-dom_client.js?v=40b2952c:5665
+updateFunctionComponent @ react-dom_client.js?v=40b2952c:7475
+beginWork @ react-dom_client.js?v=40b2952c:8525
+runWithFiberInDEV @ react-dom_client.js?v=40b2952c:997
+performUnitOfWork @ react-dom_client.js?v=40b2952c:12561
+workLoopSync @ react-dom_client.js?v=40b2952c:12424
+renderRootSync @ react-dom_client.js?v=40b2952c:12408
+performWorkOnRoot @ react-dom_client.js?v=40b2952c:11766
+performWorkOnRootViaSchedulerTask @ react-dom_client.js?v=40b2952c:13505
+performWorkUntilDeadline @ react-dom_client.js?v=40b2952c:36
+<App>
+exports.jsxDEV @ react_jsx-dev-runtime.js?v=40b2952c:247
+(anonymous) @ main.jsx:10
+ControlTowerDashboard.jsx:49 Dashboard fetch failed: 500
+(anonymous) @ ControlTowerDashboard.jsx:49
+await in (anonymous)
+(anonymous) @ ControlTowerDashboard.jsx:33
+react_stack_bottom_frame @ react-dom_client.js?v=40b2952c:18567
+runWithFiberInDEV @ react-dom_client.js?v=40b2952c:997
+commitHookEffectListMount @ react-dom_client.js?v=40b2952c:9411
+commitHookPassiveMountEffects @ react-dom_client.js?v=40b2952c:9465
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11040
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11066
+flushPassiveEffects @ react-dom_client.js?v=40b2952c:13150
+(anonymous) @ react-dom_client.js?v=40b2952c:12776
+performWorkUntilDeadline @ react-dom_client.js?v=40b2952c:36
+<ControlTowerDashboard>
+exports.jsxDEV @ react_jsx-dev-runtime.js?v=40b2952c:247
+App @ App.jsx:138
+react_stack_bottom_frame @ react-dom_client.js?v=40b2952c:18509
+renderWithHooksAgain @ react-dom_client.js?v=40b2952c:5729
+renderWithHooks @ react-dom_client.js?v=40b2952c:5665
+updateFunctionComponent @ react-dom_client.js?v=40b2952c:7475
+beginWork @ react-dom_client.js?v=40b2952c:8525
+runWithFiberInDEV @ react-dom_client.js?v=40b2952c:997
+performUnitOfWork @ react-dom_client.js?v=40b2952c:12561
+workLoopSync @ react-dom_client.js?v=40b2952c:12424
+renderRootSync @ react-dom_client.js?v=40b2952c:12408
+performWorkOnRoot @ react-dom_client.js?v=40b2952c:11766
+performWorkOnRootViaSchedulerTask @ react-dom_client.js?v=40b2952c:13505
+performWorkUntilDeadline @ react-dom_client.js?v=40b2952c:36
+<App>
+exports.jsxDEV @ react_jsx-dev-runtime.js?v=40b2952c:247
+(anonymous) @ main.jsx:10
+ControlTowerDashboard.jsx:42  GET http://localhost:5173/api/v1/dashboard/control-tower/summary?branchId=a0000000-0000-0000-0000-000000000001 500 (Internal Server Error)
+(anonymous) @ ControlTowerDashboard.jsx:42
+(anonymous) @ ControlTowerDashboard.jsx:33
+react_stack_bottom_frame @ react-dom_client.js?v=40b2952c:18567
+runWithFiberInDEV @ react-dom_client.js?v=40b2952c:997
+commitHookEffectListMount @ react-dom_client.js?v=40b2952c:9411
+commitHookPassiveMountEffects @ react-dom_client.js?v=40b2952c:9465
+reconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11273
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11317
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11265
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11317
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11265
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11317
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11317
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11317
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11317
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11265
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11317
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11265
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11317
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11265
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11265
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11317
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11265
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11265
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11317
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11317
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11265
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11265
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11317
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11265
+doubleInvokeEffectsOnFiber @ react-dom_client.js?v=40b2952c:13339
+runWithFiberInDEV @ react-dom_client.js?v=40b2952c:997
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=40b2952c:13312
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=40b2952c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=40b2952c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=40b2952c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=40b2952c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=40b2952c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=40b2952c:13317
+commitDoubleInvokeEffectsInDEV @ react-dom_client.js?v=40b2952c:13347
+flushPassiveEffects @ react-dom_client.js?v=40b2952c:13157
+(anonymous) @ react-dom_client.js?v=40b2952c:12776
+performWorkUntilDeadline @ react-dom_client.js?v=40b2952c:36
+<ControlTowerDashboard>
+exports.jsxDEV @ react_jsx-dev-runtime.js?v=40b2952c:247
+App @ App.jsx:138
+react_stack_bottom_frame @ react-dom_client.js?v=40b2952c:18509
+renderWithHooksAgain @ react-dom_client.js?v=40b2952c:5729
+renderWithHooks @ react-dom_client.js?v=40b2952c:5665
+updateFunctionComponent @ react-dom_client.js?v=40b2952c:7475
+beginWork @ react-dom_client.js?v=40b2952c:8525
+runWithFiberInDEV @ react-dom_client.js?v=40b2952c:997
+performUnitOfWork @ react-dom_client.js?v=40b2952c:12561
+workLoopSync @ react-dom_client.js?v=40b2952c:12424
+renderRootSync @ react-dom_client.js?v=40b2952c:12408
+performWorkOnRoot @ react-dom_client.js?v=40b2952c:11766
+performWorkOnRootViaSchedulerTask @ react-dom_client.js?v=40b2952c:13505
+performWorkUntilDeadline @ react-dom_client.js?v=40b2952c:36
+<App>
+exports.jsxDEV @ react_jsx-dev-runtime.js?v=40b2952c:247
+(anonymous) @ main.jsx:10
+ControlTowerDashboard.jsx:49 Dashboard fetch failed: 500
+(anonymous) @ ControlTowerDashboard.jsx:49
+await in (anonymous)
+(anonymous) @ ControlTowerDashboard.jsx:33
+react_stack_bottom_frame @ react-dom_client.js?v=40b2952c:18567
+runWithFiberInDEV @ react-dom_client.js?v=40b2952c:997
+commitHookEffectListMount @ react-dom_client.js?v=40b2952c:9411
+commitHookPassiveMountEffects @ react-dom_client.js?v=40b2952c:9465
+reconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11273
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11317
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11265
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11317
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11265
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11317
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11317
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11317
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11317
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11265
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11317
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11265
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11317
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11265
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11265
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11317
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11265
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11265
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11317
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11317
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11265
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11265
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11317
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11265
+doubleInvokeEffectsOnFiber @ react-dom_client.js?v=40b2952c:13339
+runWithFiberInDEV @ react-dom_client.js?v=40b2952c:997
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=40b2952c:13312
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=40b2952c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=40b2952c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=40b2952c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=40b2952c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=40b2952c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=40b2952c:13317
+commitDoubleInvokeEffectsInDEV @ react-dom_client.js?v=40b2952c:13347
+flushPassiveEffects @ react-dom_client.js?v=40b2952c:13157
+(anonymous) @ react-dom_client.js?v=40b2952c:12776
+performWorkUntilDeadline @ react-dom_client.js?v=40b2952c:36
+<ControlTowerDashboard>
+exports.jsxDEV @ react_jsx-dev-runtime.js?v=40b2952c:247
+App @ App.jsx:138
+react_stack_bottom_frame @ react-dom_client.js?v=40b2952c:18509
+renderWithHooksAgain @ react-dom_client.js?v=40b2952c:5729
+renderWithHooks @ react-dom_client.js?v=40b2952c:5665
+updateFunctionComponent @ react-dom_client.js?v=40b2952c:7475
+beginWork @ react-dom_client.js?v=40b2952c:8525
+runWithFiberInDEV @ react-dom_client.js?v=40b2952c:997
+performUnitOfWork @ react-dom_client.js?v=40b2952c:12561
+workLoopSync @ react-dom_client.js?v=40b2952c:12424
+renderRootSync @ react-dom_client.js?v=40b2952c:12408
+performWorkOnRoot @ react-dom_client.js?v=40b2952c:11766
+performWorkOnRootViaSchedulerTask @ react-dom_client.js?v=40b2952c:13505
+performWorkUntilDeadline @ react-dom_client.js?v=40b2952c:36
+<App>
+exports.jsxDEV @ react_jsx-dev-runtime.js?v=40b2952c:247
+(anonymous) @ main.jsx:10
+ControlTowerDashboard.jsx:42  GET http://localhost:5173/api/v1/dashboard/control-tower/summary?branchId=a0000000-0000-0000-0000-000000000001 500 (Internal Server Error)
+(anonymous) @ ControlTowerDashboard.jsx:42
+setInterval
+(anonymous) @ ControlTowerDashboard.jsx:34
+react_stack_bottom_frame @ react-dom_client.js?v=40b2952c:18567
+runWithFiberInDEV @ react-dom_client.js?v=40b2952c:997
+commitHookEffectListMount @ react-dom_client.js?v=40b2952c:9411
+commitHookPassiveMountEffects @ react-dom_client.js?v=40b2952c:9465
+reconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11273
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11317
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11265
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11317
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11265
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11317
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11317
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11317
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11317
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11265
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11317
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11265
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11317
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11265
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11265
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11317
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11265
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11265
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11317
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11317
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11265
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11265
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11317
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11265
+doubleInvokeEffectsOnFiber @ react-dom_client.js?v=40b2952c:13339
+runWithFiberInDEV @ react-dom_client.js?v=40b2952c:997
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=40b2952c:13312
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=40b2952c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=40b2952c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=40b2952c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=40b2952c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=40b2952c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=40b2952c:13317
+commitDoubleInvokeEffectsInDEV @ react-dom_client.js?v=40b2952c:13347
+flushPassiveEffects @ react-dom_client.js?v=40b2952c:13157
+(anonymous) @ react-dom_client.js?v=40b2952c:12776
+performWorkUntilDeadline @ react-dom_client.js?v=40b2952c:36
+<ControlTowerDashboard>
+exports.jsxDEV @ react_jsx-dev-runtime.js?v=40b2952c:247
+App @ App.jsx:138
+react_stack_bottom_frame @ react-dom_client.js?v=40b2952c:18509
+renderWithHooksAgain @ react-dom_client.js?v=40b2952c:5729
+renderWithHooks @ react-dom_client.js?v=40b2952c:5665
+updateFunctionComponent @ react-dom_client.js?v=40b2952c:7475
+beginWork @ react-dom_client.js?v=40b2952c:8525
+runWithFiberInDEV @ react-dom_client.js?v=40b2952c:997
+performUnitOfWork @ react-dom_client.js?v=40b2952c:12561
+workLoopSync @ react-dom_client.js?v=40b2952c:12424
+renderRootSync @ react-dom_client.js?v=40b2952c:12408
+performWorkOnRoot @ react-dom_client.js?v=40b2952c:11766
+performWorkOnRootViaSchedulerTask @ react-dom_client.js?v=40b2952c:13505
+performWorkUntilDeadline @ react-dom_client.js?v=40b2952c:36
+<App>
+exports.jsxDEV @ react_jsx-dev-runtime.js?v=40b2952c:247
+(anonymous) @ main.jsx:10
+ControlTowerDashboard.jsx:49 Dashboard fetch failed: 500
+(anonymous) @ ControlTowerDashboard.jsx:49
+setInterval
+(anonymous) @ ControlTowerDashboard.jsx:34
+react_stack_bottom_frame @ react-dom_client.js?v=40b2952c:18567
+runWithFiberInDEV @ react-dom_client.js?v=40b2952c:997
+commitHookEffectListMount @ react-dom_client.js?v=40b2952c:9411
+commitHookPassiveMountEffects @ react-dom_client.js?v=40b2952c:9465
+reconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11273
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11317
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11265
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11317
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11265
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11317
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11317
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11317
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11317
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11265
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11317
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11265
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11317
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11265
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11265
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11317
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11265
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11265
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11317
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11317
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11265
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11265
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11317
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11265
+doubleInvokeEffectsOnFiber @ react-dom_client.js?v=40b2952c:13339
+runWithFiberInDEV @ react-dom_client.js?v=40b2952c:997
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=40b2952c:13312
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=40b2952c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=40b2952c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=40b2952c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=40b2952c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=40b2952c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=40b2952c:13317
+commitDoubleInvokeEffectsInDEV @ react-dom_client.js?v=40b2952c:13347
+flushPassiveEffects @ react-dom_client.js?v=40b2952c:13157
+(anonymous) @ react-dom_client.js?v=40b2952c:12776
+performWorkUntilDeadline @ react-dom_client.js?v=40b2952c:36
+<ControlTowerDashboard>
+exports.jsxDEV @ react_jsx-dev-runtime.js?v=40b2952c:247
+App @ App.jsx:138
+react_stack_bottom_frame @ react-dom_client.js?v=40b2952c:18509
+renderWithHooksAgain @ react-dom_client.js?v=40b2952c:5729
+renderWithHooks @ react-dom_client.js?v=40b2952c:5665
+updateFunctionComponent @ react-dom_client.js?v=40b2952c:7475
+beginWork @ react-dom_client.js?v=40b2952c:8525
+runWithFiberInDEV @ react-dom_client.js?v=40b2952c:997
+performUnitOfWork @ react-dom_client.js?v=40b2952c:12561
+workLoopSync @ react-dom_client.js?v=40b2952c:12424
+renderRootSync @ react-dom_client.js?v=40b2952c:12408
+performWorkOnRoot @ react-dom_client.js?v=40b2952c:11766
+performWorkOnRootViaSchedulerTask @ react-dom_client.js?v=40b2952c:13505
+performWorkUntilDeadline @ react-dom_client.js?v=40b2952c:36
+<App>
+exports.jsxDEV @ react_jsx-dev-runtime.js?v=40b2952c:247
+(anonymous) @ main.jsx:10
+ControlTowerDashboard.jsx:42  GET http://localhost:5173/api/v1/dashboard/control-tower/summary?branchId=a0000000-0000-0000-0000-000000000001 500 (Internal Server Error)
+(anonymous) @ ControlTowerDashboard.jsx:42
+ControlTowerDashboard.jsx:49 Dashboard fetch failed: 500
+(anonymous) @ ControlTowerDashboard.jsx:49
+signalr.js:19 [2026-05-02T11:43:55.801Z] Information: Normalizing '/dashboardHub' to 'http://localhost:5173/dashboardHub'.
+signalr.js:31 SignalR: Subscriber added (Total: 1)
+signalr.js:52 SignalR: Starting connection...
+signalr.js:166 SignalR: Subscriber removed (Total: 0)
+signalr.js:31 SignalR: Subscriber added (Total: 1)
+signalr.js:36 SignalR: Aborted scheduled disconnect
+@microsoft_signalr.js?v=40b2952c:301 [2026-05-02T11:43:56.162Z] Information: WebSocket connected to ws://localhost:5173/dashboardHub?access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiI3MjE5ODVjNy1iYmFlLTQzNjgtYTk1OC04YjcyNDA4MmY1MzIiLCJlbWFpbCI6ImFkbWluQHN5bm9zLmNvbSIsInVuaXF1ZV9uYW1lIjoiU3lzdGVtIEFkbWluIiwic2Vzc2lvbl9tb2RlIjoib3ZlcnNpZ2h0Iiwic2Vzc2lvbl9pZCI6ImQ1YjBjYTZiLWVjNDktNGVjZi1iOTA4LTM5ZmJiZGMwODYxZSIsImRlcGFydG1lbnRfY29kZSI6IkdlbmVyYWwiLCJyb2xlIjoiQWRtaW4iLCJuYmYiOjE3Nzc3MDkxMzksImV4cCI6MTc3Nzc5NTUzOSwiaWF0IjoxNzc3NzA5MTM5LCJpc3MiOiJTeW5PUy5BcGkiLCJhdWQiOiJTeW5PUy5BcHAifQ.ETDa_360Pn56Hr1lY6_IbuDiblPZ7AVf_ITNxDELRdk.
+@microsoft_signalr.js?v=40b2952c:301 [2026-05-02T11:43:56.164Z] Information: Using HubProtocol 'json'.
+signalr.js:141 SignalR: ReceiveServerTime received 2026-05-02T11:43:56.3130765Z
+signalr.js:55 SignalR: Connected to /dashboardHub
+reception.js:304 DEBUG: Activity Stream Payload: []
+reception.js:304 DEBUG: Activity Stream Payload: []
+ReceptionScreen.jsx:53 DEBUG: Action Queue Raw: []
+ReceptionScreen.jsx:53 DEBUG: Action Queue Raw: []
+signalr.js:166 SignalR: Subscriber removed (Total: 0)
+ControlTowerDashboard.jsx:42  GET http://localhost:5173/api/v1/dashboard/control-tower/summary?branchId=a0000000-0000-0000-0000-000000000001 500 (Internal Server Error)
+(anonymous) @ ControlTowerDashboard.jsx:42
+(anonymous) @ ControlTowerDashboard.jsx:33
+react_stack_bottom_frame @ react-dom_client.js?v=40b2952c:18567
+runWithFiberInDEV @ react-dom_client.js?v=40b2952c:997
+commitHookEffectListMount @ react-dom_client.js?v=40b2952c:9411
+commitHookPassiveMountEffects @ react-dom_client.js?v=40b2952c:9465
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11040
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11066
+flushPassiveEffects @ react-dom_client.js?v=40b2952c:13150
+(anonymous) @ react-dom_client.js?v=40b2952c:12776
+performWorkUntilDeadline @ react-dom_client.js?v=40b2952c:36
+ControlTowerDashboard.jsx:49 Dashboard fetch failed: 500
+(anonymous) @ ControlTowerDashboard.jsx:49
+await in (anonymous)
+(anonymous) @ ControlTowerDashboard.jsx:33
+react_stack_bottom_frame @ react-dom_client.js?v=40b2952c:18567
+runWithFiberInDEV @ react-dom_client.js?v=40b2952c:997
+commitHookEffectListMount @ react-dom_client.js?v=40b2952c:9411
+commitHookPassiveMountEffects @ react-dom_client.js?v=40b2952c:9465
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11040
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=40b2952c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=40b2952c:11066
+flushPassiveEffects @ react-dom_client.js?v=40b2952c:13150
+(anonymous) @ react-dom_client.js?v=40b2952c:12776
+performWorkUntilDeadline @ react-dom_client.js?v=40b2952c:36
+ControlTowerDashboard.jsx:42  GET http://localhost:5173/api/v1/dashboard/control-tower/summary?branchId=a0000000-0000-0000-0000-000000000001 500 (Internal Server Error)
+(anonymous) @ ControlTowerDashboard.jsx:42
+(anonymous) @ ControlTowerDashboard.jsx:33
+react_stack_bottom_frame @ react-dom_client.js?v=40b2952c:18567
+runWithFiberInDEV @ react-dom_client.js?v=40b2952c:997
+commitHookEffectListMount @ react-dom_client.js?v=40b2952c:9411
+commitHookPassiveMountEffects @ react-dom_client.js?v=40b2952c:9465
+reconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11273
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11317
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11265
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11317
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11265
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11317
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11317
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11317
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11317
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11265
+doubleInvokeEffectsOnFiber @ react-dom_client.js?v=40b2952c:13339
+runWithFiberInDEV @ react-dom_client.js?v=40b2952c:997
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=40b2952c:13312
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=40b2952c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=40b2952c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=40b2952c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=40b2952c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=40b2952c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=40b2952c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=40b2952c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=40b2952c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=40b2952c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=40b2952c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=40b2952c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=40b2952c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=40b2952c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=40b2952c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=40b2952c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=40b2952c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=40b2952c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=40b2952c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=40b2952c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=40b2952c:13317
+commitDoubleInvokeEffectsInDEV @ react-dom_client.js?v=40b2952c:13347
+flushPassiveEffects @ react-dom_client.js?v=40b2952c:13157
+(anonymous) @ react-dom_client.js?v=40b2952c:12776
+performWorkUntilDeadline @ react-dom_client.js?v=40b2952c:36
+ControlTowerDashboard.jsx:49 Dashboard fetch failed: 500
+(anonymous) @ ControlTowerDashboard.jsx:49
+await in (anonymous)
+(anonymous) @ ControlTowerDashboard.jsx:33
+react_stack_bottom_frame @ react-dom_client.js?v=40b2952c:18567
+runWithFiberInDEV @ react-dom_client.js?v=40b2952c:997
+commitHookEffectListMount @ react-dom_client.js?v=40b2952c:9411
+commitHookPassiveMountEffects @ react-dom_client.js?v=40b2952c:9465
+reconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11273
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11317
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11265
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11317
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11265
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11317
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11317
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11317
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11317
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=40b2952c:11265
+doubleInvokeEffectsOnFiber @ react-dom_client.js?v=40b2952c:13339
+runWithFiberInDEV @ react-dom_client.js?v=40b2952c:997
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=40b2952c:13312
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=40b2952c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=40b2952c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=40b2952c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=40b2952c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=40b2952c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=40b2952c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=40b2952c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=40b2952c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=40b2952c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=40b2952c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=40b2952c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=40b2952c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=40b2952c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=40b2952c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=40b2952c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=40b2952c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=40b2952c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=40b2952c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=40b2952c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=40b2952c:13317
+commitDoubleInvokeEffectsInDEV @ react-dom_client.js?v=40b2952c:13347
+flushPassiveEffects @ react-dom_client.js?v=40b2952c:13157
+(anonymous) @ react-dom_client.js?v=40b2952c:12776
+performWorkUntilDeadline @ react-dom_client.js?v=40b2952c:36
+signalr.js:176 SignalR: No subscribers, disconnecting...
+@microsoft_signalr.js?v=40b2952c:301 [2026-05-02T11:44:00.790Z] Information: Connection disconnected.
+signalr.js:60 SignalR: Connection Closed
+signalr.js:181 SignalR: Disconnected

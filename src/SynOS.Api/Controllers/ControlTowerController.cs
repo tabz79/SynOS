@@ -22,16 +22,28 @@ namespace SynOS.Api.Controllers
         }
 
         [HttpGet("summary")]
-        public async Task<IActionResult> GetSummary()
+        public async Task<IActionResult> GetSummary([FromQuery] Guid? branchId)
         {
-            var branchId = _userContext.CurrentBranchId;
-            if (branchId == Guid.Empty)
+            var effectiveBranchId = branchId ?? _userContext.CurrentBranchId;
+            
+            if (effectiveBranchId == Guid.Empty)
             {
-                return BadRequest("Branch context missing.");
+                return BadRequest("Branch context missing. Please provide a branchId or ensure you have an active branch session.");
             }
 
-            var summary = await _controlTowerService.GetFullDashboardAsync(branchId);
-            return Ok(summary);
+            try 
+            {
+                var summary = await _controlTowerService.GetFullDashboardAsync(effectiveBranchId);
+                return Ok(summary);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { 
+                    message = "Operational failure during dashboard aggregation.",
+                    error = ex.Message,
+                    sector = ex.Source
+                });
+            }
         }
     }
 }
