@@ -14,9 +14,11 @@ import {
     User,
     Clock,
     Printer,
-    ShieldCheck
+    ShieldCheck,
+    Package
 } from 'lucide-react';
 import { ReportA4 } from '../documents/templates/ReportA4';
+import { StockRequestPanel } from '../inventory/StockRequestPanel';
 
 
 export function TypistTerminal() {
@@ -35,6 +37,7 @@ export function TypistTerminal() {
     const [isSaving, setIsSaving] = useState(false);
     const [lastSavedAt, setLastSavedAt] = useState(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isInventoryModalOpen, setIsInventoryModalOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
 
     const requestCounter = useRef(0);
@@ -177,8 +180,13 @@ export function TypistTerminal() {
                 <SystemBar serverTime={null} syncStatus="Synced" />
             </div>
 
-            <div className="flex-1 flex flex-row gap-4 p-4 overflow-hidden">
-                <div className="w-[15%] flex flex-col gap-4 min-h-0 no-print">
+            <div className="flex-1 flex flex-row gap-4 p-4 overflow-hidden relative">
+                {/* Main Content Container for Scaling Effect */}
+                <div className={cn(
+                    "flex-1 flex flex-row gap-4 transition-all duration-500 ease-out h-full",
+                    isInventoryModalOpen ? "opacity-40 pointer-events-none scale-[0.99]" : "opacity-100"
+                )}>
+                <div className="w-[15%] flex flex-col gap-4 min-h-0 no-print relative">
                     <div className="dark:bg-zinc-900 bg-white dark:border-white/5 border-black/[0.1] shadow-[0_4px_20px_rgba(0,0,0,0.05)] rounded-xl p-4 flex flex-col gap-3 shrink-0">
                         <div className="flex items-center justify-between">
                             <h2 className="text-lg font-bold flex items-center gap-2 dark:text-zinc-200">
@@ -201,7 +209,7 @@ export function TypistTerminal() {
                         </div>
                     </div>
 
-                    <div className="flex-1 overflow-y-auto space-y-3 pr-1 custom-scrollbar">
+                    <div className="flex-1 overflow-y-auto space-y-3 pr-1 pb-24 custom-scrollbar">
                         {isLoadingList ? (
                             <div className="flex flex-col items-center justify-center py-12 opacity-50">
                                 <Loader2 className="w-8 h-8 animate-spin mb-2" />
@@ -219,6 +227,25 @@ export function TypistTerminal() {
                                 onClick={() => setSelectedReportId(report.reportId)}
                             />
                         ))}
+                    </div>
+
+                    {/* Floating Request Stock Button (Bottom Left of Queue) */}
+                    <div className="absolute bottom-6 left-6 z-20">
+                        <button
+                            onClick={() => setIsInventoryModalOpen(true)}
+                            className={cn(
+                                "group p-3 rounded-2xl shadow-2xl transition-all duration-300 flex items-center gap-2 border hover:scale-105 active:scale-95",
+                                theme === 'dark' 
+                                    ? "bg-zinc-900 border-white/10 text-zinc-400 hover:text-white" 
+                                    : "bg-white border-zinc-200 text-zinc-500 hover:text-zinc-900"
+                            )}
+                            title="Request Stock"
+                        >
+                            <Package className="w-5 h-5" />
+                            <span className="text-[10px] font-black uppercase tracking-widest overflow-hidden max-w-0 group-hover:max-w-xs transition-all duration-500">
+                                Request Stock
+                            </span>
+                        </button>
                     </div>
                 </div>
 
@@ -446,6 +473,18 @@ export function TypistTerminal() {
                         </div>
                     </div>
                 </div>
+            </div>
+        </div>
+
+            {/* Inventory Drawer Overlay */}
+            <div className={cn(
+                "fixed top-12 right-0 bottom-0 z-[100] transition-transform duration-500 ease-out",
+                isInventoryModalOpen ? "translate-x-0 w-[40%]" : "translate-x-full w-0"
+            )}>
+                <StockRequestPanel
+                    isOpen={isInventoryModalOpen}
+                    onClose={() => setIsInventoryModalOpen(false)}
+                />
             </div>
 
             <style dangerouslySetInnerHTML={{ __html: `

@@ -3,6 +3,7 @@ import { cn } from "@/lib/utils";
 import { SystemBar } from '@/components/layout/SystemBar';
 import { useAuth } from '@/context/AuthContext';
 import { ReportsApi } from '@/api/reports';
+import { useTheme } from '@/context/ThemeContext';
 import { DeliveryWorklistCard } from './components/DeliveryWorklistCard';
 import { 
     Search, 
@@ -14,12 +15,15 @@ import {
     CheckCircle2,
     AlertTriangle,
     Smartphone,
-    FileText
+    FileText,
+    Package
 } from 'lucide-react';
 import { ReportA4 } from '../documents/templates/ReportA4';
+import { StockRequestPanel } from '../inventory/StockRequestPanel';
 
 export function DeliveryTerminal() {
     const { user } = useAuth();
+    const { theme } = useTheme();
     const [reports, setReports] = useState([]);
     const [selectedReportId, setSelectedReportId] = useState(null);
     const [reportStructure, setReportStructure] = useState(null);
@@ -31,6 +35,7 @@ export function DeliveryTerminal() {
     const [searchTerm, setSearchTerm] = useState("");
     const [showWhatsAppPrompt, setShowWhatsAppPrompt] = useState(false);
     const [deliveryPhone, setDeliveryPhone] = useState("");
+    const [isInventoryModalOpen, setIsInventoryModalOpen] = useState(false);
 
     useEffect(() => {
         fetchWorklist();
@@ -148,9 +153,14 @@ export function DeliveryTerminal() {
         <div className="h-screen w-screen dark:bg-synos-background bg-zinc-50 text-foreground flex flex-col overflow-hidden font-sans selection:bg-synos-primary/20 relative">
             <SystemBar serverTime={null} syncStatus="Synced" />
 
-            <div className="flex-1 flex flex-row overflow-hidden">
+            <div className="flex-1 flex flex-row overflow-hidden relative">
+                {/* Main Content Container for Scaling Effect */}
+                <div className={cn(
+                    "flex-1 flex flex-row transition-all duration-500 ease-out h-full",
+                    isInventoryModalOpen ? "opacity-40 pointer-events-none scale-[0.99]" : "opacity-100"
+                )}>
                 {/* LEFT: Worklist (30%) */}
-                <div className="w-[30%] border-r dark:border-white/5 border-zinc-200 flex flex-col bg-white/50 dark:bg-zinc-950/20 backdrop-blur-xl">
+                <div className="w-[30%] border-r dark:border-white/5 border-zinc-200 flex flex-col bg-white/50 dark:bg-zinc-950/20 backdrop-blur-xl relative">
                     <div className="p-6 space-y-4 shrink-0">
                         <div className="flex items-center gap-3">
                             <div className="w-10 h-10 rounded-xl bg-synos-primary/10 flex items-center justify-center text-synos-primary">
@@ -173,7 +183,7 @@ export function DeliveryTerminal() {
                         </div>
                     </div>
 
-                    <div className="flex-1 overflow-y-auto p-4 pt-0 space-y-2 custom-scrollbar">
+                    <div className="flex-1 overflow-y-auto p-4 pt-0 pb-24 space-y-2 custom-scrollbar">
                         {isLoadingList ? (
                             <div className="flex items-center justify-center py-12 opacity-30"><Loader2 className="w-8 h-8 animate-spin" /></div>
                         ) : filteredReports.length === 0 ? (
@@ -186,6 +196,25 @@ export function DeliveryTerminal() {
                                 onClick={() => setSelectedReportId(report.reportId)}
                             />
                         ))}
+                    </div>
+
+                    {/* Floating Request Stock Button (Bottom Left of Queue) */}
+                    <div className="absolute bottom-6 left-6 z-20">
+                        <button
+                            onClick={() => setIsInventoryModalOpen(true)}
+                            className={cn(
+                                "group p-3 rounded-2xl shadow-2xl transition-all duration-300 flex items-center gap-2 border hover:scale-105 active:scale-95",
+                                theme === 'dark' 
+                                    ? "bg-zinc-900 border-white/10 text-zinc-400 hover:text-white" 
+                                    : "bg-white border-zinc-200 text-zinc-500 hover:text-zinc-900"
+                            )}
+                            title="Request Stock"
+                        >
+                            <Package className="w-5 h-5" />
+                            <span className="text-[10px] font-black uppercase tracking-widest overflow-hidden max-w-0 group-hover:max-w-xs transition-all duration-500">
+                                Request Stock
+                            </span>
+                        </button>
                     </div>
                 </div>
 
@@ -280,6 +309,12 @@ export function DeliveryTerminal() {
                 </div>
             </div>
 
+            {/* Side Drawer for Inventory */}
+            <StockRequestPanel
+                isOpen={isInventoryModalOpen}
+                onClose={() => setIsInventoryModalOpen(false)}
+            />
+
             {/* WhatsApp Prompt Overlay */}
             {showWhatsAppPrompt && (
                 <div className="absolute inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
@@ -353,5 +388,6 @@ export function DeliveryTerminal() {
                 </div>
             )}
         </div>
+    </div>
     );
 }

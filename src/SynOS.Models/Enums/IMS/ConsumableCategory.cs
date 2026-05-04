@@ -5,6 +5,8 @@ namespace SynOS.Models.Enums.IMS
         Pathology,
         Radiology,
         Imaging,
+        Consumable,
+        Stationery,
         General
     }
 }

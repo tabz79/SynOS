@@ -6,6 +6,8 @@ namespace SynOS.Models.Enums.IMS
         Calibration,
         QC,
         Manual,
+        StockRequest,
+        GRN,
         Unknown
     }
 }

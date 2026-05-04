@@ -12,6 +12,9 @@ import { DeliveryTerminal } from '@/features/delivery/DeliveryTerminal'
 import { DocumentPrinter } from '@/features/documents/DocumentPrinter'
 import { AdminLayout } from '@/features/admin/AdminLayout'
 import { ControlTowerDashboard } from '@/features/admin/ControlTowerDashboard'
+import { PendingRequestsQueue } from '@/features/admin/PendingRequestsQueue'
+import { ImsRoleMappingScreen } from '@/features/admin/ImsRoleMappingScreen'
+import { InventoryTerminal } from '@/features/inventory/InventoryTerminal'
 import { RoleTakeoverBanner } from '@/features/admin/components/RoleTakeoverBanner'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 
@@ -36,6 +39,7 @@ function RootRedirect() {
   if (role === 'Pathologist') return <Navigate to="/pathologist" replace />;
   if (role === 'Typist') return <Navigate to="/typist" replace />;
   if (role === 'DeliveryDesk') return <Navigate to="/delivery" replace />;
+  if (role === 'InventoryManager') return <Navigate to="/inventory" replace />;
   
   return (
     <div className="h-screen w-screen bg-synos-background flex items-center justify-center p-4">
@@ -133,9 +137,19 @@ function App() {
               } />
             </Route>
 
+            <Route element={<ProtectedRoute allowedRoles={['InventoryManager', 'Admin']} />}>
+              <Route path="/inventory" element={
+                <AdminProtectedWrapper roleName="Inventory Operations">
+                  <InventoryTerminal />
+                </AdminProtectedWrapper>
+              } />
+            </Route>
+
             <Route element={<ProtectedRoute allowedRoles={['Admin']} />}>
               <Route element={<AdminLayout />}>
                 <Route path="/admin" element={<ControlTowerDashboard />} />
+                <Route path="/admin/inventory" element={<PendingRequestsQueue />} />
+                <Route path="/admin/inventory/setup" element={<ImsRoleMappingScreen />} />
               </Route>
             </Route>
 

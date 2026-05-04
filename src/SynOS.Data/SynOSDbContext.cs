@@ -172,6 +172,8 @@ namespace SynOS.Data
         public DbSet<ImsInventoryUsageProfile> ImsInventoryUsageProfiles { get; set; } = null!;
         public DbSet<ImsInventoryLot> ImsInventoryLots { get; set; } = null!;
         public DbSet<ImsInventoryItem> ImsInventoryItems { get; set; } = null!;
+        public DbSet<ImsRoleItemMap> ImsRoleItemMaps { get; set; } = null!;
+        public DbSet<ImsStockRequest> ImsStockRequests { get; set; } = null!;
 
         // Cost Attribution DbSets
         public DbSet<CostAttribution_UsagePolicy> CostAttribution_UsagePolicies { get; set; } = null!;
@@ -950,6 +952,7 @@ namespace SynOS.Data
                 entity.HasOne(e => e.TubeLot).WithMany().HasForeignKey(e => e.TubeLotId).OnDelete(DeleteBehavior.Restrict).IsRequired(false);
                 entity.HasOne(e => e.Consumable).WithMany().HasForeignKey(e => e.ConsumableId).OnDelete(DeleteBehavior.Restrict).IsRequired(false);
                 entity.HasOne(e => e.ConsumableLot).WithMany().HasForeignKey(e => e.ConsumableLotId).OnDelete(DeleteBehavior.Restrict).IsRequired(false);
+                entity.HasOne(e => e.InventoryLot).WithMany().HasForeignKey(e => e.InventoryLotId).OnDelete(DeleteBehavior.Restrict).IsRequired(false);
                 entity.HasOne(e => e.RecordedByUser).WithMany().HasForeignKey(e => e.RecordedByUserId).OnDelete(DeleteBehavior.Restrict);
             });
 
@@ -1001,6 +1004,22 @@ namespace SynOS.Data
             {
                 entity.ToTable("IMS_InventoryItems");
                 entity.HasIndex(e => e.ItemCode).IsUnique();
+            });
+
+            modelBuilder.Entity<ImsRoleItemMap>(entity =>
+            {
+                entity.ToTable("IMS_RoleItemMaps");
+                entity.HasIndex(e => new { e.RoleId, e.ConsumableId }).IsUnique();
+            });
+
+            modelBuilder.Entity<ImsStockRequest>(entity =>
+            {
+                entity.ToTable("IMS_StockRequests");
+                entity.Property(e => e.Status).HasConversion<string>().HasMaxLength(20);
+                entity.HasIndex(e => e.BranchId);
+                entity.HasIndex(e => e.Status);
+                entity.HasOne(e => e.RequestedByUser).WithMany().HasForeignKey(e => e.RequestedByUserId).OnDelete(DeleteBehavior.Restrict);
+                entity.HasOne(e => e.FulfilledByUser).WithMany().HasForeignKey(e => e.FulfilledByUserId).OnDelete(DeleteBehavior.Restrict);
             });
 
             // Cost Attribution Configuration

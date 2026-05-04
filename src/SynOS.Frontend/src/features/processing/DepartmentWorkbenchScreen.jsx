@@ -6,7 +6,8 @@ import { RealitySummary } from '@/components/layout/RealitySummary';
 import { ActionQueue, ActionQueueHeader } from '@/components/layout/ActionQueue';
 import { ActivityStream } from '@/components/layout/ActivityStream';
 import { useTheme } from '@/context/ThemeContext';
-import { ClipboardList, AlertCircle, CheckCircle2, FlaskConical, ChevronDown, User } from 'lucide-react';
+import { ClipboardList, AlertCircle, CheckCircle2, FlaskConical, ChevronDown, User, Package } from 'lucide-react';
+import { StockRequestPanel } from '../inventory/StockRequestPanel';
 import { useFlipGroup } from "@/hooks/useSynOSMotion";
 import { useAuth } from '@/context/AuthContext';
 import { useProcessing } from './hooks/useProcessing';
@@ -25,6 +26,7 @@ export function DepartmentWorkbenchScreen() {
     const [isSummaryCollapsed, setIsSummaryCollapsed] = useState(false);
     const [activeTab, setActiveTab] = useState("available"); // available | assigned
     const [selectedAssignmentId, setSelectedAssignmentId] = useState(null);
+    const [isInventoryModalOpen, setIsInventoryModalOpen] = useState(false);
 
     // Dirty State / Guard logic
     const [isDirty, setIsDirty] = useState(false);
@@ -124,7 +126,7 @@ export function DepartmentWorkbenchScreen() {
                 <div className="flex h-full gap-4">
                     
                     {/* Main Work Area */}
-                    <div className={cn("flex flex-col min-h-0 transition-all duration-300", isIntentPanelOpen ? "w-1/2" : "w-3/4")}>
+                    <div className={cn("flex flex-col min-h-0 transition-all duration-300", (isIntentPanelOpen || isInventoryModalOpen) ? "w-1/2 opacity-40 pointer-events-none scale-[0.99]" : "w-3/4 opacity-100 scale-100")}>
                         
                         {/* Reality Summary */}
                         <div ref={summaryRef} className="mb-4 shrink-0">
@@ -146,11 +148,11 @@ export function DepartmentWorkbenchScreen() {
                         {/* Action Queue */}
                         <div ref={queueRef} className="flex-1 flex flex-col min-h-0 relative border-t dark:border-white/5 border-zinc-200 pt-4">
                             <div className="flex items-center justify-between mb-4">
-                                <div className="flex items-center gap-4">
+                                <div className="flex items-center gap-4 shrink-0">
                                     <ActionQueueHeader title="Labor Queue" count={filteredQueue.length} />
                                     
                                     {/* Tabs */}
-                                    <div className="flex items-center gap-1 dark:bg-zinc-900/50 bg-white rounded-lg p-1 border dark:border-white/5 border-zinc-200 shadow-sm">
+                                    <div className="flex items-center gap-1 dark:bg-zinc-900/50 bg-white rounded-lg p-1 border dark:border-white/5 border-zinc-200 shadow-sm shrink-0">
                                         {['available', 'assigned'].map(tab => (
                                             <button
                                                 key={tab}
@@ -167,6 +169,20 @@ export function DepartmentWorkbenchScreen() {
                                         ))}
                                     </div>
                                 </div>
+                                <div className="flex items-center gap-2">
+                                    <button
+                                        onClick={() => setIsInventoryModalOpen(true)}
+                                        className={cn(
+                                            "px-4 py-2 rounded-lg text-sm font-bold shadow-lg transition-all duration-200 flex items-center gap-2 pointer-events-auto active:scale-95 border",
+                                            theme === 'dark'
+                                                ? "bg-zinc-900 text-zinc-400 border-white/5 hover:text-white hover:bg-zinc-800"
+                                                : "bg-white text-zinc-600 border-zinc-200 hover:text-zinc-900 hover:bg-zinc-50"
+                                        )}
+                                    >
+                                        <Package className="w-4 h-4" />
+                                        Request Stock
+                                    </button>
+                                </div>
                             </div>
 
                             <ActionQueue 
@@ -179,17 +195,27 @@ export function DepartmentWorkbenchScreen() {
                     </div>
 
                     {/* Side Panel / Intent Panel */}
-                    <div className={cn("min-h-0 relative transition-all duration-300", isIntentPanelOpen ? "w-1/2" : "w-1/4")}>
-                        {isIntentPanelOpen ? (
+                    <div className={cn("min-h-0 relative transition-all duration-300", (isIntentPanelOpen || isInventoryModalOpen) ? "w-1/2" : "w-1/4")}>
+                        {isIntentPanelOpen && (
                             <DepartmentWorkbenchIntentPanel 
                                 assignmentId={selectedAssignmentId}
                                 onClose={() => setIsIntentPanelOpen(false)}
                                 onDirtyUpdate={setIsDirty}
                                 onUpdateLocalState={updateLocalState}
                             />
-                        ) : (
-                            <ActivityStream />
                         )}
+
+                        <StockRequestPanel
+                            isOpen={isInventoryModalOpen}
+                            onClose={() => setIsInventoryModalOpen(false)}
+                        />
+
+                        <div className={cn(
+                            "flex-1 flex flex-col h-full min-h-0 transition-opacity duration-300",
+                            (isIntentPanelOpen || isInventoryModalOpen) ? "opacity-0 pointer-events-none" : "opacity-100"
+                        )}>
+                            <ActivityStream />
+                        </div>
                     </div>
 
                 </div>

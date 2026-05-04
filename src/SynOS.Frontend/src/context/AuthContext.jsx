@@ -26,6 +26,7 @@ export function AuthProvider({ children }) {
                     sessionMode: decoded.session_mode || "operational", 
                     departmentCode: decoded.department_code || "General",
                     resourceId: decoded.resource_id || decoded.resourceId,
+                    roleId: decoded.roleId || decoded.RoleId,
                     name: decoded.unique_name || decoded.sub,
                 });
             } catch (error) {
@@ -74,6 +75,7 @@ export function AuthProvider({ children }) {
                 sessionMode: decoded.session_mode || "operational",
                 departmentCode: decoded.department_code || "General",
                 resourceId: decoded.resource_id || decoded.resourceId,
+                roleId: decoded.roleId || decoded.RoleId,
                 name: decoded.unique_name || decoded.sub,
             };
             setUser(userObj);

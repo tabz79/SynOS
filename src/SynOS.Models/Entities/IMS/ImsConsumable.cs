@@ -24,6 +24,8 @@ namespace SynOS.Models.Entities.IMS
         [Required]
         [StringLength(50)]
         public string UnitOfMeasure { get; set; }
+        
+        public int LowStockThreshold { get; set; }
 
         public bool IsCritical { get; set; } = false;
 

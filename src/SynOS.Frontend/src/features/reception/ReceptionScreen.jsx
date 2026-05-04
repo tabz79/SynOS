@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from 'react'
 import { cn } from "@/lib/utils"
 import { useFlipGroup } from "@/hooks/useSynOSMotion"
-import { Plus, Users, ClipboardList, Bed, Clock, Loader2, ChevronDown } from 'lucide-react'
+import { Plus, Users, ClipboardList, Bed, Clock, Loader2, ChevronDown, Package } from 'lucide-react'
+import { StockRequestPanel } from '../inventory/StockRequestPanel'
 import { SystemBar } from '@/components/layout/SystemBar'
 import { RealitySummary } from '@/components/layout/RealitySummary'
 import { ActionQueue, ActionQueueHeader } from '@/components/layout/ActionQueue'
@@ -22,6 +23,7 @@ export function ReceptionScreen() {
 
     const [actionQueue, setActionQueue] = useState([]); // Real Data
     const [isLoadingQueue, setIsLoadingQueue] = useState(true);
+    const [isInventoryModalOpen, setIsInventoryModalOpen] = useState(false);
 
     // History State (Phase 5)
     // We use a Ref for SignalR callback access, and State for Render.
@@ -142,17 +144,9 @@ export function ReceptionScreen() {
     const [isSummaryCollapsed, setIsSummaryCollapsed] = useState(false);
 
     // MOTION CANON: Vertical FLIP Group
-    // We bind the RealitySummary container (height change) and ActionQueue container (position change)
-    // into a single physics group. When summary collapses, queue FLIPs.
     const summaryRef = useRef(null);
     const queueRef = useRef(null);
-
-    // FLIP ENGINE: 260ms OS-Bezier
-    // When isSummaryCollapsed changes, measures Start, DOM updates (Height Reflow), measures End, Inverts, Plays.
-    // We enable scaleCompensation to prevent ActionQueue content jumping during height change.
     useFlipGroup([summaryRef, queueRef], [isSummaryCollapsed], { scaleCompensation: true });
-
-    // We'll use the refs in the JSX below.
 
     // EFFECT: Reload Queue when Toggle Changes
     useEffect(() => {
@@ -168,19 +162,15 @@ export function ReceptionScreen() {
 
     // STAGE 1: Data Fetching (SignalR + Polling) (Strict DTO)
     const realityTiles = summary ? [
-        // ROW 1: Operations & Cash Flow
         { value: summary.walkInsToday?.toString() || "0", label: "Walk-Ins", qualifier: "Paid/Credit", icon: Users, color: "zinc" },
         { value: `₹${(summary.paymentsCashTotal || 0).toLocaleString()}`, label: "Cash Collected", icon: ClipboardList, color: "emerald" },
         { value: summary.paymentsOnlineCount?.toString() || "0", label: "Online Payments", icon: ClipboardList, color: "blue" },
         { value: `₹${(summary.paymentsOnlineTotal || 0).toLocaleString()}`, label: "Online Total", icon: ClipboardList, color: "blue" },
-
-        // ROW 2: Receivables & Lab Performance
-        { value: summary.prepaidBillsCount?.toString() || "0", label: "Prepaid Bills Issued", shortLabel: "Prepaid Bills", icon: ClipboardList, color: "amber" }, // Prepaid = Credit
+        { value: summary.prepaidBillsCount?.toString() || "0", label: "Prepaid Bills Issued", shortLabel: "Prepaid Bills", icon: ClipboardList, color: "amber" },
         { value: `₹${(summary.prepaidBillsTotal || 0).toLocaleString()}`, label: "Prepaid Total", icon: ClipboardList, color: "amber" },
         { value: summary.pendingReports?.toString() || "0", label: "Pending Reports", icon: Bed, color: "red" },
         { value: `${summary.avgReportTimeMinutes || 0}m`, label: "Avg Report Time", icon: Clock, color: "default" },
     ] : [
-        // Skeleton / Empty State
         { value: "—", label: "Walk-Ins", qualifier: "(Paid/Credit)", icon: Users, color: "default" },
         { value: "—", label: "Cash Collected", icon: ClipboardList, color: "default" },
         { value: "—", label: "Online Payments", icon: ClipboardList, color: "default" },
@@ -196,13 +186,12 @@ export function ReceptionScreen() {
         {
             header: "Token ID",
             accessor: "token",
-            className: "w-32", // Removed font-mono to prevent Header from inheriting it
+            className: "w-32",
             render: (row) => (
                 <TokenCell
                     row={row}
                     theme={theme}
                     onAction={(r) => {
-                        // 🔹 FINALIZATION TRUTH:
                         if (r.isFinalized) {
                             openCorrectionIntent(r.visitId);
                         } else {
@@ -223,9 +212,7 @@ export function ReceptionScreen() {
             accessor: "paymentDisplay",
             className: "w-40",
             render: (row) => {
-                // Determine Badge Logic
                 const isPrepaid = row.paymentMethod === "Prepaid";
-                // Match Test Code Dimensions/Font exactly
                 const badgeBase = "text-[10px] px-1 py-0.5 rounded font-mono leading-none border uppercase tracking-wide shrink-0";
                 const badgeColor = isPrepaid
                     ? "bg-red-500/10 dark:text-red-400 text-red-600 border-red-500/20"
@@ -237,15 +224,12 @@ export function ReceptionScreen() {
 
                 return (
                     <div className="flex flex-col gap-1 items-start justify-center min-h-[3rem]">
-                        {/* Line 1: Amount + Badge */}
                         <div className="flex items-center gap-2">
                             <span className="font-bold text-sm dark:text-zinc-200 text-zinc-900 leading-none pt-0.5">{amount}</span>
                             <span className={`${badgeBase} ${badgeColor}`}>
                                 {row.paymentMethod || "DUE"}
                             </span>
                         </div>
-
-                        {/* Line 2: Referrer Name (Prepaid ONLY) */}
                         {isPrepaid && row.referrerName && (
                             <span className="type-meta text-zinc-500 truncate max-w-[140px]" title={row.referrerName}>
                                 {row.referrerName}
@@ -263,79 +247,31 @@ export function ReceptionScreen() {
         }
     ];
 
-
-
     return (
         <div className="h-screen w-screen dark:bg-synos-background bg-transparent text-foreground flex flex-col overflow-hidden font-sans selection:bg-white/20 relative">
-            {/* High-Complexity Atmospheric Accents (Drivers for Frost Aesthetic - STATIC SIMULATION) */}
             <div className="fixed inset-0 pointer-events-none overflow-hidden z-[-1] dark:hidden">
-                {/* 1. Grain/Noise Base */}
                 <div className="absolute inset-0 opacity-[0.03] mix-blend-overlay" style={{ backgroundImage: `url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyBAMAAADsEZWCAAAAGFBMVEUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAt66YlAAAAB3RSTlMAo7S066u0v76zAAABJklEQVQ4jXWSwW7DIAyGvRNoV9HeIdp7B2nvHaK9d7D27lX836VpY6t0p8oHicDHP4Z99qGf96HvX+h7NfSmX8U8z9M0z6+P/m8X6fB6L78XpX4X5X4O6fc8l7e8n+T9KO87ed+m77pP33Wfvuu6T991nb7rum/ed5+87z55333yvvvkfffJ++6T990n77pP33Wfvus6fdd13rrvu67rvXXfd13ne+u+77rO99Z933Wdt67rtnXdt67rtnWdt67rtjW999Y9ve9997mPu8997uPus9fZZ6+zz15nn73OPnudvU9f0+v0Nb1OX9Pr9DW9Tm9O9vTmaE5vjua09f7o/db7rff7f9H3v6XvP9TzL/X+U8+/1fMv9fw7fQ==")` }} />
-
-                {/* 2. Ambient Diffusion 'Objects' (No Blur - Multi-stop Non-linear falloff) */}
-                {/* Rules: 
-                    - Max opacity at center: 8%
-                    - Multi-stop: 0% -> 40% -> 85% for soft diffusion
-                    - Over-sized containers to prevent edge-clipping
-                */}
-
-                {/* Cyan Pulse (Ambient Bloom) */}
-                <div
-                    className="absolute top-[-15%] left-[-5%] w-[50%] h-[55%] animate-pulse"
-                    style={{
-                        background: 'radial-gradient(circle at 40% 40%, rgba(6, 182, 212, 0.07) 0%, rgba(6, 182, 212, 0.02) 45%, rgba(6, 182, 212, 0) 85%)',
-                        animationDuration: '10s'
-                    }}
-                />
-
-                {/* Blue Wash (Deep Scattering) */}
-                <div
-                    className="absolute top-[-10%] right-[10%] w-[45%] h-[50%]"
-                    style={{ background: 'radial-gradient(circle at center, rgba(37, 99, 235, 0.05) 0%, rgba(37, 99, 235, 0.01) 50%, rgba(37, 99, 235, 0) 90%)' }}
-                />
-
-                {/* Dark Anchor (Subtle Depth) */}
-                <div
-                    className="absolute top-[5%] left-[35%] w-[25%] h-[25%]"
-                    style={{ background: 'radial-gradient(circle at center, rgba(39, 39, 42, 0.04) 0%, rgba(39, 39, 42, 0) 75%)' }}
-                />
-
-                {/* Emerald Glow (Warm Diffusion) */}
-                <div
-                    className="absolute top-[-25%] right-[-10%] w-[60%] h-[65%]"
-                    style={{ background: 'radial-gradient(circle at 60% 30%, rgba(52, 211, 153, 0.06) 0%, rgba(52, 211, 153, 0.01) 40%, rgba(52, 211, 153, 0) 80%)' }}
-                />
-
-                {/* Amber Hint (Micro-Bloom) */}
-                <div
-                    className="absolute top-[10%] left-[15%] w-[30%] h-[30%]"
-                    style={{ background: 'radial-gradient(circle at center, rgba(251, 191, 36, 0.03) 0%, rgba(251, 191, 36, 0) 70%)' }}
-                />
+                <div className="absolute top-[-15%] left-[-5%] w-[50%] h-[55%] animate-pulse" style={{ background: 'radial-gradient(circle at 40% 40%, rgba(6, 182, 212, 0.07) 0%, rgba(6, 182, 212, 0.02) 45%, rgba(6, 182, 212, 0) 85%)', animationDuration: '10s' }} />
+                <div className="absolute top-[-10%] right-[10%] w-[45%] h-[50%]" style={{ background: 'radial-gradient(circle at center, rgba(37, 99, 235, 0.05) 0%, rgba(37, 99, 235, 0.01) 50%, rgba(37, 99, 235, 0) 90%)' }} />
+                <div className="absolute top-[5%] left-[35%] w-[25%] h-[25%]" style={{ background: 'radial-gradient(circle at center, rgba(39, 39, 42, 0.04) 0%, rgba(39, 39, 42, 0) 75%)' }} />
+                <div className="absolute top-[-25%] right-[-10%] w-[60%] h-[65%]" style={{ background: 'radial-gradient(circle at 60% 30%, rgba(52, 211, 153, 0.06) 0%, rgba(52, 211, 153, 0.01) 40%, rgba(52, 211, 153, 0) 80%)' }} />
+                <div className="absolute top-[10%] left-[15%] w-[30%] h-[30%]" style={{ background: 'radial-gradient(circle at center, rgba(251, 191, 36, 0.03) 0%, rgba(251, 191, 36, 0) 70%)' }} />
             </div>
 
-            {/* 1. Global System Bar */}
             <SystemBar serverTime={serverTimeAnchor} syncStatus={connectionStatus} />
 
             <div className="flex-1 p-4 overflow-hidden">
                 <div className="flex h-full gap-4">
-
-                    {/* Left Column: Reality + Work */}
                     <div
                         className={`
                             flex flex-col min-h-0
-                            ${isIntentPanelOpen ? 'w-[60%]' : 'w-[75%]'}
+                            ${(isIntentPanelOpen || isInventoryModalOpen) ? 'w-[60%]' : 'w-[75%]'}
                         `}
                     >
-                        <div className={`flex flex-col h-full transition-all duration-500 ease-out ${isIntentPanelOpen ? 'opacity-40 pointer-events-none scale-[0.99]' : 'opacity-100 scale-100'}`}>
-
-                            {/* 
-                                VERTICAL OWNERSHIP CONTRACT: BOUNDED CONTEXT
-                                Motion Canon: NO CSS TRANSITION on height/layout. Snaps instantly.
-                                FLIP engine handles the visual slide.
-                            */}
+                        <div className={`flex flex-col h-full transition-all duration-500 ease-out ${(isIntentPanelOpen || isInventoryModalOpen) ? 'opacity-40 pointer-events-none scale-[0.99]' : 'opacity-100 scale-100'}`}>
                             <div
                                 ref={summaryRef}
-                                className="mb-4 shrink-0" // Removed transition-all duration-300
+                                className="mb-4 shrink-0"
                             >
                                 <div className="flex items-center justify-between mb-2 px-3 sticky top-0 dark:bg-synos-background bg-transparent z-10 py-1">
                                     <h2 className="text-lg font-bold dark:text-zinc-200 text-zinc-800">Reality Summary</h2>
@@ -350,7 +286,6 @@ export function ReceptionScreen() {
                                 <RealitySummary tiles={realityTiles} isCollapsed={isSummaryCollapsed} />
                             </div>
 
-                            {/* Action Queues - FLIP Target (Primary Mass) */}
                             <div
                                 ref={queueRef}
                                 className="flex-1 flex flex-col min-h-0 relative"
@@ -358,16 +293,12 @@ export function ReceptionScreen() {
                                 <div className="flex items-center justify-between mb-2">
                                     <div className="flex items-center gap-4">
                                         <ActionQueueHeader title="Action Queues" count={actionQueue.length} />
-
-                                        {/* HISTORY TOGGLE (UI ONLY) */}
                                         <div className="flex items-center gap-2 dark:bg-zinc-900/50 bg-white rounded-lg p-1 border dark:border-white/5 border-zinc-200 shadow-sm">
                                             <button
                                                 onClick={() => setShowHistory(false)}
                                                 className={cn(
                                                     "text-[10px] uppercase font-bold px-2 py-0.5 rounded transition-all",
-                                                    !showHistory
-                                                        ? "bg-zinc-800 text-white shadow-sm"
-                                                        : (theme === 'dark' ? "text-zinc-500 hover:text-zinc-300" : "text-zinc-500 hover:text-zinc-900")
+                                                    !showHistory ? "bg-zinc-800 text-white shadow-sm" : (theme === 'dark' ? "text-zinc-500 hover:text-zinc-300" : "text-zinc-500 hover:text-zinc-900")
                                                 )}
                                             >
                                                 Live
@@ -376,9 +307,7 @@ export function ReceptionScreen() {
                                                 onClick={() => setShowHistory(true)}
                                                 className={cn(
                                                     "text-[10px] uppercase font-bold px-2 py-0.5 rounded transition-all",
-                                                    showHistory
-                                                        ? "bg-zinc-800 text-white shadow-sm"
-                                                        : (theme === 'dark' ? "text-zinc-500 hover:text-zinc-300" : "text-zinc-500 hover:text-zinc-900")
+                                                    showHistory ? "bg-zinc-800 text-white shadow-sm" : (theme === 'dark' ? "text-zinc-500 hover:text-zinc-300" : "text-zinc-500 hover:text-zinc-900")
                                                 )}
                                             >
                                                 History (7d)
@@ -386,18 +315,28 @@ export function ReceptionScreen() {
                                         </div>
                                     </div>
 
-                                    <button
-                                        onClick={openCreateIntent}
-                                        className={cn(
-                                            "px-4 py-2 rounded-lg text-sm font-bold shadow-lg transition-all duration-200 flex items-center gap-2 pointer-events-auto active:scale-95",
-                                            theme === 'dark'
-                                                ? "bg-zinc-100 text-zinc-900 hover:bg-white shadow-black/40"
-                                                : "bg-zinc-800 text-white hover:bg-zinc-700 shadow-black/20"
-                                        )}
-                                    >
-                                        <Plus className="w-4 h-4" />
-                                        Registration
-                                    </button>
+                                    <div className="flex items-center gap-2">
+                                        <button
+                                            onClick={() => setIsInventoryModalOpen(true)}
+                                            className={cn(
+                                                "px-4 py-2 rounded-lg text-sm font-bold shadow-lg transition-all duration-200 flex items-center gap-2 pointer-events-auto active:scale-95 border",
+                                                theme === 'dark' ? "bg-zinc-900 text-zinc-400 border-white/5 hover:text-white hover:bg-zinc-800" : "bg-white text-zinc-600 border-zinc-200 hover:text-zinc-900 hover:bg-zinc-50"
+                                            )}
+                                        >
+                                            <Package className="w-4 h-4" />
+                                            Request Stock
+                                        </button>
+                                        <button
+                                            onClick={openCreateIntent}
+                                            className={cn(
+                                                "px-4 py-2 rounded-lg text-sm font-bold shadow-lg transition-all duration-200 flex items-center gap-2 pointer-events-auto active:scale-95",
+                                                theme === 'dark' ? "bg-zinc-100 text-zinc-900 hover:bg-white shadow-black/40" : "bg-zinc-800 text-white hover:bg-zinc-700 shadow-black/20"
+                                            )}
+                                        >
+                                            <Plus className="w-4 h-4" />
+                                            Registration
+                                        </button>
+                                    </div>
                                 </div>
                                 {isLoadingQueue ? (
                                     <div className="flex-1 flex items-center justify-center border border-dashed dark:border-zinc-800 border-zinc-300 rounded-xl">
@@ -413,16 +352,24 @@ export function ReceptionScreen() {
                         </div>
                     </div>
 
-                    {/* Right Column: Audit Panel OR Intent Panel */}
                     <div
                         className={`
-                            min-h-0 relative
-                            ${isIntentPanelOpen ? 'w-[40%]' : 'w-[25%]'}
+                            flex flex-col min-h-0 transition-all duration-500 ease-out relative
+                            ${(isIntentPanelOpen || isInventoryModalOpen) ? 'w-[40%]' : 'w-[25%]'}
                         `}
                     >
-                        {isIntentPanelOpen ? <IntentPanel /> : <ActivityStream serverTime={serverTimeAnchor} />}
+                        <IntentPanel />
+                        <StockRequestPanel
+                            isOpen={isInventoryModalOpen}
+                            onClose={() => setIsInventoryModalOpen(false)}
+                        />
+                        <div className={cn(
+                            "flex-1 flex flex-col min-h-0 transition-opacity duration-300",
+                            (isIntentPanelOpen || isInventoryModalOpen) ? "opacity-0 pointer-events-none" : "opacity-100"
+                        )}>
+                            <ActivityStream serverTime={serverTimeAnchor} />
+                        </div>
                     </div>
-
                 </div>
             </div>
         </div>

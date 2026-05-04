@@ -3,6 +3,8 @@ using System.Linq;
 using System.Collections.Generic;
 using SynOS.Models.Entities;
 using SynOS.Models.Entities.Operations;
+using SynOS.Models.Entities.IMS;
+using SynOS.Models.Enums.IMS;
 
 namespace SynOS.Data
 {
@@ -41,6 +43,8 @@ namespace SynOS.Data
             CatalogSeedService.SeedProcessingDepartmentsAsync(context).GetAwaiter().GetResult();
             CatalogSeedService.SeedSpecimenTypesAsync(context).GetAwaiter().GetResult();
             CatalogSeedService.SeedTubeTypesAsync(context).GetAwaiter().GetResult();
+
+            SeedIMS(context);
         }
 
         private static void SeedBranches(SynOSDbContext context)
@@ -199,7 +203,8 @@ namespace SynOS.Data
             var requiredRoles = new[]
             {
                 "Admin", "Receptionist", "Phlebotomist", "Pathologist", "Technician",
-                "XRayTech", "MriTech", "Radiologist", "DeliveryDesk", "Typist", "LabTech"
+                "XRayTech", "MriTech", "Radiologist", "DeliveryDesk", "Typist", "LabTech",
+                "InventoryManager"
             };
             var existingRoles = context.Roles.ToDictionary(r => r.Name, r => r);
 
@@ -234,7 +239,8 @@ namespace SynOS.Data
                 // Simulator Specific Users (GPT-5 Mandatory: Role Purity)
                 new { UserId = Guid.NewGuid(), Email = "typist1@lab.com",    Name = "Simulator Typist",   Password = "Admin",    RoleName = "Typist", CanUseOperational = true, CanUseOversight = false },
                 new { UserId = Guid.NewGuid(), Email = "bio.tech@synos.lab", Name = "Simulator Bio Tech", Password = "Admin",    RoleName = "LabTech", CanUseOperational = true, CanUseOversight = false },
-                new { UserId = Guid.NewGuid(), Email = "hemtech@synos.lab",  Name = "Simulator Hem Tech", Password = "Admin",    RoleName = "LabTech", CanUseOperational = true, CanUseOversight = false }
+                new { UserId = Guid.NewGuid(), Email = "hemtech@synos.lab",  Name = "Simulator Hem Tech", Password = "Admin",    RoleName = "LabTech", CanUseOperational = true, CanUseOversight = false },
+                new { UserId = Guid.NewGuid(), Email = "inventory@lab.com",  Name = "Inventory Manager",  Password = "Admin",    RoleName = "InventoryManager", CanUseOperational = true, CanUseOversight = false }
             };
 
             var existingUsers = context.Users.ToDictionary(u => u.Email, u => u, StringComparer.OrdinalIgnoreCase);
@@ -490,6 +496,68 @@ namespace SynOS.Data
             });
 
             context.SaveChanges();
+        }
+
+        private static void SeedIMS(SynOSDbContext context)
+        {
+            if (context.ImsConsumables.Any()) return;
+
+            var starterItems = new List<(string Name, string Code, ConsumableCategory Category, string Unit, int Threshold)>
+            {
+                ("Syringe 5ml", "SYR-5ML", ConsumableCategory.Consumable, "pcs", 100),
+                ("Gloves Nitro Large", "GLV-L", ConsumableCategory.Consumable, "box", 10),
+                ("Cotton Roll", "CTN-R", ConsumableCategory.Consumable, "pcs", 5),
+                ("Alcohol Swabs", "ALC-S", ConsumableCategory.Consumable, "box", 20),
+                ("Blood Collection Tube (Purple)", "TUBE-EDTA", ConsumableCategory.Consumable, "pcs", 200),
+                ("Ball Point Pen (Blue)", "PEN-BL", ConsumableCategory.Stationery, "pcs", 50),
+                ("Printer Paper A4", "PPR-A4", ConsumableCategory.Stationery, "ream", 10),
+                ("Thermal Receipt Roll", "RCT-RL", ConsumableCategory.Stationery, "pcs", 30),
+                ("CT Scan Film 14x17", "CT-FLM", ConsumableCategory.Imaging, "box", 5),
+                ("MRI Contrast Agent", "MRI-CNT", ConsumableCategory.Imaging, "bottle", 10),
+                ("X-Ray Film 8x10", "XR-FLM", ConsumableCategory.Imaging, "box", 5)
+            };
+
+            foreach (var item in starterItems)
+            {
+                var consumable = new ImsConsumable
+                {
+                    ConsumableId = Guid.NewGuid(),
+                    Code = item.Code,
+                    Name = item.Name,
+                    Category = item.Category,
+                    UnitOfMeasure = item.Unit,
+                    LowStockThreshold = item.Threshold,
+                    IsActive = true
+                };
+                context.ImsConsumables.Add(consumable);
+
+                var inventoryItem = new ImsInventoryItem
+                {
+                    ItemId = Guid.NewGuid(),
+                    ItemCode = item.Code,
+                    Name = item.Name
+                };
+                context.ImsInventoryItems.Add(inventoryItem);
+
+                // Seed some initial stock for the default branch
+                var lot = new ImsInventoryLot
+                {
+                    LotId = Guid.NewGuid(),
+                    ItemId = inventoryItem.ItemId,
+                    BatchNumber = "SEED-2024-001",
+                    CurrentQuantity = item.Threshold * 2,
+                    ContainerSize = 1,
+                    UnitCostSnapshot = 0,
+                    BranchId = DefaultBranchId,
+                    ExpiryDate = DateTimeOffset.UtcNow.AddYears(1),
+                    IsActive = true,
+                    ReceivedAt = DateTimeOffset.UtcNow
+                };
+                context.ImsInventoryLots.Add(lot);
+            }
+
+            context.SaveChanges();
+            Console.WriteLine("[DbInitializer] SEEDED IMS STARTER PACK");
         }
     }
 }

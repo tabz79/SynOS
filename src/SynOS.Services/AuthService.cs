@@ -95,7 +95,9 @@ namespace SynOS.Services
 
             Guid? selectedBranchId = null;
             string? selectedBranchName = null;
-            string selectedRoleName = user.UserRoles.FirstOrDefault()?.Role?.Name ?? "Admin";
+            var primaryRole = user.UserRoles.FirstOrDefault()?.Role;
+            string selectedRoleName = primaryRole?.Name ?? "Admin";
+            Guid selectedRoleId = primaryRole?.RoleId ?? Guid.Empty;
 
             // Operational Mode: Require Branch and Update Resource
             if (selectedMode == "operational")
@@ -119,6 +121,7 @@ namespace SynOS.Services
                     selectedBranchId = context.BranchId;
                     selectedBranchName = context.Branch.Name;
                     selectedRoleName = context.Role.Name;
+                    selectedRoleId = context.RoleId;
                 }
                 else if (userBranchRoles.Count == 1)
                 {
@@ -126,6 +129,7 @@ namespace SynOS.Services
                     selectedBranchId = context.BranchId;
                     selectedBranchName = context.Branch.Name;
                     selectedRoleName = context.Role.Name;
+                    selectedRoleId = context.RoleId;
                 }
                 else
                 {
@@ -163,7 +167,7 @@ namespace SynOS.Services
                 }
             }
 
-            var jwtToken = GenerateJwtToken(user, selectedMode, selectedBranchId, selectedBranchName, selectedRoleName, newSessionId, departmentCode);
+            var jwtToken = GenerateJwtToken(user, selectedMode, selectedBranchId, selectedBranchName, selectedRoleName, selectedRoleId, newSessionId, departmentCode);
             var refreshToken = GenerateRefreshToken(ipAddress);
             refreshToken.SessionMode = selectedMode; // PERSIST MODE
 
@@ -277,6 +281,7 @@ namespace SynOS.Services
             Guid? selectedBranchId = null;
             string? selectedBranchName = null;
             string selectedRoleName = "User";
+            Guid selectedRoleId = user.UserRoles.FirstOrDefault()?.RoleId ?? Guid.Empty;
 
             if (sessionMode == "operational")
             {
@@ -292,6 +297,7 @@ namespace SynOS.Services
                     selectedBranchId = context.BranchId;
                     selectedBranchName = context.Branch.Name;
                     selectedRoleName = context.Role.Name;
+                    selectedRoleId = context.RoleId;
                 }
                 else
                 {
@@ -301,7 +307,9 @@ namespace SynOS.Services
             }
             else
             {
-                selectedRoleName = user.UserRoles.FirstOrDefault()?.Role?.Name ?? "Admin";
+                var role = user.UserRoles.FirstOrDefault()?.Role;
+                selectedRoleName = role?.Name ?? "Admin";
+                selectedRoleId = role?.RoleId ?? Guid.Empty;
             }
 
             var newSessionId = Guid.NewGuid();
@@ -346,7 +354,7 @@ namespace SynOS.Services
                 }
             }
 
-            var jwtToken = GenerateJwtToken(user, sessionMode, selectedBranchId, selectedBranchName, selectedRoleName, newSessionId, departmentCode);
+            var jwtToken = GenerateJwtToken(user, sessionMode, selectedBranchId, selectedBranchName, selectedRoleName, selectedRoleId, newSessionId, departmentCode);
             await _auditService.LogAsync(user.UserId, "RefreshToken", "User", user.UserId, new { IpAddress = ipAddress, Mode = sessionMode });
             
             int refreshRetries = 0;
@@ -393,7 +401,7 @@ namespace SynOS.Services
             return true;
         }
 
-        private string GenerateJwtToken(User user, string sessionMode, Guid? branchId, string? branchName, string roleName, Guid sessionId, string departmentCode)
+        private string GenerateJwtToken(User user, string sessionMode, Guid? branchId, string? branchName, string roleName, Guid roleId, Guid sessionId, string departmentCode)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
             var jwtSecret = _configuration["Jwt:Secret"] ?? throw new InvalidOperationException("Jwt:Secret not configured");
@@ -407,7 +415,8 @@ namespace SynOS.Services
                 new Claim("session_mode", sessionMode), // ADDED for Phase 1B
                 new Claim("session_id", sessionId.ToString()), 
                 new Claim("department_code", departmentCode), // ADDED for Department Workbench
-                new Claim(ClaimTypes.Role, roleName)
+                new Claim(ClaimTypes.Role, roleName),
+                new Claim("RoleId", roleId.ToString())
             };
 
             if (sessionMode == "operational" && branchId.HasValue)

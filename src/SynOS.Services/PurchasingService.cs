@@ -118,9 +118,9 @@ namespace SynOS.Services
                 LotId = Guid.NewGuid(),
                 ConsumableId = consumable.ConsumableId,
                 BranchId = dto.BranchId,
-                BatchNumber = dto.LotNumber,
-                ExpiryDate = dto.ExpiryDate,
-                Quantity = dto.Quantity,
+                BatchNumber = dto.BatchNumber,
+                ExpiryDate = dto.ExpiryDate ?? DateTimeOffset.MaxValue,
+                Quantity = (int)dto.Quantity,
                 ReceivedAt = DateTimeOffset.UtcNow,
                 IsActive = true,
                 CostPerUnit = poItem.UnitPrice
@@ -139,7 +139,7 @@ namespace SynOS.Services
                 MovedAt = DateTimeOffset.UtcNow
             };
 
-            poItem.ReceivedQuantity += dto.Quantity;
+            poItem.ReceivedQuantity += (int)dto.Quantity;
             
             await _context.ImsConsumableLots.AddAsync(newLot);
             await _context.ImsStockMovements.AddAsync(movement);

@@ -6,7 +6,8 @@ import { RealitySummary } from '@/components/layout/RealitySummary'
 import { ActionQueue, ActionQueueHeader } from '@/components/layout/ActionQueue'
 import { ActivityStream } from '@/components/layout/ActivityStream'
 import { useTheme } from '@/context/ThemeContext'
-import { Users, TestTube2, AlertCircle, CheckCircle2, Plus, ChevronDown } from 'lucide-react'
+import { Users, TestTube2, AlertCircle, CheckCircle2, Plus, ChevronDown, Package } from 'lucide-react'
+import { StockRequestPanel } from '../inventory/StockRequestPanel'
 import { PhlebotomyIntentPanel } from './components/PhlebotomyIntentPanel'
 import { useFlipGroup } from "@/hooks/useSynOSMotion"
 import { ReceptionApi } from '@/api/reception'
@@ -19,6 +20,7 @@ export function PhlebotomyScreen() {
     // Local UI State for Skeleton (No Context Dependency)
     const [isIntentPanelOpen, setIsIntentPanelOpen] = useState(false);
     const [isSummaryCollapsed, setIsSummaryCollapsed] = useState(false);
+    const [isInventoryModalOpen, setIsInventoryModalOpen] = useState(false);
 
     // Dynamic Data
     const [actionQueue, setActionQueue] = useState([]);
@@ -215,24 +217,21 @@ export function PhlebotomyScreen() {
 
     return (
         <div className="h-screen w-screen dark:bg-synos-background bg-transparent text-foreground flex flex-col overflow-hidden font-sans selection:bg-white/20 relative">
-            {/* Atmospheric Layer (Canon v1) */}
             <div className="fixed inset-0 pointer-events-none overflow-hidden z-[-1] dark:hidden">
                 <div className="absolute inset-0 opacity-[0.03] mix-blend-overlay" style={{ backgroundImage: `url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyBAMAAADsEZWCAAAAGFBMVEUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAt66YlAAAAB3RSTlMAo7S066u0v76zAAABJklEQVQ4jXWSwW7DIAyGvRNoV9HeIdp7B2nvHaK9d7D27lX836VpY6t0p8oHicDHP4Z99qGf96HvX+h7NfSmX8U8z9M0z6+P/m8X6fB6L78XpX4X5X4O6fc8l7e8n+T9KO87ed+m77pP33Wfvuu6T991nb7rum/ed5+87z55333yvvvkfffJ++6T990n77pP33Wfvus6fdd13rrvu67rvXXfd13ne+u+77rO99Z933Wdt67rtnXdt67rtnWdt67rtjW999Y9ve9997mPu8997uPus9fZZ6+zz15nn73OPnudvU9f0+v0Nb1OX9Pr9DW9Tm9O9vTmaE5vjua09f7o/db7rff7f9H3v6XvP9TzL/X+U8+/1fMv9fw7fQ==")` }} />
-                {/* Simplified Gradients for Phlebo (Same DNA, different tone potentially, but sticking to Canon defaults for now) */}
                 <div className="absolute top-[-10%] right-[10%] w-[50%] h-[50%]" style={{ background: 'radial-gradient(circle at center, rgba(6, 182, 212, 0.05) 0%, rgba(6, 182, 212, 0) 70%)' }} />
             </div>
 
-            {/* Level 1: System Bar */}
             <SystemBar serverTime={serverTime} syncStatus={connectionStatus} />
 
-            {/* Level 2: Workspace */}
             <div className="flex-1 p-4 overflow-hidden">
                 <div className="flex h-full gap-4">
-
-                    {/* Work Area (Flex-1) */}
-                    <div className={`flex flex-col min-h-0 ${isIntentPanelOpen ? 'w-[60%]' : 'w-[75%]'}`}>
-
-                        {/* Summary Region (Shrink-0) */}
+                    <div
+                        className={cn(
+                            "flex flex-col min-h-0 transition-all duration-500 ease-out",
+                            (isIntentPanelOpen || isInventoryModalOpen) ? 'w-[60%] opacity-40 pointer-events-none scale-[0.99]' : 'w-[75%] opacity-100 scale-100'
+                        )}
+                    >
                         <div ref={summaryRef} className="mb-4 shrink-0">
                             <div className="flex items-center justify-between mb-2 px-3 sticky top-0 dark:bg-synos-background bg-transparent z-10 py-1">
                                 <h2 className="text-lg font-bold dark:text-zinc-200 text-zinc-800">Reality Summary</h2>
@@ -247,21 +246,16 @@ export function PhlebotomyScreen() {
                             <RealitySummary tiles={realityTiles} isCollapsed={isSummaryCollapsed} />
                         </div>
 
-                        {/* Queue Pane (Flex-1, Scroll Owner) */}
                         <div ref={queueRef} className="flex-1 flex flex-col min-h-0 relative">
                             <div className="flex items-center justify-between mb-2">
                                 <div className="flex items-center gap-4">
                                     <ActionQueueHeader title="Collection Queue" count={filteredQueue.length} />
-
-                                    {/* ASSIGNMENT TABS (Reception Canon Pattern) */}
                                     <div className="flex items-center gap-2 dark:bg-zinc-900/50 bg-white rounded-lg p-1 border dark:border-white/5 border-zinc-200 shadow-sm">
                                         <button
                                             onClick={() => setActiveAssignmentTab("available")}
                                             className={cn(
                                                 "text-[10px] uppercase font-bold px-2 py-0.5 rounded transition-all",
-                                                activeAssignmentTab === "available"
-                                                    ? "bg-zinc-800 text-white shadow-sm"
-                                                    : (theme === 'dark' ? "text-zinc-500 hover:text-zinc-300" : "text-zinc-500 hover:text-zinc-900")
+                                                activeAssignmentTab === "available" ? "bg-zinc-800 text-white shadow-sm" : (theme === 'dark' ? "text-zinc-500 hover:text-zinc-300" : "text-zinc-500 hover:text-zinc-900")
                                             )}
                                         >
                                             Available
@@ -270,43 +264,53 @@ export function PhlebotomyScreen() {
                                             onClick={() => setActiveAssignmentTab("assigned")}
                                             className={cn(
                                                 "text-[10px] uppercase font-bold px-2 py-0.5 rounded transition-all",
-                                                activeAssignmentTab === "assigned"
-                                                    ? "bg-zinc-800 text-white shadow-sm"
-                                                    : (theme === 'dark' ? "text-zinc-500 hover:text-zinc-300" : "text-zinc-500 hover:text-zinc-900")
+                                                activeAssignmentTab === "assigned" ? "bg-zinc-800 text-white shadow-sm" : (theme === 'dark' ? "text-zinc-500 hover:text-zinc-300" : "text-zinc-500 hover:text-zinc-900")
                                             )}
                                         >
                                             Assigned
                                         </button>
                                     </div>
                                 </div>
-                                <button
-                                    onClick={() => setIsIntentPanelOpen(true)}
-                                    className={cn(
-                                        "px-4 py-2 rounded-lg text-sm font-bold shadow-lg transition-all duration-200 flex items-center gap-2 pointer-events-auto active:scale-95",
-                                        theme === 'dark'
-                                            ? "bg-zinc-100 text-zinc-900 hover:bg-white shadow-black/40"
-                                            : "bg-zinc-800 text-white hover:bg-zinc-700 shadow-black/20"
-                                    )}
-                                >
-                                    <Plus className="w-4 h-4" />
-                                    Walk-In Collection
-                                </button>
+                                <div className="flex items-center gap-2">
+                                    <button
+                                        onClick={() => setIsInventoryModalOpen(true)}
+                                        className={cn(
+                                            "px-4 py-2 rounded-lg text-sm font-bold shadow-lg transition-all duration-200 flex items-center gap-2 pointer-events-auto active:scale-95 border",
+                                            theme === 'dark' ? "bg-zinc-900 text-zinc-400 border-white/5 hover:text-white hover:bg-zinc-800" : "bg-white text-zinc-600 border-zinc-200 hover:text-zinc-900 hover:bg-zinc-50"
+                                        )}
+                                    >
+                                        <Package className="w-4 h-4" />
+                                        Request Stock
+                                    </button>
+                                    <button
+                                        onClick={() => setIsIntentPanelOpen(true)}
+                                        className={cn(
+                                            "px-4 py-2 rounded-lg text-sm font-bold shadow-lg transition-all duration-200 flex items-center gap-2 pointer-events-auto active:scale-95",
+                                            theme === 'dark' ? "bg-zinc-100 text-zinc-900 hover:bg-white shadow-black/40" : "bg-zinc-800 text-white hover:bg-zinc-700 shadow-black/20"
+                                        )}
+                                    >
+                                        <Plus className="w-4 h-4" />
+                                        Walk-In Collection
+                                    </button>
+                                </div>
                             </div>
                             <ActionQueue
                                 columns={queueColumns}
                                 data={filteredQueue}
                                 isLoading={isLoadingQueue}
-                                onAction={handleOpenIntentPanel}
                             />
                         </div>
-
                     </div>
 
-                    {/* Side Column (Fixed Width) */}
-                    <div className={`min-h-0 relative ${isIntentPanelOpen ? 'w-[40%]' : 'w-[25%]'}`}>
-                        {isIntentPanelOpen ? (
-                            <PhlebotomyIntentPanel
-                                isOpen={true}
+                    <div
+                        className={cn(
+                            "transition-all duration-500 ease-out flex flex-col min-w-0",
+                            (isIntentPanelOpen || isInventoryModalOpen) ? 'w-[40%]' : 'w-[25%]'
+                        )}
+                    >
+                        <div className="flex-1 flex flex-col min-h-0 relative">
+                            <PhlebotomyIntentPanel 
+                                isOpen={isIntentPanelOpen} 
                                 visitId={selectedVisitId}
                                 queueItem={selectedQueueItem}
                                 closePanel={() => {
@@ -315,11 +319,20 @@ export function PhlebotomyScreen() {
                                 }}
                                 onUpdateLocalState={handleUpdateLocalState}
                             />
-                        ) : (
-                            <ActivityStream serverTime={serverTime} />
-                        )}
-                    </div>
 
+                            <StockRequestPanel
+                                isOpen={isInventoryModalOpen}
+                                onClose={() => setIsInventoryModalOpen(false)}
+                            />
+
+                            <div className={cn(
+                                "flex-1 flex flex-col min-h-0 transition-opacity duration-300",
+                                (isIntentPanelOpen || isInventoryModalOpen) ? "opacity-0 pointer-events-none" : "opacity-100"
+                            )}>
+                                <ActivityStream serverTime={serverTime} />
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

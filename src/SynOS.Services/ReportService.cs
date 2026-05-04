@@ -1041,19 +1041,29 @@ namespace SynOS.Services
         public async Task<System.Collections.Generic.IEnumerable<ReportListItemDto>> GetReportsByStatusAsync(string status, bool excludeManualFlow = false)
         {
             // Support comma-separated statuses for multi-state queues (e.g. "Draft,ReadyForVerification")
-            var statusList = status.Split(',').Select(s => s.Trim()).ToList();
+            var statusList = (status ?? "").Split(',').Select(s => s.Trim()).Where(s => !string.IsNullOrEmpty(s)).ToList();
 
-            var reports = await _context.Reports
+            var reportsQuery = _context.Reports
                 .Include(r => r.TypedByUser)
                 .Include(r => r.VerifiedByUser)
-                .Where(r => statusList.Contains(r.Status) && r.SourceType == "Order")
-                .Where(r => !excludeManualFlow || !r.IsManualFlow)
+                .Where(r => statusList.Contains(r.Status) && r.SourceType == "Order");
+
+            if (excludeManualFlow)
+            {
+                reportsQuery = reportsQuery.Where(r => !r.IsManualFlow);
+            }
+
+            var reports = await reportsQuery
                 .OrderByDescending(r => r.UpdatedAt ?? r.CreatedAt)
                 .AsNoTracking()
                 .ToListAsync();
 
-            var orderIds = reports.Select(r => r.SourceId).ToList();
+            if (!reports.Any()) return new System.Collections.Generic.List<ReportListItemDto>();
 
+            var orderIds = reports.Select(r => r.SourceId).ToList();
+            var reportIds = reports.Select(r => r.ReportId).ToList();
+
+            // 1. Fetch Orders with Patient details
             var orders = await _context.Orders
                 .Include(o => o.Test)
                 .Include(o => o.Visit).ThenInclude(v => v.Patient)
@@ -1061,28 +1071,41 @@ namespace SynOS.Services
                 .AsNoTracking()
                 .ToDictionaryAsync(o => o.OrderId);
 
-            var resultsCount = await _context.Results
+            // 2. Fetch Result Flags (fetch raw data and group in memory to avoid translation 500s)
+            var resultFlags = await _context.Results
                 .Where(res => orderIds.Contains(res.OrderId))
-                .GroupBy(res => res.OrderId)
-                .Select(g => new { OrderId = g.Key, AbnormalCount = g.Count(r => r.Flag != null && r.Flag != "Normal" && r.Flag != "" && r.Flag != "N") })
-                .ToDictionaryAsync(x => x.OrderId, x => x.AbnormalCount);
+                .Select(res => new { res.OrderId, res.Flag })
+                .AsNoTracking()
+                .ToListAsync();
 
-            var reportIds = reports.Select(r => r.ReportId).ToList();
-            
-            var signatureCounts = await _context.ReportSignatures
+            var abnormalCounts = resultFlags
+                .GroupBy(f => f.OrderId)
+                .ToDictionary(
+                    g => g.Key,
+                    g => g.Count(f => !string.IsNullOrEmpty(f.Flag) && f.Flag != "Normal" && f.Flag != "N")
+                );
+
+            // 3. Fetch Signature Counts
+            var sigData = await _context.ReportSignatures
                 .Where(s => reportIds.Contains(s.ReportId))
-                .GroupBy(s => s.ReportId)
-                .Select(g => new { ReportId = g.Key, Count = g.Count() })
-                .ToDictionaryAsync(x => x.ReportId, x => x.Count);
+                .Select(s => s.ReportId)
+                .ToListAsync();
+
+            var signatureCounts = sigData
+                .GroupBy(id => id)
+                .ToDictionary(g => g.Key, g => g.Count());
 
             return reports.Select(r => {
                 orders.TryGetValue(r.SourceId, out var order);
-                resultsCount.TryGetValue(r.SourceId, out var abnormalCount);
+                abnormalCounts.TryGetValue(r.SourceId, out var abnormalCount);
                 signatureCounts.TryGetValue(r.ReportId, out var sigCount);
                 
-                // Defensive guard for orphaned reports (where order is null)
                 var patient = order?.Visit?.Patient;
-                var age = (patient == null || patient.DateOfBirth == default) ? 0 : (int)((DateTime.Today - patient.DateOfBirth).TotalDays / 365.25);
+                var age = 0;
+                if (patient?.DateOfBirth != null && patient.DateOfBirth != default)
+                {
+                    age = (int)((DateTime.Today - patient.DateOfBirth).TotalDays / 365.25);
+                }
 
                 return new ReportListItemDto
                 {
@@ -1093,7 +1116,7 @@ namespace SynOS.Services
                     Department = r.Department,
                     CreatedAt = r.CreatedAt,
                     Status = r.Status,
-                    IsStat = false, // Placeholder per plan
+                    IsStat = false,
                     AbnormalCount = abnormalCount,
                     Token = order?.Visit?.Token ?? "---",
                     TypedByUserName = r.TypedByUser?.Name,

@@ -24,9 +24,13 @@ namespace SynOS.Models.Entities.IMS
         [ForeignKey("ConsumableId")]
         public virtual ImsConsumable? Consumable { get; set; }
         
-        public Guid? ConsumableLotId { get; set; } // New, nullable LotId for consumables
+        public Guid? ConsumableLotId { get; set; } // Legacy/GPT-4 Consumable Lot
         [ForeignKey("ConsumableLotId")]
         public virtual ImsConsumableLot? ConsumableLot { get; set; }
+
+        public Guid? InventoryLotId { get; set; } // Reality-First Operational Lot
+        [ForeignKey("InventoryLotId")]
+        public virtual ImsInventoryLot? InventoryLot { get; set; }
 
         // --- Common Fields ---
         [Required]

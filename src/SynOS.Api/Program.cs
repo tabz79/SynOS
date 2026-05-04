@@ -43,6 +43,7 @@ using SynOS.Api.Services; // ADDED
 using SynOS.Services.Settlements; // ADDED
 using SynOS.Services.Phlebotomy; // ADDED
 using SynOS.Services.Reporting; // ADDED
+using SynOS.Services.Inventory; // ADDED
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -212,6 +213,8 @@ builder.Services.AddScoped<IDiscountService, DiscountService>(); // ADDED
 builder.Services.AddScoped<ITubeConsumptionService, TubeConsumptionService>();
 builder.Services.AddScoped<IPurchasingService, PurchasingService>();
 builder.Services.AddScoped<IIMSWastageInsightService, IMSWastageInsightService>();
+builder.Services.AddScoped<IImsRequestService, ImsRequestService>();
+builder.Services.AddScoped<IInventoryService, InventoryService>();
 
 // Register Referral Interpretation Service
 builder.Services.AddScoped<IReferralInterpretationService, ReferralInterpretationService>(); // ADDED HERE
@@ -448,6 +451,8 @@ app.MapHub<SynOS.Api.Hubs.BranchOperationsHub>("/branchOperationsHub");
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<SynOSDbContext>();
+    DbInitializer.Initialize(context);
+    
     var misconfiguredBranches = context.Branches
         .Where(b => string.IsNullOrEmpty(b.Code))
         .ToList();

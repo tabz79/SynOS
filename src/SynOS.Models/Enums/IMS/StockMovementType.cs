@@ -8,6 +8,7 @@ namespace SynOS.Models.Enums.IMS
         Receive,
         Calibration,
         Expiry,
-        Adjustment
+        Adjustment,
+        RequestFulfillment
     }
 }

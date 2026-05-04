@@ -34,13 +34,14 @@ export function AdminLayout() {
                 { name: "Reports Typing", icon: Keyboard, path: "/typist" },
                 { name: "Pathologist", icon: UserCheck, path: "/pathologist" },
                 { name: "Delivery Desk", icon: Truck, path: "/delivery" },
-                { name: "Inventory (Ops)", icon: Box, path: "/inventory", disabled: true },
+                { name: "Inventory (Ops)", icon: Box, path: "/inventory" },
                 { name: "Finance (Ops)", icon: IndianRupee, path: "/finance", disabled: true },
             ]
         }
     ];
 
     const standaloneItems = [
+        { name: "Inventory Setup", icon: Box, path: "/admin/inventory/setup" },
         { name: "Lab Setup", icon: Settings2, path: "/admin/setup", disabled: true },
         { name: "Staff Master", icon: Users, path: "/admin/staff", disabled: true },
         { name: "Intelligence", icon: BarChart3, path: "/admin/intelligence", disabled: true },
