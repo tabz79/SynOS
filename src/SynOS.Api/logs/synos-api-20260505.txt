@@ -10,3 +10,9 @@
 2026-05-05 14:15:49.377 +05:30 [INF] Worker: Catch-up complete. Awaiting real-time events...
 2026-05-05 19:30:19.479 +05:30 [WRN] Failed to determine the https port for redirect.
 2026-05-05 20:16:59.381 +05:30 [INF] Notification Worker Service stopping gracefully.
+2026-05-05 20:24:02.562 +05:30 [INF] Notification Worker Service running.
+2026-05-05 20:24:02.702 +05:30 [INF] OperationalStatsProjectionWorker is starting in Event-Driven Mode.
+2026-05-05 20:24:02.707 +05:30 [INF] Worker: Running Consistency Check and Catch-up...
+2026-05-05 20:24:02.973 +05:30 [INF] Worker: Catch-up complete. Awaiting real-time events...
+2026-05-05 20:24:23.345 +05:30 [WRN] Failed to determine the https port for redirect.
+2026-05-05 20:50:04.277 +05:30 [INF] Notification Worker Service stopping gracefully.

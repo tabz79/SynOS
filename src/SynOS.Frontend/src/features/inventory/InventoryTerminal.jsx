@@ -152,8 +152,8 @@ const InventoryDashboard = () => {
         <div className="flex-1 flex flex-col min-h-0 gap-8">
             <div className="shrink-0">
                 <div className="flex items-center justify-between mb-4 px-2">
-                    <h2 className="text-xl font-black dark:text-white tracking-tight uppercase">System Overview</h2>
-                    <button onClick={load} className="text-[10px] font-bold text-synos-primary hover:underline uppercase tracking-widest">Refresh Pulse</button>
+                    <h2 className="type-display !text-2xl">System Overview</h2>
+                    <button onClick={load} className="type-section-header text-synos-primary hover:underline cursor-pointer">Refresh Pulse</button>
                 </div>
                 <RealitySummary 
                     tiles={[
@@ -195,21 +195,21 @@ const InventoryDashboard = () => {
                     <div className="w-20 h-20 rounded-full bg-emerald-500/10 flex items-center justify-center mb-2">
                         <CheckCircle2 className="w-10 h-10 text-emerald-500" />
                     </div>
-                    <h3 className="text-2xl font-black dark:text-white">Fulfillment Health</h3>
-                    <p className="text-zinc-500 text-sm max-w-xs">
+                    <h3 className="type-display !text-xl">Fulfillment Health</h3>
+                    <p className="type-body opacity-80 max-w-xs">
                         Inventory fulfillment logic is operational. You have fulfilled <b>{metrics?.fulfilledTodayCount}</b> requests today across all laboratory nodes.
                     </p>
                 </div>
 
                 <div className="bg-white dark:bg-zinc-900/50 rounded-[2.5rem] border border-zinc-200 dark:border-white/5 p-8 shadow-xl flex flex-col gap-6">
-                    <h3 className="text-lg font-black dark:text-white uppercase tracking-widest text-center">Critical Signals</h3>
+                    <h3 className="type-section-header text-center">Critical Signals</h3>
                     <div className="flex-1 flex flex-col gap-4">
                         <div className={cn(
                             "flex justify-between items-center px-6 py-4 rounded-2xl transition-all",
                             metrics?.pendingRequestsCount > 0 ? "bg-red-500/10 border border-red-500/20" : "bg-zinc-50 dark:bg-white/5"
                         )}>
-                            <span className="text-xs font-bold text-zinc-500">Branch Requests</span>
-                            <span className={cn("text-[10px] font-black uppercase", metrics?.pendingRequestsCount > 0 ? "text-red-500" : "text-emerald-500")}>
+                            <span className="type-label">Branch Requests</span>
+                            <span className={cn("type-section-header", metrics?.pendingRequestsCount > 0 ? "text-red-500" : "text-emerald-500")}>
                                 {metrics?.pendingRequestsCount > 0 ? `${metrics.pendingRequestsCount} URGENT` : "STABLE"}
                             </span>
                         </div>
@@ -217,8 +217,8 @@ const InventoryDashboard = () => {
                             "flex justify-between items-center px-6 py-4 rounded-2xl transition-all",
                             metrics?.criticalStockCount > 0 ? "bg-red-500/10 border border-red-500/20" : "bg-zinc-50 dark:bg-white/5"
                         )}>
-                            <span className="text-xs font-bold text-zinc-500">Stock Outs</span>
-                            <span className={cn("text-[10px] font-black uppercase", metrics?.criticalStockCount > 0 ? "text-red-500" : "text-emerald-500")}>
+                            <span className="type-label">Stock Outs</span>
+                            <span className={cn("type-section-header", metrics?.criticalStockCount > 0 ? "text-red-500" : "text-emerald-500")}>
                                 {metrics?.criticalStockCount > 0 ? `${metrics.criticalStockCount} CRITICAL` : "HEALTHY"}
                             </span>
                         </div>
@@ -226,8 +226,8 @@ const InventoryDashboard = () => {
                             "flex justify-between items-center px-6 py-4 rounded-2xl transition-all",
                             metrics?.lowStockCount > 0 ? "bg-amber-500/10 border border-amber-500/20" : "bg-zinc-50 dark:bg-white/5"
                         )}>
-                            <span className="text-xs font-bold text-zinc-500">Low Stock Alert</span>
-                            <span className={cn("text-[10px] font-black uppercase", metrics?.lowStockCount > 0 ? "text-amber-500" : "text-emerald-500")}>
+                            <span className="type-label">Low Stock Alert</span>
+                            <span className={cn("type-section-header", metrics?.lowStockCount > 0 ? "text-amber-500" : "text-emerald-500")}>
                                 {metrics?.lowStockCount > 0 ? `${metrics.lowStockCount} REORDER` : "ADEQUATE"}
                             </span>
                         </div>
@@ -937,41 +937,71 @@ export function InventoryTerminal() {
     ];
 
     return (
-        <div className="h-screen w-screen dark:bg-synos-background bg-zinc-50 text-foreground flex flex-col overflow-hidden font-sans relative">
+        <div className="flex flex-col h-screen w-screen overflow-hidden dark:bg-zinc-950 bg-transparent text-zinc-900 dark:text-zinc-300 selection:bg-synos-primary/20">
+            {/* High-Complexity Atmospheric Accents (PERFORMANCE OPTIMIZED) */}
+            <div className="fixed inset-0 pointer-events-none overflow-hidden z-[-1] dark:hidden">
+                {/* 1. Grain/Noise Base */}
+                <div className="absolute inset-0 opacity-[0.015]" style={{ backgroundImage: `url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyBAMAAADsEZWCAAAAGFBMVEUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAt66YlAAAAB3RSTlMAo7S066u0v76zAAABJklEQVQ4jXWSwW7DIAyGvRNoV9HeIdp7B2nvHaK9d7D27lX836VpY6t0p8oHicDHP4Z99qGf96HvX+h7NfSmX8U8z9M0z6+P/m8X6fB6L78XpX4X5X4O6fc8l7e8n+T9KO87ed+m77pP33Wfvuu6T991nb7rum/ed5+87z55333yvvvkfffJ++6T990n77pP33Wfvus6fdd13rrvu67rvXXfd13ne+u+77rO99Z933Wdt67rtnXdt67rtnWdt67rtjW999Y9ve9997mPu8997uPus9fZZ6+zz15nn73OPnudvU9f0+v0Nb1OX9Pr9DW9Tm9O9vTmaE5vjua09f7o/db7rff7f9H3v6XvP9TzL/X+U8+/1fMv9fw7fQ==")` }} />
+
+                {/* Static Blooms */}
+                <div
+                    className="absolute top-[-15%] left-[-5%] w-[50%] h-[55%]"
+                    style={{ background: 'radial-gradient(circle at 40% 40%, rgba(6, 182, 212, 0.05) 0%, rgba(6, 182, 212, 0) 70%)' }}
+                />
+                <div
+                    className="absolute top-[-10%] right-[10%] w-[45%] h-[50%]"
+                    style={{ background: 'radial-gradient(circle at center, rgba(37, 99, 235, 0.03) 0%, rgba(37, 99, 235, 0) 80%)' }}
+                />
+                <div
+                    className="absolute top-[-25%] right-[-10%] w-[60%] h-[65%]"
+                    style={{ background: 'radial-gradient(circle at 60% 30%, rgba(52, 211, 153, 0.04) 0%, rgba(52, 211, 153, 0) 70%)' }}
+                />
+            </div>
+
             <SystemBar serverTime={serverTime} syncStatus={connectionStatus} />
 
-            <div className="flex-1 flex overflow-hidden">
-                {/* Internal Navigation Sidebar */}
-                <div className="w-64 border-r border-zinc-200 dark:border-white/5 flex flex-col p-4 gap-2 bg-white dark:bg-synos-background shrink-0">
-                    <div className="mb-6 px-4">
-                        <h1 className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">Inventory Ops</h1>
-                    </div>
-                    {tabs.map(tab => (
-                        <button
-                            key={tab.id}
-                            onClick={() => {
-                                setActiveTab(tab.id);
-                                if (tab.id !== 'receive') setPrefilledItem(null);
-                            }}
-                            className={cn(
-                                "flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-300 group relative",
-                                activeTab === tab.id 
-                                    ? "bg-synos-primary text-white shadow-xl shadow-synos-primary/20 scale-[1.02]" 
-                                    : "text-zinc-500 hover:bg-zinc-100 dark:hover:bg-white/5 hover:text-zinc-900 dark:hover:text-white"
-                            )}
-                        >
-                            <tab.icon className={cn("w-5 h-5 transition-transform group-hover:scale-110", activeTab === tab.id ? "text-white" : "text-zinc-400")} />
-                            <span className="font-bold text-sm tracking-tight">{tab.label}</span>
-                            {activeTab === tab.id && (
-                                <div className="absolute left-0 w-1 h-6 bg-white rounded-full opacity-50" />
-                            )}
-                        </button>
-                    ))}
-                </div>
+            <div className="flex flex-1 overflow-hidden relative z-10">
+                {/* Sidebar - STATIC FROST MODEL */}
+                <aside 
+                    style={{
+                        backgroundImage: `url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyBAMAAADsEZWCAAAAGFBMVEUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAt66YlAAAAB3RSTlMAo7S066u0v76zAAABJklEQVQ4jXWSwW7DIAyGvRNoV9HeIdp7B2nvHaK9d7D27lX836VpY6t0p8oHicDHP4Z99qGf96HvX+h7NfSmX8U8z9M0z6+P/m8X6fB6L78XpX4X5X4O6fc8l7e8n+T9KO87ed+m77pP33Wfvuu6T991nb7rum/ed5+87z55333yvvvkfffJ++6T990n77pP33Wfvus6fdd13rrvu67rvXXfd13ne+u+77rO99Z933Wdt67rtnXdt67rtnWdt67rtjW999Y9ve9997mPu8997uPus9fZZ6+zz15nn73OPnudvU9f0+v0Nb1OX9Pr9DW9Tm9O9vTmaE5vjua09f7o/db7rff7f9H3v6XvP9TzL/X+U8+/1fMv9fw7fQ==")`,
+                        backgroundBlendMode: 'overlay',
+                        backgroundRepeat: 'repeat'
+                    }}
+                    className="w-64 border-r dark:border-zinc-900 border-zinc-200 dark:bg-zinc-950 bg-gradient-to-b from-white/98 to-zinc-50/95 flex flex-col relative shrink-0"
+                >
+                    <div className="absolute inset-0 border-r border-white/40 pointer-events-none" />
+                    
+                    <nav className="flex-1 overflow-y-auto p-4 pt-8 space-y-2 relative z-10">
+                        <div className="px-3 mb-6">
+                            <span className="type-section-header transition-colors">Inventory Ops</span>
+                        </div>
+                        <div className="space-y-1">
+                            {tabs.map(tab => (
+                                <button
+                                    key={tab.id}
+                                    onClick={() => {
+                                        setActiveTab(tab.id);
+                                        if (tab.id !== 'receive') setPrefilledItem(null);
+                                    }}
+                                    className={cn(
+                                        "w-full flex items-center gap-3 px-3 py-2 rounded-md transition-all duration-200 group border",
+                                        activeTab === tab.id 
+                                            ? "bg-synos-primary/10 dark:text-white text-synos-primary dark:border-synos-primary/20 border-synos-primary/30" 
+                                            : "text-zinc-500 dark:hover:bg-zinc-900 hover:bg-zinc-200/50 hover:text-zinc-900 border-transparent"
+                                    )}
+                                >
+                                    <tab.icon className={cn("w-4 h-4 shrink-0 transition-colors", activeTab === tab.id ? "text-synos-primary" : "group-hover:text-synos-primary")} />
+                                    <span className="type-label !text-zinc-500 group-hover:text-zinc-900 dark:group-hover:text-zinc-300 transition-colors">{tab.label}</span>
+                                </button>
+                            ))}
+                        </div>
+                    </nav>
+                </aside>
 
-                {/* Content Area */}
-                <div className="flex-1 flex flex-col overflow-hidden p-6 gap-6 relative">
-                    <div className="flex-1 flex flex-col min-h-0">
+                {/* Main Content */}
+                <main className="flex-1 flex flex-col h-full overflow-hidden relative">
+                    <div className="flex-1 overflow-y-auto p-8 relative z-10">
                         {activeTab === 'dashboard' && <InventoryDashboard />}
                         {activeTab === 'ledger' && <StockLedger onReceive={handleQuickReceive} />}
                         {activeTab === 'receive' && <ReceiveStock prefilledItem={prefilledItem} />}
@@ -979,7 +1009,7 @@ export function InventoryTerminal() {
                         { activeTab === 'onboarding' && <OpeningStockOnboarding /> }
                         { activeTab === 'history' && <MovementHistory /> }
                     </div>
-                </div>
+                </main>
             </div>
         </div>
     );

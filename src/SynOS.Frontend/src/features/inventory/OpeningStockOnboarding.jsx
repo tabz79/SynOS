@@ -20,6 +20,12 @@ import { InventoryApi } from '@/api/inventory';
 import { AdminApi } from '@/api/admin';
 import { useAuth } from '@/context/AuthContext';
 
+const cardStyle = {
+    background: `url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyBAMAAADsEZWCAAAAGFBMVEUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAt66YlAAAAB3RSTlMAo7S066u0v76zAAABJklEQVQ4jXWSwW7DIAyGvRNoV9HeIdp7B2nvHaK9d7D27lX836VpY6t0p8oHicDHP4Z99qGf96HvX+h7NfSmX8U8z9M0z6+P/m8X6fB6L78XpX4X5X4O6fc8l7e8n+T9KO87ed+m77pP33Wfvuu6T991nb7rum/ed5+87z55333yvvvkfffJ++6T990n77pP33Wfvus6fdd13rrvu67rvXXfd13ne+u+77rO99Z933Wdt67rtnXdt67rtnWdt67rtjW999Y9ve9997mPu8997uPus9fZZ6+zz15nn73OPnudvU9f0+v0Nb1OX9Pr9DW9Tm9O9vTmaE5vjua09f7o/db7rff7f9H3v6XvP9TzL/X+U8+/1fMv9fw7fQ=="), linear-gradient(to bottom, #ffffff 0%, #f9fafb 100%)`
+};
+
+const cardClasses = "bg-white shadow-[0_4px_12px_rgba(0,0,0,0.04),inset_0_1px_0_rgba(255,255,255,1)] border border-black/[0.1] rounded-xl";
+
 const GravityDropdown = ({ items, value, onChange, placeholder = "Select Item..." }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
@@ -124,7 +130,7 @@ const GravityDropdown = ({ items, value, onChange, placeholder = "Select Item...
         <div ref={containerRef} className="relative w-full">
             <div 
                 onClick={() => setIsOpen(!isOpen)}
-                className="w-full bg-zinc-50 dark:bg-zinc-950 border dark:border-zinc-800 border-zinc-200 rounded-xl px-4 py-3 cursor-pointer flex items-center justify-between group hover:border-synos-primary/50 transition-all"
+                className="w-full bg-black/[0.02] border border-black/5 rounded-md px-3 py-2 text-sm focus:ring-1 ring-synos-primary outline-none transition-all cursor-pointer flex items-center justify-between group hover:border-synos-primary/50"
             >
                 <span className={selectedItem ? "text-sm font-black dark:text-white" : "text-sm text-zinc-500 font-medium"}>
                     {selectedItem ? `${selectedItem.name} (${selectedItem.itemCode})` : placeholder}
@@ -155,7 +161,7 @@ const GravityDropdown = ({ items, value, onChange, placeholder = "Select Item...
                                         placeholder="Search catalog..."
                                         value={searchTerm}
                                         onChange={(e) => setSearchTerm(e.target.value)}
-                                        className="w-full bg-zinc-50 dark:bg-zinc-950 border-none rounded-lg pl-9 pr-4 py-2 text-xs font-bold outline-none focus:ring-2 ring-synos-primary/20 transition-all dark:text-white"
+                                        className="w-full bg-black/[0.02] border border-black/5 rounded-md pl-9 pr-4 py-2 text-sm focus:ring-1 ring-synos-primary outline-none transition-all"
                                     />
                                 </div>
                             </div>
@@ -184,10 +190,10 @@ const GravityDropdown = ({ items, value, onChange, placeholder = "Select Item...
                             </div>
                             
                             <div className="space-y-3">
-                                <input required value={newItem.name} onChange={e => setNewItem({...newItem, name: e.target.value})} placeholder="Product Name" className="w-full bg-zinc-50 dark:bg-zinc-950 border dark:border-white/5 border-zinc-200 rounded-lg px-4 py-2 text-xs font-bold outline-none focus:ring-2 ring-synos-primary/20 dark:text-white" />
+                                <input required value={newItem.name} onChange={e => setNewItem({...newItem, name: e.target.value})} placeholder="Product Name" className="w-full bg-black/[0.02] border border-black/5 rounded-md px-3 py-2 text-sm focus:ring-1 ring-synos-primary outline-none transition-all" />
                                 <div className="grid grid-cols-2 gap-3">
-                                    <input required value={newItem.code} onChange={e => setNewItem({...newItem, code: e.target.value})} placeholder="Code" className="w-full bg-zinc-50 dark:bg-zinc-950 border dark:border-white/5 border-zinc-200 rounded-lg px-4 py-2 text-xs font-bold outline-none focus:ring-2 ring-synos-primary/20 dark:text-white uppercase" />
-                                    <input required value={newItem.unit} onChange={e => setNewItem({...newItem, unit: e.target.value})} placeholder="Unit (ml/box)" className="w-full bg-zinc-50 dark:bg-zinc-950 border dark:border-white/5 border-zinc-200 rounded-lg px-4 py-2 text-xs font-bold outline-none focus:ring-2 ring-synos-primary/20 dark:text-white" />
+                                    <input required value={newItem.code} onChange={e => setNewItem({...newItem, code: e.target.value})} placeholder="Code" className="w-full bg-black/[0.02] border border-black/5 rounded-md px-3 py-2 text-sm focus:ring-1 ring-synos-primary outline-none transition-all uppercase" />
+                                    <input required value={newItem.unit} onChange={e => setNewItem({...newItem, unit: e.target.value})} placeholder="Unit (ml/box)" className="w-full bg-black/[0.02] border border-black/5 rounded-md px-3 py-2 text-sm focus:ring-1 ring-synos-primary outline-none transition-all" />
                                 </div>
                                 
                                 <div className="space-y-2">
@@ -202,7 +208,7 @@ const GravityDropdown = ({ items, value, onChange, placeholder = "Select Item...
                                                     value={newCategory}
                                                     onChange={e => setNewCategory(e.target.value)}
                                                     placeholder="Custom Category..."
-                                                    className="flex-1 bg-zinc-50 dark:bg-zinc-950 border dark:border-white/5 border-zinc-200 rounded-lg px-4 py-2 text-xs font-bold outline-none focus:ring-2 ring-synos-primary/20 dark:text-white"
+                                                    className="flex-1 bg-black/[0.02] border border-black/5 rounded-md px-3 py-2 text-sm focus:ring-1 ring-synos-primary outline-none transition-all"
                                                 />
                                                 <button 
                                                     type="button"
@@ -232,7 +238,7 @@ const GravityDropdown = ({ items, value, onChange, placeholder = "Select Item...
                                                         setNewItem({...newItem, category: e.target.value});
                                                     }
                                                 }}
-                                                className="w-full bg-zinc-50 dark:bg-zinc-950 border dark:border-white/5 border-zinc-200 rounded-lg px-4 py-2 text-xs font-bold outline-none focus:ring-2 ring-synos-primary/20 dark:text-white cursor-pointer"
+                                                className="w-full bg-black/[0.02] border border-black/5 rounded-md px-3 py-2 text-sm focus:ring-1 ring-synos-primary outline-none transition-all cursor-pointer"
                                             >
                                                 {categories.map(c => <option key={c} value={c}>{c}</option>)}
                                                 <option value="NEW" className="text-synos-primary font-black">+ ADD NEW CATEGORY</option>
@@ -459,25 +465,25 @@ export function OpeningStockOnboarding() {
 
     return (
         <div className="p-6 max-w-6xl mx-auto space-y-8 animate-in fade-in duration-500">
-            {/* Hidden File Input */}
-            <input 
-                type="file" 
-                ref={fileInputRef} 
-                className="hidden" 
-                accept=".csv" 
-                onChange={handleFileUpload} 
-            />
+                {/* Hidden File Input */}
+                <input 
+                    type="file" 
+                    ref={fileInputRef} 
+                    className="hidden" 
+                    accept=".csv" 
+                    onChange={handleFileUpload} 
+                />
 
-            {/* Header Area */}
-            <div className="flex items-center justify-between">
-                <div>
-                    <h1 className="text-2xl font-bold dark:text-white text-zinc-900 tracking-tight">
-                        Add Existing Stock
-                    </h1>
-                    <p className="text-zinc-500 text-sm mt-1">
-                        Onboard your physical inventory into the digital ledger.
-                    </p>
-                </div>
+                {/* Header Area */}
+                <div className="flex items-center justify-between">
+                    <div>
+                        <h1 className="text-lg font-bold dark:text-zinc-200 text-zinc-800 tracking-tight">
+                            Add Existing Stock
+                        </h1>
+                        <p className="text-xs text-zinc-400 italic mt-1">
+                            Onboard your physical inventory into the digital ledger.
+                        </p>
+                    </div>
                 
                 <div className="flex items-center gap-4">
                     <div className="flex flex-col">
@@ -485,7 +491,7 @@ export function OpeningStockOnboarding() {
                         <select 
                             value={selectedBranch}
                             onChange={(e) => setSelectedBranch(e.target.value)}
-                            className="bg-white dark:bg-zinc-900 border dark:border-zinc-800 border-zinc-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-synos-primary/20 min-w-[200px]"
+                            className="bg-black/[0.02] border border-black/5 rounded-md px-3 py-2 text-sm focus:ring-1 ring-synos-primary outline-none transition-all min-w-[200px]"
                         >
                             <option value="">Select Branch...</option>
                             {branches.map(b => (
@@ -541,11 +547,11 @@ export function OpeningStockOnboarding() {
             </div>
 
             {/* Content Area */}
-            <div className="bg-white dark:bg-zinc-900 border dark:border-zinc-800 border-zinc-200 rounded-3xl p-8 shadow-xl relative min-h-[400px]">
+            <div className={`${cardClasses} p-8 relative min-h-[400px]`} style={cardStyle}>
                 {activeMethod === 'manual' && (
                     <form onSubmit={handleManualSubmit} className="grid grid-cols-2 gap-6 animate-in fade-in zoom-in-95 duration-300">
                         <div className="col-span-2 space-y-1">
-                            <label className="text-xs font-bold text-zinc-500 uppercase ml-1">Consumable Item</label>
+                            <label className="text-[10px] uppercase font-mono tracking-wider text-zinc-500 ml-1">Consumable Item</label>
                             <GravityDropdown 
                                 items={items} 
                                 value={manualEntry.consumableId} 
@@ -554,16 +560,16 @@ export function OpeningStockOnboarding() {
                             />
                         </div>
                         <div className="space-y-1">
-                            <label className="text-xs font-bold text-zinc-500 uppercase ml-1">Quantity</label>
-                            <input type="number" required step="any" value={manualEntry.quantity} onChange={(e) => setManualEntry({...manualEntry, quantity: e.target.value})} placeholder="0.00" className="w-full bg-zinc-50 dark:bg-zinc-950 border dark:border-zinc-800 border-zinc-200 rounded-xl px-4 py-3 outline-none" />
+                            <label className="text-[10px] uppercase font-mono tracking-wider text-zinc-500 ml-1">Quantity</label>
+                            <input type="number" required step="any" value={manualEntry.quantity} onChange={(e) => setManualEntry({...manualEntry, quantity: e.target.value})} placeholder="0.00" className="w-full bg-black/[0.02] border border-black/5 rounded-md px-3 py-2 text-sm focus:ring-1 ring-synos-primary outline-none transition-all" />
                         </div>
                         <div className="space-y-1">
-                            <label className="text-xs font-bold text-zinc-500 uppercase ml-1">Batch Number</label>
-                            <input type="text" value={manualEntry.batchNumber} onChange={(e) => setManualEntry({...manualEntry, batchNumber: e.target.value})} placeholder="e.g. B123-X" className="w-full bg-zinc-50 dark:bg-zinc-950 border dark:border-zinc-800 border-zinc-200 rounded-xl px-4 py-3 outline-none" />
+                            <label className="text-[10px] uppercase font-mono tracking-wider text-zinc-500 ml-1">Batch Number</label>
+                            <input type="text" value={manualEntry.batchNumber} onChange={(e) => setManualEntry({...manualEntry, batchNumber: e.target.value})} placeholder="e.g. B123-X" className="w-full bg-black/[0.02] border border-black/5 rounded-md px-3 py-2 text-sm focus:ring-1 ring-synos-primary outline-none transition-all" />
                         </div>
                         <div className="space-y-1">
-                            <label className="text-xs font-bold text-zinc-500 uppercase ml-1">Expiry Date</label>
-                            <input type="date" value={manualEntry.expiryDate} onChange={(e) => setManualEntry({...manualEntry, expiryDate: e.target.value})} className="w-full bg-zinc-50 dark:bg-zinc-950 border dark:border-zinc-800 border-zinc-200 rounded-xl px-4 py-3 outline-none" />
+                            <label className="text-[10px] uppercase font-mono tracking-wider text-zinc-500 ml-1">Expiry Date</label>
+                            <input type="date" value={manualEntry.expiryDate} onChange={(e) => setManualEntry({...manualEntry, expiryDate: e.target.value})} className="w-full bg-black/[0.02] border border-black/5 rounded-md px-3 py-2 text-sm focus:ring-1 ring-synos-primary outline-none transition-all" />
                         </div>
                         <div className="col-span-2 pt-4">
                             <button type="submit" disabled={loading} className="w-full bg-synos-primary text-white font-bold py-4 rounded-2xl hover:brightness-110 active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-lg shadow-synos-primary/20">
@@ -601,9 +607,9 @@ export function OpeningStockOnboarding() {
                                                     }} 
                                                 />
                                             </td>
-                                            <td className="p-2"><input type="number" value={entry.quantity} onChange={(e) => { const n = [...bulkEntries]; n[index].quantity = e.target.value; setBulkEntries(n); }} className="w-full bg-transparent outline-none p-2 focus:bg-zinc-100 dark:focus:bg-zinc-800 rounded-md" /></td>
-                                            <td className="p-2"><input type="text" value={entry.batchNumber} onChange={(e) => { const n = [...bulkEntries]; n[index].batchNumber = e.target.value; setBulkEntries(n); }} className="w-full bg-transparent outline-none p-2 focus:bg-zinc-100 dark:focus:bg-zinc-800 rounded-md" /></td>
-                                            <td className="p-2"><input type="date" value={entry.expiryDate} onChange={(e) => { const n = [...bulkEntries]; n[index].expiryDate = e.target.value; setBulkEntries(n); }} className="w-full bg-transparent outline-none p-2 focus:bg-zinc-100 dark:focus:bg-zinc-800 rounded-md" /></td>
+                                            <td className="p-2"><input type="number" value={entry.quantity} onChange={(e) => { const n = [...bulkEntries]; n[index].quantity = e.target.value; setBulkEntries(n); }} className="w-full bg-black/[0.02] border border-black/5 rounded-md px-3 py-2 text-sm focus:ring-1 ring-synos-primary outline-none transition-all" /></td>
+                                            <td className="p-2"><input type="text" value={entry.batchNumber} onChange={(e) => { const n = [...bulkEntries]; n[index].batchNumber = e.target.value; setBulkEntries(n); }} className="w-full bg-black/[0.02] border border-black/5 rounded-md px-3 py-2 text-sm focus:ring-1 ring-synos-primary outline-none transition-all" /></td>
+                                            <td className="p-2"><input type="date" value={entry.expiryDate} onChange={(e) => { const n = [...bulkEntries]; n[index].expiryDate = e.target.value; setBulkEntries(n); }} className="w-full bg-black/[0.02] border border-black/5 rounded-md px-3 py-2 text-sm focus:ring-1 ring-synos-primary outline-none transition-all" /></td>
                                             <td className="p-2"><button onClick={() => setBulkEntries(bulkEntries.filter((_, i) => i !== index))} className="p-2 text-zinc-400 hover:text-red-500"><Trash2 className="w-4 h-4" /></button></td>
                                         </tr>
                                     ))}
@@ -619,7 +625,7 @@ export function OpeningStockOnboarding() {
 
                 {activeMethod === 'paste' && (
                     <div className="space-y-6 animate-in fade-in zoom-in-95 duration-300">
-                        <textarea value={pasteData} onChange={(e) => setPasteData(e.target.value)} placeholder="Paste Excel rows here..." className="w-full h-64 bg-zinc-50 dark:bg-zinc-950 border dark:border-zinc-800 border-zinc-200 rounded-2xl p-6 font-mono text-xs outline-none focus:ring-2 focus:ring-synos-primary/20" />
+                        <textarea value={pasteData} onChange={(e) => setPasteData(e.target.value)} placeholder="Paste Excel rows here..." className="w-full h-64 bg-black/[0.02] border border-black/5 rounded-md px-3 py-2 text-sm focus:ring-1 ring-synos-primary outline-none transition-all font-mono" />
                         <button onClick={parsePasteData} className="w-full bg-synos-primary text-white font-bold py-4 rounded-2xl flex items-center justify-center gap-2"><Search className="w-5 h-5" /> Parse Paste Buffer</button>
                     </div>
                 )}
@@ -642,7 +648,7 @@ export function OpeningStockOnboarding() {
                                 onChange={(e) => setBarcodeInput(e.target.value)}
                                 onKeyDown={handleBarcodeScan}
                                 placeholder="Scan or Type Item Code..."
-                                className="w-full bg-zinc-100 dark:bg-zinc-800 border-none rounded-2xl pl-12 pr-4 py-4 font-bold outline-none ring-2 ring-synos-primary/10 focus:ring-synos-primary/50 transition-all text-center"
+                                className="w-full bg-black/[0.02] border border-black/5 rounded-md pl-12 pr-4 py-4 text-sm focus:ring-1 ring-synos-primary outline-none transition-all font-bold text-center"
                             />
                         </div>
                         <div className="flex flex-wrap justify-center gap-4 mt-4">
