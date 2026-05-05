@@ -1,15 +1,17 @@
-import axios from 'axios';
+import { apiClient } from './client';
 
 const API_BASE = '/api/v1/admin';
 
 export const AdminApi = {
     getRoles: async () => {
-        const response = await axios.get(`${API_BASE}/users/roles`);
-        return response.data;
+        return apiClient.get(`${API_BASE}/users/roles`);
     },
     
     getUsers: async () => {
-        const response = await axios.get(`${API_BASE}/users`);
-        return response.data;
+        return apiClient.get(`${API_BASE}/users`);
+    },
+
+    getBranches: async () => {
+        return apiClient.get(`${API_BASE}/users/branches`);
     }
 };

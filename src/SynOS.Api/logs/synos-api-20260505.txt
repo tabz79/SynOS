@@ -1,0 +1,6 @@
+2026-05-05 07:23:33.151 +05:30 [INF] Notification Worker Service running.
+2026-05-05 07:23:33.312 +05:30 [INF] OperationalStatsProjectionWorker is starting in Event-Driven Mode.
+2026-05-05 07:23:33.318 +05:30 [INF] Worker: Running Consistency Check and Catch-up...
+2026-05-05 07:23:33.625 +05:30 [INF] Worker: Catch-up complete. Awaiting real-time events...
+2026-05-05 07:23:39.900 +05:30 [WRN] Failed to determine the https port for redirect.
+2026-05-05 08:31:39.192 +05:30 [INF] Notification Worker Service stopping gracefully.

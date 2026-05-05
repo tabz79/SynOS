@@ -13,11 +13,114 @@ import {
     ClipboardList, 
     History,
     XCircle,
-    Zap
+    Zap,
+    Plus,
+    X
 } from 'lucide-react'
 import { SignalRService } from '@/lib/signalr'
 import { cn } from '@/lib/utils'
 import { InventoryApi } from '@/api/inventory'
+import { OpeningStockOnboarding } from './OpeningStockOnboarding'
+
+const QuickItemModal = ({ isOpen, onClose, onCreated }) => {
+    const [formData, setFormData] = useState({
+        name: '',
+        itemCode: '',
+        unitOfMeasure: 'units',
+        lowStockThreshold: 10,
+        category: 'General'
+    });
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState(null);
+
+    if (!isOpen) return null;
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setIsLoading(true);
+        setError(null);
+        try {
+            const newItem = await InventoryApi.createInventoryItem(formData);
+            onCreated(newItem);
+            onClose();
+        } catch (err) {
+            setError(err.message);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    return (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-300">
+            <div className="bg-white dark:bg-zinc-900 w-full max-w-md rounded-[2.5rem] shadow-2xl border border-zinc-200 dark:border-white/10 overflow-hidden animate-in zoom-in-95 duration-300">
+                <div className="p-8 border-b border-zinc-100 dark:border-white/5 flex items-center justify-between bg-zinc-50 dark:bg-white/[0.02]">
+                    <div>
+                        <h3 className="text-xl font-black dark:text-white tracking-tight">Provision New Item</h3>
+                        <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mt-1">Register missing consumable</p>
+                    </div>
+                    <button onClick={onClose} className="p-2 hover:bg-zinc-200 dark:hover:bg-white/10 rounded-full transition-colors">
+                        <X className="w-5 h-5 text-zinc-500" />
+                    </button>
+                </div>
+
+                <form onSubmit={handleSubmit} className="p-8 space-y-6">
+                    {error && (
+                        <div className="bg-red-500/10 border border-red-500/20 p-3 rounded-xl text-red-500 text-[10px] font-bold uppercase text-center">
+                            {error}
+                        </div>
+                    )}
+                    
+                    <div className="space-y-4">
+                        <div className="flex flex-col gap-1.5">
+                            <label className="text-[10px] font-black uppercase text-zinc-500 ml-2">Display Name</label>
+                            <input 
+                                required
+                                type="text"
+                                value={formData.name}
+                                onChange={(e) => setFormData({...formData, name: e.target.value})}
+                                className="bg-zinc-100 dark:bg-zinc-800/50 border-none rounded-2xl px-5 py-3.5 text-sm font-bold focus:ring-2 ring-synos-primary outline-none transition-all dark:text-white"
+                                placeholder="e.g. EDTA Tube 4ml"
+                            />
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="flex flex-col gap-1.5">
+                                <label className="text-[10px] font-black uppercase text-zinc-500 ml-2">Unit</label>
+                                <input 
+                                    required
+                                    type="text"
+                                    value={formData.unitOfMeasure}
+                                    onChange={(e) => setFormData({...formData, unitOfMeasure: e.target.value})}
+                                    className="bg-zinc-100 dark:bg-zinc-800/50 border-none rounded-2xl px-5 py-3.5 text-sm font-bold focus:ring-2 ring-synos-primary outline-none transition-all dark:text-white"
+                                    placeholder="units"
+                                />
+                            </div>
+                            <div className="flex flex-col gap-1.5">
+                                <label className="text-[10px] font-black uppercase text-zinc-500 ml-2">Alert Threshold</label>
+                                <input 
+                                    required
+                                    type="number"
+                                    value={formData.lowStockThreshold}
+                                    onChange={(e) => setFormData({...formData, lowStockThreshold: parseInt(e.target.value)})}
+                                    className="bg-zinc-100 dark:bg-zinc-800/50 border-none rounded-2xl px-5 py-3.5 text-sm font-bold focus:ring-2 ring-synos-primary outline-none transition-all dark:text-white"
+                                />
+                            </div>
+                        </div>
+                    </div>
+
+                    <button 
+                        type="submit"
+                        disabled={isLoading}
+                        className="w-full bg-synos-primary text-white font-black py-4 rounded-2xl shadow-xl shadow-synos-primary/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2"
+                    >
+                        {isLoading ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <PlusCircle className="w-5 h-5" />}
+                        Register & Select Item
+                    </button>
+                </form>
+            </div>
+        </div>
+    );
+};
 
 // Placeholder Tab Components
 const InventoryDashboard = () => {
@@ -372,6 +475,7 @@ const ReceiveStock = ({ prefilledItem }) => {
     const [items, setItems] = useState([]);
     const [isLoadingItems, setIsLoadingItems] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isModalOpen, setIsModalOpen] = useState(false);
     const [formData, setFormData] = useState({
         itemId: prefilledItem?.itemId || "",
         quantity: "",
@@ -382,18 +486,20 @@ const ReceiveStock = ({ prefilledItem }) => {
         supplierId: null
     });
 
+    const loadItems = async () => {
+        setIsLoadingItems(true);
+        try {
+            const data = await InventoryApi.getInventoryItems();
+            setItems(data);
+        } catch (e) {
+            console.error(e);
+        } finally {
+            setIsLoadingItems(false);
+        }
+    };
+
     useEffect(() => {
-        const load = async () => {
-            try {
-                const data = await InventoryApi.getInventoryItems();
-                setItems(data);
-            } catch (e) {
-                console.error(e);
-            } finally {
-                setIsLoadingItems(false);
-            }
-        };
-        load();
+        loadItems();
     }, []);
 
     useEffect(() => {
@@ -432,11 +538,31 @@ const ReceiveStock = ({ prefilledItem }) => {
         }
     };
 
+    const handleItemCreated = (newItem) => {
+        setItems(prev => [...prev, newItem].sort((a, b) => a.name.localeCompare(b.name)));
+        setFormData(prev => ({ ...prev, itemId: newItem.itemId }));
+    };
+
     return (
         <div className="flex-1 flex flex-col min-h-0 max-w-2xl mx-auto w-full py-10">
-            <div className="mb-8">
-                <h2 className="text-3xl font-black dark:text-white mb-2 tracking-tight">Receive Stock</h2>
-                <p className="text-zinc-500 font-bold uppercase text-[10px] tracking-[0.2em]">Goods Received Note (GRN) Entry</p>
+            <QuickItemModal 
+                isOpen={isModalOpen} 
+                onClose={() => setIsModalOpen(false)} 
+                onCreated={handleItemCreated} 
+            />
+
+            <div className="mb-8 flex items-end justify-between px-2">
+                <div>
+                    <h2 className="text-3xl font-black dark:text-white mb-2 tracking-tight">Receive Stock</h2>
+                    <p className="text-zinc-500 font-bold uppercase text-[10px] tracking-[0.2em]">Goods Received Note (GRN) Entry</p>
+                </div>
+                <button 
+                    onClick={() => setIsModalOpen(true)}
+                    className="flex items-center gap-2 text-[10px] font-black uppercase text-synos-primary bg-synos-primary/10 px-4 py-2 rounded-xl border border-synos-primary/20 hover:scale-105 active:scale-95 transition-all"
+                >
+                    <Plus className="w-3 h-3" />
+                    New Item Identity
+                </button>
             </div>
 
             <form onSubmit={handleSubmit} className="bg-white dark:bg-zinc-900/50 rounded-[2.5rem] border border-zinc-200 dark:border-white/5 p-10 shadow-2xl flex flex-col gap-8">
@@ -690,7 +816,8 @@ const MovementHistory = () => {
             'Receive': 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20',
             'Consumption': 'bg-amber-500/10 text-amber-500 border-amber-500/20',
             'RequestFulfillment': 'bg-synos-primary/10 text-synos-primary border-synos-primary/20',
-            'Wastage': 'bg-red-500/10 text-red-500 border-red-500/20'
+            'Wastage': 'bg-red-500/10 text-red-500 border-red-500/20',
+            'OpeningBalance': 'bg-indigo-500/10 text-indigo-500 border-indigo-500/20'
         };
         return types[type] || 'bg-zinc-500/10 text-zinc-500 border-zinc-500/20';
     };
@@ -806,6 +933,7 @@ export function InventoryTerminal() {
         { id: 'receive', label: 'Receive Stock', icon: PlusCircle },
         { id: 'requests', label: 'Requests Queue', icon: ClipboardList },
         { id: 'history', label: 'Movement History', icon: History },
+        { id: 'onboarding', label: 'Add Existing Stock', icon: Package },
     ];
 
     return (
@@ -847,8 +975,9 @@ export function InventoryTerminal() {
                         {activeTab === 'dashboard' && <InventoryDashboard />}
                         {activeTab === 'ledger' && <StockLedger onReceive={handleQuickReceive} />}
                         {activeTab === 'receive' && <ReceiveStock prefilledItem={prefilledItem} />}
-                        {activeTab === 'requests' && <RequestsQueue />}
-                        {activeTab === 'history' && <MovementHistory />}
+                        { activeTab === 'requests' && <RequestsQueue /> }
+                        { activeTab === 'onboarding' && <OpeningStockOnboarding /> }
+                        { activeTab === 'history' && <MovementHistory /> }
                     </div>
                 </div>
             </div>

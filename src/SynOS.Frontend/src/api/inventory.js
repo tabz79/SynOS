@@ -1,9 +1,10 @@
+import { apiClient } from './client';
 import { jwtDecode } from 'jwt-decode';
 
 const API_BASE = '/api/v1/inventory';
 
 export const InventoryApi = {
-    // Helper to get headers (Sync with ReceptionApi pattern)
+    // Legacy Helpers (Kept for Surgical Migration)
     getHeaders: () => {
         const token = localStorage.getItem('synos_jwt');
         const headers = { 'Content-Type': 'application/json' };
@@ -13,7 +14,6 @@ export const InventoryApi = {
         return headers;
     },
 
-    // Helper to append branchId
     withBranchId: (url) => {
         const token = localStorage.getItem('synos_jwt');
         if (!token) return url;
@@ -32,141 +32,81 @@ export const InventoryApi = {
         return url;
     },
 
+    // Refactored Methods
     getAllowedItems: async () => {
-        const response = await fetch(InventoryApi.withBranchId(`${API_BASE}/requests/allowed-items`), {
-            headers: InventoryApi.getHeaders()
-        });
-        if (!response.ok) throw new Error("Failed to load essential items");
-        return response.json();
+        return apiClient.get(`${API_BASE}/requests/allowed-items`);
     },
     
     getAllActiveItems: async () => {
-        const response = await fetch(InventoryApi.withBranchId(`${API_BASE}/requests/all-items`), {
-            headers: InventoryApi.getHeaders()
-        });
-        if (!response.ok) throw new Error("Failed to load all items");
-        return response.json();
+        return apiClient.get(`${API_BASE}/requests/all-items`);
     },
 
     getMappings: async (roleId) => {
-        const response = await fetch(`${API_BASE}/requests/roles/${roleId}/mappings`, {
-            headers: InventoryApi.getHeaders()
-        });
-        if (!response.ok) throw new Error("Failed to load mappings");
-        return response.json();
+        return apiClient.get(`${API_BASE}/requests/roles/${roleId}/mappings`);
     },
 
     addMapping: async (roleId, consumableId) => {
-        const response = await fetch(`${API_BASE}/requests/roles/${roleId}/mappings/${consumableId}`, {
-            method: 'POST',
-            headers: InventoryApi.getHeaders()
-        });
-        if (!response.ok) throw new Error("Failed to add mapping");
+        return apiClient.post(`${API_BASE}/requests/roles/${roleId}/mappings/${consumableId}`);
     },
 
     removeMapping: async (roleId, consumableId) => {
-        const response = await fetch(`${API_BASE}/requests/roles/${roleId}/mappings/${consumableId}`, {
-            method: 'DELETE',
-            headers: InventoryApi.getHeaders()
-        });
-        if (!response.ok) throw new Error("Failed to remove mapping");
+        return apiClient.delete(`${API_BASE}/requests/roles/${roleId}/mappings/${consumableId}`);
     },
     
     createRequest: async (consumableId, quantity, branchId) => {
-        const response = await fetch(InventoryApi.withBranchId(`${API_BASE}/requests`), {
-            method: 'POST',
-            headers: InventoryApi.getHeaders(),
-            body: JSON.stringify({
-                consumableId,
-                quantity: parseInt(quantity),
-                branchId
-            })
+        return apiClient.post(`${API_BASE}/requests`, {
+            consumableId,
+            quantity: parseInt(quantity),
+            branchId
         });
-        if (!response.ok) {
-            const errData = await response.json().catch(() => ({}));
-            throw new Error(errData.message || "Failed to submit request");
-        }
-        return response.json();
     },
     
     getPendingRequests: async (branchId) => {
-        const url = InventoryApi.withBranchId(`${API_BASE}/requests/pending`);
-        const response = await fetch(url, {
-            headers: InventoryApi.getHeaders()
-        });
-        if (!response.ok) throw new Error("Failed to load pending requests");
-        return response.json();
+        return apiClient.get(`${API_BASE}/requests/pending`);
     },
     
     fulfillRequest: async (requestId) => {
-        const response = await fetch(`${API_BASE}/requests/${requestId}/fulfill`, {
-            method: 'POST',
-            headers: InventoryApi.getHeaders()
-        });
-        if (!response.ok) {
-            const errData = await response.json().catch(() => ({}));
-            throw new Error(errData.message || "Fulfillment failed");
-        }
+        return apiClient.post(`${API_BASE}/requests/${requestId}/fulfill`);
     },
     
     ignoreRequest: async (requestId) => {
-        const response = await fetch(`${API_BASE}/requests/${requestId}/ignore`, {
-            method: 'POST',
-            headers: InventoryApi.getHeaders()
-        });
-        if (!response.ok) throw new Error("Failed to ignore request");
+        return apiClient.post(`${API_BASE}/requests/${requestId}/ignore`);
     },
 
     getStockLedger: async () => {
-        const response = await fetch(`${API_BASE}/stock`, {
-            headers: InventoryApi.getHeaders()
-        });
-        if (!response.ok) throw new Error("Failed to load stock ledger");
-        return response.json();
+        return apiClient.get(`${API_BASE}/stock`);
     },
 
     getItemLots: async (itemId, branchId) => {
-        const response = await fetch(`${API_BASE}/stock/${itemId}/lots?branchId=${branchId}`, {
-            headers: InventoryApi.getHeaders()
-        });
-        if (!response.ok) throw new Error("Failed to load item lots");
-        return response.json();
+        return apiClient.get(`${API_BASE}/stock/${itemId}/lots?branchId=${branchId}`);
     },
 
     getInventoryItems: async () => {
-        const response = await fetch(`${API_BASE}/items`, {
-            headers: InventoryApi.getHeaders()
-        });
-        if (!response.ok) throw new Error("Failed to load inventory items");
-        return response.json();
+        return apiClient.get(`${API_BASE}/items`);
+    },
+
+    createInventoryItem: async (dto) => {
+        return apiClient.post(`${API_BASE}/items`, dto);
     },
 
     receiveStock: async (data) => {
-        const response = await fetch(`${API_BASE}/receive`, {
-            method: 'POST',
-            headers: InventoryApi.getHeaders(),
-            body: JSON.stringify(data)
-        });
-        if (!response.ok) {
-            const errData = await response.json().catch(() => ({}));
-            throw new Error(errData.message || "Failed to receive stock");
-        }
-        return response.json();
+        return apiClient.post(`${API_BASE}/receive`, data);
     },
 
     getMovementHistory: async () => {
-        const response = await fetch(`${API_BASE}/history`, {
-            headers: InventoryApi.getHeaders()
-        });
-        if (!response.ok) throw new Error("Failed to load movement history");
-        return response.json();
+        return apiClient.get(`${API_BASE}/history`);
     },
 
     getDashboardMetrics: async () => {
-        const response = await fetch(`${API_BASE}/dashboard`, {
-            headers: InventoryApi.getHeaders()
-        });
-        if (!response.ok) throw new Error("Failed to load dashboard metrics");
-        return response.json();
+        return apiClient.get(`${API_BASE}/dashboard`);
+    },
+
+    // New Opening Stock Methods
+    createOpeningStockSingle: async (dto) => {
+        return apiClient.post(`${API_BASE}/opening-stock/single`, dto);
+    },
+
+    createOpeningStockBulk: async (entries) => {
+        return apiClient.post(`${API_BASE}/opening-stock/bulk`, entries);
     }
 };

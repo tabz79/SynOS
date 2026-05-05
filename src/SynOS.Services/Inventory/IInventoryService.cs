@@ -14,5 +14,8 @@ namespace SynOS.Services.Inventory
         Task ReceiveStockAsync(ReceiveStockDto dto, Guid recordedByUserId);
         Task<IEnumerable<StockMovementDto>> GetMovementHistoryAsync();
         Task<InventoryDashboardDto> GetDashboardMetricsAsync();
+        Task CreateOpeningStockEntryAsync(OpeningStockDto dto, Guid recordedByUserId);
+        Task CreateOpeningStockBulkAsync(IEnumerable<OpeningStockDto> entries, Guid recordedByUserId);
+        Task<ImsInventoryItem> CreateItemAsync(CreateItemDto dto);
     }
 }

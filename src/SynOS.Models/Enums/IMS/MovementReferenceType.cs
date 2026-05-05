@@ -8,6 +8,7 @@ namespace SynOS.Models.Enums.IMS
         Manual,
         StockRequest,
         GRN,
-        Unknown
+        Unknown,
+        Other
     }
 }

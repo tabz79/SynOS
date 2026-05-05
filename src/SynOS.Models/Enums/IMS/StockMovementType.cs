@@ -9,6 +9,7 @@ namespace SynOS.Models.Enums.IMS
         Calibration,
         Expiry,
         Adjustment,
-        RequestFulfillment
+        RequestFulfillment,
+        OpeningBalance
     }
 }

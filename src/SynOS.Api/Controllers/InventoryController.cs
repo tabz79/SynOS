@@ -72,5 +72,37 @@ namespace SynOS.Api.Controllers
             var metrics = await _inventoryService.GetDashboardMetricsAsync();
             return Ok(metrics);
         }
+
+        [HttpPost("opening-stock/single")]
+        [Authorize(Roles = "Admin,InventoryManager")]
+        public async Task<ActionResult> CreateOpeningStockSingle([FromBody] OpeningStockDto dto)
+        {
+            var userIdStr = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (!Guid.TryParse(userIdStr, out var userId))
+                return Unauthorized();
+
+            await _inventoryService.CreateOpeningStockEntryAsync(dto, userId);
+            return Ok(new { message = "Opening stock entry created successfully" });
+        }
+
+        [HttpPost("opening-stock/bulk")]
+        [Authorize(Roles = "Admin,InventoryManager")]
+        public async Task<ActionResult> CreateOpeningStockBulk([FromBody] IEnumerable<OpeningStockDto> entries)
+        {
+            var userIdStr = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (!Guid.TryParse(userIdStr, out var userId))
+                return Unauthorized();
+
+            await _inventoryService.CreateOpeningStockBulkAsync(entries, userId);
+            return Ok(new { message = "Bulk opening stock entries created successfully" });
+        }
+
+        [HttpPost("items")]
+        [Authorize(Roles = "Admin,InventoryManager")]
+        public async Task<ActionResult<ImsInventoryItem>> CreateItem([FromBody] CreateItemDto dto)
+        {
+            var item = await _inventoryService.CreateItemAsync(dto);
+            return Ok(item);
+        }
     }
 }

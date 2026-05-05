@@ -166,5 +166,111 @@ namespace SynOS.Services.Inventory
                 LowStockCount = lowCount
             };
         }
+
+        public async Task CreateOpeningStockEntryAsync(OpeningStockDto dto, Guid recordedByUserId)
+        {
+            // 1. Create the new Inventory Lot
+            var lot = new ImsInventoryLot
+            {
+                LotId = Guid.NewGuid(),
+                ItemId = dto.ConsumableId, // ConsumableId in DTO maps to ItemId in Lot
+                BatchNumber = string.IsNullOrWhiteSpace(dto.BatchNumber) ? "OPEN-BAL" : dto.BatchNumber,
+                CurrentQuantity = dto.Quantity,
+                ContainerSize = dto.Quantity,
+                UnitCostSnapshot = 0, // Opening balance usually doesn't capture cost in simple flows
+                ExpiryDate = dto.ExpiryDate,
+                BranchId = dto.BranchId,
+                ReceivedAt = DateTimeOffset.UtcNow,
+                IsActive = true
+            };
+
+            _context.ImsInventoryLots.Add(lot);
+
+            // 2. Log as OpeningBalance movement
+            var movement = new ImsStockMovement
+            {
+                MovementId = Guid.NewGuid(),
+                InventoryLotId = lot.LotId,
+                MovementType = StockMovementType.OpeningBalance,
+                Quantity = (int)dto.Quantity,
+                MovedAt = DateTimeOffset.UtcNow,
+                RecordedByUserId = recordedByUserId,
+                ReferenceType = MovementReferenceType.Other,
+                ReferenceId = "Initial Onboarding"
+            };
+
+            _context.ImsStockMovements.Add(movement);
+
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task CreateOpeningStockBulkAsync(IEnumerable<OpeningStockDto> entries, Guid recordedByUserId)
+        {
+            foreach (var entry in entries)
+            {
+                // We reuse the single logic for consistency, but wrap in a single SaveChanges if needed.
+                // For bulk performance with 100s of items, we'll do them in a single transaction.
+                var lot = new ImsInventoryLot
+                {
+                    LotId = Guid.NewGuid(),
+                    ItemId = entry.ConsumableId,
+                    BatchNumber = string.IsNullOrWhiteSpace(entry.BatchNumber) ? "OPEN-BAL" : entry.BatchNumber,
+                    CurrentQuantity = entry.Quantity,
+                    ContainerSize = entry.Quantity,
+                    ExpiryDate = entry.ExpiryDate,
+                    BranchId = entry.BranchId,
+                    ReceivedAt = DateTimeOffset.UtcNow,
+                    IsActive = true
+                };
+
+                _context.ImsInventoryLots.Add(lot);
+
+                var movement = new ImsStockMovement
+                {
+                    MovementId = Guid.NewGuid(),
+                    InventoryLotId = lot.LotId,
+                    MovementType = StockMovementType.OpeningBalance,
+                    Quantity = (int)entry.Quantity,
+                    MovedAt = DateTimeOffset.UtcNow,
+                    RecordedByUserId = recordedByUserId,
+                    ReferenceType = MovementReferenceType.Other,
+                    ReferenceId = "Bulk Onboarding"
+                };
+
+                _context.ImsStockMovements.Add(movement);
+            }
+
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task<ImsInventoryItem> CreateItemAsync(CreateItemDto dto)
+        {
+            // 1. Create the Abstract Identity
+            var item = new ImsInventoryItem
+            {
+                ItemId = Guid.NewGuid(),
+                ItemCode = string.IsNullOrWhiteSpace(dto.ItemCode) ? Guid.NewGuid().ToString().Substring(0, 8).ToUpper() : dto.ItemCode,
+                Name = dto.Name
+            };
+
+            _context.ImsInventoryItems.Add(item);
+
+            // 2. Create the Consumable Metadata
+            var consumable = new ImsConsumable
+            {
+                ConsumableId = item.ItemId, // Linked by ID
+                Code = item.ItemCode,
+                Name = item.Name,
+                UnitOfMeasure = dto.UnitOfMeasure ?? "units",
+                LowStockThreshold = (int)dto.LowStockThreshold,
+                Category = Enum.TryParse<ConsumableCategory>(dto.Category, true, out var cat) ? cat : ConsumableCategory.General,
+                IsActive = true
+            };
+
+            _context.ImsConsumables.Add(consumable);
+
+            await _context.SaveChangesAsync();
+            return item;
+        }
     }
 }

@@ -15,20 +15,35 @@ export function AuthProvider({ children }) {
     };
 
     useEffect(() => {
+        let timer;
         if (token) {
             try {
                 const decoded = jwtDecode(token);
-                setUser({
-                    id: decoded.nameid || decoded.id,
-                    role: decoded.role || decoded["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"],
-                    branchId: decoded.branch_id || decoded.branchId,
-                    branchName: decoded.branch_name || "Unknown Branch",
-                    sessionMode: decoded.session_mode || "operational", 
-                    departmentCode: decoded.department_code || "General",
-                    resourceId: decoded.resource_id || decoded.resourceId,
-                    roleId: decoded.roleId || decoded.RoleId,
-                    name: decoded.unique_name || decoded.sub,
-                });
+                const currentTime = Date.now() / 1000;
+                
+                if (decoded.exp < currentTime) {
+                    console.warn("Session expired. Logging out.");
+                    logout();
+                } else {
+                    setUser({
+                        id: decoded.nameid || decoded.id,
+                        role: decoded.role || decoded["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"],
+                        branchId: decoded.branch_id || decoded.branchId,
+                        branchName: decoded.branch_name || "Unknown Branch",
+                        sessionMode: decoded.session_mode || "operational", 
+                        departmentCode: decoded.department_code || "General",
+                        resourceId: decoded.resource_id || decoded.resourceId,
+                        roleId: decoded.roleId || decoded.RoleId,
+                        name: decoded.unique_name || decoded.sub,
+                    });
+
+                    // Set auto-logout timer
+                    const timeUntilExpiry = (decoded.exp - currentTime) * 1000;
+                    timer = setTimeout(() => {
+                        console.warn("Session expired during active use. Logging out.");
+                        logout();
+                    }, timeUntilExpiry);
+                }
             } catch (error) {
                 console.error("Invalid Token:", error);
                 logout();
@@ -36,7 +51,12 @@ export function AuthProvider({ children }) {
         } else {
             setUser(null);
         }
+        
         setIsLoading(false);
+
+        return () => {
+            if (timer) clearTimeout(timer);
+        };
     }, [token]);
 
     const login = async (email, password, preferredMode = null, branchId = null) => {
