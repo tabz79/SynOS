@@ -331,7 +331,7 @@ export function OpeningStockOnboarding() {
                     </form>
                 )}
 
-                {(activeMethod === 'grid' || (activeMethod !== 'manual' && bulkEntries.length > 0)) && (
+                {activeMethod === 'grid' && (
                     <div className="space-y-6 animate-in fade-in zoom-in-95 duration-300">
                         <div className="max-h-[400px] overflow-y-auto rounded-xl border dark:border-zinc-800 border-zinc-200">
                             <table className="w-full text-left text-sm">
@@ -369,7 +369,7 @@ export function OpeningStockOnboarding() {
                     </div>
                 )}
 
-                {activeMethod === 'paste' && bulkEntries.length === 0 && (
+                {activeMethod === 'paste' && (
                     <div className="space-y-6 animate-in fade-in zoom-in-95 duration-300">
                         <textarea value={pasteData} onChange={(e) => setPasteData(e.target.value)} placeholder="Paste Excel rows here..." className="w-full h-64 bg-zinc-50 dark:bg-zinc-950 border dark:border-zinc-800 border-zinc-200 rounded-2xl p-6 font-mono text-xs outline-none focus:ring-2 focus:ring-synos-primary/20" />
                         <button onClick={parsePasteData} className="w-full bg-synos-primary text-white font-bold py-4 rounded-2xl flex items-center justify-center gap-2"><Search className="w-5 h-5" /> Parse Paste Buffer</button>
