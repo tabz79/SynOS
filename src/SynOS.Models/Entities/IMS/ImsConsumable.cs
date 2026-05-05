@@ -19,7 +19,8 @@ namespace SynOS.Models.Entities.IMS
         public string Name { get; set; }
 
         [Required]
-        public ConsumableCategory Category { get; set; }
+        [StringLength(100)]
+        public string Category { get; set; }
 
         [Required]
         [StringLength(50)]

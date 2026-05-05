@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useLayoutEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { 
     Box, 
     Upload, 
@@ -18,6 +19,245 @@ import {
 import { InventoryApi } from '@/api/inventory';
 import { AdminApi } from '@/api/admin';
 import { useAuth } from '@/context/AuthContext';
+
+const GravityDropdown = ({ items, value, onChange, placeholder = "Select Item..." }) => {
+    const [isOpen, setIsOpen] = useState(false);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [isAddingNew, setIsAddingNew] = useState(false);
+    const [dropdownStyles, setDropdownStyles] = useState({});
+    const containerRef = useRef(null);
+    const dropdownRef = useRef(null);
+    const [newItem, setNewItem] = useState({ name: '', code: '', unit: 'units', category: 'General' });
+    const [categories, setCategories] = useState(['Pathology', 'Radiology', 'Imaging', 'Consumable', 'Stationery', 'General']);
+    const [isAddingCategory, setIsAddingCategory] = useState(false);
+    const [newCategory, setNewCategory] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
+
+    useEffect(() => {
+        if (items.length > 0) {
+            const catalogCategories = [...new Set(items.map(i => i.category).filter(Boolean))];
+            setCategories(prev => [...new Set([...prev, ...catalogCategories])]);
+        }
+    }, [items]);
+
+    const selectedItem = items.find(i => i.itemId === value);
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (containerRef.current && !containerRef.current.contains(event.target) && 
+                dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+                setIsOpen(false);
+                setIsAddingNew(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    const updatePosition = () => {
+        if (isOpen && containerRef.current) {
+            const rect = containerRef.current.getBoundingClientRect();
+            const spaceBelow = window.innerHeight - rect.bottom;
+            const spaceAbove = rect.top;
+            const dropdownHeight = isAddingNew ? 450 : 350; // Increased threshold for safety
+
+            const styles = {
+                position: 'fixed',
+                left: rect.left,
+                width: rect.width,
+                zIndex: 9999,
+            };
+
+            // Gravity Logic: If not enough space below, and more space above, flip up
+            if (spaceBelow < dropdownHeight && spaceAbove > spaceBelow) {
+                styles.bottom = window.innerHeight - rect.top + 8;
+                styles.top = 'auto';
+            } else {
+                styles.top = rect.bottom + 8;
+                styles.bottom = 'auto';
+            }
+
+            setDropdownStyles(styles);
+        }
+    };
+
+    useLayoutEffect(() => {
+        updatePosition();
+        window.addEventListener('scroll', updatePosition, true);
+        window.addEventListener('resize', updatePosition);
+        return () => {
+            window.removeEventListener('scroll', updatePosition, true);
+            window.removeEventListener('resize', updatePosition);
+        };
+    }, [isOpen, isAddingNew]);
+
+    const handleSaveNewItem = async (e) => {
+        e.preventDefault();
+        setIsLoading(true);
+        try {
+            const result = await InventoryApi.createInventoryItem({
+                name: newItem.name,
+                itemCode: newItem.code,
+                unitOfMeasure: newItem.unit,
+                category: newItem.category,
+                lowStockThreshold: 10
+            });
+            onChange(result.itemId);
+            setIsAddingNew(false);
+            setIsOpen(false);
+            setNewItem({ name: '', code: '', unit: 'units', category: 'General' });
+        } catch (err) {
+            alert("Error: " + err.message);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const filteredItems = items.filter(i => 
+        i.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+        i.itemCode?.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+    const cn = (...classes) => classes.filter(Boolean).join(' ');
+
+    return (
+        <div ref={containerRef} className="relative w-full">
+            <div 
+                onClick={() => setIsOpen(!isOpen)}
+                className="w-full bg-zinc-50 dark:bg-zinc-950 border dark:border-zinc-800 border-zinc-200 rounded-xl px-4 py-3 cursor-pointer flex items-center justify-between group hover:border-synos-primary/50 transition-all"
+            >
+                <span className={selectedItem ? "text-sm font-black dark:text-white" : "text-sm text-zinc-500 font-medium"}>
+                    {selectedItem ? `${selectedItem.name} (${selectedItem.itemCode})` : placeholder}
+                </span>
+                <ChevronRight className={cn("w-4 h-4 text-zinc-400 transition-transform duration-300", isOpen && "rotate-90 text-synos-primary")} />
+            </div>
+
+            {isOpen && createPortal(
+                <div 
+                    ref={dropdownRef}
+                    style={dropdownStyles}
+                    className="bg-white dark:bg-zinc-900 border dark:border-white/10 border-zinc-200 rounded-[1.5rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200"
+                >
+                    {!isAddingNew ? (
+                        <div className="flex flex-col h-full max-h-[300px]">
+                            <div className="p-3 border-b dark:border-white/5 space-y-2 shrink-0">
+                                <button 
+                                    onClick={() => setIsAddingNew(true)}
+                                    className="w-full flex items-center gap-3 p-3 bg-synos-primary/10 text-synos-primary rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-synos-primary hover:text-white transition-all group"
+                                >
+                                    <Plus className="w-4 h-4 group-hover:rotate-90 transition-transform" />
+                                    Add New Item to Catalog
+                                </button>
+                                <div className="relative">
+                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3 h-3 text-zinc-500" />
+                                    <input 
+                                        autoFocus
+                                        placeholder="Search catalog..."
+                                        value={searchTerm}
+                                        onChange={(e) => setSearchTerm(e.target.value)}
+                                        className="w-full bg-zinc-50 dark:bg-zinc-950 border-none rounded-lg pl-9 pr-4 py-2 text-xs font-bold outline-none focus:ring-2 ring-synos-primary/20 transition-all dark:text-white"
+                                    />
+                                </div>
+                            </div>
+                            <div className="flex-1 overflow-y-auto p-2 custom-scrollbar">
+                                {filteredItems.length === 0 ? (
+                                    <div className="py-8 text-center text-[10px] font-black uppercase text-zinc-500 tracking-widest">No Matches Detected</div>
+                                ) : (
+                                    filteredItems.map(item => (
+                                        <div 
+                                            key={item.itemId}
+                                            onClick={() => { onChange(item.itemId); setIsOpen(false); }}
+                                            className="flex flex-col p-3 rounded-xl hover:bg-zinc-50 dark:hover:bg-white/5 cursor-pointer group transition-colors"
+                                        >
+                                            <span className="text-xs font-black dark:text-zinc-200 group-hover:text-synos-primary transition-colors">{item.name}</span>
+                                            <span className="text-[9px] font-mono text-zinc-500 uppercase tracking-widest mt-1">{item.itemCode}</span>
+                                        </div>
+                                    ))
+                                )}
+                            </div>
+                        </div>
+                    ) : (
+                        <form onSubmit={handleSaveNewItem} className="p-6 space-y-4 animate-in slide-in-from-right-4 duration-300">
+                            <div className="flex items-center justify-between mb-2">
+                                <h4 className="text-[10px] font-black uppercase text-zinc-500 tracking-widest">Provisioning Form</h4>
+                                <button type="button" onClick={() => setIsAddingNew(false)} className="text-[10px] font-black text-synos-primary hover:underline">Back to List</button>
+                            </div>
+                            
+                            <div className="space-y-3">
+                                <input required value={newItem.name} onChange={e => setNewItem({...newItem, name: e.target.value})} placeholder="Product Name" className="w-full bg-zinc-50 dark:bg-zinc-950 border dark:border-white/5 border-zinc-200 rounded-lg px-4 py-2 text-xs font-bold outline-none focus:ring-2 ring-synos-primary/20 dark:text-white" />
+                                <div className="grid grid-cols-2 gap-3">
+                                    <input required value={newItem.code} onChange={e => setNewItem({...newItem, code: e.target.value})} placeholder="Code" className="w-full bg-zinc-50 dark:bg-zinc-950 border dark:border-white/5 border-zinc-200 rounded-lg px-4 py-2 text-xs font-bold outline-none focus:ring-2 ring-synos-primary/20 dark:text-white uppercase" />
+                                    <input required value={newItem.unit} onChange={e => setNewItem({...newItem, unit: e.target.value})} placeholder="Unit (ml/box)" className="w-full bg-zinc-50 dark:bg-zinc-950 border dark:border-white/5 border-zinc-200 rounded-lg px-4 py-2 text-xs font-bold outline-none focus:ring-2 ring-synos-primary/20 dark:text-white" />
+                                </div>
+                                
+                                <div className="space-y-2">
+                                    <div className="flex items-center justify-between px-1">
+                                        <label className="text-[9px] font-black text-zinc-500 uppercase tracking-widest">Category</label>
+                                    </div>
+                                    <div className="relative">
+                                        {isAddingCategory ? (
+                                            <div className="flex gap-2">
+                                                <input 
+                                                    autoFocus
+                                                    value={newCategory}
+                                                    onChange={e => setNewCategory(e.target.value)}
+                                                    placeholder="Custom Category..."
+                                                    className="flex-1 bg-zinc-50 dark:bg-zinc-950 border dark:border-white/5 border-zinc-200 rounded-lg px-4 py-2 text-xs font-bold outline-none focus:ring-2 ring-synos-primary/20 dark:text-white"
+                                                />
+                                                <button 
+                                                    type="button"
+                                                    onClick={() => {
+                                                        if (newCategory.trim()) {
+                                                            setCategories([...categories, newCategory.trim()]);
+                                                            setNewItem({...newItem, category: newCategory.trim()});
+                                                            setIsAddingCategory(false);
+                                                            setNewCategory('');
+                                                        }
+                                                    }}
+                                                    className="bg-synos-primary text-white p-2 rounded-lg"
+                                                >
+                                                    <CheckCircle2 className="w-4 h-4" />
+                                                </button>
+                                                <button type="button" onClick={() => setIsAddingCategory(false)} className="bg-zinc-200 dark:bg-white/10 text-zinc-500 p-2 rounded-lg">
+                                                    <X className="w-4 h-4" />
+                                                </button>
+                                            </div>
+                                        ) : (
+                                            <select 
+                                                value={newItem.category}
+                                                onChange={(e) => {
+                                                    if (e.target.value === 'NEW') {
+                                                        setIsAddingCategory(true);
+                                                    } else {
+                                                        setNewItem({...newItem, category: e.target.value});
+                                                    }
+                                                }}
+                                                className="w-full bg-zinc-50 dark:bg-zinc-950 border dark:border-white/5 border-zinc-200 rounded-lg px-4 py-2 text-xs font-bold outline-none focus:ring-2 ring-synos-primary/20 dark:text-white cursor-pointer"
+                                            >
+                                                {categories.map(c => <option key={c} value={c}>{c}</option>)}
+                                                <option value="NEW" className="text-synos-primary font-black">+ ADD NEW CATEGORY</option>
+                                            </select>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button 
+                                type="submit"
+                                disabled={isLoading}
+                                className="w-full bg-synos-primary text-white font-black py-3 rounded-xl shadow-lg shadow-synos-primary/20 flex items-center justify-center gap-2 uppercase tracking-[0.2em] text-[10px]"
+                            >
+                                {isLoading ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <Save className="w-4 h-4" />}
+                                Provision Item
+                            </button>
+                        </form>
+                    )}
+                </div>,
+                document.body
+            )}
+        </div>
+    );
+};
 
 export function OpeningStockOnboarding() {
     const { user } = useAuth();
@@ -39,6 +279,8 @@ export function OpeningStockOnboarding() {
 
     // Bulk Entry (Grid) State
     const [bulkEntries, setBulkEntries] = useState([]);
+
+    const [isProvisionModalOpen, setIsProvisionModalOpen] = useState(false);
 
     // Paste Area State
     const [pasteData, setPasteData] = useState('');
@@ -75,6 +317,12 @@ export function OpeningStockOnboarding() {
         } catch (err) {
             setError("Failed to load metadata.");
         }
+    };
+
+    const handleItemCreated = (newItem) => {
+        setItems(prev => [...prev, newItem].sort((a, b) => a.name.localeCompare(b.name)));
+        // Refresh catalog to ensure consistent state
+        loadMetadata();
     };
 
     const handleManualSubmit = async (e) => {
@@ -298,17 +546,12 @@ export function OpeningStockOnboarding() {
                     <form onSubmit={handleManualSubmit} className="grid grid-cols-2 gap-6 animate-in fade-in zoom-in-95 duration-300">
                         <div className="col-span-2 space-y-1">
                             <label className="text-xs font-bold text-zinc-500 uppercase ml-1">Consumable Item</label>
-                            <select 
-                                required
-                                value={manualEntry.consumableId}
-                                onChange={(e) => setManualEntry({...manualEntry, consumableId: e.target.value})}
-                                className="w-full bg-zinc-50 dark:bg-zinc-950 border dark:border-zinc-800 border-zinc-200 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-synos-primary/20"
-                            >
-                                <option value="">Select Item...</option>
-                                {items.map(i => (
-                                    <option key={i.itemId} value={i.itemId}>{i.name} ({i.itemCode})</option>
-                                ))}
-                            </select>
+                            <GravityDropdown 
+                                items={items} 
+                                value={manualEntry.consumableId} 
+                                onChange={(val) => setManualEntry({...manualEntry, consumableId: val})}
+                                placeholder="Search or Register Product..."
+                            />
                         </div>
                         <div className="space-y-1">
                             <label className="text-xs font-bold text-zinc-500 uppercase ml-1">Quantity</label>
@@ -347,11 +590,16 @@ export function OpeningStockOnboarding() {
                                 <tbody className="divide-y dark:divide-zinc-800 divide-zinc-200">
                                     {bulkEntries.map((entry, index) => (
                                         <tr key={entry.id}>
-                                            <td className="p-2">
-                                                <select value={entry.consumableId} onChange={(e) => { const n = [...bulkEntries]; n[index].consumableId = e.target.value; setBulkEntries(n); }} className="w-full bg-transparent outline-none p-2 focus:bg-zinc-100 dark:focus:bg-zinc-800 rounded-md">
-                                                    <option value="">Select...</option>
-                                                    {items.map(i => <option key={i.itemId} value={i.itemId}>{i.name}</option>)}
-                                                </select>
+                                            <td className="p-2 min-w-[300px]">
+                                                <GravityDropdown 
+                                                    items={items} 
+                                                    value={entry.consumableId} 
+                                                    onChange={(val) => { 
+                                                        const n = [...bulkEntries]; 
+                                                        n[index].consumableId = val; 
+                                                        setBulkEntries(n); 
+                                                    }} 
+                                                />
                                             </td>
                                             <td className="p-2"><input type="number" value={entry.quantity} onChange={(e) => { const n = [...bulkEntries]; n[index].quantity = e.target.value; setBulkEntries(n); }} className="w-full bg-transparent outline-none p-2 focus:bg-zinc-100 dark:focus:bg-zinc-800 rounded-md" /></td>
                                             <td className="p-2"><input type="text" value={entry.batchNumber} onChange={(e) => { const n = [...bulkEntries]; n[index].batchNumber = e.target.value; setBulkEntries(n); }} className="w-full bg-transparent outline-none p-2 focus:bg-zinc-100 dark:focus:bg-zinc-800 rounded-md" /></td>

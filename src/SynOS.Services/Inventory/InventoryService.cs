@@ -263,7 +263,7 @@ namespace SynOS.Services.Inventory
                 Name = item.Name,
                 UnitOfMeasure = dto.UnitOfMeasure ?? "units",
                 LowStockThreshold = (int)dto.LowStockThreshold,
-                Category = Enum.TryParse<ConsumableCategory>(dto.Category, true, out var cat) ? cat : ConsumableCategory.General,
+                Category = string.IsNullOrWhiteSpace(dto.Category) ? "General" : dto.Category,
                 IsActive = true
             };
 

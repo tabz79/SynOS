@@ -502,19 +502,19 @@ namespace SynOS.Data
         {
             if (context.ImsConsumables.Any()) return;
 
-            var starterItems = new List<(string Name, string Code, ConsumableCategory Category, string Unit, int Threshold)>
+            var starterItems = new List<(string Name, string Code, string Category, string Unit, int Threshold)>
             {
-                ("Syringe 5ml", "SYR-5ML", ConsumableCategory.Consumable, "pcs", 100),
-                ("Gloves Nitro Large", "GLV-L", ConsumableCategory.Consumable, "box", 10),
-                ("Cotton Roll", "CTN-R", ConsumableCategory.Consumable, "pcs", 5),
-                ("Alcohol Swabs", "ALC-S", ConsumableCategory.Consumable, "box", 20),
-                ("Blood Collection Tube (Purple)", "TUBE-EDTA", ConsumableCategory.Consumable, "pcs", 200),
-                ("Ball Point Pen (Blue)", "PEN-BL", ConsumableCategory.Stationery, "pcs", 50),
-                ("Printer Paper A4", "PPR-A4", ConsumableCategory.Stationery, "ream", 10),
-                ("Thermal Receipt Roll", "RCT-RL", ConsumableCategory.Stationery, "pcs", 30),
-                ("CT Scan Film 14x17", "CT-FLM", ConsumableCategory.Imaging, "box", 5),
-                ("MRI Contrast Agent", "MRI-CNT", ConsumableCategory.Imaging, "bottle", 10),
-                ("X-Ray Film 8x10", "XR-FLM", ConsumableCategory.Imaging, "box", 5)
+                ("Syringe 5ml", "SYR-5ML", "Consumable", "pcs", 100),
+                ("Gloves Nitro Large", "GLV-L", "Consumable", "box", 10),
+                ("Cotton Roll", "CTN-R", "Consumable", "pcs", 5),
+                ("Alcohol Swabs", "ALC-S", "Consumable", "box", 20),
+                ("Blood Collection Tube (Purple)", "TUBE-EDTA", "Consumable", "pcs", 200),
+                ("Ball Point Pen (Blue)", "PEN-BL", "Stationery", "pcs", 50),
+                ("Printer Paper A4", "PPR-A4", "Stationery", "ream", 10),
+                ("Thermal Receipt Roll", "RCT-RL", "Stationery", "pcs", 30),
+                ("CT Scan Film 14x17", "CT-FLM", "Imaging", "box", 5),
+                ("MRI Contrast Agent", "MRI-CNT", "Imaging", "bottle", 10),
+                ("X-Ray Film 8x10", "XR-FLM", "Imaging", "box", 5)
             };
 
             foreach (var item in starterItems)
