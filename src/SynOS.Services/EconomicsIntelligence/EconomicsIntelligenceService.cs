@@ -54,7 +54,8 @@ namespace SynOS.Services.EconomicsIntelligence
 
             var costDetails = new List<ItemCostDetailView>();
             decimal totalCost = 0;
-            string? derivedCurrency = null;
+            string derivedCurrency = "INR";
+            string accuracyFlag = string.Empty;
 
             foreach (var fact in usageFacts)
             {
@@ -62,32 +63,53 @@ namespace SynOS.Services.EconomicsIntelligence
 
                 if (!tubes.TryGetValue(inventoryItem.ItemCode, out var tube))
                 {
-                    throw new NotSupportedException($"Costing for non-tube consumable '{inventoryItem.Name}' is not supported as no link to purchase orders exists.");
+                    accuracyFlag = "Estimated / Missing Link";
+                    costDetails.Add(new ItemCostDetailView
+                    {
+                        ItemName = inventoryItem.Name,
+                        Quantity = fact.Quantity,
+                        UnitCost = 0,
+                        TotalItemCost = 0
+                    });
+                    continue;
                 }
 
                 var relevantPOIs = purchaseOrderItems.Where(poi => poi.TubeId == tube.TubeId).ToList();
 
                 if (relevantPOIs.Count != 1)
                 {
-                    throw new NotSupportedException($"Cannot determine a single deterministic cost basis for Inventory Item '{inventoryItem.Name}'. Found {relevantPOIs.Count} purchase order items. A specific costing policy (e.g., FIFO, LIFO) is required but not implemented.");
+                    accuracyFlag = "Incomplete / Multi-PO";
+                    costDetails.Add(new ItemCostDetailView
+                    {
+                        ItemName = inventoryItem.Name,
+                        Quantity = fact.Quantity,
+                        UnitCost = 0,
+                        TotalItemCost = 0
+                    });
+                    continue;
                 }
                 
                 var purchaseItem = relevantPOIs.Single();
                 var unitCost = purchaseItem.UnitPrice;
+                var lineCost = fact.Quantity * unitCost;
 
-                // Correction: Currency does not exist on ImsPurchaseOrder.
-                // Throwing an exception as a deterministic currency cannot be derived.
-                throw new NotSupportedException($"Cannot determine currency for cost of Inventory Item '{inventoryItem.Name}'. The ImsPurchaseOrder entity does not contain currency information.");
+                totalCost += lineCost;
+                costDetails.Add(new ItemCostDetailView
+                {
+                    ItemName = inventoryItem.Name,
+                    Quantity = fact.Quantity,
+                    UnitCost = unitCost,
+                    TotalItemCost = lineCost
+                });
             }
 
-            // This part of the code is now unreachable due to the exception above,
-            // but is kept here to show the intended structure.
             return new EconomicEventCostView
             {
                 EventId = eventId,
                 Description = $"Attributed cost for Event {eventId}",
                 TotalCost = totalCost,
-                Currency = derivedCurrency ?? "N/A",
+                Currency = derivedCurrency,
+                Flag = accuracyFlag,
                 Details = costDetails
             };
         }

@@ -19,70 +19,71 @@ namespace SynOS.Services.Payroll.Calculation
 
         public async Task<PayrollCalculationResult> CalculateAsync(PayrollCalculationContext context)
         {
-            var result = new PayrollCalculationResult();
-
-            var defaultPayComponent = await _context.PayComponents
-                .AsNoTracking()
-                .Where(pc => pc.IsActive)
-                .OrderBy(pc => pc.PayComponentId) // Explicit ordering for determinism
-                .FirstOrDefaultAsync();
-
-            if (defaultPayComponent == null)
-            {
-                result.ValidationErrors.Add(new PayrollValidationErrorDto
-                {
-                    EmployeeId = Guid.Empty, // No specific employee, general error
-                    Message = "No active PayComponent found in the system. Cannot generate provisional results."
-                });
-                return result; // Cannot proceed without a base component
-            }
-
             var employees = await _context.Employees
                 .AsNoTracking()
-                .Where(e => context.EmployeeIds.Contains(e.EmployeeId))
+                .Where(e => context.EmployeeIds.Contains(e.EmployeeId) && e.IsActive)
                 .ToListAsync();
+
+            var adjustments = await _context.PayrollAdjustments
+                .AsNoTracking()
+                .Where(a => a.PayrollRunId == context.PayrollRunId)
+                .ToListAsync();
+
+            var componentTypes = await _context.PayComponents
+                .AsNoTracking()
+                .ToDictionaryAsync(pc => pc.PayComponentId, pc => pc.ComponentType);
 
             foreach (var employee in employees)
             {
-                if (!employee.IsActive)
-                {
-                    // This check is secondary, as the primary list is already filtered, but good for defense.
-                    continue;
-                }
-
-                var coveringAssignments = await _context.PayStructureAssignments
+                // 1. Get Base Salary components from Assignment
+                var assignment = await _context.PayStructureAssignments
                     .AsNoTracking()
-                    .Where(psa => 
-                        psa.EmployeeId == employee.EmployeeId &&
-                        psa.EffectiveDate <= context.PayrollPeriodStartDate &&
-                        (psa.EndDate == null || psa.EndDate >= context.PayrollPeriodEndDate))
-                    .ToListAsync();
+                    .Where(psa => psa.EmployeeId == employee.EmployeeId && psa.EndDate == null)
+                    .FirstOrDefaultAsync();
 
-                if (coveringAssignments.Count == 1)
+                decimal baseEarning = 0;
+                decimal baseDeduction = 0;
+
+                if (assignment != null)
                 {
-                    result.ProvisionalResults.Add(new ProvisionalResultDto
+                    var components = await _context.PayStructureComponents
+                        .AsNoTracking()
+                        .Where(psc => psc.PayStructureId == assignment.PayStructureId)
+                        .ToListAsync();
+
+                    foreach (var comp in components)
                     {
-                        EmployeeId = employee.EmployeeId,
-                        PayComponentId = defaultPayComponent.PayComponentId, // Use the loaded component
-                        Amount = 0
-                    });
+                        if (componentTypes.TryGetValue(comp.PayComponentId, out var type))
+                        {
+                            if (type == PayComponentType.Earning) baseEarning += comp.BaseAmount;
+                            else if (type == PayComponentType.Deduction) baseDeduction += comp.BaseAmount;
+                        }
+                    }
                 }
-                else if (coveringAssignments.Count > 1)
+
+                // 2. Apply Adjustments
+                decimal adjEarning = 0;
+                decimal adjDeduction = 0;
+
+                var empAdjustments = adjustments.Where(a => a.EmployeeId == employee.EmployeeId);
+                foreach (var adj in empAdjustments)
                 {
-                    result.ValidationErrors.Add(new PayrollValidationErrorDto
+                    if (componentTypes.TryGetValue(adj.PayComponentId, out var type))
                     {
-                        EmployeeId = employee.EmployeeId,
-                        Message = "Multiple active PayStructureAssignments detected for employee."
-                    });
+                        if (type == PayComponentType.Earning) adjEarning += adj.Amount;
+                        else if (type == PayComponentType.Deduction) adjDeduction += adj.Amount;
+                    }
                 }
-                else // Count is 0
+
+                // 3. Final Calculation
+                var netPay = (baseEarning + adjEarning) - (baseDeduction + adjDeduction);
+
+                result.ProvisionalResults.Add(new ProvisionalResultDto
                 {
-                    result.ValidationErrors.Add(new PayrollValidationErrorDto
-                    {
-                        EmployeeId = employee.EmployeeId,
-                        Message = "No covering PayStructureAssignment found for employee."
-                    });
-                }
+                    EmployeeId = employee.EmployeeId,
+                    PayComponentId = Guid.Empty, // Aggregated net pay result
+                    Amount = netPay
+                });
             }
 
             return result;

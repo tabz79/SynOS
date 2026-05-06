@@ -7,16 +7,21 @@ using SynOS.Data;
 using SynOS.Models.DTOs.IMS;
 using SynOS.Models.Entities.IMS;
 using SynOS.Models.Enums.IMS;
+using SynOS.Models.Entities.SpendEngine;
+using SynOS.Services.SpendEngine;
+using SynOS.Models.Enums;
 
 namespace SynOS.Services
 {
     public class PurchasingService : IPurchasingService
     {
         private readonly SynOSDbContext _context;
+        private readonly ISpendFactWriter _spendFactWriter;
 
-        public PurchasingService(SynOSDbContext context)
+        public PurchasingService(SynOSDbContext context, ISpendFactWriter spendFactWriter)
         {
             _context = context;
+            _spendFactWriter = spendFactWriter;
         }
 
         public async Task<ImsSupplier> CreateSupplierAsync(SupplierCreateDto dto)
@@ -143,6 +148,26 @@ namespace SynOS.Services
             
             await _context.ImsConsumableLots.AddAsync(newLot);
             await _context.ImsStockMovements.AddAsync(movement);
+
+            // EMIT SPEND FACT (Revised Plan Fix)
+            var spendAmount = dto.Quantity * poItem.UnitPrice;
+            var spendFact = new SpendFact(
+                Guid.NewGuid(),
+                Guid.Empty, // No specific PayeeId available here, could be SupplierId if mapped
+                spendAmount,
+                "INR",
+                PaymentMethod.BankTransfer,
+                poItem.POId.ToString(),
+                DateTime.UtcNow,
+                DateTime.UtcNow,
+                "IMS-PURCHASING",
+                "IMS",
+                Guid.Empty,
+                Guid.Empty,
+                Guid.Empty
+            );
+            await _spendFactWriter.CreateSpendFactAsync(spendFact);
+
             await _context.SaveChangesAsync();
             await transaction.CommitAsync();
             

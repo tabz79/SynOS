@@ -13,6 +13,7 @@ namespace SynOS.Models.ReadModels.Economics
         public string Description { get; set; } = string.Empty;
         public decimal TotalCost { get; set; }
         public string Currency { get; set; } = string.Empty;
+        public string Flag { get; set; } = string.Empty;
         public List<ItemCostDetailView> Details { get; set; } = new List<ItemCostDetailView>();
     }
 

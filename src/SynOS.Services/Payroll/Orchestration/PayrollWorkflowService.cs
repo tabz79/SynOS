@@ -9,6 +9,8 @@ using SynOS.Models.Enums;
 using SynOS.Services.Payroll.Calculation;
 using SynOS.Services.Payroll.Facts;
 using SynOS.Services.Payroll.Orchestration.Exceptions;
+using SynOS.Services.SpendEngine;
+using SynOS.Models.Entities.SpendEngine;
 using System.Text.Json; // For ProvisionalResultData serialization
 
 namespace SynOS.Services.Payroll.Orchestration
@@ -18,15 +20,18 @@ namespace SynOS.Services.Payroll.Orchestration
         private readonly SynOSDbContext _context;
         private readonly IPayrollCalculationLogic _calculationLogic;
         private readonly IPayrollFactWriter _factWriter;
+        private readonly ISpendFactWriter _spendFactWriter;
 
         public PayrollWorkflowService(
             SynOSDbContext context,
             IPayrollCalculationLogic calculationLogic,
-            IPayrollFactWriter factWriter)
+            IPayrollFactWriter factWriter,
+            ISpendFactWriter spendFactWriter)
         {
             _context = context;
             _calculationLogic = calculationLogic;
             _factWriter = factWriter;
+            _spendFactWriter = spendFactWriter;
         }
 
         public async Task<PayrollPeriod> CreatePayrollPeriodAsync(DateTime startDate, DateTime endDate)
@@ -208,6 +213,27 @@ namespace SynOS.Services.Payroll.Orchestration
             {
                 // Write facts
                 await _factWriter.WriteFactsAsync(run, calculationResultForFactWriter);
+
+                // EMIT SPEND FACTS (Revised Plan Fix)
+                foreach (var result in provisionalResults)
+                {
+                    var spendFact = new SpendFact(
+                        Guid.NewGuid(),
+                        result.EmployeeId,
+                        result.Amount,
+                        "INR",
+                        PaymentMethod.BankTransfer,
+                        run.PayrollRunId.ToString(),
+                        DateTime.UtcNow,
+                        DateTime.UtcNow,
+                        "PAYROLL",
+                        "PAYROLL-ENGINE",
+                        Guid.Empty,
+                        run.PayrollRunId,
+                        Guid.Empty
+                    );
+                    await _spendFactWriter.CreateSpendFactAsync(spendFact);
+                }
 
                 // Update run and period status
                 run.Status = PayrollRunStatus.Finalized;
