@@ -208,7 +208,7 @@ namespace SynOS.Services.Payroll.Orchestration
             }
             var calculationResultForFactWriter = new PayrollCalculationResult { ProvisionalResults = provisionalResults };
 
-            // Removed: using var transaction = await _context.Database.BeginTransactionAsync();
+            using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
                 // Write facts
@@ -243,11 +243,11 @@ namespace SynOS.Services.Payroll.Orchestration
                 period.Status = PayrollPeriodStatus.Finalized;
 
                 await _context.SaveChangesAsync();
-                // Removed: await transaction.CommitAsync();
+                await transaction.CommitAsync();
             }
             catch (Exception ex)
             {
-                // Removed: transaction.Rollback();
+                await transaction.RollbackAsync();
                 throw new PayrollOrchestrationException($"Failed to finalize Payroll Run '{payrollRunId}'. See inner exception for details.", ex);
             }
         }

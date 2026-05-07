@@ -19,6 +19,8 @@ namespace SynOS.Models.Entities.Payables
         [Column(TypeName = "decimal(18, 4)")]
         public decimal Amount { get; set; }
 
+        public decimal AmountPaid { get; set; } = 0;
+
         [Required]
         [StringLength(50)]
         public string ReferenceType { get; set; } // e.g., "PO"
@@ -27,8 +29,9 @@ namespace SynOS.Models.Entities.Payables
         public Guid ReferenceId { get; set; }
 
         [Required]
-        [StringLength(20)]
-        public string Status { get; set; } = "Pending"; // Pending, Paid
+        public SynOS.Models.Enums.Payables.VendorPayableStatus Status { get; set; } = SynOS.Models.Enums.Payables.VendorPayableStatus.Pending;
+
+        public DateTime? SettledAt { get; set; }
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }

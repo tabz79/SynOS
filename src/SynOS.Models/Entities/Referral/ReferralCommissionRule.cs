@@ -29,6 +29,8 @@ namespace SynOS.Models.Entities.Referral
 
         public DateOnly EffectiveFrom { get; set; }
         
+        public bool AllowCommissionOnOutsourcedTests { get; set; } = false;
+
         public bool IsActive { get; set; }
     }
 }

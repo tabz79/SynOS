@@ -12,7 +12,7 @@ namespace SynOS.Models.ReadModels.Economics
         public string Description { get; set; } = string.Empty;
         public decimal TotalRevenue { get; set; }
         public decimal TotalCost { get; set; }
-        public decimal GrossMargin { get; set; } // Calculated as TotalRevenue - TotalCost
+        public decimal OperationalMargin { get; set; } // Calculated as TotalRevenue - TotalCost
         public string Currency { get; set; } = string.Empty;
     }
 }

@@ -14,10 +14,12 @@ namespace SynOS.Api.Controllers
     public class PayablesController : ControllerBase
     {
         private readonly SynOSDbContext _context;
+        private readonly ISpendFactWriter _spendFactWriter;
 
-        public PayablesController(SynOSDbContext context)
+        public PayablesController(SynOSDbContext context, ISpendFactWriter spendFactWriter)
         {
             _context = context;
+            _spendFactWriter = spendFactWriter;
         }
 
         [HttpGet]
@@ -28,19 +30,84 @@ namespace SynOS.Api.Controllers
                 .ToListAsync();
         }
 
-        [HttpPatch("{id}/mark-paid")]
-        public async Task<IActionResult> MarkAsPaid(Guid id)
+        [HttpPatch("{id}/settle")]
+        public async Task<IActionResult> SettlePayable(Guid id, [FromBody] SettleRequestDto request)
         {
-            var payable = await _context.VendorPayables.FindAsync(id);
-            if (payable == null)
+            if (request == null || request.Amount <= 0)
             {
-                return NotFound();
+                return BadRequest("Valid payment amount is required.");
             }
 
-            payable.Status = "Paid";
-            await _context.SaveChangesAsync();
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                var payable = await _context.VendorPayables.FindAsync(id);
+                if (payable == null)
+                {
+                    return NotFound();
+                }
 
-            return NoContent();
+                if (payable.Status == SynOS.Models.Enums.Payables.VendorPayableStatus.Settled)
+                {
+                    return BadRequest("Payable is already fully settled.");
+                }
+
+                // Precision-safe comparison for overpayment check
+                const decimal tolerance = 0.0001m;
+                if (payable.AmountPaid + request.Amount > payable.Amount + tolerance)
+                {
+                    return BadRequest($"Overpayment rejected. Amount due is {payable.Amount - payable.AmountPaid}, but tried to pay {request.Amount}.");
+                }
+
+                // 1. Update Payable State
+                payable.AmountPaid += request.Amount;
+                
+                // Precision-safe completion check
+                if (Math.Abs(payable.Amount - payable.AmountPaid) < tolerance || payable.AmountPaid > payable.Amount)
+                {
+                    payable.Status = SynOS.Models.Enums.Payables.VendorPayableStatus.Settled;
+                    payable.SettledAt = DateTime.UtcNow;
+                }
+                else
+                {
+                    payable.Status = SynOS.Models.Enums.Payables.VendorPayableStatus.PartiallyPaid;
+                }
+
+                // 2. Emit SpendFact (Atomic with Payable update)
+                var spendFact = new SpendFact(
+                    Guid.NewGuid(),
+                    payable.VendorId ?? Guid.Empty,
+                    request.Amount,
+                    "INR", // Default
+                    "Inventory",
+                    SynOS.Models.Enums.PaymentMethod.BankTransfer,
+                    $"VENDOR-SETTLE-{payable.VendorPayableId}-{DateTime.UtcNow:yyyyMMdd}",
+                    DateTime.UtcNow,
+                    DateTime.UtcNow,
+                    "Purchasing",
+                    "Finance API",
+                    Guid.Empty,
+                    Guid.Empty,
+                    Guid.Empty
+                );
+
+                await _spendFactWriter.CreateSpendFactAsync(spendFact);
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                return Ok(new { Message = "Payable settled successfully.", Status = payable.Status.ToString(), AmountRemaining = payable.Amount - payable.AmountPaid });
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
         }
+    }
+
+    public class SettleRequestDto
+    {
+        public decimal Amount { get; set; }
+        public Guid UserId { get; set; }
     }
 }

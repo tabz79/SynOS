@@ -57,6 +57,13 @@ namespace SynOS.Services.Referral
 
                 if (commissionRule != null)
                 {
+                    // Margin Protection: Skip commission on outsourced tests unless explicitly allowed
+                    if (order.IsOutsourced && !commissionRule.AllowCommissionOnOutsourcedTests)
+                    {
+                        _logger.LogInformation("Skipping commission for outsourced Order {OrderId} per protection rule.", order.OrderId);
+                        continue;
+                    }
+
                     decimal commission = 0m;
                     if (commissionRule.CommissionType == CommissionType.Percentage)
                     {

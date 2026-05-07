@@ -7,6 +7,7 @@ using SynOS.Data;
 using SynOS.Models.Entities.IMS;
 using SynOS.Models.Entities.Revenue;
 using SynOS.Models.ReadModels.Economics;
+using SynOS.Models.DTOs.Economics;
 
 namespace SynOS.Services.EconomicsIntelligence
 {
@@ -176,27 +177,80 @@ namespace SynOS.Services.EconomicsIntelligence
 
         public async Task<EconomicEventMarginView> GetMarginForEventAsync(Guid eventId)
         {
-            var costView = await GetCostForEventAsync(eventId);
+            var inventoryCostView = await GetCostForEventAsync(eventId);
             var revenueView = await GetRevenueForEventAsync(eventId);
 
-            if (costView.Currency != "N/A" && revenueView.Currency != "N/A" && costView.Currency != revenueView.Currency)
+            // Fetch Direct Costs (Accrual)
+            var outsourcedCost = await _context.ReferenceLabPayables
+                .Where(p => p.PatientId == eventId) // eventId corresponds to VisitId
+                .SumAsync(p => p.AmountDue);
+
+            var referralPayout = await _context.ReferralPayableFacts
+                .Where(f => f.SourceVisitId == eventId)
+                .SumAsync(f => f.Amount);
+
+            var totalCost = inventoryCostView.TotalCost + outsourcedCost + referralPayout;
+
+            if (inventoryCostView.Currency != "N/A" && revenueView.Currency != "N/A" && inventoryCostView.Currency != revenueView.Currency)
             {
-                throw new InvalidOperationException($"Cannot calculate margin for Event {eventId} due to inconsistent currencies between cost ('{costView.Currency}') and revenue ('{revenueView.Currency}').");
+                throw new InvalidOperationException($"Cannot calculate margin for Event {eventId} due to inconsistent currencies between cost ('{inventoryCostView.Currency}') and revenue ('{revenueView.Currency}').");
             }
             
-            var currency = costView.Currency != "N/A" ? costView.Currency : revenueView.Currency;
+            var currency = inventoryCostView.Currency != "N/A" ? inventoryCostView.Currency : revenueView.Currency;
             
-            var grossMargin = revenueView.TotalRevenue - costView.TotalCost;
+            var operationalMargin = revenueView.TotalRevenue - totalCost;
 
             return new EconomicEventMarginView
             {
                 EventId = eventId,
-                Description = $"Gross Margin for Event {eventId}",
+                Description = $"Operational Margin for Event {eventId}",
                 TotalRevenue = revenueView.TotalRevenue,
-                TotalCost = costView.TotalCost,
-                GrossMargin = grossMargin,
+                TotalCost = totalCost,
+                OperationalMargin = operationalMargin,
                 Currency = currency
             };
+        }
+
+        public async Task<LabProfitabilitySummaryDto> GetLabProfitabilitySummaryAsync(DateTime start, DateTime end)
+        {
+            var summary = new LabProfitabilitySummaryDto
+            {
+                StartDate = start,
+                EndDate = end
+            };
+
+            // 1. Total Inflow (Recognized Revenue)
+            summary.TotalCashInflow = await _context.RevenueFacts
+                .Where(f => f.OccurredAt >= start && f.OccurredAt <= end && f.Direction == RevenueDirection.Inflow)
+                .SumAsync(f => f.Amount);
+
+            // 2. Consumable Outflow (Usage as proxy for simplicity in V1, or SpendFacts if categorized)
+            summary.ConsumableCashOutflow = await _context.CostAttribution_UsageFacts
+                .Where(f => f.OccurredAt >= start && f.OccurredAt <= end)
+                .SumAsync(f => f.TotalCost ?? 0);
+
+            // 3. Outsourced Test Outflow (SpendFacts)
+            summary.OutsourcedTestCashOutflow = await _context.SpendFacts
+                .Where(f => f.OccurredAt >= start && f.OccurredAt <= end && f.Category == "OutsourcedTest")
+                .SumAsync(f => f.Amount);
+
+            // 4. Referral Outflow (SpendFacts)
+            // Assuming Referral payouts are categorized or linked. We can use ReferenceType if available.
+            summary.ReferralCashOutflow = await _context.SpendFacts
+                .Where(f => f.OccurredAt >= start && f.OccurredAt <= end && f.Category == "Referral")
+                .SumAsync(f => f.Amount);
+
+            // 5. Payroll Outflow (SpendFacts)
+            summary.PayrollCashOutflow = await _context.SpendFacts
+                .Where(f => f.OccurredAt >= start && f.OccurredAt <= end && f.Category == "Payroll")
+                .SumAsync(f => f.Amount);
+
+            // 6. Overhead Outflow (SpendFacts)
+            summary.OverheadCashOutflow = await _context.SpendFacts
+                .Where(f => f.OccurredAt >= start && f.OccurredAt <= end && f.Category == "Overhead")
+                .SumAsync(f => f.Amount);
+
+            return summary;
         }
     }
 }

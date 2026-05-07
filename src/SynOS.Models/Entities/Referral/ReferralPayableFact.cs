@@ -11,6 +11,8 @@ namespace SynOS.Models.Entities.Referral
         public Guid ReferralPartnerId { get; init; }
 
         public decimal Amount { get; init; }
+        
+        public decimal AmountPaid { get; set; } = 0;
 
         public string Currency { get; init; } = string.Empty;
 

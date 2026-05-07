@@ -31,5 +31,11 @@ namespace SynOS.Services.EconomicsIntelligence
         /// <param name="eventId">The unique identifier for the economic event (e.g., OrderId).</param>
         /// <returns>An EconomicEventMarginView projection.</returns>
         Task<EconomicEventMarginView> GetMarginForEventAsync(Guid eventId);
+
+        /// <summary>
+        /// Retrieves the net operational position for the lab over a specific time period.
+        /// Factors in Revenue, Consumables, Outsourced Tests, Referrals, Payroll, and Overhead.
+        /// </summary>
+        Task<LabProfitabilitySummaryDto> GetLabProfitabilitySummaryAsync(DateTime start, DateTime end);
     }
 }

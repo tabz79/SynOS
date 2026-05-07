@@ -23,6 +23,8 @@ namespace SynOS.Models.Entities.AR
         [Column(TypeName = "decimal(18,4)")]
         public decimal Amount { get; init; }
 
+        public decimal AmountReceived { get; set; } = 0;
+
         [Required]
         [StringLength(3)]
         public string Currency { get; init; }
