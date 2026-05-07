@@ -1,343 +1,354 @@
-Good. This is exactly where you need to **slow your brain down for 2 minutes** and think like an owner, not like a builder.
+This is much better than the earlier vague prompts. The agent is finally thinking in operational flows instead of random entity dumping. 
 
-I read the full plan  — and I’m going to be very direct:
+But I still see a few dangerous simplifications that will hurt you later if you approve this blindly.
 
-👉 **This plan is 80% correct, 20% dangerous.**
-
----
-
-# 🧠 What your agent did RIGHT (this is solid)
-
-### ✅ Scope is controlled
-
-* Only touching:
-
-  * IMS → Spend
-  * Payroll calc
-  * Payroll → Spend
-  * Economics crash
-
-👉 Good. This aligns with what I told you earlier.
+So let’s tighten it one final time before execution.
 
 ---
 
-### ✅ No frontend touch
+# 🧠 First — What is GOOD here
 
-👉 Critical. Keeps blast radius low.
+## ✅ Dedicated outsource endpoint
 
----
+This is the correct move.
 
-### ✅ Uses existing structures
+Because:
 
-* SpendFactWriter
-* PayrollWorkflow
-* Adjustments
+```text id="dpsjlk"
+Outsourced = operational action
+```
 
-👉 This is exactly what we want: **reuse, not reinvent**
-
----
-
-# ⚠️ Now the problems (don’t ignore these)
+Not just a database flag.
 
 ---
 
-## ❌ Problem 1 — “Finalize PO = Sent”
+## ✅ SpendFact on settlement
 
-> `PO.Status = Sent`
+Correct.
 
-👉 This is wrong.
+Money should leave when:
 
----
+```text id="8vrprf"
+payable is settled
+```
 
-### Why?
-
-“Sent” ≠ “Money spent”
-
-* Sent = vendor notified
-* Finalized = financial commitment
+NOT when outsource request is created.
 
 ---
 
-👉 If you use “Sent”:
+## ✅ Overhead → immediate SpendFact
 
-* Spend will trigger too early
-* System becomes logically inconsistent
+Also correct.
 
----
+Because overhead is:
 
-### ✅ Fix (simple)
+```text id="p3uoqx"
+direct expense entry
+```
 
-Tell agent:
-
-👉 Do NOT change status meaning
-
-Instead:
-
-* Either:
-
-  * introduce **Finalized** status
-  * OR trigger SpendFact on **ReceiveStock**
+No settlement cycle needed.
 
 ---
 
-👉 Best for you now:
-
-**Trigger on ReceiveStock (safer for demo)**
+# ⚠️ Now the problems (important)
 
 ---
 
----
+# ❌ 1. `ReferenceLabPayable` is TOO simplified
 
-## ❌ Problem 2 — Payroll based ONLY on adjustments
+Right now:
 
-Agent assumption:
-
-> “Base salary comes from adjustments”
-
----
-
-👉 That’s fragile.
+```csharp id="skf8ia"
+Amount
+Status = Pending/Paid
+```
 
 ---
 
-### Why?
+👉 This is not enough.
 
-If user forgets to enter adjustment:
+You previously had the RIGHT structure:
 
-👉 salary = ₹0 again
+* AmountDue
+* AmountPaid
+* PartiallyPaid
+
+Now the agent regressed.
 
 ---
 
-### ✅ Fix
+## Why this matters
+
+Real labs often:
+
+* partially settle
+* settle weekly
+* settle by batch
+
+Without partials:
+
+```text id="20u8qg"
+you lose financial truth
+```
+
+---
+
+## ✅ Fix
 
 Use:
 
-```text
-Base Salary = PayStructureAssignment
-Adjustments = optional
+```csharp id="8m7r55"
+AmountDue
+AmountPaid
+Status:
+- Pending
+- PartiallyPaid
+- Settled
 ```
 
 ---
 
-👉 Adjustments should MODIFY, not DEFINE salary
+# ❌ 2. Missing transaction safety AGAIN
+
+This keeps getting forgotten.
+
+On settlement:
+
+* update payable
+* emit SpendFact
+
+👉 MUST be atomic.
 
 ---
 
----
+## Fix
 
-## ❌ Problem 3 — Double SpendFact risk
+Explicitly require:
 
-Agent is doing:
-
-* per employee SpendFact
-* * total SpendFact
-
----
-
-👉 This creates:
-
-```text
-Total Spend = double counted
+```text id="fc0hqv"
+single DB transaction
 ```
 
 ---
 
-### ✅ Fix
+# ❌ 3. No overpayment handling
 
-Pick ONE:
+What if:
 
-👉 Either:
-
-* per employee entries (recommended)
-  👉 OR
-* single aggregated entry
-
----
-
-👉 NOT BOTH
-
----
-
----
-
-## ❌ Problem 4 — PO Finalization endpoint
-
-Agent wants to add:
-
-```bash
-POST /purchase/orders/{id}/finalize
+```text id="2k4lh6"
+AmountPaid > AmountDue
 ```
 
 ---
 
-👉 This is unnecessary complexity for demo
+Right now:
+👉 undefined.
 
 ---
 
-### Why?
+## Fix
 
-You already have:
+Explicit rule:
 
-👉 `ReceiveStockAsync`
-
-That’s the **real-world trigger**
-
----
-
-### ✅ Fix
-
-👉 Hook SpendFact inside:
-
-```text
-ReceiveStockAsync()
+```text id="t9o7zc"
+Reject overpayment with validation error.
 ```
 
 ---
 
-No new endpoint needed.
+# ❌ 4. Missing CreatedBy on both entities
+
+You already established audit discipline elsewhere.
+
+Now:
+
+* OverheadExpense ❌
+* ReferenceLabPayable ❌
+
+missing creator tracking.
 
 ---
 
----
+## Fix
 
-## ❌ Problem 5 — Economics = “return 0”
+Add:
 
-This part:
+```csharp id="ghrnfp"
+CreatedBy
+```
 
-> “if cost missing → return 0”
-
----
-
-👉 This is okay for demo, BUT:
-
-👉 You must NOT silently hide everything
+using existing user reference pattern.
 
 ---
 
-### ✅ Fix
+# ❌ 5. `Status` as string = weak
 
-Return:
+You already use enums elsewhere.
 
-```text
-Cost = 0
-Flag = "Estimated / Missing"
+Don’t regress now.
+
+---
+
+## Fix
+
+Create enums:
+
+```text id="qafg6j"
+ReferencePayableStatus
+OverheadCategory
 ```
 
 ---
+
+👉 Strong typing matters in finance logic.
+
+---
+
+# ⚠️ 6. Outsource endpoint should mark Order state too
+
+Right now:
+
+```text id="9w3jjf"
+creates payable only
+```
+
+---
+
+But operationally:
+the order itself must reflect:
+
+```text id="n3m7sl"
+outsourced = true
+```
 
 Otherwise:
 
-👉 owner thinks numbers are real
+* UI confusion
+* workflow ambiguity
+* duplicate outsource risk
 
 ---
 
----
+## Fix
 
-# 🎯 Final verdict
+Modify Order:
 
-Your agent is **on the right track**, but:
+```csharp id="h3a2xr"
+IsOutsourced
+ReferenceLabName
+OutsourcedAt
+```
 
-👉 It made **assumptions that will bite you in demo**
-
----
-
-# 🧠 What you should do now (don’t overcomplicate)
-
-Don’t approve this as-is.
-
-Send a correction prompt.
+Minimal but necessary.
 
 ---
 
-# 🔥 Give your agent THIS (surgical fix)
+# 🔥 Final correction prompt (send this)
 
-Modify the implementation plan with the following corrections before execution.
-
----
-
-## 1. IMS Spend Trigger
-
-* DO NOT use PurchaseOrderStatus = Sent as financial trigger
-* DO NOT add a new finalize endpoint
-
-INSTEAD:
-
-* Emit SpendFact inside ReceiveStockAsync
-* Use actual received quantity × unit price
-* Currency default = INR
+Apply final corrections before execution.
 
 ---
 
-## 2. Payroll Calculation Source
+## 1. ReferenceLabPayable Structure
 
-* Base Salary MUST come from PayStructureAssignment
+Replace:
 
-* PayrollAdjustment is ONLY for:
+* Amount
+* Pending/Paid only
 
-  * allowances
-  * deductions
+WITH:
 
-* If adjustments are missing:
-  → still calculate using base salary
+* AmountDue
+* AmountPaid
+* Status enum:
 
----
-
-## 3. Payroll SpendFact Emission
-
-* Emit SpendFact per employee ONLY
-* DO NOT emit aggregate total SpendFact
+  * Pending
+  * PartiallyPaid
+  * Settled
 
 ---
 
-## 4. Economics Handling
+## 2. Settlement Safety
 
-* DO NOT throw exceptions
-* If cost missing:
-  → return cost = 0
-  → add flag: "Estimated" or "Incomplete"
+Reject settlement if:
+AmountPaid exceeds AmountDue.
 
----
-
-## RULES
-
-* Do not add new endpoints unnecessarily
-* Do not change existing status meanings
-* Do not double count financial data
+Return validation error.
 
 ---
 
-Update the plan and show revised version before execution.
+## 3. Transaction Safety
+
+Settlement update + SpendFact emission
+must occur inside ONE transaction.
 
 ---
 
-# 🧠 Why this matters
+## 4. Audit Fields
 
-This keeps:
+Add CreatedBy to:
 
-* ✅ system truthful
-* ✅ demo safe
-* ✅ logic consistent
+* ReferenceLabPayable
+* OverheadExpense
 
----
-
-# 🔥 Final thought (important)
-
-You’re very close now.
-
-👉 This is not build phase anymore
-
-👉 This is **“don’t shoot yourself in the foot” phase**
+Use existing user reference pattern.
 
 ---
 
-# 🎯 Your move
+## 5. Strong Typing
 
-Send correction prompt → get revised plan
+Replace string statuses/categories with enums:
 
-Then come back with:
-
-👉 “revised plan ready”
+* ReferencePayableStatus
+* OverheadExpenseCategory
 
 ---
 
-Then we approve and execute cleanly.
+## 6. Order Outsource State
+
+When outsourcing an order:
+also update Order with:
+
+* IsOutsourced = true
+* ReferenceLabName
+* OutsourcedAt
+
+This prevents duplicate outsourcing and keeps operational state accurate.
+
+---
+
+Do not change anything else.
+
+Return final execution-ready plan only.
+
+---
+
+# 🧠 Final verdict
+
+After THESE fixes:
+
+👉 This becomes:
+
+```text id="4q8tyx"
+Operationally believable finance flow
+```
+
+Not just “expense CRUD”.
+
+---
+
+# 🎯 Your sequencing is now correct
+
+1. Inventory cost ✅
+2. Payroll cost ✅
+3. Outsourced cost ⏳
+4. Overhead cost ⏳
+5. Referral refinement later
+
+---
+
+👉 That’s the right order.
+
+---
+
+

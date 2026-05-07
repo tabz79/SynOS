@@ -50,5 +50,12 @@ namespace SynOS.Models.Entities
         public virtual Specimen? Specimen { get; set; }
 
         public Guid? ParentOrderId { get; set; }
+
+        public bool IsOutsourced { get; set; } = false;
+
+        [StringLength(200)]
+        public string? ReferenceLabName { get; set; }
+
+        public DateTime? OutsourcedAt { get; set; }
     }
 }

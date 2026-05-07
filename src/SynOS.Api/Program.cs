@@ -231,6 +231,11 @@ builder.Services.AddHrmsIntelligenceWiring(); // ADDED
 builder.Services.AddOperationalServices(); // ADDED
 builder.Services.AddAssignmentServices(); // ADDED
 
+// Register Payroll services
+builder.Services.AddScoped<SynOS.Services.Payroll.Orchestration.IPayrollWorkflowService, SynOS.Services.Payroll.Orchestration.PayrollWorkflowService>();
+builder.Services.AddScoped<SynOS.Services.Payroll.Calculation.IPayrollCalculationLogic, SynOS.Services.Payroll.Calculation.PayrollCalculationLogicStub>();
+builder.Services.AddScoped<SynOS.Services.Payroll.Facts.IPayrollFactWriter, SynOS.Services.Payroll.Facts.PayrollFactWriter>();
+
 // Register Economics Intelligence services (OPT-IN)
 // builder.Services.AddEconomicsIntelligence();
 

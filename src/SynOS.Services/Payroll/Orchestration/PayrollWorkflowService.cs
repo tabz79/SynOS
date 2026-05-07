@@ -222,6 +222,7 @@ namespace SynOS.Services.Payroll.Orchestration
                         result.EmployeeId,
                         result.Amount,
                         "INR",
+                        "Payroll",
                         PaymentMethod.BankTransfer,
                         run.PayrollRunId.ToString(),
                         DateTime.UtcNow,

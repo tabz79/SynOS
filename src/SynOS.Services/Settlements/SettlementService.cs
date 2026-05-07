@@ -37,6 +37,7 @@ namespace SynOS.Services.Settlements
                 payable.ReferralPartnerId,
                 payable.Amount,
                 payable.Currency,
+                "Settlement",
                 PaymentMethod.BankTransfer, // Assumed settlement method
                 $"SETTLE-{payable.ReferralPayableFactId}",
                 DateTime.UtcNow,

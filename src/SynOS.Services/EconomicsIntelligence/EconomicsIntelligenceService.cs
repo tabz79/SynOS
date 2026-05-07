@@ -61,6 +61,25 @@ namespace SynOS.Services.EconomicsIntelligence
             {
                 if (!inventoryItems.TryGetValue(fact.InventoryItemId, out var inventoryItem)) continue;
 
+                // NEW: Check for persisted high-precision cost attribution (Phase 3)
+                if (fact.TotalCost.HasValue)
+                {
+                    totalCost += fact.TotalCost.Value;
+                    costDetails.Add(new ItemCostDetailView
+                    {
+                        ItemName = inventoryItem.Name,
+                        Quantity = fact.Quantity,
+                        UnitCost = fact.UnitCost ?? 0,
+                        TotalItemCost = fact.TotalCost.Value
+                    });
+                    if (!string.IsNullOrEmpty(fact.AccuracyFlag)) 
+                    {
+                        accuracyFlag = fact.AccuracyFlag;
+                    }
+                    continue;
+                }
+
+                // LEGACY FALLBACK: On-the-fly estimation logic for historical data
                 if (!tubes.TryGetValue(inventoryItem.ItemCode, out var tube))
                 {
                     accuracyFlag = "Estimated / Missing Link";

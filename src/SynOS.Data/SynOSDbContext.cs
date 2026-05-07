@@ -219,6 +219,9 @@ namespace SynOS.Data
         
         // Payables DbSets
         public DbSet<PayableFact> PayableFacts { get; set; } = null!;
+        public DbSet<VendorPayable> VendorPayables { get; set; } = null!;
+        public DbSet<ReferenceLabPayable> ReferenceLabPayables { get; set; } = null!;
+        public DbSet<OverheadExpense> OverheadExpenses { get; set; } = null!;
 
         // Compliance Engine DbSets
         public DbSet<StatutoryObligationFact> StatutoryObligationFacts { get; set; }
@@ -1135,6 +1138,35 @@ namespace SynOS.Data
                 entity.HasIndex(e => e.SourcePaymentId);
 
                 // Intentionally no foreign keys (append-only ledger)
+            });
+
+            // Vendor Payables Configuration
+            modelBuilder.Entity<VendorPayable>(entity =>
+            {
+                entity.ToTable("VendorPayables", "Payables");
+                entity.HasKey(e => e.VendorPayableId);
+                entity.Property(e => e.Amount).HasColumnType("decimal(18, 4)").IsRequired();
+                entity.Property(e => e.ReferenceType).HasMaxLength(50).IsRequired();
+                entity.Property(e => e.Status).HasMaxLength(20).IsRequired();
+                entity.HasIndex(e => e.ReferenceId);
+                entity.HasIndex(e => e.VendorId);
+            });
+
+            modelBuilder.Entity<ReferenceLabPayable>(entity =>
+            {
+                entity.ToTable("ReferenceLabPayables", "Payables");
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.AmountDue).HasColumnType("decimal(18, 4)").IsRequired();
+                entity.Property(e => e.AmountPaid).HasColumnType("decimal(18, 4)").IsRequired();
+                entity.HasIndex(e => e.TestId);
+                entity.HasIndex(e => e.PatientId);
+            });
+
+            modelBuilder.Entity<OverheadExpense>(entity =>
+            {
+                entity.ToTable("OverheadExpenses", "Payables");
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Amount).HasColumnType("decimal(18, 4)").IsRequired();
             });
 			
 			// Accounts Receivable (Flow B)

@@ -40,6 +40,15 @@ namespace SynOS.Models.Entities.CostAttribution
         [Required]
         public DateTimeOffset RecordedAt { get; set; } = DateTimeOffset.UtcNow;
 
+        [Column(TypeName = "decimal(18, 4)")]
+        public decimal? UnitCost { get; set; }
+
+        [Column(TypeName = "decimal(18, 4)")]
+        public decimal? TotalCost { get; set; }
+
+        [StringLength(50)]
+        public string? AccuracyFlag { get; set; }
+
         public Guid? CorrectsUsageFactId { get; set; }
 
         [StringLength(500)]

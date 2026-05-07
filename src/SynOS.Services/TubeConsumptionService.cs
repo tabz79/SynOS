@@ -4,12 +4,16 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Configuration;
 using SynOS.Data;
 using SynOS.Models.DTOs.IMS;
 using SynOS.Models.Entities.IMS;
 using SynOS.Models.Enums.IMS;
 using SynOS.Models.Enums;
 using SynOS.Services.Operational;
+using SynOS.Models.Entities.CostAttribution;
+using SynOS.Services.CostAttribution;
+using SynOS.Models.Events.CostAttribution;
 
 namespace SynOS.Services
 {
@@ -18,13 +22,26 @@ namespace SynOS.Services
         private readonly SynOSDbContext _context;
         private readonly IOperationalEventWriter _eventWriter;
         private readonly INotifier _notifier; // ADDED
+        private readonly IConfiguration _config;
+        private readonly ICostAttributionPolicyResolver _policyResolver;
+        private readonly ICostAttributionUsageFactWriter _factWriter;
         private readonly ILogger<TubeConsumptionService> _logger;
 
-        public TubeConsumptionService(SynOSDbContext context, IOperationalEventWriter eventWriter, INotifier notifier, ILogger<TubeConsumptionService> logger)
+        public TubeConsumptionService(
+            SynOSDbContext context, 
+            IOperationalEventWriter eventWriter, 
+            INotifier notifier, 
+            IConfiguration config, 
+            ICostAttributionPolicyResolver policyResolver,
+            ICostAttributionUsageFactWriter factWriter,
+            ILogger<TubeConsumptionService> logger)
         {
             _context = context;
             _eventWriter = eventWriter;
             _notifier = notifier; // ADDED
+            _config = config;
+            _policyResolver = policyResolver;
+            _factWriter = factWriter;
             _logger = logger;
         }
 
@@ -59,14 +76,14 @@ namespace SynOS.Services
             }
         }
 
-        private async Task ConsumeStockInternalAsync(Guid specimenId, Guid consumedByUserId)
+        private async Task<bool> ConsumeStockInternalAsync(Guid specimenId, Guid consumedByUserId)
         {
             // 1. Idempotency Check
             var referenceId = specimenId.ToString();
             if (await _context.ImsStockMovements.AnyAsync(m => m.ReferenceId == referenceId && m.MovementType == StockMovementType.Consumption))
             {
                 _logger.LogInformation("Stock consumption for SpecimenId {SpecimenId} has already been processed.", specimenId);
-                return;
+                return true;
             }
 
             // 2. Load Specimen, Orders, Tests, Visit
@@ -78,7 +95,7 @@ namespace SynOS.Services
             if (specimen == null || !specimen.Orders.Any())
             {
                 _logger.LogError("Could not process tube consumption: Specimen {SpecimenId} not found or has no orders.", specimenId);
-                return;
+                return false;
             }
 
             // 3. Determine Branch
@@ -102,74 +119,114 @@ namespace SynOS.Services
             if (tubeMap == null)
             {
                 _logger.LogWarning("No tube mapping for Test {TestName} ({TestId}). Consumption skipped for Specimen {SpecimenId}.", firstTest.TestName, firstTest.TestId, specimenId);
-                return;
+                return false;
             }
 
-            var quantityToConsume = tubeMap.QuantityPerSample; // Usually 1
-
-            // 5. Get active lots (FEFO)
-            var activeLots = await _context.ImsTubeLots
+            // 5. Get Valuation Method and Active Lots
+            var valuationMethod = _config.GetValue<string>("Inventory:ValuationMethod") ?? "FIFO";
+            var query = _context.ImsTubeLots
                 .Where(lot => lot.TubeId == tubeMap.TubeId &&
                               lot.BranchId == branchId &&
                               lot.CurrentQuantity > 0 &&
-                              lot.ExpiryDate >= DateTimeOffset.UtcNow)
-                .OrderBy(lot => lot.ExpiryDate)
-                .ThenBy(lot => lot.ReceivedAt)
-                .ToListAsync();
+                              lot.ExpiryDate >= DateTimeOffset.UtcNow);
+
+            if (valuationMethod.Equals("LIFO", StringComparison.OrdinalIgnoreCase))
+            {
+                query = query.OrderByDescending(lot => lot.ReceivedAt).ThenByDescending(lot => lot.LotId);
+            }
+            else
+            {
+                query = query.OrderBy(lot => lot.ReceivedAt).ThenBy(lot => lot.LotId);
+            }
+
+            var activeLots = await query.ToListAsync();
+            var quantityToConsume = tubeMap.QuantityPerSample;
 
             if (!activeLots.Any() || activeLots.Sum(l => l.CurrentQuantity) < quantityToConsume)
             {
                 var avail = activeLots.Sum(l => l.CurrentQuantity);
-                _logger.LogWarning("Insufficient stock for Tube {TubeId} at Branch {BranchId}. Required: {Required}, Avail: {Available}. Consumption skipped.",
+                _logger.LogWarning("Insufficient stock for Tube {TubeId} at Branch {BranchId}. Required: {Required}, Avail: {Available}. Consumption aborted.",
                    tubeMap.TubeId, branchId, quantityToConsume, avail);
 
-                // Emit Warning Event
-                await _eventWriter.WriteEventAsync(
-                    BranchEventType.INVENTORY_SHORTAGE,
-                    branchId.ToString(),
-                    specimenId.ToString(),
-                    specimen.Visit?.Token ?? "UNKNOWN",
-                    $"INVENTORY ALERT: Insufficient stock for {tubeMap.TubeId}. Required: {quantityToConsume}, Available: {avail}",
-                    "System",
-                    null,
-                    false,
-                    specimenId,
-                    "Specimen"
-                );
-
-                // PUSH REAL-TIME ALERT
+                // Emit Warning Event and Notifier (Existing logic)
+                await _eventWriter.WriteEventAsync(BranchEventType.INVENTORY_SHORTAGE, branchId.ToString(), specimenId.ToString(), specimen.Visit?.Token ?? "UNKNOWN", $"INVENTORY ALERT: Insufficient stock for {tubeMap.TubeId}.", "System", null, false, specimenId, "Specimen");
                 await _notifier.NotifyInventoryShortageAsync(branchId.ToString(), specimenId.ToString(), tubeMap.TubeId.ToString(), quantityToConsume, (int)avail);
 
-                return;
+                return false;
             }
 
-            // 6. FEFO Deduction
-            var remaining = quantityToConsume;
-            foreach (var lot in activeLots)
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
             {
-                if (remaining <= 0) break;
-                var deduct = Math.Min(lot.CurrentQuantity, remaining);
-
-                lot.CurrentQuantity -= deduct;
-                remaining -= deduct;
-
-                var movement = new ImsStockMovement
+                // 6. Deduction with Cost Attribution
+                var remaining = quantityToConsume;
+                foreach (var lot in activeLots)
                 {
-                    MovementId = Guid.NewGuid(),
-                    TubeId = tubeMap.TubeId,
-                    TubeLotId = lot.LotId,
-                    Quantity = deduct,
-                    MovementType = StockMovementType.Consumption,
-                    ReferenceType = MovementReferenceType.Sample,
-                    ReferenceId = referenceId,
-                    RecordedByUserId = consumedByUserId,
-                    MovedAt = DateTimeOffset.UtcNow
-                };
-                await _context.ImsStockMovements.AddAsync(movement);
-            }
+                    if (remaining <= 0) break;
+                    var deduct = Math.Min(lot.CurrentQuantity, remaining);
 
-            await _context.SaveChangesAsync();
-            _logger.LogInformation("Consumed {Quantity} tubes for Specimen {SpecimenId}", quantityToConsume, specimenId);
+                    var unitCost = lot.CostPerUnit ?? 0;
+                    var totalCost = unitCost * (decimal)deduct;
+                    var accuracyFlag = lot.CostPerUnit.HasValue ? null : "Estimated";
+
+                    lot.CurrentQuantity -= deduct;
+                    remaining -= deduct;
+
+                    // Movement Log
+                    var movement = new ImsStockMovement
+                    {
+                        MovementId = Guid.NewGuid(),
+                        TubeId = tubeMap.TubeId,
+                        TubeLotId = lot.LotId,
+                        Quantity = (int)deduct,
+                        MovementType = StockMovementType.Consumption,
+                        MovedAt = DateTimeOffset.UtcNow,
+                        RecordedByUserId = consumedByUserId,
+                        ReferenceType = MovementReferenceType.Sample,
+                        ReferenceId = specimenId.ToString()
+                    };
+                    await _context.ImsStockMovements.AddAsync(movement);
+
+                    // ATOMIC COST ATTRIBUTION: Create UsageFacts for each order in the specimen
+                    foreach (var order in specimen.Orders)
+                    {
+                        var policyVersion = await _policyResolver.ResolvePolicyVersionAsync(
+                            order.TestId,
+                            tubeMap.TubeId, // Assuming TubeId maps to InventoryItemId for these facts
+                            branchId,
+                            DateTimeOffset.UtcNow);
+
+                        if (policyVersion != null)
+                        {
+                            var triggerEvent = new CostingTriggerEvent
+                            {
+                                SourceEventId = specimenId,
+                                SourceEventType = CostAttribution_SourceEventType.TestExecution,
+                                TestId = order.TestId,
+                                BranchId = branchId,
+                                OccurredAt = DateTimeOffset.UtcNow
+                            };
+
+                            // We attribute the cost proportional to the total tests or as per policy?
+                            // For a shared tube, we usually attribute it once or split it.
+                            // The design doc says "Record cost based on selected lot prices".
+                            // Here we record it per deduction part.
+                            await _factWriter.WriteUsageFactAsync(policyVersion, triggerEvent, unitCost, totalCost, accuracyFlag);
+                        }
+                    }
+                }
+
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+                _logger.LogInformation("Consumed {Quantity} tubes for Specimen {SpecimenId}", quantityToConsume, specimenId);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                _logger.LogError(ex, "Failed to consume stock for Specimen {SpecimenId} due to an error. Transaction rolled back.", specimenId);
+                return false;
+            }
         }
         
         public async Task ConsumeStockOnSampleCollectedAsync(Guid sampleId, Guid consumedByUserId)

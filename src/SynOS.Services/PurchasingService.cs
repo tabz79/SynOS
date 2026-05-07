@@ -9,6 +9,7 @@ using SynOS.Models.Entities.IMS;
 using SynOS.Models.Enums.IMS;
 using SynOS.Models.Entities.SpendEngine;
 using SynOS.Services.SpendEngine;
+using SynOS.Models.Entities.Payables;
 using SynOS.Models.Enums;
 
 namespace SynOS.Services
@@ -101,7 +102,11 @@ namespace SynOS.Services
         {
             using var transaction = await _context.Database.BeginTransactionAsync();
 
-            var poItem = await _context.ImsPOItems.FindAsync(poItemId);
+            var poItem = await _context.ImsPOItems
+                .Include(pi => pi.PurchaseOrder)
+                    .ThenInclude(po => po.Supplier)
+                .FirstOrDefaultAsync(pi => pi.POItemId == poItemId);
+
             if (poItem == null)
             {
                 throw new KeyNotFoundException($"Purchase Order Item with ID '{poItemId}' not found.");
@@ -153,9 +158,10 @@ namespace SynOS.Services
             var spendAmount = dto.Quantity * poItem.UnitPrice;
             var spendFact = new SpendFact(
                 Guid.NewGuid(),
-                Guid.Empty, // No specific PayeeId available here, could be SupplierId if mapped
+                Guid.Empty, 
                 spendAmount,
                 "INR",
+                "Inventory",
                 PaymentMethod.BankTransfer,
                 poItem.POId.ToString(),
                 DateTime.UtcNow,
@@ -167,6 +173,20 @@ namespace SynOS.Services
                 Guid.Empty
             );
             await _spendFactWriter.CreateSpendFactAsync(spendFact);
+
+            // CREATE VENDOR PAYABLE (Phase 2)
+            var vendorPayable = new VendorPayable
+            {
+                VendorPayableId = Guid.NewGuid(),
+                VendorId = poItem.PurchaseOrder?.SupplierId,
+                VendorName = poItem.PurchaseOrder?.Supplier?.Name,
+                Amount = spendAmount,
+                ReferenceType = "PO",
+                ReferenceId = poItem.POId,
+                Status = "Pending",
+                CreatedAt = DateTime.UtcNow
+            };
+            await _context.VendorPayables.AddAsync(vendorPayable);
 
             await _context.SaveChangesAsync();
             await transaction.CommitAsync();

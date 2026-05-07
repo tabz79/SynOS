@@ -22,7 +22,10 @@ namespace SynOS.Services.CostAttribution
 
         public async Task WriteUsageFactAsync(
             CostAttribution_UsagePolicyVersion resolvedPolicyVersion,
-            CostingTriggerEvent eventPayload)
+            CostingTriggerEvent eventPayload,
+            decimal? unitCost = null,
+            decimal? totalCost = null,
+            string? accuracyFlag = null)
         {
             // IDEMPOTENCY CHECK:
             // Ensure a fact for this specific event source and inventory item does not already exist.
@@ -54,7 +57,10 @@ namespace SynOS.Services.CostAttribution
                 OccurredAt = eventPayload.OccurredAt,
                 RecordedAt = DateTimeOffset.UtcNow,        // System-generated timestamp
                 SourceEventId = eventPayload.SourceEventId,
-                SourceEventType = eventPayload.SourceEventType
+                SourceEventType = eventPayload.SourceEventType,
+                UnitCost = unitCost,
+                TotalCost = totalCost,
+                AccuracyFlag = accuracyFlag
             };
 
             await _context.CostAttribution_UsageFacts.AddAsync(newFact);

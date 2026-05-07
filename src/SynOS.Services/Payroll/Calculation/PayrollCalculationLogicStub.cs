@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using SynOS.Data;
 using SynOS.Models.DTOs.Payroll;
 using System.Collections.Generic;
+using SynOS.Models.Enums;
 
 namespace SynOS.Services.Payroll.Calculation
 {
@@ -19,6 +20,8 @@ namespace SynOS.Services.Payroll.Calculation
 
         public async Task<PayrollCalculationResult> CalculateAsync(PayrollCalculationContext context)
         {
+            var result = new PayrollCalculationResult();
+
             var employees = await _context.Employees
                 .AsNoTracking()
                 .Where(e => context.EmployeeIds.Contains(e.EmployeeId) && e.IsActive)

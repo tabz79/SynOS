@@ -11,6 +11,7 @@ namespace SynOS.Models.Entities.SpendEngine
         public Guid PayeeId { get; init; }
         public decimal Amount { get; init; }
         public string Currency { get; init; }
+        public string Category { get; init; } // ADDED
         public PaymentMethod PaymentMethod { get; init; }
         public string TransactionReference { get; init; }
         public DateTime OccurredAt { get; init; }
@@ -28,6 +29,7 @@ namespace SynOS.Models.Entities.SpendEngine
             Guid payeeId,
             decimal amount,
             string currency,
+            string category, // ADDED
             PaymentMethod paymentMethod,
             string transactionReference,
             DateTime occurredAt,
@@ -42,6 +44,7 @@ namespace SynOS.Models.Entities.SpendEngine
             PayeeId = payeeId;
             Amount = amount;
             Currency = currency;
+            Category = category; // ADDED
             PaymentMethod = paymentMethod;
             TransactionReference = transactionReference;
             OccurredAt = occurredAt;

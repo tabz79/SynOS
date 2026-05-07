@@ -17,6 +17,9 @@ namespace SynOS.Services.CostAttribution
         /// <param name="eventPayload">The event payload containing the contextual information for the trigger.</param>
         Task WriteUsageFactAsync(
             CostAttribution_UsagePolicyVersion resolvedPolicyVersion,
-            CostingTriggerEvent eventPayload);
+            CostingTriggerEvent eventPayload,
+            decimal? unitCost = null,
+            decimal? totalCost = null,
+            string? accuracyFlag = null);
     }
 }
