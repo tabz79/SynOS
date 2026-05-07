@@ -10,6 +10,7 @@ using SynOS.Models.Enums.IMS;
 using SynOS.Models.Entities.SpendEngine;
 using SynOS.Services.SpendEngine;
 using SynOS.Models.Entities.Payables;
+using SynOS.Models.Enums.Payables;
 using SynOS.Models.Enums;
 
 namespace SynOS.Services
@@ -183,7 +184,7 @@ namespace SynOS.Services
                 Amount = spendAmount,
                 ReferenceType = "PO",
                 ReferenceId = poItem.POId,
-                Status = "Pending",
+                Status = VendorPayableStatus.Pending,
                 CreatedAt = DateTime.UtcNow
             };
             await _context.VendorPayables.AddAsync(vendorPayable);

@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using SynOS.Models.ReadModels.Economics;
+using SynOS.Models.DTOs.Economics;
 
 namespace SynOS.Services.EconomicsIntelligence
 {

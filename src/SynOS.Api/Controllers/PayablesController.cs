@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SynOS.Data;
 using SynOS.Models.Entities.Payables;
+using SynOS.Models.Entities.SpendEngine;
+using SynOS.Services.SpendEngine;
 
 namespace SynOS.Api.Controllers
 {
@@ -103,11 +105,5 @@ namespace SynOS.Api.Controllers
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
-    }
-
-    public class SettleRequestDto
-    {
-        public decimal Amount { get; set; }
-        public Guid UserId { get; set; }
     }
 }

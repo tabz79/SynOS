@@ -15,6 +15,7 @@ import { ControlTowerDashboard } from '@/features/admin/ControlTowerDashboard'
 import { PendingRequestsQueue } from '@/features/admin/PendingRequestsQueue'
 import { ImsRoleMappingScreen } from '@/features/admin/ImsRoleMappingScreen'
 import { InventoryTerminal } from '@/features/inventory/InventoryTerminal'
+import { FinanceScreen } from '@/features/finance/FinanceScreen'
 import { RoleTakeoverBanner } from '@/features/admin/components/RoleTakeoverBanner'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 
@@ -40,6 +41,7 @@ function RootRedirect() {
   if (role === 'Typist') return <Navigate to="/typist" replace />;
   if (role === 'DeliveryDesk') return <Navigate to="/delivery" replace />;
   if (role === 'InventoryManager') return <Navigate to="/inventory" replace />;
+  if (role === 'Finance') return <Navigate to="/finance" replace />;
   
   return (
     <div className="h-screen w-screen bg-synos-background flex items-center justify-center p-4">
@@ -141,6 +143,14 @@ function App() {
               <Route path="/inventory" element={
                 <AdminProtectedWrapper roleName="Inventory Operations">
                   <InventoryTerminal />
+                </AdminProtectedWrapper>
+              } />
+            </Route>
+
+            <Route element={<ProtectedRoute allowedRoles={['Finance', 'Admin']} />}>
+              <Route path="/finance" element={
+                <AdminProtectedWrapper roleName="Finance Hub">
+                  <FinanceScreen />
                 </AdminProtectedWrapper>
               } />
             </Route>

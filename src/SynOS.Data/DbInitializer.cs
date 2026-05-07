@@ -204,7 +204,7 @@ namespace SynOS.Data
             {
                 "Admin", "Receptionist", "Phlebotomist", "Pathologist", "Technician",
                 "XRayTech", "MriTech", "Radiologist", "DeliveryDesk", "Typist", "LabTech",
-                "InventoryManager"
+                "InventoryManager", "Finance"
             };
             var existingRoles = context.Roles.ToDictionary(r => r.Name, r => r);
 
@@ -240,7 +240,8 @@ namespace SynOS.Data
                 new { UserId = Guid.NewGuid(), Email = "typist1@lab.com",    Name = "Simulator Typist",   Password = "Admin",    RoleName = "Typist", CanUseOperational = true, CanUseOversight = false },
                 new { UserId = Guid.NewGuid(), Email = "bio.tech@synos.lab", Name = "Simulator Bio Tech", Password = "Admin",    RoleName = "LabTech", CanUseOperational = true, CanUseOversight = false },
                 new { UserId = Guid.NewGuid(), Email = "hemtech@synos.lab",  Name = "Simulator Hem Tech", Password = "Admin",    RoleName = "LabTech", CanUseOperational = true, CanUseOversight = false },
-                new { UserId = Guid.NewGuid(), Email = "inventory@lab.com",  Name = "Inventory Manager",  Password = "Admin",    RoleName = "InventoryManager", CanUseOperational = true, CanUseOversight = false }
+                new { UserId = Guid.NewGuid(), Email = "inventory@lab.com",  Name = "Inventory Manager",  Password = "Admin",    RoleName = "InventoryManager", CanUseOperational = true, CanUseOversight = false },
+                new { UserId = Guid.NewGuid(), Email = "finance@lab.com",    Name = "Finance Controller", Password = "Admin",    RoleName = "Finance", CanUseOperational = true, CanUseOversight = true }
             };
 
             var existingUsers = context.Users.ToDictionary(u => u.Email, u => u, StringComparer.OrdinalIgnoreCase);

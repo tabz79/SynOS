@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using SynOS.Data;
 using SynOS.Models.Entities.SpendEngine;
 using SynOS.Models.Enums;
-using SynOS.Models.Enums.Revenue;
+using SynOS.Models.Entities.Revenue;
 using SynOS.Models.DTOs.Revenue;
 using SynOS.Services.Security;
 using SynOS.Services.SpendEngine;

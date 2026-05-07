@@ -17,6 +17,7 @@ namespace SynOS.Models.Entities.Revenue
         Patient,
         Corporate,
         Insurance,
+        Partner,
         Other
     }
 

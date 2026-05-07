@@ -19,16 +19,16 @@ namespace SynOS.Api.Controllers
         }
 
         [HttpPost("referral-payable/{id}/settle")]
-        public async Task<IActionResult> SettleReferralPayable(Guid id)
+        public async Task<IActionResult> SettleReferralPayable(Guid id, [FromBody] SettleRequestDto request)
         {
-            await _settlementService.SettleReferralPayableAsync(id);
+            await _settlementService.SettleReferralPayableAsync(id, request.Amount);
             return Ok(new { Message = "Referral payable settled successfully." });
         }
 
         [HttpPost("receivable/{id}/settle")]
-        public async Task<IActionResult> SettleReceivable(Guid id)
+        public async Task<IActionResult> SettleReceivable(Guid id, [FromBody] SettleRequestDto request)
         {
-            await _settlementService.SettleReceivableAsync(id);
+            await _settlementService.SettleReceivableAsync(id, request.Amount);
             return Ok(new { Message = "Receivable settled successfully." });
         }
     }
