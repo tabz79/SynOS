@@ -9,6 +9,8 @@ namespace SynOS.Models.DTOs.Economics
 
         // --- CASH BASIS (Truth) ---
         public decimal TotalRevenueCash { get; set; }
+        public decimal CashCollected { get; set; }
+        public decimal OnlineCollected { get; set; }
         public decimal TotalExpensesCash => 
             ConsumableCashOutflow + 
             OutsourcedTestCashOutflow + 

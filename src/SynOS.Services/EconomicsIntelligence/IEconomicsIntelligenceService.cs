@@ -51,5 +51,15 @@ namespace SynOS.Services.EconomicsIntelligence
         /// Retrieves pending referral commission payables.
         /// </summary>
         Task<IEnumerable<object>> GetReferralPayablesAsync();
+
+        /// <summary>
+        /// Retrieves a summary of receivables grouped by partner.
+        /// </summary>
+        Task<IEnumerable<PartnerReceivableSummaryDto>> GetPartnerReceivablesSummaryAsync();
+
+        /// <summary>
+        /// Retrieves revenue trends for daily, weekly, and monthly buckets.
+        /// </summary>
+        Task<object> GetRevenueTrendsAsync(int days = 30);
     }
 }

@@ -19,6 +19,9 @@ namespace SynOS.Models.Entities.AR
         [Required]
         public Guid ReferralPartnerId { get; init; }
 
+        [ForeignKey("ReferralPartnerId")]
+        public SynOS.Models.Entities.Referral.ReferralPartner ReferralPartner { get; init; } = null!;
+
         [Required]
         [Column(TypeName = "decimal(18,4)")]
         public decimal Amount { get; init; }

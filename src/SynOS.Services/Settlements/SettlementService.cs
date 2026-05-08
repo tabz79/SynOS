@@ -136,5 +136,68 @@ namespace SynOS.Services.Settlements
                 throw;
             }
         }
+        public async Task SettleBulkPartnerReceivablesAsync(Guid partnerId, List<Guid> factIds, decimal totalAmount)
+        {
+            if (totalAmount <= 0) throw new ArgumentException("Amount must be positive.");
+            if (factIds == null || !factIds.Any()) throw new ArgumentException("No fact IDs provided.");
+
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                var receivables = await _context.ReceivableFacts
+                    .Where(f => factIds.Contains(f.ReceivableFactId) && f.ReferralPartnerId == partnerId && f.SettledAt == null)
+                    .OrderBy(f => f.OccurredAt)
+                    .ToListAsync();
+
+                if (receivables.Count != factIds.Count)
+                {
+                    throw new InvalidOperationException("Some provided Fact IDs were not found, are already settled, or belong to a different partner.");
+                }
+
+                decimal remainingToDistribute = totalAmount;
+
+                foreach (var receivable in receivables)
+                {
+                    if (remainingToDistribute <= 0) break;
+
+                    decimal due = receivable.Amount - receivable.AmountReceived;
+                    decimal toApply = Math.Min(due, remainingToDistribute);
+
+                    receivable.AmountReceived += toApply;
+                    remainingToDistribute -= toApply;
+
+                    const decimal tolerance = 0.0001m;
+                    if (Math.Abs(receivable.Amount - receivable.AmountReceived) < tolerance || receivable.AmountReceived > receivable.Amount)
+                    {
+                        receivable.SettledAt = DateTimeOffset.UtcNow;
+                    }
+
+                    _context.ReceivableFacts.Update(receivable);
+                }
+
+                // Record a single RevenueFact for the entire bulk collection
+                var command = new DeclareRevenueFactCommand
+                {
+                    OccurredAt = DateTimeOffset.UtcNow,
+                    Amount = totalAmount,
+                    Currency = receivables.First().Currency,
+                    Direction = RevenueDirection.Inflow,
+                    SourceType = RevenueSourceType.Partner,
+                    SourceReferenceId = $"BULK-{partnerId}-{DateTime.UtcNow:yyyyMMddHHmmss}",
+                    PaymentMode = PaymentMode.BankTransfer,
+                    DeclaredByUserId = _userContext.CurrentUserId,
+                    Notes = $"Bulk settlement for partner {partnerId}. Applied to {receivables.Count} bills."
+                };
+
+                await _revenueFactWriter.DeclareRevenueFactAsync(command);
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
+        }
     }
 }

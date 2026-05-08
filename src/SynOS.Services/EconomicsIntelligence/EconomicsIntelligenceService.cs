@@ -244,9 +244,16 @@ namespace SynOS.Services.EconomicsIntelligence
             };
 
             // --- CASH BASIS (Movement Facts) ---
-            summary.TotalRevenueCash = await _context.RevenueFacts
+            var revenueFacts = await _context.RevenueFacts
+                .AsNoTracking()
                 .Where(f => f.OccurredAt >= start && f.OccurredAt <= end && f.Direction == RevenueDirection.Inflow)
-                .SumAsync(f => f.Amount);
+                .ToListAsync();
+
+            summary.TotalRevenueCash = revenueFacts.Sum(f => f.Amount);
+            
+            // Separation for Drawer Reconciliation
+            summary.CashCollected = revenueFacts.Where(f => f.PaymentMode == PaymentMode.Cash).Sum(f => f.Amount);
+            summary.OnlineCollected = revenueFacts.Where(f => f.PaymentMode != PaymentMode.Cash).Sum(f => f.Amount);
 
             summary.ConsumableCashOutflow = await _context.CostAttribution_UsageFacts
                 .Where(f => f.OccurredAt >= start && f.OccurredAt <= end)
@@ -269,12 +276,10 @@ namespace SynOS.Services.EconomicsIntelligence
                 .SumAsync(f => f.Amount);
 
             // --- ACCRUAL BASIS (Obligations) ---
-            // 1. Total Invoices issued (Accrual Revenue)
             summary.TotalRevenueAccrual = await _context.Invoices
                 .Where(i => i.CreatedAt >= start && i.CreatedAt <= end)
                 .SumAsync(i => i.Total);
 
-            // 2. All Payables Created (Accrual Expense)
             var vendorAccrual = await _context.VendorPayables
                 .Where(p => p.CreatedAt >= start && p.CreatedAt <= end)
                 .SumAsync(p => p.Amount);
@@ -291,7 +296,7 @@ namespace SynOS.Services.EconomicsIntelligence
                 .Where(f => f.RecordedAt >= start && f.RecordedAt <= end)
                 .SumAsync(f => f.Amount);
 
-            summary.TotalExpensesAccrual = vendorAccrual + overheadAccrual + outsourcedAccrual + referralAccrual + summary.PayrollCashOutflow; // Payroll is usually cash-only in this system
+            summary.TotalExpensesAccrual = vendorAccrual + overheadAccrual + outsourcedAccrual + referralAccrual + summary.PayrollCashOutflow;
 
             return summary;
         }
@@ -334,6 +339,70 @@ namespace SynOS.Services.EconomicsIntelligence
                     f.Description
                 })
                 .ToListAsync();
+        }
+
+        public async Task<IEnumerable<PartnerReceivableSummaryDto>> GetPartnerReceivablesSummaryAsync()
+        {
+            var now = DateTimeOffset.UtcNow;
+            var day7 = now.AddDays(-7);
+            var day30 = now.AddDays(-30);
+            
+            var query = await _context.ReceivableFacts
+                .AsNoTracking()
+                .Where(f => f.SettledAt == null)
+                .Select(f => new 
+                {
+                    f.ReferralPartnerId,
+                    PartnerName = f.ReferralPartner != null ? f.ReferralPartner.Name : "Unknown Account",
+                    f.Amount,
+                    f.AmountReceived,
+                    f.OccurredAt
+                })
+                .GroupBy(x => new { x.ReferralPartnerId, x.PartnerName })
+                .Select(g => new PartnerReceivableSummaryDto
+                {
+                    PartnerId = g.Key.ReferralPartnerId,
+                    PartnerName = g.Key.PartnerName,
+                    TotalOutstanding = g.Sum(x => x.Amount - x.AmountReceived),
+                    BillCount = g.Count(),
+                    OldestDueDate = g.Min(x => x.OccurredAt).DateTime,
+                    Aging_0_7 = g.Where(x => x.OccurredAt >= day7).Sum(x => (decimal?)(x.Amount - x.AmountReceived)) ?? 0,
+                    Aging_7_30 = g.Where(x => x.OccurredAt < day7 && x.OccurredAt >= day30).Sum(x => (decimal?)(x.Amount - x.AmountReceived)) ?? 0,
+                    Aging_30_Plus = g.Where(x => x.OccurredAt < day30).Sum(x => (decimal?)(x.Amount - x.AmountReceived)) ?? 0
+                })
+                .ToListAsync();
+
+            return query;
+        }
+
+        public async Task<object> GetRevenueTrendsAsync(int days = 30)
+        {
+            var start = DateTimeOffset.UtcNow.AddDays(-days);
+            
+            var facts = await _context.RevenueFacts
+                .AsNoTracking()
+                .Where(f => f.OccurredAt >= start && f.Direction == RevenueDirection.Inflow)
+                .ToListAsync();
+
+            var dailyTrends = facts
+                .GroupBy(f => f.OccurredAt.Date)
+                .OrderBy(g => g.Key)
+                .Select(g => new
+                {
+                    Date = g.Key.ToString("yyyy-MM-dd"),
+                    Cash = g.Where(f => f.PaymentMode == PaymentMode.Cash).Sum(f => f.Amount),
+                    Online = g.Where(f => f.PaymentMode != PaymentMode.Cash).Sum(f => f.Amount),
+                    Total = g.Sum(f => f.Amount)
+                })
+                .ToList();
+
+            return new
+            {
+                Daily = dailyTrends,
+                TotalCash = facts.Where(f => f.PaymentMode == PaymentMode.Cash).Sum(f => f.Amount),
+                TotalOnline = facts.Where(f => f.PaymentMode != PaymentMode.Cash).Sum(f => f.Amount),
+                GrowthRate = 0 // Stub for now
+            };
         }
     }
 }

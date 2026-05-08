@@ -7,7 +7,7 @@ import { useAuth } from '@/context/AuthContext';
 export const FinanceApi = {
     getHeaders: () => ({
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('token')}`
+        'Authorization': `Bearer ${localStorage.getItem('synos_jwt')}`
     }),
 
     withBranchId: (url) => {
@@ -144,6 +144,33 @@ export const FinanceApi = {
             headers: FinanceApi.getHeaders()
         });
         if (!response.ok) throw new Error("Failed to load referral payables");
+        return response.json();
+    },
+
+    getPartnerReceivablesSummary: async () => {
+        const response = await fetch(FinanceApi.withBranchId('/api/v1/economics/partner-receivables-summary'), {
+            headers: FinanceApi.getHeaders()
+        });
+        if (!response.ok) throw new Error("Failed to load partner summary");
+        return response.json();
+    },
+
+    getRevenueTrends: async (days = 30) => {
+        const url = `/api/v1/economics/trends?days=${days}`;
+        const response = await fetch(FinanceApi.withBranchId(url), {
+            headers: FinanceApi.getHeaders()
+        });
+        if (!response.ok) throw new Error("Failed to load revenue trends");
+        return response.json();
+    },
+
+    settleBulkPartnerReceivables: async (partnerId, factIds, totalAmount) => {
+        const response = await fetch('/api/settlements/receivable/bulk', {
+            method: 'POST',
+            headers: FinanceApi.getHeaders(),
+            body: JSON.stringify({ partnerId, factIds, totalAmount })
+        });
+        if (!response.ok) throw new Error("Failed to process bulk settlement");
         return response.json();
     },
 
