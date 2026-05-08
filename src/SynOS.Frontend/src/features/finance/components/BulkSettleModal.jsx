@@ -3,9 +3,17 @@ import { FinanceUtils } from './FinanceUtils';
 
 export const BulkSettleModal = ({ isOpen, onClose, onConfirm, partnerName, selectedBills }) => {
     const [amount, setAmount] = useState('');
+    const [paymentMode, setPaymentMode] = useState('BankTransfer');
     const totalDue = selectedBills.reduce((acc, bill) => acc + (bill.amount - bill.amountReceived), 0);
 
     if (!isOpen) return null;
+
+    const modes = [
+        { id: 'BankTransfer', label: 'Net Banking/NEFT' },
+        { id: 'UPI', label: 'Digital (UPI)' },
+        { id: 'Cash', label: 'Physical Cash' },
+        { id: 'Card', label: 'Card Payment' }
+    ];
 
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-zinc-950/60 backdrop-blur-sm animate-in fade-in duration-300">
@@ -50,6 +58,21 @@ export const BulkSettleModal = ({ isOpen, onClose, onConfirm, partnerName, selec
                             </div>
                         </div>
 
+                        <div className="space-y-1.5">
+                            <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 px-1">Payment Mode</label>
+                            <div className="grid grid-cols-2 gap-2">
+                                {modes.map(m => (
+                                    <button 
+                                        key={m.id}
+                                        onClick={() => setPaymentMode(m.id)}
+                                        className={`px-3 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-wider border-2 transition-all ${paymentMode === m.id ? 'border-synos-primary bg-synos-primary/5 text-synos-primary' : 'border-zinc-100 dark:border-zinc-800 text-zinc-500'}`}
+                                    >
+                                        {m.label}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
                         <div className="p-4 rounded-xl bg-amber-500/5 border border-amber-500/20">
                             <p className="text-[10px] text-amber-500 leading-relaxed font-medium">
                                 <span className="font-bold uppercase mr-1">Distribution:</span>
@@ -67,7 +90,7 @@ export const BulkSettleModal = ({ isOpen, onClose, onConfirm, partnerName, selec
                         </button>
                         <button 
                             disabled={!amount || parseFloat(amount) <= 0}
-                            onClick={() => onConfirm(parseFloat(amount))}
+                            onClick={() => onConfirm(parseFloat(amount), paymentMode)}
                             className="flex-[2] py-3 rounded-2xl bg-synos-primary text-sm font-bold text-white shadow-lg shadow-synos-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:grayscale disabled:hover:scale-100"
                         >
                             Process Settlement

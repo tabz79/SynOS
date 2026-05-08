@@ -97,7 +97,10 @@ export const BillsCollectionsScreen = () => {
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedBill, setSelectedBill] = useState(null);
-    const [activeFilter, setActiveFilter] = useState('All');
+    const [statusFilter, setStatusFilter] = useState('All');
+    const [categoryFilter, setCategoryFilter] = useState('All');
+    const [dateRange, setDateRange] = useState('All Time');
+    const [customDates, setCustomDates] = useState({ start: '', end: '' });
 
     useEffect(() => {
         loadBills();
@@ -143,12 +146,56 @@ export const BillsCollectionsScreen = () => {
     };
 
     const filteredBills = bills.filter(b => {
-        if (activeFilter === 'All') return true;
-        return b.status === activeFilter;
+        // 1. Status Filter
+        if (statusFilter !== 'All') {
+            const statusMap = {
+                'Pending': 'PENDINGPAYMENT',
+                'Partial': 'PARTIALLYPAID',
+                'Settled': 'PAID'
+            };
+            if (b.status.toUpperCase() !== statusMap[statusFilter]) return false;
+        }
+
+        // 2. Category Filter (Direct, Partner, Corporate, Insurance)
+        if (categoryFilter !== 'All') {
+            if (categoryFilter === 'Direct' && b.partnerName !== 'Direct Institutional') return false;
+            if (categoryFilter === 'Partner' && b.partnerName === 'Direct Institutional') return false;
+            if (categoryFilter === 'Corporate' && !b.partnerName.toUpperCase().includes('CORP')) return false;
+            if (categoryFilter === 'Insurance' && !b.partnerName.toUpperCase().includes('INSUR')) return false;
+        }
+
+        // 3. Date Filter
+        const billDate = new Date(b.date);
+        const today = new Date();
+        today.setHours(0,0,0,0);
+
+        if (dateRange === 'Today') {
+            if (billDate < today) return false;
+        } else if (dateRange === 'Yesterday') {
+            const yesterday = new Date(today);
+            yesterday.setDate(yesterday.getDate() - 1);
+            if (billDate < yesterday || billDate >= today) return false;
+        } else if (dateRange === 'This Week') {
+            const weekAgo = new Date(today);
+            weekAgo.setDate(weekAgo.getDate() - 7);
+            if (billDate < weekAgo) return false;
+        } else if (dateRange === 'This Month') {
+            const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+            if (billDate < monthStart) return false;
+        } else if (dateRange === 'All Time') {
+            return true;
+        } else if (dateRange === 'Custom Range' && customDates.start && customDates.end) {
+            const start = new Date(customDates.start);
+            const end = new Date(customDates.end);
+            end.setHours(23,59,59,999);
+            if (billDate < start || billDate > end) return false;
+        }
+
+        return true;
     });
 
     return (
-        <div className="p-8 max-w-[1600px] mx-auto space-y-8 animate-in fade-in duration-500">
+        <div className="p-8 w-full space-y-8 animate-in fade-in duration-500">
             <div className="flex flex-col gap-1">
                 <h1 className="text-2xl font-bold dark:text-white text-zinc-900">Bills & Collections</h1>
                 <p className="text-sm text-zinc-500 font-medium">Track institutional billing, pending dues, and collections.</p>
@@ -158,19 +205,41 @@ export const BillsCollectionsScreen = () => {
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 p-2 rounded-2xl bg-zinc-100 dark:bg-zinc-900/50 border dark:border-zinc-800 border-zinc-200">
                 <div className="flex items-center gap-1 overflow-x-auto pb-1 lg:pb-0 no-scrollbar">
                     {['All', 'Pending', 'Partial', 'Settled'].map(f => (
-                        <FilterTab key={f} label={f} isActive={activeFilter === f} onClick={() => setActiveFilter(f)} />
+                        <FilterTab key={f} label={f} isActive={statusFilter === f} onClick={() => setStatusFilter(f)} />
                     ))}
                     <div className="w-px h-6 bg-zinc-300 dark:bg-zinc-800 mx-2 hidden lg:block" />
-                    {['Direct', 'Partner', 'Corporate', 'Insurance'].map(f => (
-                        <FilterTab key={f} label={f} isActive={activeFilter === f} onClick={() => setActiveFilter(f)} variant="outline" />
+                    {['All', 'Direct', 'Partner', 'Corporate', 'Insurance'].map(f => (
+                        <FilterTab key={f} label={f} isActive={categoryFilter === f} onClick={() => setCategoryFilter(f)} variant="outline" />
                     ))}
                 </div>
-                <div className="flex items-center gap-2">
-                    <select className="bg-white dark:bg-zinc-950 border dark:border-zinc-800 border-zinc-200 rounded-lg px-3 py-1.5 text-xs font-medium dark:text-zinc-300">
+                <div className="flex items-center gap-2 px-2">
+                    {dateRange === 'Custom Range' && (
+                        <div className="flex items-center gap-2 animate-in slide-in-from-right-2 duration-300">
+                            <input 
+                                type="date" 
+                                value={customDates.start}
+                                onChange={(e) => setCustomDates({...customDates, start: e.target.value})}
+                                className="bg-white dark:bg-zinc-950 border dark:border-zinc-800 border-zinc-200 rounded-lg px-2 py-1 text-[10px] font-bold text-synos-primary"
+                            />
+                            <span className="text-zinc-400 text-[10px]">to</span>
+                            <input 
+                                type="date" 
+                                value={customDates.end}
+                                onChange={(e) => setCustomDates({...customDates, end: e.target.value})}
+                                className="bg-white dark:bg-zinc-950 border dark:border-zinc-800 border-zinc-200 rounded-lg px-2 py-1 text-[10px] font-bold text-synos-primary"
+                            />
+                        </div>
+                    )}
+                    <select 
+                        value={dateRange}
+                        onChange={(e) => setDateRange(e.target.value)}
+                        className="bg-white dark:bg-zinc-950 border dark:border-zinc-800 border-zinc-200 rounded-lg px-3 py-1.5 text-xs font-medium dark:text-zinc-300 outline-none focus:border-synos-primary transition-all"
+                    >
                         <option>Today</option>
                         <option>Yesterday</option>
                         <option>This Week</option>
                         <option>This Month</option>
+                        <option>All Time</option>
                         <option>Custom Range</option>
                     </select>
                 </div>
@@ -283,9 +352,9 @@ export const PendingReceivablesScreen = () => {
         setIsBulkModalOpen(true);
     };
 
-    const confirmBulkSettlement = async (totalAmount) => {
+    const confirmBulkSettlement = async (totalAmount, paymentMode) => {
         try {
-            await FinanceApi.settleBulkPartnerReceivables(selectedPartner.partnerId, selectedBillIds, totalAmount);
+            await FinanceApi.settleBulkPartnerReceivables(selectedPartner.partnerId, selectedBillIds, totalAmount, paymentMode);
             setIsBulkModalOpen(false);
             loadData();
         } catch (err) {
@@ -304,7 +373,7 @@ export const PendingReceivablesScreen = () => {
     };
 
     return (
-        <div className="p-8 max-w-[1600px] mx-auto space-y-8 animate-in fade-in duration-500">
+        <div className="p-8 w-full space-y-8 animate-in fade-in duration-500">
             <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
                 <div className="space-y-1">
                     <h1 className="text-2xl font-bold dark:text-white text-zinc-900">Partner Receivables</h1>
@@ -453,7 +522,7 @@ export const CollectionHistoryScreen = () => {
     };
 
     return (
-        <div className="p-8 max-w-[1600px] mx-auto space-y-8 animate-in fade-in duration-500">
+        <div className="p-8 w-full space-y-8 animate-in fade-in duration-500">
             <div className="flex flex-col gap-1">
                 <h1 className="text-2xl font-bold dark:text-white text-zinc-900">Collection History</h1>
                 <p className="text-sm text-zinc-500 font-medium">Review completed collections and settlement activity.</p>
@@ -487,7 +556,9 @@ export const CollectionHistoryScreen = () => {
                                 <tr key={row.revenueFactId} className="hover:bg-zinc-50 dark:hover:bg-zinc-900/30 transition-colors">
                                     <td className="p-4 text-xs text-zinc-500 whitespace-nowrap">{new Date(row.occurredAt).toLocaleString()}</td>
                                     <td className="p-4 text-xs font-bold dark:text-zinc-200 uppercase tracking-tighter text-synos-primary">
-                                        {FinanceUtils.mapRevenueSource(row.sourceType)}
+                                        {row.sourceType === 'Partner' && row.notes?.includes('Partner:') 
+                                            ? row.notes.split('|')[0].replace('Partner:', '').trim()
+                                            : FinanceUtils.mapRevenueSource(row.sourceType)}
                                     </td>
                                     <td className="p-4 text-xs font-bold text-right dark:text-zinc-300">₹{row.amount.toLocaleString()}</td>
                                     <td className="p-4 text-center">

@@ -136,10 +136,13 @@ namespace SynOS.Services.Settlements
                 throw;
             }
         }
-        public async Task SettleBulkPartnerReceivablesAsync(Guid partnerId, List<Guid> factIds, decimal totalAmount)
+        public async Task SettleBulkPartnerReceivablesAsync(Guid partnerId, List<Guid> factIds, decimal totalAmount, string paymentMode)
         {
             if (totalAmount <= 0) throw new ArgumentException("Amount must be positive.");
             if (factIds == null || !factIds.Any()) throw new ArgumentException("No fact IDs provided.");
+
+            var partner = await _context.ReferralPartners.FindAsync(partnerId);
+            if (partner == null) throw new InvalidOperationException("Partner not found");
 
             using var transaction = await _context.Database.BeginTransactionAsync();
             try
@@ -149,33 +152,26 @@ namespace SynOS.Services.Settlements
                     .OrderBy(f => f.OccurredAt)
                     .ToListAsync();
 
-                if (receivables.Count != factIds.Count)
+                // 2. Distribute payment (FIFO)
+                var remaining = totalAmount;
+                foreach (var rec in receivables)
                 {
-                    throw new InvalidOperationException("Some provided Fact IDs were not found, are already settled, or belong to a different partner.");
-                }
+                    if (remaining <= 0) break;
 
-                decimal remainingToDistribute = totalAmount;
+                    var outstanding = rec.Amount - rec.AmountReceived;
+                    var apply = Math.Min(remaining, outstanding);
 
-                foreach (var receivable in receivables)
-                {
-                    if (remainingToDistribute <= 0) break;
-
-                    decimal due = receivable.Amount - receivable.AmountReceived;
-                    decimal toApply = Math.Min(due, remainingToDistribute);
-
-                    receivable.AmountReceived += toApply;
-                    remainingToDistribute -= toApply;
-
-                    const decimal tolerance = 0.0001m;
-                    if (Math.Abs(receivable.Amount - receivable.AmountReceived) < tolerance || receivable.AmountReceived > receivable.Amount)
+                    rec.AmountReceived += apply;
+                    if (rec.AmountReceived >= rec.Amount)
                     {
-                        receivable.SettledAt = DateTimeOffset.UtcNow;
+                        rec.SettledAt = DateTimeOffset.UtcNow;
                     }
 
-                    _context.ReceivableFacts.Update(receivable);
+                    remaining -= apply;
+                    _context.ReceivableFacts.Update(rec);
                 }
 
-                // Record a single RevenueFact for the entire bulk collection
+                // 3. Declare Revenue Fact (Truth Engine)
                 var command = new DeclareRevenueFactCommand
                 {
                     OccurredAt = DateTimeOffset.UtcNow,
@@ -184,9 +180,9 @@ namespace SynOS.Services.Settlements
                     Direction = RevenueDirection.Inflow,
                     SourceType = RevenueSourceType.Partner,
                     SourceReferenceId = $"BULK-{partnerId}-{DateTime.UtcNow:yyyyMMddHHmmss}",
-                    PaymentMode = PaymentMode.BankTransfer,
+                    PaymentMode = Enum.TryParse<PaymentMode>(paymentMode, out var mode) ? mode : PaymentMode.BankTransfer,
                     DeclaredByUserId = _userContext.CurrentUserId,
-                    Notes = $"Bulk settlement for partner {partnerId}. Applied to {receivables.Count} bills."
+                    Notes = $"Partner: {partner.Name} | Bulk settlement for {receivables.Count} bills."
                 };
 
                 await _revenueFactWriter.DeclareRevenueFactAsync(command);
