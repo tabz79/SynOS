@@ -1,8 +1,0 @@
-2026-04-20 13:26:16.679 +05:30 [INF] OperationalStatsProjectionWorker is starting in Event-Driven Mode.
-2026-04-20 13:26:16.770 +05:30 [INF] Worker: Running Consistency Check and Catch-up...
-2026-04-20 13:26:17.574 +05:30 [INF] [ProjectorDebug] Processing Event Type: REPORT_SIGNED, BranchId: "a0000000-0000-0000-0000-000000000001", SourceId: "a72abb84-b24a-42e3-8078-d3ae2533020d", SourceType: Report, VisitId: a60c5419-e71d-43f7-82e7-f0715a859f38
-2026-04-20 13:26:18.080 +05:30 [INF] [ProjectorDebug] Checking Fact Deduplication for SourceId: "a72abb84-b24a-42e3-8078-d3ae2533020d"
-2026-04-20 13:26:18.097 +05:30 [WRN] Projector: Duplicate Event for Fact "a72abb84-b24a-42e3-8078-d3ae2533020d" detected. Skipping Logic, marking as Processed. EventId: "0404d327-401e-4078-b354-ee2317c3db3c"
-2026-04-20 13:26:18.240 +05:30 [WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
-2026-04-20 13:26:18.538 +05:30 [INF] Worker: Catch-up complete. Awaiting real-time events...
-2026-04-20 14:33:52.180 +05:30 [WRN] Failed to determine the https port for redirect.

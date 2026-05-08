@@ -39,3 +39,19 @@ node_modules/
 dist/
 build/
 .env
+# Logs
+logs/
+*.log
+
+# .NET
+bin/
+obj/
+
+# Frontend
+node_modules/
+dist/
+.vite/
+
+# IDE
+.vs/
+.vscode/
