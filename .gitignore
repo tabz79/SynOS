@@ -1,57 +1,79 @@
-document (1).pdf
-document.pdf
-ADMIN-SCREENS-A1-A2-START.md
-ADMIN-SCREENS-A3-A8-COMPLETE.md
-DAYS-10-17-GEMINI-PROMPTS.md
-FRONTEND-COMPLETE-ROLE-BY-ROLE-SCREEN-PLAYBOOK.md
-RECEPTION-SCREENS-R1-R7-COMPLETE.md
-RECEPTION-SCREENS-R8-R12-COMPLETE.md
-RECEPTION-SCREENS-R11-R12-FINAL.md
-errors.txt
-gemini-session.md
-gpt-5.md
-perplexity-opinion.md
-powershell.txt
-prompts-used.md
-xyz-errors.txt
-npx-errors.txt
-npx-gpt-5.md
-gemini-prompt.md
-manual-step.md
-prompts-used.md
-ppx-gemini-session.md
-# .NET build outputs
+# =========================
+# Build Outputs
+# =========================
 **/bin/
 **/obj/
-
-# IDE folders
-.vs/
-.idea/
-.vscode/
-
-# OS junk
-Thumbs.db
-.DS_Store
-
-# Logs
-*.log
-node_modules/
 dist/
 build/
+.vite/
+
+# =========================
+# Dependencies
+# =========================
+node_modules/
+
+# =========================
+# Environment Files
+# =========================
 .env
+
+# =========================
 # Logs
+# =========================
 logs/
 *.log
 
-# .NET
-bin/
-obj/
-
-# Frontend
-node_modules/
-dist/
-.vite/
-
-# IDE
+# =========================
+# IDE / Editor
+# =========================
 .vs/
 .vscode/
+.idea/
+
+# =========================
+# OS Junk
+# =========================
+Thumbs.db
+.DS_Store
+
+# =========================
+# Temporary / Cache
+# =========================
+*.cache
+*.tmp
+*.temp
+
+# =========================
+# Package Manager
+# =========================
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# =========================
+# Testing
+# =========================
+coverage/
+test-results/
+
+# =========================
+# Visual Studio
+# =========================
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# =========================
+# Rider / Resharper
+# =========================
+_ReSharper*/
+*.DotSettings.user
+
+# =========================
+# Database / Local Runtime
+# =========================
+*.db
+*.sqlite
+*.sqlite3
