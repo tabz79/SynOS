@@ -175,12 +175,41 @@ namespace SynOS.Services.EconomicsIntelligence
             };
         }
 
-        public async Task<EconomicEventMarginView> GetMarginForEventAsync(Guid eventId)
+        public async Task<EconomicEventMarginView> GetCashMarginForEventAsync(Guid eventId)
         {
             var inventoryCostView = await GetCostForEventAsync(eventId);
             var revenueView = await GetRevenueForEventAsync(eventId);
 
-            // Fetch Direct Costs (Accrual)
+            // Fetch Cash Moved (SpendFacts related to this event, e.g., Reference Lab Payments, Referral Payments)
+            var eventIdStr = eventId.ToString();
+            var eventSpendFacts = await _context.SpendFacts
+                .AsNoTracking()
+                .Where(f => f.TransactionReference.Contains(eventIdStr)) // simplistic linking for now
+                .SumAsync(f => f.Amount);
+
+            var totalCashCost = inventoryCostView.TotalCost + eventSpendFacts;
+
+            var currency = inventoryCostView.Currency != "N/A" ? inventoryCostView.Currency : revenueView.Currency;
+            
+            var cashMargin = revenueView.TotalRevenue - totalCashCost;
+
+            return new EconomicEventMarginView
+            {
+                EventId = eventId,
+                Description = $"Cash Margin for Event {eventId}",
+                TotalRevenue = revenueView.TotalRevenue,
+                TotalCost = totalCashCost,
+                OperationalMargin = cashMargin,
+                Currency = currency
+            };
+        }
+
+        public async Task<EconomicEventMarginView> GetAccrualMarginForEventAsync(Guid eventId)
+        {
+            var inventoryCostView = await GetCostForEventAsync(eventId);
+            var revenueView = await GetRevenueForEventAsync(eventId);
+
+            // Fetch Direct Costs (Accrual/Obligations)
             var outsourcedCost = await _context.ReferenceLabPayables
                 .Where(p => p.PatientId == eventId) // eventId corresponds to VisitId
                 .SumAsync(p => p.AmountDue);
@@ -190,11 +219,6 @@ namespace SynOS.Services.EconomicsIntelligence
                 .SumAsync(f => f.Amount);
 
             var totalCost = inventoryCostView.TotalCost + outsourcedCost + referralPayout;
-
-            if (inventoryCostView.Currency != "N/A" && revenueView.Currency != "N/A" && inventoryCostView.Currency != revenueView.Currency)
-            {
-                throw new InvalidOperationException($"Cannot calculate margin for Event {eventId} due to inconsistent currencies between cost ('{inventoryCostView.Currency}') and revenue ('{revenueView.Currency}').");
-            }
             
             var currency = inventoryCostView.Currency != "N/A" ? inventoryCostView.Currency : revenueView.Currency;
             
@@ -203,7 +227,7 @@ namespace SynOS.Services.EconomicsIntelligence
             return new EconomicEventMarginView
             {
                 EventId = eventId,
-                Description = $"Operational Margin for Event {eventId}",
+                Description = $"Accrual Margin for Event {eventId}",
                 TotalRevenue = revenueView.TotalRevenue,
                 TotalCost = totalCost,
                 OperationalMargin = operationalMargin,
@@ -219,38 +243,97 @@ namespace SynOS.Services.EconomicsIntelligence
                 EndDate = end
             };
 
-            // 1. Total Inflow (Recognized Revenue)
-            summary.TotalCashInflow = await _context.RevenueFacts
+            // --- CASH BASIS (Movement Facts) ---
+            summary.TotalRevenueCash = await _context.RevenueFacts
                 .Where(f => f.OccurredAt >= start && f.OccurredAt <= end && f.Direction == RevenueDirection.Inflow)
                 .SumAsync(f => f.Amount);
 
-            // 2. Consumable Outflow (Usage as proxy for simplicity in V1, or SpendFacts if categorized)
             summary.ConsumableCashOutflow = await _context.CostAttribution_UsageFacts
                 .Where(f => f.OccurredAt >= start && f.OccurredAt <= end)
                 .SumAsync(f => f.TotalCost ?? 0);
 
-            // 3. Outsourced Test Outflow (SpendFacts)
             summary.OutsourcedTestCashOutflow = await _context.SpendFacts
                 .Where(f => f.OccurredAt >= start && f.OccurredAt <= end && f.Category == "OutsourcedTest")
                 .SumAsync(f => f.Amount);
 
-            // 4. Referral Outflow (SpendFacts)
-            // Assuming Referral payouts are categorized or linked. We can use ReferenceType if available.
             summary.ReferralCashOutflow = await _context.SpendFacts
                 .Where(f => f.OccurredAt >= start && f.OccurredAt <= end && f.Category == "Referral")
                 .SumAsync(f => f.Amount);
 
-            // 5. Payroll Outflow (SpendFacts)
             summary.PayrollCashOutflow = await _context.SpendFacts
                 .Where(f => f.OccurredAt >= start && f.OccurredAt <= end && f.Category == "Payroll")
                 .SumAsync(f => f.Amount);
 
-            // 6. Overhead Outflow (SpendFacts)
             summary.OverheadCashOutflow = await _context.SpendFacts
                 .Where(f => f.OccurredAt >= start && f.OccurredAt <= end && f.Category == "Overhead")
                 .SumAsync(f => f.Amount);
 
+            // --- ACCRUAL BASIS (Obligations) ---
+            // 1. Total Invoices issued (Accrual Revenue)
+            summary.TotalRevenueAccrual = await _context.Invoices
+                .Where(i => i.CreatedAt >= start && i.CreatedAt <= end)
+                .SumAsync(i => i.Total);
+
+            // 2. All Payables Created (Accrual Expense)
+            var vendorAccrual = await _context.VendorPayables
+                .Where(p => p.CreatedAt >= start && p.CreatedAt <= end)
+                .SumAsync(p => p.Amount);
+
+            var overheadAccrual = await _context.OverheadPayableFacts
+                .Where(p => p.CreatedAt >= start && p.CreatedAt <= end)
+                .SumAsync(p => p.AmountDue);
+
+            var outsourcedAccrual = await _context.ReferenceLabPayables
+                .Where(p => p.CreatedAt >= start && p.CreatedAt <= end)
+                .SumAsync(p => p.AmountDue);
+
+            var referralAccrual = await _context.ReferralPayableFacts
+                .Where(f => f.RecordedAt >= start && f.RecordedAt <= end)
+                .SumAsync(f => f.Amount);
+
+            summary.TotalExpensesAccrual = vendorAccrual + overheadAccrual + outsourcedAccrual + referralAccrual + summary.PayrollCashOutflow; // Payroll is usually cash-only in this system
+
             return summary;
+        }
+
+        public async Task<IEnumerable<object>> GetRevenueFactsAsync(DateTime start, DateTime end)
+        {
+            return await _context.RevenueFacts
+                .AsNoTracking()
+                .Where(f => f.OccurredAt >= start && f.OccurredAt <= end)
+                .OrderByDescending(f => f.OccurredAt)
+                .Select(f => new
+                {
+                    f.RevenueFactId,
+                    f.OccurredAt,
+                    f.Amount,
+                    f.Currency,
+                    f.Direction,
+                    f.SourceType,
+                    f.SourceReferenceId,
+                    f.PaymentMode,
+                    f.Notes
+                })
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<object>> GetReferralPayablesAsync()
+        {
+            return await _context.ReferralPayableFacts
+                .Include(f => f.ReferralPartner)
+                .Where(f => f.SettledAt == null)
+                .OrderByDescending(f => f.RecordedAt)
+                .Select(f => new
+                {
+                    FactId = f.ReferralPayableFactId,
+                    f.ReferralPartnerId,
+                    PartnerName = f.ReferralPartner != null ? f.ReferralPartner.Name : "Unknown Partner",
+                    f.Amount,
+                    Status = f.SettledAt == null ? "Pending" : "Settled",
+                    CreatedAt = f.RecordedAt,
+                    f.Description
+                })
+                .ToListAsync();
         }
     }
 }

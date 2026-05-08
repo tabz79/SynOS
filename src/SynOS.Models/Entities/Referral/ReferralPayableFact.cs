@@ -22,6 +22,11 @@ namespace SynOS.Models.Entities.Referral
 
         public DateTime RecordedAt { get; init; } = DateTime.UtcNow;
 
+        public string Description { get; init; } = string.Empty;
+
         public DateTimeOffset? SettledAt { get; set; } // Mutable settlement status
+
+        // Navigation
+        public virtual ReferralPartner? ReferralPartner { get; set; }
     }
 }

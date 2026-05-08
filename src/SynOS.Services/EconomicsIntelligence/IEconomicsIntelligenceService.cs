@@ -27,16 +27,29 @@ namespace SynOS.Services.EconomicsIntelligence
         Task<EconomicEventRevenueView> GetRevenueForEventAsync(Guid eventId);
 
         /// <summary>
-        /// Retrieves the gross margin for a specific economic event.
+        /// Retrieves the cash-based operational margin (Strict Facts: Movement vs Movement)
         /// </summary>
-        /// <param name="eventId">The unique identifier for the economic event (e.g., OrderId).</param>
-        /// <returns>An EconomicEventMarginView projection.</returns>
-        Task<EconomicEventMarginView> GetMarginForEventAsync(Guid eventId);
+        Task<EconomicEventMarginView> GetCashMarginForEventAsync(Guid eventId);
+
+        /// <summary>
+        /// Retrieves the accrual-based operational margin (Obligations vs Recognized Revenue)
+        /// </summary>
+        Task<EconomicEventMarginView> GetAccrualMarginForEventAsync(Guid eventId);
 
         /// <summary>
         /// Retrieves the net operational position for the lab over a specific time period.
         /// Factors in Revenue, Consumables, Outsourced Tests, Referrals, Payroll, and Overhead.
         /// </summary>
         Task<LabProfitabilitySummaryDto> GetLabProfitabilitySummaryAsync(DateTime start, DateTime end);
+
+        /// <summary>
+        /// Retrieves a list of revenue facts for a given time period.
+        /// </summary>
+        Task<IEnumerable<object>> GetRevenueFactsAsync(DateTime start, DateTime end);
+
+        /// <summary>
+        /// Retrieves pending referral commission payables.
+        /// </summary>
+        Task<IEnumerable<object>> GetReferralPayablesAsync();
     }
 }

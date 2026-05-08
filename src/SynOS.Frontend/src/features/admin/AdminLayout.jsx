@@ -35,7 +35,7 @@ export function AdminLayout() {
                 { name: "Pathologist", icon: UserCheck, path: "/pathologist" },
                 { name: "Delivery Desk", icon: Truck, path: "/delivery" },
                 { name: "Inventory (Ops)", icon: Box, path: "/inventory" },
-                { name: "Finance (Ops)", icon: IndianRupee, path: "/finance", disabled: true },
+                { name: "Finance (Ops)", icon: IndianRupee, path: "/finance" },
             ]
         }
     ];

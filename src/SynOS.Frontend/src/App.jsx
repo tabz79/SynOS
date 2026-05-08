@@ -15,7 +15,12 @@ import { ControlTowerDashboard } from '@/features/admin/ControlTowerDashboard'
 import { PendingRequestsQueue } from '@/features/admin/PendingRequestsQueue'
 import { ImsRoleMappingScreen } from '@/features/admin/ImsRoleMappingScreen'
 import { InventoryTerminal } from '@/features/inventory/InventoryTerminal'
-import { FinanceScreen } from '@/features/finance/FinanceScreen'
+import { FinanceLayout } from '@/features/finance/FinanceLayout'
+import { FinanceOverview } from '@/features/finance/FinanceOverview'
+import { BillsCollectionsScreen, PendingReceivablesScreen, CollectionHistoryScreen, RevenueOverview } from '@/features/finance/RevenueScreens'
+import { VendorPayablesScreen, OverheadBillsScreen, OutsourcedPayablesScreen } from '@/features/finance/ExpenseScreens'
+import { PartnerRegistryScreen, CommissionPayoutsScreen, CommissionRulesScreen } from '@/features/finance/ReferralScreens'
+import { IntelligenceDashboard } from '@/features/finance/IntelligenceScreens'
 import { RoleTakeoverBanner } from '@/features/admin/components/RoleTakeoverBanner'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 
@@ -148,11 +153,34 @@ function App() {
             </Route>
 
             <Route element={<ProtectedRoute allowedRoles={['Finance', 'Admin']} />}>
-              <Route path="/finance" element={
+              <Route element={
                 <AdminProtectedWrapper roleName="Finance Hub">
-                  <FinanceScreen />
+                  <FinanceLayout />
                 </AdminProtectedWrapper>
-              } />
+              }>
+                <Route path="/finance" element={<FinanceOverview />} />
+                {/* Revenue Department */}
+                <Route path="/finance/revenue" element={<RevenueOverview />} />
+                <Route path="/finance/revenue/bills" element={<BillsCollectionsScreen />} />
+                <Route path="/finance/revenue/receivables" element={<PendingReceivablesScreen />} />
+                <Route path="/finance/revenue/history" element={<CollectionHistoryScreen />} />
+                
+                {/* Expense Department */}
+                <Route path="/finance/expenses" element={<VendorPayablesScreen />} />
+                <Route path="/finance/expenses/payables" element={<VendorPayablesScreen />} />
+                <Route path="/finance/overheads" element={<OverheadBillsScreen />} />
+                <Route path="/finance/outsourcing" element={<OutsourcedPayablesScreen />} />
+                <Route path="/finance/outsourcing/pending" element={<OutsourcedPayablesScreen />} />
+
+                {/* Referral Department */}
+                <Route path="/finance/referrals" element={<PartnerRegistryScreen />} />
+                <Route path="/finance/referrals/registry" element={<PartnerRegistryScreen />} />
+                <Route path="/finance/referrals/payouts" element={<CommissionPayoutsScreen />} />
+                <Route path="/finance/referrals/rules" element={<CommissionRulesScreen />} />
+
+                {/* Intelligence Department */}
+                <Route path="/finance/intelligence" element={<IntelligenceDashboard />} />
+              </Route>
             </Route>
 
             <Route element={<ProtectedRoute allowedRoles={['Admin']} />}>

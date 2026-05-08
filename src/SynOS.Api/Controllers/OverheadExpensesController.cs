@@ -26,10 +26,10 @@ namespace SynOS.Api.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<OverheadExpense>>> GetExpenses()
+        public async Task<ActionResult<IEnumerable<OverheadPayableFact>>> GetExpenses()
         {
-            return await _context.OverheadExpenses
-                .OrderByDescending(e => e.ExpenseDate)
+            return await _context.OverheadPayableFacts
+                .OrderByDescending(e => e.CreatedAt)
                 .ToListAsync();
         }
 
@@ -44,30 +44,70 @@ namespace SynOS.Api.Controllers
             using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
-                // 1. Create Overhead Expense
-                var expense = new OverheadExpense
+                // 1. Create Overhead Payable (Obligation ONLY)
+                var payable = new OverheadPayableFact
                 {
-                    Id = Guid.NewGuid(),
+                    OverheadPayableId = Guid.NewGuid(),
                     Category = request.Category,
-                    Amount = request.Amount,
+                    AmountDue = request.Amount,
                     Description = request.Description,
-                    ExpenseDate = request.ExpenseDate,
+                    DueDate = request.ExpenseDate,
+                    Status = VendorPayableStatus.Pending,
                     CreatedAt = DateTime.UtcNow,
                     CreatedBy = request.UserId
                 };
 
-                await _context.OverheadExpenses.AddAsync(expense);
+                await _context.OverheadPayableFacts.AddAsync(payable);
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
 
-                // 2. Emit SpendFact (Immediate for overhead)
+                return CreatedAtAction(nameof(GetExpenses), new { id = payable.OverheadPayableId }, payable);
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
+
+        [HttpPost("{id}/settle")]
+        public async Task<IActionResult> SettleExpense(Guid id, [FromBody] SettleOverheadRequestDto request)
+        {
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                var payable = await _context.OverheadPayableFacts.FindAsync(id);
+                if (payable == null) return NotFound("Overhead payable not found.");
+
+                if (payable.Status == VendorPayableStatus.Settled)
+                    return BadRequest("Payable is already settled.");
+
+                var remaining = payable.AmountDue - payable.AmountPaid;
+                var settleAmount = Math.Min(request.Amount, remaining);
+
+                payable.AmountPaid += settleAmount;
+
+                // Precision check: using 0.0001m
+                if (Math.Abs(payable.AmountDue - payable.AmountPaid) < 0.0001m)
+                {
+                    payable.Status = VendorPayableStatus.Settled;
+                    payable.SettledAt = DateTime.UtcNow;
+                }
+                else
+                {
+                    payable.Status = VendorPayableStatus.PartiallyPaid;
+                }
+
+                // Emit SpendFact (Money Moved)
                 var spendFact = new SpendFact(
                     Guid.NewGuid(),
-                    Guid.Empty, // Generic payee for overhead
-                    request.Amount,
+                    Guid.Empty,
+                    settleAmount,
                     "INR",
                     "Overhead",
-                    SynOS.Models.Enums.PaymentMethod.Cash, // Default
-                    $"Overhead-{request.Category}-{DateTime.UtcNow:yyyyMMdd}",
-                    request.ExpenseDate,
+                    request.PaymentMethod,
+                    $"OHP-{payable.OverheadPayableId.ToString().Substring(0, 8)}",
+                    DateTime.UtcNow,
                     DateTime.UtcNow,
                     "Main Account",
                     "Finance API",
@@ -80,7 +120,7 @@ namespace SynOS.Api.Controllers
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
 
-                return CreatedAtAction(nameof(GetExpenses), new { id = expense.Id }, expense);
+                return Ok(payable);
             }
             catch (Exception ex)
             {
@@ -97,5 +137,11 @@ namespace SynOS.Api.Controllers
         public string Description { get; set; }
         public DateTime ExpenseDate { get; set; }
         public Guid UserId { get; set; }
+    }
+
+    public class SettleOverheadRequestDto
+    {
+        public decimal Amount { get; set; }
+        public SynOS.Models.Enums.PaymentMethod PaymentMethod { get; set; }
     }
 }

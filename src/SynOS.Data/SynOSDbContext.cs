@@ -222,6 +222,7 @@ namespace SynOS.Data
         public DbSet<VendorPayable> VendorPayables { get; set; } = null!;
         public DbSet<ReferenceLabPayable> ReferenceLabPayables { get; set; } = null!;
         public DbSet<OverheadExpense> OverheadExpenses { get; set; } = null!;
+        public DbSet<OverheadPayableFact> OverheadPayableFacts { get; set; } = null!;
 
         // Compliance Engine DbSets
         public DbSet<StatutoryObligationFact> StatutoryObligationFacts { get; set; }
@@ -293,6 +294,11 @@ namespace SynOS.Data
                 entity.HasKey(e => e.ReferralPayableFactId);
                 entity.HasIndex(e => e.SourceVisitId).IsUnique(); // ADDED: Idempotency enforcement
                 entity.Property(e => e.Amount).HasColumnType("decimal(18, 4)");
+                
+                entity.HasOne(e => e.ReferralPartner)
+                      .WithMany()
+                      .HasForeignKey(e => e.ReferralPartnerId)
+                      .OnDelete(DeleteBehavior.Cascade);
             });
 
             modelBuilder.Entity<ReferralDraft>(entity =>
