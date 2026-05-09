@@ -108,5 +108,9 @@ export const InventoryApi = {
 
     createOpeningStockBulk: async (entries) => {
         return apiClient.post(`${API_BASE}/opening-stock/bulk`, entries);
+    },
+
+    getSuppliers: async () => {
+        return apiClient.get(`${API_BASE}/suppliers`);
     }
 };

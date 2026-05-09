@@ -473,6 +473,7 @@ const StockLedger = ({ onReceive }) => {
 
 const ReceiveStock = ({ prefilledItem }) => {
     const [items, setItems] = useState([]);
+    const [suppliers, setSuppliers] = useState([]);
     const [isLoadingItems, setIsLoadingItems] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -483,14 +484,18 @@ const ReceiveStock = ({ prefilledItem }) => {
         expiryDate: "",
         unitCost: "0",
         branchId: prefilledItem?.branchId || "a0000000-0000-0000-0000-000000000001", // Default to Main
-        supplierId: null
+        supplierId: ""
     });
 
-    const loadItems = async () => {
+    const loadData = async () => {
         setIsLoadingItems(true);
         try {
-            const data = await InventoryApi.getInventoryItems();
-            setItems(data);
+            const [itemsData, suppliersData] = await Promise.all([
+                InventoryApi.getInventoryItems(),
+                InventoryApi.getSuppliers()
+            ]);
+            setItems(itemsData);
+            setSuppliers(suppliersData);
         } catch (e) {
             console.error(e);
         } finally {
@@ -499,7 +504,7 @@ const ReceiveStock = ({ prefilledItem }) => {
     };
 
     useEffect(() => {
-        loadItems();
+        loadData();
     }, []);
 
     useEffect(() => {
@@ -519,7 +524,8 @@ const ReceiveStock = ({ prefilledItem }) => {
             await InventoryApi.receiveStock({
                 ...formData,
                 quantity: parseFloat(formData.quantity),
-                unitCost: parseFloat(formData.unitCost)
+                unitCost: parseFloat(formData.unitCost),
+                supplierId: formData.supplierId || null
             });
             alert("Stock received and logged successfully");
             setFormData({
@@ -529,7 +535,7 @@ const ReceiveStock = ({ prefilledItem }) => {
                 expiryDate: "",
                 unitCost: "0",
                 branchId: formData.branchId,
-                supplierId: null
+                supplierId: ""
             });
         } catch (e) {
             alert(e.message);
@@ -578,6 +584,20 @@ const ReceiveStock = ({ prefilledItem }) => {
                             <option value="">Choose an inventory item...</option>
                             {items.map(item => (
                                 <option key={item.itemId} value={item.itemId}>{item.name} ({item.itemCode})</option>
+                            ))}
+                        </select>
+                    </div>
+
+                    <div className="flex flex-col gap-2">
+                        <label className="text-[10px] font-black uppercase text-zinc-500 ml-4 tracking-widest">Select Vendor / Supplier (For Finance Payable)</label>
+                        <select 
+                            value={formData.supplierId}
+                            onChange={(e) => setFormData({ ...formData, supplierId: e.target.value })}
+                            className="bg-zinc-100 dark:bg-zinc-800/50 border-none rounded-2xl px-6 py-4 text-sm font-bold focus:ring-2 ring-synos-primary outline-none transition-all dark:text-white"
+                        >
+                            <option value="">Manual Entry (No Payable) / Select Vendor...</option>
+                            {suppliers.map(s => (
+                                <option key={s.supplierId} value={s.supplierId}>{s.name}</option>
                             ))}
                         </select>
                     </div>

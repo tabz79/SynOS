@@ -6,6 +6,8 @@ namespace SynOS.Models.Enums
         Cheque,
         Cash,
         Wallet,
+        UPI,
+        Card,
         Other
     }
 }

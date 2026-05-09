@@ -105,6 +105,9 @@ namespace SynOS.Api.Controllers
                     settleAmount,
                     "INR",
                     "Overhead",
+                    payable.Description ?? "Overhead Expense", // PayeeName
+                    $"Category: {payable.Category}", // Notes
+                    null, // BranchId
                     request.PaymentMethod,
                     $"OHP-{payable.OverheadPayableId.ToString().Substring(0, 8)}",
                     DateTime.UtcNow,

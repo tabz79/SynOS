@@ -17,5 +17,6 @@ namespace SynOS.Services.Inventory
         Task CreateOpeningStockEntryAsync(OpeningStockDto dto, Guid recordedByUserId);
         Task CreateOpeningStockBulkAsync(IEnumerable<OpeningStockDto> entries, Guid recordedByUserId);
         Task<ImsInventoryItem> CreateItemAsync(CreateItemDto dto);
+        Task<IEnumerable<ImsSupplier>> GetSuppliersAsync();
     }
 }

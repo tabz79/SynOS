@@ -58,13 +58,19 @@ namespace SynOS.Services.Settlements
 
                 _context.ReferralPayableFacts.Update(payable);
 
+                var partner = await _context.ReferralPartners.FindAsync(payable.ReferralPartnerId);
+                var partnerName = partner?.Name ?? "Unknown Partner";
+
                 // Emit SpendFact
                 var spendFact = new SpendFact(
                     Guid.NewGuid(),
                     payable.ReferralPartnerId,
                     amount,
                     payable.Currency,
-                    "Settlement",
+                    "Referral", // Use operational category
+                    partnerName, // PayeeName
+                    $"Settlement for {payable.Description}", // Notes
+                    null, // BranchId (not explicitly tracked in ReferralPayableFact yet)
                     PaymentMethod.BankTransfer,
                     $"SETTLE-{payable.ReferralPayableFactId}-{DateTime.UtcNow:yyyyMMdd}",
                     DateTime.UtcNow,

@@ -61,5 +61,15 @@ namespace SynOS.Services.EconomicsIntelligence
         /// Retrieves revenue trends for daily, weekly, and monthly buckets.
         /// </summary>
         Task<object> GetRevenueTrendsAsync(int days = 30);
+        
+        /// <summary>
+        /// Retrieves a unified list of expenses (SpendFacts only) for a given time period.
+        /// </summary>
+        Task<IEnumerable<ExpenseFactDto>> GetExpenseFactsAsync(DateTime start, DateTime end);
+
+        /// <summary>
+        /// Retrieves a summary of vendor liabilities grouped by vendor.
+        /// </summary>
+        Task<IEnumerable<VendorPayableSummaryDto>> GetVendorPayablesSummaryAsync();
     }
 }

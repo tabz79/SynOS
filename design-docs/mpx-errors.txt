@@ -1,72 +1,970 @@
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence> dotnet run --project src\SynOS.Api\SynOS.Api.csproj --urls "http://127.0.0.1:59999"
-
-[13:01:57 WRN] No store type was specified for the decimal property 'AmountReceived' on entity type 'ReceivableFact'. This will cause values to be silently truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.
-[13:01:57 WRN] No store type was specified for the decimal property 'AmountPaid' on entity type 'VendorPayable'. This will cause values to be silently truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.
-[13:01:57 WRN] No store type was specified for the decimal property 'BaseAmount' on entity type 'PayStructureComponent'. This will cause values to be silently truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.
-[13:01:57 WRN] No store type was specified for the decimal property 'AmountPaid' on entity type 'ReferralPayableFact'. This will cause values to be silently truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.
-[13:02:06 INF] Notification Worker Service running.
-[13:02:06 INF] OperationalStatsProjectionWorker is starting in Event-Driven Mode.
-[13:02:06 INF] Worker: Running Consistency Check and Catch-up...
-[13:02:06 INF] Worker: Catch-up complete. Awaiting real-time events...
-[13:02:36 WRN] Failed to determine the https port for redirect.
-[13:02:49 WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
-[13:03:18 WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
-[13:03:18 ERR] An exception occurred in the database while saving changes for context type 'SynOS.Data.SynOSDbContext'.
-Microsoft.EntityFrameworkCore.DbUpdateException: An error occurred while saving the entity changes. See the inner exception for details.
- ---> Microsoft.Data.SqlClient.SqlException (0x80131904): Cannot insert duplicate key row in object 'dbo.RevenueFacts' with unique index 'IX_RevenueFacts_SourceType_SourceReferenceId'. The duplicate key value is (Partner, BULK-730599da-0832-4a97-95bf-25a6b1fd52de-20260508).
-   at Microsoft.Data.SqlClient.SqlConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
-   at Microsoft.Data.SqlClient.SqlInternalConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
-   at Microsoft.Data.SqlClient.TdsParser.ThrowExceptionAndWarning(TdsParserStateObject stateObj, Boolean callerHasConnectionLock, Boolean asyncClose)
-   at Microsoft.Data.SqlClient.TdsParser.TryRun(RunBehavior runBehavior, SqlCommand cmdHandler, SqlDataReader dataStream, BulkCopySimpleResultSet bulkCopyHandler, TdsParserStateObject stateObj, Boolean& dataReady)
-   at Microsoft.Data.SqlClient.SqlDataReader.TryHasMoreRows(Boolean& moreRows)
-   at Microsoft.Data.SqlClient.SqlDataReader.TryHasMoreResults(Boolean& moreResults)
-   at Microsoft.Data.SqlClient.SqlDataReader.TryNextResult(Boolean& more)
-   at Microsoft.Data.SqlClient.SqlDataReader.NextResultAsyncExecute(Task task, Object state)
-   at Microsoft.Data.SqlClient.SqlDataReader.InvokeAsyncCall[T](SqlDataReaderBaseAsyncCallContext`1 context)
---- End of stack trace from previous location ---
-   at Microsoft.EntityFrameworkCore.Update.AffectedCountModificationCommandBatch.ConsumeAsync(RelationalDataReader reader, CancellationToken cancellationToken)
-ClientConnectionId:79e09dd3-561f-478b-ac63-9abd12a4c16d
-Error Number:2601,State:1,Class:14
-   --- End of inner exception stack trace ---
-   at Microsoft.EntityFrameworkCore.Update.AffectedCountModificationCommandBatch.ConsumeAsync(RelationalDataReader reader, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Update.ReaderModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Update.ReaderModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.SqlServer.Update.Internal.SqlServerModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.ChangeTracking.Internal.StateManager.SaveChangesAsync(IList`1 entriesToSave, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.ChangeTracking.Internal.StateManager.SaveChangesAsync(StateManager stateManager, Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.DbContext.SaveChangesAsync(Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
-Microsoft.EntityFrameworkCore.DbUpdateException: An error occurred while saving the entity changes. See the inner exception for details.
- ---> Microsoft.Data.SqlClient.SqlException (0x80131904): Cannot insert duplicate key row in object 'dbo.RevenueFacts' with unique index 'IX_RevenueFacts_SourceType_SourceReferenceId'. The duplicate key value is (Partner, BULK-730599da-0832-4a97-95bf-25a6b1fd52de-20260508).
-   at Microsoft.Data.SqlClient.SqlConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
-   at Microsoft.Data.SqlClient.SqlInternalConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
-   at Microsoft.Data.SqlClient.TdsParser.ThrowExceptionAndWarning(TdsParserStateObject stateObj, Boolean callerHasConnectionLock, Boolean asyncClose)
-   at Microsoft.Data.SqlClient.TdsParser.TryRun(RunBehavior runBehavior, SqlCommand cmdHandler, SqlDataReader dataStream, BulkCopySimpleResultSet bulkCopyHandler, TdsParserStateObject stateObj, Boolean& dataReady)
-   at Microsoft.Data.SqlClient.SqlDataReader.TryHasMoreRows(Boolean& moreRows)
-   at Microsoft.Data.SqlClient.SqlDataReader.TryHasMoreResults(Boolean& moreResults)
-   at Microsoft.Data.SqlClient.SqlDataReader.TryNextResult(Boolean& more)
-   at Microsoft.Data.SqlClient.SqlDataReader.NextResultAsyncExecute(Task task, Object state)
-   at Microsoft.Data.SqlClient.SqlDataReader.InvokeAsyncCall[T](SqlDataReaderBaseAsyncCallContext`1 context)
---- End of stack trace from previous location ---
-   at Microsoft.EntityFrameworkCore.Update.AffectedCountModificationCommandBatch.ConsumeAsync(RelationalDataReader reader, CancellationToken cancellationToken)
-ClientConnectionId:79e09dd3-561f-478b-ac63-9abd12a4c16d
-Error Number:2601,State:1,Class:14
-   --- End of inner exception stack trace ---
-   at Microsoft.EntityFrameworkCore.Update.AffectedCountModificationCommandBatch.ConsumeAsync(RelationalDataReader reader, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Update.ReaderModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Update.ReaderModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.SqlServer.Update.Internal.SqlServerModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.ChangeTracking.Internal.StateManager.SaveChangesAsync(IList`1 entriesToSave, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.ChangeTracking.Internal.StateManager.SaveChangesAsync(StateManager stateManager, Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.DbContext.SaveChangesAsync(Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
-
-
+console logs:
 react-dom_client.js?v=8e8c482c:20103 Download the React DevTools for a better development experience: https://react.dev/link/react-devtools
-:5173/api/settlements/receivable/bulk:1  Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+finance.js:214  GET http://localhost:5173/api/v1/economics/expense-facts?start=2026-04-08T13:32:30.941Z&end=2026-05-08T13:32:30.941Z 500 (Internal Server Error)
+(anonymous) @ finance.js:214
+(anonymous) @ ExpenseScreens.jsx:82
+(anonymous) @ ExpenseScreens.jsx:70
+react_stack_bottom_frame @ react-dom_client.js?v=8e8c482c:18567
+runWithFiberInDEV @ react-dom_client.js?v=8e8c482c:997
+commitHookEffectListMount @ react-dom_client.js?v=8e8c482c:9411
+commitHookPassiveMountEffects @ react-dom_client.js?v=8e8c482c:9465
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11040
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11066
+flushPassiveEffects @ react-dom_client.js?v=8e8c482c:13150
+(anonymous) @ react-dom_client.js?v=8e8c482c:12776
+performWorkUntilDeadline @ react-dom_client.js?v=8e8c482c:36
+<ExpenseFeedScreen>
+exports.jsxDEV @ react_jsx-dev-runtime.js?v=8e8c482c:247
+App @ App.jsx:170
+react_stack_bottom_frame @ react-dom_client.js?v=8e8c482c:18509
+renderWithHooksAgain @ react-dom_client.js?v=8e8c482c:5729
+renderWithHooks @ react-dom_client.js?v=8e8c482c:5665
+updateFunctionComponent @ react-dom_client.js?v=8e8c482c:7475
+beginWork @ react-dom_client.js?v=8e8c482c:8525
+runWithFiberInDEV @ react-dom_client.js?v=8e8c482c:997
+performUnitOfWork @ react-dom_client.js?v=8e8c482c:12561
+workLoopSync @ react-dom_client.js?v=8e8c482c:12424
+renderRootSync @ react-dom_client.js?v=8e8c482c:12408
+performWorkOnRoot @ react-dom_client.js?v=8e8c482c:11766
+performWorkOnRootViaSchedulerTask @ react-dom_client.js?v=8e8c482c:13505
+performWorkUntilDeadline @ react-dom_client.js?v=8e8c482c:36
+<App>
+exports.jsxDEV @ react_jsx-dev-runtime.js?v=8e8c482c:247
+(anonymous) @ main.jsx:10
+ExpenseScreens.jsx:89 Failed to load expense feed: Error: Failed to load expense feed
+    at Object.getExpenseFeed (finance.js:217:33)
+    at async Promise.all (index 0)
+    at async loadData (ExpenseScreens.jsx:81:44)
+(anonymous) @ ExpenseScreens.jsx:89
+await in (anonymous)
+(anonymous) @ ExpenseScreens.jsx:70
+react_stack_bottom_frame @ react-dom_client.js?v=8e8c482c:18567
+runWithFiberInDEV @ react-dom_client.js?v=8e8c482c:997
+commitHookEffectListMount @ react-dom_client.js?v=8e8c482c:9411
+commitHookPassiveMountEffects @ react-dom_client.js?v=8e8c482c:9465
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11040
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11066
+flushPassiveEffects @ react-dom_client.js?v=8e8c482c:13150
+(anonymous) @ react-dom_client.js?v=8e8c482c:12776
+performWorkUntilDeadline @ react-dom_client.js?v=8e8c482c:36
+<ExpenseFeedScreen>
+exports.jsxDEV @ react_jsx-dev-runtime.js?v=8e8c482c:247
+App @ App.jsx:170
+react_stack_bottom_frame @ react-dom_client.js?v=8e8c482c:18509
+renderWithHooksAgain @ react-dom_client.js?v=8e8c482c:5729
+renderWithHooks @ react-dom_client.js?v=8e8c482c:5665
+updateFunctionComponent @ react-dom_client.js?v=8e8c482c:7475
+beginWork @ react-dom_client.js?v=8e8c482c:8525
+runWithFiberInDEV @ react-dom_client.js?v=8e8c482c:997
+performUnitOfWork @ react-dom_client.js?v=8e8c482c:12561
+workLoopSync @ react-dom_client.js?v=8e8c482c:12424
+renderRootSync @ react-dom_client.js?v=8e8c482c:12408
+performWorkOnRoot @ react-dom_client.js?v=8e8c482c:11766
+performWorkOnRootViaSchedulerTask @ react-dom_client.js?v=8e8c482c:13505
+performWorkUntilDeadline @ react-dom_client.js?v=8e8c482c:36
+<App>
+exports.jsxDEV @ react_jsx-dev-runtime.js?v=8e8c482c:247
+(anonymous) @ main.jsx:10
+finance.js:214  GET http://localhost:5173/api/v1/economics/expense-facts?start=2026-04-08T13:32:30.949Z&end=2026-05-08T13:32:30.949Z 500 (Internal Server Error)
+(anonymous) @ finance.js:214
+(anonymous) @ ExpenseScreens.jsx:82
+(anonymous) @ ExpenseScreens.jsx:70
+react_stack_bottom_frame @ react-dom_client.js?v=8e8c482c:18567
+runWithFiberInDEV @ react-dom_client.js?v=8e8c482c:997
+commitHookEffectListMount @ react-dom_client.js?v=8e8c482c:9411
+commitHookPassiveMountEffects @ react-dom_client.js?v=8e8c482c:9465
+reconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11273
+doubleInvokeEffectsOnFiber @ react-dom_client.js?v=8e8c482c:13339
+runWithFiberInDEV @ react-dom_client.js?v=8e8c482c:997
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13312
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+commitDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13347
+flushPassiveEffects @ react-dom_client.js?v=8e8c482c:13157
+(anonymous) @ react-dom_client.js?v=8e8c482c:12776
+performWorkUntilDeadline @ react-dom_client.js?v=8e8c482c:36
+<ExpenseFeedScreen>
+exports.jsxDEV @ react_jsx-dev-runtime.js?v=8e8c482c:247
+App @ App.jsx:170
+react_stack_bottom_frame @ react-dom_client.js?v=8e8c482c:18509
+renderWithHooksAgain @ react-dom_client.js?v=8e8c482c:5729
+renderWithHooks @ react-dom_client.js?v=8e8c482c:5665
+updateFunctionComponent @ react-dom_client.js?v=8e8c482c:7475
+beginWork @ react-dom_client.js?v=8e8c482c:8525
+runWithFiberInDEV @ react-dom_client.js?v=8e8c482c:997
+performUnitOfWork @ react-dom_client.js?v=8e8c482c:12561
+workLoopSync @ react-dom_client.js?v=8e8c482c:12424
+renderRootSync @ react-dom_client.js?v=8e8c482c:12408
+performWorkOnRoot @ react-dom_client.js?v=8e8c482c:11766
+performWorkOnRootViaSchedulerTask @ react-dom_client.js?v=8e8c482c:13505
+performWorkUntilDeadline @ react-dom_client.js?v=8e8c482c:36
+<App>
+exports.jsxDEV @ react_jsx-dev-runtime.js?v=8e8c482c:247
+(anonymous) @ main.jsx:10
+ExpenseScreens.jsx:89 Failed to load expense feed: Error: Failed to load expense feed
+    at Object.getExpenseFeed (finance.js:217:33)
+    at async Promise.all (index 0)
+    at async loadData (ExpenseScreens.jsx:81:44)
+(anonymous) @ ExpenseScreens.jsx:89
+await in (anonymous)
+(anonymous) @ ExpenseScreens.jsx:70
+react_stack_bottom_frame @ react-dom_client.js?v=8e8c482c:18567
+runWithFiberInDEV @ react-dom_client.js?v=8e8c482c:997
+commitHookEffectListMount @ react-dom_client.js?v=8e8c482c:9411
+commitHookPassiveMountEffects @ react-dom_client.js?v=8e8c482c:9465
+reconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11273
+doubleInvokeEffectsOnFiber @ react-dom_client.js?v=8e8c482c:13339
+runWithFiberInDEV @ react-dom_client.js?v=8e8c482c:997
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13312
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+commitDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13347
+flushPassiveEffects @ react-dom_client.js?v=8e8c482c:13157
+(anonymous) @ react-dom_client.js?v=8e8c482c:12776
+performWorkUntilDeadline @ react-dom_client.js?v=8e8c482c:36
+<ExpenseFeedScreen>
+exports.jsxDEV @ react_jsx-dev-runtime.js?v=8e8c482c:247
+App @ App.jsx:170
+react_stack_bottom_frame @ react-dom_client.js?v=8e8c482c:18509
+renderWithHooksAgain @ react-dom_client.js?v=8e8c482c:5729
+renderWithHooks @ react-dom_client.js?v=8e8c482c:5665
+updateFunctionComponent @ react-dom_client.js?v=8e8c482c:7475
+beginWork @ react-dom_client.js?v=8e8c482c:8525
+runWithFiberInDEV @ react-dom_client.js?v=8e8c482c:997
+performUnitOfWork @ react-dom_client.js?v=8e8c482c:12561
+workLoopSync @ react-dom_client.js?v=8e8c482c:12424
+renderRootSync @ react-dom_client.js?v=8e8c482c:12408
+performWorkOnRoot @ react-dom_client.js?v=8e8c482c:11766
+performWorkOnRootViaSchedulerTask @ react-dom_client.js?v=8e8c482c:13505
+performWorkUntilDeadline @ react-dom_client.js?v=8e8c482c:36
+<App>
+exports.jsxDEV @ react_jsx-dev-runtime.js?v=8e8c482c:247
+(anonymous) @ main.jsx:10
+finance.js:214  GET http://localhost:5173/api/v1/economics/expense-facts?start=2026-04-08T13:32:33.296Z&end=2026-05-08T13:32:33.296Z 500 (Internal Server Error)
+(anonymous) @ finance.js:214
+(anonymous) @ ExpenseScreens.jsx:82
+(anonymous) @ ExpenseScreens.jsx:70
+react_stack_bottom_frame @ react-dom_client.js?v=8e8c482c:18567
+runWithFiberInDEV @ react-dom_client.js?v=8e8c482c:997
+commitHookEffectListMount @ react-dom_client.js?v=8e8c482c:9411
+commitHookPassiveMountEffects @ react-dom_client.js?v=8e8c482c:9465
+reconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11273
+doubleInvokeEffectsOnFiber @ react-dom_client.js?v=8e8c482c:13339
+runWithFiberInDEV @ react-dom_client.js?v=8e8c482c:997
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13312
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+commitDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13347
+flushPassiveEffects @ react-dom_client.js?v=8e8c482c:13157
+(anonymous) @ react-dom_client.js?v=8e8c482c:12776
+performWorkUntilDeadline @ react-dom_client.js?v=8e8c482c:36
+<ExpenseFeedScreen>
+exports.jsxDEV @ react_jsx-dev-runtime.js?v=8e8c482c:247
+App @ App.jsx:170
+react_stack_bottom_frame @ react-dom_client.js?v=8e8c482c:18509
+renderWithHooksAgain @ react-dom_client.js?v=8e8c482c:5729
+renderWithHooks @ react-dom_client.js?v=8e8c482c:5665
+updateFunctionComponent @ react-dom_client.js?v=8e8c482c:7475
+beginWork @ react-dom_client.js?v=8e8c482c:8525
+runWithFiberInDEV @ react-dom_client.js?v=8e8c482c:997
+performUnitOfWork @ react-dom_client.js?v=8e8c482c:12561
+workLoopSync @ react-dom_client.js?v=8e8c482c:12424
+renderRootSync @ react-dom_client.js?v=8e8c482c:12408
+performWorkOnRoot @ react-dom_client.js?v=8e8c482c:11766
+performWorkOnRootViaSchedulerTask @ react-dom_client.js?v=8e8c482c:13505
+performWorkUntilDeadline @ react-dom_client.js?v=8e8c482c:36
+<App>
+exports.jsxDEV @ react_jsx-dev-runtime.js?v=8e8c482c:247
+(anonymous) @ main.jsx:10
+ExpenseScreens.jsx:89 Failed to load expense feed: Error: Failed to load expense feed
+    at Object.getExpenseFeed (finance.js:217:33)
+    at async Promise.all (index 0)
+    at async loadData (ExpenseScreens.jsx:81:44)
+(anonymous) @ ExpenseScreens.jsx:89
+await in (anonymous)
+(anonymous) @ ExpenseScreens.jsx:70
+react_stack_bottom_frame @ react-dom_client.js?v=8e8c482c:18567
+runWithFiberInDEV @ react-dom_client.js?v=8e8c482c:997
+commitHookEffectListMount @ react-dom_client.js?v=8e8c482c:9411
+commitHookPassiveMountEffects @ react-dom_client.js?v=8e8c482c:9465
+reconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11273
+doubleInvokeEffectsOnFiber @ react-dom_client.js?v=8e8c482c:13339
+runWithFiberInDEV @ react-dom_client.js?v=8e8c482c:997
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13312
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+commitDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13347
+flushPassiveEffects @ react-dom_client.js?v=8e8c482c:13157
+(anonymous) @ react-dom_client.js?v=8e8c482c:12776
+performWorkUntilDeadline @ react-dom_client.js?v=8e8c482c:36
+<ExpenseFeedScreen>
+exports.jsxDEV @ react_jsx-dev-runtime.js?v=8e8c482c:247
+App @ App.jsx:170
+react_stack_bottom_frame @ react-dom_client.js?v=8e8c482c:18509
+renderWithHooksAgain @ react-dom_client.js?v=8e8c482c:5729
+renderWithHooks @ react-dom_client.js?v=8e8c482c:5665
+updateFunctionComponent @ react-dom_client.js?v=8e8c482c:7475
+beginWork @ react-dom_client.js?v=8e8c482c:8525
+runWithFiberInDEV @ react-dom_client.js?v=8e8c482c:997
+performUnitOfWork @ react-dom_client.js?v=8e8c482c:12561
+workLoopSync @ react-dom_client.js?v=8e8c482c:12424
+renderRootSync @ react-dom_client.js?v=8e8c482c:12408
+performWorkOnRoot @ react-dom_client.js?v=8e8c482c:11766
+performWorkOnRootViaSchedulerTask @ react-dom_client.js?v=8e8c482c:13505
+performWorkUntilDeadline @ react-dom_client.js?v=8e8c482c:36
+<App>
+exports.jsxDEV @ react_jsx-dev-runtime.js?v=8e8c482c:247
+(anonymous) @ main.jsx:10
+finance.js:214  GET http://localhost:5173/api/v1/economics/expense-facts?start=2026-04-08T13:32:33.291Z&end=2026-05-08T13:32:33.291Z 500 (Internal Server Error)
+(anonymous) @ finance.js:214
+(anonymous) @ ExpenseScreens.jsx:82
+(anonymous) @ ExpenseScreens.jsx:70
+react_stack_bottom_frame @ react-dom_client.js?v=8e8c482c:18567
+runWithFiberInDEV @ react-dom_client.js?v=8e8c482c:997
+commitHookEffectListMount @ react-dom_client.js?v=8e8c482c:9411
+commitHookPassiveMountEffects @ react-dom_client.js?v=8e8c482c:9465
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11040
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11066
+flushPassiveEffects @ react-dom_client.js?v=8e8c482c:13150
+(anonymous) @ react-dom_client.js?v=8e8c482c:12776
+performWorkUntilDeadline @ react-dom_client.js?v=8e8c482c:36
+<ExpenseFeedScreen>
+exports.jsxDEV @ react_jsx-dev-runtime.js?v=8e8c482c:247
+App @ App.jsx:170
+react_stack_bottom_frame @ react-dom_client.js?v=8e8c482c:18509
+renderWithHooksAgain @ react-dom_client.js?v=8e8c482c:5729
+renderWithHooks @ react-dom_client.js?v=8e8c482c:5665
+updateFunctionComponent @ react-dom_client.js?v=8e8c482c:7475
+beginWork @ react-dom_client.js?v=8e8c482c:8525
+runWithFiberInDEV @ react-dom_client.js?v=8e8c482c:997
+performUnitOfWork @ react-dom_client.js?v=8e8c482c:12561
+workLoopSync @ react-dom_client.js?v=8e8c482c:12424
+renderRootSync @ react-dom_client.js?v=8e8c482c:12408
+performWorkOnRoot @ react-dom_client.js?v=8e8c482c:11766
+performWorkOnRootViaSchedulerTask @ react-dom_client.js?v=8e8c482c:13505
+performWorkUntilDeadline @ react-dom_client.js?v=8e8c482c:36
+<App>
+exports.jsxDEV @ react_jsx-dev-runtime.js?v=8e8c482c:247
+(anonymous) @ main.jsx:10
+ExpenseScreens.jsx:89 Failed to load expense feed: Error: Failed to load expense feed
+    at Object.getExpenseFeed (finance.js:217:33)
+    at async Promise.all (index 0)
+    at async loadData (ExpenseScreens.jsx:81:44)
+(anonymous) @ ExpenseScreens.jsx:89
+await in (anonymous)
+(anonymous) @ ExpenseScreens.jsx:70
+react_stack_bottom_frame @ react-dom_client.js?v=8e8c482c:18567
+runWithFiberInDEV @ react-dom_client.js?v=8e8c482c:997
+commitHookEffectListMount @ react-dom_client.js?v=8e8c482c:9411
+commitHookPassiveMountEffects @ react-dom_client.js?v=8e8c482c:9465
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11040
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11066
+flushPassiveEffects @ react-dom_client.js?v=8e8c482c:13150
+(anonymous) @ react-dom_client.js?v=8e8c482c:12776
+performWorkUntilDeadline @ react-dom_client.js?v=8e8c482c:36
+<ExpenseFeedScreen>
+exports.jsxDEV @ react_jsx-dev-runtime.js?v=8e8c482c:247
+App @ App.jsx:170
+react_stack_bottom_frame @ react-dom_client.js?v=8e8c482c:18509
+renderWithHooksAgain @ react-dom_client.js?v=8e8c482c:5729
+renderWithHooks @ react-dom_client.js?v=8e8c482c:5665
+updateFunctionComponent @ react-dom_client.js?v=8e8c482c:7475
+beginWork @ react-dom_client.js?v=8e8c482c:8525
+runWithFiberInDEV @ react-dom_client.js?v=8e8c482c:997
+performUnitOfWork @ react-dom_client.js?v=8e8c482c:12561
+workLoopSync @ react-dom_client.js?v=8e8c482c:12424
+renderRootSync @ react-dom_client.js?v=8e8c482c:12408
+performWorkOnRoot @ react-dom_client.js?v=8e8c482c:11766
+performWorkOnRootViaSchedulerTask @ react-dom_client.js?v=8e8c482c:13505
+performWorkUntilDeadline @ react-dom_client.js?v=8e8c482c:36
+<App>
+exports.jsxDEV @ react_jsx-dev-runtime.js?v=8e8c482c:247
+(anonymous) @ main.jsx:10
+
+backend logs:
+PS D:\Projects\SynOS-Synthesized-Lab-Intelligence> dotnet run --project src\SynOS.Api\SynOS.Api.csproj --urls "http://127.0.0.1:59999"
+[18:34:24 WRN] No store type was specified for the decimal property 'AmountReceived' on entity type 'ReceivableFact'. This will cause values to be silently truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.
+[18:34:24 WRN] No store type was specified for the decimal property 'AmountPaid' on entity type 'VendorPayable'. This will cause values to be silently truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.
+[18:34:24 WRN] No store type was specified for the decimal property 'BaseAmount' on entity type 'PayStructureComponent'. This will cause values to be silently truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.
+[18:34:24 WRN] No store type was specified for the decimal property 'AmountPaid' on entity type 'ReferralPayableFact'. This will cause values to be silently truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.
+[18:34:33 INF] Notification Worker Service running.
+[18:34:33 INF] OperationalStatsProjectionWorker is starting in Event-Driven Mode.
+[18:34:33 INF] Worker: Running Consistency Check and Catch-up...
+[18:34:34 INF] Worker: Catch-up complete. Awaiting real-time events...
+[18:34:41 WRN] Failed to determine the https port for redirect.
+[19:01:53 ERR] Failed executing DbCommand (272ms) [Parameters=[@__start_0='?' (DbType = DateTime2), @__end_1='?' (DbType = DateTime2)], CommandType='Text', CommandTimeout='30']
+SELECT [s].[SpendFactId], [s].[OccurredAt], [s].[Category], COALESCE([s].[PayeeName], N'Unknown Payee'), [s].[Amount], [s].[Currency], [s].[PaymentMethod], [s].[TransactionReference], COALESCE([s].[Notes], N'')
+FROM [SpendFacts] AS [s]
+WHERE [s].[OccurredAt] >= @__start_0 AND [s].[OccurredAt] <= @__end_1
+ORDER BY [s].[OccurredAt] DESC
+[19:01:53 ERR] Failed executing DbCommand (275ms) [Parameters=[@__start_0='?' (DbType = DateTime2), @__end_1='?' (DbType = DateTime2)], CommandType='Text', CommandTimeout='30']
+SELECT [s].[SpendFactId], [s].[OccurredAt], [s].[Category], COALESCE([s].[PayeeName], N'Unknown Payee'), [s].[Amount], [s].[Currency], [s].[PaymentMethod], [s].[TransactionReference], COALESCE([s].[Notes], N'')
+FROM [SpendFacts] AS [s]
+WHERE [s].[OccurredAt] >= @__start_0 AND [s].[OccurredAt] <= @__end_1
+ORDER BY [s].[OccurredAt] DESC
+[19:01:53 ERR] An exception occurred while iterating over the results of a query for context type 'SynOS.Data.SynOSDbContext'.
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'PayeeName'.
+Invalid column name 'PayeeName'.
+Invalid column name 'Notes'.
+Invalid column name 'Notes'.
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:be961be0-5498-46c6-884f-c0f78fd68c7d
+Error Number:207,State:1,Class:16
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'PayeeName'.
+Invalid column name 'PayeeName'.
+Invalid column name 'Notes'.
+Invalid column name 'Notes'.
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:be961be0-5498-46c6-884f-c0f78fd68c7d
+Error Number:207,State:1,Class:16
+[19:01:53 ERR] An exception occurred while iterating over the results of a query for context type 'SynOS.Data.SynOSDbContext'.
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'PayeeName'.
+Invalid column name 'PayeeName'.
+Invalid column name 'Notes'.
+Invalid column name 'Notes'.
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:8d5f9373-953b-4efa-aadd-33bf7d12f9f9
+Error Number:207,State:1,Class:16
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'PayeeName'.
+Invalid column name 'PayeeName'.
+Invalid column name 'Notes'.
+Invalid column name 'Notes'.
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:8d5f9373-953b-4efa-aadd-33bf7d12f9f9
+Error Number:207,State:1,Class:16
+[19:02:00 ERR] Failed executing DbCommand (18ms) [Parameters=[@__start_0='?' (DbType = DateTime2), @__end_1='?' (DbType = DateTime2)], CommandType='Text', CommandTimeout='30']
+SELECT [s].[SpendFactId], [s].[OccurredAt], [s].[Category], COALESCE([s].[PayeeName], N'Unknown Payee'), [s].[Amount], [s].[Currency], [s].[PaymentMethod], [s].[TransactionReference], COALESCE([s].[Notes], N'')
+FROM [SpendFacts] AS [s]
+WHERE [s].[OccurredAt] >= @__start_0 AND [s].[OccurredAt] <= @__end_1
+ORDER BY [s].[OccurredAt] DESC
+[19:02:00 ERR] Failed executing DbCommand (180ms) [Parameters=[@__start_0='?' (DbType = DateTime2), @__end_1='?' (DbType = DateTime2)], CommandType='Text', CommandTimeout='30']
+SELECT [s].[SpendFactId], [s].[OccurredAt], [s].[Category], COALESCE([s].[PayeeName], N'Unknown Payee'), [s].[Amount], [s].[Currency], [s].[PaymentMethod], [s].[TransactionReference], COALESCE([s].[Notes], N'')
+FROM [SpendFacts] AS [s]
+WHERE [s].[OccurredAt] >= @__start_0 AND [s].[OccurredAt] <= @__end_1
+ORDER BY [s].[OccurredAt] DESC
+[19:02:00 ERR] An exception occurred while iterating over the results of a query for context type 'SynOS.Data.SynOSDbContext'.
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'PayeeName'.
+Invalid column name 'PayeeName'.
+Invalid column name 'Notes'.
+Invalid column name 'Notes'.
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:be961be0-5498-46c6-884f-c0f78fd68c7d
+Error Number:207,State:1,Class:16
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'PayeeName'.
+Invalid column name 'PayeeName'.
+Invalid column name 'Notes'.
+Invalid column name 'Notes'.
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:be961be0-5498-46c6-884f-c0f78fd68c7d
+Error Number:207,State:1,Class:16
+[19:02:00 ERR] An exception occurred while iterating over the results of a query for context type 'SynOS.Data.SynOSDbContext'.
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'PayeeName'.
+Invalid column name 'PayeeName'.
+Invalid column name 'Notes'.
+Invalid column name 'Notes'.
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:8e7ac787-5981-4531-acf4-fd7e777a19de
+Error Number:207,State:1,Class:16
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'PayeeName'.
+Invalid column name 'PayeeName'.
+Invalid column name 'Notes'.
+Invalid column name 'Notes'.
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:8e7ac787-5981-4531-acf4-fd7e777a19de
+Error Number:207,State:1,Class:16
+[19:02:31 ERR] Failed executing DbCommand (13ms) [Parameters=[@__start_0='?' (DbType = DateTime2), @__end_1='?' (DbType = DateTime2)], CommandType='Text', CommandTimeout='30']
+SELECT [s].[SpendFactId], [s].[OccurredAt], [s].[Category], COALESCE([s].[PayeeName], N'Unknown Payee'), [s].[Amount], [s].[Currency], [s].[PaymentMethod], [s].[TransactionReference], COALESCE([s].[Notes], N'')
+FROM [SpendFacts] AS [s]
+WHERE [s].[OccurredAt] >= @__start_0 AND [s].[OccurredAt] <= @__end_1
+ORDER BY [s].[OccurredAt] DESC
+[19:02:31 ERR] Failed executing DbCommand (8ms) [Parameters=[@__start_0='?' (DbType = DateTime2), @__end_1='?' (DbType = DateTime2)], CommandType='Text', CommandTimeout='30']
+SELECT [s].[SpendFactId], [s].[OccurredAt], [s].[Category], COALESCE([s].[PayeeName], N'Unknown Payee'), [s].[Amount], [s].[Currency], [s].[PaymentMethod], [s].[TransactionReference], COALESCE([s].[Notes], N'')
+FROM [SpendFacts] AS [s]
+WHERE [s].[OccurredAt] >= @__start_0 AND [s].[OccurredAt] <= @__end_1
+ORDER BY [s].[OccurredAt] DESC
+[19:02:31 ERR] An exception occurred while iterating over the results of a query for context type 'SynOS.Data.SynOSDbContext'.
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'PayeeName'.
+Invalid column name 'PayeeName'.
+Invalid column name 'Notes'.
+Invalid column name 'Notes'.
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:be961be0-5498-46c6-884f-c0f78fd68c7d
+Error Number:207,State:1,Class:16
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'PayeeName'.
+Invalid column name 'PayeeName'.
+Invalid column name 'Notes'.
+Invalid column name 'Notes'.
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:be961be0-5498-46c6-884f-c0f78fd68c7d
+Error Number:207,State:1,Class:16
+[19:02:31 ERR] An exception occurred while iterating over the results of a query for context type 'SynOS.Data.SynOSDbContext'.
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'PayeeName'.
+Invalid column name 'PayeeName'.
+Invalid column name 'Notes'.
+Invalid column name 'Notes'.
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:3f93c252-8296-4cdc-a90e-b2576726cb14
+Error Number:207,State:1,Class:16
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'PayeeName'.
+Invalid column name 'PayeeName'.
+Invalid column name 'Notes'.
+Invalid column name 'Notes'.
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:3f93c252-8296-4cdc-a90e-b2576726cb14
+Error Number:207,State:1,Class:16
+[19:02:33 ERR] Failed executing DbCommand (72ms) [Parameters=[@__start_0='?' (DbType = DateTime2), @__end_1='?' (DbType = DateTime2)], CommandType='Text', CommandTimeout='30']
+SELECT [s].[SpendFactId], [s].[OccurredAt], [s].[Category], COALESCE([s].[PayeeName], N'Unknown Payee'), [s].[Amount], [s].[Currency], [s].[PaymentMethod], [s].[TransactionReference], COALESCE([s].[Notes], N'')
+FROM [SpendFacts] AS [s]
+WHERE [s].[OccurredAt] >= @__start_0 AND [s].[OccurredAt] <= @__end_1
+ORDER BY [s].[OccurredAt] DESC
+[19:02:33 ERR] Failed executing DbCommand (101ms) [Parameters=[@__start_0='?' (DbType = DateTime2), @__end_1='?' (DbType = DateTime2)], CommandType='Text', CommandTimeout='30']
+SELECT [s].[SpendFactId], [s].[OccurredAt], [s].[Category], COALESCE([s].[PayeeName], N'Unknown Payee'), [s].[Amount], [s].[Currency], [s].[PaymentMethod], [s].[TransactionReference], COALESCE([s].[Notes], N'')
+FROM [SpendFacts] AS [s]
+WHERE [s].[OccurredAt] >= @__start_0 AND [s].[OccurredAt] <= @__end_1
+ORDER BY [s].[OccurredAt] DESC
+[19:02:33 ERR] An exception occurred while iterating over the results of a query for context type 'SynOS.Data.SynOSDbContext'.
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'PayeeName'.
+Invalid column name 'PayeeName'.
+Invalid column name 'Notes'.
+Invalid column name 'Notes'.
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:8d5f9373-953b-4efa-aadd-33bf7d12f9f9
+Error Number:207,State:1,Class:16
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'PayeeName'.
+Invalid column name 'PayeeName'.
+Invalid column name 'Notes'.
+Invalid column name 'Notes'.
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:8d5f9373-953b-4efa-aadd-33bf7d12f9f9
+Error Number:207,State:1,Class:16
+[19:02:33 ERR] An exception occurred while iterating over the results of a query for context type 'SynOS.Data.SynOSDbContext'.
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'PayeeName'.
+Invalid column name 'PayeeName'.
+Invalid column name 'Notes'.
+Invalid column name 'Notes'.
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:3f93c252-8296-4cdc-a90e-b2576726cb14
+Error Number:207,State:1,Class:16
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'PayeeName'.
+Invalid column name 'PayeeName'.
+Invalid column name 'Notes'.
+Invalid column name 'Notes'.
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:3f93c252-8296-4cdc-a90e-b2576726cb14
+Error Number:207,State:1,Class:16

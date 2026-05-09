@@ -18,7 +18,8 @@ import { InventoryTerminal } from '@/features/inventory/InventoryTerminal'
 import { FinanceLayout } from '@/features/finance/FinanceLayout'
 import { FinanceOverview } from '@/features/finance/FinanceOverview'
 import { BillsCollectionsScreen, PendingReceivablesScreen, CollectionHistoryScreen, RevenueOverview } from '@/features/finance/RevenueScreens'
-import { VendorPayablesScreen, OverheadBillsScreen, OutsourcedPayablesScreen } from '@/features/finance/ExpenseScreens'
+import { ExpenseFeedScreen, VendorPayablesScreen, DailyExpensesScreen, OutsourcedPayablesScreen } from '@/features/finance/ExpenseScreens'
+import { VendorMasterScreen } from '@/features/finance/VendorMasterScreen'
 import { PartnerRegistryScreen, CommissionPayoutsScreen, CommissionRulesScreen } from '@/features/finance/ReferralScreens'
 import { IntelligenceDashboard } from '@/features/finance/IntelligenceScreens'
 import { RoleTakeoverBanner } from '@/features/admin/components/RoleTakeoverBanner'
@@ -166,9 +167,13 @@ function App() {
                 <Route path="/finance/revenue/history" element={<CollectionHistoryScreen />} />
                 
                 {/* Expense Department */}
-                <Route path="/finance/expenses" element={<VendorPayablesScreen />} />
+                <Route path="/finance/expenses" element={<Navigate to="/finance/expenses/feed" replace />} />
+                <Route path="/finance/expenses/feed" element={<ExpenseFeedScreen />} />
                 <Route path="/finance/expenses/payables" element={<VendorPayablesScreen />} />
-                <Route path="/finance/overheads" element={<OverheadBillsScreen />} />
+                <Route path="/finance/expenses/vendors" element={<VendorMasterScreen />} />
+                <Route path="/finance/expenses/daily" element={<DailyExpensesScreen />} />
+                
+                <Route path="/finance/overheads" element={<DailyExpensesScreen />} />
                 <Route path="/finance/outsourcing" element={<OutsourcedPayablesScreen />} />
                 <Route path="/finance/outsourcing/pending" element={<OutsourcedPayablesScreen />} />
 

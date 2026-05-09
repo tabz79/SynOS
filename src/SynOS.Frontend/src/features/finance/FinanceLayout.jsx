@@ -43,7 +43,8 @@ export function FinanceLayout() {
             subItems: [
                 { name: "Expense Feed", path: "/finance/expenses/feed" },
                 { name: "Vendor Payables", path: "/finance/expenses/payables" },
-                { name: "Recorded Expenses", path: "/finance/expenses/recorded" }
+                { name: "Vendor Master", path: "/finance/expenses/vendors" },
+                { name: "Daily Expenses", path: "/finance/expenses/daily" }
             ]
         },
         {

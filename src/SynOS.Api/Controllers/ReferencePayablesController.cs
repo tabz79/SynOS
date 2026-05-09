@@ -80,6 +80,9 @@ namespace SynOS.Api.Controllers
                     request.Amount,
                     "INR", // Default currency
                     "OutsourcedTest",
+                    payable.ReferenceLabName ?? "Reference Lab",
+                    $"Settlement for Lab Payout: {payable.Id}",
+                    null, // BranchId
                     SynOS.Models.Enums.PaymentMethod.BankTransfer, // Default
                     $"Settlement-{payable.Id}-{DateTime.UtcNow:yyyyMMdd}",
                     DateTime.UtcNow,

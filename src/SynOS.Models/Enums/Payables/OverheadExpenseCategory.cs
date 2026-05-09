@@ -8,6 +8,11 @@ namespace SynOS.Models.Enums.Payables
         Courier = 4,
         IT = 5,
         PPE = 6,
+        Tea = 10,
+        Repairs = 11,
+        Logistics = 12,
+        Electricity = 13,
+        Staff = 14,
         Misc = 99
     }
 }

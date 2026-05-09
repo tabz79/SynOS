@@ -7,6 +7,8 @@ using SynOS.Data;
 using SynOS.Models.DTOs.IMS;
 using SynOS.Models.Entities.IMS;
 using SynOS.Models.Enums.IMS;
+using SynOS.Models.Entities.Payables;
+using SynOS.Models.Enums.Payables;
 
 namespace SynOS.Services.Inventory
 {
@@ -81,39 +83,69 @@ namespace SynOS.Services.Inventory
 
         public async Task ReceiveStockAsync(ReceiveStockDto dto, Guid recordedByUserId)
         {
-            // 1. Create a new Inventory Lot for this receipt
-            var lot = new ImsInventoryLot
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
             {
-                LotId = Guid.NewGuid(),
-                ItemId = dto.ItemId,
-                BatchNumber = dto.BatchNumber,
-                CurrentQuantity = dto.Quantity,
-                ContainerSize = dto.Quantity,
-                UnitCostSnapshot = dto.UnitCost,
-                ExpiryDate = dto.ExpiryDate,
-                BranchId = dto.BranchId,
-                ReceivedAt = DateTimeOffset.UtcNow,
-                IsActive = true
-            };
+                // 1. Create a new Inventory Lot for this receipt
+                var lot = new ImsInventoryLot
+                {
+                    LotId = Guid.NewGuid(),
+                    ItemId = dto.ItemId,
+                    BatchNumber = dto.BatchNumber,
+                    CurrentQuantity = dto.Quantity,
+                    ContainerSize = dto.Quantity,
+                    UnitCostSnapshot = dto.UnitCost,
+                    ExpiryDate = dto.ExpiryDate,
+                    BranchId = dto.BranchId,
+                    ReceivedAt = DateTimeOffset.UtcNow,
+                    IsActive = true
+                };
 
-            _context.ImsInventoryLots.Add(lot);
+                _context.ImsInventoryLots.Add(lot);
 
-            // 2. Log the inbound movement for audit and history
-            var movement = new ImsStockMovement
+                // 2. Log the inbound movement for audit and history
+                var movement = new ImsStockMovement
+                {
+                    MovementId = Guid.NewGuid(),
+                    InventoryLotId = lot.LotId,
+                    MovementType = StockMovementType.Receive,
+                    Quantity = (int)dto.Quantity,
+                    MovedAt = DateTimeOffset.UtcNow,
+                    RecordedByUserId = recordedByUserId,
+                    ReferenceType = MovementReferenceType.GRN,
+                    ReferenceId = lot.LotId.ToString() // Reference the lot we just created
+                };
+
+                _context.ImsStockMovements.Add(movement);
+
+                // 3. CREATE VENDOR PAYABLE (Bridge to Finance)
+                if (dto.SupplierId.HasValue && dto.UnitCost > 0)
+                {
+                    var supplier = await _context.ImsSuppliers.FindAsync(dto.SupplierId.Value);
+                    var totalAmount = dto.Quantity * dto.UnitCost;
+
+                    var vendorPayable = new VendorPayable
+                    {
+                        VendorPayableId = Guid.NewGuid(),
+                        VendorId = dto.SupplierId,
+                        VendorName = supplier?.Name ?? "Unknown Supplier",
+                        Amount = totalAmount,
+                        ReferenceType = "MANUAL-GRN",
+                        ReferenceId = lot.LotId,
+                        Status = VendorPayableStatus.Pending,
+                        CreatedAt = DateTime.UtcNow
+                    };
+                    await _context.VendorPayables.AddAsync(vendorPayable);
+                }
+
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+            }
+            catch (Exception)
             {
-                MovementId = Guid.NewGuid(),
-                InventoryLotId = lot.LotId,
-                MovementType = StockMovementType.Receive,
-                Quantity = (int)dto.Quantity,
-                MovedAt = DateTimeOffset.UtcNow,
-                RecordedByUserId = recordedByUserId,
-                ReferenceType = MovementReferenceType.GRN,
-                ReferenceId = lot.LotId.ToString() // Reference the lot we just created
-            };
-
-            _context.ImsStockMovements.Add(movement);
-
-            await _context.SaveChangesAsync();
+                await transaction.RollbackAsync();
+                throw;
+            }
         }
 
         public async Task<IEnumerable<StockMovementDto>> GetMovementHistoryAsync()
@@ -271,6 +303,14 @@ namespace SynOS.Services.Inventory
 
             await _context.SaveChangesAsync();
             return item;
+        }
+
+        public async Task<IEnumerable<ImsSupplier>> GetSuppliersAsync()
+        {
+            return await _context.ImsSuppliers
+                .Where(s => s.IsActive)
+                .OrderBy(s => s.Name)
+                .ToListAsync();
         }
     }
 }

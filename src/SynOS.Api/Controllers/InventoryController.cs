@@ -104,5 +104,13 @@ namespace SynOS.Api.Controllers
             var item = await _inventoryService.CreateItemAsync(dto);
             return Ok(item);
         }
+
+        [HttpGet("suppliers")]
+        [Authorize(Roles = "Admin,InventoryManager")]
+        public async Task<ActionResult<IEnumerable<ImsSupplier>>> GetSuppliers()
+        {
+            var suppliers = await _inventoryService.GetSuppliersAsync();
+            return Ok(suppliers);
+        }
     }
 }

@@ -17,11 +17,16 @@ namespace SynOS.Api.Controllers
     {
         private readonly SynOSDbContext _context;
         private readonly ISpendFactWriter _spendFactWriter;
+        private readonly SynOS.Services.EconomicsIntelligence.IEconomicsIntelligenceService _economicsService;
 
-        public PayablesController(SynOSDbContext context, ISpendFactWriter spendFactWriter)
+        public PayablesController(
+            SynOSDbContext context, 
+            ISpendFactWriter spendFactWriter,
+            SynOS.Services.EconomicsIntelligence.IEconomicsIntelligenceService economicsService)
         {
             _context = context;
             _spendFactWriter = spendFactWriter;
+            _economicsService = economicsService;
         }
 
         [HttpGet]
@@ -82,6 +87,9 @@ namespace SynOS.Api.Controllers
                     request.Amount,
                     "INR", // Default
                     "Inventory",
+                    payable.VendorName ?? "Unknown Vendor",
+                    $"Vendor Settlement: {payable.ReferenceType} {payable.ReferenceId}",
+                    null, // BranchId not in current scope
                     SynOS.Models.Enums.PaymentMethod.BankTransfer,
                     $"VENDOR-SETTLE-{payable.VendorPayableId}-{DateTime.UtcNow:yyyyMMdd}",
                     DateTime.UtcNow,
@@ -105,5 +113,96 @@ namespace SynOS.Api.Controllers
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
+
+        [HttpGet("summary")]
+        public async Task<ActionResult<IEnumerable<SynOS.Models.DTOs.Economics.VendorPayableSummaryDto>>> GetSummary()
+        {
+            var summary = await _economicsService.GetVendorPayablesSummaryAsync();
+            return Ok(summary);
+        }
+
+        [HttpPost("bulk-settle")]
+        public async Task<IActionResult> BulkSettle([FromBody] BulkVendorSettleRequest request)
+        {
+            if (request == null || request.Amount <= 0) return BadRequest("Invalid amount.");
+
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                var payables = await _context.VendorPayables
+                    .Where(p => p.VendorId == request.VendorId && p.Status != SynOS.Models.Enums.Payables.VendorPayableStatus.Settled)
+                    .OrderBy(p => p.CreatedAt)
+                    .ToListAsync();
+
+                if (!payables.Any()) return BadRequest("No pending bills for this vendor.");
+
+                var vendorName = payables.First().VendorName;
+                var remaining = request.Amount;
+                var settledBillsCount = 0;
+
+                foreach (var p in payables)
+                {
+                    if (remaining <= 0) break;
+
+                    var due = p.Amount - p.AmountPaid;
+                    var apply = Math.Min(remaining, due);
+
+                    p.AmountPaid += apply;
+                    remaining -= apply;
+
+                    if (Math.Abs(p.Amount - p.AmountPaid) < 0.0001m)
+                    {
+                        p.Status = SynOS.Models.Enums.Payables.VendorPayableStatus.Settled;
+                        p.SettledAt = DateTime.UtcNow;
+                    }
+                    else
+                    {
+                        p.Status = SynOS.Models.Enums.Payables.VendorPayableStatus.PartiallyPaid;
+                    }
+
+                    _context.VendorPayables.Update(p);
+                    settledBillsCount++;
+                }
+
+                // Emit SpendFact
+                var spendFact = new SpendFact(
+                    Guid.NewGuid(),
+                    request.VendorId,
+                    request.Amount,
+                    "INR",
+                    "Inventory",
+                    vendorName ?? "Unknown Vendor",
+                    $"Bulk settlement for {settledBillsCount} bills.",
+                    null,
+                    request.PaymentMethod,
+                    $"BULK-VENDOR-{request.VendorId.ToString().Substring(0, 8)}",
+                    DateTime.UtcNow,
+                    DateTime.UtcNow,
+                    "Purchasing",
+                    "Finance API",
+                    Guid.Empty,
+                    Guid.Empty,
+                    Guid.Empty
+                );
+
+                await _spendFactWriter.CreateSpendFactAsync(spendFact);
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                return Ok(new { Message = "Bulk settlement processed.", AmountApplied = request.Amount - remaining });
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                return StatusCode(500, ex.Message);
+            }
+        }
+    }
+
+    public class BulkVendorSettleRequest
+    {
+        public Guid VendorId { get; set; }
+        public decimal Amount { get; set; }
+        public SynOS.Models.Enums.PaymentMethod PaymentMethod { get; set; }
     }
 }

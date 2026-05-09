@@ -215,14 +215,24 @@ namespace SynOS.Services.Payroll.Orchestration
                 await _factWriter.WriteFactsAsync(run, calculationResultForFactWriter);
 
                 // EMIT SPEND FACTS (Revised Plan Fix)
+                var employeeIds = provisionalResults.Select(r => r.EmployeeId).Distinct().ToList();
+                var employees = await _context.Employees
+                    .Where(e => employeeIds.Contains(e.EmployeeId))
+                    .ToDictionaryAsync(e => e.EmployeeId, e => $"{e.FirstName} {e.LastName}");
+
                 foreach (var result in provisionalResults)
                 {
+                    employees.TryGetValue(result.EmployeeId, out var empName);
+
                     var spendFact = new SpendFact(
                         Guid.NewGuid(),
                         result.EmployeeId,
                         result.Amount,
                         "INR",
                         "Payroll",
+                        empName ?? "Unknown Employee", // PayeeName
+                        $"Salary for period ending {period.EndDate:MMM yyyy}", // Notes
+                        null, // BranchId
                         PaymentMethod.BankTransfer,
                         run.PayrollRunId.ToString(),
                         DateTime.UtcNow,

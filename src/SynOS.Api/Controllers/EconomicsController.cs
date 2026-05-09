@@ -65,5 +65,15 @@ namespace SynOS.Api.Controllers
             var result = await _economicsService.GetPartnerReceivablesSummaryAsync();
             return Ok(result);
         }
+
+        [HttpGet("expense-facts")]
+        public async Task<IActionResult> GetExpenseFacts([FromQuery] DateTime start, [FromQuery] DateTime end)
+        {
+            if (start == default) start = DateTime.UtcNow.AddDays(-30);
+            if (end == default) end = DateTime.UtcNow;
+
+            var result = await _economicsService.GetExpenseFactsAsync(start, end);
+            return Ok(result);
+        }
     }
 }

@@ -404,5 +404,62 @@ namespace SynOS.Services.EconomicsIntelligence
                 GrowthRate = 0 // Stub for now
             };
         }
+
+        public async Task<IEnumerable<ExpenseFactDto>> GetExpenseFactsAsync(DateTime start, DateTime end)
+        {
+            return await _context.SpendFacts
+                .AsNoTracking()
+                .Where(f => f.OccurredAt >= start && f.OccurredAt <= end)
+                .OrderByDescending(f => f.OccurredAt)
+                .Select(f => new ExpenseFactDto
+                {
+                    SpendFactId = f.SpendFactId,
+                    OccurredAt = f.OccurredAt,
+                    Category = f.Category,
+                    CategoryLabel = f.Category, // For now, labels match categories
+                    PayeeName = f.PayeeName ?? "Unknown Payee",
+                    Amount = f.Amount,
+                    Currency = f.Currency,
+                    PaymentMode = f.PaymentMethod.ToString(),
+                    Reference = f.TransactionReference,
+                    BranchName = "Main Branch", // Placeholder or fetch branch name
+                    Notes = f.Notes ?? string.Empty
+                })
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<VendorPayableSummaryDto>> GetVendorPayablesSummaryAsync()
+        {
+            var now = DateTimeOffset.UtcNow;
+            var day7 = now.AddDays(-7);
+            var day30 = now.AddDays(-30);
+
+            var query = await _context.VendorPayables
+                .AsNoTracking()
+                .Where(p => p.Status != SynOS.Models.Enums.Payables.VendorPayableStatus.Settled)
+                .Select(p => new
+                {
+                    p.VendorId,
+                    p.VendorName,
+                    p.Amount,
+                    p.AmountPaid,
+                    p.CreatedAt
+                })
+                .GroupBy(x => new { x.VendorId, x.VendorName })
+                .Select(g => new VendorPayableSummaryDto
+                {
+                    VendorId = g.Key.VendorId ?? Guid.Empty,
+                    VendorName = g.Key.VendorName ?? "Unknown Vendor",
+                    TotalOutstanding = g.Sum(x => x.Amount - x.AmountPaid),
+                    BillCount = g.Count(),
+                    OldestDueDate = g.Min(x => x.CreatedAt),
+                    Aging_0_7 = g.Where(x => x.CreatedAt >= day7.DateTime).Sum(x => (decimal?)(x.Amount - x.AmountPaid)) ?? 0,
+                    Aging_7_30 = g.Where(x => x.CreatedAt < day7.DateTime && x.CreatedAt >= day30.DateTime).Sum(x => (decimal?)(x.Amount - x.AmountPaid)) ?? 0,
+                    Aging_30_Plus = g.Where(x => x.CreatedAt < day30.DateTime).Sum(x => (decimal?)(x.Amount - x.AmountPaid)) ?? 0
+                })
+                .ToListAsync();
+
+            return query;
+        }
     }
 }

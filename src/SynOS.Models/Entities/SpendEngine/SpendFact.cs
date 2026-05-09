@@ -12,6 +12,9 @@ namespace SynOS.Models.Entities.SpendEngine
         public decimal Amount { get; init; }
         public string Currency { get; init; }
         public string Category { get; init; } // ADDED
+        public string? PayeeName { get; init; } // ADDED: For fast operational scanning
+        public string? Notes { get; init; } // ADDED: Context
+        public Guid? BranchId { get; init; } // ADDED: Multi-branch tracking
         public PaymentMethod PaymentMethod { get; init; }
         public string TransactionReference { get; init; }
         public DateTime OccurredAt { get; init; }
@@ -29,7 +32,10 @@ namespace SynOS.Models.Entities.SpendEngine
             Guid payeeId,
             decimal amount,
             string currency,
-            string category, // ADDED
+            string category,
+            string? payeeName,
+            string? notes,
+            Guid? branchId,
             PaymentMethod paymentMethod,
             string transactionReference,
             DateTime occurredAt,
@@ -44,7 +50,10 @@ namespace SynOS.Models.Entities.SpendEngine
             PayeeId = payeeId;
             Amount = amount;
             Currency = currency;
-            Category = category; // ADDED
+            Category = category;
+            PayeeName = payeeName;
+            Notes = notes;
+            BranchId = branchId;
             PaymentMethod = paymentMethod;
             TransactionReference = transactionReference;
             OccurredAt = occurredAt;

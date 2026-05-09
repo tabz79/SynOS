@@ -204,5 +204,88 @@ export const FinanceApi = {
         });
         if (!response.ok) throw new Error("Failed to load referral rules");
         return response.json();
+    },
+
+    /**
+     * EXPENSES (OPX) HARDENING
+     */
+    getExpenseFeed: async (start, end) => {
+        const url = `/api/v1/economics/expense-facts${start && end ? `?start=${start}&end=${end}` : ''}`;
+        const response = await fetch(FinanceApi.withBranchId(url), {
+            headers: FinanceApi.getHeaders()
+        });
+        if (!response.ok) throw new Error("Failed to load expense feed");
+        return response.json();
+    },
+
+    getVendorPayablesSummary: async () => {
+        const response = await fetch(FinanceApi.withBranchId('/api/v1/Payables/summary'), {
+            headers: FinanceApi.getHeaders()
+        });
+        if (!response.ok) throw new Error("Failed to load vendor liability summary");
+        return response.json();
+    },
+
+    settleBulkVendorPayables: async (vendorId, amount, paymentMethod) => {
+        const response = await fetch('/api/v1/Payables/bulk-settle', {
+            method: 'POST',
+            headers: FinanceApi.getHeaders(),
+            body: JSON.stringify({ vendorId, amount, paymentMethod })
+        });
+        if (!response.ok) throw new Error("Failed to process bulk vendor settlement");
+        return response.json();
+    },
+
+    recordDailyExpense: async (data) => {
+        const response = await fetch('/api/v1/OverheadExpenses', {
+            method: 'POST',
+            headers: FinanceApi.getHeaders(),
+            body: JSON.stringify({
+                category: data.category,
+                amount: data.amount,
+                description: data.description,
+                expenseDate: new Date().toISOString(),
+                userId: localStorage.getItem('synos_user_id') || '00000000-0000-0000-0000-000000000000'
+            })
+        });
+        if (!response.ok) throw new Error("Failed to record daily expense");
+        
+        const result = await response.json();
+        
+        // Immediately settle it to emit SpendFact (Daily Expense logic)
+        await FinanceApi.settleOverheadExpense(result.overheadPayableId, data.amount, data.paymentMethod);
+        
+        return result;
+    },
+
+    getVendors: async () => {
+        const response = await fetch('/api/v1/finance/Vendors', {
+            headers: FinanceApi.getHeaders()
+        });
+        if (!response.ok) throw new Error("Failed to fetch vendors");
+        return response.json();
+    },
+
+    createVendor: async (data) => {
+        const response = await fetch('/api/v1/finance/Vendors', {
+            method: 'POST',
+            headers: FinanceApi.getHeaders(),
+            body: JSON.stringify(data)
+        });
+        if (!response.ok) {
+            const err = await response.text();
+            throw new Error(err || "Failed to create vendor");
+        }
+        return response.json();
+    },
+
+    updateVendor: async (id, data) => {
+        const response = await fetch(`/api/v1/finance/Vendors/${id}`, {
+            method: 'PUT',
+            headers: FinanceApi.getHeaders(),
+            body: JSON.stringify(data)
+        });
+        if (!response.ok) throw new Error("Failed to update vendor");
+        return true;
     }
 };
