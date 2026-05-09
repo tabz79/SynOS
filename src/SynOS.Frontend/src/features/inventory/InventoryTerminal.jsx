@@ -21,6 +21,8 @@ import { SignalRService } from '@/lib/signalr'
 import { cn } from '@/lib/utils'
 import { InventoryApi } from '@/api/inventory'
 import { OpeningStockOnboarding } from './OpeningStockOnboarding'
+import { ProcurementTerminal } from './ProcurementTerminal'
+import { ShoppingCart } from 'lucide-react'
 
 const QuickItemModal = ({ isOpen, onClose, onCreated }) => {
     const [formData, setFormData] = useState({
@@ -952,6 +954,7 @@ export function InventoryTerminal() {
         { id: 'ledger', label: 'Stock Ledger', icon: ListFilter },
         { id: 'receive', label: 'Receive Stock', icon: PlusCircle },
         { id: 'requests', label: 'Requests Queue', icon: ClipboardList },
+        { id: 'procurement', label: 'Procurement', icon: ShoppingCart },
         { id: 'history', label: 'Movement History', icon: History },
         { id: 'onboarding', label: 'Add Existing Stock', icon: Package },
     ];
@@ -1026,6 +1029,7 @@ export function InventoryTerminal() {
                         {activeTab === 'ledger' && <StockLedger onReceive={handleQuickReceive} />}
                         {activeTab === 'receive' && <ReceiveStock prefilledItem={prefilledItem} />}
                         { activeTab === 'requests' && <RequestsQueue /> }
+                        { activeTab === 'procurement' && <ProcurementTerminal /> }
                         { activeTab === 'onboarding' && <OpeningStockOnboarding /> }
                         { activeTab === 'history' && <MovementHistory /> }
                     </div>

@@ -3,7 +3,11 @@ namespace SynOS.Models.Enums.IMS
     public enum PurchaseOrderStatus
     {
         Draft,
+        Approved,
         Sent,
-        Received
+        Ordered,
+        PartiallyReceived,
+        Received,
+        Closed
     }
 }

@@ -72,18 +72,34 @@ namespace SynOS.Services
                 throw new InvalidOperationException("Items can only be added to a Purchase Order in 'Draft' status.");
             }
 
-            // This now needs to check against Consumables
-            var consumable = await _context.ImsConsumables.FirstOrDefaultAsync(c => c.LegacyTubeId == dto.TubeId && c.IsActive);
-            if (consumable == null)
+            // 1. Try to find the item in the modern Inventory Registry
+            var inventoryItem = await _context.ImsInventoryItems.FindAsync(dto.TubeId);
+            if (inventoryItem == null)
             {
-                throw new KeyNotFoundException($"Active consumable for legacy tube ID '{dto.TubeId}' not found.");
+                throw new KeyNotFoundException($"Inventory item with ID '{dto.TubeId}' not found in the master registry.");
+            }
+
+            // 2. Ensure the item exists in ImsTubeMasters to satisfy the legacy DB Foreign Key constraint
+            var tubeMaster = await _context.ImsTubeMasters.FindAsync(dto.TubeId);
+            if (tubeMaster == null)
+            {
+                // Auto-shadow the item into the tube master registry for P2P compatibility
+                tubeMaster = new ImsTubeMaster
+                {
+                    TubeId = inventoryItem.ItemId,
+                    Code = inventoryItem.ItemCode,
+                    Name = inventoryItem.Name,
+                    UnitOfMeasure = "units",
+                    IsActive = true
+                };
+                await _context.ImsTubeMasters.AddAsync(tubeMaster);
             }
 
             var poItem = new ImsPOItem
             {
                 POItemId = Guid.NewGuid(),
                 POId = poId,
-                TubeId = dto.TubeId, // Keep legacy TubeId for now
+                TubeId = dto.TubeId, 
                 OrderedQuantity = dto.OrderedQuantity,
                 UnitPrice = dto.UnitPrice,
                 TaxRate = dto.TaxRate
@@ -92,6 +108,23 @@ namespace SynOS.Services
             await _context.ImsPOItems.AddAsync(poItem);
             await _context.SaveChangesAsync();
             return poItem;
+        }
+
+        public async Task<ImsPurchaseOrder> ApprovePurchaseOrderAsync(Guid poId)
+        {
+            var po = await _context.ImsPurchaseOrders.FindAsync(poId);
+            if (po == null)
+            {
+                throw new KeyNotFoundException($"Purchase Order with ID '{poId}' not found.");
+            }
+            if (po.Status != PurchaseOrderStatus.Draft)
+            {
+                throw new InvalidOperationException("Only 'Draft' Purchase Orders can be approved.");
+            }
+
+            po.Status = PurchaseOrderStatus.Approved;
+            await _context.SaveChangesAsync();
+            return po;
         }
 
         public async Task<ImsConsumableLot> ReceiveStockAsync(Guid poItemId, ReceiveStockDto dto, Guid userId)
@@ -202,6 +235,15 @@ namespace SynOS.Services
                 throw new KeyNotFoundException($"Purchase Order with ID '{poId}' not found.");
             }
             return po;
+        }
+
+        public async Task<IEnumerable<ImsPurchaseOrder>> GetAllPurchaseOrdersAsync()
+        {
+            return await _context.ImsPurchaseOrders
+                .Include(p => p.Supplier)
+                .Include(p => p.POItems)
+                .OrderByDescending(p => p.CreatedAt)
+                .ToListAsync();
         }
 
         public async Task<IEnumerable<ImsPOItem>> GetPurchaseOrderItemsAsync(Guid poId)
