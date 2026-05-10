@@ -37,7 +37,7 @@ namespace SynOS.Api.Controllers.Lab
         }
 
         [HttpPost("manual")]
-        [Authorize(Policy = "OperationalModeOnly")]
+        
         public async Task<ActionResult<ManualResultEnqueueResponseDto>> EnqueueManualResult(
             Guid analyzerId,
             [FromBody] ManualAnalyzerResultDto dto)
@@ -48,7 +48,7 @@ namespace SynOS.Api.Controllers.Lab
         }
 
         [HttpPost("raw")]
-        [Authorize(Policy = "OperationalModeOnly")]
+        
         public async Task<ActionResult<ManualResultEnqueueResponseDto>> EnqueueRawResult(
             Guid analyzerId,
             [FromBody] RawMessageIngestDto dto)
@@ -107,7 +107,7 @@ namespace SynOS.Api.Controllers.Lab
         }
 
         [HttpPost("{inboxId}/auto-match")]
-        [Authorize(Policy = "OperationalModeOnly")]
+        
         public async Task<ActionResult<ManualResultEnqueueResponseDto>> AutoMatchSpecificInboxItem(Guid analyzerId, Guid inboxId)
         {
             var currentUserId = GetCurrentUserId();
@@ -120,7 +120,7 @@ namespace SynOS.Api.Controllers.Lab
         }
 
         [HttpPost("auto-match-all")]
-        [Authorize(Policy = "OperationalModeOnly")]
+        
         public async Task<ActionResult<int>> AutoMatchAllPendingItems(Guid analyzerId)
         {
             var currentUserId = GetCurrentUserId();
@@ -130,7 +130,7 @@ namespace SynOS.Api.Controllers.Lab
 
         [HttpPost("{inboxId}/import-to-order")]
         [Authorize(Roles = "Pathologist,LabTech,Admin")]
-        [Authorize(Policy = "OperationalModeOnly")]
+        
         public async Task<ActionResult<AnalyzerImportResultDto>> ImportSingleInboxItemToOrder(Guid analyzerId, Guid inboxId, [FromQuery] bool submitForVerification = true)
         {
             var currentUserId = GetCurrentUserId();
@@ -140,7 +140,7 @@ namespace SynOS.Api.Controllers.Lab
 
         [HttpPost("import-all-matched")]
         [Authorize(Roles = "Pathologist,LabTech,Admin")]
-        [Authorize(Policy = "OperationalModeOnly")]
+        
         public async Task<ActionResult<Dictionary<string, int>>> ImportAllMatchedItemsToOrder(Guid analyzerId, [FromQuery] bool submitForVerification = true)
         {
             var currentUserId = GetCurrentUserId();

@@ -19,6 +19,7 @@ namespace SynOS.Models.Entities.Payables
         [Column(TypeName = "decimal(18, 4)")]
         public decimal Amount { get; set; }
 
+        [Column(TypeName = "decimal(18, 4)")]
         public decimal AmountPaid { get; set; } = 0;
 
         [Required]

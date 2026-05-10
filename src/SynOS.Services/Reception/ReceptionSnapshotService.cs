@@ -248,7 +248,7 @@ namespace SynOS.Services.Reception
                     
                     PaymentStatus = invoice.Status, // "PendingPayment" | "Paid"
                     PaymentMethod = invoice.Payments?.FirstOrDefault()?.Method, // Safe navigation
-                    TotalPaid = invoice.Payments?.Sum(p => p.Amount) ?? 0m,
+                    TotalPaid = (invoice.Payments?.Sum(p => p.Amount) ?? 0m) + (invoice.PartialPayments?.Sum(p => p.Amount) ?? 0m),
                     
                     IsEditable = visit.Status != VisitStatus.Paid && visit.Status != VisitStatus.Cancelled,
                     IsLocked = visit.Status == VisitStatus.Paid

@@ -20,8 +20,8 @@ import { FinanceOverview } from '@/features/finance/FinanceOverview'
 import { BillsCollectionsScreen, PendingReceivablesScreen, CollectionHistoryScreen, RevenueOverview } from '@/features/finance/RevenueScreens'
 import { ExpenseFeedScreen, VendorPayablesScreen, DailyExpensesScreen, OutsourcedPayablesScreen } from '@/features/finance/ExpenseScreens'
 import { VendorMasterScreen } from '@/features/finance/VendorMasterScreen'
-import { PartnerRegistryScreen, CommissionPayoutsScreen, CommissionRulesScreen } from '@/features/finance/ReferralScreens'
 import { IntelligenceDashboard } from '@/features/finance/IntelligenceScreens'
+import { ReferralTerminal } from '@/features/finance/ReferralTerminal'
 import { RoleTakeoverBanner } from '@/features/admin/components/RoleTakeoverBanner'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 
@@ -33,8 +33,7 @@ function RootRedirect() {
   console.info('[RootRedirect] Evaluating redirect:', { 
     isAuthenticated, 
     role, 
-    isAdmin,
-    sessionMode: user?.sessionMode 
+    isAdmin
   });
 
   if (!isAuthenticated) return <Navigate to="/login" replace />;
@@ -178,10 +177,8 @@ function App() {
                 <Route path="/finance/outsourcing/pending" element={<OutsourcedPayablesScreen />} />
 
                 {/* Referral Department */}
-                <Route path="/finance/referrals" element={<PartnerRegistryScreen />} />
-                <Route path="/finance/referrals/registry" element={<PartnerRegistryScreen />} />
-                <Route path="/finance/referrals/payouts" element={<CommissionPayoutsScreen />} />
-                <Route path="/finance/referrals/rules" element={<CommissionRulesScreen />} />
+                <Route path="/finance/referrals" element={<ReferralTerminal />} />
+                <Route path="/finance/referrals/:tab" element={<ReferralTerminal />} />
 
                 {/* Intelligence Department */}
                 <Route path="/finance/intelligence" element={<IntelligenceDashboard />} />

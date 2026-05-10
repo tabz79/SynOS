@@ -16,7 +16,5 @@ namespace SynOS.Models.DTOs
         public string Password { get; set; } = string.Empty;
 
         public Guid? BranchId { get; set; } // ADDED for Phase 1A: Explicit Branch Selection
-
-        public string? PreferredMode { get; set; } // ADDED for Phase 1B: operational or oversight
     }
 }

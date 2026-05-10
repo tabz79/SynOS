@@ -63,56 +63,25 @@ namespace SynOS.Services
                 throw new UnauthorizedAccessException("Your account has been deactivated. Please contact your administrator.");
             }
 
-            // Mode Resolution Logic (Phase 1B)
-            bool canOperational = user.CanUseOperationalMode;
-            bool canOversight = user.CanUseOversightMode;
-
-            if (!canOperational && !canOversight)
-            {
-                throw new UnauthorizedAccessException("This account has no valid session mode configured. Please contact support.");
-            }
-
-            string selectedMode;
-            if (!string.IsNullOrEmpty(request.PreferredMode))
-            {
-                selectedMode = request.PreferredMode.ToLower();
-                if (selectedMode == "operational" && !canOperational) throw new UnauthorizedAccessException("Operational mode not allowed for this user.");
-                if (selectedMode == "oversight" && !canOversight) throw new UnauthorizedAccessException("Oversight mode not allowed for this user.");
-            }
-            else
-            {
-                if (canOperational && canOversight)
-                {
-                    return new LoginResponse
-                    {
-                        RequiresModeSelection = true,
-                        AvailableModes = new System.Collections.Generic.List<string> { "operational", "oversight" },
-                        User = _mapper.Map<UserDto>(user)
-                    };
-                }
-                selectedMode = canOperational ? "operational" : "oversight";
-            }
-
+            // Mode Resolution Logic (Removed hard modes)
+            string selectedMode = "operational"; // Unified mode
+            
             Guid? selectedBranchId = null;
             string? selectedBranchName = null;
             var primaryRole = user.UserRoles.FirstOrDefault()?.Role;
             string selectedRoleName = primaryRole?.Name ?? "Admin";
             Guid selectedRoleId = primaryRole?.RoleId ?? Guid.Empty;
 
-            // Operational Mode: Require Branch and Update Resource
-            if (selectedMode == "operational")
+            // Fetch Branch Assignments
+            var userBranchRoles = await _context.UserBranchRoles
+                .Include(ubr => ubr.Role)
+                .Include(ubr => ubr.Branch)
+                .Where(ubr => ubr.UserId == user.UserId)
+                .ToListAsync();
+
+            // If user has branch assignments, they must pick one or use the only one assigned
+            if (userBranchRoles.Count > 0)
             {
-                var userBranchRoles = await _context.UserBranchRoles
-                    .Include(ubr => ubr.Role)
-                    .Include(ubr => ubr.Branch)
-                    .Where(ubr => ubr.UserId == user.UserId)
-                    .ToListAsync();
-
-                if (userBranchRoles.Count == 0)
-                {
-                    throw new UnauthorizedAccessException("No active branch assignment found for this operational user.");
-                }
-
                 if (request.BranchId.HasValue)
                 {
                     var context = userBranchRoles.FirstOrDefault(ubr => ubr.BranchId == request.BranchId.Value);
@@ -133,6 +102,7 @@ namespace SynOS.Services
                 }
                 else
                 {
+                    // Multiple branches, but no selection provided
                     return new LoginResponse
                     {
                         RequiresBranchSelection = true,
@@ -148,28 +118,39 @@ namespace SynOS.Services
 
             var newSessionId = Guid.NewGuid();
             var departmentCode = "General";
-            if (selectedMode == "operational")
+            
+            // Sync Operational Resource (Internal safeguard)
+            var resource = await _context.OperationalResources.FirstOrDefaultAsync(r => r.UserId == user.UserId);
+            if (resource != null)
             {
-                var resource = await _context.OperationalResources.AsNoTracking().FirstOrDefaultAsync(r => r.UserId == user.UserId);
+                resource.ActiveSessionId = newSessionId;
+                resource.LastSessionIssuedAt = DateTime.UtcNow;
+                if (selectedBranchId.HasValue) resource.BranchId = selectedBranchId.Value;
                 
-                // If resource exists, use its assigned department. 
-                // If it's a new resource (resource == null), we need to determine the department from the user's role/branch context.
-                if (resource != null && !string.IsNullOrEmpty(resource.DepartmentCode) && resource.DepartmentCode != "General")
+                if (!string.IsNullOrEmpty(resource.DepartmentCode) && resource.DepartmentCode != "General")
                 {
                     departmentCode = resource.DepartmentCode;
                 }
-                else
+            }
+            else if (selectedBranchId.HasValue)
+            {
+                resource = new OperationalResource
                 {
-                    // Heuristic: If they have a role like 'Biochemistry Technician', default to 'BIO'
-                    departmentCode = selectedRoleName.Contains("Biochem", StringComparison.OrdinalIgnoreCase) ? "BIO" : 
-                                     selectedRoleName.Contains("Hemat", StringComparison.OrdinalIgnoreCase) ? "HEM" : 
-                                     selectedRoleName.Contains("Path", StringComparison.OrdinalIgnoreCase) ? "PAT" : "General";
-                }
+                    UserId = user.UserId,
+                    ActiveSessionId = newSessionId,
+                    LastSessionIssuedAt = DateTime.UtcNow,
+                    BranchId = selectedBranchId.Value,
+                    Role = selectedRoleName,
+                    DepartmentCode = "General",
+                    IsOnline = false,
+                    IsActive = true
+                };
+                _context.OperationalResources.Add(resource);
             }
 
             var jwtToken = GenerateJwtToken(user, selectedMode, selectedBranchId, selectedBranchName, selectedRoleName, selectedRoleId, newSessionId, departmentCode);
             var refreshToken = GenerateRefreshToken(ipAddress);
-            refreshToken.SessionMode = selectedMode; // PERSIST MODE
+            refreshToken.SessionMode = selectedMode;
 
             foreach (var rt in user.RefreshTokens.Where(t => t.IsActive))
             {
@@ -178,58 +159,9 @@ namespace SynOS.Services
             }
 
             user.RefreshTokens.Add(refreshToken);
-
-            // Operational Identity Sync
-            if (selectedMode == "operational")
-            {
-                int retries = 0;
-                bool saved = false;
-                while (!saved && retries < 2)
-                {
-                    try
-                    {
-                        var resource = await _context.OperationalResources.FirstOrDefaultAsync(r => r.UserId == user.UserId);
-                        if (resource != null)
-                        {
-                            resource.ActiveSessionId = newSessionId;
-                            resource.LastSessionIssuedAt = DateTime.UtcNow;
-                            resource.BranchId = selectedBranchId!.Value;
-                            resource.IsOnline = false;
-                        }
-                        else
-                        {
-                            resource = new OperationalResource
-                            {
-                                UserId = user.UserId,
-                                ActiveSessionId = newSessionId,
-                                LastSessionIssuedAt = DateTime.UtcNow,
-                                BranchId = selectedBranchId!.Value,
-                                Role = selectedRoleName,
-                                DepartmentCode = departmentCode, // Sync from context
-                                IsOnline = false,
-                                IsActive = true // Auto-activate for efficiency
-                            };
-                            _context.OperationalResources.Add(resource);
-                        }
-
-                        await _auditService.LogAsync(user.UserId, "Login", "User", user.UserId, new { IpAddress = ipAddress, BranchId = selectedBranchId, Mode = selectedMode });
-                        await _context.SaveChangesAsync();
-                        saved = true;
-                    }
-                    catch (DbUpdateConcurrencyException)
-                    {
-                        retries++;
-                        if (retries >= 2) throw;
-                        _context.Entry(user).State = EntityState.Detached; 
-                    }
-                }
-            }
-            else
-            {
-                // Oversight simple logging
-                await _auditService.LogAsync(user.UserId, "Login", "User", user.UserId, new { IpAddress = ipAddress, Mode = selectedMode });
-                await _context.SaveChangesAsync();
-            }
+            
+            await _auditService.LogAsync(user.UserId, "Login", "User", user.UserId, new { IpAddress = ipAddress, BranchId = selectedBranchId });
+            await _context.SaveChangesAsync();
 
             return new LoginResponse
             {
@@ -244,6 +176,8 @@ namespace SynOS.Services
         {
             var user = await _context.Users
                 .Include(u => u.RefreshTokens)
+                .Include(u => u.UserRoles)
+                .ThenInclude(ur => ur.Role)
                 .SingleOrDefaultAsync(u => u.RefreshTokens.Any(t => t.Token == token));
 
             if (user == null) throw new UnauthorizedAccessException("Invalid token");
@@ -252,20 +186,10 @@ namespace SynOS.Services
             var refreshToken = user.RefreshTokens.Single(x => x.Token == token);
             if (!refreshToken.IsActive) throw new UnauthorizedAccessException("Invalid token");
 
-            var sessionMode = refreshToken.SessionMode ?? "operational"; // Fallback for legacy tokens
-
-            // Capability Revalidation
-            if ((sessionMode == "operational" && !user.CanUseOperationalMode) || 
-                (sessionMode == "oversight" && !user.CanUseOversightMode))
-            {
-                refreshToken.Revoked = DateTime.UtcNow;
-                refreshToken.RevokedByIp = ipAddress ?? string.Empty;
-                await _context.SaveChangesAsync();
-                throw new UnauthorizedAccessException("Session capability has been revoked.");
-            }
+            var selectedMode = "operational";
 
             var newRefreshToken = GenerateRefreshToken(ipAddress);
-            newRefreshToken.SessionMode = sessionMode;
+            newRefreshToken.SessionMode = selectedMode;
             refreshToken.Revoked = DateTime.UtcNow;
             refreshToken.RevokedByIp = ipAddress ?? string.Empty;
             refreshToken.ReplacedByToken = newRefreshToken.Token;
@@ -280,99 +204,51 @@ namespace SynOS.Services
 
             Guid? selectedBranchId = null;
             string? selectedBranchName = null;
-            string selectedRoleName = "User";
-            Guid selectedRoleId = user.UserRoles.FirstOrDefault()?.RoleId ?? Guid.Empty;
+            var primaryRole = user.UserRoles.FirstOrDefault()?.Role;
+            string selectedRoleName = primaryRole?.Name ?? "Admin";
+            Guid selectedRoleId = primaryRole?.RoleId ?? Guid.Empty;
 
-            if (sessionMode == "operational")
+            // Fetch Branch Assignments
+            var userBranchRoles = await _context.UserBranchRoles
+               .Include(ubr => ubr.Role)
+               .Include(ubr => ubr.Branch) 
+               .Where(ubr => ubr.UserId == user.UserId)
+               .ToListAsync();
+
+            if (userBranchRoles.Count == 1)
             {
-                var userBranchRoles = await _context.UserBranchRoles
-                   .Include(ubr => ubr.Role)
-                   .Include(ubr => ubr.Branch) 
-                   .Where(ubr => ubr.UserId == user.UserId)
-                   .ToListAsync();
-
-                if (userBranchRoles.Count == 1)
-                {
-                    var context = userBranchRoles.First();
-                    selectedBranchId = context.BranchId;
-                    selectedBranchName = context.Branch.Name;
-                    selectedRoleName = context.Role.Name;
-                    selectedRoleId = context.RoleId;
-                }
-                else
-                {
-                    if (userBranchRoles.Count > 1) throw new UnauthorizedAccessException("Multiple branches assigned. Please log in again to select a branch.");
-                    throw new UnauthorizedAccessException("No active branch assignment found for this user.");
-                }
+                var context = userBranchRoles.First();
+                selectedBranchId = context.BranchId;
+                selectedBranchName = context.Branch.Name;
+                selectedRoleName = context.Role.Name;
+                selectedRoleId = context.RoleId;
             }
-            else
+            else if (userBranchRoles.Count > 1)
             {
-                var role = user.UserRoles.FirstOrDefault()?.Role;
-                selectedRoleName = role?.Name ?? "Admin";
-                selectedRoleId = role?.RoleId ?? Guid.Empty;
+                // If they have multiple branches, we can't easily auto-select one during refresh if it's not in the old token.
+                // However, we usually store the branch_id in the RefreshToken or similar if we wanted to be robust.
+                // For now, if multiple branches exist, we might force a re-login if we can't resolve it.
+                // But let's check if the old refreshToken had a branch? No, it didn't.
+                // We'll just take the first one or throw.
+                var context = userBranchRoles.First();
+                selectedBranchId = context.BranchId;
+                selectedBranchName = context.Branch.Name;
             }
 
             var newSessionId = Guid.NewGuid();
-            if (sessionMode == "operational")
-            {
-                var resource = await _context.OperationalResources.FirstOrDefaultAsync(r => r.UserId == user.UserId);
-                if (resource != null)
-                {
-                    resource.ActiveSessionId = newSessionId;
-                    resource.LastSessionIssuedAt = DateTime.UtcNow;
-                }
-                else
-                {
-                    resource = new OperationalResource
-                    {
-                        UserId = user.UserId,
-                        ActiveSessionId = newSessionId,
-                        LastSessionIssuedAt = DateTime.UtcNow,
-                        BranchId = selectedBranchId!.Value,
-                        Role = selectedRoleName,
-                        DepartmentCode = "General",
-                        IsOnline = false,
-                        IsActive = false
-                    };
-                    _context.OperationalResources.Add(resource);
-                }
-            }
-
             var departmentCode = "General";
-            if (sessionMode == "operational")
+            
+            var resource = await _context.OperationalResources.FirstOrDefaultAsync(r => r.UserId == user.UserId);
+            if (resource != null)
             {
-                var resource = await _context.OperationalResources.AsNoTracking().FirstOrDefaultAsync(r => r.UserId == user.UserId);
-                if (resource != null && !string.IsNullOrEmpty(resource.DepartmentCode) && resource.DepartmentCode != "General")
-                {
-                    departmentCode = resource.DepartmentCode;
-                }
-                else
-                {
-                    departmentCode = selectedRoleName.Contains("Biochem", StringComparison.OrdinalIgnoreCase) ? "BIO" : 
-                                     selectedRoleName.Contains("Hemat", StringComparison.OrdinalIgnoreCase) ? "HEM" : 
-                                     selectedRoleName.Contains("Path", StringComparison.OrdinalIgnoreCase) ? "PAT" : "General";
-                }
+                resource.ActiveSessionId = newSessionId;
+                resource.LastSessionIssuedAt = DateTime.UtcNow;
+                if (!string.IsNullOrEmpty(resource.DepartmentCode)) departmentCode = resource.DepartmentCode;
             }
 
-            var jwtToken = GenerateJwtToken(user, sessionMode, selectedBranchId, selectedBranchName, selectedRoleName, selectedRoleId, newSessionId, departmentCode);
-            await _auditService.LogAsync(user.UserId, "RefreshToken", "User", user.UserId, new { IpAddress = ipAddress, Mode = sessionMode });
-            
-            int refreshRetries = 0;
-            bool refreshSaved = false;
-            while (!refreshSaved && refreshRetries < 2)
-            {
-                try
-                {
-                    await _context.SaveChangesAsync();
-                    refreshSaved = true;
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    refreshRetries++;
-                    if (refreshRetries >= 2) throw;
-                    _context.Entry(user).State = EntityState.Detached;
-                }
-            }
+            var jwtToken = GenerateJwtToken(user, selectedMode, selectedBranchId, selectedBranchName, selectedRoleName, selectedRoleId, newSessionId, departmentCode);
+            await _auditService.LogAsync(user.UserId, "RefreshToken", "User", user.UserId, new { IpAddress = ipAddress });
+            await _context.SaveChangesAsync();
 
             return new LoginResponse
             {

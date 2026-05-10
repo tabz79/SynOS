@@ -23,7 +23,7 @@ namespace SynOS.Api.Controllers
 
         [HttpPost]
         [Authorize(Policy = "ReceptionPolicy")]
-        [Authorize(Policy = "OperationalModeOnly")]
+        
         public async Task<IActionResult> CreateAppointment([FromBody] AppointmentCreateDto appointmentDto, [FromHeader(Name = "Idempotency-Key")] string idempotencyKey)
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -76,7 +76,7 @@ namespace SynOS.Api.Controllers
 
         [HttpPost("{id}/reschedule")]
         [Authorize(Policy = "ReceptionPolicy")]
-        [Authorize(Policy = "OperationalModeOnly")]
+        
         public async Task<IActionResult> RescheduleAppointment(Guid id, [FromBody] RescheduleRequestDto request)
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -91,7 +91,7 @@ namespace SynOS.Api.Controllers
 
         [HttpPost("{id}/cancel")]
         [Authorize(Policy = "ReceptionPolicy")]
-        [Authorize(Policy = "OperationalModeOnly")]
+        
         public async Task<IActionResult> CancelAppointment(Guid id, [FromBody] CancelAppointmentRequestDto request)
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;

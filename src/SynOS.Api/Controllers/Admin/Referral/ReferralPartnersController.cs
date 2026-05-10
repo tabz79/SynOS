@@ -82,5 +82,27 @@ namespace SynOS.Api.Controllers.Admin.Referral
                 return Conflict(new { message = ex.Message }); 
             }
         }
+        [HttpGet("summary")]
+        [Authorize(Roles = "Admin,Receptionist")]
+        public async Task<IActionResult> GetSummary()
+        {
+            var summary = await _referralPartnerService.GetReferralSummaryAsync();
+            return Ok(summary);
+        }
+
+        [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> DeactivatePartner(Guid id)
+        {
+            try 
+            {
+                await _referralPartnerService.DeleteReferralPartnerAsync(id, _userContext.CurrentUserId);
+                return NoContent();
+            } 
+            catch (System.Collections.Generic.KeyNotFoundException) 
+            { 
+                return NotFound(); 
+            }
+        }
     }
 }

@@ -78,6 +78,15 @@ export const ReportsApi = {
         if (!response.ok) throw new Error('Failed to reopen report');
         return true;
     },
+    
+    claimReport: async (reportId) => {
+        const response = await fetch(`/api/v1/reports/${reportId}/claim`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('synos_jwt')}` }
+        });
+        if (!response.ok) throw new Error('Failed to claim report');
+        return true;
+    },
 
     verifyManual: async (reportId, pathologistId) => {
         const response = await fetch(`/api/v1/reports/${reportId}/verify-manual?pathologistId=${pathologistId}`, {

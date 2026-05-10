@@ -114,6 +114,16 @@ export function PathologistWorklistCard({ report, isSelected, onClick }) {
                     </div>
                 )}
             </div>
+
+            {/* LINE 4: OWNERSHIP (Who is working on this?) */}
+            {(report.typedByUserName || report.verifiedByUserName) && (
+                <div className="flex items-center gap-1.5 pt-1.5 opacity-60">
+                    <div className="w-1.5 h-1.5 rounded-full bg-synos-primary" />
+                    <span className="text-[9px] font-bold uppercase tracking-widest truncate">
+                        {report.typedByUserName || report.verifiedByUserName}
+                    </span>
+                </div>
+            )}
         </button>
     );
 }

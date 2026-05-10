@@ -14,8 +14,6 @@ namespace SynOS.Models.DTOs
         public UserDto User { get; set; } = new UserDto();
         public bool RequiresBranchSelection { get; set; } // ADDED for Phase 1A
         public System.Collections.Generic.List<BranchSummaryDto>? AvailableBranches { get; set; } // ADDED for Phase 1A
-        public bool RequiresModeSelection { get; set; } // ADDED for Phase 1B
-        public System.Collections.Generic.List<string>? AvailableModes { get; set; } // ADDED for Phase 1B
     }
 
     public class BranchSummaryDto

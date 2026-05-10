@@ -26,6 +26,7 @@ namespace SynOS.Models.Entities.AR
         [Column(TypeName = "decimal(18,4)")]
         public decimal Amount { get; init; }
 
+        [Column(TypeName = "decimal(18, 4)")]
         public decimal AmountReceived { get; set; } = 0;
 
         [Required]

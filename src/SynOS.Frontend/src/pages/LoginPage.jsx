@@ -20,7 +20,7 @@ export function LoginPage() {
 
         try {
             const data = await login(email, password);
-            if (data.requiresModeSelection || data.requiresBranchSelection) {
+            if (data.requiresBranchSelection) {
                 setAuthData(data);
             } else {
                 navigate('/');
@@ -33,26 +33,10 @@ export function LoginPage() {
         }
     };
 
-    const handleModeSelect = async (mode) => {
-        setSelectedMode(mode);
-        if (mode === 'oversight') {
-            try {
-                setIsSubmitting(true);
-                await login(email, password, 'oversight');
-                navigate('/');
-            } catch (err) {
-                setError(err.message);
-            } finally {
-                setIsSubmitting(false);
-            }
-        }
-        // If 'operational', we might still need branch selection (handled by authData.requiresBranchSelection in render)
-    };
-
     const handleBranchSelect = async (branchId) => {
         setIsSubmitting(true);
         try {
-            await login(email, password, selectedMode || authData?.availableModes?.[0] || 'operational', branchId);
+            await login(email, password, branchId);
             navigate('/');
         } catch (err) {
             setError(err.message);
@@ -65,35 +49,8 @@ export function LoginPage() {
         setTimeout(() => navigate('/'), 100);
     }
 
-    // Render Mode Selection
-    if (authData?.requiresModeSelection && !selectedMode) {
-        return (
-            <div className="h-screen w-screen bg-synos-background flex items-center justify-center p-4">
-                <div className="w-full max-w-sm bg-zinc-900 border border-synos-border rounded-xl p-8 shadow-2xl">
-                    <h2 className="text-xl font-bold text-white mb-6 text-center">Select Session Mode</h2>
-                    <div className="space-y-4">
-                        <button
-                            onClick={() => handleModeSelect('operational')}
-                            className="w-full bg-zinc-800 border border-zinc-700 hover:border-synos-primary text-white p-4 rounded-lg transition-all text-left"
-                        >
-                            <div className="font-bold">Operational Mode</div>
-                            <div className="text-xs text-zinc-500">Perform workforce tasks (Phlebotomy, Lab, Reception)</div>
-                        </button>
-                        <button
-                            onClick={() => handleModeSelect('oversight')}
-                            className="w-full bg-zinc-800 border border-zinc-700 hover:border-synos-primary text-white p-4 rounded-lg transition-all text-left"
-                        >
-                            <div className="font-bold">Oversight Mode</div>
-                            <div className="text-xs text-zinc-500">View stats, monitor branches, and audit data</div>
-                        </button>
-                    </div>
-                </div>
-            </div>
-        );
-    }
-
     // Render Branch Selection
-    if (authData?.requiresBranchSelection || (selectedMode === 'operational' && authData?.availableBranches)) {
+    if (authData?.requiresBranchSelection) {
         return (
             <div className="h-screen w-screen bg-synos-background flex items-center justify-center p-4">
                 <div className="w-full max-w-sm bg-zinc-900 border border-synos-border rounded-xl p-8 shadow-2xl">

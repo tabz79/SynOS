@@ -4197,12 +4197,18 @@ namespace SynOS.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<int>("CalculationBase")
+                        .HasColumnType("int");
+
                     b.Property<string>("ContactInfo")
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("datetimeoffset");
+
+                    b.Property<decimal>("DefaultCommissionPercentage")
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
@@ -4267,6 +4273,10 @@ namespace SynOS.Data.Migrations
 
                     b.Property<Guid>("SourceVisitId")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("ReferralPayableFactId");
 

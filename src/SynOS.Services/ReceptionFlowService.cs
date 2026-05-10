@@ -149,8 +149,15 @@ namespace SynOS.Services
 
             if (existingDraft != null)
             {
-               _logger.LogInformation("StartVisit Idempotency: returning existing Draft visit {VisitId}", existingDraft.VisitId);
-               return await MapToStartVisitResponse(existingDraft);
+                // SANITY CHECK: Double-check status to prevent "drift" pollution
+                if (existingDraft.Status == VisitStatus.Draft)
+                {
+                    _logger.LogInformation("StartVisit Idempotency: returning existing Draft visit {VisitId} (Token: {Token})", existingDraft.VisitId, existingDraft.Token);
+                    return await MapToStartVisitResponse(existingDraft);
+                }
+                
+                _logger.LogWarning("StartVisit Idempotency Conflict: Found visit {VisitId} for patient {PatientId} at desk {UserId}, but status is {Status} instead of Draft. Ignoring.", 
+                    existingDraft.VisitId, request.PatientId, currentUserId, existingDraft.Status);
             }
             // ------------------------------------------------------------
 
@@ -639,7 +646,9 @@ namespace SynOS.Services
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError(ex, "Failed to process referral commission for VisitId {VisitId} and PaymentId {PaymentId}. This did not affect the payment transaction.", visit.VisitId, payment.PaymentId);
+                        var partnerName = visit.ReferralPartner?.Name ?? "Unknown";
+                        _logger.LogError(ex, "Failed to process referral commission for VisitId {VisitId} (Partner: {PartnerName}) and PaymentId {PaymentId}. Root Cause: {Message}", 
+                            visit.VisitId, partnerName, payment.PaymentId, ex.Message);
                         // The exception is intentionally swallowed to guarantee the payment operation succeeds for the user,
                         // leaving the failed commission recognition for offline reconciliation.
                     }

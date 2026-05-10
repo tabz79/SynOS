@@ -163,8 +163,6 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy("DeliveryPolicy", policy =>
         policy.RequireAssertion(context =>
             context.User.IsInRole("DeliveryDesk") || context.User.IsInRole("Admin")));
-    options.AddPolicy("OperationalModeOnly", policy =>
-        policy.RequireClaim("session_mode", "operational"));
     options.AddPolicy("ReportingPolicy", policy =>
         policy.RequireAssertion(context =>
             context.User.IsInRole("Pathologist") || 
@@ -172,11 +170,10 @@ builder.Services.AddAuthorization(options =>
             context.User.IsInRole("DeliveryDesk") || 
             context.User.IsInRole("Admin")));
     options.AddPolicy("LabProcessingPolicy", policy =>
-        policy.RequireClaim("session_mode", "operational")
-              .RequireAssertion(context =>
-                  context.User.IsInRole("Technician") ||
-                  context.User.IsInRole("LabTech") ||
-                  context.User.IsInRole("Admin")));
+        policy.RequireAssertion(context =>
+            context.User.IsInRole("Technician") ||
+            context.User.IsInRole("LabTech") ||
+            context.User.IsInRole("Admin")));
 });
 
 // Add AutoMapper

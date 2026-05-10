@@ -34,32 +34,21 @@ namespace SynOS.Services.Security
         {
             get
             {
-                var mode = CurrentMode;
-                if (mode == "oversight")
+                // If a branchId is explicitly provided in the query string, allow it for high-privilege users (Admins).
+                // This allows Admins to view reports/dashboards for different branches without re-logging.
+                var queryBranchId = _httpContextAccessor.HttpContext?.Request.Query["branchId"].ToString();
+                if (!string.IsNullOrEmpty(queryBranchId) && Guid.TryParse(queryBranchId, out var qbId) && qbId != Guid.Empty)
                 {
-                    var queryBranchId = _httpContextAccessor.HttpContext?.Request.Query["branchId"].ToString();
-                    if (string.IsNullOrEmpty(queryBranchId) || !Guid.TryParse(queryBranchId, out var branchId) || branchId == Guid.Empty)
-                    {
-                        // MANDATORY HARDENING (Requirement 2): Oversight REQUIRES valid non-empty BranchId
-                        throw new System.ArgumentException("BranchId required for oversight mode");
-                    }
-                    return branchId;
+                    if (CurrentRole == "Admin" || CurrentRole == "SystemAdmin") return qbId;
                 }
 
-                // Operational Mode: Strictly bound to JWT branch_id claim
+                // Default: Strictly bound to JWT branch_id claim
                 var branchIdClaim = _httpContextAccessor.HttpContext?.User?.FindFirst("branch_id")?.Value;
                 return Guid.TryParse(branchIdClaim, out var bId) ? bId : Guid.Empty;
             }
         }
 
-        public string CurrentMode
-        {
-            get
-            {
-                // Custom claim 'session_mode' added during login. Defaults to 'operational' for safety.
-                return _httpContextAccessor.HttpContext?.User?.FindFirst("session_mode")?.Value ?? "operational";
-            }
-        }
+        public string CurrentMode => "operational"; // Modes are deprecated
 
         public Guid CurrentSessionId
         {

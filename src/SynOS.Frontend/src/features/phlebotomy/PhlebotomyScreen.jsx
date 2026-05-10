@@ -204,11 +204,18 @@ export function PhlebotomyScreen() {
         }));
     };
 
-    // Filtered Queue Data (Client-Side Simulation)
+    const isAdmin = user?.role === 'Admin' || user?.role === 'SystemAdmin';
+
+    // Filtered Queue Data (Client-Side Isolation vs Admin Oversight)
     const filteredQueue = actionQueue.filter(row => {
         if (activeAssignmentTab === "available") {
             return !row.assignedPhlebotomistId;
         } else {
+            // ADMIN RULE: Admins see EVERYTHING in the assigned tab
+            if (isAdmin) {
+                return !!row.assignedPhlebotomistId;
+            }
+            // Standard User: See only what is assigned to ME
             return row.assignedPhlebotomistId === user?.id;
         }
     });

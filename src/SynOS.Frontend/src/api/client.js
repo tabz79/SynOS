@@ -28,11 +28,18 @@ const withBranchId = (url) => {
     if (!token) return url;
     try {
         const decoded = jwtDecode(token);
-        const mode = decoded.session_mode || "operational";
-        if (mode === "oversight") {
+        
+        // ROLE CANON: Check for Admin or SystemAdmin elevated roles
+        const role = decoded.role || decoded["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
+        const isAdmin = role === 'Admin' || role === 'SystemAdmin' || 
+                       (Array.isArray(role) && (role.includes('Admin') || role.includes('SystemAdmin')));
+
+        if (isAdmin) {
             const branchId = localStorage.getItem('synos_oversight_branch_id');
-            if (branchId && branchId !== 'undefined') {
+            if (branchId && branchId !== 'undefined' && branchId !== 'null') {
+                // Prevent duplication: Check if branchId or BranchId is already in the URL
                 if (url.toLowerCase().includes('branchid=')) return url;
+                
                 const separator = url.includes('?') ? '&' : '?';
                 return `${url}${separator}branchId=${branchId}`;
             }

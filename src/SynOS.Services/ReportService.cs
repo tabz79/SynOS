@@ -1128,5 +1128,24 @@ namespace SynOS.Services
                 };
             }).ToList();
         }
+
+        public async Task ClaimReportAsync(Guid reportId, Guid userId)
+        {
+            var report = await _context.Reports.FirstOrDefaultAsync(r => r.ReportId == reportId);
+            if (report == null) throw new KeyNotFoundException($"Report {reportId} not found.");
+
+            // Determine if claiming as Typist or Verifier
+            if (report.Status == "Draft")
+            {
+                report.TypedByUserId = userId;
+            }
+            else if (report.Status == "ReadyForVerification")
+            {
+                report.VerifiedByUserId = userId;
+            }
+
+            report.UpdatedAt = DateTimeOffset.UtcNow;
+            await _context.SaveChangesAsync();
+        }
     }
 }

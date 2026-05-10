@@ -23,6 +23,9 @@ namespace SynOS.Models.Entities.Referral
         [StringLength(50)]
         public string PaymentCollectionModel { get; set; } = "LabCollects"; // "LabCollects" or "PartnerCollects"
 
+        public decimal DefaultCommissionPercentage { get; set; } = 0;
+        public CommissionCalculationBase CalculationBase { get; set; } = CommissionCalculationBase.AfterDiscounts;
+
         public bool IsActive { get; set; }
 
         public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;

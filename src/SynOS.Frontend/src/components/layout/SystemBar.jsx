@@ -30,26 +30,32 @@ export function SystemBar({ serverTime, syncStatus = "Not Synced" }) {
     return () => clearInterval(t);
   }, []);
 
-  // Fetch branches for oversight mode
+  // Fetch branches for management view (Admins only)
   useEffect(() => {
-    if (user?.sessionMode === 'oversight') {
+    const isAdmin = user?.role === 'Admin' || user?.role === 'SystemAdmin' || 
+                   (Array.isArray(user?.role) && (user.role.includes('Admin') || user.role.includes('SystemAdmin')));
+    
+    if (isAdmin) {
       ReceptionApi.getBranches().then(branches => {
         setAvailableBranches(branches);
-        // Auto-select first branch if none active
+        // Auto-select first branch if none active and we're an admin
         if (!activeOversightBranchId && branches.length > 0) {
           setOversightBranch(branches[0].id || branches[0].branchId);
         }
       }).catch(err => console.error("Failed to fetch branches:", err));
     }
-  }, [user?.sessionMode]);
+  }, [user?.role]);
 
   const handleLogout = () => {
     logout();
     window.location.href = '/login';
   };
 
-  const currentBranchName = user?.sessionMode === 'oversight'
-    ? (availableBranches.find(b => (b.id || b.branchId) === activeOversightBranchId)?.name || "Select Branch...")
+  const isAdmin = user?.role === 'Admin' || user?.role === 'SystemAdmin' || 
+                 (Array.isArray(user?.role) && (user.role.includes('Admin') || user.role.includes('SystemAdmin')));
+
+  const currentBranchName = isAdmin
+    ? (availableBranches.find(b => (b.id || b.branchId) === activeOversightBranchId)?.name || user?.branchName || "Select Branch...")
     : (user?.branchName || "Unknown Branch");
 
   const timeDisplay = currentTime.toLocaleTimeString('en-US', {
@@ -120,37 +126,26 @@ export function SystemBar({ serverTime, syncStatus = "Not Synced" }) {
       {/* RIGHT — Controls */}
       <div className="flex items-center gap-3">
 
-        {/* Session Mode Indicator */}
-        <div className={cn(
-          "flex items-center gap-2 px-3 py-1.5 rounded-xl text-[10px] font-bold uppercase tracking-widest border transition-all",
-          user?.sessionMode === 'oversight'
-            ? "bg-amber-500/10 border-amber-500/50 text-amber-500"
-            : "bg-blue-500/10 border-blue-500/50 text-blue-500"
-        )}>
-          {user?.sessionMode === 'oversight' ? <Monitor className="w-3 h-3" /> : <Activity className="w-3 h-3" />}
-          {user?.sessionMode || 'operational'}
-        </div>
-
         {/* Branch (Fake Frost Pill) */}
         <div className="relative">
           <button
             onClick={() => {
-              if (user?.sessionMode === 'oversight') {
+              if (isAdmin) {
                 setActiveDropdown(activeDropdown === 'facility' ? null : 'facility');
               }
             }}
             className={cn(
               "flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-medium transition-all",
               ui.pill,
-              user?.sessionMode !== 'oversight' && "cursor-default hover:bg-zinc-900"
+              !isAdmin && "cursor-default hover:bg-zinc-900"
             )}
           >
             <Globe className="w-3.5 h-3.5 opacity-70" />
             {currentBranchName}
-            {user?.sessionMode === 'oversight' && <ChevronDown className="w-3 h-3 opacity-50" />}
+            {isAdmin && <ChevronDown className="w-3 h-3 opacity-50" />}
           </button>
 
-          {activeDropdown === 'facility' && user?.sessionMode === 'oversight' && (
+          {activeDropdown === 'facility' && isAdmin && (
             <div
               ref={facilityRef}
               className={cn(

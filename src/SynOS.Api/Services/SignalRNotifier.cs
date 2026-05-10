@@ -36,6 +36,15 @@ namespace SynOS.Api.Services
                         
                         if (delta != null)
                         {
+                            // --- POLLUTION GUARD ---
+                            // If the visit is finalized and NOT from Today, do NOT broadcast delta.
+                            // This prevents old visits (e.g. from months ago) from suddenly jumping into the Live queue 
+                            // if an administrative action (like a referral update) occurs.
+                            if (delta.IsFinalized && delta.DateGroup != "Today")
+                            {
+                                return;
+                            }
+
                             // 1. Target Receptionist (Private Desktop)
                             if (delta.AssignedToUserId.HasValue && delta.AssignedToUserId.Value != Guid.Empty)
                             {

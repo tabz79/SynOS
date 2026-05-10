@@ -158,6 +158,11 @@ namespace SynOS.Services.Settlements
                     .OrderBy(f => f.OccurredAt)
                     .ToListAsync();
 
+                if (!receivables.Any())
+                {
+                    throw new InvalidOperationException($"No pending receivables found for Partner {partnerId} with the provided IDs.");
+                }
+
                 // 2. Distribute payment (FIFO)
                 var remaining = totalAmount;
                 foreach (var rec in receivables)
@@ -182,7 +187,7 @@ namespace SynOS.Services.Settlements
                 {
                     OccurredAt = DateTimeOffset.UtcNow,
                     Amount = totalAmount,
-                    Currency = receivables.First().Currency,
+                    Currency = receivables.First().Currency ?? "INR",
                     Direction = RevenueDirection.Inflow,
                     SourceType = RevenueSourceType.Partner,
                     SourceReferenceId = $"BULK-{partnerId}-{DateTime.UtcNow:yyyyMMddHHmmss}",
@@ -192,6 +197,77 @@ namespace SynOS.Services.Settlements
                 };
 
                 await _revenueFactWriter.DeclareRevenueFactAsync(command);
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
+        }
+        public async Task SettleBulkReferralPayablesAsync(Guid partnerId, List<Guid> factIds, decimal totalAmount, string paymentMethod)
+        {
+            if (totalAmount <= 0) throw new ArgumentException("Amount must be positive.");
+            if (factIds == null || !factIds.Any()) throw new ArgumentException("No fact IDs provided.");
+
+            var partner = await _context.ReferralPartners.FindAsync(partnerId);
+            if (partner == null) throw new InvalidOperationException("Partner not found");
+
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                var payables = await _context.ReferralPayableFacts
+                    .Where(f => factIds.Contains(f.ReferralPayableFactId) && f.ReferralPartnerId == partnerId && f.SettledAt == null)
+                    .OrderBy(f => f.OccurredAt)
+                    .ToListAsync();
+
+                if (!payables.Any())
+                {
+                    throw new InvalidOperationException($"No pending referral payables found for Partner {partnerId} with the provided IDs. Ensure status is 'Pending'.");
+                }
+
+                var remaining = totalAmount;
+                foreach (var payable in payables)
+                {
+                    if (remaining <= 0) break;
+
+                    var outstanding = payable.Amount - payable.AmountPaid;
+                    var apply = Math.Min(remaining, outstanding);
+
+                    payable.AmountPaid += apply;
+                    if (payable.AmountPaid >= payable.Amount)
+                    {
+                        payable.SettledAt = DateTimeOffset.UtcNow;
+                        payable.Status = "Settled";
+                    }
+
+                    remaining -= apply;
+                    _context.ReferralPayableFacts.Update(payable);
+                }
+
+                // Emit SpendFact
+                var spendFact = new SpendFact(
+                    Guid.NewGuid(),
+                    partnerId,
+                    totalAmount,
+                    payables.First().Currency ?? "INR",
+                    "Referral",
+                    partner.Name,
+                    $"Bulk Settlement for {payables.Count} referral items.",
+                    null,
+                    Enum.TryParse<PaymentMethod>(paymentMethod, out var method) ? method : PaymentMethod.BankTransfer,
+                    $"BULK-SETTLE-{partnerId}-{DateTime.UtcNow:yyyyMMddHHmmss}",
+                    DateTime.UtcNow,
+                    DateTime.UtcNow,
+                    "Commission Expense",
+                    "System Bulk Settlement",
+                    Guid.Empty,
+                    Guid.Empty,
+                    Guid.Empty
+                );
+
+                await _spendFactWriter.CreateSpendFactAsync(spendFact);
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
             }

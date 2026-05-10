@@ -140,10 +140,44 @@ export const FinanceApi = {
      * Fetches referral commission payables.
      */
     getReferralPayables: async () => {
-        const response = await fetch(FinanceApi.withBranchId('/api/v1/Economics/referral-payables'), {
+        const response = await fetch(FinanceApi.withBranchId('/api/v1/economics/referral-payables'), {
             headers: FinanceApi.getHeaders()
         });
         if (!response.ok) throw new Error("Failed to load referral payables");
+        return response.json();
+    },
+
+    getReferralSummary: async () => {
+        const response = await fetch(FinanceApi.withBranchId('/api/v1/admin/referral-partners/summary'), {
+            headers: FinanceApi.getHeaders()
+        });
+        if (!response.ok) throw new Error("Failed to load referral summary");
+        return response.json();
+    },
+
+    settleReferralPayout: async (data) => {
+        const response = await fetch('/api/v1/admin/referral-settle/payout', {
+            method: 'POST',
+            headers: FinanceApi.getHeaders(),
+            body: JSON.stringify(data)
+        });
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.message || "Failed to settle referral payout");
+        }
+        return response.json();
+    },
+
+    settleReferralRecovery: async (data) => {
+        const response = await fetch('/api/v1/admin/referral-settle/recovery', {
+            method: 'POST',
+            headers: FinanceApi.getHeaders(),
+            body: JSON.stringify(data)
+        });
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.message || "Failed to settle referral recovery");
+        }
         return response.json();
     },
 
@@ -184,6 +218,62 @@ export const FinanceApi = {
         return response.json();
     },
 
+    createReferralPartner: async (data) => {
+        const response = await fetch('/api/v1/admin/referral-partners', {
+            method: 'POST',
+            headers: FinanceApi.getHeaders(),
+            body: JSON.stringify(data)
+        });
+        if (!response.ok) throw new Error("Failed to create referral partner");
+        return response.json();
+    },
+
+    updateReferralPartner: async (id, data) => {
+        const response = await fetch(`/api/v1/admin/referral-partners/${id}`, {
+            method: 'PUT',
+            headers: FinanceApi.getHeaders(),
+            body: JSON.stringify(data)
+        });
+        if (!response.ok) throw new Error("Failed to update referral partner");
+        return response.json();
+    },
+
+    deactivateReferralPartner: async (id) => {
+        const response = await fetch(`/api/v1/admin/referral-partners/${id}`, {
+            method: 'DELETE',
+            headers: FinanceApi.getHeaders()
+        });
+        if (!response.ok) throw new Error("Failed to deactivate referral partner");
+        return true;
+    },
+
+    getReferralRulesForPartner: async (partnerId) => {
+        const response = await fetch(FinanceApi.withBranchId(`/api/v1/admin/referral-partners/${partnerId}/commission-rules`), {
+            headers: FinanceApi.getHeaders()
+        });
+        if (!response.ok) throw new Error("Failed to load referral rules");
+        return response.json();
+    },
+
+    createReferralRule: async (partnerId, data) => {
+        const response = await fetch(`/api/v1/admin/referral-partners/${partnerId}/commission-rules`, {
+            method: 'POST',
+            headers: FinanceApi.getHeaders(),
+            body: JSON.stringify(data)
+        });
+        if (!response.ok) throw new Error("Failed to create commission rule");
+        return response.json();
+    },
+
+    deleteReferralRule: async (ruleId) => {
+        const response = await fetch(`/api/v1/admin/commission-rules/${ruleId}`, {
+            method: 'DELETE',
+            headers: FinanceApi.getHeaders()
+        });
+        if (!response.ok) throw new Error("Failed to delete commission rule");
+        return true;
+    },
+
     /**
      * Fetches referral partners registry.
      */
@@ -203,6 +293,15 @@ export const FinanceApi = {
             headers: FinanceApi.getHeaders()
         });
         if (!response.ok) throw new Error("Failed to load referral rules");
+        return response.json();
+    },
+
+    getSettlementHistory: async () => {
+        // We'll use a combined feed of SpendFacts and RevenueFacts with 'Referral' or 'Partner' source
+        const response = await fetch(FinanceApi.withBranchId('/api/v1/economics/settlement-history?category=Referral'), {
+            headers: FinanceApi.getHeaders()
+        });
+        if (!response.ok) throw new Error("Failed to load settlement history");
         return response.json();
     },
 
@@ -287,5 +386,13 @@ export const FinanceApi = {
         });
         if (!response.ok) throw new Error("Failed to update vendor");
         return true;
+    },
+
+    getTests: async () => {
+        const response = await fetch('/api/v1/Tests', {
+            headers: FinanceApi.getHeaders()
+        });
+        if (!response.ok) throw new Error("Failed to fetch tests");
+        return response.json();
     }
 };

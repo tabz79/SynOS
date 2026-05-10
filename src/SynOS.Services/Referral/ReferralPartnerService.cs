@@ -109,23 +109,89 @@ namespace SynOS.Services.Referral
             return _mapper.Map<ReferralPartnerReadDto>(partner);
         }
 
-        public async Task DeleteReferralPartnerAsync(Guid id)
+        public async Task DeleteReferralPartnerAsync(Guid id, Guid userId)
         {
-            // Soft delete only per requirements
-             var partner = await _context.ReferralPartners.FirstOrDefaultAsync(p => p.ReferralPartnerId == id);
+            var partner = await _context.ReferralPartners.FirstOrDefaultAsync(p => p.ReferralPartnerId == id);
             if (partner == null) throw new KeyNotFoundException("Partner not found");
-            
-            // Check for active visits? 
-            // "Partner with active visits CANNOT be hard-deleted."
-            // But we are doing Soft Deactivate.
-            // Prompt says: "Cannot delete partners (soft deactivate only)."
-            // So this method should just set IsActive = false?
-            // Or Controller should call Update(IsActive=false).
-            // Usually Delete verb maps to this.
-            
+
             partner.IsActive = false;
             partner.UpdatedAt = DateTimeOffset.UtcNow;
             await _context.SaveChangesAsync();
+
+            await _auditService.LogAsync(userId, "DeactivateReferralPartner", "ReferralPartner", id, new { Active = false });
+        }
+
+        public async Task<ReferralSummaryDto> GetReferralSummaryAsync()
+        {
+            var today = DateTimeOffset.UtcNow.Date;
+            
+            var totalPendingPayouts = await _context.ReferralPayableFacts
+                .Where(f => f.SettledAt == null)
+                .SumAsync(f => (decimal?)(f.Amount - f.AmountPaid)) ?? 0m;
+
+            var totalActivePartners = await _context.ReferralPartners
+                .CountAsync(p => p.IsActive);
+
+            var totalPendingReceivables = await _context.ReceivableFacts
+                .Where(f => f.SettledAt == null)
+                .SumAsync(f => (decimal?)(f.Amount - f.AmountReceived)) ?? 0m;
+
+            var referralsToday = await _context.Visits
+                .Where(v => v.IsReferred && v.CreatedAt >= today)
+                .CountAsync();
+
+            var revenueToday = await _context.Invoices
+                .Where(i => i.Visit != null && i.Visit.IsReferred && i.CreatedAt >= today)
+                .SumAsync(i => (decimal?)i.Total) ?? 0m;
+
+            return new ReferralSummaryDto
+            {
+                TotalPendingPayouts = totalPendingPayouts,
+                TotalActivePartners = totalActivePartners,
+                TotalPendingReceivables = totalPendingReceivables,
+                NewReferralsToday = referralsToday,
+                TotalReferralRevenueToday = revenueToday
+            };
+        }
+
+        public async Task<IEnumerable<ReferralCommissionRuleReadDto>> GetAllCommissionRulesAsync()
+        {
+            var rules = await _context.ReferralCommissionRules
+                .Include(r => r.ReferralPartner)
+                .Include(r => r.Test)
+                .AsNoTracking()
+                .ToListAsync();
+            return _mapper.Map<IEnumerable<ReferralCommissionRuleReadDto>>(rules);
+        }
+
+        public async Task<ReferralCommissionRuleReadDto> CreateCommissionRuleAsync(ReferralCommissionRuleCreateDto dto, Guid userId)
+        {
+            var rule = _mapper.Map<ReferralCommissionRule>(dto);
+            rule.RuleId = Guid.NewGuid();
+            
+            _context.ReferralCommissionRules.Add(rule);
+            await _context.SaveChangesAsync();
+            
+            await _auditService.LogAsync(userId, "CreateCommissionRule", "ReferralCommissionRule", rule.RuleId, dto);
+
+            // Re-fetch with includes for DTO mapping
+            var created = await _context.ReferralCommissionRules
+                .Include(r => r.ReferralPartner)
+                .Include(r => r.Test)
+                .FirstAsync(r => r.RuleId == rule.RuleId);
+
+            return _mapper.Map<ReferralCommissionRuleReadDto>(created);
+        }
+
+        public async Task DeleteCommissionRuleAsync(Guid id, Guid userId)
+        {
+            var rule = await _context.ReferralCommissionRules.FindAsync(id);
+            if (rule != null)
+            {
+                _context.ReferralCommissionRules.Remove(rule);
+                await _context.SaveChangesAsync();
+                await _auditService.LogAsync(userId, "DeleteCommissionRule", "ReferralCommissionRule", id, null);
+            }
         }
     }
 }

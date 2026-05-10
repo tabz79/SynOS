@@ -25,7 +25,7 @@ namespace SynOS.Api.Controllers
         }
 
         [HttpPost]
-        [Authorize(Policy = "OperationalModeOnly")]
+        
         public async Task<IActionResult> CreatePatient([FromBody] PatientCreateDto patientDto, [FromHeader(Name = "Idempotency-Key")] string idempotencyKey)
         {
             // In a real implementation, the idempotencyKey would be used to prevent duplicate requests.
@@ -65,7 +65,7 @@ namespace SynOS.Api.Controllers
 
         [HttpPost("merge-preview")]
         [Authorize(Policy = "ReceptionPolicy")]
-        [Authorize(Policy = "OperationalModeOnly")]
+        
         public async Task<IActionResult> MergePreview([FromBody] MergeRequestDto request)
         {
             var preview = await _patientService.GetMergePreviewAsync(request.TargetId, request.SourceId);
@@ -74,7 +74,7 @@ namespace SynOS.Api.Controllers
 
         [HttpPost("merge")]
         [Authorize(Policy = "ReceptionPolicy")]
-        [Authorize(Policy = "OperationalModeOnly")]
+        
         public async Task<IActionResult> Merge([FromBody] MergeRequestDto request, [FromHeader(Name = "Idempotency-Key")] string idempotencyKey)
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;

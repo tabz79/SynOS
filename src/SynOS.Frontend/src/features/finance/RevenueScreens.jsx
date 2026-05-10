@@ -458,7 +458,8 @@ export const PendingReceivablesScreen = () => {
                                                     <table className="w-full text-left">
                                                         <thead>
                                                             <tr className="text-[9px] font-bold uppercase tracking-widest text-zinc-400 border-b dark:border-zinc-900 pb-2">
-                                                                <th className="pb-2">Bill Ref</th>
+                                                                <th className="pb-2">Token / Ref</th>
+                                                                <th className="pb-2">Patient</th>
                                                                 <th className="pb-2">Date</th>
                                                                 <th className="pb-2 text-right">Original</th>
                                                                 <th className="pb-2 text-right">Recovered</th>
@@ -468,7 +469,8 @@ export const PendingReceivablesScreen = () => {
                                                         <tbody className="divide-y dark:divide-zinc-900/50 divide-zinc-100">
                                                             {allBills.filter(b => b.partnerName === partner.partnerName && !b.settledAt).map(bill => (
                                                                 <tr key={bill.receivableFactId}>
-                                                                    <td className="py-3 text-[10px] font-mono text-zinc-500">{bill.receivableFactId.toString().substring(0, 13)}...</td>
+                                                                    <td className="py-3 text-[10px] font-mono text-zinc-500 font-bold">{bill.token || bill.receivableFactId.toString().substring(0, 13)}</td>
+                                                                    <td className="py-3 text-[10px] font-bold dark:text-zinc-300">{bill.patientName || 'Unknown Patient'}</td>
                                                                     <td className="py-3 text-[10px] text-zinc-400">{new Date(bill.occurredAt).toLocaleDateString()}</td>
                                                                     <td className="py-3 text-[10px] font-bold text-right dark:text-zinc-300">₹{bill.amount.toLocaleString()}</td>
                                                                     <td className="py-3 text-[10px] font-bold text-right text-emerald-500">₹{bill.amountReceived.toLocaleString()}</td>

@@ -30,6 +30,9 @@ namespace SynOS.Services.Revenue
             
             var visit = await _context.Visits
                 .Include(v => v.Invoices)
+                    .ThenInclude(i => i.Payments)
+                .Include(v => v.Invoices)
+                    .ThenInclude(i => i.PartialPayments)
                 .Include(v => v.Orders)
                 .FirstOrDefaultAsync(v => v.VisitId == visitId);
 

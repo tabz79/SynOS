@@ -277,5 +277,23 @@ namespace SynOS.Api.Controllers
             var users = await _userService.GetPathologistsAsync();
             return Ok(users.Select(u => new { u.UserId, u.Name }));
         }
+
+        [HttpPost("{reportId}/claim")]
+        [Authorize(Policy = "ReportingPolicy")]
+        public async Task<IActionResult> ClaimReport(Guid reportId)
+        {
+            var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!Guid.TryParse(userIdString, out var userId)) return Unauthorized();
+
+            try
+            {
+                await _reportService.ClaimReportAsync(reportId, userId);
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
     }
 }

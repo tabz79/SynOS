@@ -276,6 +276,7 @@ namespace SynOS.Data
                 entity.ToTable("ReferralPartners");
                 entity.HasIndex(e => e.Name).IsUnique();
                 entity.Property(e => e.PartnerType).HasConversion<string>().HasMaxLength(50);
+                entity.Property(e => e.DefaultCommissionPercentage).HasColumnType("decimal(18, 4)");
             });
 
             modelBuilder.Entity<ReferralCommissionRule>(entity =>
@@ -294,6 +295,7 @@ namespace SynOS.Data
                 entity.HasKey(e => e.ReferralPayableFactId);
                 entity.HasIndex(e => e.SourceVisitId).IsUnique(); // ADDED: Idempotency enforcement
                 entity.Property(e => e.Amount).HasColumnType("decimal(18, 4)");
+                entity.Property(e => e.AmountPaid).HasColumnType("decimal(18, 4)");
                 
                 entity.HasOne(e => e.ReferralPartner)
                       .WithMany()

@@ -44,56 +44,113 @@ namespace SynOS.Services.Referral
                 _logger.LogError("Cannot process commission for Visit {VisitId}: Invoice not found.", visit.VisitId);
                 throw new InvalidOperationException($"Invoice not found for visit {visit.VisitId}.");
             }
+            var partner = await _context.ReferralPartners.FindAsync(visit.ReferralPartnerId);
+            if (partner == null) return;
 
             var totalCommissionAmount = 0m;
-
             foreach (var order in visit.Orders)
             {
-                var commissionRule = await _context.ReferralCommissionRules
-                    .AsNoTracking()
-                    .Where(r => r.ReferralPartnerId == visit.ReferralPartnerId && r.TestId == order.TestId && r.IsActive)
-                    .OrderByDescending(r => r.EffectiveFrom)
-                    .FirstOrDefaultAsync();
+                totalCommissionAmount += await CalculateCommissionForOrderAsync(partner, order);
+            }
 
-                if (commissionRule != null)
+            // --- REVENUE RECOGNITION (Partner owes Lab) ---
+            if (partner.PaymentCollectionModel == "PartnerCollects")
+            {
+                var totalBill = visit.Orders.Sum(o => o.Price - o.Discount);
+                var netPayableByPartner = totalBill - totalCommissionAmount;
+
+                if (netPayableByPartner > 0)
                 {
-                    // Margin Protection: Skip commission on outsourced tests unless explicitly allowed
-                    if (order.IsOutsourced && !commissionRule.AllowCommissionOnOutsourcedTests)
+                    var receivableFact = new SynOS.Models.Entities.AR.ReceivableFact
                     {
-                        _logger.LogInformation("Skipping commission for outsourced Order {OrderId} per protection rule.", order.OrderId);
-                        continue;
-                    }
+                        ReceivableFactId = Guid.NewGuid(),
+                        SourceVisitId = visit.VisitId,
+                        ReferralPartnerId = partner.ReferralPartnerId,
+                        Amount = netPayableByPartner,
+                        Currency = "INR",
+                        OccurredAt = visit.CreatedAt,
+                        RecordedAt = DateTimeOffset.UtcNow
+                    };
+                    _context.ReceivableFacts.Add(receivableFact);
+                    _logger.LogInformation("Partner Receivable recognized for Visit {VisitId}: ₹{Amount}", visit.VisitId, netPayableByPartner);
+                }
+            }
+            else // --- LIABILITY RECOGNITION (Lab owes Doctor) ---
+            {
+                if (totalCommissionAmount > 0)
+                {
+                    var payableFact = new ReferralPayableFact
+                    {
+                        ReferralPayableFactId = Guid.NewGuid(),
+                        ReferralPartnerId = visit.ReferralPartnerId.Value,
+                        Amount = totalCommissionAmount,
+                        Currency = "INR", 
+                        SourceVisitId = visit.VisitId,
+                        OccurredAt = visit.CreatedAt,
+                        RecordedAt = DateTime.UtcNow,
+                        Status = "Pending"
+                    };
 
-                    decimal commission = 0m;
-                    if (commissionRule.CommissionType == CommissionType.Percentage)
-                    {
-                        commission = order.Price * (commissionRule.CommissionValue / 100m);
-                    }
-                    else if (commissionRule.CommissionType == CommissionType.Flat)
-                    {
-                        commission = commissionRule.CommissionValue;
-                    }
-
-                    totalCommissionAmount += commission;
+                    _context.ReferralPayableFacts.Add(payableFact);
+                    _logger.LogInformation("Commission Payable recognized for Visit {VisitId}: ₹{Amount}", visit.VisitId, totalCommissionAmount);
                 }
             }
 
-            if (totalCommissionAmount > 0)
-            {
-                var payableFact = new ReferralPayableFact
-                {
-                    ReferralPayableFactId = Guid.NewGuid(),
-                    ReferralPartnerId = visit.ReferralPartnerId.Value,
-                    Amount = totalCommissionAmount,
-                    Currency = "INR", // TODO: Use actual currency from Invoice once available.
-                    SourceVisitId = visit.VisitId,
-                    OccurredAt = visit.CreatedAt,
-                    RecordedAt = DateTime.UtcNow
-                };
+            await _context.SaveChangesAsync();
+        }
 
-                _context.ReferralPayableFacts.Add(payableFact);
-                _logger.LogInformation("Commission Recognition (Liability pending save) for Visit {VisitId}.", visit.VisitId);
+        private async Task<decimal> CalculateCommissionForOrderAsync(ReferralPartner partner, Order order)
+        {
+            // TIER 1: Test-Specific Override
+            var commissionRule = await _context.ReferralCommissionRules
+                .AsNoTracking()
+                .Where(r => r.ReferralPartnerId == partner.ReferralPartnerId && r.TestId == order.TestId && r.IsActive)
+                .OrderByDescending(r => r.EffectiveFrom)
+                .FirstOrDefaultAsync();
+
+            decimal rate = 0;
+            CommissionType? type = null;
+
+            if (commissionRule != null)
+            {
+                // Margin Protection: Skip commission on outsourced tests unless explicitly allowed
+                if (order.IsOutsourced && !commissionRule.AllowCommissionOnOutsourcedTests)
+                {
+                    _logger.LogInformation("Skipping commission for outsourced Order {OrderId} per protection rule.", order.OrderId);
+                    return 0;
+                }
+                rate = commissionRule.CommissionValue;
+                type = commissionRule.CommissionType;
             }
+            else if (partner.DefaultCommissionPercentage > 0)
+            {
+                // TIER 3: Partner Default Cut (Fallback)
+                rate = partner.DefaultCommissionPercentage;
+                type = CommissionType.Percentage;
+            }
+            else
+            {
+                // TIER 4: No Payout + Warning
+                _logger.LogWarning("No commission rule or partner default found for Partner {PartnerId} on Test {TestId}.", partner.ReferralPartnerId, order.TestId);
+                return 0;
+            }
+
+            // Calculation Base Logic (Before vs After Discounts)
+            decimal baseAmount = (partner.CalculationBase == CommissionCalculationBase.BeforeDiscounts)
+                ? order.Price 
+                : (order.Price - order.Discount);
+
+            decimal commission = 0;
+            if (type == CommissionType.Percentage)
+            {
+                commission = baseAmount * (rate / 100m);
+            }
+            else if (type == CommissionType.Flat)
+            {
+                commission = rate;
+            }
+
+            return commission;
         }
     }
 }

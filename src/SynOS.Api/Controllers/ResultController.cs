@@ -33,7 +33,7 @@ namespace SynOS.Api.Controllers
         }
 
         [HttpPost]
-        [Authorize(Policy = "OperationalModeOnly")]
+        
         public async Task<IActionResult> EnterResults([FromBody] ResultEntryRequestDto requestDto)
         {
             var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -52,7 +52,7 @@ namespace SynOS.Api.Controllers
         }
 
         [HttpPost("autosave")]
-        [Authorize(Policy = "OperationalModeOnly")]
+        
         public async Task<IActionResult> AutosaveResults([FromBody] AutosaveRequestDto request)
         {
             var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -76,7 +76,7 @@ namespace SynOS.Api.Controllers
         }
 
         [HttpPost("orders/{orderId}/submit")]
-        [Authorize(Policy = "OperationalModeOnly")]
+        
         public async Task<IActionResult> SubmitForVerification(Guid orderId)
         {
             await _resultService.SubmitForVerificationAsync(orderId);
@@ -93,7 +93,7 @@ namespace SynOS.Api.Controllers
         // New Endpoints for Day 14.11
         [HttpPost("{resultId}/modify")]
         [Authorize(Roles = "Pathologist,Admin")]
-        [Authorize(Policy = "OperationalModeOnly")]
+        
         public async Task<IActionResult> ModifyResult(Guid resultId, [FromBody] ModifyResultRequestDto request)
         {
             var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);

@@ -111,8 +111,17 @@ export function DepartmentWorkbenchScreen() {
         }
     ];
 
+    const isAdmin = user?.role === 'Admin' || user?.role === 'SystemAdmin';
+
     const filteredQueue = queue.filter(item => {
         if (activeTab === "available") return !item.assignedResourceId;
+        
+        // ADMIN RULE: Admins see EVERYTHING in the assigned tab
+        if (isAdmin) {
+            return !!item.assignedResourceId;
+        }
+        
+        // Standard User: See only what is assigned to ME
         return item.assignedResourceId === user?.resourceId;
     });
 

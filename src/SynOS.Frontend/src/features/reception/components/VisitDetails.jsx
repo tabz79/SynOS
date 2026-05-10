@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Search, X, Plus, Loader2, Lock, AlertCircle } from 'lucide-react'
 import { ReceptionApi } from '@/api/reception'
 import { cn } from '@/lib/utils'
@@ -603,6 +603,7 @@ export function VisitDetails({ snapshot, visitId, onVisitUpdated, isPrepaidInten
 function ReferralCombinedInput({ initialValue, isReadOnly, isProcessing, partners, onApplyPartner, onUpdateText }) {
     const [value, setValue] = useState(initialValue);
     const [showSuggestions, setShowSuggestions] = useState(false);
+    const isSelecting = useRef(false);
 
     // Sync with Snapshot (Strict Rule)
     useEffect(() => {
@@ -644,9 +645,16 @@ function ReferralCombinedInput({ initialValue, isReadOnly, isProcessing, partner
                     // Delay to allow click on suggestion to register
                     setTimeout(() => {
                         setShowSuggestions(false);
+                        
+                        // FIX: If we are currently selecting a partner from the dropdown, skip the text update
+                        // because it will cause a race condition with onApplyPartner.
+                        if (isSelecting.current) return;
+
                         // Case B: Commit text if changed, no partner selected, and value differs from snapshot
-                        if (value !== initialValue) {
-                            onUpdateText(value);
+                        const trimmedValue = value?.trim();
+                        const trimmedInitial = initialValue?.trim();
+                        if (trimmedValue !== trimmedInitial) {
+                            onUpdateText(trimmedValue);
                         }
                     }, 200);
                 }}
@@ -661,7 +669,11 @@ function ReferralCombinedInput({ initialValue, isReadOnly, isProcessing, partner
                             key={p.referralPartnerId}
                             onMouseDown={(e) => {
                                 e.preventDefault(); // Prevent blur
+                                isSelecting.current = true;
                                 onApplyPartner(p.referralPartnerId);
+                                // The component will likely unmount or change state here, 
+                                // but we set it back just in case for long-lived components
+                                setTimeout(() => { isSelecting.current = false; }, 500);
                             }}
                             className={cn("w-full text-left px-3 py-2 transition-colors border-b last:border-0 type-label",
                                 ui.hover, isDark ? "border-zinc-800/50" : "border-zinc-100")}

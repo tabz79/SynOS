@@ -121,16 +121,23 @@ namespace SynOS.Services
 
             decimal currentPaidAmount = invoice.Payments.Sum(p => p.Amount) + invoice.PartialPayments.Sum(pp => pp.Amount);
             decimal remainingDue = invoice.Total - currentPaidAmount;
-
-            if (paymentDto.Amount > remainingDue)
+            if (remainingDue <= 0)
             {
-                _logger.LogWarning("Payment amount {PaymentAmount} exceeds remaining due {RemainingDue}. Recording full remaining amount.", paymentDto.Amount, remainingDue);
-                paymentDto.Amount = remainingDue;
+                _logger.LogWarning("Rejecting payment for Visit {VisitId}: Invoice {InvoiceId} is already fully paid (Total: {Total}, Paid: {Paid})", 
+                    invoice.VisitId, invoiceId, invoice.Total, currentPaidAmount);
+                throw new InvalidOperationException($"Invoice {invoiceId} is already fully paid.");
             }
 
-            if (paymentDto.Amount <= 0)
+            decimal recordedAmount = paymentDto.Amount;
+            if (paymentDto.Amount > remainingDue)
             {
-                throw new ArgumentException("Payment amount must be greater than zero.");
+                _logger.LogWarning("Payment amount {Amount} exceeds remaining due {Remaining}. Truncating to remaining amount.", paymentDto.Amount, remainingDue);
+                recordedAmount = remainingDue;
+            }
+
+            if (recordedAmount <= 0)
+            {
+                throw new InvalidOperationException("Effective payment amount must be greater than zero.");
             }
 
             var payment = new Payment

@@ -280,10 +280,36 @@ export function PathologistTerminal() {
 
     const isIdentityComplete = missingIdentityFields.length === 0;
 
-    const filteredReports = reports.filter(r => 
-        r.patientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        r.testName.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const isAdmin = user?.role === 'Admin' || user?.role === 'SystemAdmin';
+    const [activeTab, setActiveTab] = useState("available"); // available | assigned
+
+    const filteredReports = reports.filter(r => {
+        const matchesSearch = r.patientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                             r.testName.toLowerCase().includes(searchTerm.toLowerCase());
+        
+        if (!matchesSearch) return false;
+
+        if (activeTab === "available") {
+            return !r.verifiedByUserId;
+        } else {
+            // ADMIN RULE: Admins see EVERYTHING in the assigned tab
+            if (isAdmin) {
+                return !!r.verifiedByUserId;
+            }
+            // Standard User: See only what I am verifying
+            return r.verifiedByUserId === user?.id;
+        }
+    });
+
+    const handleClaim = async (reportId) => {
+        try {
+            await ReportsApi.claimReport(reportId);
+            await fetchWorklist();
+            setSelectedReportId(reportId);
+        } catch (err) {
+            alert("Failed to claim report: " + err.message);
+        }
+    };
 
     return (
         <div className="h-screen w-screen dark:bg-synos-background bg-transparent text-foreground flex flex-col overflow-hidden font-sans selection:bg-white/20 relative">
@@ -315,9 +341,27 @@ export function PathologistTerminal() {
                                 Worklist
                             </h2>
                             <span className="bg-indigo-500/10 text-indigo-500 dark:text-indigo-400 text-xs font-bold px-2 py-0.5 rounded-full">
-                                {reports.length}
+                                {filteredReports.length}
                             </span>
                         </div>
+
+                        <div className="flex items-center gap-1 dark:bg-zinc-950 bg-zinc-50 p-1 rounded-xl border dark:border-white/5 border-zinc-200">
+                            {['available', 'assigned'].map(tab => (
+                                <button
+                                    key={tab}
+                                    onClick={() => setActiveTab(tab)}
+                                    className={cn(
+                                        "flex-1 text-[10px] uppercase font-black tracking-widest py-1.5 rounded-lg transition-all",
+                                        activeTab === tab 
+                                            ? "bg-indigo-500 text-white shadow-lg shadow-indigo-500/20" 
+                                            : "text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"
+                                    )}
+                                >
+                                    {tab}
+                                </button>
+                            ))}
+                        </div>
+
                         <div className="relative">
                             <Search className="absolute left-3 top-2.5 w-4 h-4 text-zinc-500" />
                             <input 
@@ -386,6 +430,20 @@ export function PathologistTerminal() {
                                 <p className="dark:text-zinc-600 text-zinc-400 max-w-xs">
                                     Choose a record from the worklist to start interpretation and signing.
                                 </p>
+                            </div>
+                        ) : (activeTab === 'available' && !isAdmin) ? (
+                            <div className="flex-1 flex flex-col items-center justify-center text-center px-8">
+                                <ShieldAlert className="w-20 h-20 mb-6 text-indigo-500 opacity-20" />
+                                <h3 className="text-xl font-bold dark:text-zinc-200 uppercase tracking-widest">Unclaimed for Verification</h3>
+                                <p className="dark:text-zinc-500 text-zinc-500 max-w-xs text-sm mt-2 mb-8">
+                                    This report is ready for final verification. Please claim it to begin the clinical signing process.
+                                </p>
+                                <button 
+                                    onClick={() => handleClaim(selectedReportId)}
+                                    className="bg-indigo-600 text-white px-12 py-4 rounded-2xl font-black uppercase tracking-widest shadow-xl shadow-indigo-500/20 active:scale-95 transition-all"
+                                >
+                                    Claim for Verification
+                                </button>
                             </div>
                         ) : (
                             <div className="flex flex-col h-full min-h-0">

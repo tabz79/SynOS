@@ -324,21 +324,27 @@ namespace SynOS.Services.EconomicsIntelligence
 
         public async Task<IEnumerable<object>> GetReferralPayablesAsync()
         {
-            return await _context.ReferralPayableFacts
-                .Include(f => f.ReferralPartner)
-                .Where(f => f.SettledAt == null)
-                .OrderByDescending(f => f.RecordedAt)
-                .Select(f => new
-                {
-                    FactId = f.ReferralPayableFactId,
-                    f.ReferralPartnerId,
-                    PartnerName = f.ReferralPartner != null ? f.ReferralPartner.Name : "Unknown Partner",
-                    f.Amount,
-                    Status = f.SettledAt == null ? "Pending" : "Settled",
-                    CreatedAt = f.RecordedAt,
-                    f.Description
-                })
-                .ToListAsync();
+            var query = from f in _context.ReferralPayableFacts
+                        join v in _context.Visits on f.SourceVisitId equals v.VisitId
+                        join p in _context.Patients on v.PatientId equals p.PatientId
+                        where f.SettledAt == null
+                        orderby f.RecordedAt descending
+                        select new
+                        {
+                            factId = f.ReferralPayableFactId,
+                            referralPartnerId = f.ReferralPartnerId,
+                            partnerName = f.ReferralPartner != null ? f.ReferralPartner.Name : "Unknown Partner",
+                            amount = f.Amount - f.AmountPaid,
+                            originalAmount = f.Amount,
+                            amountPaid = f.AmountPaid,
+                            status = f.SettledAt == null ? "Pending" : "Settled",
+                            createdAt = f.RecordedAt,
+                            description = f.Description,
+                            patientName = p.FirstName + " " + p.LastName,
+                            token = v.Token
+                        };
+
+            return await query.ToListAsync();
         }
 
         public async Task<IEnumerable<PartnerReceivableSummaryDto>> GetPartnerReceivablesSummaryAsync()
@@ -426,6 +432,54 @@ namespace SynOS.Services.EconomicsIntelligence
                     Notes = f.Notes ?? string.Empty
                 })
                 .ToListAsync();
+        }
+
+        public async Task<IEnumerable<object>> GetSettlementHistoryAsync(string category = null)
+        {
+            // Combined history from SpendFacts and RevenueFacts
+            var spendHistory = await _context.SpendFacts
+                .AsNoTracking()
+                .Where(f => f.Category == category || category == null)
+                .OrderByDescending(f => f.OccurredAt)
+                .Select(f => new {
+                    FactId = f.SpendFactId,
+                    Direction = "Outflow",
+                    Amount = f.Amount,
+                    Currency = f.Currency,
+                    Category = f.Category,
+                    PayeeName = f.PayeeName,
+                    Notes = f.Notes,
+                    Reference = f.TransactionReference,
+                    RecordedAt = f.RecordedAt,
+                    PaymentMethod = f.PaymentMethod.ToString()
+                })
+                .Take(100)
+                .ToListAsync();
+
+            var revenueHistory = await _context.RevenueFacts
+                .AsNoTracking()
+                .Where(f => f.SourceType == RevenueSourceType.Partner) // Filtering for referral-like revenue
+                .OrderByDescending(f => f.OccurredAt)
+                .Select(f => new {
+                    FactId = f.RevenueFactId,
+                    Direction = "Inflow",
+                    Amount = f.Amount,
+                    Currency = f.Currency,
+                    Category = "Referral Recovery",
+                    PayeeName = "Referral Partner",
+                    Notes = f.Notes,
+                    Reference = f.SourceReferenceId,
+                    RecordedAt = f.DeclaredAt,
+                    PaymentMethod = f.PaymentMode.ToString()
+                })
+                .Take(100)
+                .ToListAsync();
+
+            var combined = spendHistory.Cast<object>().Concat(revenueHistory.Cast<object>())
+                .OrderByDescending(x => (DateTimeOffset)((dynamic)x).RecordedAt)
+                .ToList();
+
+            return combined;
         }
 
         public async Task<IEnumerable<VendorPayableSummaryDto>> GetVendorPayablesSummaryAsync()

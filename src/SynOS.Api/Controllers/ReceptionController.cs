@@ -31,7 +31,7 @@ namespace SynOS.Api.Controllers
         }
 
         [HttpPost("start-visit")]
-        [Authorize(Policy = "OperationalModeOnly")]
+
         public async Task<IActionResult> StartVisit([FromBody] ReceptionStartVisitRequest request)
         {
             try
@@ -60,7 +60,7 @@ namespace SynOS.Api.Controllers
         }
 
         [HttpPost("complete-payment")]
-        [Authorize(Policy = "OperationalModeOnly")]
+
         public async Task<IActionResult> CompletePayment([FromBody] ReceptionCompletePaymentRequest request)
         {
             try
@@ -113,7 +113,7 @@ namespace SynOS.Api.Controllers
             }
         }
         [HttpPost("visit/discount")]
-        [Authorize(Policy = "OperationalModeOnly")]
+
         public async Task<IActionResult> ApplyDiscount([FromBody] ReceptionApplyDiscountRequest request)
         {
             try
@@ -138,7 +138,7 @@ namespace SynOS.Api.Controllers
         }
 
         [HttpDelete("visit/discount")]
-        [Authorize(Policy = "OperationalModeOnly")]
+
         public async Task<IActionResult> RemoveDiscount([FromQuery] Guid visitId)
         {
             try
@@ -156,7 +156,7 @@ namespace SynOS.Api.Controllers
             }
         }
         [HttpPost("visit/test")]
-        [Authorize(Policy = "OperationalModeOnly")]
+
         public async Task<IActionResult> AddTest([FromBody] ReceptionAddTestRequest request)
         {
             try
@@ -181,7 +181,7 @@ namespace SynOS.Api.Controllers
         }
 
         [HttpDelete("visit/test")]
-        [Authorize(Policy = "OperationalModeOnly")]
+
         public async Task<IActionResult> RemoveTest([FromQuery] Guid visitId, [FromQuery] string testCode)
         {
             try
@@ -206,7 +206,7 @@ namespace SynOS.Api.Controllers
         }
 
         [HttpDelete("order")]
-        [Authorize(Policy = "OperationalModeOnly")]
+
         public async Task<IActionResult> RemoveOrder([FromQuery] Guid visitId, [FromQuery] Guid orderId)
         {
             try
@@ -227,7 +227,7 @@ namespace SynOS.Api.Controllers
         }
 
         [HttpPut("visit/referral")]
-        [Authorize(Policy = "OperationalModeOnly")]
+
         public async Task<IActionResult> SetReferral([FromBody] ReceptionUpdateReferralRequest request)
         {
             try
@@ -250,7 +250,7 @@ namespace SynOS.Api.Controllers
 
 
         [HttpPost("visit/referral-draft")]
-        [Authorize(Policy = "OperationalModeOnly")]
+
         public async Task<IActionResult> AddReferralDraft([FromBody] ReceptionAddReferralDraftRequest request)
         {
             try
@@ -270,7 +270,7 @@ namespace SynOS.Api.Controllers
             }
         }
         [HttpPost("referral-draft/resolve")]
-        [Authorize(Policy = "OperationalModeOnly")]
+
         public async Task<IActionResult> ResolveReferralDraft([FromBody] ReceptionResolveReferralDraftRequest request)
         {
             try
@@ -291,7 +291,7 @@ namespace SynOS.Api.Controllers
         }
 
         [HttpPost("visit/reassign")]
-        [Authorize(Policy = "OperationalModeOnly")]
+
         public async Task<IActionResult> ReassignVisit([FromBody] ReceptionReassignVisitRequest request)
         {
             try

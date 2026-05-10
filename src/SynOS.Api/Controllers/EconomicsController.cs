@@ -58,6 +58,13 @@ namespace SynOS.Api.Controllers
             var result = await _economicsService.GetRevenueTrendsAsync(days);
             return Ok(result);
         }
+        
+        [HttpGet("settlement-history")]
+        public async Task<IActionResult> GetSettlementHistory([FromQuery] string category)
+        {
+            var result = await _economicsService.GetSettlementHistoryAsync(category);
+            return Ok(result);
+        }
 
         [HttpGet("partner-receivables-summary")]
         public async Task<IActionResult> GetPartnerReceivablesSummary()

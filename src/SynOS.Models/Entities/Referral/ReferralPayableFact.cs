@@ -26,6 +26,8 @@ namespace SynOS.Models.Entities.Referral
 
         public DateTimeOffset? SettledAt { get; set; } // Mutable settlement status
 
+        public string Status { get; set; } = "Pending"; // Pending, Settled, Disputed
+
         // Navigation
         public virtual ReferralPartner? ReferralPartner { get; set; }
     }

@@ -68,6 +68,11 @@ namespace SynOS.Services.EconomicsIntelligence
         Task<IEnumerable<ExpenseFactDto>> GetExpenseFactsAsync(DateTime start, DateTime end);
 
         /// <summary>
+        /// Retrieves a combined history of outflows (SpendFacts) and inflows (RevenueFacts).
+        /// </summary>
+        Task<IEnumerable<object>> GetSettlementHistoryAsync(string category = null);
+
+        /// <summary>
         /// Retrieves a summary of vendor liabilities grouped by vendor.
         /// </summary>
         Task<IEnumerable<VendorPayableSummaryDto>> GetVendorPayablesSummaryAsync();

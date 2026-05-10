@@ -77,15 +77,33 @@ export function ReceptionScreen() {
                 if (!deltaRow) return;
 
                 const normalized = normalizeQueueData([deltaRow])[0];
-                console.log("SignalR: Action Queue Delta Upsert for", normalized.token);
+                console.log("ReceptionScreen: Delta Received", { 
+                    visitId: normalized.visitId, 
+                    token: normalized.token, 
+                    status: normalized.operationalStatus,
+                    isFinalized: normalized.isFinalized 
+                });
 
                 setActionQueue(prev => {
                     const exists = prev.some(r => r.visitId === normalized.visitId);
+                    
+                    // Filter: If we are in "Live" mode, we only care about:
+                    // 1. Unpaid visits (Backlog)
+                    // 2. Today's visits (Paid or Unpaid)
+                    const isActionable = !normalized.isFinalized || normalized.dateGroup === "Today";
+                    
                     if (exists) {
+                        if (!isActionable && !showHistoryRef.current) {
+                            // It was finalized and it's not from today - remove it from Live view
+                            return prev.filter(r => r.visitId !== normalized.visitId);
+                        }
                         return prev.map(r => r.visitId === normalized.visitId ? normalized : r);
                     } else {
-                        // Unshift to top of queue
-                        return [normalized, ...prev];
+                        // Only add new items if they are actionable or we are in history mode
+                        if (isActionable || showHistoryRef.current) {
+                            return [normalized, ...prev];
+                        }
+                        return prev;
                     }
                 });
             });

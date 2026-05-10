@@ -113,9 +113,9 @@ export function IntentPanel() {
             setSnapshot(data);
 
             // Sync IDs from verified snapshot
-            if (data?.visit?.id) setCurrentVisitId(data.visit.id);
-            if (data?.visit?.visitId) setCurrentVisitId(data.visit.visitId);
-            if (data?.patient?.patientId) setCurrentPatientId(data.patient.patientId);
+            if (data?.visit?.id && data.visit.id !== currentVisitId) setCurrentVisitId(data.visit.id);
+            if (data?.visit?.visitId && data.visit.visitId !== currentVisitId) setCurrentVisitId(data.visit.visitId);
+            if (data?.patient?.patientId && data.patient.patientId !== currentPatientId) setCurrentPatientId(data.patient.patientId);
 
             // Sync intent from backend if locked
             if (data?.billing?.isLocked && data?.visit?.paymentCollectionModel === 'PartnerCollects') {
@@ -133,20 +133,38 @@ export function IntentPanel() {
     useEffect(() => {
         if (!isOpen) return;
 
-        // Wait for IDs to settle if they are being set by Mode effect
-        if ((isResumeIntent || isCorrectionIntent) && !currentVisitId) return;
-
+        // Initial Load
         loadSnapshot();
+
+        // Subscription for Real-time Deltas
         const handleUpdate = (newSnapshot) => {
+            if (!newSnapshot) return;
+
             // Verify relevance (Simple check)
             // If in resume/correct mode, only update if visitId matches
-            if ((isResumeIntent || isCorrectionIntent) && newSnapshot?.visit?.visitId !== currentVisitId) return;
+            const newVisitId = newSnapshot?.visit?.visitId || newSnapshot?.visit?.id;
+            if ((isResumeIntent || isCorrectionIntent) && newVisitId && newVisitId !== currentVisitId) {
+                console.log("IntentPanel: Ignoring update for different visit", { current: currentVisitId, received: newVisitId });
+                return;
+            }
 
             setSnapshot(newSnapshot);
-            if (newSnapshot?.visit?.visitId) setCurrentVisitId(newSnapshot.visit.visitId);
+            
+            // OPTIMIZATION: Only update currentVisitId if it was null (e.g. first load from patientId)
+            // to avoid re-triggering the parent effect unnecessarily.
+            if (newVisitId && !currentVisitId) {
+                setCurrentVisitId(newVisitId);
+            }
         };
+
         SignalRService.onIntakeSnapshotUpdated(handleUpdate);
-    }, [isOpen, currentPatientId, currentVisitId, isResumeIntent, isCorrectionIntent]);
+        
+        return () => {
+            // SignalR Service handles internal off() calls, but we should be clean
+            // Actually, SignalRService.onIntakeSnapshotUpdated calls conn.off() inside.
+        };
+    }, [isOpen, currentPatientId, currentVisitId]); 
+    // Removed isResumeIntent/isCorrectionIntent from deps as they are derived from intent/drawerState which are already tracked via currentVisitId change.
 
     // HANDLERS
     const handleSelectPatient = async (patient) => {
@@ -202,16 +220,16 @@ export function IntentPanel() {
                 return;
             }
 
-            // REMOVED: Extra Dialog as per User Request (Enterprise Speed)
             setIsLoading(true);
             try {
                 await ReceptionApi.markVisitAsPrepaid(snapshot.visit.visitId);
-                // Success handled by snapshot update or close?
-                // User wants "Sliding window changes" (Reset).
-                // Let's reset!
-                handleClearPatient(); // Clears panel state
-                closePanel(); // Closes panel
-                // REMOVED: Alert "Visit Finalized"
+                
+                // CRITICAL: We wait for the API to succeed before closing.
+                // The backend emits VISIT_FINALIZED which updates the snapshot and Action Queue.
+                
+                // CLEAR PANEL STATE
+                handleClearPatient(); 
+                closePanel(); 
             } catch (err) {
                 alert(err.message);
                 setIsLoading(false);
@@ -220,11 +238,11 @@ export function IntentPanel() {
         }
 
         // 2. CHECKOUT (ACCEPT PAYMENT)
-        if (snapshot.billing.paymentStatus === 'PendingPayment' && !snapshot.billing.isLocked) {
+        if (canCheckout && !snapshot.billing.isLocked) {
             setIsLoading(true);
             try {
                 // Default Cash for now as per previous UI -> STAGE 2: Dynamic Method
-                await ReceptionApi.collectPayment(snapshot.visit.visitId, snapshot.billing.netAmount, paymentMethod);
+                await ReceptionApi.collectPayment(snapshot.visit.visitId, remainingDue, paymentMethod);
 
                 // DECOUPLED: Thermal Printing is now completely Event-Driven.
                 // The backend emits 'PrintThermalReceiptEvent' via SignalR, which is 
@@ -232,7 +250,6 @@ export function IntentPanel() {
 
                 handleClearPatient();
                 closePanel();
-                // REMOVED: Alert "Payment Collected"
             } catch (err) {
                 alert(err.message);
                 setIsLoading(false);
@@ -252,10 +269,15 @@ export function IntentPanel() {
 
     const hasPatient = !!snapshot?.patient;
     const hasVisit = !!snapshot?.visit;
-    // Footer Logic Calculation
-    const canCheckout = snapshot?.billing?.paymentStatus === 'PendingPayment' && snapshot?.billing?.netAmount > 0;
+    
+    // Derived Financial Logic
+    const totalDue = snapshot?.billing?.netAmount || 0;
+    const totalPaid = snapshot?.billing?.totalPaid || 0;
+    const remainingDue = Math.max(0, totalDue - totalPaid);
+    
+    const canCheckout = (snapshot?.billing?.paymentStatus === 'PendingPayment' || snapshot?.billing?.paymentStatus === 'PartialPayment') && remainingDue > 0;
     const canLockPrepaid = isPrepaidIntent && !snapshot?.billing?.isLocked;
-    const isVisitFinalized = snapshot?.billing?.paymentStatus === 'Paid';
+    const isVisitFinalized = snapshot?.billing?.paymentStatus === 'Paid' || (remainingDue <= 0 && totalDue > 0);
 
     // Determine Button Label & State
     let mainActionLabel = "Identify Patient & Start Visit";
@@ -274,7 +296,7 @@ export function IntentPanel() {
             // RELAXED RULE: Partner OR Draft
             isActionEnabled = Boolean(snapshot?.billing?.referral?.partner || snapshot?.billing?.referral?.draft);
         } else if (canCheckout) {
-            mainActionLabel = `Accept Payment (₹${snapshot.billing.netAmount})`;
+            mainActionLabel = `Accept Payment (₹${remainingDue})`;
             isActionEnabled = true;
         } else {
             mainActionLabel = "Add Tests to Proceed";

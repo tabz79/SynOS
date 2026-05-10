@@ -30,7 +30,6 @@ export function AuthProvider({ children }) {
                         role: decoded.role || decoded["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"],
                         branchId: decoded.branch_id || decoded.branchId,
                         branchName: decoded.branch_name || "Unknown Branch",
-                        sessionMode: decoded.session_mode || "operational", 
                         departmentCode: decoded.department_code || "General",
                         resourceId: decoded.resource_id || decoded.resourceId,
                         roleId: decoded.roleId || decoded.RoleId,
@@ -59,11 +58,11 @@ export function AuthProvider({ children }) {
         };
     }, [token]);
 
-    const login = async (email, password, preferredMode = null, branchId = null) => {
+    const login = async (email, password, branchId = null) => {
         const response = await fetch('/api/v1/auth/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, password, preferredMode, branchId }),
+            body: JSON.stringify({ email, password, branchId }),
         });
 
         if (!response.ok) {
@@ -74,7 +73,7 @@ export function AuthProvider({ children }) {
         const data = await response.json();
 
         // If the server requires more info, return the data to the caller (LoginPage)
-        if (data.requiresModeSelection || data.requiresBranchSelection) {
+        if (data.requiresBranchSelection) {
             return data;
         }
 
@@ -92,7 +91,6 @@ export function AuthProvider({ children }) {
                 role: decoded.role || decoded["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"],
                 branchId: decoded.branch_id || decoded.branchId,
                 branchName: decoded.branch_name || "Unknown Branch",
-                sessionMode: decoded.session_mode || "operational",
                 departmentCode: decoded.department_code || "General",
                 resourceId: decoded.resource_id || decoded.resourceId,
                 roleId: decoded.roleId || decoded.RoleId,

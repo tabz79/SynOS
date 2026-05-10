@@ -16,5 +16,6 @@ namespace SynOS.Services
         Task MarkReportAsDeliveredAsync(Guid orderId);
         Task<ReportDataModel?> GetReportDataForPdfAsync(Guid reportId, bool forceLive = false);
         Task<IEnumerable<ReportListItemDto>> GetReportsByStatusAsync(string status, bool excludeManualFlow = false);
+        Task ClaimReportAsync(Guid reportId, Guid userId); // NEW: Supports Pool Pattern
     }
 }

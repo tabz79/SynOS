@@ -7,8 +7,11 @@ export function RoleTakeoverBanner({ roleName }) {
     const navigate = useNavigate();
     const { user } = useAuth();
 
+    const isAdmin = user?.role === 'Admin' || user?.role === 'SystemAdmin' || 
+                   (Array.isArray(user?.role) && (user.role.includes('Admin') || user.role.includes('SystemAdmin')));
+
     // Only show if the user is an Admin acting in an operational role
-    if (!user || (Array.isArray(user.role) ? !user.role.includes('Admin') : user.role !== 'Admin')) {
+    if (!user || !isAdmin) {
         return null;
     }
 

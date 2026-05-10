@@ -102,7 +102,7 @@ namespace SynOS.Api.Controllers
         }
 
         [HttpPost("status")]
-        [Authorize(Policy = "OperationalModeOnly")]
+        
         public async Task<IActionResult> UpdateStatus([FromBody] UpdateStatusRequest request)
         {
             var userId = _userContext.CurrentUserId;
