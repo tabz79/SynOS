@@ -13,6 +13,9 @@ namespace SynOS.Models.Enums
         InPhlebotomy,
         InLab,
         Completed,
-        Finalized
+        Finalized,
+        Refunded,
+        Reversed,
+        Voided
     }
 }

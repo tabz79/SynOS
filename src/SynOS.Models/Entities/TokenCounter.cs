@@ -18,7 +18,10 @@ namespace SynOS.Models.Entities
 
         [Required]
         [StringLength(1)]
-        public string SeriesLetter { get; set; } = "A";
+        public Guid? BranchId { get; set; }
+
+        [StringLength(5)]
+        public string? Prefix { get; set; }
 
         public int LastNumber { get; set; } = 0;
 

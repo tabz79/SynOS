@@ -1,4 +1,5 @@
 using AutoMapper;
+using Microsoft.Extensions.Logging;
 using Microsoft.EntityFrameworkCore;
 using SynOS.Data;
 using SynOS.Models.DTOs.Admin.Referral;
@@ -6,6 +7,7 @@ using SynOS.Models.Entities.Referral;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using SynOS.Models.Enums.Referral;
 
 namespace SynOS.Services.Referral
 {
@@ -13,13 +15,22 @@ namespace SynOS.Services.Referral
     {
         private readonly SynOSDbContext _context;
         private readonly IMapper _mapper;
-        private readonly IAuditService _auditService; // ADDED
+        private readonly IAuditService _auditService;
+        private readonly IReferralFinancialService _referralFinancialService;
+        private readonly ILogger<ReferralPartnerService> _logger;
 
-        public ReferralPartnerService(SynOSDbContext context, IMapper mapper, IAuditService auditService)
+        public ReferralPartnerService(
+            SynOSDbContext context, 
+            IMapper mapper, 
+            IAuditService auditService,
+            IReferralFinancialService referralFinancialService,
+            ILogger<ReferralPartnerService> logger)
         {
             _context = context;
             _mapper = mapper;
             _auditService = auditService;
+            _referralFinancialService = referralFinancialService;
+            _logger = logger;
         }
 
         // Updated signature to accept userId? Or inject UserContext? 
@@ -30,13 +41,6 @@ namespace SynOS.Services.Referral
         
         // I will update Interface separately. For now, assuming interface matches or I update it.
         
-        public async Task<ReferralPartnerReadDto> CreateReferralPartnerAsync(ReferralPartnerCreateDto createDto)
-        {
-            // Note: Caller (Controller) should pass userId ideally, but for now passing Guid.Empty if not provided in interface
-            // Actually, I will overload or change interface. Let's change interface first.
-            throw new NotImplementedException("Use the overload with userId");
-        }
-        
         public async Task<ReferralPartnerReadDto> CreateReferralPartnerAsync(ReferralPartnerCreateDto createDto, Guid userId)
         {
             var existingPartner = await _context.ReferralPartners.FirstOrDefaultAsync(p => p.Name == createDto.Name);
@@ -46,7 +50,9 @@ namespace SynOS.Services.Referral
             }
 
             var partner = _mapper.Map<ReferralPartner>(createDto);
-            partner.ReferralPartnerId = Guid.NewGuid(); // Ensure ID
+            partner.ReferralPartnerId = Guid.NewGuid();
+            partner.Status = PartnerStatus.Active; // Direct creation is Active
+            partner.IsActive = true;
             partner.CreatedAt = DateTimeOffset.UtcNow;
             partner.UpdatedAt = DateTimeOffset.UtcNow;
 
@@ -58,9 +64,80 @@ namespace SynOS.Services.Referral
             return _mapper.Map<ReferralPartnerReadDto>(partner);
         }
 
+        public async Task<ReferralPartnerReadDto> CreateDraftPartnerAsync(ReferralPartnerCreateDto createDto, Guid userId)
+        {
+            var existingPartner = await _context.ReferralPartners.FirstOrDefaultAsync(p => p.Name == createDto.Name);
+            if (existingPartner != null) return _mapper.Map<ReferralPartnerReadDto>(existingPartner);
+
+            var partner = _mapper.Map<ReferralPartner>(createDto);
+            partner.ReferralPartnerId = Guid.NewGuid();
+            partner.Status = PartnerStatus.Draft;
+            partner.IsActive = false;
+            partner.CreatedAt = DateTimeOffset.UtcNow;
+            partner.UpdatedAt = DateTimeOffset.UtcNow;
+
+            _context.ReferralPartners.Add(partner);
+            await _context.SaveChangesAsync();
+
+            await _auditService.LogAsync(userId, "CreateReferralPartnerDraft", "ReferralPartner", partner.ReferralPartnerId, createDto);
+
+            return _mapper.Map<ReferralPartnerReadDto>(partner);
+        }
+
+        public async Task ApprovePartnerAsync(Guid partnerId, decimal commissionPercentage, Guid userId)
+        {
+            var partner = await _context.ReferralPartners.FirstOrDefaultAsync(p => p.ReferralPartnerId == partnerId);
+            if (partner == null) throw new KeyNotFoundException("Partner not found");
+
+            if (partner.Status != PartnerStatus.Draft)
+            {
+                throw new InvalidOperationException("Only draft partners can be approved.");
+            }
+
+            partner.Status = PartnerStatus.Active;
+            partner.IsActive = true;
+            partner.DefaultCommissionPercentage = commissionPercentage;
+            partner.ApprovedByUserId = userId;
+            partner.ApprovedAt = DateTimeOffset.UtcNow;
+            partner.UpdatedAt = DateTimeOffset.UtcNow;
+
+            // Trigger Backfill Engine
+            // Note: We'll need to inject IReferralFinancialService
+            // For now, assume it's injected or we add it to constructor.
+            // I'll update the constructor in the next chunk.
+            await _referralFinancialService.ProcessRetroactiveCommissionsAsync(partnerId, commissionPercentage, userId);
+
+            await _context.SaveChangesAsync();
+            await _auditService.LogAsync(userId, "ApproveReferralPartner", "ReferralPartner", partnerId, new { Commission = commissionPercentage });
+        }
+
         public async Task<IEnumerable<ReferralPartnerReadDto>> GetAllReferralPartnersAsync()
         {
-            var partners = await _context.ReferralPartners.AsNoTracking().ToListAsync();
+            var partners = await _context.ReferralPartners.ToListAsync();
+            
+            // LEGACY & CONSISTENCY SYNC: 
+            // 1. If IsActive is true but Status is Draft (legacy default), promote to Active.
+            // 2. Ensure IsActive matches the Status (Active = true, others = false).
+            var needsSync = partners.Where(p => 
+                (p.IsActive && p.Status == PartnerStatus.Draft) || 
+                (p.Status == PartnerStatus.Active && !p.IsActive) ||
+                (p.Status != PartnerStatus.Active && p.IsActive)
+            ).ToList();
+
+            if (needsSync.Any())
+            {
+                foreach (var p in needsSync)
+                {
+                    if (p.IsActive && p.Status == PartnerStatus.Draft) p.Status = PartnerStatus.Active;
+                    
+                    // Sync IsActive boolean for backward compatibility
+                    p.IsActive = (p.Status == PartnerStatus.Active);
+                    p.UpdatedAt = DateTimeOffset.UtcNow;
+                }
+                await _context.SaveChangesAsync();
+                _logger.LogInformation("Synced {Count} referral partners for state consistency.", needsSync.Count);
+            }
+
             return _mapper.Map<IEnumerable<ReferralPartnerReadDto>>(partners);
         }
 
@@ -72,11 +149,6 @@ namespace SynOS.Services.Referral
                 throw new KeyNotFoundException($"Referral partner with ID '{id}' not found.");
             }
             return _mapper.Map<ReferralPartnerReadDto>(partner);
-        }
-
-        public async Task<ReferralPartnerReadDto> UpdateReferralPartnerAsync(Guid id, ReferralPartnerUpdateDto updateDto)
-        {
-             throw new NotImplementedException("Use the overload with userId");
         }
 
         public async Task<ReferralPartnerReadDto> UpdateReferralPartnerAsync(Guid id, ReferralPartnerUpdateDto updateDto, Guid userId)
@@ -93,18 +165,23 @@ namespace SynOS.Services.Referral
                 throw new InvalidOperationException($"A referral partner with the name '{updateDto.Name}' already exists.");
             }
 
-            // Capture old state for audit if PaymentCollectionModel changes
-            var oldModel = partner.PaymentCollectionModel;
-
             _mapper.Map(updateDto, partner);
+            
+            // Sync Status based on IsActive if Status wasn't explicitly provided in DTO 
+            // (or just enforce consistency based on the update DTO's IsActive flag)
+            if (partner.IsActive && partner.Status != PartnerStatus.Active && partner.Status != PartnerStatus.Draft)
+            {
+                partner.Status = PartnerStatus.Active;
+            }
+            else if (!partner.IsActive && partner.Status == PartnerStatus.Active)
+            {
+                partner.Status = PartnerStatus.Suspended;
+            }
+
             partner.UpdatedAt = DateTimeOffset.UtcNow;
             await _context.SaveChangesAsync();
 
-            await _auditService.LogAsync(userId, "UpdateReferralPartner", "ReferralPartner", id, new { 
-                Update = updateDto, 
-                OldModel = oldModel, 
-                NewModel = partner.PaymentCollectionModel 
-            });
+            await _auditService.LogAsync(userId, "UpdateReferralPartner", "ReferralPartner", id, updateDto);
 
             return _mapper.Map<ReferralPartnerReadDto>(partner);
         }
@@ -114,11 +191,12 @@ namespace SynOS.Services.Referral
             var partner = await _context.ReferralPartners.FirstOrDefaultAsync(p => p.ReferralPartnerId == id);
             if (partner == null) throw new KeyNotFoundException("Partner not found");
 
+            partner.Status = PartnerStatus.Suspended;
             partner.IsActive = false;
             partner.UpdatedAt = DateTimeOffset.UtcNow;
             await _context.SaveChangesAsync();
 
-            await _auditService.LogAsync(userId, "DeactivateReferralPartner", "ReferralPartner", id, new { Active = false });
+            await _auditService.LogAsync(userId, "SuspendReferralPartner", "ReferralPartner", id, new { Active = false });
         }
 
         public async Task<ReferralSummaryDto> GetReferralSummaryAsync()
@@ -130,7 +208,7 @@ namespace SynOS.Services.Referral
                 .SumAsync(f => (decimal?)(f.Amount - f.AmountPaid)) ?? 0m;
 
             var totalActivePartners = await _context.ReferralPartners
-                .CountAsync(p => p.IsActive);
+                .CountAsync(p => p.Status == PartnerStatus.Active);
 
             var totalPendingReceivables = await _context.ReceivableFacts
                 .Where(f => f.SettledAt == null)

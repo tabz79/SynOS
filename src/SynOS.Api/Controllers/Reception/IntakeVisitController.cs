@@ -78,7 +78,7 @@ namespace SynOS.Api.Controllers.Reception
             try
             {
                 var userId = GetCurrentUserId();
-                await _service.UpdateVisitReferrerTextAsync(request.VisitId, request.ReferrerText, userId);
+                await _service.UpdateReferrerTextAsync(request.VisitId, request.ReferrerText, userId);
                 return Ok();
             }
             catch (System.Collections.Generic.KeyNotFoundException ex)

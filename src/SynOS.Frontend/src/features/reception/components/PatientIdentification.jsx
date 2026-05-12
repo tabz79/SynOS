@@ -218,8 +218,10 @@ export function PatientIdentification({ snapshot, onSelectPatient, onClearPatien
                     </div>
 
                     <RegisterFormInline
-                        onSuccess={(pid, data) => {
-                            onSelectPatient({ ...data, id: pid, mobile: data.mobile }); // Ensure mobile mapping
+                        initialMobile={searchQuery}
+                        onSuccess={(result, data) => {
+                            // Ensure MRN and other metadata from backend are preserved
+                            onSelectPatient({ ...data, ...result, id: result.patientId }); 
                             setIsNewPatientMode(false);
                         }}
                     />
@@ -230,8 +232,8 @@ export function PatientIdentification({ snapshot, onSelectPatient, onClearPatien
 }
 
 
-function RegisterFormInline({ onSuccess, onCancel }) {
-    const [formData, setFormData] = useState({ name: '', mobile: '', age: '', gender: 'Male' });
+function RegisterFormInline({ onSuccess, onCancel, initialMobile = '' }) {
+    const [formData, setFormData] = useState({ name: '', mobile: initialMobile, age: '', gender: 'Male' });
     const [error, setError] = useState(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const { theme } = useTheme();
@@ -270,7 +272,7 @@ function RegisterFormInline({ onSuccess, onCancel }) {
         try {
             const result = await ReceptionApi.registerPatient(formData);
             if (result && result.patientId) {
-                onSuccess(result.patientId, formData);
+                onSuccess(result, formData);
             }
         } catch (err) {
             setError(err.message);

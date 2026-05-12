@@ -1,24 +1,40 @@
-console logs:
-react-dom_client.js?v=8e8c482c:20103 Download the React DevTools for a better development experience: https://react.dev/link/react-devtools
-finance.js:214  GET http://localhost:5173/api/v1/economics/expense-facts?start=2026-04-08T13:32:30.941Z&end=2026-05-08T13:32:30.941Z 500 (Internal Server Error)
-(anonymous) @ finance.js:214
-(anonymous) @ ExpenseScreens.jsx:82
-(anonymous) @ ExpenseScreens.jsx:70
+console logs: react-dom_client.js?v=8e8c482c:20103 Download the React DevTools for a better development experience: https://react.dev/link/react-devtools
+signalr.js:19 [2026-05-11T07:07:49.115Z] Information: Normalizing '/dashboardHub' to 'http://localhost:5173/dashboardHub'.
+signalr.js:31 SignalR: Subscriber added (Total: 1)
+signalr.js:52 SignalR: Starting connection...
+signalr.js:218 SignalR(Branch): Subscriber added (Total: 1)
+signalr.js:211 [2026-05-11T07:07:49.131Z] Information: Normalizing '/branchOperationsHub' to 'http://localhost:5173/branchOperationsHub'.
+signalr.js:239 SignalR(Branch): Starting connection...
+signalr.js:298 SignalR(Branch): Subscriber removed (Total: 0)
+signalr.js:166 SignalR: Subscriber removed (Total: 0)
+signalr.js:31 SignalR: Subscriber added (Total: 1)
+signalr.js:36 SignalR: Aborted scheduled disconnect
+signalr.js:218 SignalR(Branch): Subscriber added (Total: 1)
+signalr.js:223 SignalR(Branch): Aborted scheduled disconnect
+@microsoft_signalr.js?v=8e8c482c:301 [2026-05-11T07:07:49.315Z] Information: WebSocket connected to ws://localhost:5173/dashboardHub?access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiI3MjE5ODVjNy1iYmFlLTQzNjgtYTk1OC04YjcyNDA4MmY1MzIiLCJlbWFpbCI6ImFkbWluQHN5bm9zLmNvbSIsInVuaXF1ZV9uYW1lIjoiU3lzdGVtIEFkbWluIiwic2Vzc2lvbl9tb2RlIjoib3BlcmF0aW9uYWwiLCJzZXNzaW9uX2lkIjoiZjc3MDNiM2ItZTE5Yy00YTg1LWJkZTUtN2RmMDMzM2E4ZDk2IiwiZGVwYXJ0bWVudF9jb2RlIjoiR2VuZXJhbCIsInJvbGUiOiJBZG1pbiIsIlJvbGVJZCI6ImM4Y2UyNTJlLTQyM2YtNDc4YS1hMWUzLTgwNjc1Y2FlZWUwOCIsImJyYW5jaF9pZCI6ImEwMDAwMDAwLTAwMDAtMDAwMC0wMDAwLTAwMDAwMDAwMDAwMSIsInJlc291cmNlX2lkIjoiZjc2MDg3OTktNDYzNy00NzM0LWE2NjUtM2M1YzkzZWMzOGIwIiwiYnJhbmNoX25hbWUiOiJNYWluIExhYm9yYXRvcnkiLCJuYmYiOjE3Nzg0ODMxODAsImV4cCI6MTc3ODU2OTU4MCwiaWF0IjoxNzc4NDgzMTgwLCJpc3MiOiJTeW5PUy5BcGkiLCJhdWQiOiJTeW5PUy5BcHAifQ.nPgpdMwxMUqOa_OsR06yaiIi6tlvfFgpy7tp8uM6DCA.
+@microsoft_signalr.js?v=8e8c482c:301 [2026-05-11T07:07:49.316Z] Information: Using HubProtocol 'json'.
+@microsoft_signalr.js?v=8e8c482c:301 [2026-05-11T07:07:49.608Z] Information: WebSocket connected to ws://localhost:5173/branchOperationsHub?access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiI3MjE5ODVjNy1iYmFlLTQzNjgtYTk1OC04YjcyNDA4MmY1MzIiLCJlbWFpbCI6ImFkbWluQHN5bm9zLmNvbSIsInVuaXF1ZV9uYW1lIjoiU3lzdGVtIEFkbWluIiwic2Vzc2lvbl9tb2RlIjoib3BlcmF0aW9uYWwiLCJzZXNzaW9uX2lkIjoiZjc3MDNiM2ItZTE5Yy00YTg1LWJkZTUtN2RmMDMzM2E4ZDk2IiwiZGVwYXJ0bWVudF9jb2RlIjoiR2VuZXJhbCIsInJvbGUiOiJBZG1pbiIsIlJvbGVJZCI6ImM4Y2UyNTJlLTQyM2YtNDc4YS1hMWUzLTgwNjc1Y2FlZWUwOCIsImJyYW5jaF9pZCI6ImEwMDAwMDAwLTAwMDAtMDAwMC0wMDAwLTAwMDAwMDAwMDAwMSIsInJlc291cmNlX2lkIjoiZjc2MDg3OTktNDYzNy00NzM0LWE2NjUtM2M1YzkzZWMzOGIwIiwiYnJhbmNoX25hbWUiOiJNYWluIExhYm9yYXRvcnkiLCJuYmYiOjE3Nzg0ODMxODAsImV4cCI6MTc3ODU2OTU4MCwiaWF0IjoxNzc4NDgzMTgwLCJpc3MiOiJTeW5PUy5BcGkiLCJhdWQiOiJTeW5PUy5BcHAifQ.nPgpdMwxMUqOa_OsR06yaiIi6tlvfFgpy7tp8uM6DCA.
+@microsoft_signalr.js?v=8e8c482c:301 [2026-05-11T07:07:49.611Z] Information: Using HubProtocol 'json'.
+signalr.js:141 SignalR: ReceiveServerTime received 2026-05-11T07:07:49.4616517Z
+signalr.js:55 SignalR: Connected to /dashboardHub
+signalr.js:242 SignalR(Branch): Connected to /branchOperationsHub
+reception.js:307 DEBUG: Activity Stream Payload: []
+reception.js:307 DEBUG: Activity Stream Payload: []
+@microsoft_signalr.js?v=8e8c482c:298 [2026-05-11T07:07:51.089Z] Warning: No client method with the name 'capabilityregistered' found.
+log @ @microsoft_signalr.js?v=8e8c482c:298
+_invokeClientMethod @ @microsoft_signalr.js?v=8e8c482c:1374
+_processIncomingData @ @microsoft_signalr.js?v=8e8c482c:1264
+connection.onreceive @ @microsoft_signalr.js?v=8e8c482c:914
+webSocket.onmessage @ @microsoft_signalr.js?v=8e8c482c:2092
+reception.js:270  GET http://localhost:5173/api/v1/branch/action-queue?branchId=a0000000-0000-0000-0000-000000000001 500 (Internal Server Error)
+(anonymous) @ reception.js:270
+$RefreshSig$ @ ReceptionScreen.jsx:50
+$RefreshSig$ @ ReceptionScreen.jsx:65
 react_stack_bottom_frame @ react-dom_client.js?v=8e8c482c:18567
 runWithFiberInDEV @ react-dom_client.js?v=8e8c482c:997
 commitHookEffectListMount @ react-dom_client.js?v=8e8c482c:9411
 commitHookPassiveMountEffects @ react-dom_client.js?v=8e8c482c:9465
 commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11040
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
 recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
 commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
 recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
@@ -74,9 +90,9 @@ commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11066
 flushPassiveEffects @ react-dom_client.js?v=8e8c482c:13150
 (anonymous) @ react-dom_client.js?v=8e8c482c:12776
 performWorkUntilDeadline @ react-dom_client.js?v=8e8c482c:36
-<ExpenseFeedScreen>
+<ReceptionScreen>
 exports.jsxDEV @ react_jsx-dev-runtime.js?v=8e8c482c:247
-App @ App.jsx:170
+App @ App.jsx:100
 react_stack_bottom_frame @ react-dom_client.js?v=8e8c482c:18509
 renderWithHooksAgain @ react-dom_client.js?v=8e8c482c:5729
 renderWithHooks @ react-dom_client.js?v=8e8c482c:5665
@@ -92,28 +108,16 @@ performWorkUntilDeadline @ react-dom_client.js?v=8e8c482c:36
 <App>
 exports.jsxDEV @ react_jsx-dev-runtime.js?v=8e8c482c:247
 (anonymous) @ main.jsx:10
-ExpenseScreens.jsx:89 Failed to load expense feed: Error: Failed to load expense feed
-    at Object.getExpenseFeed (finance.js:217:33)
-    at async Promise.all (index 0)
-    at async loadData (ExpenseScreens.jsx:81:44)
-(anonymous) @ ExpenseScreens.jsx:89
+reception.js:275 Action Queue Fetch Failed: 500
+(anonymous) @ reception.js:275
 await in (anonymous)
-(anonymous) @ ExpenseScreens.jsx:70
+$RefreshSig$ @ ReceptionScreen.jsx:50
+$RefreshSig$ @ ReceptionScreen.jsx:65
 react_stack_bottom_frame @ react-dom_client.js?v=8e8c482c:18567
 runWithFiberInDEV @ react-dom_client.js?v=8e8c482c:997
 commitHookEffectListMount @ react-dom_client.js?v=8e8c482c:9411
 commitHookPassiveMountEffects @ react-dom_client.js?v=8e8c482c:9465
 commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11040
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
 recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
 commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
 recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
@@ -169,9 +173,9 @@ commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11066
 flushPassiveEffects @ react-dom_client.js?v=8e8c482c:13150
 (anonymous) @ react-dom_client.js?v=8e8c482c:12776
 performWorkUntilDeadline @ react-dom_client.js?v=8e8c482c:36
-<ExpenseFeedScreen>
+<ReceptionScreen>
 exports.jsxDEV @ react_jsx-dev-runtime.js?v=8e8c482c:247
-App @ App.jsx:170
+App @ App.jsx:100
 react_stack_bottom_frame @ react-dom_client.js?v=8e8c482c:18509
 renderWithHooksAgain @ react-dom_client.js?v=8e8c482c:5729
 renderWithHooks @ react-dom_client.js?v=8e8c482c:5665
@@ -187,287 +191,15 @@ performWorkUntilDeadline @ react-dom_client.js?v=8e8c482c:36
 <App>
 exports.jsxDEV @ react_jsx-dev-runtime.js?v=8e8c482c:247
 (anonymous) @ main.jsx:10
-finance.js:214  GET http://localhost:5173/api/v1/economics/expense-facts?start=2026-04-08T13:32:30.949Z&end=2026-05-08T13:32:30.949Z 500 (Internal Server Error)
-(anonymous) @ finance.js:214
-(anonymous) @ ExpenseScreens.jsx:82
-(anonymous) @ ExpenseScreens.jsx:70
-react_stack_bottom_frame @ react-dom_client.js?v=8e8c482c:18567
-runWithFiberInDEV @ react-dom_client.js?v=8e8c482c:997
-commitHookEffectListMount @ react-dom_client.js?v=8e8c482c:9411
-commitHookPassiveMountEffects @ react-dom_client.js?v=8e8c482c:9465
-reconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11273
-doubleInvokeEffectsOnFiber @ react-dom_client.js?v=8e8c482c:13339
-runWithFiberInDEV @ react-dom_client.js?v=8e8c482c:997
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13312
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-commitDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13347
-flushPassiveEffects @ react-dom_client.js?v=8e8c482c:13157
-(anonymous) @ react-dom_client.js?v=8e8c482c:12776
-performWorkUntilDeadline @ react-dom_client.js?v=8e8c482c:36
-<ExpenseFeedScreen>
-exports.jsxDEV @ react_jsx-dev-runtime.js?v=8e8c482c:247
-App @ App.jsx:170
-react_stack_bottom_frame @ react-dom_client.js?v=8e8c482c:18509
-renderWithHooksAgain @ react-dom_client.js?v=8e8c482c:5729
-renderWithHooks @ react-dom_client.js?v=8e8c482c:5665
-updateFunctionComponent @ react-dom_client.js?v=8e8c482c:7475
-beginWork @ react-dom_client.js?v=8e8c482c:8525
-runWithFiberInDEV @ react-dom_client.js?v=8e8c482c:997
-performUnitOfWork @ react-dom_client.js?v=8e8c482c:12561
-workLoopSync @ react-dom_client.js?v=8e8c482c:12424
-renderRootSync @ react-dom_client.js?v=8e8c482c:12408
-performWorkOnRoot @ react-dom_client.js?v=8e8c482c:11766
-performWorkOnRootViaSchedulerTask @ react-dom_client.js?v=8e8c482c:13505
-performWorkUntilDeadline @ react-dom_client.js?v=8e8c482c:36
-<App>
-exports.jsxDEV @ react_jsx-dev-runtime.js?v=8e8c482c:247
-(anonymous) @ main.jsx:10
-ExpenseScreens.jsx:89 Failed to load expense feed: Error: Failed to load expense feed
-    at Object.getExpenseFeed (finance.js:217:33)
-    at async Promise.all (index 0)
-    at async loadData (ExpenseScreens.jsx:81:44)
-(anonymous) @ ExpenseScreens.jsx:89
-await in (anonymous)
-(anonymous) @ ExpenseScreens.jsx:70
-react_stack_bottom_frame @ react-dom_client.js?v=8e8c482c:18567
-runWithFiberInDEV @ react-dom_client.js?v=8e8c482c:997
-commitHookEffectListMount @ react-dom_client.js?v=8e8c482c:9411
-commitHookPassiveMountEffects @ react-dom_client.js?v=8e8c482c:9465
-reconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11273
-doubleInvokeEffectsOnFiber @ react-dom_client.js?v=8e8c482c:13339
-runWithFiberInDEV @ react-dom_client.js?v=8e8c482c:997
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13312
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-commitDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13347
-flushPassiveEffects @ react-dom_client.js?v=8e8c482c:13157
-(anonymous) @ react-dom_client.js?v=8e8c482c:12776
-performWorkUntilDeadline @ react-dom_client.js?v=8e8c482c:36
-<ExpenseFeedScreen>
-exports.jsxDEV @ react_jsx-dev-runtime.js?v=8e8c482c:247
-App @ App.jsx:170
-react_stack_bottom_frame @ react-dom_client.js?v=8e8c482c:18509
-renderWithHooksAgain @ react-dom_client.js?v=8e8c482c:5729
-renderWithHooks @ react-dom_client.js?v=8e8c482c:5665
-updateFunctionComponent @ react-dom_client.js?v=8e8c482c:7475
-beginWork @ react-dom_client.js?v=8e8c482c:8525
-runWithFiberInDEV @ react-dom_client.js?v=8e8c482c:997
-performUnitOfWork @ react-dom_client.js?v=8e8c482c:12561
-workLoopSync @ react-dom_client.js?v=8e8c482c:12424
-renderRootSync @ react-dom_client.js?v=8e8c482c:12408
-performWorkOnRoot @ react-dom_client.js?v=8e8c482c:11766
-performWorkOnRootViaSchedulerTask @ react-dom_client.js?v=8e8c482c:13505
-performWorkUntilDeadline @ react-dom_client.js?v=8e8c482c:36
-<App>
-exports.jsxDEV @ react_jsx-dev-runtime.js?v=8e8c482c:247
-(anonymous) @ main.jsx:10
-finance.js:214  GET http://localhost:5173/api/v1/economics/expense-facts?start=2026-04-08T13:32:33.296Z&end=2026-05-08T13:32:33.296Z 500 (Internal Server Error)
-(anonymous) @ finance.js:214
-(anonymous) @ ExpenseScreens.jsx:82
-(anonymous) @ ExpenseScreens.jsx:70
-react_stack_bottom_frame @ react-dom_client.js?v=8e8c482c:18567
-runWithFiberInDEV @ react-dom_client.js?v=8e8c482c:997
-commitHookEffectListMount @ react-dom_client.js?v=8e8c482c:9411
-commitHookPassiveMountEffects @ react-dom_client.js?v=8e8c482c:9465
-reconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11273
-doubleInvokeEffectsOnFiber @ react-dom_client.js?v=8e8c482c:13339
-runWithFiberInDEV @ react-dom_client.js?v=8e8c482c:997
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13312
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-commitDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13347
-flushPassiveEffects @ react-dom_client.js?v=8e8c482c:13157
-(anonymous) @ react-dom_client.js?v=8e8c482c:12776
-performWorkUntilDeadline @ react-dom_client.js?v=8e8c482c:36
-<ExpenseFeedScreen>
-exports.jsxDEV @ react_jsx-dev-runtime.js?v=8e8c482c:247
-App @ App.jsx:170
-react_stack_bottom_frame @ react-dom_client.js?v=8e8c482c:18509
-renderWithHooksAgain @ react-dom_client.js?v=8e8c482c:5729
-renderWithHooks @ react-dom_client.js?v=8e8c482c:5665
-updateFunctionComponent @ react-dom_client.js?v=8e8c482c:7475
-beginWork @ react-dom_client.js?v=8e8c482c:8525
-runWithFiberInDEV @ react-dom_client.js?v=8e8c482c:997
-performUnitOfWork @ react-dom_client.js?v=8e8c482c:12561
-workLoopSync @ react-dom_client.js?v=8e8c482c:12424
-renderRootSync @ react-dom_client.js?v=8e8c482c:12408
-performWorkOnRoot @ react-dom_client.js?v=8e8c482c:11766
-performWorkOnRootViaSchedulerTask @ react-dom_client.js?v=8e8c482c:13505
-performWorkUntilDeadline @ react-dom_client.js?v=8e8c482c:36
-<App>
-exports.jsxDEV @ react_jsx-dev-runtime.js?v=8e8c482c:247
-(anonymous) @ main.jsx:10
-ExpenseScreens.jsx:89 Failed to load expense feed: Error: Failed to load expense feed
-    at Object.getExpenseFeed (finance.js:217:33)
-    at async Promise.all (index 0)
-    at async loadData (ExpenseScreens.jsx:81:44)
-(anonymous) @ ExpenseScreens.jsx:89
-await in (anonymous)
-(anonymous) @ ExpenseScreens.jsx:70
-react_stack_bottom_frame @ react-dom_client.js?v=8e8c482c:18567
-runWithFiberInDEV @ react-dom_client.js?v=8e8c482c:997
-commitHookEffectListMount @ react-dom_client.js?v=8e8c482c:9411
-commitHookPassiveMountEffects @ react-dom_client.js?v=8e8c482c:9465
-reconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11273
-doubleInvokeEffectsOnFiber @ react-dom_client.js?v=8e8c482c:13339
-runWithFiberInDEV @ react-dom_client.js?v=8e8c482c:997
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13312
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
-commitDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13347
-flushPassiveEffects @ react-dom_client.js?v=8e8c482c:13157
-(anonymous) @ react-dom_client.js?v=8e8c482c:12776
-performWorkUntilDeadline @ react-dom_client.js?v=8e8c482c:36
-<ExpenseFeedScreen>
-exports.jsxDEV @ react_jsx-dev-runtime.js?v=8e8c482c:247
-App @ App.jsx:170
-react_stack_bottom_frame @ react-dom_client.js?v=8e8c482c:18509
-renderWithHooksAgain @ react-dom_client.js?v=8e8c482c:5729
-renderWithHooks @ react-dom_client.js?v=8e8c482c:5665
-updateFunctionComponent @ react-dom_client.js?v=8e8c482c:7475
-beginWork @ react-dom_client.js?v=8e8c482c:8525
-runWithFiberInDEV @ react-dom_client.js?v=8e8c482c:997
-performUnitOfWork @ react-dom_client.js?v=8e8c482c:12561
-workLoopSync @ react-dom_client.js?v=8e8c482c:12424
-renderRootSync @ react-dom_client.js?v=8e8c482c:12408
-performWorkOnRoot @ react-dom_client.js?v=8e8c482c:11766
-performWorkOnRootViaSchedulerTask @ react-dom_client.js?v=8e8c482c:13505
-performWorkUntilDeadline @ react-dom_client.js?v=8e8c482c:36
-<App>
-exports.jsxDEV @ react_jsx-dev-runtime.js?v=8e8c482c:247
-(anonymous) @ main.jsx:10
-finance.js:214  GET http://localhost:5173/api/v1/economics/expense-facts?start=2026-04-08T13:32:33.291Z&end=2026-05-08T13:32:33.291Z 500 (Internal Server Error)
-(anonymous) @ finance.js:214
-(anonymous) @ ExpenseScreens.jsx:82
-(anonymous) @ ExpenseScreens.jsx:70
+ReceptionScreen.jsx:55 DEBUG: Action Queue Raw: []
+reception.js:270  GET http://localhost:5173/api/v1/branch/action-queue?branchId=a0000000-0000-0000-0000-000000000001 500 (Internal Server Error)
+(anonymous) @ reception.js:270
+$RefreshSig$ @ ReceptionScreen.jsx:172
 react_stack_bottom_frame @ react-dom_client.js?v=8e8c482c:18567
 runWithFiberInDEV @ react-dom_client.js?v=8e8c482c:997
 commitHookEffectListMount @ react-dom_client.js?v=8e8c482c:9411
 commitHookPassiveMountEffects @ react-dom_client.js?v=8e8c482c:9465
 commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11040
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
 recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
 commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
 recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
@@ -523,9 +255,9 @@ commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11066
 flushPassiveEffects @ react-dom_client.js?v=8e8c482c:13150
 (anonymous) @ react-dom_client.js?v=8e8c482c:12776
 performWorkUntilDeadline @ react-dom_client.js?v=8e8c482c:36
-<ExpenseFeedScreen>
+<ReceptionScreen>
 exports.jsxDEV @ react_jsx-dev-runtime.js?v=8e8c482c:247
-App @ App.jsx:170
+App @ App.jsx:100
 react_stack_bottom_frame @ react-dom_client.js?v=8e8c482c:18509
 renderWithHooksAgain @ react-dom_client.js?v=8e8c482c:5729
 renderWithHooks @ react-dom_client.js?v=8e8c482c:5665
@@ -541,28 +273,15 @@ performWorkUntilDeadline @ react-dom_client.js?v=8e8c482c:36
 <App>
 exports.jsxDEV @ react_jsx-dev-runtime.js?v=8e8c482c:247
 (anonymous) @ main.jsx:10
-ExpenseScreens.jsx:89 Failed to load expense feed: Error: Failed to load expense feed
-    at Object.getExpenseFeed (finance.js:217:33)
-    at async Promise.all (index 0)
-    at async loadData (ExpenseScreens.jsx:81:44)
-(anonymous) @ ExpenseScreens.jsx:89
+reception.js:275 Action Queue Fetch Failed: 500
+(anonymous) @ reception.js:275
 await in (anonymous)
-(anonymous) @ ExpenseScreens.jsx:70
+$RefreshSig$ @ ReceptionScreen.jsx:172
 react_stack_bottom_frame @ react-dom_client.js?v=8e8c482c:18567
 runWithFiberInDEV @ react-dom_client.js?v=8e8c482c:997
 commitHookEffectListMount @ react-dom_client.js?v=8e8c482c:9411
 commitHookPassiveMountEffects @ react-dom_client.js?v=8e8c482c:9465
 commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11040
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
 recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
 commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
 recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
@@ -618,9 +337,9 @@ commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11066
 flushPassiveEffects @ react-dom_client.js?v=8e8c482c:13150
 (anonymous) @ react-dom_client.js?v=8e8c482c:12776
 performWorkUntilDeadline @ react-dom_client.js?v=8e8c482c:36
-<ExpenseFeedScreen>
+<ReceptionScreen>
 exports.jsxDEV @ react_jsx-dev-runtime.js?v=8e8c482c:247
-App @ App.jsx:170
+App @ App.jsx:100
 react_stack_bottom_frame @ react-dom_client.js?v=8e8c482c:18509
 renderWithHooksAgain @ react-dom_client.js?v=8e8c482c:5729
 renderWithHooks @ react-dom_client.js?v=8e8c482c:5665
@@ -636,33 +355,360 @@ performWorkUntilDeadline @ react-dom_client.js?v=8e8c482c:36
 <App>
 exports.jsxDEV @ react_jsx-dev-runtime.js?v=8e8c482c:247
 (anonymous) @ main.jsx:10
+reception.js:270  GET http://localhost:5173/api/v1/branch/action-queue?branchId=a0000000-0000-0000-0000-000000000001 500 (Internal Server Error)
+(anonymous) @ reception.js:270
+$RefreshSig$ @ ReceptionScreen.jsx:50
+$RefreshSig$ @ ReceptionScreen.jsx:65
+react_stack_bottom_frame @ react-dom_client.js?v=8e8c482c:18567
+runWithFiberInDEV @ react-dom_client.js?v=8e8c482c:997
+commitHookEffectListMount @ react-dom_client.js?v=8e8c482c:9411
+commitHookPassiveMountEffects @ react-dom_client.js?v=8e8c482c:9465
+reconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11273
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11317
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11317
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11265
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11317
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11265
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11317
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11265
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11317
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11265
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11265
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11317
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11265
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11265
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11317
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11317
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11265
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11265
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11317
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11265
+doubleInvokeEffectsOnFiber @ react-dom_client.js?v=8e8c482c:13339
+runWithFiberInDEV @ react-dom_client.js?v=8e8c482c:997
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13312
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+commitDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13347
+flushPassiveEffects @ react-dom_client.js?v=8e8c482c:13157
+(anonymous) @ react-dom_client.js?v=8e8c482c:12776
+performWorkUntilDeadline @ react-dom_client.js?v=8e8c482c:36
+<ReceptionScreen>
+exports.jsxDEV @ react_jsx-dev-runtime.js?v=8e8c482c:247
+App @ App.jsx:100
+react_stack_bottom_frame @ react-dom_client.js?v=8e8c482c:18509
+renderWithHooksAgain @ react-dom_client.js?v=8e8c482c:5729
+renderWithHooks @ react-dom_client.js?v=8e8c482c:5665
+updateFunctionComponent @ react-dom_client.js?v=8e8c482c:7475
+beginWork @ react-dom_client.js?v=8e8c482c:8525
+runWithFiberInDEV @ react-dom_client.js?v=8e8c482c:997
+performUnitOfWork @ react-dom_client.js?v=8e8c482c:12561
+workLoopSync @ react-dom_client.js?v=8e8c482c:12424
+renderRootSync @ react-dom_client.js?v=8e8c482c:12408
+performWorkOnRoot @ react-dom_client.js?v=8e8c482c:11766
+performWorkOnRootViaSchedulerTask @ react-dom_client.js?v=8e8c482c:13505
+performWorkUntilDeadline @ react-dom_client.js?v=8e8c482c:36
+<App>
+exports.jsxDEV @ react_jsx-dev-runtime.js?v=8e8c482c:247
+(anonymous) @ main.jsx:10
+reception.js:275 Action Queue Fetch Failed: 500
+(anonymous) @ reception.js:275
+await in (anonymous)
+$RefreshSig$ @ ReceptionScreen.jsx:50
+$RefreshSig$ @ ReceptionScreen.jsx:65
+react_stack_bottom_frame @ react-dom_client.js?v=8e8c482c:18567
+runWithFiberInDEV @ react-dom_client.js?v=8e8c482c:997
+commitHookEffectListMount @ react-dom_client.js?v=8e8c482c:9411
+commitHookPassiveMountEffects @ react-dom_client.js?v=8e8c482c:9465
+reconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11273
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11317
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11317
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11265
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11317
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11265
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11317
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11265
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11317
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11265
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11265
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11317
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11265
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11265
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11317
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11317
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11265
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11265
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11317
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11265
+doubleInvokeEffectsOnFiber @ react-dom_client.js?v=8e8c482c:13339
+runWithFiberInDEV @ react-dom_client.js?v=8e8c482c:997
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13312
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+commitDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13347
+flushPassiveEffects @ react-dom_client.js?v=8e8c482c:13157
+(anonymous) @ react-dom_client.js?v=8e8c482c:12776
+performWorkUntilDeadline @ react-dom_client.js?v=8e8c482c:36
+<ReceptionScreen>
+exports.jsxDEV @ react_jsx-dev-runtime.js?v=8e8c482c:247
+App @ App.jsx:100
+react_stack_bottom_frame @ react-dom_client.js?v=8e8c482c:18509
+renderWithHooksAgain @ react-dom_client.js?v=8e8c482c:5729
+renderWithHooks @ react-dom_client.js?v=8e8c482c:5665
+updateFunctionComponent @ react-dom_client.js?v=8e8c482c:7475
+beginWork @ react-dom_client.js?v=8e8c482c:8525
+runWithFiberInDEV @ react-dom_client.js?v=8e8c482c:997
+performUnitOfWork @ react-dom_client.js?v=8e8c482c:12561
+workLoopSync @ react-dom_client.js?v=8e8c482c:12424
+renderRootSync @ react-dom_client.js?v=8e8c482c:12408
+performWorkOnRoot @ react-dom_client.js?v=8e8c482c:11766
+performWorkOnRootViaSchedulerTask @ react-dom_client.js?v=8e8c482c:13505
+performWorkUntilDeadline @ react-dom_client.js?v=8e8c482c:36
+<App>
+exports.jsxDEV @ react_jsx-dev-runtime.js?v=8e8c482c:247
+(anonymous) @ main.jsx:10
+ReceptionScreen.jsx:55 DEBUG: Action Queue Raw: []
+reception.js:270  GET http://localhost:5173/api/v1/branch/action-queue?branchId=a0000000-0000-0000-0000-000000000001 500 (Internal Server Error)
+(anonymous) @ reception.js:270
+$RefreshSig$ @ ReceptionScreen.jsx:172
+react_stack_bottom_frame @ react-dom_client.js?v=8e8c482c:18567
+runWithFiberInDEV @ react-dom_client.js?v=8e8c482c:997
+commitHookEffectListMount @ react-dom_client.js?v=8e8c482c:9411
+commitHookPassiveMountEffects @ react-dom_client.js?v=8e8c482c:9465
+reconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11273
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11317
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11317
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11265
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11317
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11265
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11317
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11265
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11317
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11265
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11265
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11317
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11265
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11265
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11317
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11317
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11265
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11265
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11317
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11265
+doubleInvokeEffectsOnFiber @ react-dom_client.js?v=8e8c482c:13339
+runWithFiberInDEV @ react-dom_client.js?v=8e8c482c:997
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13312
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+commitDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13347
+flushPassiveEffects @ react-dom_client.js?v=8e8c482c:13157
+(anonymous) @ react-dom_client.js?v=8e8c482c:12776
+performWorkUntilDeadline @ react-dom_client.js?v=8e8c482c:36
+<ReceptionScreen>
+exports.jsxDEV @ react_jsx-dev-runtime.js?v=8e8c482c:247
+App @ App.jsx:100
+react_stack_bottom_frame @ react-dom_client.js?v=8e8c482c:18509
+renderWithHooksAgain @ react-dom_client.js?v=8e8c482c:5729
+renderWithHooks @ react-dom_client.js?v=8e8c482c:5665
+updateFunctionComponent @ react-dom_client.js?v=8e8c482c:7475
+beginWork @ react-dom_client.js?v=8e8c482c:8525
+runWithFiberInDEV @ react-dom_client.js?v=8e8c482c:997
+performUnitOfWork @ react-dom_client.js?v=8e8c482c:12561
+workLoopSync @ react-dom_client.js?v=8e8c482c:12424
+renderRootSync @ react-dom_client.js?v=8e8c482c:12408
+performWorkOnRoot @ react-dom_client.js?v=8e8c482c:11766
+performWorkOnRootViaSchedulerTask @ react-dom_client.js?v=8e8c482c:13505
+performWorkUntilDeadline @ react-dom_client.js?v=8e8c482c:36
+<App>
+exports.jsxDEV @ react_jsx-dev-runtime.js?v=8e8c482c:247
+(anonymous) @ main.jsx:10
+reception.js:275 Action Queue Fetch Failed: 500
+(anonymous) @ reception.js:275
+await in (anonymous)
+$RefreshSig$ @ ReceptionScreen.jsx:172
+react_stack_bottom_frame @ react-dom_client.js?v=8e8c482c:18567
+runWithFiberInDEV @ react-dom_client.js?v=8e8c482c:997
+commitHookEffectListMount @ react-dom_client.js?v=8e8c482c:9411
+commitHookPassiveMountEffects @ react-dom_client.js?v=8e8c482c:9465
+reconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11273
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11317
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11317
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11265
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11317
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11265
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11317
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11265
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11317
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11265
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11265
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11317
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11265
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11265
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11317
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11317
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11265
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11265
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11317
+recursivelyTraverseReconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11240
+reconnectPassiveEffects @ react-dom_client.js?v=8e8c482c:11265
+doubleInvokeEffectsOnFiber @ react-dom_client.js?v=8e8c482c:13339
+runWithFiberInDEV @ react-dom_client.js?v=8e8c482c:997
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13312
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+recursivelyTraverseAndDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13317
+commitDoubleInvokeEffectsInDEV @ react-dom_client.js?v=8e8c482c:13347
+flushPassiveEffects @ react-dom_client.js?v=8e8c482c:13157
+(anonymous) @ react-dom_client.js?v=8e8c482c:12776
+performWorkUntilDeadline @ react-dom_client.js?v=8e8c482c:36
+<ReceptionScreen>
+exports.jsxDEV @ react_jsx-dev-runtime.js?v=8e8c482c:247
+App @ App.jsx:100
+react_stack_bottom_frame @ react-dom_client.js?v=8e8c482c:18509
+renderWithHooksAgain @ react-dom_client.js?v=8e8c482c:5729
+renderWithHooks @ react-dom_client.js?v=8e8c482c:5665
+updateFunctionComponent @ react-dom_client.js?v=8e8c482c:7475
+beginWork @ react-dom_client.js?v=8e8c482c:8525
+runWithFiberInDEV @ react-dom_client.js?v=8e8c482c:997
+performUnitOfWork @ react-dom_client.js?v=8e8c482c:12561
+workLoopSync @ react-dom_client.js?v=8e8c482c:12424
+renderRootSync @ react-dom_client.js?v=8e8c482c:12408
+performWorkOnRoot @ react-dom_client.js?v=8e8c482c:11766
+performWorkOnRootViaSchedulerTask @ react-dom_client.js?v=8e8c482c:13505
+performWorkUntilDeadline @ react-dom_client.js?v=8e8c482c:36
+<App>
+exports.jsxDEV @ react_jsx-dev-runtime.js?v=8e8c482c:247
+(anonymous) @ main.jsx:10
+reception.js:307 DEBUG: Activity Stream Payload: []
+reception.js:307 DEBUG: Activity Stream Payload: []
+reception.js:307 DEBUG: Activity Stream Payload: []
+reception.js:307 DEBUG: Activity Stream Payload: []
+reception.js:307 DEBUG: Activity Stream Payload: []
+reception.js:307 DEBUG: Activity Stream Payload: []
+reception.js:307 DEBUG: Activity Stream Payload: []
+reception.js:307 DEBUG: Activity Stream Payload: []
+reception.js:307 DEBUG: Activity Stream Payload: []
+reception.js:307 DEBUG: Activity Stream Payload: []
+reception.js:307 DEBUG: Activity Stream Payload: []
+reception.js:307 DEBUG: Activity Stream Payload: []
+reception.js:307 DEBUG: Activity Stream Payload: []
 
 backend logs:
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence> dotnet run --project src\SynOS.Api\SynOS.Api.csproj --urls "http://127.0.0.1:59999"
-[18:34:24 WRN] No store type was specified for the decimal property 'AmountReceived' on entity type 'ReceivableFact'. This will cause values to be silently truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.
-[18:34:24 WRN] No store type was specified for the decimal property 'AmountPaid' on entity type 'VendorPayable'. This will cause values to be silently truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.
-[18:34:24 WRN] No store type was specified for the decimal property 'BaseAmount' on entity type 'PayStructureComponent'. This will cause values to be silently truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.
-[18:34:24 WRN] No store type was specified for the decimal property 'AmountPaid' on entity type 'ReferralPayableFact'. This will cause values to be silently truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.
-[18:34:33 INF] Notification Worker Service running.
-[18:34:33 INF] OperationalStatsProjectionWorker is starting in Event-Driven Mode.
-[18:34:33 INF] Worker: Running Consistency Check and Catch-up...
-[18:34:34 INF] Worker: Catch-up complete. Awaiting real-time events...
-[18:34:41 WRN] Failed to determine the https port for redirect.
-[19:01:53 ERR] Failed executing DbCommand (272ms) [Parameters=[@__start_0='?' (DbType = DateTime2), @__end_1='?' (DbType = DateTime2)], CommandType='Text', CommandTimeout='30']
-SELECT [s].[SpendFactId], [s].[OccurredAt], [s].[Category], COALESCE([s].[PayeeName], N'Unknown Payee'), [s].[Amount], [s].[Currency], [s].[PaymentMethod], [s].[TransactionReference], COALESCE([s].[Notes], N'')
-FROM [SpendFacts] AS [s]
-WHERE [s].[OccurredAt] >= @__start_0 AND [s].[OccurredAt] <= @__end_1
-ORDER BY [s].[OccurredAt] DESC
-[19:01:53 ERR] Failed executing DbCommand (275ms) [Parameters=[@__start_0='?' (DbType = DateTime2), @__end_1='?' (DbType = DateTime2)], CommandType='Text', CommandTimeout='30']
-SELECT [s].[SpendFactId], [s].[OccurredAt], [s].[Category], COALESCE([s].[PayeeName], N'Unknown Payee'), [s].[Amount], [s].[Currency], [s].[PaymentMethod], [s].[TransactionReference], COALESCE([s].[Notes], N'')
-FROM [SpendFacts] AS [s]
-WHERE [s].[OccurredAt] >= @__start_0 AND [s].[OccurredAt] <= @__end_1
-ORDER BY [s].[OccurredAt] DESC
-[19:01:53 ERR] An exception occurred while iterating over the results of a query for context type 'SynOS.Data.SynOSDbContext'.
-Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'PayeeName'.
-Invalid column name 'PayeeName'.
-Invalid column name 'Notes'.
-Invalid column name 'Notes'.
+PS D:\Projects\SynOS-Synthesized-Lab-Intelligence>dotnet run --project src\SynOS.Api\SynOS.Api.csproj --urls "http://127.0.0.1:59999"
+[12:34:04 WRN] No store type was specified for the decimal property 'CommissionPercentageAssigned' on entity type 'ReferralApprovalLog'. This will cause values to be silently truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.
+[12:34:13 INF] Notification Worker Service running.
+[12:34:13 INF] OperationalStatsProjectionWorker is starting in Event-Driven Mode.
+[12:34:13 INF] Worker: Running Consistency Check and Catch-up...
+[12:34:13 INF] Worker: Catch-up complete. Awaiting real-time events...
+[12:36:17 WRN] Failed to determine the https port for redirect.
+[12:36:23 INF] Terminal web-1zy6xxtky authorized and added to Thermal80mm group for Branch a0000000-0000-0000-0000-000000000001.
+[12:36:32 INF] Terminal web-1zy6xxtky authorized and added to Thermal80mm group for Branch a0000000-0000-0000-0000-000000000001.
+[12:36:41 INF] Terminal web-1zy6xxtky authorized and added to Thermal80mm group for Branch a0000000-0000-0000-0000-000000000001.
+[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=05/11/2026 12:37:42, Today=05/11/2026 00:00:00, Window=[05/11/2026 00:00:00 - 05/12/2026 00:00:00)
+[12:37:42 ERR] Failed executing DbCommand (46ms) [Parameters=[@__branchId_0='?' (DbType = Guid), @__startDate_1='?' (DbType = DateTime2), @__today_2='?' (DbType = DateTime2), @__nextDay_3='?' (DbType = DateTime2)], CommandType='Text', CommandTimeout='30']
+SELECT [v].[VisitId], [v].[AssignedReceptionistId], [v].[BranchId], [v].[CreatedAt], [v].[CreatedByUserId], [v].[CurrentAssignmentId], [v].[Department], [v].[IsReferred], [v].[PatientId], [v].[PaymentCollectionModel], [v].[ReferralPartnerId], [v].[ReferrerId], [v].[ReferrerText], [v].[RowVersion], [v].[Status], [v].[Token], [v].[TokenDate], [v].[UpdatedAt], [p].[PatientId], [p].[CreatedAt], [p].[CurrentPhoneNumber], [p].[DateOfBirth], [p].[DisplayName], [p].[FirstName], [p].[Gender], [p].[IsDateOfBirthKnown], [p].[IsSoftDeleted], [p].[LastName], [p].[MRN], [p].[RowVersion], [p].[UpdatedAt], [r].[ReferralPartnerId], [r].[ApprovedAt], [r].[ApprovedByUserId], [r].[CalculationBase], [r].[ClinicName], [r].[ContactInfo], [r].[CreatedAt], [r].[DefaultCommissionPercentage], [r].[IsActive], [r].[Location], [r].[Name], [r].[PartnerType], [r].[PaymentCollectionModel], [r].[Status], [r].[UpdatedAt], [u].[UserId], [u].[CanUseOperationalMode], [u].[CanUseOversightMode], [u].[CreatedAt], [u].[DefaultBranchId], [u].[Designation], [u].[Email], [u].[FailedLoginAttempts], [u].[IsActive], [u].[IsDefaultSignatory], [u].[LockoutEnd], [u].[Name], [u].[PasswordHash], [u].[RowVersion], [u].[SignatureImageUrl], [u].[SignatureUpdatedAt], [u].[UpdatedAt]
+FROM [Visits] AS [v]
+INNER JOIN [Patients] AS [p] ON [v].[PatientId] = [p].[PatientId]
+LEFT JOIN [ReferralPartners] AS [r] ON [v].[ReferralPartnerId] = [r].[ReferralPartnerId]
+LEFT JOIN [Users] AS [u] ON [v].[AssignedReceptionistId] = [u].[UserId]
+WHERE [v].[BranchId] = @__branchId_0 AND [v].[Status] <> 5 AND (([v].[Status] NOT IN (2, 3) AND [v].[TokenDate] >= @__startDate_1) OR ([v].[Status] IN (2, 3) AND [v].[TokenDate] >= @__today_2 AND [v].[TokenDate] < @__nextDay_3))
+ORDER BY [v].[TokenDate] DESC, [v].[CreatedAt] DESC, [v].[VisitId], [p].[PatientId], [r].[ReferralPartnerId], [u].[UserId]
+[12:37:43 ERR] An exception occurred while iterating over the results of a query for context type 'SynOS.Data.SynOSDbContext'.
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'UpdatedAt'.
+Invalid column name 'ApprovedAt'.
+Invalid column name 'ApprovedByUserId'.
+Invalid column name 'ClinicName'.
+Invalid column name 'Location'.
+Invalid column name 'Status'.
    at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
    at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
 --- End of stack trace from previous location ---
@@ -671,15 +717,17 @@ Invalid column name 'Notes'.
 --- End of stack trace from previous location ---
    at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
    at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SplitQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
    at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
-ClientConnectionId:be961be0-5498-46c6-884f-c0f78fd68c7d
+   at Microsoft.EntityFrameworkCore.Query.Internal.SplitQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:b43d4ade-a2d8-4c8f-8da6-0a89d4b51bd6
 Error Number:207,State:1,Class:16
-Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'PayeeName'.
-Invalid column name 'PayeeName'.
-Invalid column name 'Notes'.
-Invalid column name 'Notes'.
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'UpdatedAt'.
+Invalid column name 'ApprovedAt'.
+Invalid column name 'ApprovedByUserId'.
+Invalid column name 'ClinicName'.
+Invalid column name 'Location'.
+Invalid column name 'Status'.
    at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
    at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
 --- End of stack trace from previous location ---
@@ -688,16 +736,27 @@ Invalid column name 'Notes'.
 --- End of stack trace from previous location ---
    at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
    at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SplitQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
    at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
-ClientConnectionId:be961be0-5498-46c6-884f-c0f78fd68c7d
+   at Microsoft.EntityFrameworkCore.Query.Internal.SplitQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:b43d4ade-a2d8-4c8f-8da6-0a89d4b51bd6
 Error Number:207,State:1,Class:16
-[19:01:53 ERR] An exception occurred while iterating over the results of a query for context type 'SynOS.Data.SynOSDbContext'.
-Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'PayeeName'.
-Invalid column name 'PayeeName'.
-Invalid column name 'Notes'.
-Invalid column name 'Notes'.
+[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=05/11/2026 12:37:43, Today=05/11/2026 00:00:00, Window=[05/11/2026 00:00:00 - 05/12/2026 00:00:00)
+[12:37:43 ERR] Failed executing DbCommand (13ms) [Parameters=[@__branchId_0='?' (DbType = Guid), @__startDate_1='?' (DbType = DateTime2), @__today_2='?' (DbType = DateTime2), @__nextDay_3='?' (DbType = DateTime2)], CommandType='Text', CommandTimeout='30']
+SELECT [v].[VisitId], [v].[AssignedReceptionistId], [v].[BranchId], [v].[CreatedAt], [v].[CreatedByUserId], [v].[CurrentAssignmentId], [v].[Department], [v].[IsReferred], [v].[PatientId], [v].[PaymentCollectionModel], [v].[ReferralPartnerId], [v].[ReferrerId], [v].[ReferrerText], [v].[RowVersion], [v].[Status], [v].[Token], [v].[TokenDate], [v].[UpdatedAt], [p].[PatientId], [p].[CreatedAt], [p].[CurrentPhoneNumber], [p].[DateOfBirth], [p].[DisplayName], [p].[FirstName], [p].[Gender], [p].[IsDateOfBirthKnown], [p].[IsSoftDeleted], [p].[LastName], [p].[MRN], [p].[RowVersion], [p].[UpdatedAt], [r].[ReferralPartnerId], [r].[ApprovedAt], [r].[ApprovedByUserId], [r].[CalculationBase], [r].[ClinicName], [r].[ContactInfo], [r].[CreatedAt], [r].[DefaultCommissionPercentage], [r].[IsActive], [r].[Location], [r].[Name], [r].[PartnerType], [r].[PaymentCollectionModel], [r].[Status], [r].[UpdatedAt], [u].[UserId], [u].[CanUseOperationalMode], [u].[CanUseOversightMode], [u].[CreatedAt], [u].[DefaultBranchId], [u].[Designation], [u].[Email], [u].[FailedLoginAttempts], [u].[IsActive], [u].[IsDefaultSignatory], [u].[LockoutEnd], [u].[Name], [u].[PasswordHash], [u].[RowVersion], [u].[SignatureImageUrl], [u].[SignatureUpdatedAt], [u].[UpdatedAt]
+FROM [Visits] AS [v]
+INNER JOIN [Patients] AS [p] ON [v].[PatientId] = [p].[PatientId]
+LEFT JOIN [ReferralPartners] AS [r] ON [v].[ReferralPartnerId] = [r].[ReferralPartnerId]
+LEFT JOIN [Users] AS [u] ON [v].[AssignedReceptionistId] = [u].[UserId]
+WHERE [v].[BranchId] = @__branchId_0 AND [v].[Status] <> 5 AND (([v].[Status] NOT IN (2, 3) AND [v].[TokenDate] >= @__startDate_1) OR ([v].[Status] IN (2, 3) AND [v].[TokenDate] >= @__today_2 AND [v].[TokenDate] < @__nextDay_3))
+ORDER BY [v].[TokenDate] DESC, [v].[CreatedAt] DESC, [v].[VisitId], [p].[PatientId], [r].[ReferralPartnerId], [u].[UserId]
+[12:37:43 ERR] An exception occurred while iterating over the results of a query for context type 'SynOS.Data.SynOSDbContext'.
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'UpdatedAt'.
+Invalid column name 'ApprovedAt'.
+Invalid column name 'ApprovedByUserId'.
+Invalid column name 'ClinicName'.
+Invalid column name 'Location'.
+Invalid column name 'Status'.
    at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
    at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
 --- End of stack trace from previous location ---
@@ -706,15 +765,17 @@ Invalid column name 'Notes'.
 --- End of stack trace from previous location ---
    at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
    at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SplitQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
    at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
-ClientConnectionId:8d5f9373-953b-4efa-aadd-33bf7d12f9f9
+   at Microsoft.EntityFrameworkCore.Query.Internal.SplitQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:b43d4ade-a2d8-4c8f-8da6-0a89d4b51bd6
 Error Number:207,State:1,Class:16
-Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'PayeeName'.
-Invalid column name 'PayeeName'.
-Invalid column name 'Notes'.
-Invalid column name 'Notes'.
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'UpdatedAt'.
+Invalid column name 'ApprovedAt'.
+Invalid column name 'ApprovedByUserId'.
+Invalid column name 'ClinicName'.
+Invalid column name 'Location'.
+Invalid column name 'Status'.
    at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
    at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
 --- End of stack trace from previous location ---
@@ -723,26 +784,27 @@ Invalid column name 'Notes'.
 --- End of stack trace from previous location ---
    at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
    at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SplitQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
    at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
-ClientConnectionId:8d5f9373-953b-4efa-aadd-33bf7d12f9f9
+   at Microsoft.EntityFrameworkCore.Query.Internal.SplitQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:b43d4ade-a2d8-4c8f-8da6-0a89d4b51bd6
 Error Number:207,State:1,Class:16
-[19:02:00 ERR] Failed executing DbCommand (18ms) [Parameters=[@__start_0='?' (DbType = DateTime2), @__end_1='?' (DbType = DateTime2)], CommandType='Text', CommandTimeout='30']
-SELECT [s].[SpendFactId], [s].[OccurredAt], [s].[Category], COALESCE([s].[PayeeName], N'Unknown Payee'), [s].[Amount], [s].[Currency], [s].[PaymentMethod], [s].[TransactionReference], COALESCE([s].[Notes], N'')
-FROM [SpendFacts] AS [s]
-WHERE [s].[OccurredAt] >= @__start_0 AND [s].[OccurredAt] <= @__end_1
-ORDER BY [s].[OccurredAt] DESC
-[19:02:00 ERR] Failed executing DbCommand (180ms) [Parameters=[@__start_0='?' (DbType = DateTime2), @__end_1='?' (DbType = DateTime2)], CommandType='Text', CommandTimeout='30']
-SELECT [s].[SpendFactId], [s].[OccurredAt], [s].[Category], COALESCE([s].[PayeeName], N'Unknown Payee'), [s].[Amount], [s].[Currency], [s].[PaymentMethod], [s].[TransactionReference], COALESCE([s].[Notes], N'')
-FROM [SpendFacts] AS [s]
-WHERE [s].[OccurredAt] >= @__start_0 AND [s].[OccurredAt] <= @__end_1
-ORDER BY [s].[OccurredAt] DESC
-[19:02:00 ERR] An exception occurred while iterating over the results of a query for context type 'SynOS.Data.SynOSDbContext'.
-Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'PayeeName'.
-Invalid column name 'PayeeName'.
-Invalid column name 'Notes'.
-Invalid column name 'Notes'.
+[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=05/11/2026 12:37:43, Today=05/11/2026 00:00:00, Window=[05/11/2026 00:00:00 - 05/12/2026 00:00:00)
+[12:37:43 ERR] Failed executing DbCommand (17ms) [Parameters=[@__branchId_0='?' (DbType = Guid), @__startDate_1='?' (DbType = DateTime2), @__today_2='?' (DbType = DateTime2), @__nextDay_3='?' (DbType = DateTime2)], CommandType='Text', CommandTimeout='30']
+SELECT [v].[VisitId], [v].[AssignedReceptionistId], [v].[BranchId], [v].[CreatedAt], [v].[CreatedByUserId], [v].[CurrentAssignmentId], [v].[Department], [v].[IsReferred], [v].[PatientId], [v].[PaymentCollectionModel], [v].[ReferralPartnerId], [v].[ReferrerId], [v].[ReferrerText], [v].[RowVersion], [v].[Status], [v].[Token], [v].[TokenDate], [v].[UpdatedAt], [p].[PatientId], [p].[CreatedAt], [p].[CurrentPhoneNumber], [p].[DateOfBirth], [p].[DisplayName], [p].[FirstName], [p].[Gender], [p].[IsDateOfBirthKnown], [p].[IsSoftDeleted], [p].[LastName], [p].[MRN], [p].[RowVersion], [p].[UpdatedAt], [r].[ReferralPartnerId], [r].[ApprovedAt], [r].[ApprovedByUserId], [r].[CalculationBase], [r].[ClinicName], [r].[ContactInfo], [r].[CreatedAt], [r].[DefaultCommissionPercentage], [r].[IsActive], [r].[Location], [r].[Name], [r].[PartnerType], [r].[PaymentCollectionModel], [r].[Status], [r].[UpdatedAt], [u].[UserId], [u].[CanUseOperationalMode], [u].[CanUseOversightMode], [u].[CreatedAt], [u].[DefaultBranchId], [u].[Designation], [u].[Email], [u].[FailedLoginAttempts], [u].[IsActive], [u].[IsDefaultSignatory], [u].[LockoutEnd], [u].[Name], [u].[PasswordHash], [u].[RowVersion], [u].[SignatureImageUrl], [u].[SignatureUpdatedAt], [u].[UpdatedAt]
+FROM [Visits] AS [v]
+INNER JOIN [Patients] AS [p] ON [v].[PatientId] = [p].[PatientId]
+LEFT JOIN [ReferralPartners] AS [r] ON [v].[ReferralPartnerId] = [r].[ReferralPartnerId]
+LEFT JOIN [Users] AS [u] ON [v].[AssignedReceptionistId] = [u].[UserId]
+WHERE [v].[BranchId] = @__branchId_0 AND [v].[Status] <> 5 AND (([v].[Status] NOT IN (2, 3) AND [v].[TokenDate] >= @__startDate_1) OR ([v].[Status] IN (2, 3) AND [v].[TokenDate] >= @__today_2 AND [v].[TokenDate] < @__nextDay_3))
+ORDER BY [v].[TokenDate] DESC, [v].[CreatedAt] DESC, [v].[VisitId], [p].[PatientId], [r].[ReferralPartnerId], [u].[UserId]
+[12:37:43 ERR] An exception occurred while iterating over the results of a query for context type 'SynOS.Data.SynOSDbContext'.
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'UpdatedAt'.
+Invalid column name 'ApprovedAt'.
+Invalid column name 'ApprovedByUserId'.
+Invalid column name 'ClinicName'.
+Invalid column name 'Location'.
+Invalid column name 'Status'.
    at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
    at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
 --- End of stack trace from previous location ---
@@ -751,15 +813,17 @@ Invalid column name 'Notes'.
 --- End of stack trace from previous location ---
    at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
    at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SplitQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
    at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
-ClientConnectionId:be961be0-5498-46c6-884f-c0f78fd68c7d
+   at Microsoft.EntityFrameworkCore.Query.Internal.SplitQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:b43d4ade-a2d8-4c8f-8da6-0a89d4b51bd6
 Error Number:207,State:1,Class:16
-Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'PayeeName'.
-Invalid column name 'PayeeName'.
-Invalid column name 'Notes'.
-Invalid column name 'Notes'.
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'UpdatedAt'.
+Invalid column name 'ApprovedAt'.
+Invalid column name 'ApprovedByUserId'.
+Invalid column name 'ClinicName'.
+Invalid column name 'Location'.
+Invalid column name 'Status'.
    at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
    at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
 --- End of stack trace from previous location ---
@@ -768,16 +832,27 @@ Invalid column name 'Notes'.
 --- End of stack trace from previous location ---
    at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
    at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SplitQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
    at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
-ClientConnectionId:be961be0-5498-46c6-884f-c0f78fd68c7d
+   at Microsoft.EntityFrameworkCore.Query.Internal.SplitQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:b43d4ade-a2d8-4c8f-8da6-0a89d4b51bd6
 Error Number:207,State:1,Class:16
-[19:02:00 ERR] An exception occurred while iterating over the results of a query for context type 'SynOS.Data.SynOSDbContext'.
-Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'PayeeName'.
-Invalid column name 'PayeeName'.
-Invalid column name 'Notes'.
-Invalid column name 'Notes'.
+[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=05/11/2026 12:37:43, Today=05/11/2026 00:00:00, Window=[05/11/2026 00:00:00 - 05/12/2026 00:00:00)
+[12:37:43 ERR] Failed executing DbCommand (4ms) [Parameters=[@__branchId_0='?' (DbType = Guid), @__startDate_1='?' (DbType = DateTime2), @__today_2='?' (DbType = DateTime2), @__nextDay_3='?' (DbType = DateTime2)], CommandType='Text', CommandTimeout='30']
+SELECT [v].[VisitId], [v].[AssignedReceptionistId], [v].[BranchId], [v].[CreatedAt], [v].[CreatedByUserId], [v].[CurrentAssignmentId], [v].[Department], [v].[IsReferred], [v].[PatientId], [v].[PaymentCollectionModel], [v].[ReferralPartnerId], [v].[ReferrerId], [v].[ReferrerText], [v].[RowVersion], [v].[Status], [v].[Token], [v].[TokenDate], [v].[UpdatedAt], [p].[PatientId], [p].[CreatedAt], [p].[CurrentPhoneNumber], [p].[DateOfBirth], [p].[DisplayName], [p].[FirstName], [p].[Gender], [p].[IsDateOfBirthKnown], [p].[IsSoftDeleted], [p].[LastName], [p].[MRN], [p].[RowVersion], [p].[UpdatedAt], [r].[ReferralPartnerId], [r].[ApprovedAt], [r].[ApprovedByUserId], [r].[CalculationBase], [r].[ClinicName], [r].[ContactInfo], [r].[CreatedAt], [r].[DefaultCommissionPercentage], [r].[IsActive], [r].[Location], [r].[Name], [r].[PartnerType], [r].[PaymentCollectionModel], [r].[Status], [r].[UpdatedAt], [u].[UserId], [u].[CanUseOperationalMode], [u].[CanUseOversightMode], [u].[CreatedAt], [u].[DefaultBranchId], [u].[Designation], [u].[Email], [u].[FailedLoginAttempts], [u].[IsActive], [u].[IsDefaultSignatory], [u].[LockoutEnd], [u].[Name], [u].[PasswordHash], [u].[RowVersion], [u].[SignatureImageUrl], [u].[SignatureUpdatedAt], [u].[UpdatedAt]
+FROM [Visits] AS [v]
+INNER JOIN [Patients] AS [p] ON [v].[PatientId] = [p].[PatientId]
+LEFT JOIN [ReferralPartners] AS [r] ON [v].[ReferralPartnerId] = [r].[ReferralPartnerId]
+LEFT JOIN [Users] AS [u] ON [v].[AssignedReceptionistId] = [u].[UserId]
+WHERE [v].[BranchId] = @__branchId_0 AND [v].[Status] <> 5 AND (([v].[Status] NOT IN (2, 3) AND [v].[TokenDate] >= @__startDate_1) OR ([v].[Status] IN (2, 3) AND [v].[TokenDate] >= @__today_2 AND [v].[TokenDate] < @__nextDay_3))
+ORDER BY [v].[TokenDate] DESC, [v].[CreatedAt] DESC, [v].[VisitId], [p].[PatientId], [r].[ReferralPartnerId], [u].[UserId]
+[12:37:43 ERR] An exception occurred while iterating over the results of a query for context type 'SynOS.Data.SynOSDbContext'.
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'UpdatedAt'.
+Invalid column name 'ApprovedAt'.
+Invalid column name 'ApprovedByUserId'.
+Invalid column name 'ClinicName'.
+Invalid column name 'Location'.
+Invalid column name 'Status'.
    at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
    at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
 --- End of stack trace from previous location ---
@@ -786,15 +861,17 @@ Invalid column name 'Notes'.
 --- End of stack trace from previous location ---
    at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
    at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SplitQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
    at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
-ClientConnectionId:8e7ac787-5981-4531-acf4-fd7e777a19de
+   at Microsoft.EntityFrameworkCore.Query.Internal.SplitQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:b43d4ade-a2d8-4c8f-8da6-0a89d4b51bd6
 Error Number:207,State:1,Class:16
-Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'PayeeName'.
-Invalid column name 'PayeeName'.
-Invalid column name 'Notes'.
-Invalid column name 'Notes'.
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'UpdatedAt'.
+Invalid column name 'ApprovedAt'.
+Invalid column name 'ApprovedByUserId'.
+Invalid column name 'ClinicName'.
+Invalid column name 'Location'.
+Invalid column name 'Status'.
    at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
    at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
 --- End of stack trace from previous location ---
@@ -803,26 +880,28 @@ Invalid column name 'Notes'.
 --- End of stack trace from previous location ---
    at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
    at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SplitQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
    at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
-ClientConnectionId:8e7ac787-5981-4531-acf4-fd7e777a19de
+   at Microsoft.EntityFrameworkCore.Query.Internal.SplitQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:b43d4ade-a2d8-4c8f-8da6-0a89d4b51bd6
 Error Number:207,State:1,Class:16
-[19:02:31 ERR] Failed executing DbCommand (13ms) [Parameters=[@__start_0='?' (DbType = DateTime2), @__end_1='?' (DbType = DateTime2)], CommandType='Text', CommandTimeout='30']
-SELECT [s].[SpendFactId], [s].[OccurredAt], [s].[Category], COALESCE([s].[PayeeName], N'Unknown Payee'), [s].[Amount], [s].[Currency], [s].[PaymentMethod], [s].[TransactionReference], COALESCE([s].[Notes], N'')
-FROM [SpendFacts] AS [s]
-WHERE [s].[OccurredAt] >= @__start_0 AND [s].[OccurredAt] <= @__end_1
-ORDER BY [s].[OccurredAt] DESC
-[19:02:31 ERR] Failed executing DbCommand (8ms) [Parameters=[@__start_0='?' (DbType = DateTime2), @__end_1='?' (DbType = DateTime2)], CommandType='Text', CommandTimeout='30']
-SELECT [s].[SpendFactId], [s].[OccurredAt], [s].[Category], COALESCE([s].[PayeeName], N'Unknown Payee'), [s].[Amount], [s].[Currency], [s].[PaymentMethod], [s].[TransactionReference], COALESCE([s].[Notes], N'')
-FROM [SpendFacts] AS [s]
-WHERE [s].[OccurredAt] >= @__start_0 AND [s].[OccurredAt] <= @__end_1
-ORDER BY [s].[OccurredAt] DESC
-[19:02:31 ERR] An exception occurred while iterating over the results of a query for context type 'SynOS.Data.SynOSDbContext'.
-Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'PayeeName'.
-Invalid column name 'PayeeName'.
-Invalid column name 'Notes'.
-Invalid column name 'Notes'.
+[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=05/11/2026 12:37:49, Today=05/11/2026 00:00:00, Window=[05/11/2026 00:00:00 - 05/12/2026 00:00:00)
+[12:37:50 ERR] Failed executing DbCommand (207ms) [Parameters=[@__branchId_0='?' (DbType = Guid), @__startDate_1='?' (DbType = DateTime2), @__today_2='?' (DbType = DateTime2), @__nextDay_3='?' (DbType = DateTime2)], CommandType='Text', CommandTimeout='30']
+SELECT [v].[VisitId], [v].[AssignedReceptionistId], [v].[BranchId], [v].[CreatedAt], [v].[CreatedByUserId], [v].[CurrentAssignmentId], [v].[Department], [v].[IsReferred], [v].[PatientId], [v].[PaymentCollectionModel], [v].[ReferralPartnerId], [v].[ReferrerId], [v].[ReferrerText], [v].[RowVersion], [v].[Status], [v].[Token], [v].[TokenDate], [v].[UpdatedAt], [p].[PatientId], [p].[CreatedAt], [p].[CurrentPhoneNumber], [p].[DateOfBirth], [p].[DisplayName], [p].[FirstName], [p].[Gender], [p].[IsDateOfBirthKnown], [p].[IsSoftDeleted], [p].[LastName], [p].[MRN], [p].[RowVersion], [p].[UpdatedAt], [r].[ReferralPartnerId], [r].[ApprovedAt], [r].[ApprovedByUserId], [r].[CalculationBase], [r].[ClinicName], [r].[ContactInfo], [r].[CreatedAt], [r].[DefaultCommissionPercentage], [r].[IsActive], [r].[Location], [r].[Name], [r].[PartnerType], [r].[PaymentCollectionModel], [r].[Status], [r].[UpdatedAt], [u].[UserId], [u].[CanUseOperationalMode], [u].[CanUseOversightMode], [u].[CreatedAt], [u].[DefaultBranchId], [u].[Designation], [u].[Email], [u].[FailedLoginAttempts], [u].[IsActive], [u].[IsDefaultSignatory], [u].[LockoutEnd], [u].[Name], [u].[PasswordHash], [u].[RowVersion], [u].[SignatureImageUrl], [u].[SignatureUpdatedAt], [u].[UpdatedAt]
+FROM [Visits] AS [v]
+INNER JOIN [Patients] AS [p] ON [v].[PatientId] = [p].[PatientId]
+LEFT JOIN [ReferralPartners] AS [r] ON [v].[ReferralPartnerId] = [r].[ReferralPartnerId]
+LEFT JOIN [Users] AS [u] ON [v].[AssignedReceptionistId] = [u].[UserId]
+WHERE [v].[BranchId] = @__branchId_0 AND [v].[Status] <> 5 AND (([v].[Status] NOT IN (2, 3) AND [v].[TokenDate] >= @__startDate_1) OR ([v].[Status] IN (2, 3) AND [v].[TokenDate] >= @__today_2 AND [v].[TokenDate] < @__nextDay_3))
+ORDER BY [v].[TokenDate] DESC, [v].[CreatedAt] DESC, [v].[VisitId], [p].[PatientId], [r].[ReferralPartnerId], [u].[UserId]
+[12:37:50 INF] Terminal web-1zy6xxtky authorized and added to Thermal80mm group for Branch a0000000-0000-0000-0000-000000000001.
+[12:37:51 ERR] An exception occurred while iterating over the results of a query for context type 'SynOS.Data.SynOSDbContext'.
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'UpdatedAt'.
+Invalid column name 'ApprovedAt'.
+Invalid column name 'ApprovedByUserId'.
+Invalid column name 'ClinicName'.
+Invalid column name 'Location'.
+Invalid column name 'Status'.
    at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
    at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
 --- End of stack trace from previous location ---
@@ -831,15 +910,17 @@ Invalid column name 'Notes'.
 --- End of stack trace from previous location ---
    at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
    at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SplitQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
    at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
-ClientConnectionId:be961be0-5498-46c6-884f-c0f78fd68c7d
+   at Microsoft.EntityFrameworkCore.Query.Internal.SplitQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:91e5f028-4b66-4ba9-9733-5a593e5d1dd6
 Error Number:207,State:1,Class:16
-Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'PayeeName'.
-Invalid column name 'PayeeName'.
-Invalid column name 'Notes'.
-Invalid column name 'Notes'.
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'UpdatedAt'.
+Invalid column name 'ApprovedAt'.
+Invalid column name 'ApprovedByUserId'.
+Invalid column name 'ClinicName'.
+Invalid column name 'Location'.
+Invalid column name 'Status'.
    at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
    at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
 --- End of stack trace from previous location ---
@@ -848,16 +929,27 @@ Invalid column name 'Notes'.
 --- End of stack trace from previous location ---
    at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
    at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SplitQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
    at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
-ClientConnectionId:be961be0-5498-46c6-884f-c0f78fd68c7d
+   at Microsoft.EntityFrameworkCore.Query.Internal.SplitQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:91e5f028-4b66-4ba9-9733-5a593e5d1dd6
 Error Number:207,State:1,Class:16
-[19:02:31 ERR] An exception occurred while iterating over the results of a query for context type 'SynOS.Data.SynOSDbContext'.
-Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'PayeeName'.
-Invalid column name 'PayeeName'.
-Invalid column name 'Notes'.
-Invalid column name 'Notes'.
+[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=05/11/2026 12:37:51, Today=05/11/2026 00:00:00, Window=[05/11/2026 00:00:00 - 05/12/2026 00:00:00)
+[12:37:51 ERR] Failed executing DbCommand (4ms) [Parameters=[@__branchId_0='?' (DbType = Guid), @__startDate_1='?' (DbType = DateTime2), @__today_2='?' (DbType = DateTime2), @__nextDay_3='?' (DbType = DateTime2)], CommandType='Text', CommandTimeout='30']
+SELECT [v].[VisitId], [v].[AssignedReceptionistId], [v].[BranchId], [v].[CreatedAt], [v].[CreatedByUserId], [v].[CurrentAssignmentId], [v].[Department], [v].[IsReferred], [v].[PatientId], [v].[PaymentCollectionModel], [v].[ReferralPartnerId], [v].[ReferrerId], [v].[ReferrerText], [v].[RowVersion], [v].[Status], [v].[Token], [v].[TokenDate], [v].[UpdatedAt], [p].[PatientId], [p].[CreatedAt], [p].[CurrentPhoneNumber], [p].[DateOfBirth], [p].[DisplayName], [p].[FirstName], [p].[Gender], [p].[IsDateOfBirthKnown], [p].[IsSoftDeleted], [p].[LastName], [p].[MRN], [p].[RowVersion], [p].[UpdatedAt], [r].[ReferralPartnerId], [r].[ApprovedAt], [r].[ApprovedByUserId], [r].[CalculationBase], [r].[ClinicName], [r].[ContactInfo], [r].[CreatedAt], [r].[DefaultCommissionPercentage], [r].[IsActive], [r].[Location], [r].[Name], [r].[PartnerType], [r].[PaymentCollectionModel], [r].[Status], [r].[UpdatedAt], [u].[UserId], [u].[CanUseOperationalMode], [u].[CanUseOversightMode], [u].[CreatedAt], [u].[DefaultBranchId], [u].[Designation], [u].[Email], [u].[FailedLoginAttempts], [u].[IsActive], [u].[IsDefaultSignatory], [u].[LockoutEnd], [u].[Name], [u].[PasswordHash], [u].[RowVersion], [u].[SignatureImageUrl], [u].[SignatureUpdatedAt], [u].[UpdatedAt]
+FROM [Visits] AS [v]
+INNER JOIN [Patients] AS [p] ON [v].[PatientId] = [p].[PatientId]
+LEFT JOIN [ReferralPartners] AS [r] ON [v].[ReferralPartnerId] = [r].[ReferralPartnerId]
+LEFT JOIN [Users] AS [u] ON [v].[AssignedReceptionistId] = [u].[UserId]
+WHERE [v].[BranchId] = @__branchId_0 AND [v].[Status] <> 5 AND (([v].[Status] NOT IN (2, 3) AND [v].[TokenDate] >= @__startDate_1) OR ([v].[Status] IN (2, 3) AND [v].[TokenDate] >= @__today_2 AND [v].[TokenDate] < @__nextDay_3))
+ORDER BY [v].[TokenDate] DESC, [v].[CreatedAt] DESC, [v].[VisitId], [p].[PatientId], [r].[ReferralPartnerId], [u].[UserId]
+[12:37:51 ERR] An exception occurred while iterating over the results of a query for context type 'SynOS.Data.SynOSDbContext'.
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'UpdatedAt'.
+Invalid column name 'ApprovedAt'.
+Invalid column name 'ApprovedByUserId'.
+Invalid column name 'ClinicName'.
+Invalid column name 'Location'.
+Invalid column name 'Status'.
    at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
    at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
 --- End of stack trace from previous location ---
@@ -866,15 +958,17 @@ Invalid column name 'Notes'.
 --- End of stack trace from previous location ---
    at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
    at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SplitQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
    at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
-ClientConnectionId:3f93c252-8296-4cdc-a90e-b2576726cb14
+   at Microsoft.EntityFrameworkCore.Query.Internal.SplitQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:91e5f028-4b66-4ba9-9733-5a593e5d1dd6
 Error Number:207,State:1,Class:16
-Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'PayeeName'.
-Invalid column name 'PayeeName'.
-Invalid column name 'Notes'.
-Invalid column name 'Notes'.
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'UpdatedAt'.
+Invalid column name 'ApprovedAt'.
+Invalid column name 'ApprovedByUserId'.
+Invalid column name 'ClinicName'.
+Invalid column name 'Location'.
+Invalid column name 'Status'.
    at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
    at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
 --- End of stack trace from previous location ---
@@ -883,26 +977,27 @@ Invalid column name 'Notes'.
 --- End of stack trace from previous location ---
    at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
    at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SplitQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
    at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
-ClientConnectionId:3f93c252-8296-4cdc-a90e-b2576726cb14
+   at Microsoft.EntityFrameworkCore.Query.Internal.SplitQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:91e5f028-4b66-4ba9-9733-5a593e5d1dd6
 Error Number:207,State:1,Class:16
-[19:02:33 ERR] Failed executing DbCommand (72ms) [Parameters=[@__start_0='?' (DbType = DateTime2), @__end_1='?' (DbType = DateTime2)], CommandType='Text', CommandTimeout='30']
-SELECT [s].[SpendFactId], [s].[OccurredAt], [s].[Category], COALESCE([s].[PayeeName], N'Unknown Payee'), [s].[Amount], [s].[Currency], [s].[PaymentMethod], [s].[TransactionReference], COALESCE([s].[Notes], N'')
-FROM [SpendFacts] AS [s]
-WHERE [s].[OccurredAt] >= @__start_0 AND [s].[OccurredAt] <= @__end_1
-ORDER BY [s].[OccurredAt] DESC
-[19:02:33 ERR] Failed executing DbCommand (101ms) [Parameters=[@__start_0='?' (DbType = DateTime2), @__end_1='?' (DbType = DateTime2)], CommandType='Text', CommandTimeout='30']
-SELECT [s].[SpendFactId], [s].[OccurredAt], [s].[Category], COALESCE([s].[PayeeName], N'Unknown Payee'), [s].[Amount], [s].[Currency], [s].[PaymentMethod], [s].[TransactionReference], COALESCE([s].[Notes], N'')
-FROM [SpendFacts] AS [s]
-WHERE [s].[OccurredAt] >= @__start_0 AND [s].[OccurredAt] <= @__end_1
-ORDER BY [s].[OccurredAt] DESC
-[19:02:33 ERR] An exception occurred while iterating over the results of a query for context type 'SynOS.Data.SynOSDbContext'.
-Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'PayeeName'.
-Invalid column name 'PayeeName'.
-Invalid column name 'Notes'.
-Invalid column name 'Notes'.
+[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=05/11/2026 12:37:51, Today=05/11/2026 00:00:00, Window=[05/11/2026 00:00:00 - 05/12/2026 00:00:00)
+[12:37:51 ERR] Failed executing DbCommand (51ms) [Parameters=[@__branchId_0='?' (DbType = Guid), @__startDate_1='?' (DbType = DateTime2), @__today_2='?' (DbType = DateTime2), @__nextDay_3='?' (DbType = DateTime2)], CommandType='Text', CommandTimeout='30']
+SELECT [v].[VisitId], [v].[AssignedReceptionistId], [v].[BranchId], [v].[CreatedAt], [v].[CreatedByUserId], [v].[CurrentAssignmentId], [v].[Department], [v].[IsReferred], [v].[PatientId], [v].[PaymentCollectionModel], [v].[ReferralPartnerId], [v].[ReferrerId], [v].[ReferrerText], [v].[RowVersion], [v].[Status], [v].[Token], [v].[TokenDate], [v].[UpdatedAt], [p].[PatientId], [p].[CreatedAt], [p].[CurrentPhoneNumber], [p].[DateOfBirth], [p].[DisplayName], [p].[FirstName], [p].[Gender], [p].[IsDateOfBirthKnown], [p].[IsSoftDeleted], [p].[LastName], [p].[MRN], [p].[RowVersion], [p].[UpdatedAt], [r].[ReferralPartnerId], [r].[ApprovedAt], [r].[ApprovedByUserId], [r].[CalculationBase], [r].[ClinicName], [r].[ContactInfo], [r].[CreatedAt], [r].[DefaultCommissionPercentage], [r].[IsActive], [r].[Location], [r].[Name], [r].[PartnerType], [r].[PaymentCollectionModel], [r].[Status], [r].[UpdatedAt], [u].[UserId], [u].[CanUseOperationalMode], [u].[CanUseOversightMode], [u].[CreatedAt], [u].[DefaultBranchId], [u].[Designation], [u].[Email], [u].[FailedLoginAttempts], [u].[IsActive], [u].[IsDefaultSignatory], [u].[LockoutEnd], [u].[Name], [u].[PasswordHash], [u].[RowVersion], [u].[SignatureImageUrl], [u].[SignatureUpdatedAt], [u].[UpdatedAt]
+FROM [Visits] AS [v]
+INNER JOIN [Patients] AS [p] ON [v].[PatientId] = [p].[PatientId]
+LEFT JOIN [ReferralPartners] AS [r] ON [v].[ReferralPartnerId] = [r].[ReferralPartnerId]
+LEFT JOIN [Users] AS [u] ON [v].[AssignedReceptionistId] = [u].[UserId]
+WHERE [v].[BranchId] = @__branchId_0 AND [v].[Status] <> 5 AND (([v].[Status] NOT IN (2, 3) AND [v].[TokenDate] >= @__startDate_1) OR ([v].[Status] IN (2, 3) AND [v].[TokenDate] >= @__today_2 AND [v].[TokenDate] < @__nextDay_3))
+ORDER BY [v].[TokenDate] DESC, [v].[CreatedAt] DESC, [v].[VisitId], [p].[PatientId], [r].[ReferralPartnerId], [u].[UserId]
+[12:37:51 ERR] An exception occurred while iterating over the results of a query for context type 'SynOS.Data.SynOSDbContext'.
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'UpdatedAt'.
+Invalid column name 'ApprovedAt'.
+Invalid column name 'ApprovedByUserId'.
+Invalid column name 'ClinicName'.
+Invalid column name 'Location'.
+Invalid column name 'Status'.
    at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
    at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
 --- End of stack trace from previous location ---
@@ -911,15 +1006,17 @@ Invalid column name 'Notes'.
 --- End of stack trace from previous location ---
    at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
    at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SplitQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
    at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
-ClientConnectionId:8d5f9373-953b-4efa-aadd-33bf7d12f9f9
+   at Microsoft.EntityFrameworkCore.Query.Internal.SplitQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:91e5f028-4b66-4ba9-9733-5a593e5d1dd6
 Error Number:207,State:1,Class:16
-Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'PayeeName'.
-Invalid column name 'PayeeName'.
-Invalid column name 'Notes'.
-Invalid column name 'Notes'.
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'UpdatedAt'.
+Invalid column name 'ApprovedAt'.
+Invalid column name 'ApprovedByUserId'.
+Invalid column name 'ClinicName'.
+Invalid column name 'Location'.
+Invalid column name 'Status'.
    at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
    at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
 --- End of stack trace from previous location ---
@@ -928,16 +1025,27 @@ Invalid column name 'Notes'.
 --- End of stack trace from previous location ---
    at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
    at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SplitQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
    at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
-ClientConnectionId:8d5f9373-953b-4efa-aadd-33bf7d12f9f9
+   at Microsoft.EntityFrameworkCore.Query.Internal.SplitQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:91e5f028-4b66-4ba9-9733-5a593e5d1dd6
 Error Number:207,State:1,Class:16
-[19:02:33 ERR] An exception occurred while iterating over the results of a query for context type 'SynOS.Data.SynOSDbContext'.
-Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'PayeeName'.
-Invalid column name 'PayeeName'.
-Invalid column name 'Notes'.
-Invalid column name 'Notes'.
+[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=05/11/2026 12:37:51, Today=05/11/2026 00:00:00, Window=[05/11/2026 00:00:00 - 05/12/2026 00:00:00)
+[12:37:51 ERR] Failed executing DbCommand (10ms) [Parameters=[@__branchId_0='?' (DbType = Guid), @__startDate_1='?' (DbType = DateTime2), @__today_2='?' (DbType = DateTime2), @__nextDay_3='?' (DbType = DateTime2)], CommandType='Text', CommandTimeout='30']
+SELECT [v].[VisitId], [v].[AssignedReceptionistId], [v].[BranchId], [v].[CreatedAt], [v].[CreatedByUserId], [v].[CurrentAssignmentId], [v].[Department], [v].[IsReferred], [v].[PatientId], [v].[PaymentCollectionModel], [v].[ReferralPartnerId], [v].[ReferrerId], [v].[ReferrerText], [v].[RowVersion], [v].[Status], [v].[Token], [v].[TokenDate], [v].[UpdatedAt], [p].[PatientId], [p].[CreatedAt], [p].[CurrentPhoneNumber], [p].[DateOfBirth], [p].[DisplayName], [p].[FirstName], [p].[Gender], [p].[IsDateOfBirthKnown], [p].[IsSoftDeleted], [p].[LastName], [p].[MRN], [p].[RowVersion], [p].[UpdatedAt], [r].[ReferralPartnerId], [r].[ApprovedAt], [r].[ApprovedByUserId], [r].[CalculationBase], [r].[ClinicName], [r].[ContactInfo], [r].[CreatedAt], [r].[DefaultCommissionPercentage], [r].[IsActive], [r].[Location], [r].[Name], [r].[PartnerType], [r].[PaymentCollectionModel], [r].[Status], [r].[UpdatedAt], [u].[UserId], [u].[CanUseOperationalMode], [u].[CanUseOversightMode], [u].[CreatedAt], [u].[DefaultBranchId], [u].[Designation], [u].[Email], [u].[FailedLoginAttempts], [u].[IsActive], [u].[IsDefaultSignatory], [u].[LockoutEnd], [u].[Name], [u].[PasswordHash], [u].[RowVersion], [u].[SignatureImageUrl], [u].[SignatureUpdatedAt], [u].[UpdatedAt]
+FROM [Visits] AS [v]
+INNER JOIN [Patients] AS [p] ON [v].[PatientId] = [p].[PatientId]
+LEFT JOIN [ReferralPartners] AS [r] ON [v].[ReferralPartnerId] = [r].[ReferralPartnerId]
+LEFT JOIN [Users] AS [u] ON [v].[AssignedReceptionistId] = [u].[UserId]
+WHERE [v].[BranchId] = @__branchId_0 AND [v].[Status] <> 5 AND (([v].[Status] NOT IN (2, 3) AND [v].[TokenDate] >= @__startDate_1) OR ([v].[Status] IN (2, 3) AND [v].[TokenDate] >= @__today_2 AND [v].[TokenDate] < @__nextDay_3))
+ORDER BY [v].[TokenDate] DESC, [v].[CreatedAt] DESC, [v].[VisitId], [p].[PatientId], [r].[ReferralPartnerId], [u].[UserId]
+[12:37:51 ERR] An exception occurred while iterating over the results of a query for context type 'SynOS.Data.SynOSDbContext'.
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'UpdatedAt'.
+Invalid column name 'ApprovedAt'.
+Invalid column name 'ApprovedByUserId'.
+Invalid column name 'ClinicName'.
+Invalid column name 'Location'.
+Invalid column name 'Status'.
    at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
    at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
 --- End of stack trace from previous location ---
@@ -946,15 +1054,17 @@ Invalid column name 'Notes'.
 --- End of stack trace from previous location ---
    at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
    at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SplitQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
    at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
-ClientConnectionId:3f93c252-8296-4cdc-a90e-b2576726cb14
+   at Microsoft.EntityFrameworkCore.Query.Internal.SplitQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:91e5f028-4b66-4ba9-9733-5a593e5d1dd6
 Error Number:207,State:1,Class:16
-Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'PayeeName'.
-Invalid column name 'PayeeName'.
-Invalid column name 'Notes'.
-Invalid column name 'Notes'.
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'UpdatedAt'.
+Invalid column name 'ApprovedAt'.
+Invalid column name 'ApprovedByUserId'.
+Invalid column name 'ClinicName'.
+Invalid column name 'Location'.
+Invalid column name 'Status'.
    at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
    at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
 --- End of stack trace from previous location ---
@@ -963,8 +1073,8 @@ Invalid column name 'Notes'.
 --- End of stack trace from previous location ---
    at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
    at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SplitQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
    at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
-ClientConnectionId:3f93c252-8296-4cdc-a90e-b2576726cb14
+   at Microsoft.EntityFrameworkCore.Query.Internal.SplitQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:91e5f028-4b66-4ba9-9733-5a593e5d1dd6
 Error Number:207,State:1,Class:16

@@ -1,263 +1,241 @@
-Your thinking is correct.
-At THIS stage of SynOS, these modes are mostly:
+This is good now.
+This is finally a real stabilization phase. 
 
-```text id="u8m2pk"
-cost without proportional value
+Approve it.
+
+But before execution, I’d tighten 4 things so you don’t regret them later.
+
+---
+
+# 1. Rename “Active” → “Resumable”
+
+This matters a LOT.
+
+Because:
+
+```text id="5k2n42"
+Paid
+Completed
 ```
 
-That’s the real issue.
+are still operationally active TODAY,
+but should NOT resume.
 
----
+So this naming:
 
-# What problem were they TRYING to solve?
-
-Originally:
-
-* prevent accidental writes
-* separate management vs operations
-* reduce clinical collisions
-* optimize live event subscriptions
-
-All reasonable ideas.
-
-BUT…
-
-those ideas only become valuable when:
-
-```text id="x1q7vx"
-system scale + concurrency complexity
+```text id="ptk4yx"
+Active
 ```
 
-actually becomes a real operational problem.
+will become misleading later.
 
-Right now?
-It’s mostly theoretical.
+Instead:
+
+## Use:
+
+```text id="4nnwr8"
+CanResume()
+```
+
+and:
+
+```text id="d0uxyt"
+IsTerminal()
+```
+
+ONLY.
+
+Avoid:
+
+```text id="svdqeu"
+IsActive()
+```
+
+It becomes ambiguous very fast.
 
 ---
 
-# What’s ACTUALLY happening instead?
+# 2. Do NOT hardcode “today only” inside queue logic forever
 
-The modes are currently causing:
+Today it’s correct.
+
+But future-proof it slightly.
+
+Instead of:
+
+```text id="hy3qun"
+Live = today
+```
+
+internally make it:
+
+```text id="7ap4e4"
+OperationalWindow
+```
+
+Even if currently:
+
+```text id="8bx1rz"
+today only
+```
+
+Why?
+
+Because later some labs may want:
+
+* night shift continuity
+* 24hr operational window
+* emergency labs
+* overnight processing
+
+Tiny abstraction now saves pain later.
+
+Not overengineering.
+Just naming correctly.
 
 ---
 
-# 1. Mental friction
+# 3. Add future-safe states NOW (even if unused)
 
-Users think:
+This is important.
 
-```text id="m8v2qx"
-“Why can’t I do this?”
+Don’t wait.
+
+Add:
+
+* Cancelled
+* Refunded
+* Reversed
+* Voided
+
+NOW.
+
+Even if UI doesn’t use them.
+
+Why?
+
+Because otherwise later:
+
+* migrations
+* scattered assumptions
+* lifecycle rewrites
+
+become painful.
+
+You already know these flows are coming.
+
+So reserve the architecture now.
+
+---
+
+# 4. MOST IMPORTANT:
+
+Separate VISIT completion from PAYMENT completion
+
+Right now I suspect you still have:
+
+```text id="j6m4b0"
+Paid == Completed
+```
+
+Dangerous.
+
+These are NOT same.
+
+Example:
+
+## Visit can be:
+
+```text id="43dwz8"
+sample collected
+```
+
+but:
+
+```text id="q0uv4y"
+payment pending
+```
+
+OR
+
+## Payment complete
+
+but:
+
+```text id="mvd9gv"
+report not generated
+```
+
+These are DIFFERENT lifecycles.
+
+You can survive short-term with combined logic.
+
+But mentally:
+NEVER treat them as same.
+
+That distinction becomes massive later.
+
+---
+
+# Also VERY important
+
+This sentence:
+
+```text id="ifsc1n"
+Live Queue vs History: Visibility depends on date, NOT status
+```
+
+Needs ONE refinement.
+
+It should be:
+
+```text id="18uzl0"
+Visibility depends primarily on date,
+secondarily on operational relevance.
+```
+
+Otherwise:
+
+```text id="w33zqv"
+Reversed
+Voided
+Archived
+```
+
+will pollute live queue later.
+
+Tiny correction.
+Very important.
+
+---
+
+# Overall verdict
+
+You are NOW fixing:
+
+```text id="0h7g1k"
+core workflow semantics
 ```
 
 instead of:
 
-```text id="f3m7pk"
-“Let me finish my work.”
+```text id="5twtw5"
+frontend symptoms
 ```
 
-Bad UX.
-
-Especially in healthcare operations.
-
----
-
-# 2. Architecture friction
-
-Now you have:
-
-* middleware checks
-* claims logic
-* route restrictions
-* special bypass rules
-* context switching
-* session branching
-
-This spreads complexity EVERYWHERE.
-
-And complexity compounds.
-
----
-
-# 3. Debugging overhead
-
-You already saw this yourself:
-
-```text id="x5q9vx"
-403 error for valid workflow
-```
-
-This is exactly how:
-
-```text id="n2m4pk"
-invisible architecture decisions
-```
-
-start poisoning developer velocity.
-
----
-
-# 4. Operational slowdown
-
-(important nuance)
-
-You asked:
-
-```text id="d7v1qx"
-“Will removing this make system faster?”
-```
-
-Probably:
-
-```text id="k8m5pk"
-slightly yes
-```
-
-BUT not because:
-
-```text id="u6q2vx"
-modes themselves are computationally heavy
-```
-
-That’s not the real gain.
-
-The REAL gain is:
-
-```text id="z3m8pk"
-less branching
-less middleware
-less subscription complexity
-less auth-condition evaluation
-less session orchestration
-```
-
-Meaning:
-
-```text id="t1v7qx"
-simpler execution paths
-```
-
-THAT improves maintainability AND operational predictability.
-
-Which indirectly improves performance and stability.
-
----
-
-# MOST IMPORTANT THING
-
-Your product philosophy changed.
-
-Originally:
-
-```text id="w4m2pk"
-isolated departmental software
-```
-
-Now:
-
-```text id="j9q5vx"
-unified operational system
-```
-
-That architectural shift makes hard modes feel unnatural.
-
-Because now workflows cross domains constantly:
-
-* reception → finance
-* finance → referral
-* inventory → expenses
-* admin → reception
-
-Hard separation fights your actual product direction.
-
----
-
-# Here’s the key engineering truth
-
-Complexity is only justified when:
-
-```text id="p6m1pk"
-it solves a CURRENT expensive problem
-```
-
-Not:
-
-```text id="x2m8pk"
-a hypothetical future problem
-```
-
-Right now:
-the modes are solving:
-
-```text id="q5v3vx"
-future-theoretical concurrency risks
-```
-
-while creating:
-
-```text id="c8m4pk"
-present-day operational pain
-```
-
-That tradeoff is bad.
-
----
-
-# My recommendation
-
-YES.
-
-Remove:
-
-* visible modes
-* mode middleware
-* mode claims
-* mode restrictions
-* mode switching UX
-
-Completely.
-
----
-
-# BUT KEEP:
-
-* internal record locking
-* optimistic concurrency
-* duplicate edit protection
-* transactional safeguards
-
-Those are REAL engineering protections.
-
-Users never need to know they exist.
-
----
-
-# In simple terms
-
-Bad architecture:
-
-```text id="r1q7vx"
-“Choose your mode before working.”
-```
-
-Good architecture:
-
-```text id="u3m5pk"
-“Just work. System protects itself silently.”
-```
-
-That’s the mature direction for SynOS.
-
----
-
-# Final truth
-
-You are correctly sensing:
-
-```text id="x8q2vx"
-premature enterprise complexity
-```
+That’s the correct path.
 
 And honestly?
-Catching that EARLY is a very strong product instinct.
+This phase determines whether SynOS becomes:
 
-A lot of systems become bloated precisely because founders become emotionally attached to “clever architecture” instead of operational clarity.
+```text id="0uwic6"
+stable enterprise software
+```
+
+or:
+
+```text id="7lru38"
+forever-buggy ERP spaghetti
+```
+
+You’re making the right architectural decisions now.

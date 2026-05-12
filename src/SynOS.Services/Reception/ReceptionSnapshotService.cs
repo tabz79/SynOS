@@ -1,8 +1,10 @@
 using Microsoft.EntityFrameworkCore;
+using SynOS.Services.Operational; // ADDED
 using SynOS.Data;
 using SynOS.Models.DTOs.Reception;
 using SynOS.Services.Security;
 using SynOS.Models.Enums;
+using SynOS.Services.Time; // ADDED
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -13,11 +15,19 @@ namespace SynOS.Services.Reception
     {
         private readonly SynOSDbContext _context;
         private readonly IUserContext _userContext;
+        private readonly IVisitLifecyclePolicy _lifecyclePolicy;
+        private readonly ILabTimeProvider _labTimeProvider; // ADDED
 
-        public ReceptionSnapshotService(SynOSDbContext context, IUserContext userContext)
+        public ReceptionSnapshotService(
+            SynOSDbContext context, 
+            IUserContext userContext, 
+            IVisitLifecyclePolicy lifecyclePolicy,
+            ILabTimeProvider labTimeProvider) // ADDED
         {
             _context = context;
             _userContext = userContext;
+            _lifecyclePolicy = lifecyclePolicy;
+            _labTimeProvider = labTimeProvider;
         }
 
         public async Task<ReceptionIntakeSnapshotDto> GetSnapshotAsync(ReceptionSnapshotQuery query)
@@ -42,22 +52,28 @@ namespace SynOS.Services.Reception
                 }
                 else if (query.PatientId.HasValue)
                 {
-                    // Fix: Check for Active Visit first
-                    var activeVisitQuery = _context.Visits
-                        .Where(v => v.PatientId == query.PatientId.Value && v.Status != VisitStatus.Paid && v.Status != VisitStatus.Cancelled);
+                    // Use Policy to find any resumable visit for this patient
+                    var patientVisits = await _context.Visits
+                        .Where(v => v.PatientId == query.PatientId.Value)
+                        .OrderByDescending(v => v.CreatedAt)
+                        .ToListAsync();
+
+                    var today = _labTimeProvider.GetLabToday();
+                    var resumableVisit = patientVisits.FirstOrDefault(v => 
+                        v.TokenDate == today && // ONLY resume visits from Today
+                        _lifecyclePolicy.CanResume(v.Status));
 
                     if (_userContext.CurrentRole == "Receptionist")
                     {
-                        activeVisitQuery = activeVisitQuery.Where(v => v.AssignedReceptionistId == _userContext.CurrentUserId);
+                        if (resumableVisit != null && resumableVisit.AssignedReceptionistId != _userContext.CurrentUserId)
+                        {
+                            resumableVisit = null;
+                        }
                     }
 
-                    var activeVisit = await activeVisitQuery
-                        .OrderByDescending(v => v.CreatedAt)
-                        .FirstOrDefaultAsync();
-
-                    if (activeVisit != null)
+                    if (resumableVisit != null)
                     {
-                        await LoadVisitContextAsync(snapshot, activeVisit.VisitId, query.PatientId);
+                        await LoadVisitContextAsync(snapshot, resumableVisit.VisitId, query.PatientId);
                     }
                     else
                     {
@@ -181,8 +197,7 @@ namespace SynOS.Services.Reception
                     partnerInfo = new ReferralPartnerInfo
                     {
                         Id = partner.ReferralPartnerId,
-                        DisplayName = partner.Name,
-                        CollectionLabel = partner.PaymentCollectionModel == "PartnerCollects" ? "Prepaid (Partner)" : "Patient Pay"
+                        DisplayName = partner.Name
                     };
                 }
             }
@@ -213,11 +228,9 @@ namespace SynOS.Services.Reception
                 ReferralPartner = partnerInfo != null ? new IntakeReferralPartner
                 {
                     PartnerId = partnerInfo.Id,
-                    Name = partnerInfo.DisplayName,
-                    // PaymentCollectionModel is available via the local 'partner' variable from the block above
-                    // but since we only need ID and Name for legacy, we can fetch or assume default
-                    PaymentCollectionModel = "LabCollects" // Fallback for legacy DTO
+                    Name = partnerInfo.DisplayName
                 } : null,
+                PaymentCollectionModel = visit.PaymentCollectionModel ?? "LabCollects",
                 Tests = visit.Orders?
                     .Where(o => o.Status != SynOS.Models.Enums.OrderStatus.Cancelled) // 🔹 FIX: Exclude Cancelled Orders
                     .Select(o => new IntakeTestItem
@@ -250,28 +263,25 @@ namespace SynOS.Services.Reception
                     PaymentMethod = invoice.Payments?.FirstOrDefault()?.Method, // Safe navigation
                     TotalPaid = (invoice.Payments?.Sum(p => p.Amount) ?? 0m) + (invoice.PartialPayments?.Sum(p => p.Amount) ?? 0m),
                     
-                    IsEditable = visit.Status != VisitStatus.Paid && visit.Status != VisitStatus.Cancelled,
-                    IsLocked = visit.Status == VisitStatus.Paid
+                    IsEditable = !_lifecyclePolicy.IsTerminal(visit.Status),
+                    IsLocked = _lifecyclePolicy.IsTerminal(visit.Status)
                 };
             }
 
             // 3. Derived UI Hints (using logic from Billing contract)
-            bool isPaid = visit.Status == VisitStatus.Paid;
-            bool isCancelled = visit.Status == VisitStatus.Cancelled;
+            snapshot.UiState.IsReadOnly = _lifecyclePolicy.IsTerminal(visit.Status);
+            if (snapshot.UiState.IsReadOnly) snapshot.UiState.ReadOnlyReason = $"Visit is {visit.Status}";
+
             bool hasTests = snapshot.Visit.Tests.Any();
             bool hasBill = snapshot.Billing != null;
 
-            snapshot.UiState.IsReadOnly = isPaid || isCancelled;
-            if (isPaid) snapshot.UiState.ReadOnlyReason = "Visit is Paid";
-            if (isCancelled) snapshot.UiState.ReadOnlyReason = "Visit is Cancelled";
-
             if (!snapshot.UiState.IsReadOnly)
             {
-                snapshot.UiState.CanAddTests = !hasBill; // Locked once billed in V1 flow
+                snapshot.UiState.CanAddTests = _lifecyclePolicy.IsEditable(visit.Status) && !hasBill;
                 if (hasBill) snapshot.UiState.ReadOnlyReason = "Bill Generated";
 
                 snapshot.UiState.CanGenerateBill = hasTests && !hasBill;
-                snapshot.UiState.CanAcceptPayment = hasBill && !isPaid;
+                snapshot.UiState.CanAcceptPayment = _lifecyclePolicy.CanAcceptPayment(visit.Status);
             }
         }
 

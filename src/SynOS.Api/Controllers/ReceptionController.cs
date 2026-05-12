@@ -226,6 +226,24 @@ namespace SynOS.Api.Controllers
             }
         }
 
+        [HttpPatch("visit/collection-model")]
+        public async Task<IActionResult> SetCollectionModel([FromBody] ReceptionUpdateCollectionModelRequest request)
+        {
+            try
+            {
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (!Guid.TryParse(userIdClaim, out var userId)) return Unauthorized();
+
+                await _receptionFlowService.SetVisitCollectionModelAsync(request.VisitId, request.Model, userId);
+                return Ok(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to update collection model");
+                return StatusCode(500, new { message = ex.Message });
+            }
+        }
+
         [HttpPut("visit/referral")]
 
         public async Task<IActionResult> SetReferral([FromBody] ReceptionUpdateReferralRequest request)
@@ -335,6 +353,12 @@ namespace SynOS.Api.Controllers
     {
         public Guid VisitId { get; set; }
         public Guid ReferralPartnerId { get; set; }
+    }
+
+    public class ReceptionUpdateCollectionModelRequest
+    {
+        public Guid VisitId { get; set; }
+        public string Model { get; set; } = string.Empty;
     }
 
     public class ReceptionResolveReferralDraftRequest

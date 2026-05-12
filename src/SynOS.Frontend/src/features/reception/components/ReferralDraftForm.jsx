@@ -21,8 +21,20 @@ const ReferralDraftForm = ({ visitId, onSuccess, onCancel }) => {
         setError(null);
 
         try {
-            await ReceptionApi.addReferralDraft(visitId, providerName, clinicName, location);
-            if (onSuccess) onSuccess();
+            // OPX-GPT-5: Save to Unified Registry as DRAFT
+            const partner = await ReceptionApi.createDraftPartner({
+                name: providerName,
+                clinicName: clinicName,
+                location: location,
+                partnerType: 'Doctor' // Default for draft onboarding
+            });
+
+            // Link to the current visit
+            if (visitId) {
+                await ReceptionApi.applyReferralToVisit(visitId, partner.referralPartnerId);
+            }
+
+            if (onSuccess) onSuccess(partner);
         } catch (err) {
             setError(err.message || 'Failed to save draft.');
             setIsSubmitting(false);

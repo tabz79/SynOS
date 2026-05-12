@@ -8,6 +8,8 @@ namespace SynOS.Services.Referral
     public interface IReferralPartnerService
     {
         Task<ReferralPartnerReadDto> CreateReferralPartnerAsync(ReferralPartnerCreateDto createDto, Guid userId);
+        Task<ReferralPartnerReadDto> CreateDraftPartnerAsync(ReferralPartnerCreateDto createDto, Guid userId);
+        Task ApprovePartnerAsync(Guid partnerId, decimal commissionPercentage, Guid userId);
         Task<IEnumerable<ReferralPartnerReadDto>> GetAllReferralPartnersAsync();
         Task<ReferralPartnerReadDto> GetReferralPartnerByIdAsync(Guid id);
         Task<ReferralPartnerReadDto> UpdateReferralPartnerAsync(Guid id, ReferralPartnerUpdateDto updateDto, Guid userId);

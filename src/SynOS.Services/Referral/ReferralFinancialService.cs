@@ -26,7 +26,6 @@ namespace SynOS.Services.Referral
         public async Task ProcessCommissionRecognitionAsync(Visit visit)
         {
             // IDEMPOTENCY GUARD (Layer 1: App Check)
-            // Fast fail if already processed.
             if (await _context.ReferralPayableFacts.AnyAsync(f => f.SourceVisitId == visit.VisitId))
             {
                 _logger.LogInformation("Commission already recognized for Visit {VisitId}. Skipping.", visit.VisitId);
@@ -38,14 +37,23 @@ namespace SynOS.Services.Referral
                 return;
             }
 
+            var partner = await _context.ReferralPartners.FindAsync(visit.ReferralPartnerId);
+            if (partner == null) return;
+
+            // OPX-GPT-5: Draft partners do NOT trigger payouts immediately.
+            // They wait for Admin approval + Backfill.
+            if (partner.Status == PartnerStatus.Draft)
+            {
+                _logger.LogInformation("Partner {PartnerId} is in DRAFT status. Skipping immediate payout for Visit {VisitId}.", partner.ReferralPartnerId, visit.VisitId);
+                return;
+            }
+
             var invoice = visit.Invoices.FirstOrDefault();
             if (invoice == null)
             {
-                _logger.LogError("Cannot process commission for Visit {VisitId}: Invoice not found.", visit.VisitId);
-                throw new InvalidOperationException($"Invoice not found for visit {visit.VisitId}.");
+                _logger.LogWarning("Cannot process commission for Visit {VisitId}: Invoice not found.", visit.VisitId);
+                return; 
             }
-            var partner = await _context.ReferralPartners.FindAsync(visit.ReferralPartnerId);
-            if (partner == null) return;
 
             var totalCommissionAmount = 0m;
             foreach (var order in visit.Orders)
@@ -53,13 +61,16 @@ namespace SynOS.Services.Referral
                 totalCommissionAmount += await CalculateCommissionForOrderAsync(partner, order);
             }
 
-            // --- REVENUE RECOGNITION (Partner owes Lab) ---
-            if (partner.PaymentCollectionModel == "PartnerCollects")
+            // OPX-GPT-5: VISIT-LEVEL AUTHORITY
+            // Use visit.PaymentCollectionModel instead of partner's default.
+            var collectionModel = visit.PaymentCollectionModel ?? partner.PaymentCollectionModel;
+
+            if (collectionModel == "PartnerCollects")
             {
                 var totalBill = visit.Orders.Sum(o => o.Price - o.Discount);
                 var netPayableByPartner = totalBill - totalCommissionAmount;
 
-                if (netPayableByPartner > 0)
+                if (netPayableByPartner > 0 && !await _context.ReceivableFacts.AnyAsync(f => f.SourceVisitId == visit.VisitId))
                 {
                     var receivableFact = new SynOS.Models.Entities.AR.ReceivableFact
                     {
@@ -75,7 +86,7 @@ namespace SynOS.Services.Referral
                     _logger.LogInformation("Partner Receivable recognized for Visit {VisitId}: ₹{Amount}", visit.VisitId, netPayableByPartner);
                 }
             }
-            else // --- LIABILITY RECOGNITION (Lab owes Doctor) ---
+            else // Liability Recognition
             {
                 if (totalCommissionAmount > 0)
                 {
@@ -97,6 +108,87 @@ namespace SynOS.Services.Referral
             }
 
             await _context.SaveChangesAsync();
+        }
+
+        public async Task ProcessRetroactiveCommissionsAsync(Guid partnerId, decimal commissionPercentage, Guid userId)
+        {
+            var partner = await _context.ReferralPartners.FindAsync(partnerId);
+            if (partner == null) return;
+
+            // 1. Find all pending visits for this partner that were created AFTER onboarding
+            // and do NOT have a payout fact yet.
+            var pendingVisits = await _context.Visits
+                .Include(v => v.Orders)
+                .Include(v => v.Invoices)
+                .Where(v => v.ReferralPartnerId == partnerId 
+                         && v.IsReferred 
+                         && v.CreatedAt >= partner.CreatedAt)
+                .ToListAsync();
+
+            var backfilledCount = 0;
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                foreach (var visit in pendingVisits)
+                {
+                    // Skip if already has a payout fact (Idempotency)
+                    if (await _context.ReferralPayableFacts.AnyAsync(f => f.SourceVisitId == visit.VisitId)) continue;
+
+                    // Skip if it was a Prepaid bill (PartnerCollects) - these already handled in receivables
+                    if (visit.PaymentCollectionModel == "PartnerCollects") continue;
+
+                    var totalCommission = 0m;
+                    foreach (var order in visit.Orders)
+                    {
+                        // Calculate using the new approved percentage
+                        decimal baseAmount = (partner.CalculationBase == CommissionCalculationBase.BeforeDiscounts)
+                            ? order.Price 
+                            : (order.Price - order.Discount);
+                        
+                        totalCommission += baseAmount * (commissionPercentage / 100m);
+                    }
+
+                    if (totalCommission > 0)
+                    {
+                        var payableFact = new ReferralPayableFact
+                        {
+                            ReferralPayableFactId = Guid.NewGuid(),
+                            ReferralPartnerId = partnerId,
+                            Amount = totalCommission,
+                            Currency = "INR",
+                            SourceVisitId = visit.VisitId,
+                            OccurredAt = visit.CreatedAt,
+                            RecordedAt = DateTime.UtcNow,
+                            Status = "Pending"
+                        };
+                        _context.ReferralPayableFacts.Add(payableFact);
+                        backfilledCount++;
+                    }
+                }
+
+                // 2. Log the Approval Event
+                var approvalLog = new ReferralApprovalLog
+                {
+                    LogId = Guid.NewGuid(),
+                    PartnerId = partnerId,
+                    ApprovedByUserId = userId,
+                    CommissionPercentageAssigned = commissionPercentage,
+                    BackfilledVisitCount = backfilledCount,
+                    Timestamp = DateTimeOffset.UtcNow,
+                    Note = "OPX-GPT-5: Atomic Backfill"
+                };
+                _context.ReferralApprovalLogs.Add(approvalLog);
+
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+                _logger.LogInformation("Successfully backfilled {Count} visits for Partner {PartnerId}.", backfilledCount, partnerId);
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                _logger.LogError(ex, "Failed to backfill commissions for Partner {PartnerId}.", partnerId);
+                throw;
+            }
         }
 
         private async Task<decimal> CalculateCommissionForOrderAsync(ReferralPartner partner, Order order)

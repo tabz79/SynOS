@@ -49,6 +49,7 @@ namespace SynOS.Models.Entities
         public VisitStatus Status { get; set; }
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public DateTimeOffset UpdatedAt { get; set; } = DateTimeOffset.UtcNow;
 
         [Timestamp]
         public byte[]? RowVersion { get; set; }

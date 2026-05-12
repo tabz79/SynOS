@@ -20,6 +20,7 @@ using SynOS.Services.Referral;
 using SynOS.Services.Revenue;
 using SynOS.Models.ReadModels;
 using System.Text.Json;
+using SynOS.Services.Time;
 
 namespace SynOS.Services
 {
@@ -34,8 +35,9 @@ namespace SynOS.Services
         private readonly IReferralFinancialService _referralFinancialService;
         private readonly IRevenueFactWriter _revenueFactWriter;
         private readonly IRevenueEngine _revenueEngine;
+        private readonly IVisitLifecyclePolicy _lifecyclePolicy; // ADDED
 
-        private static TimeZoneInfo _labTimeZone = TimeZoneInfo.Local;
+        private readonly ILabTimeProvider _labTimeProvider; // ADDED
 
         public VisitService(
             SynOSDbContext context,
@@ -46,7 +48,9 @@ namespace SynOS.Services
             IUserContext userContext,
             IReferralFinancialService referralFinancialService,
             IRevenueFactWriter revenueFactWriter,
-            IRevenueEngine revenueEngine)
+            IRevenueEngine revenueEngine,
+            ILabTimeProvider labTimeProvider,
+            IVisitLifecyclePolicy lifecyclePolicy) // ADDED
         {
             _context = context;
             _logger = logger;
@@ -57,6 +61,8 @@ namespace SynOS.Services
             _referralFinancialService = referralFinancialService ?? throw new ArgumentNullException(nameof(referralFinancialService));
             _revenueFactWriter = revenueFactWriter ?? throw new ArgumentNullException(nameof(revenueFactWriter));
             _revenueEngine = revenueEngine;
+            _labTimeProvider = labTimeProvider; // ADDED
+            _lifecyclePolicy = lifecyclePolicy; // ADDED
         }
 
         public async Task<VisitTokenPrintDto> GetVisitTokenForPrintingAsync(Guid visitId)
@@ -104,7 +110,7 @@ namespace SynOS.Services
                 throw new KeyNotFoundException($"Patient with ID {visitDto.PatientId} not found or is inactive.");
             }
 
-            var labLocalToday = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, _labTimeZone).Date;
+            var labLocalToday = _labTimeProvider.GetLabToday();
             var token = $"DRAFT-{Guid.NewGuid().ToString().Substring(0, 8).ToUpper()}";
 
             if (visitDto.ReferralPartnerId.HasValue)
@@ -377,8 +383,8 @@ namespace SynOS.Services
             if (visit == null) throw new KeyNotFoundException($"Visit {visitId} not found.");
 
             // 1. Visit-Scoped Validation
-            if (visit.Status != VisitStatus.Draft)
-                throw new InvalidOperationException($"Cannot delete orders from a visit in {visit.Status} state. Only Draft visits allow deletion.");
+            if (!_lifecyclePolicy.IsEditable(visit.Status))
+                throw new InvalidOperationException($"Cannot delete orders from a visit in {visit.Status} state. Current policy prevents modifications.");
 
             if (visit.Invoices.Any(i => i.Status == "Paid" || i.Status == "PartiallyPaid"))
                 throw new InvalidOperationException("Cannot delete orders. Payment has already been accepted for this visit.");
@@ -612,8 +618,9 @@ namespace SynOS.Services
         public async Task RemoveVisitReferralAsync(Guid visitId, Guid actorUserId)
         {
             var visit = await _context.Visits
-                .Include(v => v.Patient) // ADDED
-                .Include(v => v.Orders) //.ThenInclude(o => o.Samples) // REFACTOR: Removed
+                .Include(v => v.Patient)
+                .Include(v => v.Orders)
+                .Include(v => v.Invoices).ThenInclude(i => i.Payments)
                 .FirstOrDefaultAsync(v => v.VisitId == visitId);
 
             if (visit == null) throw new KeyNotFoundException($"Visit {visitId} not found.");
@@ -623,6 +630,25 @@ namespace SynOS.Services
 
             visit.ReferralPartnerId = null;
             visit.IsReferred = false;
+            
+            // 2. Clear Prepaid Financial State (PartnerAccount payments)
+            // If we remove the partner, any system-generated prepaid payments must be voided/removed.
+            visit.PaymentCollectionModel = "LabCollects"; // Reset to standard
+            
+            var invoice = visit.Invoices.OrderByDescending(i => i.CreatedAt).FirstOrDefault();
+            if (invoice != null)
+            {
+                var systemPayments = invoice.Payments.Where(p => p.Method == "PartnerAccount").ToList();
+                if (systemPayments.Any())
+                {
+                    _context.Payments.RemoveRange(systemPayments);
+                    
+                    // Also clear associated ReceivableFacts to prevent ledger leaks
+                    var receivables = await _context.ReceivableFacts.Where(r => r.SourceVisitId == visitId).ToListAsync();
+                    _context.ReceivableFacts.RemoveRange(receivables);
+                }
+            }
+
             await _context.SaveChangesAsync();
             await _revenueEngine.ApplySnapshotAsync(visitId, actorUserId);
 
@@ -737,7 +763,21 @@ namespace SynOS.Services
 
         public async Task<string> AssignOfficialTokenAsync(Guid visitId, Guid actorUserId)
         {
-            return await GenerateDailyTokenAsync("Pathology", DateTime.Today, actorUserId);
+            var visit = await _context.Visits.FindAsync(visitId);
+            if (visit == null) throw new KeyNotFoundException($"Visit {visitId} not found");
+
+            // Only assign if it's still a DRAFT or doesn't have a proper token yet
+            if (!visit.Token.StartsWith("DRAFT")) return visit.Token;
+
+            var newToken = await GenerateDailyTokenAsync(visit.Department, _labTimeProvider.GetLabToday(), actorUserId);
+            
+            visit.Token = newToken;
+            visit.UpdatedAt = DateTimeOffset.UtcNow;
+            
+            await _context.SaveChangesAsync();
+            
+            _logger.LogInformation("Assigned Official Token {Token} to Visit {VisitId}", newToken, visitId);
+            return newToken;
         }
 
         public async Task RecalculateFinancialsAsync(Guid visitId, Guid actorUserId)
@@ -851,15 +891,20 @@ namespace SynOS.Services
 
         private async Task<string> GenerateDailyTokenAsync(string department, DateTime labLocalDay, Guid actorUserId)
         {
-            string deptLetter = department switch
+            var branchId = _userContext.CurrentBranchId;
+            var branch = await _context.Branches.FindAsync(branchId);
+            
+            // Use first 3 letters of branch code as prefix, fallback to LAB
+            string prefix = "LAB";
+            if (branch != null && !string.IsNullOrWhiteSpace(branch.Code))
             {
-                "Pathology" => "P",
-                "Radiology" => "X",
-                _ => "U"
-            };
+                prefix = branch.Code.Trim().ToUpper();
+                if (prefix.Length > 3) prefix = prefix.Substring(0, 3);
+            }
 
+            // We use a branch-specific counter for better isolation
             var tokenCounter = await _context.TokenCounters
-                .FirstOrDefaultAsync(tc => tc.Day == labLocalDay && tc.Department == department);
+                .FirstOrDefaultAsync(tc => tc.Day == labLocalDay && tc.BranchId == branchId && tc.Department == department);
 
             if (tokenCounter == null)
             {
@@ -868,38 +913,29 @@ namespace SynOS.Services
                     CounterId = Guid.NewGuid(),
                     Department = department,
                     Day = labLocalDay,
-                    SeriesLetter = "A",
+                    BranchId = branchId,
+                    Prefix = prefix,
                     LastNumber = 0,
-                    MaxPerSeries = 999,
+                    MaxPerSeries = 9999, // Allow more tokens per day if needed
                     UpdatedAt = DateTime.UtcNow
                 };
                 _context.TokenCounters.Add(tokenCounter);
             }
             else
             {
-                _context.Entry(tokenCounter).Reload();
+                // Ensure we have the latest number from DB (basic concurrency guard)
+                await _context.Entry(tokenCounter).ReloadAsync();
             }
 
             tokenCounter.LastNumber++;
             tokenCounter.UpdatedAt = DateTime.UtcNow;
 
-            if (tokenCounter.LastNumber > tokenCounter.MaxPerSeries)
-            {
-                if (tokenCounter.SeriesLetter[0] < 'Z')
-                {
-                    tokenCounter.SeriesLetter = ((char)(tokenCounter.SeriesLetter[0] + 1)).ToString();
-                    tokenCounter.LastNumber = 1;
-                }
-                else
-                {
-                    throw new InvalidOperationException($"Token space exhausted for {department} today. Please contact admin.");
-                }
-            }
-
+            // Save immediately to reserve the number
             await _context.SaveChangesAsync();
+            
             await _auditService.LogAsync(actorUserId, "TokenGenerated", "TokenCounter", tokenCounter.CounterId, tokenCounter);
 
-            return $"{tokenCounter.SeriesLetter}{deptLetter}-{tokenCounter.LastNumber:D3}";
+            return $"{prefix}-{tokenCounter.LastNumber:D3}";
         }
         
         private class ResolvedTestDto

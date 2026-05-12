@@ -12,8 +12,8 @@ using SynOS.Data;
 namespace SynOS.Data.Migrations
 {
     [DbContext(typeof(SynOSDbContext))]
-    [Migration("20260510064146_AddReferralStatusAndReceivables")]
-    partial class AddReferralStatusAndReceivables
+    [Migration("20260511162514_AddPaymentCollectionModelToPartner")]
+    partial class AddPaymentCollectionModelToPartner
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -35,7 +35,7 @@ namespace SynOS.Data.Migrations
                         .HasColumnType("decimal(18,4)");
 
                     b.Property<decimal>("AmountReceived")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18, 4)");
 
                     b.Property<string>("Currency")
                         .IsRequired()
@@ -3545,7 +3545,7 @@ namespace SynOS.Data.Migrations
                         .HasColumnType("decimal(18, 4)");
 
                     b.Property<decimal>("AmountPaid")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18, 4)");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -3727,7 +3727,7 @@ namespace SynOS.Data.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<decimal>("BaseAmount")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18, 4)");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -4106,6 +4106,38 @@ namespace SynOS.Data.Migrations
                     b.ToTable("ReferenceRanges");
                 });
 
+            modelBuilder.Entity("SynOS.Models.Entities.Referral.ReferralApprovalLog", b =>
+                {
+                    b.Property<Guid>("LogId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ApprovedByUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("BackfilledVisitCount")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("CommissionPercentageAssigned")
+                        .HasColumnType("decimal(18, 4)");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<Guid>("PartnerId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("Timestamp")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("LogId");
+
+                    b.HasIndex("PartnerId");
+
+                    b.ToTable("ReferralApprovalLogs");
+                });
+
             modelBuilder.Entity("SynOS.Models.Entities.Referral.ReferralCommissionRule", b =>
                 {
                     b.Property<Guid>("RuleId")
@@ -4200,8 +4232,18 @@ namespace SynOS.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<DateTimeOffset?>("ApprovedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid?>("ApprovedByUserId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<int>("CalculationBase")
                         .HasColumnType("int");
+
+                    b.Property<string>("ClinicName")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
 
                     b.Property<string>("ContactInfo")
                         .HasMaxLength(500)
@@ -4211,10 +4253,14 @@ namespace SynOS.Data.Migrations
                         .HasColumnType("datetimeoffset");
 
                     b.Property<decimal>("DefaultCommissionPercentage")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18, 4)");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
+
+                    b.Property<string>("Location")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -4227,9 +4273,11 @@ namespace SynOS.Data.Migrations
                         .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("PaymentCollectionModel")
-                        .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
 
                     b.Property<DateTimeOffset>("UpdatedAt")
                         .HasColumnType("datetimeoffset");
@@ -4252,7 +4300,7 @@ namespace SynOS.Data.Migrations
                         .HasColumnType("decimal(18, 4)");
 
                     b.Property<decimal>("AmountPaid")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18, 4)");
 
                     b.Property<string>("Currency")
                         .IsRequired()
@@ -5818,6 +5866,9 @@ namespace SynOS.Data.Migrations
                     b.Property<DateTime>("TokenDate")
                         .HasColumnType("datetime2");
 
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
                     b.HasKey("VisitId");
 
                     b.HasIndex("AssignedReceptionistId");
@@ -7090,6 +7141,17 @@ namespace SynOS.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("Parameter");
+                });
+
+            modelBuilder.Entity("SynOS.Models.Entities.Referral.ReferralApprovalLog", b =>
+                {
+                    b.HasOne("SynOS.Models.Entities.Referral.ReferralPartner", "Partner")
+                        .WithMany()
+                        .HasForeignKey("PartnerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Partner");
                 });
 
             modelBuilder.Entity("SynOS.Models.Entities.Referral.ReferralCommissionRule", b =>

@@ -39,6 +39,47 @@ namespace SynOS.Api.Controllers.Admin.Referral
             }
         }
 
+        [HttpPost("draft")]
+        [Authorize(Roles = "Admin,Receptionist")]
+        public async Task<IActionResult> CreateDraftPartner([FromBody] ReferralPartnerCreateDto createDto)
+        {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+            
+            try 
+            {
+                var partner = await _referralPartnerService.CreateDraftPartnerAsync(createDto, _userContext.CurrentUserId);
+                return Ok(partner);
+            } 
+            catch (InvalidOperationException ex) 
+            { 
+                return Conflict(new { message = ex.Message }); 
+            }
+        }
+
+        [HttpPost("{id}/approve")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> ApprovePartner(Guid id, [FromBody] PartnerApprovalRequest request)
+        {
+            try 
+            {
+                await _referralPartnerService.ApprovePartnerAsync(id, request.CommissionPercentage, _userContext.CurrentUserId);
+                return NoContent();
+            } 
+            catch (System.Collections.Generic.KeyNotFoundException) 
+            { 
+                return NotFound(); 
+            }
+            catch (InvalidOperationException ex) 
+            { 
+                return BadRequest(new { message = ex.Message }); 
+            }
+        }
+
+        public class PartnerApprovalRequest
+        {
+            public decimal CommissionPercentage { get; set; }
+        }
+
         [HttpGet]
         [Authorize(Roles = "Admin,Receptionist")]
         public async Task<IActionResult> GetAllReferralPartners()

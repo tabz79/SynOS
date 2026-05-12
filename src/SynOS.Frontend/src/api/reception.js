@@ -487,6 +487,36 @@ export const ReceptionApi = {
     },
 
     /**
+     * Creates a new referral partner draft.
+     * @param {Object} payload - { name, partnerType, clinicName, location, contactInfo }
+     * @returns {Promise<Object>}
+     */
+    createDraftPartner: async (payload) => {
+        const response = await fetch(ReceptionApi.withBranchId('/api/v1/admin/referral-partners/draft'), {
+            method: 'POST',
+            headers: ReceptionApi.getHeaders(),
+            body: JSON.stringify(payload)
+        });
+        if (!response.ok) throw new Error("Failed to create draft partner");
+        return response.json();
+    },
+
+    /**
+     * Updates the payment collection model (Prepaid vs Commission) for a visit.
+     * @param {string} visitId
+     * @param {string} model - 'LabCollects' or 'PartnerCollects'
+     * @returns {Promise<void>}
+     */
+    updatePaymentCollectionModel: async (visitId, model) => {
+        const response = await fetch(ReceptionApi.withBranchId('/api/v1/reception/visit/collection-model'), {
+            method: 'PATCH',
+            headers: ReceptionApi.getHeaders(),
+            body: JSON.stringify({ visitId, model })
+        });
+        if (!response.ok) throw new Error('Failed to update collection model');
+    },
+
+    /**
      * Adds a provisional referral draft to the visit.
      * @param {string} visitId
      * @param {string} providerName

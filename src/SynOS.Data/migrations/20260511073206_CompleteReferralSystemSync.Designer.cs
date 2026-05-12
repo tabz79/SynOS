@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SynOS.Data;
 
@@ -11,9 +12,11 @@ using SynOS.Data;
 namespace SynOS.Data.Migrations
 {
     [DbContext(typeof(SynOSDbContext))]
-    partial class SynOSDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260511073206_CompleteReferralSystemSync")]
+    partial class CompleteReferralSystemSync
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -4270,6 +4273,7 @@ namespace SynOS.Data.Migrations
                         .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("PaymentCollectionModel")
+                        .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
@@ -5652,11 +5656,6 @@ namespace SynOS.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid?>("BranchId")
-                        .IsRequired()
-                        .HasMaxLength(1)
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<DateTime>("Day")
                         .HasColumnType("datetime2");
 
@@ -5671,9 +5670,10 @@ namespace SynOS.Data.Migrations
                     b.Property<int>("MaxPerSeries")
                         .HasColumnType("int");
 
-                    b.Property<string>("Prefix")
-                        .HasMaxLength(5)
-                        .HasColumnType("nvarchar(5)");
+                    b.Property<string>("SeriesLetter")
+                        .IsRequired()
+                        .HasMaxLength(1)
+                        .HasColumnType("nvarchar(1)");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime2");

@@ -72,14 +72,19 @@ namespace SynOS.Services.Reception
             _context.Patients.Add(patient);
             await _context.SaveChangesAsync();
 
-            return new IntakeRegisterPatientResponse { PatientId = patient.PatientId };
+            return new IntakeRegisterPatientResponse 
+            { 
+                PatientId = patient.PatientId,
+                MRN = patient.MRN 
+            };
         }
 
         private async Task<string> GenerateCanonicalMrnAsync()
         {
-            // FALLBACK: Software Sequence (Max + 1)
+            // CANONICAL FIX: Order by MRN descending to find the actual highest sequence
+            // CreatedAt is unreliable if multiple records are seeded/imported at once.
             var last = await _context.Patients
-                .OrderByDescending(p => p.CreatedAt)
+                .OrderByDescending(p => p.MRN)
                 .Select(p => p.MRN)
                 .FirstOrDefaultAsync();
 
@@ -117,7 +122,21 @@ namespace SynOS.Services.Reception
                  nextVal = 604661761; // Start at 'A00001' for brand new DB
             }
 
-            return IntToBase36(nextVal).PadLeft(6, '0');
+            // DEFENSIVE CHECK: Ensure the generated MRN doesn't already exist
+            // This handles cases where manual entries might have fragmented the sequence.
+            string candidateMrn = IntToBase36(nextVal).PadLeft(6, '0');
+            bool exists = await _context.Patients.AnyAsync(p => p.MRN == candidateMrn);
+            int safetyCounter = 0;
+
+            while (exists && safetyCounter < 100)
+            {
+                nextVal++;
+                candidateMrn = IntToBase36(nextVal).PadLeft(6, '0');
+                exists = await _context.Patients.AnyAsync(p => p.MRN == candidateMrn);
+                safetyCounter++;
+            }
+
+            return candidateMrn;
         }
 
         private static string IntToBase36(long value)

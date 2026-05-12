@@ -33,7 +33,13 @@ namespace SynOS.Api.Controllers.Reception
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { message = "An error occurred during registration.", details = ex.Message });
+                // EXPOSE DETAILS FOR STABILIZATION PHASE
+                return StatusCode(500, new { 
+                    message = "An error occurred during registration.", 
+                    details = ex.Message,
+                    inner = ex.InnerException?.Message,
+                    stack = ex.StackTrace 
+                });
             }
         }
     }

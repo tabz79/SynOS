@@ -12,7 +12,8 @@ namespace SynOS.Services
         Task<ReceptionStartVisitResponse> RemoveOrderAsync(Guid visitId, Guid orderId, Guid actorUserId);
         Task SetVisitReferralAsync(Guid visitId, Guid referralPartnerId, Guid actorUserId);
         Task RemoveVisitReferralAsync(Guid visitId, Guid actorUserId);
-        Task UpdateVisitReferrerTextAsync(Guid visitId, string? referrerText, Guid actorUserId);
+        Task UpdateReferrerTextAsync(Guid visitId, string? referrerText, Guid actorUserId);
+        Task SetVisitCollectionModelAsync(Guid visitId, string model, Guid actorUserId);
         Task MarkVisitAsPrepaidAsync(Guid visitId, Guid actorUserId);
         Task<ReceptionCompletePaymentResponse> CompletePaymentAsync(ReceptionCompletePaymentRequest request, Guid userId);
         Task<ReceptionVisitSummaryResponse> GetVisitSummaryAsync(Guid visitId);

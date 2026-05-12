@@ -13,5 +13,6 @@ namespace SynOS.Models.DTOs.Reception
     public class IntakeRegisterPatientResponse
     {
         public Guid PatientId { get; set; }
+        public string MRN { get; set; } = string.Empty;
     }
 }

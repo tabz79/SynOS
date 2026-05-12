@@ -44,6 +44,7 @@ using SynOS.Services.Settlements; // ADDED
 using SynOS.Services.Phlebotomy; // ADDED
 using SynOS.Services.Reporting; // ADDED
 using SynOS.Services.Inventory; // ADDED
+using SynOS.Services.Time; // ADDED
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -228,6 +229,8 @@ builder.Services.AddHrmsInterpretation(); // ADDED
 builder.Services.AddHrmsIntelligenceWiring(); // ADDED
 builder.Services.AddOperationalServices(); // ADDED
 builder.Services.AddAssignmentServices(); // ADDED
+builder.Services.AddScoped<ILabTimeProvider, LabTimeProvider>(); // ADDED
+builder.Services.AddScoped<IVisitLifecyclePolicy, VisitLifecyclePolicy>(); // ADDED
 
 // Register Payroll services
 builder.Services.AddScoped<SynOS.Services.Payroll.Orchestration.IPayrollWorkflowService, SynOS.Services.Payroll.Orchestration.PayrollWorkflowService>();
@@ -258,7 +261,9 @@ builder.Services.AddScoped<IReceptionFlowService>(provider =>
         provider.GetRequiredService<IWorkRoutingEngine>(), // ADDED
         provider.GetRequiredService<ISpecimenGroupingService>(), // ADDED
         provider.GetRequiredService<IEventPublishingService>(), // ADDED
-        provider.GetRequiredService<INotifier>() // ADDED
+        provider.GetRequiredService<INotifier>(), // ADDED
+        provider.GetRequiredService<IVisitLifecyclePolicy>(), // ADDED
+        provider.GetRequiredService<ILabTimeProvider>() // ADDED
     ));
 builder.Services.AddScoped<IResultService, ResultService>();
 builder.Services.AddScoped<IPhlebotomyService, PhlebotomyService>();

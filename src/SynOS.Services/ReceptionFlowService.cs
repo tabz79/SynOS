@@ -19,6 +19,7 @@ using SynOS.Services.Assignment; // ADDED
 using SynOS.Models.Entities.Operations; // ADDED
 using SynOS.Models.Entities.Referral; // ADDED
 using SynOS.Models.ReadModels; // ADDED
+using SynOS.Services.Time; // ADDED
 
 
 namespace SynOS.Services
@@ -39,6 +40,8 @@ namespace SynOS.Services
         private readonly ISpecimenGroupingService _groupingService; // ADDED
         private readonly IEventPublishingService _eventPublishingService; // ADDED
         private readonly INotifier _notifier; // ADDED
+        private readonly IVisitLifecyclePolicy _lifecyclePolicy; // ADDED
+        private readonly ILabTimeProvider _labTimeProvider; // ADDED
 
         public ReceptionFlowService(
             SynOSDbContext context,
@@ -54,7 +57,9 @@ namespace SynOS.Services
             IWorkRoutingEngine routingEngine,
             ISpecimenGroupingService groupingService,
             IEventPublishingService eventPublishingService,
-            INotifier notifier) // ADDED
+            INotifier notifier,
+            IVisitLifecyclePolicy lifecyclePolicy,
+            ILabTimeProvider labTimeProvider) // ADDED
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
             _visitService = visitService ?? throw new ArgumentNullException(nameof(visitService));
@@ -70,6 +75,8 @@ namespace SynOS.Services
             _groupingService = groupingService ?? throw new ArgumentNullException(nameof(groupingService)); // ADDED
             _eventPublishingService = eventPublishingService ?? throw new ArgumentNullException(nameof(eventPublishingService)); // ADDED
             _notifier = notifier ?? throw new ArgumentNullException(nameof(notifier)); // ADDED
+            _lifecyclePolicy = lifecyclePolicy ?? throw new ArgumentNullException(nameof(lifecyclePolicy)); // ADDED
+            _labTimeProvider = labTimeProvider ?? throw new ArgumentNullException(nameof(labTimeProvider)); // ADDED
         }
 
         // small helper to centralize a defensive check (keeps ctor lines tidy)
@@ -136,7 +143,7 @@ namespace SynOS.Services
             // If a Draft visit exists for this patient at this desk, return it instead of creating duplicate.
             var branchId = _userContext.CurrentBranchId;
             var currentUserId = _userContext.CurrentUserId;
-            var existingDraft = await _context.Visits
+            var existingVisit = await _context.Visits
                 .Include(v => v.Patient)
                 .Include(v => v.Orders)
                 .Include(v => v.Invoices).ThenInclude(i => i.Payments)
@@ -144,20 +151,16 @@ namespace SynOS.Services
                 .FirstOrDefaultAsync(v => 
                     v.PatientId == request.PatientId && 
                     v.BranchId == branchId && 
-                    v.AssignedReceptionistId == currentUserId &&
-                    v.Status == VisitStatus.Draft);
+                    v.AssignedReceptionistId == currentUserId);
 
-            if (existingDraft != null)
+            var today = _labTimeProvider.GetLabToday();
+            if (existingVisit != null && 
+                existingVisit.TokenDate == today && // ONLY resume if it's the current operational day
+                _lifecyclePolicy.CanResume(existingVisit.Status))
             {
-                // SANITY CHECK: Double-check status to prevent "drift" pollution
-                if (existingDraft.Status == VisitStatus.Draft)
-                {
-                    _logger.LogInformation("StartVisit Idempotency: returning existing Draft visit {VisitId} (Token: {Token})", existingDraft.VisitId, existingDraft.Token);
-                    return await MapToStartVisitResponse(existingDraft);
-                }
-                
-                _logger.LogWarning("StartVisit Idempotency Conflict: Found visit {VisitId} for patient {PatientId} at desk {UserId}, but status is {Status} instead of Draft. Ignoring.", 
-                    existingDraft.VisitId, request.PatientId, currentUserId, existingDraft.Status);
+                _logger.LogInformation("StartVisit Idempotency: resuming existing visit {VisitId} (Token: {Token}, Status: {Status})", 
+                    existingVisit.VisitId, existingVisit.Token, existingVisit.Status);
+                return await MapToStartVisitResponse(existingVisit);
             }
             // ------------------------------------------------------------
 
@@ -275,9 +278,34 @@ namespace SynOS.Services
             await _visitService.RemoveVisitReferralAsync(visitId, actorUserId);
         }
 
-        public async Task UpdateVisitReferrerTextAsync(Guid visitId, string? referrerText, Guid actorUserId)
+        public async Task UpdateReferrerTextAsync(Guid visitId, string? referrerText, Guid actorUserId)
         {
-            await _visitService.UpdateVisitReferrerTextAsync(visitId, referrerText, actorUserId);
+            var visit = await _context.Visits.FindAsync(visitId);
+            if (visit == null) throw new KeyNotFoundException($"Visit {visitId} not found");
+
+            visit.ReferrerText = referrerText;
+            visit.UpdatedAt = DateTimeOffset.UtcNow;
+            await _context.SaveChangesAsync();
+            
+            _logger.LogInformation("Updated ReferrerText for Visit {VisitId}", visitId);
+        }
+
+        public async Task SetVisitCollectionModelAsync(Guid visitId, string model, Guid actorUserId)
+        {
+            var visit = await _context.Visits.FindAsync(visitId);
+            if (visit == null) throw new KeyNotFoundException($"Visit {visitId} not found");
+
+            var validModels = new[] { "LabCollects", "PartnerCollects" };
+            if (!validModels.Contains(model, StringComparer.OrdinalIgnoreCase))
+            {
+                throw new ArgumentException($"Invalid PaymentCollectionModel: {model}");
+            }
+
+            visit.PaymentCollectionModel = model;
+            visit.UpdatedAt = DateTimeOffset.UtcNow;
+            await _context.SaveChangesAsync();
+
+            _logger.LogInformation("Updated PaymentCollectionModel for Visit {VisitId} to {Model}", visitId, model);
         }
 
         public async Task AddReferralDraftAsync(Guid visitId, string providerName, string? clinicName, string? location, Guid actorUserId)
@@ -288,8 +316,8 @@ namespace SynOS.Services
 
             if (visit == null) throw new KeyNotFoundException($"Visit {visitId} not found");
             
-            // Check status - ensure not finalized (though read-only in UI handles this, backend should guard)
-            if (new[] { VisitStatus.Paid, VisitStatus.Cancelled }.Contains(visit.Status))
+            // Check status - ensure not terminal (solidified)
+            if (_lifecyclePolicy.IsTerminal(visit.Status))
             {
                 throw new InvalidOperationException($"Cannot add draft to solidified visit status: {visit.Status}");
             }

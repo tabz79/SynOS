@@ -39,6 +39,7 @@ namespace SynOS.Models.DTOs.Reception
         public string Status { get; set; } = "Draft"; // Draft, Billed, Paid, Cancelled
         public bool IsReferred { get; set; }
         public IntakeReferralPartner? ReferralPartner { get; set; }
+        public string PaymentCollectionModel { get; set; } = "LabCollects";
         public List<IntakeTestItem> Tests { get; set; } = new();
     }
 
@@ -46,7 +47,6 @@ namespace SynOS.Models.DTOs.Reception
     {
         public Guid PartnerId { get; set; }
         public string Name { get; set; } = string.Empty;
-        public string PaymentCollectionModel { get; set; } = "LabCollects";
     }
 
     public class IntakeTestItem
@@ -105,7 +105,6 @@ namespace SynOS.Models.DTOs.Reception
     {
         public Guid Id { get; set; }
         public string DisplayName { get; set; } = string.Empty;
-        public string CollectionLabel { get; set; } = string.Empty; // e.g. "Prepaid (Partner)" or "Patient Pay"
     }
 
     public class IntakeUiHints

@@ -319,15 +319,34 @@ export function VisitDetails({ snapshot, visitId, onVisitUpdated, isPrepaidInten
                         type="checkbox"
                         id="chkPrepaid"
                         checked={isPrepaidIntent}
-                        onChange={(e) => setIsPrepaidIntent(e.target.checked)}
-                        disabled={isReadOnly && !isCorrectionIntent} // Allow in Correction
+                        onChange={async (e) => {
+                            const checked = e.target.checked;
+                            setIsPrepaidIntent(checked);
+                            
+                            // OPX-GPT-5: Sync Visit-Level Authority with Backend
+                            if (visitId && !isReadOnly) {
+                                setIsProcessing(true);
+                                try {
+                                    const model = checked ? "PartnerCollects" : "LabCollects";
+                                    await ReceptionApi.updatePaymentCollectionModel(visitId, model);
+                                    if (onVisitUpdated) onVisitUpdated();
+                                } catch (err) {
+                                    console.error("Failed to sync collection model", err);
+                                    // Revert UI state on failure
+                                    setIsPrepaidIntent(!checked);
+                                } finally {
+                                    setIsProcessing(false);
+                                }
+                            }
+                        }}
+                        disabled={isReadOnly && !isCorrectionIntent}
                         className="mt-0.5 accent-synos-primary cursor-pointer w-4 h-4"
                     />
                     <div className="space-y-0.5">
                         <label htmlFor="chkPrepaid" className={cn("cursor-pointer transition-colors type-body",
                             isPrepaidIntent
                                 ? (isDark ? "text-amber-400" : "text-amber-700")
-                                : "" // Inherits type-body default
+                                : ""
                         )}>
                             Prepaid Bill (Patient already paid)
                         </label>
@@ -352,14 +371,6 @@ export function VisitDetails({ snapshot, visitId, onVisitUpdated, isPrepaidInten
                             <span className="truncate flex-1 tracking-tight type-value">
                                 {snapshot.billing.referral.partner.displayName || "Partner"}
                             </span>
-
-                            {/* Collection Label Badge */}
-                            {snapshot.billing.referral.partner.collectionLabel && (
-                                <span className={cn("type-code px-1.5 py-0.5 rounded border uppercase",
-                                    isDark ? "bg-zinc-900 border-zinc-700 text-zinc-500" : "bg-zinc-100 border-zinc-200 text-zinc-600")}>
-                                    {snapshot.billing.referral.partner.collectionLabel}
-                                </span>
-                            )}
 
                             {/* Silent Lock: If not editable, show nothing. If editable, show Remove. */}
                             {canEditReferral && (
@@ -671,14 +682,18 @@ function ReferralCombinedInput({ initialValue, isReadOnly, isProcessing, partner
                                 e.preventDefault(); // Prevent blur
                                 isSelecting.current = true;
                                 onApplyPartner(p.referralPartnerId);
-                                // The component will likely unmount or change state here, 
-                                // but we set it back just in case for long-lived components
                                 setTimeout(() => { isSelecting.current = false; }, 500);
                             }}
-                            className={cn("w-full text-left px-3 py-2 transition-colors border-b last:border-0 type-label",
+                            className={cn("w-full text-left px-3 py-2 transition-colors border-b last:border-0 type-label flex items-center justify-between",
                                 ui.hover, isDark ? "border-zinc-800/50" : "border-zinc-100")}
                         >
-                            {p.name}
+                            <span className="truncate">{p.name}</span>
+                            {p.status === 0 && (
+                                <span className={cn("text-[9px] font-bold px-1 py-0.5 rounded border leading-none uppercase", 
+                                    isDark ? "bg-amber-500/10 border-amber-500/30 text-amber-500" : "bg-amber-100 border-amber-300 text-amber-700")}>
+                                    Draft
+                                </span>
+                            )}
                         </button>
                     ))}
                 </div>

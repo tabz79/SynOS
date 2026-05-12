@@ -228,6 +228,16 @@ export const FinanceApi = {
         return response.json();
     },
 
+    createDraftPartner: async (data) => {
+        const response = await fetch('/api/v1/admin/referral-partners/draft', {
+            method: 'POST',
+            headers: FinanceApi.getHeaders(),
+            body: JSON.stringify(data)
+        });
+        if (!response.ok) throw new Error("Failed to create draft partner");
+        return response.json();
+    },
+
     updateReferralPartner: async (id, data) => {
         const response = await fetch(`/api/v1/admin/referral-partners/${id}`, {
             method: 'PUT',
@@ -244,6 +254,19 @@ export const FinanceApi = {
             headers: FinanceApi.getHeaders()
         });
         if (!response.ok) throw new Error("Failed to deactivate referral partner");
+        return true;
+    },
+
+    approvePartner: async (id, commissionPercentage) => {
+        const response = await fetch(`/api/v1/admin/referral-partners/${id}/approve`, {
+            method: 'POST',
+            headers: FinanceApi.getHeaders(),
+            body: JSON.stringify({ commissionPercentage })
+        });
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.message || "Failed to approve partner");
+        }
         return true;
     },
 

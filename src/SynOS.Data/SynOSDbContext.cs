@@ -141,6 +141,7 @@ namespace SynOS.Data
         public DbSet<ReferralPartner> ReferralPartners { get; set; } = null!;
         public DbSet<ReferralCommissionRule> ReferralCommissionRules { get; set; } = null!;
         public DbSet<ReferralPayableFact> ReferralPayableFacts { get; set; } = null!;
+        public DbSet<ReferralApprovalLog> ReferralApprovalLogs { get; set; } = null!;
         public DbSet<ReferralDraft> ReferralDrafts { get; set; } = null!; // ADDED: Provisional Referral
 
         public DbSet<ImsTubeMaster> ImsTubeMasters { get; set; } = null!;

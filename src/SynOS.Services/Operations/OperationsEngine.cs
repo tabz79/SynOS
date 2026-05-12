@@ -1,4 +1,5 @@
 using System;
+using SynOS.Services.Time; // ADDED
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
@@ -17,19 +18,28 @@ namespace SynOS.Services.Operations
         private readonly SynOSDbContext _context;
         private readonly IOperationalEventWriter _eventWriter;
         private readonly SynOS.Services.Security.IUserContext _userContext;
+        private readonly ILabTimeProvider _labTimeProvider; // ADDED
+        private readonly IVisitLifecyclePolicy _lifecyclePolicy; // ADDED
 
-        public OperationsEngine(SynOSDbContext context, IOperationalEventWriter eventWriter, SynOS.Services.Security.IUserContext userContext)
+        public OperationsEngine(
+            SynOSDbContext context, 
+            IOperationalEventWriter eventWriter, 
+            SynOS.Services.Security.IUserContext userContext,
+            ILabTimeProvider labTimeProvider,
+            IVisitLifecyclePolicy lifecyclePolicy)
         {
             _context = context;
             _eventWriter = eventWriter;
             _userContext = userContext;
+            _labTimeProvider = labTimeProvider;
+            _lifecyclePolicy = lifecyclePolicy;
         }
 
         public async Task<OperationsStatsDto> GetDailyOperationsStatsAsync(Guid branchId, Guid? userId = null)
         {
             if (branchId == Guid.Empty) throw new ArgumentException("BranchId required");
 
-            var today = DateTime.UtcNow.Date;
+            var today = _labTimeProvider.GetLabToday();
             
             int pendingReports = 0;
             double avgTime = 0;
@@ -88,17 +98,30 @@ namespace SynOS.Services.Operations
             // DEBUG TRACING
             Console.WriteLine($"[ActionQueue] Query: Branch={branchId}, Date={date}, Today={today}, Window=[{startDate} - {nextDay})");
 
+            // Use Policy-driven operational window
+            // Rule 1: Show ALL Active (Non-terminal) visits from the retrospective window (7 days)
+            // Rule 2: Show Terminal (Finalized) visits ONLY from the current Operational Today
+            
+            // We fetch statuses in memory or use a list for EF if needed, but since we are refactoring, 
+            // we will use the status definitions from the policy if possible, or keep the list for query performance.
+            var terminalStatuses = _lifecyclePolicy.GetTerminalStatuses();
+            
             var visitQuery = _context.Visits
                 .AsNoTracking()
                 .AsSplitQuery()
                 .Where(v => v.BranchId == branchId && 
                             v.Status != VisitStatus.Cancelled &&
                             (
-                                // Rule 1: Show ALL Active (Unpaid) visits from recent window (7 days) covers clock skew/backlog
-                                (v.Status != VisitStatus.Paid && v.Status != VisitStatus.FullPaid && v.TokenDate >= startDate)
+                                // LIVE VIEW: Active (7 days) + Terminal (Today)
+                                (!includeHistory && 
+                                    (
+                                        (!terminalStatuses.Contains(v.Status) && v.TokenDate >= startDate) ||
+                                        (terminalStatuses.Contains(v.Status) && v.TokenDate >= today && v.TokenDate < nextDay)
+                                    )
+                                )
                                 ||
-                                // Rule 2: Show FINALIZED (Paid) visits ONLY from Today (to keep list clean)
-                                ((v.Status == VisitStatus.Paid || v.Status == VisitStatus.FullPaid) && v.TokenDate >= today && v.TokenDate < nextDay)
+                                // HISTORY VIEW: Terminal (7 days)
+                                (includeHistory && terminalStatuses.Contains(v.Status) && v.TokenDate >= startDate && v.TokenDate < nextDay)
                             ));
 
             if (_userContext.CurrentRole == "Receptionist")
@@ -213,8 +236,8 @@ namespace SynOS.Services.Operations
                     // FIXED: Pass empty list instead of null to prevent NRE in DeriveOperationalStatus
                     OperationalStatus = DeriveOperationalStatus(visit, new List<object>(), assignments.Where(a => a.VisitId == visit.VisitId).Select(a => a.Status).ToList(), visitResults.Select(r => r.Status?.ToString()).ToList().Cast<string?>().ToList(), visitReport?.Status),
                     LastUpdatedAt = CalculateLastUpdatedAt(visit, new List<DateTime?>(), visitResults.Select(r => r.EnteredAt).ToList(), visitReport?.SignedAt),
-                    DateGroup = CalculateDateGroup(visit.TokenDate, DateTime.UtcNow.Date),
-                    IsFinalized = invoice != null && (invoice.Status == "Paid" || invoice.Status == "FullPaid"),
+                    DateGroup = CalculateDateGroup(visit.TokenDate, today),
+                    IsFinalized = _lifecyclePolicy.IsTerminal(visit.Status),
                     
                     AssignedToUserId = visit.AssignedReceptionistId,
                     AssignedToName = visit.AssignedReceptionist?.Name,
@@ -310,7 +333,7 @@ namespace SynOS.Services.Operations
                 })
                 .ToListAsync();
 
-            var today = DateTime.Now.Date;
+            var today = _labTimeProvider.GetLabToday();
 
             return new ActionQueueRowDto
             {
@@ -338,9 +361,9 @@ namespace SynOS.Services.Operations
                 
                 LastUpdatedAt = CalculateLastUpdatedAt(visit, new List<DateTime?>(), results.Select(r => r.EnteredAt).ToList(), report?.SignedAt),
                 
-                DateGroup = CalculateDateGroup(visit.TokenDate, DateTime.UtcNow.Date),
+                DateGroup = CalculateDateGroup(visit.TokenDate, today),
 
-                IsFinalized = invoice != null && (invoice.Status == "Paid" || invoice.Status == "FullPaid"),
+                IsFinalized = _lifecyclePolicy.IsTerminal(visit.Status),
                 
                 AssignedToUserId = visit.AssignedReceptionistId,
                 AssignedToName = visit.AssignedReceptionist?.Name,

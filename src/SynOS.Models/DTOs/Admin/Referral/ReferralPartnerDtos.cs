@@ -9,9 +9,10 @@ namespace SynOS.Models.DTOs.Admin.Referral
         public string Name { get; set; } = string.Empty;
         public PartnerType PartnerType { get; set; }
         public string? ContactInfo { get; set; }
-        public string? PaymentCollectionModel { get; set; } // "LabCollects" or "PartnerCollects"
         public decimal DefaultCommissionPercentage { get; set; }
         public CommissionCalculationBase CalculationBase { get; set; }
+        public PartnerStatus Status { get; set; }
+        public string? PaymentCollectionModel { get; set; }
         public bool IsActive { get; set; }
         public DateTimeOffset CreatedAt { get; set; }
         public DateTimeOffset UpdatedAt { get; set; }
@@ -26,15 +27,12 @@ namespace SynOS.Models.DTOs.Admin.Referral
         [Required]
         public PartnerType PartnerType { get; set; }
 
-        [StringLength(500)]
         public string? ContactInfo { get; set; }
-
-        [Required]
-        public string PaymentCollectionModel { get; set; } = "LabCollects";
 
         public decimal DefaultCommissionPercentage { get; set; }
         public CommissionCalculationBase CalculationBase { get; set; } = CommissionCalculationBase.AfterDiscounts;
 
+        public string? PaymentCollectionModel { get; set; }
         public bool IsActive { get; set; } = true;
     }
 
@@ -47,15 +45,11 @@ namespace SynOS.Models.DTOs.Admin.Referral
         [Required]
         public PartnerType PartnerType { get; set; }
 
-        [StringLength(500)]
         public string? ContactInfo { get; set; }
-
-        [Required]
-        public string PaymentCollectionModel { get; set; } = "LabCollects";
         
         public decimal DefaultCommissionPercentage { get; set; }
         public CommissionCalculationBase CalculationBase { get; set; }
-
+        public string? PaymentCollectionModel { get; set; }
         public bool IsActive { get; set; }
     }
 }
