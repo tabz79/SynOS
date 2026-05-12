@@ -91,17 +91,38 @@ const ReceptionCheckinFlow: React.FC = () => {
     const idempotencyKey = uuidv4();
 
     try {
-      const response = await apiClient.post('/visits', {
+      // Split tests into normal and ad-hoc (ad-hoc tests have testCode starting with AD-HOC-)
+      const normalTests = selectedTests.filter(t => !t.testCode.startsWith('AD-HOC-'));
+      const adHocTests = selectedTests.filter(t => t.testCode.startsWith('AD-HOC-'));
+
+      // 1. Create Visit with normal tests (or just a visit shell if all are ad-hoc)
+      const response = await apiClient.post('/reception/start-visit', {
         patientId: selectedPatient.patientId,
-        department: selectedTests[0].department, // Assuming all tests are from same dept for simplicity
-        testCodes: selectedTests.map(t => t.testCode),
+        department: normalTests.length > 0 ? normalTests[0].department : 'Outsourced',
+        testCodes: normalTests.map(t => t.testCode),
         referrerId: referralType === 'internal' ? 'some-internal-id' : null, // Placeholder
       }, {
         headers: {
           'Idempotency-Key': idempotencyKey,
         },
       });
-      setVisitDetails(response.data);
+
+      const newVisit = response.data.data;
+      const visitId = newVisit.visitId;
+
+      // 2. Add ad-hoc outsourced tests if any
+      for (const test of adHocTests) {
+        await apiClient.post('/reception/visit/outsource-test', {
+          visitId: visitId,
+          testName: test.name,
+          price: test.price
+        });
+      }
+
+      // 3. Re-fetch final visit summary to ensure invoice is correct
+      const summaryResponse = await apiClient.get(`/reception/visit-summary/${visitId}`);
+      setVisitDetails(summaryResponse.data.data);
+
       setStep(5); // Move to payment step
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to create visit.');

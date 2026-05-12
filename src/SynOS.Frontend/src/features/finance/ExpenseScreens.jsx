@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { 
     Search, 
     Filter, 
@@ -21,10 +22,19 @@ import {
     ChevronDown,
     ChevronUp,
     IndianRupee,
-    Beaker
+    Beaker,
+    X,
+    Plus,
+    Mail,
+    Phone,
+    MapPin,
+    UserPlus,
+    ShieldCheck,
+    History,
+    Loader2
 } from 'lucide-react';
 import { FinanceApi } from '@/api/finance';
-import { useAuth } from '@/context/AuthContext';
+import { cn } from '@/lib/utils';
 
 // --- SHARED COMPONENTS (Finance Screens Pattern) ---
 
@@ -144,8 +154,6 @@ const BulkSettleVendorModal = ({ isOpen, onClose, vendor, onSettled }) => {
     );
 };
 
-import { X } from 'lucide-react';
-
 // --- 1. EXPENSE FEED SCREEN (SpendFacts Only) ---
 
 export const ExpenseFeedScreen = () => {
@@ -154,11 +162,7 @@ export const ExpenseFeedScreen = () => {
     const [stats, setStats] = useState(null);
     const [filterRange, setFilterRange] = useState('30D');
 
-    useEffect(() => {
-        loadData();
-    }, [filterRange]);
-
-    const loadData = async () => {
+    const loadData = useCallback(async () => {
         try {
             setLoading(true);
             const start = new Date();
@@ -178,7 +182,11 @@ export const ExpenseFeedScreen = () => {
         } finally {
             setLoading(false);
         }
-    };
+    }, [filterRange]);
+
+    useEffect(() => {
+        loadData();
+    }, [filterRange, loadData]);
 
     return (
         <div className="p-6 space-y-6 animate-in fade-in duration-500">
@@ -323,7 +331,7 @@ export const VendorPayablesScreen = () => {
     const [summary, setSummary] = useState([]);
     const [loading, setLoading] = useState(true);
     const [expandedVendor, setExpandedVendor] = useState(null);
-    const [vendorBills, setVendorBills] = useState({});
+    const [vendorBills] = useState({});
     const [settlementModal, setSettlementModal] = useState({ isOpen: false, vendor: null });
 
     useEffect(() => {
@@ -680,15 +688,483 @@ export const DailyExpensesScreen = () => {
     );
 };
 
-// --- 4. OUTSOURCED PAYABLES (Stub for completeness) ---
+// --- 4. OUTSOURCED PAYABLES SCREEN (Reference Lab Reconciliation) ---
+
+const SettleOutsourcedModal = ({ isOpen, onClose, payable, onSettled }) => {
+    const [amount, setAmount] = useState(0);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    useEffect(() => {
+        if (payable) setAmount(payable.amountDue - payable.amountPaid);
+    }, [payable]);
+
+    if (!isOpen || !payable) return null;
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        try {
+            setIsSubmitting(true);
+            await FinanceApi.settleOutsourcedPayable(payable.id, amount);
+            onSettled();
+            onClose();
+        } catch (err) {
+            alert(err.message);
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    return (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+            <div className="bg-white dark:bg-zinc-950 w-full max-w-md rounded-[2.5rem] shadow-2xl border border-zinc-200 dark:border-white/10 overflow-hidden animate-in zoom-in-95 duration-300">
+                <div className="p-8 border-b dark:border-zinc-800 border-zinc-200 flex items-center justify-between bg-zinc-50/50 dark:bg-zinc-900/40">
+                    <div>
+                        <h3 className="text-xl font-black dark:text-white tracking-tight">Lab Settlement</h3>
+                        <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mt-0.5">{payable.referenceLabName}</p>
+                    </div>
+                    <button onClick={onClose} className="p-2 hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded-xl transition-colors">
+                        <X className="w-5 h-5 text-zinc-500" />
+                    </button>
+                </div>
+
+                <form onSubmit={handleSubmit} className="p-8 space-y-6">
+                    <div className="space-y-1">
+                        <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest ml-1">Patient & Test</p>
+                        <div className="p-4 rounded-2xl bg-zinc-100 dark:bg-white/5 border dark:border-zinc-800 border-zinc-200">
+                            <p className="text-sm font-bold dark:text-zinc-200">{payable.patientName}</p>
+                            <p className="text-xs text-zinc-500">{payable.testName}</p>
+                        </div>
+                    </div>
+
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black uppercase text-zinc-500 ml-4 tracking-widest">Payment Amount (₹)</label>
+                        <div className="relative">
+                            <span className="absolute left-6 top-1/2 -translate-y-1/2 text-xl font-bold text-zinc-400">₹</span>
+                            <input 
+                                type="number"
+                                required
+                                value={amount}
+                                onChange={(e) => setAmount(parseFloat(e.target.value))}
+                                className="w-full bg-zinc-100 dark:bg-white/5 border-none rounded-2xl pl-12 pr-6 py-4 text-xl font-black focus:ring-2 ring-synos-primary outline-none transition-all dark:text-white"
+                                max={payable.amountDue - payable.amountPaid}
+                                min={1}
+                            />
+                        </div>
+                        <p className="text-[10px] text-zinc-400 ml-4">Balance: ₹{(payable.amountDue - payable.amountPaid).toLocaleString()}</p>
+                    </div>
+
+                    <button 
+                        type="submit"
+                        disabled={isSubmitting || amount <= 0}
+                        className="w-full bg-synos-primary text-white font-black py-5 rounded-2xl shadow-xl shadow-synos-primary/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                    >
+                        {isSubmitting ? 'Recording...' : 'Authorize Payout'}
+                        <CheckCircle2 className="w-5 h-5" />
+                    </button>
+                </form>
+            </div>
+        </div>
+    );
+};
 
 export const OutsourcedPayablesScreen = () => {
+    const { tab = 'active' } = useParams();
+    const navigate = useNavigate();
+    const [payables, setPayables] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [settleModal, setSettleModal] = useState({ isOpen: false, payable: null });
+    const [searchQuery, setSearchQuery] = useState('');
+
+    useEffect(() => {
+        loadData();
+    }, []);
+
+    const loadData = async () => {
+        try {
+            setLoading(true);
+            const data = await FinanceApi.getOutsourcedPayables();
+            setPayables(data);
+        } catch (err) {
+            console.error("Failed to load outsourced payables:", err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const filteredPayables = payables.filter(p => {
+        const matchesSearch = p.referenceLabName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            p.patientName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            p.testName.toLowerCase().includes(searchQuery.toLowerCase());
+        
+        if (!matchesSearch) return false;
+
+        if (tab === 'pending') return p.status !== 'Settled';
+        if (tab === 'history') return p.status === 'Settled';
+        if (tab === 'active') return p.status !== 'Settled'; // Simplified for now
+        
+        return true;
+    });
+
+    const stats = {
+        totalDue: payables.reduce((acc, p) => acc + (p.amountDue - p.amountPaid), 0),
+        pendingCount: payables.filter(p => p.status !== 'Settled').length,
+        settledToday: payables.filter(p => p.status === 'Settled' && new Date(p.settledAt).toDateString() === new Date().toDateString())
+            .reduce((acc, p) => acc + p.amountPaid, 0)
+    };
+
     return (
-        <div className="p-20 text-center flex flex-col items-center justify-center gap-4">
-            <Beaker className="w-12 h-12 text-zinc-300 animate-pulse" />
-            <div className="space-y-1">
-                <h3 className="text-lg font-bold text-zinc-400 italic">Processing Reference Lab Reconciliation</h3>
-                <p className="text-sm text-zinc-500 max-w-sm">Synchronizing external test facts with settlement obligations.</p>
+        <div className="p-6 space-y-6 animate-in fade-in duration-500">
+            <div className="flex flex-col gap-1">
+                <div className="flex items-center justify-between">
+                    <h1 className="text-xl font-bold dark:text-white text-zinc-900 flex items-center gap-2">
+                        <Beaker className="w-5 h-5 text-synos-primary" />
+                        Outsourced Lab Payables
+                    </h1>
+                    <div className="flex items-center gap-1 bg-zinc-100 dark:bg-white/5 p-1 rounded-xl border dark:border-white/10 border-zinc-200">
+                        {['active', 'labs', 'pending', 'history'].map((t) => (
+                            <button
+                                key={t}
+                                onClick={() => navigate(`/finance/outsourcing/${t}`)}
+                                className={`px-4 py-1.5 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all ${
+                                    tab === t 
+                                        ? 'bg-white dark:bg-zinc-800 text-synos-primary shadow-sm shadow-black/5' 
+                                        : 'text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'
+                                }`}
+                            >
+                                {t.replace('-', ' ')}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+                <p className="text-xs text-zinc-500 tracking-tight">Reference lab reconciliation and external test settlement management.</p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <SummaryCard title="Total Lab Liability" value={stats.totalDue.toLocaleString()} subtitle="Aggregate balance due" />
+                <SummaryCard title="Pending Tests" value={stats.pendingCount.toString()} type="warning" subtitle="Awaiting reconciliation" />
+                <SummaryCard title="Settled Today" value={stats.settledToday.toLocaleString()} type="positive" subtitle="Confirmed money-out" />
+            </div>
+
+            <div className="bg-white dark:bg-zinc-900/20 border dark:border-zinc-800 border-zinc-200 rounded-xl overflow-hidden shadow-sm">
+                <div className="p-4 border-b dark:border-zinc-800 border-zinc-200 flex items-center justify-between bg-zinc-50/50 dark:bg-zinc-900/40">
+                    <div className="relative">
+                        <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" />
+                        <input 
+                            type="text" 
+                            placeholder="Search Lab, Patient or Test..." 
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="pl-9 pr-4 py-1.5 bg-white dark:bg-zinc-950 border dark:border-zinc-800 border-zinc-200 rounded-lg text-xs w-80 focus:outline-none focus:ring-1 focus:ring-synos-primary/50"
+                        />
+                    </div>
+                </div>
+
+                <div className="overflow-x-auto">
+                    {tab === 'labs' ? (
+                        <ReferenceLabsView />
+                    ) : (
+                        <table className="w-full text-left border-collapse">
+                            <thead>
+                                <tr className="border-b dark:border-zinc-800 border-zinc-200 bg-zinc-50/30 dark:bg-zinc-900/20">
+                                    <th className="px-6 py-3 text-[10px] font-bold uppercase tracking-widest text-zinc-500">Date</th>
+                                    <th className="px-6 py-3 text-[10px] font-bold uppercase tracking-widest text-zinc-500">Patient & Test</th>
+                                    <th className="px-6 py-3 text-[10px] font-bold uppercase tracking-widest text-zinc-500">Reference Lab</th>
+                                    <th className="px-6 py-3 text-[10px] font-bold uppercase tracking-widest text-zinc-500 text-right">Amount</th>
+                                    <th className="px-6 py-3 text-[10px] font-bold uppercase tracking-widest text-zinc-500 text-center">Status</th>
+                                    <th className="px-6 py-3 text-[10px] font-bold uppercase tracking-widest text-zinc-500 text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y dark:divide-zinc-800 divide-zinc-200">
+                                {loading ? (
+                                    <tr>
+                                        <td colSpan="6" className="px-6 py-10 text-center text-xs text-zinc-500 animate-pulse">Synchronizing with reference lab facts...</td>
+                                    </tr>
+                                ) : filteredPayables.length === 0 ? (
+                                    <tr>
+                                        <td colSpan="6" className="px-6 py-10 text-center text-xs text-zinc-500">No {tab} records found.</td>
+                                    </tr>
+                                ) : (
+                                    filteredPayables.map((payable) => (
+                                        <tr key={payable.id} className="group hover:bg-zinc-50 dark:hover:bg-zinc-800/30 transition-colors">
+                                            <td className="px-6 py-4 text-xs text-zinc-500">
+                                                {new Date(payable.createdAt).toLocaleDateString()}
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <div className="flex flex-col">
+                                                    <span className="text-xs font-bold text-zinc-900 dark:text-zinc-200">{payable.patientName}</span>
+                                                    <span className="text-[10px] text-zinc-500 uppercase tracking-tight">{payable.testName}</span>
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <span className="text-xs font-medium text-zinc-700 dark:text-zinc-300">{payable.referenceLabName}</span>
+                                            </td>
+                                            <td className="px-6 py-4 text-right">
+                                                <p className="text-xs font-bold text-zinc-900 dark:text-zinc-100">₹{payable.amountDue.toLocaleString()}</p>
+                                                {payable.amountPaid > 0 && (
+                                                    <p className="text-[10px] text-emerald-500 font-bold uppercase tracking-tighter">₹{payable.amountPaid.toLocaleString()} Paid</p>
+                                                )}
+                                            </td>
+                                            <td className="px-6 py-4 text-center">
+                                                <StatusBadge status={payable.status} />
+                                            </td>
+                                            <td className="px-6 py-4 text-right">
+                                                {payable.status !== 'Settled' && tab !== 'history' && (
+                                                    <button 
+                                                        onClick={() => setSettleModal({ isOpen: true, payable })}
+                                                        className="px-3 py-1.5 bg-synos-primary text-white text-[10px] font-bold uppercase tracking-widest rounded shadow-sm hover:bg-synos-primary/90 transition-colors"
+                                                    >
+                                                        Settle
+                                                    </button>
+                                                )}
+                                            </td>
+                                        </tr>
+                                    ))
+                                )}
+                            </tbody>
+                        </table>
+                    )}
+                </div>
+            </div>
+
+            <SettleOutsourcedModal 
+                isOpen={settleModal.isOpen}
+                payable={settleModal.payable}
+                onClose={() => setSettleModal({ isOpen: false, payable: null })}
+                onSettled={() => loadData()}
+            />
+        </div>
+    );
+};
+
+const ReferenceLabsView = () => {
+    const [labs, setLabs] = useState([]);
+    const [auditLogs, setAuditLogs] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [processingId, setProcessingId] = useState(null);
+
+    useEffect(() => {
+        fetchLabs();
+    }, []);
+
+    const fetchLabs = async () => {
+        try {
+            setLoading(true);
+            const [labsData, auditData] = await Promise.all([
+                FinanceApi.getReferenceLabs(),
+                FinanceApi.getLabAuditLogs()
+            ]);
+            setLabs(labsData || []);
+            setAuditLogs(auditData || []);
+        } catch (err) {
+            console.error(err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleActivate = async (labId) => {
+        try {
+            setProcessingId(labId);
+            await FinanceApi.activateReferenceLab(labId);
+            await fetchLabs();
+        } catch (err) {
+            alert(err.message);
+        } finally {
+            setProcessingId(null);
+        }
+    };
+
+    return (
+        <div className="p-6 space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            {/* Header with Action */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                    <h2 className="text-xl font-black dark:text-white uppercase tracking-tight">Reference Partners</h2>
+                    <p className="text-xs text-zinc-500 font-medium">Manage external laboratory outsourcing and activations</p>
+                </div>
+                <button 
+                    onClick={() => setIsModalOpen(true)}
+                    className="flex items-center justify-center gap-2 px-6 py-3 bg-synos-primary text-white rounded-2xl text-xs font-bold hover:shadow-lg hover:shadow-synos-primary/20 active:scale-95 transition-all"
+                >
+                    <UserPlus className="w-4 h-4" /> REGISTER NEW PARTNER
+                </button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {loading ? (
+                    <div className="col-span-full py-20 text-center text-zinc-500 animate-pulse">Synchronizing reference partner directory...</div>
+                ) : labs.length === 0 ? (
+                    <div className="col-span-full py-20 text-center text-zinc-500 bg-zinc-50/50 dark:bg-zinc-900/20 rounded-[2rem] border-2 border-dashed dark:border-zinc-800 border-zinc-200">
+                        <Beaker className="w-10 h-10 mx-auto mb-4 opacity-20" />
+                        <p className="text-sm font-medium">No reference labs registered.</p>
+                    </div>
+                ) : (
+                    labs.map(lab => (
+                        <div key={lab.id} className="bg-white dark:bg-zinc-900 border dark:border-zinc-800 border-zinc-200 rounded-[2rem] p-6 shadow-sm hover:shadow-xl transition-all group border-b-4 border-b-synos-primary/20">
+                            <div className="flex items-center justify-between mb-6">
+                                <div className="flex items-center gap-4">
+                                    <div className="w-12 h-12 rounded-2xl bg-synos-primary/10 flex items-center justify-center text-synos-primary group-hover:scale-110 transition-transform">
+                                        <Building2 className="w-6 h-6" />
+                                    </div>
+                                    <div>
+                                        <h4 className="text-sm font-black dark:text-white uppercase tracking-tight">{lab.name}</h4>
+                                        <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest">
+                                            {lab.status === 1 || lab.status === 'Provisional' ? (
+                                                <span className="text-amber-500">Provisional Partner</span>
+                                            ) : (
+                                                <span className="text-emerald-500">Active Partner</span>
+                                            )}
+                                        </p>
+                                    </div>
+                                </div>
+                                {lab.status === 1 || lab.status === 'Provisional' ? (
+                                    <button 
+                                        onClick={() => handleActivate(lab.id)}
+                                        disabled={processingId === lab.id}
+                                        className="px-4 py-2 bg-amber-500 text-white rounded-xl text-[10px] font-bold hover:bg-amber-600 transition-all uppercase tracking-widest shadow-lg shadow-amber-500/20 disabled:opacity-50"
+                                    >
+                                        {processingId === lab.id ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Approve Partner'}
+                                    </button>
+                                ) : (
+                                    <div className="flex items-center gap-1.5 px-3 py-1 bg-emerald-500/10 text-emerald-500 rounded-full text-[9px] font-black uppercase tracking-widest border border-emerald-500/20">
+                                        <ShieldCheck size={10} /> Active
+                                    </div>
+                                )}
+                            </div>
+                            <div className="space-y-3">
+                                <div className="flex items-center gap-3 text-xs text-zinc-600 dark:text-zinc-400">
+                                    <Mail className="w-3.5 h-3.5 opacity-50" />
+                                    <span>{lab.email || 'No email provided'}</span>
+                                </div>
+                                <div className="flex items-center gap-3 text-xs text-zinc-600 dark:text-zinc-400">
+                                    <Phone className="w-3.5 h-3.5 opacity-50" />
+                                    <span>{lab.phone || 'No phone provided'}</span>
+                                </div>
+                                <div className="flex items-center gap-3 text-xs text-zinc-600 dark:text-zinc-400">
+                                    <MapPin className="w-3.5 h-3.5 opacity-50" />
+                                    <span className="truncate">{lab.address || 'No address provided'}</span>
+                                </div>
+                            </div>
+                            <button className="w-full mt-6 py-3 bg-zinc-100 dark:bg-white/5 rounded-2xl text-[10px] font-black uppercase tracking-widest text-zinc-500 hover:text-synos-primary hover:bg-synos-primary/5 transition-all">
+                                View Rate List
+                            </button>
+                        </div>
+                    ))
+                )}
+            </div>
+
+            {isModalOpen && <ReferenceLabRegistrationModal onClose={() => setIsModalOpen(false)} onSave={fetchLabs} />}
+        </div>
+    );
+};
+
+const ReferenceLabRegistrationModal = ({ onClose, onSave }) => {
+    const [formData, setFormData] = useState({
+        name: '',
+        location: '',
+        email: '',
+        phone: ''
+    });
+    const [submitting, setSubmitting] = useState(false);
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        try {
+            setSubmitting(true);
+            await FinanceApi.createDraftReferenceLab(formData);
+            onSave();
+            onClose();
+        } catch (err) {
+            alert(err.message);
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
+    return (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm animate-in fade-in duration-300 p-4">
+            <div className="bg-white dark:bg-zinc-950 w-full max-w-lg rounded-[32px] overflow-hidden shadow-2xl border dark:border-zinc-900 border-zinc-100 animate-in zoom-in-95 duration-300">
+                <div className="p-8 flex justify-between items-center border-b dark:border-zinc-900 border-zinc-100 bg-zinc-50/50 dark:bg-zinc-900/50">
+                    <div className="flex items-center gap-4">
+                        <div className="p-3 bg-synos-primary/10 text-synos-primary rounded-2xl">
+                            <Building2 className="w-5 h-5" />
+                        </div>
+                        <div>
+                            <h2 className="text-lg font-bold dark:text-white text-zinc-900">Partner Onboarding</h2>
+                            <p className="text-[11px] text-zinc-500 font-medium uppercase tracking-widest">Register a new reference laboratory</p>
+                        </div>
+                    </div>
+                    <button onClick={onClose} className="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-900 rounded-xl transition-all">
+                        <X size={20} className="text-zinc-400" />
+                    </button>
+                </div>
+
+                <form onSubmit={handleSubmit} className="p-8 space-y-6">
+                    <div className="space-y-4">
+                        <div className="space-y-1">
+                            <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest ml-1">Laboratory Name</label>
+                            <input 
+                                required
+                                type="text"
+                                value={formData.name}
+                                onChange={(e) => setFormData({...formData, name: e.target.value})}
+                                className="w-full px-4 py-3 bg-zinc-50 dark:bg-zinc-900 border dark:border-zinc-800 border-zinc-100 rounded-2xl text-xs font-bold focus:ring-2 focus:ring-synos-primary/20 outline-none transition-all"
+                                placeholder="e.g. Metropolis Labs, SRL Diagnostics"
+                            />
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-1">
+                                <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest ml-1">Email Address</label>
+                                <input 
+                                    type="email"
+                                    value={formData.email}
+                                    onChange={(e) => setFormData({...formData, email: e.target.value})}
+                                    className="w-full px-4 py-3 bg-zinc-50 dark:bg-zinc-900 border dark:border-zinc-800 border-zinc-100 rounded-2xl text-xs font-bold focus:ring-2 focus:ring-synos-primary/20 outline-none transition-all"
+                                    placeholder="partner@lab.com"
+                                />
+                            </div>
+                            <div className="space-y-1">
+                                <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest ml-1">Phone Number</label>
+                                <input 
+                                    type="tel"
+                                    value={formData.phone}
+                                    onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                                    className="w-full px-4 py-3 bg-zinc-50 dark:bg-zinc-900 border dark:border-zinc-800 border-zinc-100 rounded-2xl text-xs font-bold focus:ring-2 focus:ring-synos-primary/20 outline-none transition-all"
+                                    placeholder="+91..."
+                                />
+                            </div>
+                        </div>
+
+                        <div className="space-y-1">
+                            <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest ml-1">Address / Location</label>
+                            <textarea 
+                                value={formData.location}
+                                onChange={(e) => setFormData({...formData, location: e.target.value})}
+                                rows={3}
+                                className="w-full px-4 py-3 bg-zinc-50 dark:bg-zinc-900 border dark:border-zinc-800 border-zinc-100 rounded-2xl text-xs font-bold focus:ring-2 focus:ring-synos-primary/20 outline-none transition-all resize-none"
+                                placeholder="Complete lab address..."
+                            />
+                        </div>
+                    </div>
+
+                    <div className="flex gap-4 pt-4">
+                        <button 
+                            type="button"
+                            onClick={onClose}
+                            className="flex-1 py-4 bg-zinc-100 dark:bg-zinc-900 text-zinc-500 rounded-2xl text-xs font-bold hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-all"
+                        >
+                            CANCEL
+                        </button>
+                        <button 
+                            disabled={submitting}
+                            className="flex-1 py-4 bg-synos-primary text-white rounded-2xl text-xs font-bold hover:shadow-lg hover:shadow-synos-primary/20 active:scale-95 transition-all disabled:opacity-50"
+                        >
+                            {submitting ? 'ONBOARDING...' : 'REGISTER PARTNER'}
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     );

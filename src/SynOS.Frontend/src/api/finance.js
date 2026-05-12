@@ -105,6 +105,41 @@ export const FinanceApi = {
         return response.json();
     },
 
+    getReferenceLabs: async () => {
+        const response = await fetch(FinanceApi.withBranchId('/api/v1/ReferencePayables/labs'), {
+            headers: FinanceApi.getHeaders()
+        });
+        if (!response.ok) throw new Error("Failed to load reference labs");
+        return response.json();
+    },
+
+    activateReferenceLab: async (labId) => {
+        const response = await fetch(FinanceApi.withBranchId(`/api/v1/Outsourcing/labs/${labId}/activate`), {
+            method: 'PATCH',
+            headers: FinanceApi.getHeaders()
+        });
+        if (!response.ok) throw new Error("Activation failed");
+        return response.json();
+    },
+
+    getLabAuditLogs: async () => {
+        const response = await fetch(FinanceApi.withBranchId('/api/v1/Outsourcing/labs/audit'), {
+            headers: FinanceApi.getHeaders()
+        });
+        if (!response.ok) throw new Error("Failed to load audit logs");
+        return response.json();
+    },
+
+    createDraftReferenceLab: async (data) => {
+        const response = await fetch('/api/v1/Outsourcing/labs/draft', {
+            method: 'POST',
+            headers: FinanceApi.getHeaders(),
+            body: JSON.stringify(data)
+        });
+        if (!response.ok) throw new Error("Failed to register reference lab draft");
+        return response.json();
+    },
+
     settleOutsourcedPayable: async (id, amount) => {
         const response = await fetch(`/api/v1/ReferencePayables/${id}/settle`, {
             method: 'PATCH',

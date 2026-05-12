@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { ReceptionApi } from '@/api/reception';
 import { cn } from '@/lib/utils'; // Assuming this utility exists, else standard classes
 
-const ReferralDraftForm = ({ visitId, onSuccess, onCancel }) => {
+const ReferralDraftForm = ({ visitId, onSuccess, onCancel, isDark, uiStyles }) => {
     const [providerName, setProviderName] = useState('');
     const [clinicName, setClinicName] = useState('');
     const [location, setLocation] = useState('');
@@ -42,13 +42,14 @@ const ReferralDraftForm = ({ visitId, onSuccess, onCancel }) => {
     };
 
     return (
-        <div className="bg-zinc-950/30 border border-synos-border rounded-lg p-4 animate-in fade-in zoom-in-95 duration-200">
-            <h4 className="text-xs font-bold text-zinc-400 uppercase tracking-wider mb-3">
+        <div className={cn("p-4 animate-in fade-in zoom-in-95 duration-200 border rounded-xl", uiStyles.section)}>
+            <h4 className={cn("mb-3", uiStyles.sectionTitle)}>
                 Referral Draft (Provisional)
             </h4>
 
             {error && (
-                <div className="text-red-400 text-xs mb-3 font-medium bg-red-900/20 border border-red-500/30 p-2 rounded">
+                <div className={cn("text-xs mb-3 font-medium p-2 rounded border", 
+                    isDark ? "text-red-400 bg-red-900/20 border-red-500/30" : "text-red-600 bg-red-50 border-red-200")}>
                     {error}
                 </div>
             )}
@@ -62,7 +63,7 @@ const ReferralDraftForm = ({ visitId, onSuccess, onCancel }) => {
                         type="text"
                         value={providerName}
                         onChange={(e) => setProviderName(e.target.value)}
-                        className="w-full h-10 bg-zinc-900 border border-synos-border rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-synos-primary transition-colors placeholder:text-zinc-600 disabled:opacity-50"
+                        className={cn("w-full h-10 rounded-lg px-3 py-2 text-sm focus:outline-none transition-colors disabled:opacity-50", uiStyles.input)}
                         placeholder="e.g. Dr. Rajesh Kumar"
                         disabled={isSubmitting}
                         autoFocus
@@ -78,7 +79,7 @@ const ReferralDraftForm = ({ visitId, onSuccess, onCancel }) => {
                             type="text"
                             value={clinicName}
                             onChange={(e) => setClinicName(e.target.value)}
-                            className="w-full h-10 bg-zinc-900 border border-synos-border rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-synos-primary transition-colors placeholder:text-zinc-600 disabled:opacity-50"
+                            className={cn("w-full h-10 rounded-lg px-3 py-2 text-sm focus:outline-none transition-colors disabled:opacity-50", uiStyles.input)}
                             placeholder="e.g. Sunshine Clinic"
                             disabled={isSubmitting}
                         />
@@ -91,7 +92,7 @@ const ReferralDraftForm = ({ visitId, onSuccess, onCancel }) => {
                             type="text"
                             value={location}
                             onChange={(e) => setLocation(e.target.value)}
-                            className="w-full h-10 bg-zinc-900 border border-synos-border rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-synos-primary transition-colors placeholder:text-zinc-600 disabled:opacity-50"
+                            className={cn("w-full h-10 rounded-lg px-3 py-2 text-sm focus:outline-none transition-colors disabled:opacity-50", uiStyles.input)}
                             placeholder="e.g. Indiranagar"
                             disabled={isSubmitting}
                         />
@@ -103,14 +104,18 @@ const ReferralDraftForm = ({ visitId, onSuccess, onCancel }) => {
                         type="button"
                         onClick={onCancel}
                         disabled={isSubmitting}
-                        className="px-4 py-2 text-xs font-medium text-zinc-400 hover:text-white transition-colors disabled:opacity-50"
+                        className={cn("px-4 py-2 text-xs font-medium transition-colors disabled:opacity-50",
+                            isDark ? "text-zinc-400 hover:text-white" : "text-zinc-500 hover:text-zinc-900")}
                     >
                         Cancel
                     </button>
                     <button
                         type="submit"
                         disabled={isSubmitting || !providerName.trim()}
-                        className="px-4 py-2 text-xs font-bold text-white bg-zinc-800 border border-zinc-700 rounded-lg hover:bg-zinc-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        className={cn("px-4 py-2 text-xs font-bold rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors",
+                            isDark 
+                                ? "text-white bg-zinc-800 border border-zinc-700 hover:bg-zinc-700" 
+                                : "text-white bg-zinc-900 border border-black/10 hover:bg-black")}
                     >
                         {isSubmitting ? 'Saving...' : 'Save Draft'}
                     </button>

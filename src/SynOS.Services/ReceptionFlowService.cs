@@ -12,6 +12,7 @@ using SynOS.Models.Enums; // Required for WorkType, BranchEventType
 using SynOS.Services.Referral;
 using SynOS.Services.Operational; // ADDED
 using SynOS.Services.Security; // ADDED
+using SynOS.Services.Revenue; // ADDED
 using SynOS.Models.Entities.Revenue; // ADDED
 using SynOS.Models.Entities.AR; // ADDED: Stage 1 Financials
 using SynOS.Models.Entities.Payments; // ADDED: Stage 1 Financials
@@ -20,6 +21,8 @@ using SynOS.Models.Entities.Operations; // ADDED
 using SynOS.Models.Entities.Referral; // ADDED
 using SynOS.Models.ReadModels; // ADDED
 using SynOS.Services.Time; // ADDED
+using SynOS.Models.Entities.Payables; // ADDED
+using SynOS.Models.Enums.Payables; // ADDED
 
 
 namespace SynOS.Services
@@ -42,6 +45,7 @@ namespace SynOS.Services
         private readonly INotifier _notifier; // ADDED
         private readonly IVisitLifecyclePolicy _lifecyclePolicy; // ADDED
         private readonly ILabTimeProvider _labTimeProvider; // ADDED
+        private readonly IRevenueEngine _revenueEngine; // ADDED
 
         public ReceptionFlowService(
             SynOSDbContext context,
@@ -59,7 +63,8 @@ namespace SynOS.Services
             IEventPublishingService eventPublishingService,
             INotifier notifier,
             IVisitLifecyclePolicy lifecyclePolicy,
-            ILabTimeProvider labTimeProvider) // ADDED
+            ILabTimeProvider labTimeProvider,
+            IRevenueEngine revenueEngine) // ADDED
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
             _visitService = visitService ?? throw new ArgumentNullException(nameof(visitService));
@@ -77,6 +82,7 @@ namespace SynOS.Services
             _notifier = notifier ?? throw new ArgumentNullException(nameof(notifier)); // ADDED
             _lifecyclePolicy = lifecyclePolicy ?? throw new ArgumentNullException(nameof(lifecyclePolicy)); // ADDED
             _labTimeProvider = labTimeProvider ?? throw new ArgumentNullException(nameof(labTimeProvider)); // ADDED
+            _revenueEngine = revenueEngine ?? throw new ArgumentNullException(nameof(revenueEngine)); // ADDED
         }
 
         // small helper to centralize a defensive check (keeps ctor lines tidy)
@@ -409,15 +415,63 @@ namespace SynOS.Services
                 BranchEventType.RECEIVABLE_CREATED,
                 _userContext.CurrentBranchId.ToString(),
                 visit.VisitId.ToString(),
-                visit.Token,
+                visit.Token, // Restore missing Token
                 $"Prepaid Credit Issued: {fact.Amount:C} (Fact: {fact.ReceivableFactId})",
                 "User",
                 actorUserId.ToString(),
                 true, // saveChanges
-                fact.ReceivableFactId, // SourceId = FactId
+                fact.ReceivableFactId, // sourceId
                 "ReceivableFact"
             );
             // ----------------------------------------
+
+            // --- OUTSOURCED PAYABLE GENERATION ---
+            await ProcessOutsourcedPayablesAsync(visit.VisitId, actorUserId);
+            // -------------------------------------
+        }
+
+        private async Task ProcessOutsourcedPayablesAsync(Guid visitId, Guid actorUserId)
+        {
+            var visit = await _context.Visits
+                .Include(v => v.Orders)
+                .Include(v => v.Patient)
+                .FirstOrDefaultAsync(v => v.VisitId == visitId);
+
+            if (visit == null) return;
+
+            var outsourcedOrders = visit.Orders
+                .Where(o => o.IsOutsourced && o.ReferenceLabId.HasValue && o.OutsourceCost.HasValue)
+                .ToList();
+
+            foreach (var order in outsourcedOrders)
+            {
+                // Idempotency check: Don't create duplicate payables for the same order
+                var existingPayable = await _context.ReferenceLabPayables
+                    .AnyAsync(p => p.TestId == order.TestId && p.PatientId == visit.PatientId && p.CreatedAt.Date == DateTime.UtcNow.Date);
+                
+                if (existingPayable) continue;
+
+                var payable = new ReferenceLabPayable
+                {
+                    Id = Guid.NewGuid(),
+                    ReferenceLabName = order.ReferenceLabName ?? "Reference Lab",
+                    ReferenceLabId = order.ReferenceLabId,
+                    PatientId = visit.PatientId,
+                    TestId = order.TestId,
+                    AmountDue = order.OutsourceCost.Value,
+                    AmountPaid = 0,
+                    Status = ReferencePayableStatus.Pending,
+                    CreatedAt = DateTime.UtcNow,
+                    CreatedBy = actorUserId
+                };
+
+                _context.ReferenceLabPayables.Add(payable);
+                
+                _logger.LogInformation("Automated Payable: Created ReferenceLabPayable {PayableId} for Order {OrderId} (Lab: {LabName})", 
+                    payable.Id, order.OrderId, payable.ReferenceLabName);
+            }
+
+            await _context.SaveChangesAsync();
         }
 
         private async Task<ReceptionStartVisitResponse> MapToStartVisitResponse(Visit visit)
@@ -769,6 +823,11 @@ namespace SynOS.Services
                 }
             }
             // --------------------------------
+
+
+            // --- OUTSOURCED PAYABLE GENERATION ---
+            await ProcessOutsourcedPayablesAsync(visit.VisitId, userId);
+            // -------------------------------------
 
             return new ReceptionCompletePaymentResponse
             {
@@ -1198,6 +1257,123 @@ namespace SynOS.Services
                 "System",
                 actorUserId.ToString()
             );
+        }
+
+        public async Task<ReceptionStartVisitResponse> AddOutsourcedTestAsync(Guid visitId, string testName, decimal price, Guid? referenceLabId, Guid actorUserId)
+        {
+            // 1. Ensure/Create Test Master Entry for this ad-hoc test
+            var testCode = $"OUT-{testName.Replace(" ", "-").ToUpper()}-{DateTime.UtcNow.Ticks.ToString().Substring(10)}";
+            
+            var existingTest = await _context.Tests.FirstOrDefaultAsync(t => t.TestName == testName && t.IsOutsourced);
+            Guid testId;
+            string labName = "External Lab";
+
+            if (referenceLabId.HasValue)
+            {
+                var lab = await _context.ReferenceLabs.FindAsync(referenceLabId.Value);
+                if (lab != null) labName = lab.Name;
+            }
+
+            if (existingTest == null)
+            {
+                var newTest = new Test
+                {
+                    TestId = Guid.NewGuid(),
+                    TestCode = testCode,
+                    TestName = testName,
+                    IsOutsourced = true,
+                    IsActive = true,
+                    CreatedAt = DateTimeOffset.UtcNow,
+                    UpdatedAt = DateTimeOffset.UtcNow,
+                    Category = "Outsourced" // Corrected from Department
+                };
+                _context.Tests.Add(newTest);
+                
+                // Also create pricing entry
+                var pricing = new TestPricing
+                {
+                    PricingId = Guid.NewGuid(),
+                    TestId = newTest.TestId,
+                    BasePrice = price,
+                    EffectiveFrom = DateTime.UtcNow,
+                    CreatedAt = DateTimeOffset.UtcNow,
+                    CreatedByUserId = actorUserId
+                };
+                _context.TestPricings.Add(pricing);
+
+                testId = newTest.TestId;
+            }
+            else
+            {
+                testId = existingTest.TestId;
+            }
+
+            await _context.SaveChangesAsync();
+
+            // 2. Add to Visit via internal logic (similar to AddTestAsync but with manual Order setup)
+            var visit = await _context.Visits
+                .Include(v => v.Orders)
+                .Include(v => v.Invoices)
+                .FirstOrDefaultAsync(v => v.VisitId == visitId);
+
+            if (visit == null) throw new KeyNotFoundException("Visit not found");
+
+            var order = new Order
+            {
+                OrderId = Guid.NewGuid(),
+                VisitId = visitId,
+                TestId = testId,
+                TestCode = testCode,
+                Department = "Outsourced",
+                Status = OrderStatus.Pending,
+                Price = price,
+                Discount = 0,
+                CreatedAt = DateTime.UtcNow,
+                IsOutsourced = true,
+                OutsourceCost = price, // Ad-hoc cost matches price by default? 
+                ReferenceLabId = referenceLabId,
+                ReferenceLabName = labName,
+                OutsourcedAt = DateTime.UtcNow
+            };
+
+            _context.Orders.Add(order);
+            await _context.SaveChangesAsync();
+
+            // 3. Recalculate Financials
+            await _revenueEngine.ApplySnapshotAsync(visitId, actorUserId);
+
+            // 4. Return Summary
+            return await MapToStartVisitResponse(visit);
+        }
+
+        public async Task<IEnumerable<TestSummaryDto>> GetOutsourcedTestCatalogAsync()
+        {
+            return await _context.Tests
+                .AsNoTracking()
+                .Where(t => t.IsOutsourced && t.IsActive)
+                .Select(t => new TestSummaryDto
+                {
+                    TestId = t.TestId,
+                    TestCode = t.TestCode,
+                    TestName = t.TestName,
+                    Department = t.Category ?? "Outsourced",
+                    BasePrice = t.TestPricings.OrderByDescending(p => p.EffectiveFrom).Select(p => p.BasePrice).FirstOrDefault()
+                })
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<ReferenceLabDto>> GetReferenceLabsAsync()
+        {
+            return await _context.ReferenceLabs
+                .AsNoTracking()
+                .Where(l => l.IsActive)
+                .Select(l => new ReferenceLabDto
+                {
+                    Id = l.Id,
+                    Name = l.Name,
+                    Code = l.Code
+                })
+                .ToListAsync();
         }
     }
 }

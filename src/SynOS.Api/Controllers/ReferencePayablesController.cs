@@ -9,27 +9,60 @@ using SynOS.Models.Entities.Payables;
 using SynOS.Models.Entities.SpendEngine;
 using SynOS.Models.Enums.Payables;
 using SynOS.Services.SpendEngine;
+using SynOS.Models.DTOs.Economics;
+using SynOS.Models.Entities;
+using SynOS.Models.Entities.Catalog;
 
 namespace SynOS.Api.Controllers
 {
     [ApiController]
     [Route("api/v1/[controller]")]
+    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Admin,SystemAdmin,FinanceManager")]
     public class ReferencePayablesController : ControllerBase
     {
         private readonly SynOSDbContext _context;
         private readonly ISpendFactWriter _spendFactWriter;
+        private readonly SynOS.Services.IAuditService _auditService;
 
-        public ReferencePayablesController(SynOSDbContext context, ISpendFactWriter spendFactWriter)
+        public ReferencePayablesController(SynOSDbContext context, ISpendFactWriter spendFactWriter, SynOS.Services.IAuditService auditService)
         {
             _context = context;
             _spendFactWriter = spendFactWriter;
+            _auditService = auditService;
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<ReferenceLabPayable>>> GetPayables()
+        public async Task<ActionResult<IEnumerable<ReferenceLabPayableDto>>> GetPayables()
         {
-            return await _context.ReferenceLabPayables
-                .OrderByDescending(p => p.CreatedAt)
+            var query = from p in _context.ReferenceLabPayables
+                        join test in _context.Tests on p.TestId equals test.TestId
+                        join patient in _context.Patients on p.PatientId equals patient.PatientId
+                        orderby p.CreatedAt descending
+                        select new ReferenceLabPayableDto
+                        {
+                            Id = p.Id,
+                            ReferenceLabName = p.ReferenceLabName,
+                            ReferenceLabId = p.ReferenceLabId,
+                            PatientId = p.PatientId,
+                            PatientName = patient.FirstName + " " + patient.LastName,
+                            TestId = p.TestId,
+                            TestName = test.TestName,
+                            AmountDue = p.AmountDue,
+                            AmountPaid = p.AmountPaid,
+                            Status = p.Status.ToString(),
+                            CreatedAt = p.CreatedAt,
+                            SettledAt = p.SettledAt
+                        };
+
+            return await query.ToListAsync();
+        }
+
+        [HttpGet("labs")]
+        public async Task<ActionResult<IEnumerable<ReferenceLab>>> GetReferenceLabs()
+        {
+            return await _context.ReferenceLabs
+                .Where(l => l.IsActive)
+                .OrderBy(l => l.Name)
                 .ToListAsync();
         }
 
@@ -98,6 +131,13 @@ namespace SynOS.Api.Controllers
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
 
+                // Audit the settlement
+                Guid? actorId = null;
+                var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
+                if (userIdClaim != null && Guid.TryParse(userIdClaim.Value, out var parsedId)) actorId = parsedId;
+
+                await _auditService.LogAsync(actorId, "SettleLabPayable", "ReferenceLabPayable", payable.Id, new { Lab = payable.ReferenceLabName, Amount = request.Amount });
+
                 return Ok(new { Message = "Payable settled successfully.", Status = payable.Status.ToString(), AmountRemaining = payable.AmountDue - payable.AmountPaid });
             }
             catch (Exception ex)
@@ -106,6 +146,22 @@ namespace SynOS.Api.Controllers
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
+    }
+
+    public class ReferenceLabPayableDto
+    {
+        public Guid Id { get; set; }
+        public string ReferenceLabName { get; set; }
+        public Guid? ReferenceLabId { get; set; }
+        public Guid PatientId { get; set; }
+        public string PatientName { get; set; }
+        public Guid TestId { get; set; }
+        public string TestName { get; set; }
+        public decimal AmountDue { get; set; }
+        public decimal AmountPaid { get; set; }
+        public string Status { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public DateTime? SettledAt { get; set; }
     }
 
     public class SettleRequestDto

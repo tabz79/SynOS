@@ -263,7 +263,8 @@ builder.Services.AddScoped<IReceptionFlowService>(provider =>
         provider.GetRequiredService<IEventPublishingService>(), // ADDED
         provider.GetRequiredService<INotifier>(), // ADDED
         provider.GetRequiredService<IVisitLifecyclePolicy>(), // ADDED
-        provider.GetRequiredService<ILabTimeProvider>() // ADDED
+        provider.GetRequiredService<ILabTimeProvider>(), // ADDED
+        provider.GetRequiredService<IRevenueEngine>() // ADDED
     ));
 builder.Services.AddScoped<IResultService, ResultService>();
 builder.Services.AddScoped<IPhlebotomyService, PhlebotomyService>();
@@ -350,7 +351,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowFrontend",
         policy =>
         {
-            policy.WithOrigins("http://localhost:5173")
+            policy.WithOrigins("http://localhost:5173", "http://localhost:5174")
                   .AllowAnyHeader()
                   .AllowAnyMethod()
                   .AllowCredentials();

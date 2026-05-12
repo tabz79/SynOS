@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using SynOS.Models.DTOs;
 
@@ -8,6 +9,7 @@ namespace SynOS.Services
     {
         Task<ReceptionStartVisitResponse> StartVisitAsync(ReceptionStartVisitRequest request, Guid actorUserId);
         Task<ReceptionStartVisitResponse> AddTestAsync(Guid visitId, string testCode, Guid actorUserId);
+        Task<ReceptionStartVisitResponse> AddOutsourcedTestAsync(Guid visitId, string testName, decimal price, Guid? referenceLabId, Guid actorUserId);
         Task<ReceptionStartVisitResponse> RemoveTestAsync(Guid visitId, string testCode, Guid actorUserId);
         Task<ReceptionStartVisitResponse> RemoveOrderAsync(Guid visitId, Guid orderId, Guid actorUserId);
         Task SetVisitReferralAsync(Guid visitId, Guid referralPartnerId, Guid actorUserId);
@@ -30,5 +32,23 @@ namespace SynOS.Services
         Task TransitionToSpecimenPlannedAsync(Guid visitId); // ADDED: Specimen Architecture
 
         Task ReassignVisitAsync(Guid visitId, Guid newReceptionistId, Guid actorUserId);
+        Task<IEnumerable<TestSummaryDto>> GetOutsourcedTestCatalogAsync();
+        Task<IEnumerable<ReferenceLabDto>> GetReferenceLabsAsync();
+    }
+
+    public class TestSummaryDto
+    {
+        public Guid TestId { get; set; }
+        public string TestCode { get; set; } = string.Empty;
+        public string TestName { get; set; } = string.Empty;
+        public string? Department { get; set; }
+        public decimal BasePrice { get; set; }
+    }
+
+    public class ReferenceLabDto
+    {
+        public Guid Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string? Code { get; set; }
     }
 }

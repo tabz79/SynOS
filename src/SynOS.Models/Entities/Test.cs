@@ -40,6 +40,7 @@ namespace SynOS.Models.Entities
         public int TAT_Hours { get; set; } = 24;
 
         public bool IsActive { get; set; } = true;
+        public bool IsOutsourced { get; set; } = false;
 
         [StringLength(1000)]
         public string? ExtraInfo { get; set; }

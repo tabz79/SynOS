@@ -10,6 +10,7 @@ import PatientSearchPage from './pages/PatientSearchPage';
 import PatientDetailPage from './pages/PatientDetailPage';
 import AppointmentsPage from './pages/AppointmentsPage';
 import VisitsPage from './pages/VisitsPage'; // Import the new VisitsPage
+import OutsourcedPayablesScreen from './pages/finance/OutsourcedPayablesScreen';
 import './App.css'; // Assuming some basic app-wide styles
 
 // Dummy components for demonstration
@@ -58,7 +59,10 @@ function App() {
                   </>
                 )}
                 {hasRole('Admin') && (
-                  <li><Link to="/admin" className="text-blue-600 hover:text-blue-800">Admin</Link></li>
+                  <>
+                    <li><Link to="/admin" className="text-blue-600 hover:text-blue-800">Admin</Link></li>
+                    <li><Link to="/finance/payables" className="text-blue-600 hover:text-blue-800">Finance</Link></li>
+                  </>
                 )}
               </ul>
               <button onClick={logout} className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600">Logout</button>
@@ -100,6 +104,7 @@ function App() {
 
           <Route element={<ProtectedRoute allowedRoles={['Admin']} />}>
             <Route path="/admin" element={<AdminPage />} />
+            <Route path="/finance/payables" element={<OutsourcedPayablesScreen />} />
           </Route>
 
           <Route path="*" element={<div>404 Not Found</div>} />

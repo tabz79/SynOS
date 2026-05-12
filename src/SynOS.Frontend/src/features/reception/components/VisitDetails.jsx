@@ -1,21 +1,30 @@
 import { useState, useEffect, useRef } from 'react'
-import { Search, X, Plus, Loader2, Lock, AlertCircle } from 'lucide-react'
+import { Search, X, Plus, Loader2, Lock, AlertCircle, Beaker } from 'lucide-react'
 import { ReceptionApi } from '@/api/reception'
 import { cn } from '@/lib/utils'
 import { useTheme } from '@/context/ThemeContext'
 import ReferralDraftForm from './ReferralDraftForm'
+import OutsourceDraftForm from './OutsourceDraftForm'
 
 export function VisitDetails({ snapshot, visitId, onVisitUpdated, isPrepaidIntent, setIsPrepaidIntent, isCorrectionIntent }) {
     // Local UI State for Search Interaction ONLY
     const [filter, setFilter] = useState("");
     const [catalog, setCatalog] = useState([]); // Master list for search suggestions
     const [referralPartners, setReferralPartners] = useState([]); // Referral Master
+    const [referenceLabs, setReferenceLabs] = useState([]); // Reference Labs Master
     const [isSearching, setIsSearching] = useState(false);
     const [isProcessing, setIsProcessing] = useState(false); // Command spinner
+
+    // Referral Draft UI State
+    const [isDraftFormVisible, setIsDraftFormVisible] = useState(false);
+    // Outsource Draft UI State
+    const [isOutsourceFormVisible, setIsOutsourceFormVisible] = useState(false);
 
     // 1. PURE RENDER SOURCE: Snapshot
     const visit = snapshot?.visit;
     const tests = visit?.tests || [];
+    const internalTests = tests.filter(t => !t.isOutsourced);
+    const outsourcedTests = tests.filter(t => t.isOutsourced);
 
     // Strict Governance Rule (Phase 6.4.4) + Phase 1 Alignment:
     // UI is ReadOnly if:
@@ -108,6 +117,21 @@ export function VisitDetails({ snapshot, visitId, onVisitUpdated, isPrepaidInten
             } catch (err) {
                 console.warn("Failed to load referral partners (likely permission)", err);
             }
+            // 3. Load Reference Labs
+            try {
+                const labsData = await ReceptionApi.getReferenceLabs();
+                setReferenceLabs(labsData?.data || labsData || []);
+            } catch (err) {
+                console.warn("Failed to load reference labs", err);
+            }
+
+            // 4. Load Outsourced Catalog
+            try {
+                const outCatalog = await ReceptionApi.getOutsourcedTestCatalog();
+                setOutsourcedCatalog(outCatalog?.data || outCatalog || []);
+            } catch (err) {
+                console.warn("Failed to load outsourced catalog", err);
+            }
         };
         loadCatalogs();
     }, []);
@@ -180,8 +204,6 @@ export function VisitDetails({ snapshot, visitId, onVisitUpdated, isPrepaidInten
         reason: ""
     });
 
-    // Referral Draft UI State
-    const [isDraftFormVisible, setIsDraftFormVisible] = useState(false);
 
     // COMMAND: Add Test (Intent Aware)
     const handleAddTest = async (test) => {
@@ -249,6 +271,7 @@ export function VisitDetails({ snapshot, visitId, onVisitUpdated, isPrepaidInten
             setIsProcessing(false);
         }
     };
+
 
     // EXECUTE CORRECTION (Called from Modal)
     const confirmCorrection = async () => {
@@ -446,6 +469,8 @@ export function VisitDetails({ snapshot, visitId, onVisitUpdated, isPrepaidInten
                 {isDraftFormVisible && !referralDraft && (
                     <ReferralDraftForm
                         visitId={visitId}
+                        isDark={isDark}
+                        uiStyles={ui}
                         onSuccess={() => {
                             setIsDraftFormVisible(false);
                             if (onVisitUpdated) onVisitUpdated();
@@ -497,12 +522,13 @@ export function VisitDetails({ snapshot, visitId, onVisitUpdated, isPrepaidInten
                         {/* Search Suggestions Dropdown */}
                         {suggestions.length > 0 && (
                             <div className={cn("absolute top-full left-0 right-0 mt-1 rounded-lg overflow-y-auto z-20 border", ui.suggestionBox, "max-h-60")}>
+                                {/* INTERNAL TESTS */}
                                 {suggestions.map(test => (
                                     <button
                                         key={test.testCode || test.code}
                                         onClick={() => handleAddTest(test)}
-                                        className={cn("w-full text-left px-3 py-2 flex items-center justify-between group transition-colors",
-                                            isDark ? "hover:bg-zinc-800" : "hover:bg-zinc-50")}
+                                        className={cn("w-full text-left px-3 py-2 flex items-center justify-between group transition-colors border-b last:border-0",
+                                            isDark ? "hover:bg-zinc-800 border-zinc-800/50" : "hover:bg-zinc-50 border-zinc-100")}
                                     >
                                         <div>
                                             <div className="type-value">{test.testName || test.name}</div>
@@ -514,20 +540,23 @@ export function VisitDetails({ snapshot, visitId, onVisitUpdated, isPrepaidInten
                                         </div>
                                     </button>
                                 ))}
+
+                                {/* AD-HOC MANUAL TRIGGER REMOVED TO AVOID HYBRID MODEL */}
                             </div>
                         )}
                     </div>
                 )}
 
-                {/* Selected Tests List (Pure Render from Snapshot) */}
+
+                {/* Selected Internal Tests List (Pure Render from Snapshot) */}
                 <div className="space-y-2">
-                    {tests.length === 0 && !isReadOnly && (
+                    {internalTests.length === 0 && !isReadOnly && (
                         <div className="text-center py-4 border border-dashed border-zinc-800 rounded-lg type-label">
-                            No tests added yet
+                            No internal tests added
                         </div>
                     )}
 
-                    {tests.map(test => (
+                    {internalTests.map(test => (
                         <div key={test.testCode || test.code} className={cn("rounded-lg p-3 flex items-center justify-between group animate-in zoom-in-95 duration-200 border", ui.testCard)}>
                             <div className="flex items-center gap-3">
                                 <div className={cn("w-8 h-8 rounded flex items-center justify-center type-code border", ui.testCode)}>
@@ -535,17 +564,17 @@ export function VisitDetails({ snapshot, visitId, onVisitUpdated, isPrepaidInten
                                 </div>
                                 <div>
                                     <div className="type-value leading-tight">{test.testName || test.name}</div>
-                                    <div className="type-section-header mt-0.5">{test.dept || test.category}</div>
+                                    <div className="type-section-header mt-0.5">{test.dept || test.category || test.department}</div>
                                 </div>
                             </div>
                             <div className="flex items-center gap-4">
                                 <div className="type-code">₹{test.basePrice || test.price || test.Price}</div>
+                                
                                 {/* Allow Remove if NOT ReadOnly OR if Correction Intent */}
                                 {(!isReadOnly || isCorrectionIntent) && (
                                     <button
                                         onClick={() => {
-                                            console.log("DEBUG TEST OBJ:", test); // Debugging
-                                            handleRemoveTest(test.testCode || test.code, test.orderId || test.OrderId || test.TestId || test.testId); // Fallback to TestId? No, need OrderId.
+                                            handleRemoveTest(test.testCode || test.code, test.orderId || test.OrderId || test.TestId || test.testId);
                                         }}
                                         disabled={isProcessing}
                                         className="text-zinc-500 hover:text-red-400 p-1 hover:bg-red-400/10 rounded transition-colors"
@@ -558,8 +587,83 @@ export function VisitDetails({ snapshot, visitId, onVisitUpdated, isPrepaidInten
                     ))}
                 </div>
             </div >
+ 
+            {/* SECTION 3b: Outsourced Tests List */}
+            {outsourcedTests.length > 0 && (
+                <div className={cn("p-4 rounded-xl space-y-2 border-amber-500/20", ui.section)}>
+                    <div className="flex items-center gap-2 mb-1">
+                        <Beaker className="w-3.5 h-3.5 text-amber-500" />
+                        <h4 className={ui.sectionTitle}>Outsourced Tests</h4>
+                    </div>
+                    
+                    <div className="space-y-2">
+                        {outsourcedTests.map(test => (
+                            <div key={test.orderId} className={cn("rounded-lg p-3 flex items-center justify-between group animate-in slide-in-from-right-2 duration-200 border", ui.testCard)}>
+                                <div className="flex items-center gap-3">
+                                    <div className={cn("w-8 h-8 rounded flex items-center justify-center bg-amber-500/10 border-amber-500/20")}>
+                                        <Beaker className="w-3.5 h-3.5 text-amber-500" />
+                                    </div>
+                                    <div>
+                                        <div className="type-value leading-tight">{test.testName}</div>
+                                        <div className="flex items-center gap-2 mt-0.5">
+                                            <span className="type-section-header text-amber-600/70">{test.referenceLabName || "Partner Lab"}</span>
+                                            <span className="text-[10px] text-zinc-500 opacity-30">•</span>
+                                            <span className="type-label opacity-50">{test.department}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-4">
+                                    <div className="type-code text-amber-500">₹{test.price}</div>
+                                    
+                                    {/* Allow Remove if NOT ReadOnly OR if Correction Intent */}
+                                    {(!isReadOnly || isCorrectionIntent) && (
+                                        <button
+                                            onClick={() => {
+                                                handleRemoveTest(test.testCode, test.orderId);
+                                            }}
+                                            disabled={isProcessing}
+                                            className="text-zinc-500 hover:text-red-400 p-1 hover:bg-red-400/10 rounded transition-colors"
+                                        >
+                                            <X className="w-4 h-4" />
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
 
-            {/* CORRECTION REASON MODAL */}
+            {/* SECTION 3c: Standalone Outsource Trigger */}
+            <div className="py-2">
+                {isOutsourceFormVisible ? (
+                    <OutsourceDraftForm
+                        visitId={visitId}
+                        referenceLabs={referenceLabs}
+                        isDark={isDark}
+                        uiStyles={ui}
+                        onSuccess={() => {
+                            setIsOutsourceFormVisible(false);
+                            if (onVisitUpdated) onVisitUpdated();
+                        }}
+                        onCancel={() => setIsOutsourceFormVisible(false)}
+                    />
+                ) : (
+                    !isReadOnly && (
+                        <button
+                            onClick={() => setIsOutsourceFormVisible(true)}
+                            className={cn("flex items-center gap-2 type-section-header transition-all px-3 py-2 rounded-lg border group",
+                                isDark
+                                    ? "border-zinc-800 hover:text-white hover:bg-zinc-800/50"
+                                    : "bg-white border-zinc-300 shadow-sm hover:border-zinc-400 hover:shadow-md")}
+                        >
+                            <Beaker className="w-3 h-3 transition-transform group-hover:rotate-12" />
+                            Outsource Test
+                        </button>
+                    )
+                )}
+            </div>
+
             {correctionState.isOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 animate-in fade-in duration-200">
                     <div className={cn("w-96 rounded-xl shadow-2xl p-6 space-y-4 animate-in zoom-in-95 duration-200 border", ui.modal)}>

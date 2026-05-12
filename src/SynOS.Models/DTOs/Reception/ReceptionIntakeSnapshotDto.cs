@@ -57,6 +57,8 @@ namespace SynOS.Models.DTOs.Reception
         public string TestName { get; set; } = string.Empty;
         public string Department { get; set; } = string.Empty;
         public decimal Price { get; set; }
+        public bool IsOutsourced { get; set; }
+        public string? ReferenceLabName { get; set; }
     }
 
     public class IntakeBilling

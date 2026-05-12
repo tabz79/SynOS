@@ -187,6 +187,32 @@ export const ReceptionApi = {
             throw new Error(msg);
         }
     },
+    
+    /**
+     * Adds an outsourced test to the specified visit.
+     * @param {string} visitId
+     * @param {string} testName
+     * @param {number} price
+     * @param {string|null} referenceLabId
+     * @returns {Promise<void>}
+     */
+    addOutsourcedTestToVisit: async (visitId, testName, price, referenceLabId = null) => {
+        const response = await fetch(ReceptionApi.withBranchId('/api/v1/reception/visit/outsource-test'), {
+            method: 'POST',
+            headers: ReceptionApi.getHeaders(),
+            body: JSON.stringify({ 
+                VisitId: visitId, 
+                TestName: testName, 
+                Price: price, 
+                ReferenceLabId: referenceLabId 
+            })
+        });
+        if (!response.ok) {
+            const errData = await response.json().catch(() => ({}));
+            const msg = errData.message ? `Failed to add outsourced test: ${errData.message}` : 'Failed to add outsourced test';
+            throw new Error(msg);
+        }
+    },
 
     /**
      * Removes a test from the specified visit.
@@ -589,6 +615,45 @@ export const ReceptionApi = {
             headers: ReceptionApi.getHeaders()
         });
         if (!response.ok) throw new Error("Failed to load branches");
+        return response.json();
+    },
+
+    /**
+     * Fetches the Outsourced Test catalog.
+     * @returns {Promise<Array>}
+     */
+    getOutsourcedTestCatalog: async () => {
+        const response = await fetch(ReceptionApi.withBranchId('/api/v1/reception/outsourced-catalog'), {
+            headers: ReceptionApi.getHeaders()
+        });
+        if (!response.ok) throw new Error("Failed to load outsourced test catalog");
+        return response.json();
+    },
+
+    /**
+     * Fetches the Reference Labs.
+     * @returns {Promise<Array>}
+     */
+    getReferenceLabs: async () => {
+        const response = await fetch(ReceptionApi.withBranchId('/api/v1/outsourcing/labs'), {
+            headers: ReceptionApi.getHeaders()
+        });
+        if (!response.ok) throw new Error("Failed to load reference labs");
+        return response.json();
+    },
+    
+    /**
+     * Creates a new reference lab draft.
+     * @param {Object} payload - { name, location, contactInfo }
+     * @returns {Promise<Object>}
+     */
+    createDraftReferenceLab: async (payload) => {
+        const response = await fetch(ReceptionApi.withBranchId('/api/v1/outsourcing/labs/draft'), {
+            method: 'POST',
+            headers: ReceptionApi.getHeaders(),
+            body: JSON.stringify(payload)
+        });
+        if (!response.ok) throw new Error("Failed to create draft reference lab");
         return response.json();
     }
 };

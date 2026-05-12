@@ -327,6 +327,54 @@ namespace SynOS.Api.Controllers
                 return StatusCode(500, new { message = ex.Message });
             }
         }
+
+        [HttpPost("visit/outsource-test")]
+        public async Task<IActionResult> AddOutsourcedTest([FromBody] ReceptionAddOutsourcedTestRequest request)
+        {
+            try
+            {
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (!Guid.TryParse(userIdClaim, out var userId)) return Unauthorized();
+
+                var response = await _receptionFlowService.AddOutsourcedTestAsync(request.VisitId, request.TestName, request.Price, request.ReferenceLabId, userId);
+                return Ok(new ApiResponse<ReceptionStartVisitResponse>(response));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to add outsourced test {TestName}", request.TestName);
+                return StatusCode(500, new { message = ex.Message });
+            }
+        }
+
+        [HttpGet("outsourced-catalog")]
+        public async Task<IActionResult> GetOutsourcedTestCatalog()
+        {
+            try
+            {
+                var catalog = await _receptionFlowService.GetOutsourcedTestCatalogAsync();
+                return Ok(new ApiResponse<IEnumerable<TestSummaryDto>>(catalog));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to get outsourced test catalog");
+                return StatusCode(500, new { message = ex.Message });
+            }
+        }
+
+        [HttpGet("reference-labs")]
+        public async Task<IActionResult> GetReferenceLabs()
+        {
+            try
+            {
+                var labs = await _receptionFlowService.GetReferenceLabsAsync();
+                return Ok(new ApiResponse<IEnumerable<ReferenceLabDto>>(labs));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to get reference labs");
+                return StatusCode(500, new { message = ex.Message });
+            }
+        }
     }
 
     public class ReceptionAddTestRequest
@@ -371,5 +419,13 @@ namespace SynOS.Api.Controllers
     {
         public Guid VisitId { get; set; }
         public Guid NewReceptionistId { get; set; }
+    }
+
+    public class ReceptionAddOutsourcedTestRequest
+    {
+        public Guid VisitId { get; set; }
+        public required string TestName { get; set; }
+        public decimal Price { get; set; }
+        public Guid? ReferenceLabId { get; set; }
     }
 }

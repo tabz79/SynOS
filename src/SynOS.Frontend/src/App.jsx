@@ -174,7 +174,7 @@ function App() {
                 
                 <Route path="/finance/overheads" element={<DailyExpensesScreen />} />
                 <Route path="/finance/outsourcing" element={<OutsourcedPayablesScreen />} />
-                <Route path="/finance/outsourcing/pending" element={<OutsourcedPayablesScreen />} />
+                <Route path="/finance/outsourcing/:tab" element={<OutsourcedPayablesScreen />} />
 
                 {/* Referral Department */}
                 <Route path="/finance/referrals" element={<ReferralTerminal />} />

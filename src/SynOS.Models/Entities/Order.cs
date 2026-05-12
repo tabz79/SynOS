@@ -55,6 +55,10 @@ namespace SynOS.Models.Entities
 
         [StringLength(200)]
         public string? ReferenceLabName { get; set; }
+        public Guid? ReferenceLabId { get; set; }
+
+        [Column(TypeName = "decimal(12, 2)")]
+        public decimal? OutsourceCost { get; set; }
 
         public DateTime? OutsourcedAt { get; set; }
     }

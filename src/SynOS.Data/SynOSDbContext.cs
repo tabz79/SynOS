@@ -222,6 +222,7 @@ namespace SynOS.Data
         public DbSet<PayableFact> PayableFacts { get; set; } = null!;
         public DbSet<VendorPayable> VendorPayables { get; set; } = null!;
         public DbSet<ReferenceLabPayable> ReferenceLabPayables { get; set; } = null!;
+        public DbSet<ReferenceLab> ReferenceLabs { get; set; } = null!;
         public DbSet<OverheadExpense> OverheadExpenses { get; set; } = null!;
         public DbSet<OverheadPayableFact> OverheadPayableFacts { get; set; } = null!;
 
@@ -410,9 +411,18 @@ namespace SynOS.Data
                 entity.HasIndex(e => e.Name).IsUnique();
             });
 
+            modelBuilder.Entity<ReferenceLab>(entity =>
+            {
+                entity.ToTable("ReferenceLabs", schema: "Payables");
+                entity.Property(e => e.Status).HasConversion<string>().HasMaxLength(50);
+            });
+
             modelBuilder.Entity<TokenCounter>(entity => entity.HasIndex(e => new { e.Day, e.Department }).IsUnique());
 
-            modelBuilder.Entity<Order>(entity => entity.HasIndex(e => e.TestCode));
+            modelBuilder.Entity<Order>(entity => {
+                entity.HasIndex(e => e.TestCode);
+                entity.Property(e => e.OutsourceCost).HasColumnType("decimal(18, 4)");
+            });
 
             modelBuilder.Entity<Invoice>(entity => entity.HasIndex(e => e.Status));
 

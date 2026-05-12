@@ -240,7 +240,9 @@ namespace SynOS.Services.Reception
                     TestCode = o.TestCode,
                     TestName = o.Test?.TestName ?? o.TestCode, // Safe navigation
                     Department = o.Department,
-                    Price = o.Price
+                    Price = o.Price,
+                    IsOutsourced = o.IsOutsourced,
+                    ReferenceLabName = o.ReferenceLabName
                 }).ToList() ?? new List<IntakeTestItem>()
             };
 
