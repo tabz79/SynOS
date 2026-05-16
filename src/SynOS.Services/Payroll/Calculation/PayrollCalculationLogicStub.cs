@@ -64,7 +64,32 @@ namespace SynOS.Services.Payroll.Calculation
                     }
                 }
 
-                // 2. Apply Adjustments
+                // 2. Apply Attendance Proration (Healthcare-First: Exception-Driven)
+                var periodStart = context.PayrollPeriodStartDate;
+                var periodEnd = context.PayrollPeriodEndDate;
+                
+                // Extensible: Adjusted working window for mid-month joining/resignation
+                var effectiveStart = employee.JoinDate.DateTime > periodStart ? employee.JoinDate.DateTime : periodStart;
+                var effectiveEnd = periodEnd; // Future: Check ResignationDate
+                
+                int periodTotalDays = (periodEnd - periodStart).Days + 1;
+                int employeeActiveDays = Math.Max(0, (effectiveEnd.Date - effectiveStart.Date).Days + 1);
+                
+                // Days before joining or after resignation are treated as unpaid
+                int automaticUnpaidDays = Math.Max(0, periodTotalDays - employeeActiveDays);
+
+                var empExceptions = await _context.AttendanceLogs
+                    .AsNoTracking()
+                    .Where(l => l.EmployeeId == employee.EmployeeId && l.ClockIn >= periodStart && l.ClockIn <= periodEnd)
+                    .ToListAsync();
+
+                int recordedUnpaidDays = empExceptions.Count(x => x.Status == "Absent" || x.Status == "UnpaidLeave");
+                int totalDeductionDays = automaticUnpaidDays + recordedUnpaidDays;
+                
+                decimal prorationRatio = periodTotalDays > 0 ? (decimal)(periodTotalDays - totalDeductionDays) / periodTotalDays : 0;
+                if (prorationRatio < 0) prorationRatio = 0;
+
+                // 3. Apply Adjustments
                 decimal adjEarning = 0;
                 decimal adjDeduction = 0;
 
@@ -78,14 +103,14 @@ namespace SynOS.Services.Payroll.Calculation
                     }
                 }
 
-                // 3. Final Calculation
-                var netPay = (baseEarning + adjEarning) - (baseDeduction + adjDeduction);
+                // 4. Final Calculation (Prorated Base + Full Adjustments)
+                var netPay = ((baseEarning - baseDeduction) * prorationRatio) + (adjEarning - adjDeduction);
 
                 result.ProvisionalResults.Add(new ProvisionalResultDto
                 {
                     EmployeeId = employee.EmployeeId,
                     PayComponentId = Guid.Empty, // Aggregated net pay result
-                    Amount = netPay
+                    Amount = Math.Round(netPay, 2)
                 });
             }
 

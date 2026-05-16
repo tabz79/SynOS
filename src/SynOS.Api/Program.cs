@@ -32,7 +32,8 @@ using SynOS.Services.Interpretation; // ADDED
 using SynOS.Services.HR; // ADDED
 using SynOS.Services.Governance; // ADDED
 using SynOS.Services.Compliance; // ADDED
-using SynOS.Services.HRMS.Interpretation; // ADDED
+using SynOS.Services.HRMS.Interpretation;
+using SynOS.Services.HRMS;
 using SynOS.Services.HRMS.IntelligenceWiring; // ADDED
 using SynOS.Services.Operational; // ADDED
 using SynOS.Services.Assignment; // ADDED
@@ -226,6 +227,7 @@ builder.Services.AddRevenueEngine();
 builder.Services.AddComplianceServices(); // ADDED
 builder.Services.AddGovernanceServices(); // ADDED
 builder.Services.AddHrmsInterpretation(); // ADDED
+builder.Services.AddHrmsOperations(); // ADDED
 builder.Services.AddHrmsIntelligenceWiring(); // ADDED
 builder.Services.AddOperationalServices(); // ADDED
 builder.Services.AddAssignmentServices(); // ADDED
@@ -236,6 +238,7 @@ builder.Services.AddScoped<IVisitLifecyclePolicy, VisitLifecyclePolicy>(); // AD
 builder.Services.AddScoped<SynOS.Services.Payroll.Orchestration.IPayrollWorkflowService, SynOS.Services.Payroll.Orchestration.PayrollWorkflowService>();
 builder.Services.AddScoped<SynOS.Services.Payroll.Calculation.IPayrollCalculationLogic, SynOS.Services.Payroll.Calculation.PayrollCalculationLogicStub>();
 builder.Services.AddScoped<SynOS.Services.Payroll.Facts.IPayrollFactWriter, SynOS.Services.Payroll.Facts.PayrollFactWriter>();
+builder.Services.AddScoped<SynOS.Services.Payroll.Settlement.IPayrollSettlementService, SynOS.Services.Payroll.Settlement.PayrollSettlementService>();
 
 // Register Economics Intelligence services (OPT-IN)
 // builder.Services.AddEconomicsIntelligence();

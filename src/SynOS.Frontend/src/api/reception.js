@@ -192,11 +192,12 @@ export const ReceptionApi = {
      * Adds an outsourced test to the specified visit.
      * @param {string} visitId
      * @param {string} testName
-     * @param {number} price
+     * @param {number} price - Patient Price
+     * @param {number|null} outsourceCost - Vendor Cost
      * @param {string|null} referenceLabId
      * @returns {Promise<void>}
      */
-    addOutsourcedTestToVisit: async (visitId, testName, price, referenceLabId = null) => {
+    addOutsourcedTestToVisit: async (visitId, testName, price, outsourceCost = null, referenceLabId = null) => {
         const response = await fetch(ReceptionApi.withBranchId('/api/v1/reception/visit/outsource-test'), {
             method: 'POST',
             headers: ReceptionApi.getHeaders(),
@@ -204,6 +205,7 @@ export const ReceptionApi = {
                 VisitId: visitId, 
                 TestName: testName, 
                 Price: price, 
+                OutsourceCost: outsourceCost,
                 ReferenceLabId: referenceLabId 
             })
         });

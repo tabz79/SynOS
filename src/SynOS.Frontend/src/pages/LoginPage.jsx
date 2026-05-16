@@ -4,7 +4,7 @@ import { useAuth } from '@/context/AuthContext';
 import { Loader2, AlertCircle } from 'lucide-react';
 
 export function LoginPage() {
-    const [email, setEmail] = useState('');
+    const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -19,7 +19,7 @@ export function LoginPage() {
         setError(null);
 
         try {
-            const data = await login(email, password);
+            const data = await login(username, password);
             if (data.requiresBranchSelection) {
                 setAuthData(data);
             } else {
@@ -36,7 +36,7 @@ export function LoginPage() {
     const handleBranchSelect = async (branchId) => {
         setIsSubmitting(true);
         try {
-            await login(email, password, branchId);
+            await login(username, password, branchId);
             navigate('/');
         } catch (err) {
             setError(err.message);
@@ -88,14 +88,14 @@ export function LoginPage() {
                     )}
 
                     <div className="space-y-1">
-                        <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Email</label>
+                        <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Username</label>
                         <input
-                            type="email"
+                            type="text"
                             required
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
+                            value={username}
+                            onChange={(e) => setUsername(e.target.value)}
                             className="w-full bg-black/50 border border-zinc-700 rounded p-2 text-white focus:outline-none focus:border-synos-primary transition-colors"
-                            placeholder="user@synos.lab"
+                            placeholder="username"
                         />
                     </div>
 

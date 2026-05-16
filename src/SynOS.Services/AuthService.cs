@@ -37,7 +37,7 @@ namespace SynOS.Services
             var user = await _context.Users
                 .Include(u => u.UserRoles)
                 .ThenInclude(ur => ur.Role)
-                .SingleOrDefaultAsync(u => u.Email == request.Email);
+                .SingleOrDefaultAsync(u => u.Username == request.Username);
 
             if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
             {
@@ -62,6 +62,10 @@ namespace SynOS.Services
             {
                 throw new UnauthorizedAccessException("Your account has been deactivated. Please contact your administrator.");
             }
+
+            user.LastLoginAt = DateTime.UtcNow;
+            user.FailedLoginAttempts = 0;
+            user.LockoutEnd = null;
 
             // Mode Resolution Logic (Removed hard modes)
             string selectedMode = "operational"; // Unified mode
@@ -286,14 +290,23 @@ namespace SynOS.Services
             var claimsList = new System.Collections.Generic.List<Claim>
             {
                 new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
-                new Claim(ClaimTypes.Email, user.Email),
                 new Claim(ClaimTypes.Name, user.Name),
-                new Claim("session_mode", sessionMode), // ADDED for Phase 1B
+                new Claim("username", user.Username),
+            };
+
+            if (!string.IsNullOrEmpty(user.Email))
+            {
+                claimsList.Add(new Claim(ClaimTypes.Email, user.Email));
+            }
+
+            claimsList.AddRange(new[]
+            {
+                new Claim("session_mode", sessionMode),
                 new Claim("session_id", sessionId.ToString()), 
-                new Claim("department_code", departmentCode), // ADDED for Department Workbench
+                new Claim("department_code", departmentCode),
                 new Claim(ClaimTypes.Role, roleName),
                 new Claim("RoleId", roleId.ToString())
-            };
+            });
 
             if (sessionMode == "operational" && branchId.HasValue)
             {

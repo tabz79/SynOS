@@ -200,8 +200,12 @@ namespace SynOS.Data
         public DbSet<PayrollAdjustment> PayrollAdjustments { get; set; }
         public DbSet<PayrollFact> PayrollFacts { get; set; }
         public DbSet<PayStructureComponent> PayStructureComponents { get; set; }
+        public DbSet<SalaryAdvance> SalaryAdvances { get; set; }
+        public DbSet<StatutoryConfig> StatutoryConfigs { get; set; }
+        public DbSet<WorkforcePolicy> WorkforcePolicies { get; set; }
 
         // Time Engine DbSets
+        public DbSet<AttendanceLog> AttendanceLogs { get; set; }
         public DbSet<TimePeriod> TimePeriods { get; set; }
         public DbSet<ClockEventFact> ClockEventFacts { get; set; }
         public DbSet<WorkSessionBoundaryFact> WorkSessionBoundaryFacts { get; set; }
@@ -212,6 +216,7 @@ namespace SynOS.Data
         // Leave Engine DbSets
         public DbSet<LeaveFact> LeaveFacts { get; set; }
         public DbSet<LeaveCancellationFact> LeaveCancellationFacts { get; set; }
+        public DbSet<LeaveRequest> LeaveRequests { get; set; }
 
         // Revenue Engine DbSets
         public DbSet<RevenueFact> RevenueFacts { get; set; } = null!;
@@ -221,8 +226,10 @@ namespace SynOS.Data
         // Payables DbSets
         public DbSet<PayableFact> PayableFacts { get; set; } = null!;
         public DbSet<VendorPayable> VendorPayables { get; set; } = null!;
+        public DbSet<EmployeePayable> EmployeePayables { get; set; } = null!;
         public DbSet<ReferenceLabPayable> ReferenceLabPayables { get; set; } = null!;
         public DbSet<ReferenceLab> ReferenceLabs { get; set; } = null!;
+        public DbSet<ReferenceLabRateRule> ReferenceLabRateRules { get; set; } = null!;
         public DbSet<OverheadExpense> OverheadExpenses { get; set; } = null!;
         public DbSet<OverheadPayableFact> OverheadPayableFacts { get; set; } = null!;
 
@@ -385,6 +392,11 @@ namespace SynOS.Data
                 entity.HasIndex(e => e.MRN).IsUnique();
                 entity.HasIndex(e => e.CurrentPhoneNumber);
                 entity.Property(e => e.RowVersion).IsRowVersion();
+            });
+
+            modelBuilder.Entity<Employee>(entity =>
+            {
+                entity.Property(e => e.BaseSalary).HasColumnType("decimal(18, 4)");
             });
             modelBuilder.Entity<PatientPhoneHistory>(entity => entity.HasIndex(e => e.PhoneNumber));
             modelBuilder.Entity<PatientReferrerLink>(entity => entity.HasIndex(e => new { e.ExternalLabCode, e.ExternalPatientId }).IsUnique());
@@ -1186,6 +1198,43 @@ namespace SynOS.Data
                 entity.ToTable("OverheadExpenses", "Payables");
                 entity.HasKey(e => e.Id);
                 entity.Property(e => e.Amount).HasColumnType("decimal(18, 4)").IsRequired();
+            });
+
+            modelBuilder.Entity<EmployeePayable>(entity =>
+            {
+                entity.ToTable("EmployeePayables", "Payables");
+                entity.HasKey(e => e.EmployeePayableId);
+                entity.Property(e => e.GrossSalary).HasColumnType("decimal(18, 4)");
+                entity.Property(e => e.NetPayable).HasColumnType("decimal(18, 4)");
+                entity.Property(e => e.AmountPaid).HasColumnType("decimal(18, 4)");
+                entity.Property(e => e.PFDeduction).HasColumnType("decimal(18, 4)");
+                entity.Property(e => e.ESIDeduction).HasColumnType("decimal(18, 4)");
+                entity.Property(e => e.TDSDeduction).HasColumnType("decimal(18, 4)");
+                entity.HasIndex(e => e.PayrollRunId);
+                entity.HasIndex(e => e.EmployeeId);
+            });
+
+            modelBuilder.Entity<SalaryAdvance>(entity =>
+            {
+                entity.ToTable("SalaryAdvances", "Payables");
+                entity.HasKey(e => e.AdvanceId);
+                entity.Property(e => e.Amount).HasColumnType("decimal(18, 4)");
+                entity.HasIndex(e => e.EmployeeId);
+            });
+
+            modelBuilder.Entity<StatutoryConfig>(entity =>
+            {
+                entity.ToTable("StatutoryConfigs", "Payables");
+                entity.HasKey(e => e.ConfigId);
+                entity.Property(e => e.EmployeeRate).HasColumnType("decimal(18, 4)");
+                entity.Property(e => e.EmployerRate).HasColumnType("decimal(18, 4)");
+            });
+
+            modelBuilder.Entity<AttendanceLog>(entity =>
+            {
+                entity.ToTable("AttendanceLogs", "HR");
+                entity.HasKey(e => e.AttendanceId);
+                entity.HasIndex(e => new { e.EmployeeId, e.ClockIn });
             });
 			
 			// Accounts Receivable (Flow B)

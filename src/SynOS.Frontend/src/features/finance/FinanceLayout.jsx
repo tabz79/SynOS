@@ -70,9 +70,17 @@ export function FinanceLayout() {
             ]
         },
         {
-            name: "Payroll & Staff",
-            path: "/finance/payroll",
-            icon: Users2
+            name: "Workforce & Payroll",
+            path: "/finance/workforce",
+            icon: Users2,
+            subItems: [
+                { name: "Staff Registry", path: "/finance/workforce/staff" },
+                { name: "Identity & Access", path: "/finance/workforce/identity" },
+                { name: "Attendance & Leaves", path: "/finance/workforce/attendance" },
+                { name: "Salary Processing", path: "/finance/workforce/process" },
+                { name: "Payroll History", path: "/finance/workforce/history" },
+                { name: "Advances & Deductions", path: "/finance/workforce/adjustments" }
+            ]
         },
         {
             name: "Overheads",

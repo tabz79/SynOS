@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel.DataAnnotations; // Keep for [Key]
+using System.ComponentModel.DataAnnotations.Schema;
 using SynOS.Models.Enums; // For EmploymentType
 
 namespace SynOS.Models.Entities.HR
@@ -18,8 +19,22 @@ namespace SynOS.Models.Entities.HR
 
         // Employment Classification
         public EmploymentType EmploymentType { get; set; }
+        public SalaryType SalaryType { get; set; } // ADDED
         public string JobTitle { get; set; }
-        public string Department { get; set; }
+        public Guid? DepartmentId { get; set; } // ADDED: Link to DepartmentMaster
+        public string? Department { get; set; } // Deprecated or for legacy display
+        public int MonthlyPaidLeaveQuota { get; set; } = 2; // NEW: Enterprise Quota
+        public string? PreferredOffDay { get; set; } // NEW: Optional metadata
+
+        // Financials
+        public decimal BaseSalary { get; set; } // ADDED
+        public string? BankName { get; set; } // ADDED
+        public string? AccountNumber { get; set; } // ADDED
+        public string? IFSC { get; set; } // ADDED
+
+        // Contacts
+        public string? Phone { get; set; } // ADDED
+        public string? EmergencyContact { get; set; } // ADDED
 
         // Lifecycle
         public DateTimeOffset JoinDate { get; set; }
@@ -27,6 +42,9 @@ namespace SynOS.Models.Entities.HR
 
         // System Link (Optional)
         public Guid? UserId { get; set; } // Nullable link to application User (login identity)
+        
+        [ForeignKey("UserId")]
+        public virtual User? User { get; set; }
 
         // Metadata
         public DateTime CreatedAt { get; set; }

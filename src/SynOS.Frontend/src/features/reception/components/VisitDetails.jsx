@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { Search, X, Plus, Loader2, Lock, AlertCircle, Beaker } from 'lucide-react'
+import { Search, X, Plus, Loader2, Lock, AlertCircle, Beaker, ShieldCheck } from 'lucide-react'
 import { ReceptionApi } from '@/api/reception'
 import { cn } from '@/lib/utils'
 import { useTheme } from '@/context/ThemeContext'
@@ -12,6 +12,7 @@ export function VisitDetails({ snapshot, visitId, onVisitUpdated, isPrepaidInten
     const [catalog, setCatalog] = useState([]); // Master list for search suggestions
     const [referralPartners, setReferralPartners] = useState([]); // Referral Master
     const [referenceLabs, setReferenceLabs] = useState([]); // Reference Labs Master
+    const [outsourcedCatalog, setOutsourcedCatalog] = useState([]); // ADDED: Outsourced Catalog Master
     const [isSearching, setIsSearching] = useState(false);
     const [isProcessing, setIsProcessing] = useState(false); // Command spinner
 
@@ -190,11 +191,19 @@ export function VisitDetails({ snapshot, visitId, onVisitUpdated, isPrepaidInten
 
     // Filter Logic for Search (UI Only)
     // Backend returns: { testName, testCode, basePrice, department }
-    const suggestions = filter.length < 2 ? [] : catalog.filter(t =>
+    const internalSuggestions = filter.length < 2 ? [] : catalog.filter(t =>
         ((t.testName || t.name || "").toLowerCase().includes(filter.toLowerCase()) ||
             (t.testCode || t.code || "").toLowerCase().includes(filter.toLowerCase())) &&
         !tests.some(existing => existing.code === (t.testCode || t.code)) // Don't suggest already added
     );
+
+    const outsourcedSuggestions = filter.length < 2 ? [] : outsourcedCatalog.filter(t =>
+        ((t.testName || t.name || "").toLowerCase().includes(filter.toLowerCase()) ||
+            (t.testCode || t.code || "").toLowerCase().includes(filter.toLowerCase())) &&
+        !tests.some(existing => existing.code === (t.testCode || t.code))
+    );
+
+    const suggestions = [...internalSuggestions, ...outsourcedSuggestions];
 
     // State for Correction Reason Modal
     const [correctionState, setCorrectionState] = useState({
@@ -530,9 +539,14 @@ export function VisitDetails({ snapshot, visitId, onVisitUpdated, isPrepaidInten
                                         className={cn("w-full text-left px-3 py-2 flex items-center justify-between group transition-colors border-b last:border-0",
                                             isDark ? "hover:bg-zinc-800 border-zinc-800/50" : "hover:bg-zinc-50 border-zinc-100")}
                                     >
-                                        <div>
-                                            <div className="type-value">{test.testName || test.name}</div>
-                                            <div className="type-code">{test.testCode || test.code}</div>
+                                        <div className="flex items-center gap-2">
+                                            <div>
+                                                <div className="type-value">{test.testName || test.name}</div>
+                                                <div className="type-code">{test.testCode || test.code}</div>
+                                            </div>
+                                            {(test.isOutsourced || test.IsOutsourced) && (
+                                                <Beaker className="w-3 h-3 text-amber-500 opacity-60" />
+                                            )}
                                         </div>
                                         <div className="flex items-center gap-2">
                                             <span className="type-code">₹{test.basePrice || test.price || test.Price}</span>
@@ -613,7 +627,18 @@ export function VisitDetails({ snapshot, visitId, onVisitUpdated, isPrepaidInten
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-4">
-                                    <div className="type-code text-amber-500">₹{test.price}</div>
+                                    <div className="flex flex-col items-end">
+                                        <div className="type-code text-amber-500">₹{test.price}</div>
+                                        {test.isPricingResolved ? (
+                                            <div className="flex items-center gap-1 text-[8px] font-black uppercase tracking-widest text-emerald-500">
+                                                <ShieldCheck className="w-2 h-2" /> Verified
+                                            </div>
+                                        ) : (
+                                            <div className="flex items-center gap-1 text-[8px] font-black uppercase tracking-widest text-amber-500 animate-pulse">
+                                                <AlertCircle className="w-2 h-2" /> Pending Intel
+                                            </div>
+                                        )}
+                                    </div>
                                     
                                     {/* Allow Remove if NOT ReadOnly OR if Correction Intent */}
                                     {(!isReadOnly || isCorrectionIntent) && (
@@ -640,6 +665,7 @@ export function VisitDetails({ snapshot, visitId, onVisitUpdated, isPrepaidInten
                     <OutsourceDraftForm
                         visitId={visitId}
                         referenceLabs={referenceLabs}
+                        outsourcedCatalog={outsourcedCatalog}
                         isDark={isDark}
                         uiStyles={ui}
                         onSuccess={() => {

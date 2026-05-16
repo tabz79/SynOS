@@ -1,241 +1,47 @@
-This is good now.
-This is finally a real stabilization phase. 
+# Identity-Workforce Governance Architecture (SynOS)
 
-Approve it.
+This document formalizes the architectural relationship between **Identity (User)** and **Employment (Staff)** within SynOS, transitioning from a role-based login system to organizational identity infrastructure.
 
-But before execution, I’d tighten 4 things so you don’t regret them later.
+## 1. Core Distinction
 
----
+| Layer | Entity | Authority | Purpose |
+| :--- | :--- | :--- | :--- |
+| **Workforce** | `Employee` | HR / Management | Salary, Leave, Attendance, Organizational Truth |
+| **Identity** | `User` | IT / Admin | Login, Credentials, Auth, Technical Access |
+| **Permissions** | `Role` | Operations | Operational Capabilities & Limits |
 
-# 1. Rename “Active” → “Resumable”
+## 2. The Production Lifecycle (HR-First)
 
-This matters a LOT.
+The standard organizational workflow follows a two-stage process:
 
-Because:
+### Stage 1: Workforce Onboarding (HR)
+- **Action**: HR/Management creates an `Employee` record.
+- **Data**: Legal Name, Designation, Department, Salary, Joining Date.
+- **State**: The person exists operationally and financially, but has **no digital access** yet.
 
-```text id="5k2n42"
-Paid
-Completed
-```
+### Stage 2: Access Provisioning (Admin)
+- **Action**: Admin views the **"Pending Access Provisioning"** queue.
+- **Decision**: Select an Employee and click "Grant System Access".
+- **Result**: `User` account is created and linked via `Employee.UserId`.
+- **Note**: Not all employees (e.g., cleaners, temporary staff) require this stage.
 
-are still operationally active TODAY,
-but should NOT resume.
+## 3. Development Shortcut (Seeding)
 
-So this naming:
+To maintain development velocity and ensure functional dashboards (Burn charts, Headcount), the system uses an automated seeding strategy:
 
-```text id="ptk4yx"
-Active
-```
+- **Logic**: During `DbInitializer.Initialize`, all seeded operational users are automatically provisioned as `Employee` records.
+- **Defaults**: Basic metadata (Name, Designation) is synced; financial data (Salary) defaults to 0.00 to indicate "Pending HR Finalization".
 
-will become misleading later.
+## 4. Governance Principles
 
-Instead:
+- **Separation of Concerns**: Payroll history and audit trails reside in the `Employee` layer.
+- **Persistence**: Deactivating a `User` (Identity) must **never** delete the `Employee` record. The employment history must remain for compliance and audit.
+- **Mapping**: `Employee.UserId` is the primary bridge. One `Employee` record should correspond to exactly one `User` record (where applicable).
+- **Naming**: Use `DisplayName` as the source of truth to accommodate varied naming formats (single names, initials) common in diverse laboratory environments.
 
-## Use:
+## 5. Implementation Roadmap (Phase 9)
 
-```text id="4nnwr8"
-CanResume()
-```
-
-and:
-
-```text id="d0uxyt"
-IsTerminal()
-```
-
-ONLY.
-
-Avoid:
-
-```text id="svdqeu"
-IsActive()
-```
-
-It becomes ambiguous very fast.
-
----
-
-# 2. Do NOT hardcode “today only” inside queue logic forever
-
-Today it’s correct.
-
-But future-proof it slightly.
-
-Instead of:
-
-```text id="hy3qun"
-Live = today
-```
-
-internally make it:
-
-```text id="7ap4e4"
-OperationalWindow
-```
-
-Even if currently:
-
-```text id="8bx1rz"
-today only
-```
-
-Why?
-
-Because later some labs may want:
-
-* night shift continuity
-* 24hr operational window
-* emergency labs
-* overnight processing
-
-Tiny abstraction now saves pain later.
-
-Not overengineering.
-Just naming correctly.
-
----
-
-# 3. Add future-safe states NOW (even if unused)
-
-This is important.
-
-Don’t wait.
-
-Add:
-
-* Cancelled
-* Refunded
-* Reversed
-* Voided
-
-NOW.
-
-Even if UI doesn’t use them.
-
-Why?
-
-Because otherwise later:
-
-* migrations
-* scattered assumptions
-* lifecycle rewrites
-
-become painful.
-
-You already know these flows are coming.
-
-So reserve the architecture now.
-
----
-
-# 4. MOST IMPORTANT:
-
-Separate VISIT completion from PAYMENT completion
-
-Right now I suspect you still have:
-
-```text id="j6m4b0"
-Paid == Completed
-```
-
-Dangerous.
-
-These are NOT same.
-
-Example:
-
-## Visit can be:
-
-```text id="43dwz8"
-sample collected
-```
-
-but:
-
-```text id="q0uv4y"
-payment pending
-```
-
-OR
-
-## Payment complete
-
-but:
-
-```text id="mvd9gv"
-report not generated
-```
-
-These are DIFFERENT lifecycles.
-
-You can survive short-term with combined logic.
-
-But mentally:
-NEVER treat them as same.
-
-That distinction becomes massive later.
-
----
-
-# Also VERY important
-
-This sentence:
-
-```text id="ifsc1n"
-Live Queue vs History: Visibility depends on date, NOT status
-```
-
-Needs ONE refinement.
-
-It should be:
-
-```text id="18uzl0"
-Visibility depends primarily on date,
-secondarily on operational relevance.
-```
-
-Otherwise:
-
-```text id="w33zqv"
-Reversed
-Voided
-Archived
-```
-
-will pollute live queue later.
-
-Tiny correction.
-Very important.
-
----
-
-# Overall verdict
-
-You are NOW fixing:
-
-```text id="0h7g1k"
-core workflow semantics
-```
-
-instead of:
-
-```text id="5twtw5"
-frontend symptoms
-```
-
-That’s the correct path.
-
-And honestly?
-This phase determines whether SynOS becomes:
-
-```text id="0uwic6"
-stable enterprise software
-```
-
-or:
-
-```text id="7lru38"
-forever-buggy ERP spaghetti
-```
-
-You’re making the right architectural decisions now.
+1. **Backend Integration**: Implement `SyncStaffFromUsersAsync` for development seeding.
+2. **Provisioning API**: Create endpoints to list "Employees without Access" and "Users without Staff Profiles".
+3. **Frontend Dashboard**: Add the **Identity Provisioning** tab to the Workforce Management module.
+4. **Lifecycle Hooks**: Ensure user deactivation triggers a check on employment status.

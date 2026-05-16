@@ -144,31 +144,138 @@ namespace SynOS.Services.HRMS.Interpretation
                 .Where(l => l.EmployeeId == employeeId && l.StartTime >= startDate && l.EndTime <= endDate.AddDays(1))
                 .ToListAsync();
 
+            var manualLogs = await _context.AttendanceLogs.AsNoTracking()
+                .Where(l => l.EmployeeId == employeeId && l.ClockIn >= startDate && l.ClockIn <= endDate.AddDays(1))
+                .ToListAsync();
+
+            // Load Leave Policy
+            var policy = await _context.WorkforcePolicies.AsNoTracking()
+                .FirstOrDefaultAsync(p => p.PolicyName == "LeavePolicy");
+            
+            bool policyEnabled = policy?.IsEnabled ?? true;
+            int defaultQuota = 2;
+            
+            if (policy != null && !string.IsNullOrEmpty(policy.ConfigJson))
+            {
+                try {
+                    var config = System.Text.Json.JsonSerializer.Deserialize<System.Text.Json.Nodes.JsonObject>(policy.ConfigJson);
+                    defaultQuota = config?["defaultMonthlyPaidLeave"]?.GetValue<int>() ?? 2;
+                } catch { }
+            }
+
+            // If policy is enabled, we use the global default as the base, 
+            // but allow employee-specific overrides IF they are lower than the default (stricter)
+            // or if we decide that the employee master is the ultimate override.
+            // For now, to solve the user's issue of 'dummy modal', we prioritize the global policy.
+            int runningQuota = policyEnabled ? defaultQuota : 999;
+            
+            // If the employee has a specific quota set that is NOT 2 (meaning it might be an override), 
+            // we could consider it. But for the 'System Admin' who likely has the default, 
+            // we want to ensure they hit the 2-day limit.
+            if (policyEnabled && employee.MonthlyPaidLeaveQuota > 0 && employee.MonthlyPaidLeaveQuota < defaultQuota)
+            {
+                runningQuota = employee.MonthlyPaidLeaveQuota;
+            }
+            var today = DateTime.Today;
+
             for (var d = startDate; d <= endDate; d = d.AddDays(1))
             {
                 var dayStatus = new DailyStatus { Date = DateOnly.FromDateTime(d) };
                 
+                // 1. Check Approved Leaves (Highest Priority)
                 var leave = leaves.FirstOrDefault(l => l.StartTime.Date <= d.Date && l.EndTime.Date >= d.Date); 
                 if (leave != null)
                 {
                     dayStatus.IsLeave = true;
-                    dayStatus.Status = "Leave";
                     dayStatus.LeaveType = leave.LeaveType.ToString();
-                    view.TotalLeaveDays++;
-                }
-                else
-                {
-                    var daySessions = sessions.Where(s => s.StartTime.Date == d.Date).ToList();
-                    if (daySessions.Any())
+                    
+                    // Dynamic Quota Check: Even if DB says IsPaid, we enforce the current policy quota
+                    bool canBePaid = leave.IsPaid && runningQuota > 0;
+                    
+                    dayStatus.RawStatus = canBePaid ? "PaidLeave" : "UnpaidLeave";
+                    
+                    if (canBePaid)
                     {
-                        dayStatus.Status = "Present";
-                        dayStatus.WorkedHours = (decimal)daySessions.Sum(s => (s.EndTime - s.StartTime).TotalHours);
-                        view.TotalPresentDays++;
+                        dayStatus.Status = "Leave";
+                        if (d.Date > today) 
+                            view.TotalPlannedLeaves++;
+                        else
+                            view.TotalLeaveDays++;
+
+                        runningQuota--;
                     }
                     else
                     {
-                        dayStatus.Status = "Absent"; 
+                        dayStatus.Status = "Absent";
                         view.TotalAbsentDays++;
+                    }
+                }
+                else
+                {
+                    // 2. Check Manual Exceptions (AttendanceLogs)
+                    var log = manualLogs.FirstOrDefault(l => l.ClockIn.Date == d.Date);
+
+                    if (log != null)
+                    {
+                        dayStatus.RawStatus = log.Status;
+                        dayStatus.Notes = log.Notes;
+
+                        string effectiveStatus = log.Status;
+                        // Also reconcile manual PaidLeave exceptions with running quota
+                        if (effectiveStatus == "PaidLeave")
+                        {
+                            if (runningQuota > 0)
+                            {
+                                runningQuota--;
+                            }
+                            else
+                            {
+                                effectiveStatus = "UnpaidLeave";
+                            }
+                        }
+
+                        dayStatus.Status = effectiveStatus switch {
+                            "UnpaidLeave" => "Absent",
+                            "Absent" => "Absent",
+                            "PaidLeave" => "Leave",
+                            "Present" => "Present",
+                            _ => log.Status
+                        };
+                        
+                        if (dayStatus.Status == "Absent") view.TotalAbsentDays++;
+                        else if (dayStatus.Status == "Leave") {
+                            view.TotalLeaveDays++;
+                            dayStatus.IsLeave = true;
+                        }
+                        else if (dayStatus.Status == "Present") view.TotalPresentDays++;
+                    }
+                    else 
+                    {
+                        // 3. Check for Clock Events (Work Sessions)
+                        var daySessions = sessions.Where(s => s.StartTime.Date == d.Date).ToList();
+                        if (daySessions.Any())
+                        {
+                            dayStatus.Status = "Present";
+                            dayStatus.RawStatus = "Present";
+                            dayStatus.WorkedHours = (decimal)daySessions.Sum(s => (s.EndTime - s.StartTime).TotalHours);
+                            view.TotalPresentDays++;
+                        }
+                        else
+                        {
+                            // 4. DEFAULT Logic
+                            if (d.Date > today)
+                            {
+                                dayStatus.Status = "Upcoming";
+                                dayStatus.RawStatus = "Upcoming";
+                            }
+                            else
+                            {
+                                // Past/Today dates default to Present unless exception/leave exists
+                                dayStatus.Status = "Present"; 
+                                dayStatus.RawStatus = "Present";
+                                view.TotalPresentDays++;
+                            }
+                        }
                     }
                 }
                 view.DailyStatuses.Add(dayStatus);
@@ -284,6 +391,100 @@ namespace SynOS.Services.HRMS.Interpretation
 
             view.Events = view.Events.OrderBy(e => e.Timestamp).ToList();
             return view;
+        }
+
+        public async Task<LeaveImpactAnalysisView?> GetLeaveImpactAnalysisAsync(Guid employeeId, DateTime start, DateTime end)
+        {
+            var employee = await _context.Employees.AsNoTracking().FirstOrDefaultAsync(e => e.EmployeeId == employeeId);
+            if (employee == null) return null;
+
+            var monthStart = new DateTime(start.Year, start.Month, 1);
+            var monthEnd = monthStart.AddMonths(1).AddDays(-1);
+
+            var paidUsedFacts = await _context.LeaveFacts.AsNoTracking()
+                .Where(l => l.EmployeeId == employeeId && l.IsPaid && l.StartTime >= monthStart && l.StartTime <= monthEnd)
+                .ToListAsync();
+            
+            var policy = await _context.WorkforcePolicies.AsNoTracking()
+                .FirstOrDefaultAsync(p => p.PolicyName == "LeavePolicy");
+            
+            bool policyEnabled = policy?.IsEnabled ?? true;
+            int defaultQuota = 2;
+            if (policy != null && !string.IsNullOrEmpty(policy.ConfigJson))
+            {
+                try {
+                    var config = System.Text.Json.JsonSerializer.Deserialize<System.Text.Json.Nodes.JsonObject>(policy.ConfigJson);
+                    defaultQuota = config?["defaultMonthlyPaidLeave"]?.GetValue<int>() ?? 2;
+                } catch { }
+            }
+            
+            int usedQuota = paidUsedFacts.Sum(l => (l.EndTime.Date - l.StartTime.Date).Days + 1);
+
+            int requestedDays = (int)(end.Date - start.Date).TotalDays + 1;
+            int baseQuota = policyEnabled ? (employee.MonthlyPaidLeaveQuota > 0 ? employee.MonthlyPaidLeaveQuota : defaultQuota) : 0; 
+            
+            int remainingQuota = Math.Max(0, baseQuota - usedQuota);
+
+            int paidDays = Math.Min(requestedDays, remainingQuota);
+            int lopDays = requestedDays - paidDays;
+
+            decimal dailyRate = CalculateDailyRate(employee.BaseSalary, DateTime.DaysInMonth(start.Year, start.Month));
+
+            return new LeaveImpactAnalysisView
+            {
+                EmployeeId = employeeId,
+                TotalDaysRequested = requestedDays,
+                PaidDays = paidDays,
+                LopDays = lopDays,
+                RemainingQuotaBefore = remainingQuota,
+                RemainingQuotaAfter = Math.Max(0, remainingQuota - paidDays),
+                EstimatedSalaryReduction = Math.Round(lopDays * dailyRate, 2),
+                Month = start.ToString("yyyy-MM")
+            };
+        }
+
+        public async Task<MonthlyLopSummaryView?> GetMonthlyLopSummaryAsync(DateOnly month)
+        {
+            var monthStart = new DateTime(month.Year, month.Month, 1);
+            var monthEnd = monthStart.AddMonths(1).AddDays(-1);
+            int daysInMonth = DateTime.DaysInMonth(month.Year, month.Month);
+
+            var employees = await _context.Employees.AsNoTracking().Where(e => e.IsActive).ToListAsync();
+            var summary = new MonthlyLopSummaryView { Month = month };
+
+            foreach (var emp in employees)
+            {
+                var paidUsedFacts = await _context.LeaveFacts.AsNoTracking()
+                    .Where(l => l.EmployeeId == emp.EmployeeId && l.IsPaid && l.StartTime >= monthStart && l.StartTime <= monthEnd)
+                    .ToListAsync();
+                
+                int paidUsed = paidUsedFacts.Sum(l => (l.EndTime.Date - l.StartTime.Date).Days + 1);
+
+                var lopDays = await _context.AttendanceLogs.AsNoTracking()
+                    .Where(l => l.EmployeeId == emp.EmployeeId && (l.Status == "UnpaidLeave" || l.Status == "Absent") && l.ClockIn >= monthStart && l.ClockIn <= monthEnd)
+                    .CountAsync();
+
+                decimal dailyRate = CalculateDailyRate(emp.BaseSalary, daysInMonth);
+
+                summary.Rows.Add(new EmployeeLopRow
+                {
+                    EmployeeId = emp.EmployeeId,
+                    EmployeeName = $"{emp.FirstName} {emp.LastName}",
+                    PaidLeaveUsed = paidUsed,
+                    PaidLeaveQuota = emp.MonthlyPaidLeaveQuota,
+                    LopDays = lopDays,
+                    BaseSalary = emp.BaseSalary,
+                    EstimatedDeduction = Math.Round(lopDays * dailyRate, 2)
+                });
+            }
+
+            return summary;
+        }
+
+        private decimal CalculateDailyRate(decimal baseSalary, int daysInPeriod)
+        {
+            if (daysInPeriod <= 0) return 0;
+            return baseSalary / daysInPeriod;
         }
     }
 }

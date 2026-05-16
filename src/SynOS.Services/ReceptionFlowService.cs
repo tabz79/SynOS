@@ -439,17 +439,45 @@ namespace SynOS.Services
 
             if (visit == null) return;
 
+            // 1. Identify all outsourced orders that need payables
             var outsourcedOrders = visit.Orders
-                .Where(o => o.IsOutsourced && o.ReferenceLabId.HasValue && o.OutsourceCost.HasValue)
+                .Where(o => o.IsOutsourced && o.ReferenceLabId.HasValue)
                 .ToList();
 
             foreach (var order in outsourcedOrders)
             {
-                // Idempotency check: Don't create duplicate payables for the same order
+                // Idempotency check: Don't create duplicate payables for the same order/patient/day
                 var existingPayable = await _context.ReferenceLabPayables
                     .AnyAsync(p => p.TestId == order.TestId && p.PatientId == visit.PatientId && p.CreatedAt.Date == DateTime.UtcNow.Date);
                 
                 if (existingPayable) continue;
+
+                // ORGANIC GOVERNANCE: A payable is only 'Resolved' if a ground-truth Rule exists.
+                // Reception-entered costs are Snapshot Intelligence, not Binding Rules.
+                decimal cost = order.OutsourceCost ?? 0;
+                bool isResolved = false;
+
+                // 2. CHECK RULES ENGINE (The Source of Truth)
+                var rule = await _context.ReferenceLabRateRules
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(r => r.ReferenceLabId == order.ReferenceLabId && r.TestId == order.TestId);
+                
+                if (rule != null)
+                {
+                    cost = rule.Cost;
+                    isResolved = true;
+                    
+                    // Update the order snapshot for consistency
+                    order.OutsourceCost = cost;
+                    order.IsPricingResolved = true;
+                }
+                else
+                {
+                    // No rule found - this is an unauthorized payout.
+                    // We keep the reception-side cost as a 'Proposed' value for the finance team.
+                    isResolved = false;
+                    order.IsPricingResolved = false;
+                }
 
                 var payable = new ReferenceLabPayable
                 {
@@ -458,17 +486,18 @@ namespace SynOS.Services
                     ReferenceLabId = order.ReferenceLabId,
                     PatientId = visit.PatientId,
                     TestId = order.TestId,
-                    AmountDue = order.OutsourceCost.Value,
+                    AmountDue = cost,
                     AmountPaid = 0,
-                    Status = ReferencePayableStatus.Pending,
+                    Status = isResolved ? ReferencePayableStatus.Pending : ReferencePayableStatus.PendingPricing,
                     CreatedAt = DateTime.UtcNow,
-                    CreatedBy = actorUserId
+                    CreatedBy = actorUserId,
+                    IsPricingResolved = isResolved
                 };
 
                 _context.ReferenceLabPayables.Add(payable);
                 
-                _logger.LogInformation("Automated Payable: Created ReferenceLabPayable {PayableId} for Order {OrderId} (Lab: {LabName})", 
-                    payable.Id, order.OrderId, payable.ReferenceLabName);
+                _logger.LogInformation("Outsourcing Intelligence: Created Payable {PayableId} (Lab: {LabName}, Resolved: {Resolved}, Cost: {Cost})", 
+                    payable.Id, payable.ReferenceLabName, isResolved, cost);
             }
 
             await _context.SaveChangesAsync();
@@ -516,15 +545,16 @@ namespace SynOS.Services
                 {
                     OrderId = o.OrderId,
                     TestCode = o.TestCode,
-                    // TestName is not on Order directly, need Test include. VisitService AddTest includes it? No, AddTest creates it.
-                    // The returned Visit object from VisitService might have Test navigation null if it was just added.
-                    // We might need to fetch names. This is getting complex.
-                    // Shortcut: Just return basic info or query cleanly.
-                    // Let's rely on the IDs for now or query context.
-                    TestName = o.TestCode, // Fallback
+                    TestName = o.Test?.TestName ?? o.TestCode,
                     Dept = o.Department,
                     Price = o.Price,
-                    Discount = o.Discount
+                    Discount = o.Discount,
+                    GrossAmount = o.Price,
+                    NetAmount = o.Price - o.Discount,
+                    TaxAmount = 0m,
+                    TaxRate = 0m,
+                    IsOutsourced = o.IsOutsourced,
+                    IsPricingResolved = o.IsPricingResolved
                 }).ToList(),
                 Invoice = invoice == null ? null : new InvoiceSummaryDto
                 {
@@ -886,14 +916,16 @@ namespace SynOS.Services
                 {
                     OrderId = o.OrderId,
                     TestCode = o.TestCode,
-                    TestName = o.Test.TestName, // Corrected to o.Test.TestName
+                    TestName = o.Test.TestName,
                     Dept = o.Department,
                     Price = o.Price,
                     Discount = o.Discount,
                     GrossAmount = o.Price,
                     NetAmount = o.Price - o.Discount,
                     TaxAmount = 0m,
-                    TaxRate = 0m
+                    TaxRate = 0m,
+                    IsOutsourced = o.IsOutsourced,
+                    IsPricingResolved = o.IsPricingResolved
                 }).ToList(),
                 Invoice = new InvoiceSummaryDto
                 {
@@ -1259,7 +1291,7 @@ namespace SynOS.Services
             );
         }
 
-        public async Task<ReceptionStartVisitResponse> AddOutsourcedTestAsync(Guid visitId, string testName, decimal price, Guid? referenceLabId, Guid actorUserId)
+        public async Task<ReceptionStartVisitResponse> AddOutsourcedTestAsync(Guid visitId, string testName, decimal price, decimal? outsourceCost, Guid? referenceLabId, Guid actorUserId)
         {
             // 1. Ensure/Create Test Master Entry for this ad-hoc test
             var testCode = $"OUT-{testName.Replace(" ", "-").ToUpper()}-{DateTime.UtcNow.Ticks.ToString().Substring(10)}";
@@ -1330,9 +1362,10 @@ namespace SynOS.Services
                 Discount = 0,
                 CreatedAt = DateTime.UtcNow,
                 IsOutsourced = true,
-                OutsourceCost = price, // Ad-hoc cost matches price by default? 
+                OutsourceCost = outsourceCost ?? price, // If not provided, fallback to price
                 ReferenceLabId = referenceLabId,
                 ReferenceLabName = labName,
+                IsPricingResolved = outsourceCost.HasValue,
                 OutsourcedAt = DateTime.UtcNow
             };
 
@@ -1357,7 +1390,10 @@ namespace SynOS.Services
                     TestCode = t.TestCode,
                     TestName = t.TestName,
                     Department = t.Category ?? "Outsourced",
-                    BasePrice = t.TestPricings.OrderByDescending(p => p.EffectiveFrom).Select(p => p.BasePrice).FirstOrDefault()
+                    BasePrice = t.TestPricings.OrderByDescending(p => p.EffectiveFrom).Select(p => p.BasePrice).FirstOrDefault(),
+                    LabRates = t.ReferenceLabRateRules
+                        .Select(r => new LabRateRuleDto { LabId = r.ReferenceLabId, Cost = r.Cost })
+                        .ToList()
                 })
                 .ToListAsync();
         }

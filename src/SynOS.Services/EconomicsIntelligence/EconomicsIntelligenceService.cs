@@ -8,6 +8,7 @@ using SynOS.Models.Entities.IMS;
 using SynOS.Models.Entities.Revenue;
 using SynOS.Models.ReadModels.Economics;
 using SynOS.Models.DTOs.Economics;
+using SynOS.Models.Entities.Payables; // ADDED
 
 namespace SynOS.Services.EconomicsIntelligence
 {
@@ -18,6 +19,21 @@ namespace SynOS.Services.EconomicsIntelligence
         public EconomicsIntelligenceService(SynOSDbContext context)
         {
             _context = context;
+        }
+
+        private async Task<bool> CheckTableExistsAsync(string schema, string table)
+        {
+            try
+            {
+                // SQL Server specific existence check
+                var sql = "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = @p0 AND TABLE_NAME = @p1";
+                var count = await _context.Database.SqlQueryRaw<int>(sql, schema, table).ToListAsync();
+                return count.FirstOrDefault() > 0;
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         public async Task<EconomicEventCostView> GetCostForEventAsync(Guid eventId)
@@ -296,7 +312,26 @@ namespace SynOS.Services.EconomicsIntelligence
                 .Where(f => f.RecordedAt >= start && f.RecordedAt <= end)
                 .SumAsync(f => f.Amount);
 
-            summary.TotalExpensesAccrual = vendorAccrual + overheadAccrual + outsourcedAccrual + referralAccrual + summary.PayrollCashOutflow;
+            decimal payrollAccrual = 0;
+            if (await CheckTableExistsAsync("Payables", "EmployeePayables"))
+            {
+                try
+                {
+                    payrollAccrual = await _context.EmployeePayables
+                        .Where(p => p.CreatedAt >= start && p.CreatedAt <= end)
+                        .SumAsync(p => p.GrossSalary);
+                }
+                catch
+                {
+                    payrollAccrual = summary.PayrollCashOutflow;
+                }
+            }
+            else
+            {
+                payrollAccrual = summary.PayrollCashOutflow;
+            }
+
+            summary.TotalExpensesAccrual = vendorAccrual + overheadAccrual + outsourcedAccrual + referralAccrual + payrollAccrual;
 
             return summary;
         }
@@ -514,6 +549,76 @@ namespace SynOS.Services.EconomicsIntelligence
                 .ToListAsync();
 
             return query;
+        }
+
+        public async Task<object> GetWorkforceBurnSummaryAsync(DateTime start, DateTime end)
+        {
+            if (!await CheckTableExistsAsync("Payables", "EmployeePayables"))
+            {
+                return new { Message = "Workforce analytics unavailable (Schema not initialized)." };
+            }
+
+            try
+            {
+                var totalLiability = await _context.EmployeePayables
+                    .Where(p => p.CreatedAt >= start && p.CreatedAt <= end)
+                    .SumAsync(p => p.NetPayable);
+
+                var actualPaid = await _context.SpendFacts
+                    .Where(f => f.OccurredAt >= start && f.OccurredAt <= end && f.Category == "Payroll")
+                    .SumAsync(f => f.Amount);
+
+                var statutoryAccrual = await _context.EmployeePayables
+                    .Where(p => p.CreatedAt >= start && p.CreatedAt <= end)
+                    .SumAsync(p => p.PFDeduction + p.ESIDeduction + p.TDSDeduction);
+
+                return new
+                {
+                    TotalAccruedLiability = totalLiability,
+                    TotalActualPaid = actualPaid,
+                    TotalStatutoryAccrual = statutoryAccrual,
+                    NetWorkforceBurn = totalLiability + statutoryAccrual // CTC perspective
+                };
+            }
+            catch
+            {
+                return new { Message = "Workforce analytics error (Check Database Health)." };
+            }
+        }
+
+        public async Task<object> GetComplianceLiabilitySummaryAsync()
+        {
+            if (!await CheckTableExistsAsync("Payables", "EmployeePayables"))
+            {
+                return new { Message = "Compliance analytics unavailable (Schema not initialized)." };
+            }
+
+            try
+            {
+                var pendingPF = await _context.EmployeePayables
+                    .Where(p => p.Status != "Settled") // This is simplified; ideally we track deposit facts
+                    .SumAsync(p => p.PFDeduction);
+
+                var pendingESI = await _context.EmployeePayables
+                    .Where(p => p.Status != "Settled")
+                    .SumAsync(p => p.ESIDeduction);
+
+                var pendingTDS = await _context.EmployeePayables
+                    .Where(p => p.Status != "Settled")
+                    .SumAsync(p => p.TDSDeduction);
+
+                return new
+                {
+                    PendingPF = pendingPF,
+                    PendingESI = pendingESI,
+                    PendingTDS = pendingTDS,
+                    TotalComplianceLiability = pendingPF + pendingESI + pendingTDS
+                };
+            }
+            catch
+            {
+                return new { Message = "Compliance analytics error (Check Database Health)." };
+            }
         }
     }
 }

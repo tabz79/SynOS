@@ -61,5 +61,7 @@ namespace SynOS.Models.Entities
         public virtual ICollection<ProfileMap> ProfileChildren { get; set; } = new List<ProfileMap>();
         [InverseProperty("ChildTest")]
         public virtual ICollection<ProfileMap> ProfileParents { get; set; } = new List<ProfileMap>();
+
+        public virtual ICollection<SynOS.Models.Entities.Payables.ReferenceLabRateRule> ReferenceLabRateRules { get; set; } = new List<SynOS.Models.Entities.Payables.ReferenceLabRateRule>();
     }
 }

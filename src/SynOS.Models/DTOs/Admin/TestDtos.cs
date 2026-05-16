@@ -14,6 +14,7 @@ namespace SynOS.Models.DTOs.Admin
         public decimal BasePrice { get; set; }
         public int TAT_Hours { get; set; }
         public bool IsActive { get; set; }
+        public bool IsOutsourced { get; set; }
         public DateTimeOffset CreatedAt { get; set; }
         public DateTimeOffset UpdatedAt { get; set; }
     }
@@ -41,6 +42,8 @@ namespace SynOS.Models.DTOs.Admin
 
         [Range(1, int.MaxValue)]
         public int TAT_Hours { get; set; } = 24;
+
+        public bool IsOutsourced { get; set; } = false;
     }
 
     public class UpdateTestDto : CreateTestDto

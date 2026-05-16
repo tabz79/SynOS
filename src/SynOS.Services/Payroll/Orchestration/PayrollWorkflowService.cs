@@ -11,6 +11,7 @@ using SynOS.Services.Payroll.Facts;
 using SynOS.Services.Payroll.Orchestration.Exceptions;
 using SynOS.Services.SpendEngine;
 using SynOS.Models.Entities.SpendEngine;
+using SynOS.Models.Entities.Payables; // ADDED
 using System.Text.Json; // For ProvisionalResultData serialization
 
 namespace SynOS.Services.Payroll.Orchestration
@@ -211,39 +212,76 @@ namespace SynOS.Services.Payroll.Orchestration
             using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
-                // Write facts
+                // 1. Write granular facts for audit/history
                 await _factWriter.WriteFactsAsync(run, calculationResultForFactWriter);
 
-                // EMIT SPEND FACTS (Revised Plan Fix)
+                // 2. Generate Liabilities (EmployeePayables) - NO SpendFacts here
                 var employeeIds = provisionalResults.Select(r => r.EmployeeId).Distinct().ToList();
                 var employees = await _context.Employees
                     .Where(e => employeeIds.Contains(e.EmployeeId))
-                    .ToDictionaryAsync(e => e.EmployeeId, e => $"{e.FirstName} {e.LastName}");
+                    .ToDictionaryAsync(e => e.EmployeeId, e => e);
 
-                foreach (var result in provisionalResults)
+                // Get active statutory rates (PF, ESI)
+                var statutoryRates = await _context.StatutoryConfigs
+                    .Where(c => c.IsActive)
+                    .ToListAsync();
+                
+                var pfRate = statutoryRates.FirstOrDefault(r => r.ComponentName == "PF")?.EmployeeRate ?? 0.12m;
+                var esiRate = statutoryRates.FirstOrDefault(r => r.ComponentName == "ESI")?.EmployeeRate ?? 0.0075m;
+
+                foreach (var empId in employeeIds)
                 {
-                    employees.TryGetValue(result.EmployeeId, out var empName);
+                    employees.TryGetValue(empId, out var emp);
+                    var empResults = provisionalResults.Where(r => r.EmployeeId == empId);
+                    
+                    // Simple aggregation for V1
+                    var grossSalary = empResults.Sum(r => r.Amount);
+                    
+                    // Statutory Deductions
+                    var pfDeduction = Math.Round(grossSalary * pfRate, 2);
+                    var esiDeduction = Math.Round(grossSalary * esiRate, 2);
+                    
+                    // Manual TDS Override (Search for specific adjustment if exists)
+                    var tdsAdjustment = await _context.PayrollAdjustments
+                        .Where(a => a.EmployeeId == empId && a.PayrollRunId == run.PayrollRunId && a.Notes != null && a.Notes.Contains("TDS"))
+                        .FirstOrDefaultAsync();
+                    var tdsDeduction = tdsAdjustment?.Amount ?? 0;
 
-                    var spendFact = new SpendFact(
-                        Guid.NewGuid(),
-                        result.EmployeeId,
-                        result.Amount,
-                        "INR",
-                        "Payroll",
-                        empName ?? "Unknown Employee", // PayeeName
-                        $"Salary for period ending {period.EndDate:MMM yyyy}", // Notes
-                        null, // BranchId
-                        PaymentMethod.BankTransfer,
-                        run.PayrollRunId.ToString(),
-                        DateTime.UtcNow,
-                        DateTime.UtcNow,
-                        "PAYROLL",
-                        "PAYROLL-ENGINE",
-                        Guid.Empty,
-                        run.PayrollRunId,
-                        Guid.Empty
-                    );
-                    await _spendFactWriter.CreateSpendFactAsync(spendFact);
+                    // Deduct Pending Advances (if any)
+                    var advances = await _context.SalaryAdvances
+                        .Where(a => a.EmployeeId == empId && a.Status == "Pending")
+                        .ToListAsync();
+                    var advanceDeduction = advances.Sum(a => a.Amount);
+
+                    var netPayable = grossSalary - pfDeduction - esiDeduction - tdsDeduction - advanceDeduction;
+
+                    var payable = new EmployeePayable
+                    {
+                        EmployeePayableId = Guid.NewGuid(),
+                        EmployeeId = empId,
+                        PayrollRunId = run.PayrollRunId,
+                        PayrollPeriodId = run.PayrollPeriodId,
+                        GrossSalary = grossSalary,
+                        PFDeduction = pfDeduction,
+                        ESIDeduction = esiDeduction,
+                        TDSDeduction = tdsDeduction,
+                        OtherDeductions = advanceDeduction,
+                        NetPayable = netPayable,
+                        AmountPaid = 0,
+                        Status = "Due",
+                        Remarks = $"Generated via Payroll Run {run.PayrollRunId}",
+                        CreatedAt = DateTime.UtcNow,
+                        UpdatedAt = DateTime.UtcNow
+                    };
+
+                    _context.EmployeePayables.Add(payable);
+
+                    // Mark advances as Adjusted
+                    foreach (var adv in advances)
+                    {
+                        adv.Status = "Adjusted";
+                        adv.AdjustedInPayrollRunId = run.PayrollRunId;
+                    }
                 }
 
                 // Update run and period status

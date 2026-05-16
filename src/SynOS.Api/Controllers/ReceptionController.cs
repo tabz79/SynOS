@@ -336,12 +336,12 @@ namespace SynOS.Api.Controllers
                 var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
                 if (!Guid.TryParse(userIdClaim, out var userId)) return Unauthorized();
 
-                var response = await _receptionFlowService.AddOutsourcedTestAsync(request.VisitId, request.TestName, request.Price, request.ReferenceLabId, userId);
+                var response = await _receptionFlowService.AddOutsourcedTestAsync(request.VisitId, request.TestName, request.Price, request.OutsourceCost, request.ReferenceLabId, userId);
                 return Ok(new ApiResponse<ReceptionStartVisitResponse>(response));
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to add outsourced test {TestName}", request.TestName);
+                _logger.LogError(ex, "Failed to add outsourced test {TestName} to visit {VisitId}", request.TestName, request.VisitId);
                 return StatusCode(500, new { message = ex.Message });
             }
         }
@@ -425,7 +425,8 @@ namespace SynOS.Api.Controllers
     {
         public Guid VisitId { get; set; }
         public required string TestName { get; set; }
-        public decimal Price { get; set; }
+        public decimal Price { get; set; } // Patient Price
+        public decimal? OutsourceCost { get; set; } // Vendor Cost
         public Guid? ReferenceLabId { get; set; }
     }
 }

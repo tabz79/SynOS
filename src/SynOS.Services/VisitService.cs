@@ -1054,28 +1054,60 @@ namespace SynOS.Services
                 return;
             }
 
+            // Fetch full test from cache to check IsOutsourced and children
+            var allTests = await _testsCacheService.GetCachedTestsAsync();
+            var test = allTests.FirstOrDefault(t => t.TestId == resolved.TestId);
+
+            // Resolve Outsourcing Data if applicable
+            bool isOutsourced = test?.IsOutsourced ?? false;
+            Guid? refLabId = null;
+            string? refLabName = null;
+            decimal? outsourceCost = null;
+            bool isPricingResolved = false;
+
+            if (isOutsourced && test != null)
+            {
+                // Attempt to link a Reference Lab Rule (Take first available as default for quick-add)
+                var rule = await _context.ReferenceLabRateRules
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(r => r.TestId == test.TestId);
+                
+                if (rule != null)
+                {
+                    refLabId = rule.ReferenceLabId;
+                    outsourceCost = rule.Cost;
+                    isPricingResolved = true;
+
+                    var lab = await _context.ReferenceLabs.FindAsync(rule.ReferenceLabId);
+                    refLabName = lab?.Name;
+                }
+            }
+
             var order = new Order
             {
                 OrderId = Guid.NewGuid(),
                 VisitId = visitId,
                 TestId = resolved.TestId,
                 TestCode = resolved.TestCode,
-                Department = resolved.DepartmentCode,
+                Department = isOutsourced ? "Outsourced" : resolved.DepartmentCode,
                 Status = SynOS.Models.Enums.OrderStatus.Pending,
                 Price = isChild ? 0 : resolved.BasePrice,
                 ParentOrderId = parentOrderId,
                 Discount = 0,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.UtcNow,
+                IsOutsourced = isOutsourced,
+                ReferenceLabId = refLabId,
+                ReferenceLabName = refLabName,
+                OutsourceCost = outsourceCost,
+                IsPricingResolved = isPricingResolved,
+                OutsourcedAt = isOutsourced ? DateTime.UtcNow : (DateTime?)null
             };
-            
+
             _logger.LogInformation($"[ExpansionDebug] Creating Order entry: {order.TestCode}, ID: {order.OrderId}, Parent: {order.ParentOrderId}");
             _context.Orders.Add(order);
             collection.Add(order);
             _logger.LogInformation($"[ExpansionDebug] Order {order.TestCode} added to context and local collection.");
 
-            // Fetch full test from cache to check for children
-            var allTests = await _testsCacheService.GetCachedTestsAsync();
-            var test = allTests.FirstOrDefault(t => t.TestId == resolved.TestId);
 
             if (test != null && test.IsProfile)
             {

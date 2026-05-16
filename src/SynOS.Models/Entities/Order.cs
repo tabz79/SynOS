@@ -60,6 +60,8 @@ namespace SynOS.Models.Entities
         [Column(TypeName = "decimal(12, 2)")]
         public decimal? OutsourceCost { get; set; }
 
+        public bool IsPricingResolved { get; set; } = false;
+
         public DateTime? OutsourcedAt { get; set; }
     }
 }

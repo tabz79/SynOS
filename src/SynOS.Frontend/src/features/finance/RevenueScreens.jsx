@@ -42,7 +42,18 @@ export const RevenueOverview = () => {
     }
   };
 
-  if (loading) return <div className="p-20 text-center animate-pulse text-zinc-500">Loading economic truth...</div>;
+  if (loading) return <div className="p-20 text-center animate-pulse text-zinc-500 font-bold uppercase tracking-widest text-[10px]">Synchronizing economic truth...</div>;
+  
+  if (!stats) return (
+    <div className="p-20 text-center space-y-4">
+        <div className="w-12 h-12 bg-rose-500/10 rounded-full flex items-center justify-center mx-auto">
+            <AlertCircle className="text-rose-500 w-6 h-6" />
+        </div>
+        <p className="text-sm font-bold text-rose-500 uppercase tracking-widest">Economic Position Unavailable</p>
+        <p className="text-xs text-zinc-500 max-w-xs mx-auto">The system could not retrieve the profitability summary. This may be due to uninitialized financial schemas.</p>
+        <button onClick={loadStats} className="text-[10px] font-bold text-synos-primary hover:underline uppercase tracking-widest">Retry Synchronization</button>
+    </div>
+  );
 
   return (
     <DepartmentOverview 

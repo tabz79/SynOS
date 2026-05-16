@@ -5,6 +5,7 @@ using SynOS.Models.Entities;
 using SynOS.Models.Entities.Operations;
 using SynOS.Models.Entities.IMS;
 using SynOS.Models.Enums.IMS;
+using SynOS.Models.Entities.HR;
 
 namespace SynOS.Data
 {
@@ -22,6 +23,7 @@ namespace SynOS.Data
             
             SeedBranches(context); // Seed branches first
             SeedRolesAndUsers(context);
+            SeedEmployees(context); // Connect Identity to Workforce (Seeding)
             SeedLabProfile(context);
 
             SeedSpecimenTypes(context);
@@ -45,6 +47,7 @@ namespace SynOS.Data
             CatalogSeedService.SeedTubeTypesAsync(context).GetAwaiter().GetResult();
 
             SeedIMS(context);
+            SeedWorkforcePolicies(context);
         }
 
         private static void SeedBranches(SynOSDbContext context)
@@ -76,9 +79,14 @@ namespace SynOS.Data
         {
             // Our seeded admin user uses "admin@synos.com", not "admin@lab.com".
             // Fall back to any user if somehow that one is missing.
-            var adminUser = context.Users
-                                   .FirstOrDefault(u => u.Email == "admin@synos.com")
-                            ?? context.Users.First();
+            var adminUser = context.Users.FirstOrDefault(u => u.Email == "admin@synos.com")
+                            ?? context.Users.FirstOrDefault();
+
+            if (adminUser == null)
+            {
+                Console.WriteLine("[DbInitializer] WARNING: No users found. Skipping report template seeding.");
+                return;
+            }
 
             var templates = new ReportTemplate[]
             {
@@ -226,36 +234,48 @@ namespace SynOS.Data
 
             var usersToSeed = new[]
             {
-                new { UserId = adminUserId, Email = "admin@synos.com",    Name = "System Admin",       Password = "admin123", RoleName = "Admin", CanUseOperational = true, CanUseOversight = true },
-                new { UserId = Guid.NewGuid(), Email = "reception@lab.com",  Name = "Reception User",     Password = "Admin",    RoleName = "Receptionist", CanUseOperational = true, CanUseOversight = false },
-                new { UserId = Guid.NewGuid(), Email = "phlebo@lab.com",     Name = "Phlebotomy User",    Password = "Admin",    RoleName = "Phlebotomist", CanUseOperational = true, CanUseOversight = false },
-                new { UserId = Guid.Parse("A30F52D6-60E5-4834-9BF1-8C4E56AB3956"), Email = "pathologist@lab.com",Name = "Pathologist User",   Password = "Admin",    RoleName = "Pathologist", CanUseOperational = true, CanUseOversight = false },
-                new { UserId = Guid.NewGuid(), Email = "xray@lab.com",       Name = "X-Ray Tech User",    Password = "Admin",    RoleName = "XRayTech", CanUseOperational = true, CanUseOversight = false },
-                new { UserId = Guid.NewGuid(), Email = "mri@lab.com",        Name = "MRI Tech User",      Password = "Admin",    RoleName = "MriTech", CanUseOperational = true, CanUseOversight = false },
-                new { UserId = Guid.NewGuid(), Email = "radiologist@lab.com",Name = "Radiologist User",   Password = "Admin",    RoleName = "Radiologist", CanUseOperational = true, CanUseOversight = false },
-                new { UserId = Guid.NewGuid(), Email = "delivery@lab.com",   Name = "Delivery Desk User", Password = "Admin",    RoleName = "DeliveryDesk", CanUseOperational = true, CanUseOversight = false },
-                new { UserId = Guid.NewGuid(), Email = "pathologist2@lab.com", Name = "Dr. Sarah Williams", Password = "Admin", RoleName = "Pathologist", CanUseOperational = true, CanUseOversight = false },
+                new { UserId = adminUserId, Username = "admin", Email = "admin@synos.com",    Name = "System Admin",       Password = "admin123", RoleName = "Admin", CanUseOperational = true, CanUseOversight = true },
+                new { UserId = Guid.NewGuid(), Username = "reception", Email = "reception@lab.com",  Name = "Reception User",     Password = "Admin",    RoleName = "Receptionist", CanUseOperational = true, CanUseOversight = false },
+                new { UserId = Guid.NewGuid(), Username = "phlebo", Email = "phlebo@lab.com",     Name = "Phlebotomy User",    Password = "Admin",    RoleName = "Phlebotomist", CanUseOperational = true, CanUseOversight = false },
+                new { UserId = Guid.Parse("A30F52D6-60E5-4834-9BF1-8C4E56AB3956"), Username = "pathologist", Email = "pathologist@lab.com",Name = "Pathologist User",   Password = "Admin",    RoleName = "Pathologist", CanUseOperational = true, CanUseOversight = false },
+                new { UserId = Guid.NewGuid(), Username = "xray", Email = "xray@lab.com",       Name = "X-Ray Tech User",    Password = "Admin",    RoleName = "XRayTech", CanUseOperational = true, CanUseOversight = false },
+                new { UserId = Guid.NewGuid(), Username = "mri", Email = "mri@lab.com",        Name = "MRI Tech User",      Password = "Admin",    RoleName = "MriTech", CanUseOperational = true, CanUseOversight = false },
+                new { UserId = Guid.NewGuid(), Username = "radiologist", Email = "radiologist@lab.com",Name = "Radiologist User",   Password = "Admin",    RoleName = "Radiologist", CanUseOperational = true, CanUseOversight = false },
+                new { UserId = Guid.NewGuid(), Username = "delivery", Email = "delivery@lab.com",   Name = "Delivery Desk User", Password = "Admin",    RoleName = "DeliveryDesk", CanUseOperational = true, CanUseOversight = false },
+                new { UserId = Guid.NewGuid(), Username = "sarah", Email = "pathologist2@lab.com", Name = "Dr. Sarah Williams", Password = "Admin", RoleName = "Pathologist", CanUseOperational = true, CanUseOversight = false },
                 
                 // Simulator Specific Users (GPT-5 Mandatory: Role Purity)
-                new { UserId = Guid.NewGuid(), Email = "typist1@lab.com",    Name = "Simulator Typist",   Password = "Admin",    RoleName = "Typist", CanUseOperational = true, CanUseOversight = false },
-                new { UserId = Guid.NewGuid(), Email = "bio.tech@synos.lab", Name = "Simulator Bio Tech", Password = "Admin",    RoleName = "LabTech", CanUseOperational = true, CanUseOversight = false },
-                new { UserId = Guid.NewGuid(), Email = "hemtech@synos.lab",  Name = "Simulator Hem Tech", Password = "Admin",    RoleName = "LabTech", CanUseOperational = true, CanUseOversight = false },
-                new { UserId = Guid.NewGuid(), Email = "inventory@lab.com",  Name = "Inventory Manager",  Password = "Admin",    RoleName = "InventoryManager", CanUseOperational = true, CanUseOversight = false },
-                new { UserId = Guid.NewGuid(), Email = "finance@lab.com",    Name = "Finance Controller", Password = "Admin",    RoleName = "Finance", CanUseOperational = true, CanUseOversight = true }
+                new { UserId = Guid.NewGuid(), Username = "typist1", Email = "typist1@lab.com",    Name = "Simulator Typist",   Password = "Admin",    RoleName = "Typist", CanUseOperational = true, CanUseOversight = false },
+                new { UserId = Guid.NewGuid(), Username = "biotech", Email = "bio.tech@synos.lab", Name = "Simulator Bio Tech", Password = "Admin",    RoleName = "LabTech", CanUseOperational = true, CanUseOversight = false },
+                new { UserId = Guid.NewGuid(), Username = "hemtech", Email = "hemtech@synos.lab",  Name = "Simulator Hem Tech", Password = "Admin",    RoleName = "LabTech", CanUseOperational = true, CanUseOversight = false },
+                new { UserId = Guid.NewGuid(), Username = "inventory", Email = "inventory@lab.com",  Name = "Inventory Manager",  Password = "Admin",    RoleName = "InventoryManager", CanUseOperational = true, CanUseOversight = false },
+                new { UserId = Guid.NewGuid(), Username = "finance", Email = "finance@lab.com",    Name = "Finance Controller", Password = "Admin",    RoleName = "Finance", CanUseOperational = true, CanUseOversight = true }
             };
 
-            var existingUsers = context.Users.ToDictionary(u => u.Email, u => u, StringComparer.OrdinalIgnoreCase);
+            // Robust Lookup: Find existing users by any available identifier
+            var allUsers = context.Users.ToList();
+            
+            // Fix: If any existing users have empty usernames (common after migration), 
+            // we should NOT use them as keys in a dictionary.
+            var existingUsersByUsername = allUsers
+                .Where(u => !string.IsNullOrEmpty(u.Username))
+                .GroupBy(u => u.Username)
+                .ToDictionary(g => g.Key, g => g.First(), StringComparer.OrdinalIgnoreCase);
 
             foreach (var userData in usersToSeed)
             {
-                // Try to find user by Email (case-insensitive) OR by UserId
-                var user = existingUsers.TryGetValue(userData.Email, out var matchByEmail) 
-                    ? matchByEmail 
-                    : context.Users.Local.FirstOrDefault(u => u.UserId == userData.UserId) ?? context.Users.FirstOrDefault(u => u.UserId == userData.UserId);
+                // Priority Lookup:
+                // 1. By Fixed UserId (Most reliable)
+                // 2. By Username (The new primary identity)
+                // 3. By Email (The legacy primary identity)
+                var user = allUsers.FirstOrDefault(u => u.UserId == userData.UserId)
+                    ?? (existingUsersByUsername.TryGetValue(userData.Username, out var matchByUsername) ? matchByUsername : null)
+                    ?? allUsers.FirstOrDefault(u => u.Email.Equals(userData.Email, StringComparison.OrdinalIgnoreCase));
 
                 if (user != null)
                 {
                     // Update existing user
+                    user.Username = userData.Username; // Migrating legacy users to the new identity
                     user.Name = userData.Name; // Sync Name to clear any stale identity artifacts
                     user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(userData.Password);
                     user.CanUseOperationalMode = userData.CanUseOperational;
@@ -274,6 +294,7 @@ namespace SynOS.Data
                     var newUser = new User
                     {
                         UserId = userData.UserId, // Use predefined UserId
+                        Username = userData.Username,
                         Name = userData.Name,
                         Email = userData.Email,
                         PasswordHash = BCrypt.Net.BCrypt.HashPassword(userData.Password),
@@ -286,7 +307,7 @@ namespace SynOS.Data
                         CanUseOversightMode = userData.CanUseOversight
                     };
                     context.Users.Add(newUser);
-                    existingUsers.Add(newUser.Email, newUser);
+                    allUsers.Add(newUser); // Keep our local list in sync for subsequent lookups
                 }
             }
             context.SaveChanges();
@@ -303,7 +324,8 @@ namespace SynOS.Data
 
             foreach (var userData in usersToSeed)
             {
-                var user = existingUsers[userData.Email];
+                var user = allUsers.FirstOrDefault(u => u.Username == userData.Username) 
+                    ?? allUsers.First(u => u.Email.Equals(userData.Email, StringComparison.OrdinalIgnoreCase));
                 var role = existingRoles[userData.RoleName];
                 var userRoleKey = user.UserId + "|" + role.RoleId;
 
@@ -559,6 +581,60 @@ namespace SynOS.Data
 
             context.SaveChanges();
             Console.WriteLine("[DbInitializer] SEEDED IMS STARTER PACK");
+        }
+
+        private static void SeedEmployees(SynOSDbContext context)
+        {
+            // Reverse-seed: Ensure every seeded user has an employee record for development
+            var users = context.Users.ToList();
+            var employees = context.Employees.ToList();
+
+            foreach (var user in users)
+            {
+                if (!employees.Any(e => e.UserId == user.UserId))
+                {
+                    var names = user.Name.Split(' ', 2);
+                    var firstName = names[0];
+                    var lastName = names.Length > 1 ? names[1] : "";
+
+                    var newEmployee = new Employee
+                    {
+                        EmployeeId = Guid.NewGuid(),
+                        UserId = user.UserId,
+                        FirstName = firstName,
+                        LastName = lastName,
+                        JobTitle = user.Designation ?? "Lab Staff",
+                        Department = "General",
+                        JoinDate = DateTimeOffset.UtcNow.AddMonths(-6), // Simulation: existed for 6 months
+                        IsActive = user.IsActive,
+                        BaseSalary = 0, // Manual setup still required by HR
+                        CreatedAt = DateTime.UtcNow,
+                        UpdatedAt = DateTime.UtcNow
+                    };
+                    context.Employees.Add(newEmployee);
+                    Console.WriteLine($"[DbInitializer] PROVISIONED STAFF RECORD FOR: {user.Email}");
+                }
+            }
+            context.SaveChanges();
+        }
+
+        private static void SeedWorkforcePolicies(SynOSDbContext context)
+        {
+            if (context.WorkforcePolicies == null) return;
+
+            if (!context.WorkforcePolicies.Any(p => p.PolicyName == "LeavePolicy"))
+            {
+                context.WorkforcePolicies.Add(new SynOS.Models.Entities.Payroll.WorkforcePolicy
+                {
+                    PolicyId = Guid.NewGuid(),
+                    PolicyName = "LeavePolicy",
+                    IsEnabled = true,
+                    ConfigJson = "{\"defaultMonthlyPaidLeave\":2}",
+                    UpdatedAt = DateTime.UtcNow
+                });
+                context.SaveChanges();
+                Console.WriteLine("[DbInitializer] SEEDED GLOBAL LEAVE POLICY");
+            }
         }
     }
 }

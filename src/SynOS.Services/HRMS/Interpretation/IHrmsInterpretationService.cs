@@ -11,5 +11,7 @@ namespace SynOS.Services.HRMS.Interpretation
         Task<AttendanceLeaveSummaryView?> GetAttendanceLeaveSummaryAsync(Guid employeeId, DateOnly month);
         Task<WorkforceCostView?> GetWorkforceCostAsync(DateOnly month);
         Task<AuditTimelineView?> GetEmployeeAuditTimelineAsync(Guid employeeId);
+        Task<LeaveImpactAnalysisView?> GetLeaveImpactAnalysisAsync(Guid employeeId, DateTime start, DateTime end);
+        Task<MonthlyLopSummaryView?> GetMonthlyLopSummaryAsync(DateOnly month);
     }
 }

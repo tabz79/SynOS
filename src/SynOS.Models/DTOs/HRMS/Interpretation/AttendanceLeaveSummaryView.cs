@@ -14,12 +14,15 @@ namespace SynOS.Models.DTOs.HRMS.Interpretation
         public int TotalPresentDays { get; set; }
         public int TotalLeaveDays { get; set; }
         public int TotalAbsentDays { get; set; }
+        public int TotalPlannedLeaves { get; set; }
     }
 
     public class DailyStatus
     {
         public DateOnly Date { get; set; }
-        public string Status { get; set; } = string.Empty; // "Present", "Leave: Sick", "Absent", "Weekend"
+        public string Status { get; set; } = string.Empty; // "Present", "Leave", "Absent", "Upcoming"
+        public string? RawStatus { get; set; } // The actual stored status (e.g., "PaidLeave", "UnpaidLeave")
+        public string? Notes { get; set; }
         public decimal WorkedHours { get; set; }
         public bool IsLeave { get; set; }
         public string LeaveType { get; set; } = string.Empty;

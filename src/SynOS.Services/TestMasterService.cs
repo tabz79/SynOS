@@ -38,6 +38,7 @@ namespace SynOS.Services
             test.TestId = Guid.NewGuid();
             test.CreatedAt = DateTimeOffset.UtcNow;
             test.IsActive = true;
+            test.IsOutsourced = dto.IsOutsourced;
 
             // Phase 8: Resolve DepartmentId from string
             if (!string.IsNullOrEmpty(dto.Department))
@@ -148,6 +149,7 @@ namespace SynOS.Services
             if (dto.Category != null) test.Category = dto.Category;
             test.TAT_Hours = dto.TAT_Hours;
             test.IsActive = dto.IsActive;
+            test.IsOutsourced = dto.IsOutsourced;
             
             // _mapper.Map(dto, test); // CAUTION: If DTO has BasePrice/Department, this might try to set non-existent props? 
             // Since props are removed from Test, AutoMapper fails silently or errors depending on config.

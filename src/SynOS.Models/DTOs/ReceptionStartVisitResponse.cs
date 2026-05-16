@@ -46,6 +46,8 @@ namespace SynOS.Models.DTOs
         public decimal NetAmount { get; set; }
         public decimal TaxAmount { get; set; }
         public decimal TaxRate { get; set; }
+        public bool IsOutsourced { get; set; }
+        public bool IsPricingResolved { get; set; }
     }
 
     public class InvoiceSummaryDto

@@ -15,8 +15,11 @@ namespace SynOS.Models.Entities
         public Guid UserId { get; set; }
 
         [Required]
+        [MaxLength(100)]
+        public string Username { get; set; } = string.Empty;
+
         [MaxLength(255)]
-        public string Email { get; set; } = string.Empty;
+        public string? Email { get; set; }
 
         [Required]
         public string PasswordHash { get; set; } = string.Empty;
@@ -35,6 +38,7 @@ namespace SynOS.Models.Entities
 
         public int FailedLoginAttempts { get; set; } = 0;
         public DateTime? LockoutEnd { get; set; }
+        public DateTime? LastLoginAt { get; set; }
 
         public Guid? DefaultBranchId { get; set; } // ADDED for Phase 1A Migration Safety
 

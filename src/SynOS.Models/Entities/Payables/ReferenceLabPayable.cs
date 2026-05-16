@@ -39,6 +39,7 @@ namespace SynOS.Models.Entities.Payables
         [Required]
         public Guid CreatedBy { get; set; }
 
+        public bool IsPricingResolved { get; set; } = false;
         public DateTime? SettledAt { get; set; }
     }
 }

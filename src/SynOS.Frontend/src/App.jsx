@@ -22,6 +22,11 @@ import { ExpenseFeedScreen, VendorPayablesScreen, DailyExpensesScreen, Outsource
 import { VendorMasterScreen } from '@/features/finance/VendorMasterScreen'
 import { IntelligenceDashboard } from '@/features/finance/IntelligenceScreens'
 import { ReferralTerminal } from '@/features/finance/ReferralTerminal'
+import { StaffRegistryScreen, IdentityProvisioningScreen, SalaryProcessingScreen, PayrollHistoryScreen, AdvancesDeductionsScreen, AttendanceLeavesScreen } from '@/features/finance/WorkforceScreens' // UPDATED
+import { StaffLayout } from '@/features/employee/StaffLayout'
+import { MyHRDashboard } from '@/features/employee/MyHRDashboard'
+import { LeaveApplication } from '@/features/employee/LeaveApplication'
+import { MyAttendance, RequestStatus } from '@/features/employee/EmployeeStubs'
 import { RoleTakeoverBanner } from '@/features/admin/components/RoleTakeoverBanner'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 
@@ -180,6 +185,15 @@ function App() {
                 <Route path="/finance/referrals" element={<ReferralTerminal />} />
                 <Route path="/finance/referrals/:tab" element={<ReferralTerminal />} />
 
+                {/* Workforce & Payroll Department */}
+                <Route path="/finance/workforce" element={<Navigate to="/finance/workforce/staff" replace />} />
+                <Route path="/finance/workforce/staff" element={<StaffRegistryScreen />} />
+                <Route path="/finance/workforce/identity" element={<IdentityProvisioningScreen />} />
+                <Route path="/finance/workforce/attendance" element={<AttendanceLeavesScreen />} />
+                <Route path="/finance/workforce/process" element={<SalaryProcessingScreen />} />
+                <Route path="/finance/workforce/history" element={<PayrollHistoryScreen />} />
+                <Route path="/finance/workforce/adjustments" element={<AdvancesDeductionsScreen />} />
+
                 {/* Intelligence Department */}
                 <Route path="/finance/intelligence" element={<IntelligenceDashboard />} />
               </Route>
@@ -190,6 +204,16 @@ function App() {
                 <Route path="/admin" element={<ControlTowerDashboard />} />
                 <Route path="/admin/inventory" element={<PendingRequestsQueue />} />
                 <Route path="/admin/inventory/setup" element={<ImsRoleMappingScreen />} />
+              </Route>
+            </Route>
+
+            {/* My HR / Employee Portal */}
+            <Route element={<ProtectedRoute allowedRoles={['Admin', 'Receptionist', 'Phlebotomist', 'Technician', 'LabTech', 'Pathologist', 'Typist', 'DeliveryDesk', 'InventoryManager', 'Finance']} />}>
+              <Route element={<StaffLayout />} >
+                <Route path="/my-hr" element={<MyHRDashboard />} />
+                <Route path="/my-hr/attendance" element={<MyAttendance />} />
+                <Route path="/my-hr/leave" element={<LeaveApplication />} />
+                <Route path="/my-hr/requests" element={<RequestStatus />} />
               </Route>
             </Route>
 

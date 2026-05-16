@@ -76,5 +76,15 @@ namespace SynOS.Services.EconomicsIntelligence
         /// Retrieves a summary of vendor liabilities grouped by vendor.
         /// </summary>
         Task<IEnumerable<VendorPayableSummaryDto>> GetVendorPayablesSummaryAsync();
+        
+        /// <summary>
+        /// Retrieves workforce cost summary (Liability + Actual Spend).
+        /// </summary>
+        Task<object> GetWorkforceBurnSummaryAsync(DateTime start, DateTime end);
+        
+        /// <summary>
+        /// Retrieves pending statutory liabilities (PF, ESI, TDS).
+        /// </summary>
+        Task<object> GetComplianceLiabilitySummaryAsync();
     }
 }

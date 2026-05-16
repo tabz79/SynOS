@@ -9,7 +9,7 @@ namespace SynOS.Services
     {
         Task<ReceptionStartVisitResponse> StartVisitAsync(ReceptionStartVisitRequest request, Guid actorUserId);
         Task<ReceptionStartVisitResponse> AddTestAsync(Guid visitId, string testCode, Guid actorUserId);
-        Task<ReceptionStartVisitResponse> AddOutsourcedTestAsync(Guid visitId, string testName, decimal price, Guid? referenceLabId, Guid actorUserId);
+        Task<ReceptionStartVisitResponse> AddOutsourcedTestAsync(Guid visitId, string testName, decimal price, decimal? outsourceCost, Guid? referenceLabId, Guid actorUserId);
         Task<ReceptionStartVisitResponse> RemoveTestAsync(Guid visitId, string testCode, Guid actorUserId);
         Task<ReceptionStartVisitResponse> RemoveOrderAsync(Guid visitId, Guid orderId, Guid actorUserId);
         Task SetVisitReferralAsync(Guid visitId, Guid referralPartnerId, Guid actorUserId);
@@ -43,6 +43,13 @@ namespace SynOS.Services
         public string TestName { get; set; } = string.Empty;
         public string? Department { get; set; }
         public decimal BasePrice { get; set; }
+        public List<LabRateRuleDto> LabRates { get; set; } = new();
+    }
+
+    public class LabRateRuleDto
+    {
+        public Guid LabId { get; set; }
+        public decimal Cost { get; set; }
     }
 
     public class ReferenceLabDto

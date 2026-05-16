@@ -58,11 +58,11 @@ export function AuthProvider({ children }) {
         };
     }, [token]);
 
-    const login = async (email, password, branchId = null) => {
+    const login = async (username, password, branchId = null) => {
         const response = await fetch('/api/v1/auth/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, password, branchId }),
+            body: JSON.stringify({ username, password, branchId }),
         });
 
         if (!response.ok) {

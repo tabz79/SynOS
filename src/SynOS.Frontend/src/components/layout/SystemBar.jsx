@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ChevronDown, Globe, Shield, Wifi, WifiOff, Clock, Moon, Sun, Monitor, Activity } from 'lucide-react';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
 import { useAuth } from '@/context/AuthContext';
@@ -8,6 +9,7 @@ import { ReceptionApi } from '@/api/reception';
 
 export function SystemBar({ serverTime, syncStatus = "Not Synced" }) {
   const { user, logout, activeOversightBranchId, setOversightBranch } = useAuth();
+  const navigate = useNavigate();
   const { theme, setTheme } = useTheme();
   const [currentTime, setCurrentTime] = useState(new Date());
   const [activeDropdown, setActiveDropdown] = useState(null);
@@ -202,6 +204,42 @@ export function SystemBar({ serverTime, syncStatus = "Not Synced" }) {
                 {isDark ? <Moon className="w-3.5 h-3.5" /> : <Sun className="w-3.5 h-3.5" />}
                 Theme: {theme}
               </button>
+
+              <div className="h-px bg-black/5 dark:bg-white/5 my-1" />
+              
+              <button
+                className="w-full px-3 py-2 text-xs rounded-lg hover:bg-black/5 dark:hover:bg-white/5 flex items-center gap-2"
+                onClick={() => { navigate('/my-hr'); setActiveDropdown(null); }}
+              >
+                <Shield className="w-3.5 h-3.5" />
+                My HR
+              </button>
+
+              <button
+                className="w-full px-3 py-2 text-xs rounded-lg hover:bg-black/5 dark:hover:bg-white/5 flex items-center gap-2"
+                onClick={() => { navigate('/my-hr/attendance'); setActiveDropdown(null); }}
+              >
+                <Clock className="w-3.5 h-3.5" />
+                My Attendance
+              </button>
+
+              <button
+                className="w-full px-3 py-2 text-xs rounded-lg hover:bg-black/5 dark:hover:bg-white/5 flex items-center gap-2"
+                onClick={() => { navigate('/my-hr/leave'); setActiveDropdown(null); }}
+              >
+                <Activity className="w-3.5 h-3.5" />
+                Apply Leave
+              </button>
+
+              <button
+                className="w-full px-3 py-2 text-xs rounded-lg hover:bg-black/5 dark:hover:bg-white/5 flex items-center gap-2"
+                onClick={() => { navigate('/my-hr/requests'); setActiveDropdown(null); }}
+              >
+                <Activity className="w-3.5 h-3.5 opacity-50" />
+                My Requests
+              </button>
+
+              <div className="h-px bg-black/5 dark:bg-white/5 my-1" />
 
               <button
                 className="w-full px-3 py-2 text-xs rounded-lg text-red-500 hover:bg-red-500/10"

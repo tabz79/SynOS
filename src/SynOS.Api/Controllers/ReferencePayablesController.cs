@@ -49,7 +49,7 @@ namespace SynOS.Api.Controllers
                             TestName = test.TestName,
                             AmountDue = p.AmountDue,
                             AmountPaid = p.AmountPaid,
-                            Status = p.Status.ToString(),
+                            Status = (!p.IsPricingResolved && p.Status == ReferencePayableStatus.Pending) ? "PendingPricing" : p.Status.ToString(),
                             CreatedAt = p.CreatedAt,
                             SettledAt = p.SettledAt
                         };
@@ -146,6 +146,130 @@ namespace SynOS.Api.Controllers
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
+
+        [HttpGet("pending-pricing")]
+        public async Task<ActionResult<IEnumerable<ReferenceLabPayableDto>>> GetPendingPricingPayables()
+        {
+            var query = from p in _context.ReferenceLabPayables
+                        join test in _context.Tests on p.TestId equals test.TestId
+                        join patient in _context.Patients on p.PatientId equals patient.PatientId
+                        where p.Status == ReferencePayableStatus.PendingPricing || !p.IsPricingResolved
+                        orderby p.CreatedAt descending
+                        select new ReferenceLabPayableDto
+                        {
+                            Id = p.Id,
+                            ReferenceLabName = p.ReferenceLabName,
+                            ReferenceLabId = p.ReferenceLabId,
+                            PatientId = p.PatientId,
+                            PatientName = patient.FirstName + " " + patient.LastName,
+                            TestId = p.TestId,
+                            TestName = test.TestName,
+                            AmountDue = p.AmountDue,
+                            AmountPaid = p.AmountPaid,
+                            Status = p.Status.ToString(),
+                            CreatedAt = p.CreatedAt,
+                            SettledAt = p.SettledAt
+                        };
+
+            return await query.ToListAsync();
+        }
+
+        [HttpPost("resolve-pricing")]
+        public async Task<IActionResult> ResolvePricing([FromBody] ResolvePricingRequestDto request)
+        {
+            if (request == null || request.PayableId == Guid.Empty || request.Cost <= 0)
+            {
+                return BadRequest("Valid PayableId and Cost are required.");
+            }
+
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                var payable = await _context.ReferenceLabPayables.FindAsync(request.PayableId);
+                if (payable == null)
+                {
+                    return NotFound("Payable not found.");
+                }
+
+                // 1. Update the specific payable
+                payable.AmountDue = request.Cost;
+                payable.Status = ReferencePayableStatus.Pending;
+                payable.IsPricingResolved = true;
+
+                // 2. Update the Order snapshot
+                var order = await _context.Orders.FirstOrDefaultAsync(o => o.TestId == payable.TestId && o.VisitId == (from v in _context.Visits where v.PatientId == payable.PatientId select v.VisitId).FirstOrDefault() && o.IsOutsourced);
+                if (order != null)
+                {
+                    order.OutsourceCost = request.Cost;
+                }
+
+                // 3. Organic Discovery: Create or Update the Rule
+                if (payable.ReferenceLabId.HasValue)
+                {
+                    var rule = await _context.ReferenceLabRateRules
+                        .FirstOrDefaultAsync(r => r.ReferenceLabId == payable.ReferenceLabId.Value && r.TestId == payable.TestId);
+                    
+                    if (rule == null)
+                    {
+                        rule = new ReferenceLabRateRule
+                        {
+                            Id = Guid.NewGuid(),
+                            ReferenceLabId = payable.ReferenceLabId.Value,
+                            TestId = payable.TestId,
+                            Cost = request.Cost,
+                            UpdatedAt = DateTime.UtcNow,
+                            UpdatedBy = request.UserId
+                        };
+                        await _context.ReferenceLabRateRules.AddAsync(rule);
+                    }
+                    else
+                    {
+                        rule.Cost = request.Cost;
+                        rule.UpdatedAt = DateTime.UtcNow;
+                        rule.UpdatedBy = request.UserId;
+                    }
+                }
+
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                // Audit the resolution
+                await _auditService.LogAsync(request.UserId, "ResolvePricing", "ReferenceLabPayable", payable.Id, new { Lab = payable.ReferenceLabName, Cost = request.Cost });
+
+                return Ok(new { Message = "Pricing resolved successfully and rule created/updated." });
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
+
+        [HttpGet("rules")]
+        public async Task<IActionResult> GetRateRules()
+        {
+            var rules = await (from r in _context.ReferenceLabRateRules
+                              join lab in _context.ReferenceLabs on r.ReferenceLabId equals lab.Id
+                              join test in _context.Tests on r.TestId equals test.TestId
+                              select new {
+                                  r.Id,
+                                  r.ReferenceLabId,
+                                  LabName = lab.Name,
+                                  r.TestId,
+                                  TestName = test.TestName,
+                                  TestCode = test.TestCode,
+                                  r.Cost,
+                                  r.UpdatedAt
+                              }).ToListAsync();
+            return Ok(rules);
+        }
+    }
+
+    public class ResolvePricingRequestDto
+    {
+        public Guid PayableId { get; set; }
+        public decimal Cost { get; set; }
+        public Guid UserId { get; set; }
     }
 
     public class ReferenceLabPayableDto

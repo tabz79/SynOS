@@ -1599,11 +1599,25 @@ namespace SynOS.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("AccountNumber")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("BankName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("BaseSalary")
+                        .HasColumnType("decimal(18, 4)");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Department")
-                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid?>("DepartmentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("EmergencyContact")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("EmploymentType")
@@ -1611,6 +1625,9 @@ namespace SynOS.Data.Migrations
 
                     b.Property<string>("FirstName")
                         .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("IFSC")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("IsActive")
@@ -1627,6 +1644,18 @@ namespace SynOS.Data.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("MonthlyPaidLeaveQuota")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Phone")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PreferredOffDay")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("SalaryType")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime2");
 
@@ -1634,6 +1663,8 @@ namespace SynOS.Data.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.HasKey("EmployeeId");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("Employees");
                 });
@@ -2580,6 +2611,50 @@ namespace SynOS.Data.Migrations
                     b.ToTable("LeaveFacts");
                 });
 
+            modelBuilder.Entity("SynOS.Models.Entities.Leave.LeaveRequest", b =>
+                {
+                    b.Property<Guid>("LeaveRequestId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("ActionedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("ActionedByUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("AppliedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("EmployeeId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("EndDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("LeaveType")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Reason")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("SupervisorNote")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("LeaveRequestId");
+
+                    b.ToTable("LeaveRequests", "HR");
+                });
+
             modelBuilder.Entity("SynOS.Models.Entities.NotificationQueue", b =>
                 {
                     b.Property<Guid>("QueueId")
@@ -2926,6 +3001,9 @@ namespace SynOS.Data.Migrations
                         .HasColumnType("decimal(10, 2)");
 
                     b.Property<bool>("IsOutsourced")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsPricingResolved")
                         .HasColumnType("bit");
 
                     b.Property<decimal?>("OutsourceCost")
@@ -3376,6 +3454,68 @@ namespace SynOS.Data.Migrations
                     b.ToTable("PatientReferrerLinks");
                 });
 
+            modelBuilder.Entity("SynOS.Models.Entities.Payables.EmployeePayable", b =>
+                {
+                    b.Property<Guid>("EmployeePayableId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("AmountPaid")
+                        .HasColumnType("decimal(18, 4)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal>("ESIDeduction")
+                        .HasColumnType("decimal(18, 4)");
+
+                    b.Property<Guid>("EmployeeId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("GrossSalary")
+                        .HasColumnType("decimal(18, 4)");
+
+                    b.Property<decimal>("NetPayable")
+                        .HasColumnType("decimal(18, 4)");
+
+                    b.Property<decimal>("OtherDeductions")
+                        .HasColumnType("decimal(18, 4)");
+
+                    b.Property<decimal>("PFDeduction")
+                        .HasColumnType("decimal(18, 4)");
+
+                    b.Property<Guid>("PayrollPeriodId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("PayrollRunId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Remarks")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("SettledAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<decimal>("TDSDeduction")
+                        .HasColumnType("decimal(18, 4)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("EmployeePayableId");
+
+                    b.HasIndex("EmployeeId");
+
+                    b.HasIndex("PayrollRunId");
+
+                    b.ToTable("EmployeePayables", "Payables");
+                });
+
             modelBuilder.Entity("SynOS.Models.Entities.Payables.OverheadExpense", b =>
                 {
                     b.Property<Guid>("Id")
@@ -3509,6 +3649,9 @@ namespace SynOS.Data.Migrations
                     b.Property<Guid>("CreatedBy")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<bool>("IsPricingResolved")
+                        .HasColumnType("bit");
+
                     b.Property<Guid>("PatientId")
                         .HasColumnType("uniqueidentifier");
 
@@ -3536,6 +3679,34 @@ namespace SynOS.Data.Migrations
                     b.HasIndex("TestId");
 
                     b.ToTable("ReferenceLabPayables", "Payables");
+                });
+
+            modelBuilder.Entity("SynOS.Models.Entities.Payables.ReferenceLabRateRule", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("Cost")
+                        .HasColumnType("decimal(18, 4)");
+
+                    b.Property<Guid>("ReferenceLabId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("TestId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("UpdatedBy")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TestId");
+
+                    b.ToTable("ReferenceLabRateRules", "Payables");
                 });
 
             modelBuilder.Entity("SynOS.Models.Entities.Payables.VendorPayable", b =>
@@ -3841,7 +4012,107 @@ namespace SynOS.Data.Migrations
 
                     b.HasKey("PayrollRunId");
 
+                    b.HasIndex("PayrollPeriodId");
+
                     b.ToTable("PayrollRuns");
+                });
+
+            modelBuilder.Entity("SynOS.Models.Entities.Payroll.SalaryAdvance", b =>
+                {
+                    b.Property<Guid>("AdvanceId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("AdjustedInPayrollRunId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("decimal(18, 4)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("EmployeeId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("IssuedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("IssuedBy")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Reason")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.HasKey("AdvanceId");
+
+                    b.HasIndex("EmployeeId");
+
+                    b.ToTable("SalaryAdvances", "Payables");
+                });
+
+            modelBuilder.Entity("SynOS.Models.Entities.Payroll.StatutoryConfig", b =>
+                {
+                    b.Property<Guid>("ConfigId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ComponentName")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("EffectiveFrom")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("EffectiveTo")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal>("EmployeeRate")
+                        .HasColumnType("decimal(18, 4)");
+
+                    b.Property<decimal>("EmployerRate")
+                        .HasColumnType("decimal(18, 4)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.HasKey("ConfigId");
+
+                    b.ToTable("StatutoryConfigs", "Payables");
+                });
+
+            modelBuilder.Entity("SynOS.Models.Entities.Payroll.WorkforcePolicy", b =>
+                {
+                    b.Property<Guid>("PolicyId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ConfigJson")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsEnabled")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("PolicyName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("PolicyId");
+
+                    b.ToTable("WorkforcePolicies");
                 });
 
             modelBuilder.Entity("SynOS.Models.Entities.PriceConfig", b =>
@@ -5531,6 +5802,54 @@ namespace SynOS.Data.Migrations
                     b.ToTable("TestPricing");
                 });
 
+            modelBuilder.Entity("SynOS.Models.Entities.Time.AttendanceLog", b =>
+                {
+                    b.Property<Guid>("AttendanceId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("ClockIn")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("ClockOut")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("EmployeeId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("EntrySourceId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Notes")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ShiftType")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Source")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("AttendanceId");
+
+                    b.HasIndex("EmployeeId", "ClockIn");
+
+                    b.ToTable("AttendanceLogs", "HR");
+                });
+
             modelBuilder.Entity("SynOS.Models.Entities.Time.ClockEventFact", b =>
                 {
                     b.Property<Guid>("ClockEventFactId")
@@ -5761,7 +6080,6 @@ namespace SynOS.Data.Migrations
                         .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("Email")
-                        .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
 
@@ -5773,6 +6091,9 @@ namespace SynOS.Data.Migrations
 
                     b.Property<bool>("IsDefaultSignatory")
                         .HasColumnType("bit");
+
+                    b.Property<DateTime?>("LastLoginAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<DateTime?>("LockoutEnd")
                         .HasColumnType("datetime2");
@@ -5801,12 +6122,18 @@ namespace SynOS.Data.Migrations
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("Username")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
                     b.HasKey("UserId");
 
                     b.HasIndex("DefaultBranchId");
 
                     b.HasIndex("Email")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasFilter("[Email] IS NOT NULL");
 
                     b.ToTable("Users");
                 });
@@ -6581,6 +6908,15 @@ namespace SynOS.Data.Migrations
                     b.Navigation("LockedBy");
                 });
 
+            modelBuilder.Entity("SynOS.Models.Entities.HR.Employee", b =>
+                {
+                    b.HasOne("SynOS.Models.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("SynOS.Models.Entities.IMS.ImsConsumableLot", b =>
                 {
                     b.HasOne("SynOS.Models.Entities.Branch", "Branch")
@@ -7056,6 +7392,17 @@ namespace SynOS.Data.Migrations
                     b.Navigation("Patient");
                 });
 
+            modelBuilder.Entity("SynOS.Models.Entities.Payables.ReferenceLabRateRule", b =>
+                {
+                    b.HasOne("SynOS.Models.Entities.Test", "Test")
+                        .WithMany("ReferenceLabRateRules")
+                        .HasForeignKey("TestId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Test");
+                });
+
             modelBuilder.Entity("SynOS.Models.Entities.Payment", b =>
                 {
                     b.HasOne("SynOS.Models.Entities.Invoice", "Invoice")
@@ -7073,6 +7420,17 @@ namespace SynOS.Data.Migrations
                     b.Navigation("Invoice");
 
                     b.Navigation("ReceivedBy");
+                });
+
+            modelBuilder.Entity("SynOS.Models.Entities.Payroll.PayrollRun", b =>
+                {
+                    b.HasOne("SynOS.Models.Entities.Payroll.PayrollPeriod", "PayrollPeriod")
+                        .WithMany()
+                        .HasForeignKey("PayrollPeriodId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("PayrollPeriod");
                 });
 
             modelBuilder.Entity("SynOS.Models.Entities.PriceConfig", b =>
@@ -7767,6 +8125,8 @@ namespace SynOS.Data.Migrations
                     b.Navigation("ProfileChildren");
 
                     b.Navigation("ProfileParents");
+
+                    b.Navigation("ReferenceLabRateRules");
 
                     b.Navigation("TestPricings");
                 });

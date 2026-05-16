@@ -1,78 +1,296 @@
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence>dotnet run --project src\SynOS.Api\SynOS.Api.csproj --urls "http://127.0.0.1:59999"
-[12:02:33 INF] Notification Worker Service running.
-[12:02:33 INF] OperationalStatsProjectionWorker is starting in Event-Driven Mode.
-[12:02:33 INF] Worker: Running Consistency Check and Catch-up...
-[12:02:33 ERR] Hosting failed to start
-System.IO.IOException: Failed to bind to address http://127.0.0.1:59999: address already in use.
- ---> Microsoft.AspNetCore.Connections.AddressInUseException: Only one usage of each socket address (protocol/network address/port) is normally permitted.
- ---> System.Net.Sockets.SocketException (10048): Only one usage of each socket address (protocol/network address/port) is normally permitted.
-   at System.Net.Sockets.Socket.UpdateStatusAfterSocketErrorAndThrowException(SocketError error, Boolean disconnectOnFailure, String callerName)
-   at System.Net.Sockets.Socket.DoBind(EndPoint endPointSnapshot, SocketAddress socketAddress)
-   at System.Net.Sockets.Socket.Bind(EndPoint localEP)
-   at Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketTransportOptions.CreateDefaultBoundListenSocket(EndPoint endpoint)
-   at Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionListener.Bind()
-   --- End of inner exception stack trace ---
-   at Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionListener.Bind()
-   at Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketTransportFactory.BindAsync(EndPoint endpoint, CancellationToken cancellationToken)
-   at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.TransportManager.BindAsync(EndPoint endPoint, ConnectionDelegate connectionDelegate, EndpointConfig endpointConfig, CancellationToken cancellationToken)
-   at Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerImpl.<>c__DisplayClass28_0`1.<<StartAsync>g__OnBind|0>d.MoveNext()
+react-dom_client.js?v=8e8c482c:20103 Download the React DevTools for a better development experience: https://react.dev/link/react-devtools
+signalr.js:218 SignalR(Branch): Subscriber added (Total: 1)
+signalr.js:211 [2026-05-15T08:29:59.728Z] Information: Normalizing '/branchOperationsHub' to 'http://localhost:5173/branchOperationsHub'.
+signalr.js:239 SignalR(Branch): Starting connection...
+signalr.js:298 SignalR(Branch): Subscriber removed (Total: 0)
+signalr.js:218 SignalR(Branch): Subscriber added (Total: 1)
+signalr.js:223 SignalR(Branch): Aborted scheduled disconnect
+@microsoft_signalr.js?v=8e8c482c:301 [2026-05-15T08:30:00.826Z] Information: WebSocket connected to ws://localhost:5173/branchOperationsHub?access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiI3MjE5ODVjNy1iYmFlLTQzNjgtYTk1OC04YjcyNDA4MmY1MzIiLCJ1bmlxdWVfbmFtZSI6IlN5c3RlbSBBZG1pbiIsInVzZXJuYW1lIjoiYWRtaW4iLCJlbWFpbCI6ImFkbWluQHN5bm9zLmNvbSIsInNlc3Npb25fbW9kZSI6Im9wZXJhdGlvbmFsIiwic2Vzc2lvbl9pZCI6IjZmMGY0MzI0LWE3MzAtNGZkNC1hZjExLTNmNzRiN2UzNWQxYyIsImRlcGFydG1lbnRfY29kZSI6IkdlbmVyYWwiLCJyb2xlIjoiQWRtaW4iLCJSb2xlSWQiOiJjOGNlMjUyZS00MjNmLTQ3OGEtYTFlMy04MDY3NWNhZWVlMDgiLCJicmFuY2hfaWQiOiJhMDAwMDAwMC0wMDAwLTAwMDAtMDAwMC0wMDAwMDAwMDAwMDEiLCJyZXNvdXJjZV9pZCI6ImY3NjA4Nzk5LTQ2MzctNDczNC1hNjY1LTNjNWM5M2VjMzhiMCIsImJyYW5jaF9uYW1lIjoiTWFpbiBMYWJvcmF0b3J5IiwibmJmIjoxNzc4ODMzMTA3LCJleHAiOjE3Nzg5MTk1MDcsImlhdCI6MTc3ODgzMzEwNywiaXNzIjoiU3luT1MuQXBpIiwiYXVkIjoiU3luT1MuQXBwIn0.g8kr0OG0tCwoxqL9Hn9xk0V5krIvYWkPNcCaYu1WLIg.
+@microsoft_signalr.js?v=8e8c482c:301 [2026-05-15T08:30:00.829Z] Information: Using HubProtocol 'json'.
+signalr.js:242 SignalR(Branch): Connected to /branchOperationsHub
+@microsoft_signalr.js?v=8e8c482c:298 [2026-05-15T08:30:01.073Z] Warning: No client method with the name 'capabilityregistered' found.
+log @ @microsoft_signalr.js?v=8e8c482c:298
+_invokeClientMethod @ @microsoft_signalr.js?v=8e8c482c:1374
+_processIncomingData @ @microsoft_signalr.js?v=8e8c482c:1264
+connection.onreceive @ @microsoft_signalr.js?v=8e8c482c:914
+webSocket.onmessage @ @microsoft_signalr.js?v=8e8c482c:2092
+finance.js:663  GET http://localhost:5173/api/v1/workforce-admin/policies 500 (Internal Server Error)
+(anonymous) @ finance.js:663
+$RefreshSig$ @ WorkforcePolicyModal.jsx:22
+$RefreshSig$ @ WorkforcePolicyModal.jsx:16
+react_stack_bottom_frame @ react-dom_client.js?v=8e8c482c:18567
+runWithFiberInDEV @ react-dom_client.js?v=8e8c482c:997
+commitHookEffectListMount @ react-dom_client.js?v=8e8c482c:9411
+commitHookPassiveMountEffects @ react-dom_client.js?v=8e8c482c:9465
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11040
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11066
+flushPassiveEffects @ react-dom_client.js?v=8e8c482c:13150
+flushPendingEffects @ react-dom_client.js?v=8e8c482c:13088
+flushSpawnedWork @ react-dom_client.js?v=8e8c482c:13062
+commitRoot @ react-dom_client.js?v=8e8c482c:12804
+commitRootWhenReady @ react-dom_client.js?v=8e8c482c:12016
+performWorkOnRoot @ react-dom_client.js?v=8e8c482c:11950
+performSyncWorkOnRoot @ react-dom_client.js?v=8e8c482c:13517
+flushSyncWorkAcrossRoots_impl @ react-dom_client.js?v=8e8c482c:13414
+processRootScheduleInMicrotask @ react-dom_client.js?v=8e8c482c:13437
+(anonymous) @ react-dom_client.js?v=8e8c482c:13531
+<WorkforcePolicyModal>
+exports.jsxDEV @ react_jsx-dev-runtime.js?v=8e8c482c:247
+(anonymous) @ WorkforceScreens.jsx:293
+react_stack_bottom_frame @ react-dom_client.js?v=8e8c482c:18509
+renderWithHooksAgain @ react-dom_client.js?v=8e8c482c:5729
+renderWithHooks @ react-dom_client.js?v=8e8c482c:5665
+updateFunctionComponent @ react-dom_client.js?v=8e8c482c:7475
+beginWork @ react-dom_client.js?v=8e8c482c:8525
+runWithFiberInDEV @ react-dom_client.js?v=8e8c482c:997
+performUnitOfWork @ react-dom_client.js?v=8e8c482c:12561
+workLoopSync @ react-dom_client.js?v=8e8c482c:12424
+renderRootSync @ react-dom_client.js?v=8e8c482c:12408
+performWorkOnRoot @ react-dom_client.js?v=8e8c482c:11766
+performWorkOnRootViaSchedulerTask @ react-dom_client.js?v=8e8c482c:13505
+performWorkUntilDeadline @ react-dom_client.js?v=8e8c482c:36
+<AttendanceLeavesScreen>
+exports.jsxDEV @ react_jsx-dev-runtime.js?v=8e8c482c:247
+App @ App.jsx:192
+react_stack_bottom_frame @ react-dom_client.js?v=8e8c482c:18509
+renderWithHooksAgain @ react-dom_client.js?v=8e8c482c:5729
+renderWithHooks @ react-dom_client.js?v=8e8c482c:5665
+updateFunctionComponent @ react-dom_client.js?v=8e8c482c:7475
+beginWork @ react-dom_client.js?v=8e8c482c:8525
+runWithFiberInDEV @ react-dom_client.js?v=8e8c482c:997
+performUnitOfWork @ react-dom_client.js?v=8e8c482c:12561
+workLoopSync @ react-dom_client.js?v=8e8c482c:12424
+renderRootSync @ react-dom_client.js?v=8e8c482c:12408
+performWorkOnRoot @ react-dom_client.js?v=8e8c482c:11766
+performWorkOnRootViaSchedulerTask @ react-dom_client.js?v=8e8c482c:13505
+performWorkUntilDeadline @ react-dom_client.js?v=8e8c482c:36
+<App>
+exports.jsxDEV @ react_jsx-dev-runtime.js?v=8e8c482c:247
+(anonymous) @ main.jsx:10
+WorkforcePolicyModal.jsx:31 Failed to load policy: Error: Failed to load workforce policies
+    at Object.getPolicies (finance.js:664:37)
+    at async loadPolicy (WorkforcePolicyModal.jsx:22:30)
+$RefreshSig$ @ WorkforcePolicyModal.jsx:31
+await in $RefreshSig$
+$RefreshSig$ @ WorkforcePolicyModal.jsx:16
+react_stack_bottom_frame @ react-dom_client.js?v=8e8c482c:18567
+runWithFiberInDEV @ react-dom_client.js?v=8e8c482c:997
+commitHookEffectListMount @ react-dom_client.js?v=8e8c482c:9411
+commitHookPassiveMountEffects @ react-dom_client.js?v=8e8c482c:9465
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11040
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11066
+flushPassiveEffects @ react-dom_client.js?v=8e8c482c:13150
+flushPendingEffects @ react-dom_client.js?v=8e8c482c:13088
+flushSpawnedWork @ react-dom_client.js?v=8e8c482c:13062
+commitRoot @ react-dom_client.js?v=8e8c482c:12804
+commitRootWhenReady @ react-dom_client.js?v=8e8c482c:12016
+performWorkOnRoot @ react-dom_client.js?v=8e8c482c:11950
+performSyncWorkOnRoot @ react-dom_client.js?v=8e8c482c:13517
+flushSyncWorkAcrossRoots_impl @ react-dom_client.js?v=8e8c482c:13414
+processRootScheduleInMicrotask @ react-dom_client.js?v=8e8c482c:13437
+(anonymous) @ react-dom_client.js?v=8e8c482c:13531
+<WorkforcePolicyModal>
+exports.jsxDEV @ react_jsx-dev-runtime.js?v=8e8c482c:247
+(anonymous) @ WorkforceScreens.jsx:293
+react_stack_bottom_frame @ react-dom_client.js?v=8e8c482c:18509
+renderWithHooksAgain @ react-dom_client.js?v=8e8c482c:5729
+renderWithHooks @ react-dom_client.js?v=8e8c482c:5665
+updateFunctionComponent @ react-dom_client.js?v=8e8c482c:7475
+beginWork @ react-dom_client.js?v=8e8c482c:8525
+runWithFiberInDEV @ react-dom_client.js?v=8e8c482c:997
+performUnitOfWork @ react-dom_client.js?v=8e8c482c:12561
+workLoopSync @ react-dom_client.js?v=8e8c482c:12424
+renderRootSync @ react-dom_client.js?v=8e8c482c:12408
+performWorkOnRoot @ react-dom_client.js?v=8e8c482c:11766
+performWorkOnRootViaSchedulerTask @ react-dom_client.js?v=8e8c482c:13505
+performWorkUntilDeadline @ react-dom_client.js?v=8e8c482c:36
+<AttendanceLeavesScreen>
+exports.jsxDEV @ react_jsx-dev-runtime.js?v=8e8c482c:247
+App @ App.jsx:192
+react_stack_bottom_frame @ react-dom_client.js?v=8e8c482c:18509
+renderWithHooksAgain @ react-dom_client.js?v=8e8c482c:5729
+renderWithHooks @ react-dom_client.js?v=8e8c482c:5665
+updateFunctionComponent @ react-dom_client.js?v=8e8c482c:7475
+beginWork @ react-dom_client.js?v=8e8c482c:8525
+runWithFiberInDEV @ react-dom_client.js?v=8e8c482c:997
+performUnitOfWork @ react-dom_client.js?v=8e8c482c:12561
+workLoopSync @ react-dom_client.js?v=8e8c482c:12424
+renderRootSync @ react-dom_client.js?v=8e8c482c:12408
+performWorkOnRoot @ react-dom_client.js?v=8e8c482c:11766
+performWorkOnRootViaSchedulerTask @ react-dom_client.js?v=8e8c482c:13505
+performWorkUntilDeadline @ react-dom_client.js?v=8e8c482c:36
+<App>
+exports.jsxDEV @ react_jsx-dev-runtime.js?v=8e8c482c:247
+(anonymous) @ main.jsx:10
+
+PS D:\Projects\SynOS-Synthesized-Lab-Intelligence> dotnet run --project src\SynOS.Api\SynOS.Api.csproj --urls "http://127.0.0.1:59999"
+[13:59:31 INF] Notification Worker Service running.
+[13:59:31 INF] OperationalStatsProjectionWorker is starting in Event-Driven Mode.
+[13:59:31 INF] Worker: Running Consistency Check and Catch-up...
+[13:59:31 INF] Worker: Catch-up complete. Awaiting real-time events...
+[14:00:00 WRN] Failed to determine the https port for redirect.
+[14:00:01 INF] Terminal web-1zy6xxtky authorized and added to Thermal80mm group for Branch a0000000-0000-0000-0000-000000000001.
+[14:00:31 ERR] Failed executing DbCommand (14ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+SELECT [w].[PolicyId], [w].[ConfigJson], [w].[IsEnabled], [w].[PolicyName], [w].[UpdatedAt]
+FROM [WorkforcePolicies] AS [w]
+[14:00:31 ERR] An exception occurred while iterating over the results of a query for context type 'SynOS.Data.SynOSDbContext'.
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid object name 'WorkforcePolicies'.
+   at Microsoft.Data.SqlClient.SqlCommand.<>c.<ExecuteDbDataReaderAsync>b__209_0(Task`1 result)
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
 --- End of stack trace from previous location ---
-   at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.AddressBinder.BindEndpointAsync(ListenOptions endpoint, AddressBindContext context, CancellationToken cancellationToken)
-   --- End of inner exception stack trace ---
-   at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.AddressBinder.BindEndpointAsync(ListenOptions endpoint, AddressBindContext context, CancellationToken cancellationToken)
-   at Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions.BindAsync(AddressBindContext context, CancellationToken cancellationToken)
-   at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.AddressBinder.AddressesStrategy.BindAsync(AddressBindContext context, CancellationToken cancellationToken)
-   at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.AddressBinder.BindAsync(ListenOptions[] listenOptions, AddressBindContext context, Func`2 useHttps, CancellationToken cancellationToken)
-   at Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerImpl.BindAsync(CancellationToken cancellationToken)
-   at Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerImpl.StartAsync[TContext](IHttpApplication`1 application, CancellationToken cancellationToken)
-   at Microsoft.AspNetCore.Hosting.GenericWebHostService.StartAsync(CancellationToken cancellationToken)
-   at Microsoft.Extensions.Hosting.Internal.Host.<StartAsync>b__15_1(IHostedService service, CancellationToken token)
-   at Microsoft.Extensions.Hosting.Internal.Host.ForeachService[T](IEnumerable`1 services, CancellationToken token, Boolean concurrent, Boolean abortOnFirstException, List`1 exceptions, Func`3 operation)
-[12:02:33 INF] Notification Worker Service stopping gracefully.
-Unhandled exception. [12:02:33 ERR] An error occurred using the connection to database 'SynOSDb' on server '(localdb)\MSSQLLocalDB'.
-[12:02:33 INF] Worker: Catch-up complete. Awaiting real-time events...
-[12:02:33 ERR] BackgroundService failed
-System.IO.IOException: Failed to bind to address http://127.0.0.1:59999: address already in use.
- ---> Microsoft.AspNetCore.Connections.AddressInUseException: Only one usage of each socket address (protocol/network address/port) is normally permitted.
- ---> System.Net.Sockets.SocketException (10048): Only one usage of each socket address (protocol/network address/port) is normally permitted.
-   at System.Net.Sockets.Socket.UpdateStatusAfterSocketErrorAndThrowException(SocketError error, Boolean disconnectOnFailure, String callerName)
-   at System.Net.Sockets.Socket.DoBind(EndPoint endPointSnapshot, SocketAddress socketAddress)
-   at System.Net.Sockets.Socket.Bind(EndPoint localEP)
-   at Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketTransportOptions.CreateDefaultBoundListenSocket(EndPoint endpoint)
-   at Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionListener.Bind()
-   --- End of inner exception stack trace ---
-   at Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionListener.Bind()
-   at Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketTransportFactory.BindAsync(EndPoint endpoint, CancellationToken cancellationToken)
-   at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.TransportManager.BindAsync(EndPoint endPoint, ConnectionDelegate connectionDelegate, EndpointConfig endpointConfig, CancellationToken cancellationToken)
-   at Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerImpl.<>c__DisplayClass28_0`1.<<StartAsync>g__OnBind|0>d.MoveNext()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
 --- End of stack trace from previous location ---
-   at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.AddressBinder.BindEndpointAsync(ListenOptions endpoint, AddressBindContext context, CancellationToken cancellationToken)
-   --- End of inner exception stack trace ---
-   at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.AddressBinder.BindEndpointAsync(ListenOptions endpoint, AddressBindContext context, CancellationToken cancellationToken)
-   at Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions.BindAsync(AddressBindContext context, CancellationToken cancellationToken)
-   at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.AddressBinder.AddressesStrategy.BindAsync(AddressBindContext context, CancellationToken cancellationToken)
-   at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.AddressBinder.BindAsync(ListenOptions[] listenOptions, AddressBindContext context, Func`2 useHttps, CancellationToken cancellationToken)
-   at Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerImpl.BindAsync(CancellationToken cancellationToken)
-   at Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerImpl.StartAsync[TContext](IHttpApplication`1 application, CancellationToken cancellationToken)
-   at Microsoft.AspNetCore.Hosting.GenericWebHostService.StartAsync(CancellationToken cancellationToken)
-   at Microsoft.Extensions.Hosting.Internal.Host.<StartAsync>b__15_1(IHostedService service, CancellationToken token)
-   at Microsoft.Extensions.Hosting.Internal.Host.ForeachService[T](IEnumerable`1 services, CancellationToken token, Boolean concurrent, Boolean abortOnFirstException, List`1 exceptions, Func`3 operation)
-   at Microsoft.Extensions.Hosting.Internal.Host.StartAsync(CancellationToken cancellationToken)
-   at Microsoft.Extensions.Hosting.HostingAbstractionsHostExtensions.RunAsync(IHost host, CancellationToken token)
-   at Microsoft.Extensions.Hosting.HostingAbstractionsHostExtensions.RunAsync(IHost host, CancellationToken token)
-   at Microsoft.Extensions.Hosting.HostingAbstractionsHostExtensions.Run(IHost host)
-   at Program.<Main>$(String[] args) in D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Program.cs:line 480
-System.Threading.Tasks.TaskCanceledException: A task was canceled.
-   at System.Threading.Channels.ChannelReader`1.ReadAllAsync(CancellationToken cancellationToken)+MoveNext()
-   at System.Threading.Channels.ChannelReader`1.ReadAllAsync(CancellationToken cancellationToken)+System.Threading.Tasks.Sources.IValueTaskSource<System.Boolean>.GetResult()
-   at SynOS.Api.BackgroundServices.OperationalStatsProjectionWorker.ExecuteAsync(CancellationToken stoppingToken) in D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\BackgroundServices\OperationalStatsProjectionWorker.cs:line 55
-   at SynOS.Api.BackgroundServices.OperationalStatsProjectionWorker.ExecuteAsync(CancellationToken stoppingToken) in D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\BackgroundServices\OperationalStatsProjectionWorker.cs:line 55
-   at Microsoft.Extensions.Hosting.Internal.Host.TryExecuteBackgroundServiceAsync(BackgroundService backgroundService)
-[12:02:33 FTL] The HostOptions.BackgroundServiceExceptionBehavior is configured to StopHost. A BackgroundService has thrown an unhandled exception, and the IHost instance is stopping. To avoid this behavior, configure this to Ignore; however the BackgroundService will not be restarted.
-System.Threading.Tasks.TaskCanceledException: A task was canceled.
-   at System.Threading.Channels.ChannelReader`1.ReadAllAsync(CancellationToken cancellationToken)+MoveNext()
-   at System.Threading.Channels.ChannelReader`1.ReadAllAsync(CancellationToken cancellationToken)+System.Threading.Tasks.Sources.IValueTaskSource<System.Boolean>.GetResult()
-   at SynOS.Api.BackgroundServices.OperationalStatsProjectionWorker.ExecuteAsync(CancellationToken stoppingToken) in D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\BackgroundServices\OperationalStatsProjectionWorker.cs:line 55
-   at SynOS.Api.BackgroundServices.OperationalStatsProjectionWorker.ExecuteAsync(CancellationToken stoppingToken) in D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\BackgroundServices\OperationalStatsProjectionWorker.cs:line 55
-   at Microsoft.Extensions.Hosting.Internal.Host.TryExecuteBackgroundServiceAsync(BackgroundService backgroundService)
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence>
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:5a3c54fa-8fe0-4276-92d6-bb839e1058ca
+Error Number:208,State:1,Class:16
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid object name 'WorkforcePolicies'.
+   at Microsoft.Data.SqlClient.SqlCommand.<>c.<ExecuteDbDataReaderAsync>b__209_0(Task`1 result)
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:5a3c54fa-8fe0-4276-92d6-bb839e1058ca
+Error Number:208,State:1,Class:16
