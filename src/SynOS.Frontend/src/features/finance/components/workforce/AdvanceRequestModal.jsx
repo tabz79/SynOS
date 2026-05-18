@@ -24,7 +24,7 @@ export function AdvanceRequestModal({ isOpen, onClose, staffList, onAdvanceAdded
             await WorkforceApi.requestAdvance({
                 employeeId: formData.employeeId,
                 amount: parseFloat(formData.amount),
-                purpose: formData.reason,
+                reason: formData.reason,
                 requestedAt: new Date(formData.requestedAt).toISOString(),
                 status: "Pending"
             });

@@ -42,7 +42,6 @@ export function AttendanceLeavesScreen() {
     const [selectedStaff, setSelectedStaff] = useState(null);
     const [month, setMonth] = useState(new Date().toISOString().split('-').slice(0, 2).join('-') + '-01');
     const [summary, setSummary] = useState(null);
-    const [audit, setAudit] = useState([]);
     const [pendingLeaves, setPendingLeaves] = useState([]);
     const [loading, setLoading] = useState(false);
     const [reviewingLeave, setReviewingLeave] = useState(null);
@@ -85,13 +84,9 @@ export function AttendanceLeavesScreen() {
             const data = await WorkforceApi.getAttendanceSummary(staffId, month);
             setSummary(data);
             
-            // Check period status
             const periods = await WorkforceApi.getPeriods();
             const currentPeriod = periods.find(p => p.startDate.substring(0, 7) === month.substring(0, 7));
             setIsPeriodLocked(currentPeriod?.status === 1 || currentPeriod?.status === 2);
-
-            const auditData = await WorkforceApi.getAttendanceAudit(staffId);
-            setAudit(auditData.events || []);
         } catch (error) {
             console.error(error);
         } finally {
@@ -208,32 +203,7 @@ export function AttendanceLeavesScreen() {
                             <AttendanceCalendar 
                                 statuses={summary?.dailyStatuses || []} 
                                 isLocked={isPeriodLocked} 
-                                onDateClick={handleDateClick}
                             />
-
-                            {/* Audit Timeline */}
-                            <div className="dark:bg-zinc-900/50 bg-white border dark:border-zinc-800 border-zinc-200 rounded-2xl p-6">
-                                <h3 className="text-xs font-bold uppercase tracking-widest text-zinc-500 mb-6 flex items-center gap-2">
-                                    <History className="w-4 h-4" /> Clock Audit Timeline
-                                </h3>
-                                <div className="space-y-6 relative ml-4 before:absolute before:left-0 before:top-2 before:bottom-2 before:w-px before:bg-zinc-200 dark:before:bg-zinc-800">
-                                    {audit.length === 0 ? (
-                                        <p className="text-xs text-zinc-500 italic ml-6">No clock events recorded for this employee.</p>
-                                    ) : audit.slice(-5).reverse().map((ev, i) => (
-                                        <div key={i} className="relative pl-8 group">
-                                            <div className="absolute left-[-4px] top-1.5 w-2 h-2 rounded-full bg-synos-primary border-2 border-white dark:border-zinc-950 z-10 group-hover:scale-150 transition-transform" />
-                                            <div className="flex flex-col">
-                                                <div className="flex items-center gap-2">
-                                                    <span className="text-xs font-bold dark:text-zinc-200">{ev.eventType}</span>
-                                                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 text-zinc-500 uppercase">{ev.sourceModule}</span>
-                                                </div>
-                                                <p className="text-[10px] text-zinc-500 mt-0.5">{new Date(ev.timestamp).toLocaleString()}</p>
-                                                {ev.description && <p className="text-[10px] text-zinc-400 italic mt-1 font-mono">{ev.description}</p>}
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
                         </>
                     )}
                 </div>
@@ -500,9 +470,13 @@ export function SalaryProcessingScreen() {
     const [staffList, setStaffList] = useState([]);
     const [finalPayables, setFinalPayables] = useState([]);
     const [selectedPayslip, setSelectedPayslip] = useState(null);
+    const [advancesList, setAdvancesList] = useState([]);
 
     const calculateEmployeePayrollDetails = (employeeId, grossAmount) => {
         const gross = Number(grossAmount) || 0;
+        const empAdvances = (advancesList || []).filter(a => a.employeeId === employeeId && a.status === 'Approved');
+        const advance = empAdvances.reduce((sum, a) => sum + (Number(a.amount) || 0), 0);
+
         const emp = staffList.find(s => s.employeeId === employeeId);
         if (!emp) {
             const pf = Math.round(gross * 0.12 * 100) / 100;
@@ -513,7 +487,8 @@ export function SalaryProcessingScreen() {
                 pf,
                 esi,
                 tds: 0,
-                net: Math.round(gross - pf - esi)
+                advance,
+                net: Math.round(gross - pf - esi - advance)
             };
         }
 
@@ -533,7 +508,7 @@ export function SalaryProcessingScreen() {
             }
         }
 
-        const net = Math.round(gross - pf - esi - tds);
+        const net = Math.round(gross - pf - esi - tds - advance);
 
         return {
             name: `${emp.firstName || ''} ${emp.lastName || ''}`.trim() || "Employee",
@@ -541,6 +516,7 @@ export function SalaryProcessingScreen() {
             pf,
             esi,
             tds,
+            advance,
             net
         };
     };
@@ -562,17 +538,19 @@ export function SalaryProcessingScreen() {
         setSelectedPeriod(period);
         setLoading(true);
         try {
-            // Check for existing run or start new one
             const run = await WorkforceApi.startRun(period.payrollPeriodId);
             setActiveRun(run);
             
-            // Fetch LOP Preview for this month
             const monthStr = period.startDate.substring(0, 7) + '-01';
-            const lop = await WorkforceApi.getLopSummary(monthStr);
+            const [lop, staff, advances] = await Promise.all([
+                WorkforceApi.getLopSummary(monthStr),
+                WorkforceApi.getStaff(),
+                WorkforceApi.getAdvances()
+            ]);
+            
             setLopSummary(lop);
-
-            const staff = await WorkforceApi.getStaff();
             setStaffList(staff);
+            setAdvancesList(advances);
 
             if (run.status === 'Finalized' || run.status === 3) {
                 const payables = await WorkforceApi.getRunPayables(run.payrollRunId);
@@ -597,7 +575,11 @@ export function SalaryProcessingScreen() {
         setLoading(true);
         try {
             await WorkforceApi.calculateRun(activeRun.payrollRunId);
-            const results = await WorkforceApi.getRunReview(activeRun.payrollRunId);
+            const [results, advances] = await Promise.all([
+                WorkforceApi.getRunReview(activeRun.payrollRunId),
+                WorkforceApi.getAdvances()
+            ]);
+            setAdvancesList(advances);
             setDraftResults(results);
         } catch (error) {
             alert("Calculation failed: " + error.message);
@@ -853,6 +835,7 @@ export function SalaryProcessingScreen() {
                                             <th className="px-6 py-3 text-right text-rose-500">PF Deduction</th>
                                             <th className="px-6 py-3 text-right text-rose-500">ESI Deduction</th>
                                             <th className="px-6 py-3 text-right text-rose-500">TDS</th>
+                                            <th className="px-6 py-3 text-right text-rose-500">Advances</th>
                                             <th className="px-6 py-3 text-right text-emerald-500 font-bold">Net Salary</th>
                                         </tr>
                                     </thead>
@@ -868,6 +851,7 @@ export function SalaryProcessingScreen() {
                                                     <td className="px-6 py-3 text-right text-rose-500">-₹{(details.pf ?? 0).toLocaleString()}</td>
                                                     <td className="px-6 py-3 text-right text-rose-500">-₹{(details.esi ?? 0).toLocaleString()}</td>
                                                     <td className="px-6 py-3 text-right text-rose-500">-₹{(details.tds ?? 0).toLocaleString()}</td>
+                                                    <td className="px-6 py-3 text-right text-rose-500">{details.advance > 0 ? `-₹${(details.advance).toLocaleString()}` : '--'}</td>
                                                     <td className="px-6 py-3 text-right text-emerald-500 font-bold font-sans text-sm">₹{(details.net ?? 0).toLocaleString()}</td>
                                                 </tr>
                                             );
@@ -897,11 +881,13 @@ export function SalaryProcessingScreen() {
                 <div className="space-y-8 animate-in slide-in-from-right-4 duration-500">
                     <style>{`
                         @media print {
-                            body > * {
-                                display: none !important;
+                            body {
+                                visibility: hidden !important;
+                            }
+                            #printable-payslip, #printable-payslip * {
+                                visibility: visible !important;
                             }
                             #printable-payslip {
-                                display: block !important;
                                 position: absolute;
                                 left: 0;
                                 top: 0;
@@ -1127,6 +1113,7 @@ export function SalaryProcessingScreen() {
                                         <th className="px-6 py-3 text-right text-rose-500">PF Deduction</th>
                                         <th className="px-6 py-3 text-right text-rose-500">ESI Deduction</th>
                                         <th className="px-6 py-3 text-right text-rose-500">TDS</th>
+                                        <th className="px-6 py-3 text-right text-rose-500">Advances</th>
                                         <th className="px-6 py-3 text-right text-emerald-500 font-bold">Net Salary</th>
                                         <th className="px-6 py-3 text-center">Status</th>
                                         <th className="px-6 py-3 text-right">Actions</th>
@@ -1140,6 +1127,7 @@ export function SalaryProcessingScreen() {
                                             <td className="px-6 py-3 text-right text-rose-500 font-mono">-₹{(p.pfDeduction || 0).toLocaleString()}</td>
                                             <td className="px-6 py-3 text-right text-rose-500 font-mono">-₹{(p.esiDeduction || 0).toLocaleString()}</td>
                                             <td className="px-6 py-3 text-right text-rose-500 font-mono">-₹{(p.tdsDeduction || 0).toLocaleString()}</td>
+                                            <td className="px-6 py-3 text-right text-rose-500 font-mono">{p.otherDeductions > 0 ? `-₹${(p.otherDeductions).toLocaleString()}` : '--'}</td>
                                             <td className="px-6 py-3 text-right text-emerald-500 font-bold font-sans text-sm">₹{(p.netPayable || 0).toLocaleString()}</td>
                                             <td className="px-6 py-3 text-center">
                                                 <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${p.status === 'Settled' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-amber-500/10 text-amber-500'}`}>
@@ -1216,7 +1204,10 @@ export function SalaryProcessingScreen() {
                                         <div className="flex justify-between"><span>EPF ({selectedPayslip.snapshotPFRate * 100}%):</span> <span className="text-rose-500">-₹{selectedPayslip.pfDeduction.toLocaleString()}</span></div>
                                         <div className="flex justify-between"><span>ESI ({selectedPayslip.snapshotESIRate * 100}%):</span> <span className="text-rose-500">-₹{selectedPayslip.esiDeduction.toLocaleString()}</span></div>
                                         <div className="flex justify-between"><span>TDS:</span> <span className="text-rose-500">-₹{selectedPayslip.tdsDeduction.toLocaleString()}</span></div>
-                                        <div className="flex justify-between border-t dark:border-zinc-800 border-zinc-100 pt-2 font-bold text-rose-500"><span>Total Deductions:</span> <span>-₹{(selectedPayslip.pfDeduction + selectedPayslip.esiDeduction + selectedPayslip.tdsDeduction).toLocaleString()}</span></div>
+                                        {selectedPayslip.otherDeductions > 0 && (
+                                            <div className="flex justify-between"><span>Salary Advances:</span> <span className="text-rose-500">-₹{selectedPayslip.otherDeductions.toLocaleString()}</span></div>
+                                        )}
+                                        <div className="flex justify-between border-t dark:border-zinc-800 border-zinc-100 pt-2 font-bold text-rose-500"><span>Total Deductions:</span> <span>-₹{(selectedPayslip.pfDeduction + selectedPayslip.esiDeduction + selectedPayslip.tdsDeduction + (selectedPayslip.otherDeductions || 0)).toLocaleString()}</span></div>
                                     </div>
                                 </div>
                             </div>
@@ -1299,11 +1290,13 @@ export function PayrollHistoryScreen() {
         <div className="p-8 space-y-8">
             <style>{`
                 @media print {
-                    body > * {
-                        display: none !important;
+                    body {
+                        visibility: hidden !important;
+                    }
+                    #printable-payslip, #printable-payslip * {
+                        visibility: visible !important;
                     }
                     #printable-payslip {
-                        display: block !important;
                         position: absolute;
                         left: 0;
                         top: 0;
@@ -1617,7 +1610,10 @@ export function PayrollHistoryScreen() {
                                         <div className="flex justify-between"><span>EPF ({selectedPayslip.snapshotPFRate * 100}%):</span> <span className="text-rose-500">-₹{selectedPayslip.pfDeduction.toLocaleString()}</span></div>
                                         <div className="flex justify-between"><span>ESI ({selectedPayslip.snapshotESIRate * 100}%):</span> <span className="text-rose-500">-₹{selectedPayslip.esiDeduction.toLocaleString()}</span></div>
                                         <div className="flex justify-between"><span>TDS:</span> <span className="text-rose-500">-₹{selectedPayslip.tdsDeduction.toLocaleString()}</span></div>
-                                        <div className="flex justify-between border-t dark:border-zinc-800 border-zinc-100 pt-2 font-bold text-rose-500"><span>Total Deductions:</span> <span>-₹{(selectedPayslip.pfDeduction + selectedPayslip.esiDeduction + selectedPayslip.tdsDeduction).toLocaleString()}</span></div>
+                                        {selectedPayslip.otherDeductions > 0 && (
+                                            <div className="flex justify-between"><span>Salary Advances:</span> <span className="text-rose-500">-₹{selectedPayslip.otherDeductions.toLocaleString()}</span></div>
+                                        )}
+                                        <div className="flex justify-between border-t dark:border-zinc-800 border-zinc-100 pt-2 font-bold text-rose-500"><span>Total Deductions:</span> <span>-₹{(selectedPayslip.pfDeduction + selectedPayslip.esiDeduction + selectedPayslip.tdsDeduction + (selectedPayslip.otherDeductions || 0)).toLocaleString()}</span></div>
                                     </div>
                                 </div>
                             </div>
@@ -1663,6 +1659,7 @@ export function AdvancesDeductionsScreen() {
     const [staff, setStaff] = useState([]);
     const [loading, setLoading] = useState(true);
     const [isAdvanceModalOpen, setIsAdvanceModalOpen] = useState(false);
+    const [activeTab, setActiveTab] = useState('Pending'); // 'Pending', 'Approved', 'Adjusted'
 
     useEffect(() => {
         loadData();
@@ -1684,6 +1681,24 @@ export function AdvancesDeductionsScreen() {
         }
     };
 
+    const getEmployeeName = (a) => {
+        if (a.employeeName && a.employeeName !== 'Unknown') return a.employeeName;
+        const emp = staff.find(s => s.employeeId === a.employeeId);
+        return emp ? `${emp.firstName} ${emp.lastName}` : (a.employeeId ? `${a.employeeId.substring(0, 8)}...` : 'Unknown');
+    };
+
+    const handleApprove = async (id) => {
+        if (!window.confirm("Are you sure you want to approve and disburse this salary advance?")) return;
+        try {
+            await WorkforceApi.approveAdvance(id);
+            alert("Advance successfully approved and disbursed!");
+            loadData();
+        } catch (error) {
+            console.error(error);
+            alert("Failed to approve advance: " + error.message);
+        }
+    };
+
     return (
         <div className="p-8 space-y-8">
             <div className="flex justify-between items-end">
@@ -1700,37 +1715,93 @@ export function AdvancesDeductionsScreen() {
                 </button>
             </div>
 
-            <div className="grid grid-cols-2 gap-6">
-                <div className="space-y-4">
+            <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+                <div className="xl:col-span-2 space-y-4">
                     <h3 className="text-sm font-bold uppercase tracking-widest text-zinc-500 flex items-center gap-2">
-                        <Wallet className="w-4 h-4" /> Pending Advances
+                        <Wallet className="w-4 h-4" /> Salary Advances Manager
                     </h3>
-                    <div className="dark:bg-zinc-900/50 bg-white border dark:border-zinc-800 border-zinc-200 rounded-2xl overflow-hidden min-h-[300px]">
-                        {loading ? <div className="p-8 text-center text-zinc-500">Loading...</div> : (
-                            <table className="w-full text-left text-xs">
-                                <thead className="bg-zinc-50 dark:bg-zinc-950 font-bold text-zinc-500 border-b dark:border-zinc-800">
-                                    <tr>
-                                        <th className="px-4 py-3">Employee</th>
-                                        <th className="px-4 py-3 text-right">Amount</th>
-                                        <th className="px-4 py-3">Status</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y dark:divide-zinc-800">
-                                    {advances.filter(a => a.status === 'Pending').map(a => (
-                                        <tr key={a.advanceId}>
-                                            <td className="px-4 py-3">{a.employeeId.substring(0,8)}...</td>
-                                            <td className="px-4 py-3 text-right font-bold">₹{a.amount}</td>
-                                            <td className="px-4 py-3">
-                                                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-500">{a.status}</span>
-                                            </td>
+                    <div className="dark:bg-zinc-900/50 bg-white border dark:border-zinc-800 border-zinc-200 rounded-2xl p-6 shadow-sm space-y-4">
+                        <div className="flex border-b dark:border-zinc-800 border-zinc-200 gap-4">
+                            {['Pending', 'Approved', 'Adjusted'].map(tab => {
+                                const count = advances.filter(a => {
+                                    if (tab === 'Pending') return a.status === 'Pending';
+                                    if (tab === 'Approved') return a.status === 'Approved';
+                                    return a.status === 'Adjusted' || a.status === 'Recovered';
+                                }).length;
+                                const labels = {
+                                    'Pending': 'Pending Approvals',
+                                    'Approved': 'Approved & Active',
+                                    'Adjusted': 'Deducted & Settled'
+                                };
+                                const activeColor = tab === 'Pending' ? 'border-amber-500 text-amber-500' : tab === 'Approved' ? 'border-emerald-500 text-emerald-500' : 'border-synos-primary text-synos-primary';
+                                return (
+                                    <button 
+                                        key={tab}
+                                        onClick={() => setActiveTab(tab)} 
+                                        className={`pb-2 text-[10px] font-bold uppercase tracking-wider border-b-2 transition-all ${activeTab === tab ? `${activeColor}` : 'border-transparent text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200'}`}
+                                    >
+                                        {labels[tab]} ({count})
+                                    </button>
+                                );
+                            })}
+                        </div>
+
+                        <div className="overflow-x-auto min-h-[250px]">
+                            {loading ? <div className="p-8 text-center text-zinc-500">Loading...</div> : (
+                                <table className="w-full text-left text-xs">
+                                    <thead className="bg-zinc-50 dark:bg-zinc-950/50 font-bold text-zinc-500 border-b dark:border-zinc-800">
+                                        <tr>
+                                            <th className="px-4 py-3">Employee</th>
+                                            <th className="px-4 py-3">Reason</th>
+                                            <th className="px-4 py-3 text-right">Amount</th>
+                                            <th className="px-4 py-3 text-center">Status</th>
+                                            {activeTab === 'Pending' && <th className="px-4 py-3 text-right">Actions</th>}
                                         </tr>
-                                    ))}
-                                    {advances.filter(a => a.status === 'Pending').length === 0 && (
-                                        <tr><td colSpan="3" className="p-8 text-center text-zinc-500 italic">No pending advances.</td></tr>
-                                    )}
-                                </tbody>
-                            </table>
-                        )}
+                                    </thead>
+                                    <tbody className="divide-y dark:divide-zinc-800">
+                                        {advances.filter(a => {
+                                            if (activeTab === 'Pending') return a.status === 'Pending';
+                                            if (activeTab === 'Approved') return a.status === 'Approved';
+                                            return a.status === 'Adjusted' || a.status === 'Recovered';
+                                        }).map(a => (
+                                            <tr key={a.advanceId} className="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/10">
+                                                <td className="px-4 py-3 font-bold dark:text-white">{getEmployeeName(a)}</td>
+                                                <td className="px-4 py-3 text-zinc-500">{a.reason || 'Salary advance request'}</td>
+                                                <td className="px-4 py-3 text-right font-mono font-bold dark:text-zinc-300">₹{(Number(a.amount) || 0).toLocaleString()}</td>
+                                                <td className="px-4 py-3 text-center">
+                                                    <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${
+                                                        a.status === 'Pending' ? 'bg-amber-500/10 text-amber-500' :
+                                                        a.status === 'Approved' ? 'bg-emerald-500/10 text-emerald-500' :
+                                                        'bg-zinc-500/10 text-zinc-500'
+                                                    }`}>
+                                                        {a.status === 'Pending' ? 'Pending' :
+                                                         a.status === 'Approved' ? 'Awaiting Recovery' :
+                                                         'Deducted'}
+                                                    </span>
+                                                </td>
+                                                {activeTab === 'Pending' && (
+                                                    <td className="px-4 py-3 text-right">
+                                                        <button 
+                                                            onClick={() => handleApprove(a.advanceId)}
+                                                            className="bg-emerald-500 hover:bg-emerald-600 text-white px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all shadow-md shadow-emerald-500/10"
+                                                        >
+                                                            Approve & Disburse
+                                                        </button>
+                                                    </td>
+                                                )}
+                                            </tr>
+                                        ))}
+                                        {advances.filter(a => {
+                                            if (activeTab === 'Pending') return a.status === 'Pending';
+                                            if (activeTab === 'Approved') return a.status === 'Approved';
+                                            return a.status === 'Adjusted' || a.status === 'Recovered';
+                                        }).length === 0 && (
+                                            <tr><td colSpan={activeTab === 'Pending' ? 5 : 4} className="p-8 text-center text-zinc-500 italic">No advances in this state.</td></tr>
+                                        )}
+                                    </tbody>
+                                </table>
+                            )}
+                        </div>
                     </div>
                 </div>
 
@@ -1738,7 +1809,7 @@ export function AdvancesDeductionsScreen() {
                     <h3 className="text-sm font-bold uppercase tracking-widest text-zinc-500 flex items-center gap-2">
                         <Calculator className="w-4 h-4" /> Recent Adjustments
                     </h3>
-                    <div className="dark:bg-zinc-900/50 bg-white border dark:border-zinc-800 border-zinc-200 rounded-2xl p-8 text-center">
+                    <div className="dark:bg-zinc-900/50 bg-white border dark:border-zinc-800 border-zinc-200 rounded-2xl p-8 text-center min-h-[300px] flex flex-col items-center justify-center">
                         <FileText className="w-8 h-8 text-zinc-300 mx-auto mb-2" />
                         <p className="text-xs text-zinc-500">Ad-hoc adjustments (TDS overrides, bonuses) appear here once finalized.</p>
                     </div>

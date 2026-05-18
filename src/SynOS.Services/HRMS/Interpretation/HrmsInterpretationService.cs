@@ -361,34 +361,6 @@ namespace SynOS.Services.HRMS.Interpretation
                 .ToListAsync();
             view.Events.AddRange(leaveEvents);
 
-            var payEvents = await _context.PayrollFacts.AsNoTracking()
-                .Where(f => f.EmployeeId == employeeId)
-                .Select(f => f.PayrollRunId)
-                .Distinct()
-                .Join(_context.PayrollRuns, id => id, r => r.PayrollRunId, (id, r) => new TimelineEvent
-                {
-                    Timestamp = r.CompletedAt ?? r.CreatedAt, 
-                    SourceModule = "Payroll",
-                    EventType = "RunIncluded",
-                    Description = r.Status.ToString(),
-                    FactId = r.PayrollRunId
-                })
-                .ToListAsync();
-            view.Events.AddRange(payEvents);
-
-            var spendEvents = await _context.SpendFacts.AsNoTracking()
-                .Where(s => s.PayeeId == employeeId)
-                .Select(s => new TimelineEvent
-                {
-                    Timestamp = s.RecordedAt,
-                    SourceModule = "Spend",
-                    EventType = "Payment",
-                    Description = $"{s.Amount} {s.Currency}",
-                    FactId = s.SpendFactId
-                })
-                .ToListAsync();
-            view.Events.AddRange(spendEvents);
-
             view.Events = view.Events.OrderBy(e => e.Timestamp).ToList();
             return view;
         }
@@ -401,8 +373,8 @@ namespace SynOS.Services.HRMS.Interpretation
             var monthStart = new DateTime(start.Year, start.Month, 1);
             var monthEnd = monthStart.AddMonths(1).AddDays(-1);
 
-            var paidUsedFacts = await _context.LeaveFacts.AsNoTracking()
-                .Where(l => l.EmployeeId == employeeId && l.IsPaid && l.StartTime >= monthStart && l.StartTime <= monthEnd)
+            var paidLogs = await _context.AttendanceLogs.AsNoTracking()
+                .Where(l => l.EmployeeId == employeeId && l.Status == "PaidLeave" && l.ClockIn >= monthStart && l.ClockIn <= monthEnd)
                 .ToListAsync();
             
             var policy = await _context.WorkforcePolicies.AsNoTracking()
@@ -418,7 +390,7 @@ namespace SynOS.Services.HRMS.Interpretation
                 } catch { }
             }
             
-            int usedQuota = paidUsedFacts.Sum(l => (l.EndTime.Date - l.StartTime.Date).Days + 1);
+            int usedQuota = paidLogs.Count;
 
             int requestedDays = (int)(end.Date - start.Date).TotalDays + 1;
             int baseQuota = policyEnabled ? (employee.MonthlyPaidLeaveQuota > 0 ? employee.MonthlyPaidLeaveQuota : defaultQuota) : 0; 
@@ -454,11 +426,11 @@ namespace SynOS.Services.HRMS.Interpretation
 
             foreach (var emp in employees)
             {
-                var paidUsedFacts = await _context.LeaveFacts.AsNoTracking()
-                    .Where(l => l.EmployeeId == emp.EmployeeId && l.IsPaid && l.StartTime >= monthStart && l.StartTime <= monthEnd)
+                var paidLogs = await _context.AttendanceLogs.AsNoTracking()
+                    .Where(l => l.EmployeeId == emp.EmployeeId && l.Status == "PaidLeave" && l.ClockIn >= monthStart && l.ClockIn <= monthEnd)
                     .ToListAsync();
                 
-                int paidUsed = paidUsedFacts.Sum(l => (l.EndTime.Date - l.StartTime.Date).Days + 1);
+                int paidUsed = paidLogs.Count;
 
                 var attendanceLogs = await _context.AttendanceLogs.AsNoTracking()
                     .Where(l => l.EmployeeId == emp.EmployeeId && l.ClockIn >= monthStart && l.ClockIn <= monthEnd)

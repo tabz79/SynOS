@@ -710,6 +710,14 @@ export const FinanceApi = {
             if (!response.ok) throw new Error("Failed to record advance");
             return response.json();
         },
+        approveAdvance: async (id) => {
+            const response = await fetch(`/api/v1/workforce-admin/advances/${id}/approve`, {
+                method: 'POST',
+                headers: FinanceApi.getHeaders()
+            });
+            if (!response.ok) throw new Error("Failed to approve advance");
+            return response.json();
+        },
 
         // Attendance
         getAttendanceSummary: async (employeeId, month) => {

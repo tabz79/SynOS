@@ -52,9 +52,23 @@ namespace SynOS.Api.Controllers
         [HttpGet("advances")]
         public async Task<IActionResult> GetAdvances()
         {
-            var advances = await _context.SalaryAdvances
-                .OrderByDescending(a => a.CreatedAt)
-                .ToListAsync();
+            var advances = await (from a in _context.SalaryAdvances
+                                  join e in _context.Employees on a.EmployeeId equals e.EmployeeId into empJoin
+                                  from e in empJoin.DefaultIfEmpty()
+                                  select new {
+                                      a.AdvanceId,
+                                      a.EmployeeId,
+                                      EmployeeName = e != null ? $"{e.FirstName} {e.LastName}" : "Unknown",
+                                      a.Amount,
+                                      a.Status,
+                                      a.Reason,
+                                      a.IssuedAt,
+                                      a.IssuedBy,
+                                      a.AdjustedInPayrollRunId,
+                                      a.CreatedAt
+                                  })
+                                  .OrderByDescending(a => a.CreatedAt)
+                                  .ToListAsync();
             return Ok(advances);
         }
 

@@ -106,6 +106,17 @@ namespace SynOS.Services.Payroll.Orchestration
                 throw new PayrollOrchestrationException($"Payroll Period with ID '{payrollPeriodId}' not found.");
             }
 
+            // Check for any existing run first - Idempotent return (Draft, Calculated, Finalized, etc.)
+            var existingRun = await _context.PayrollRuns
+                .Where(pr => pr.PayrollPeriodId == payrollPeriodId)
+                .OrderByDescending(pr => pr.CreatedAt)
+                .FirstOrDefaultAsync();
+
+            if (existingRun != null)
+            {
+                return existingRun;
+            }
+
             // Auto-lock if Open
             if (period.Status == PayrollPeriodStatus.Open)
             {
@@ -115,20 +126,6 @@ namespace SynOS.Services.Payroll.Orchestration
             else if (period.Status != PayrollPeriodStatus.Locked)
             {
                 throw new PayrollOrchestrationException($"Payroll Period with ID '{payrollPeriodId}' is in {period.Status} status. Cannot start a run.");
-            }
-
-            // Check for active runs (Draft, Processing, Calculated) - Idempotent return
-            var existingRun = await _context.PayrollRuns
-                .Where(pr => pr.PayrollPeriodId == payrollPeriodId &&
-                                (pr.Status == PayrollRunStatus.Draft ||
-                                 pr.Status == PayrollRunStatus.Processing ||
-                                 pr.Status == PayrollRunStatus.Calculated))
-                .OrderByDescending(pr => pr.CreatedAt)
-                .FirstOrDefaultAsync();
-
-            if (existingRun != null)
-            {
-                return existingRun;
             }
 
             var newRun = new PayrollRun
@@ -152,9 +149,9 @@ namespace SynOS.Services.Payroll.Orchestration
             {
                 throw new PayrollOrchestrationException($"Payroll Run with ID '{payrollRunId}' not found.");
             }
-            if (run.Status != PayrollRunStatus.Draft)
+            if (run.Status != PayrollRunStatus.Draft && run.Status != PayrollRunStatus.Calculated)
             {
-                throw new PayrollOrchestrationException($"Payroll Run with ID '{payrollRunId}' is not in Draft status. Cannot execute calculation.");
+                throw new PayrollOrchestrationException($"Payroll Run with ID '{payrollRunId}' is in status '{run.Status}'. Cannot execute calculation.");
             }
 
             var period = await _context.PayrollPeriods.FindAsync(run.PayrollPeriodId);
@@ -283,9 +280,9 @@ namespace SynOS.Services.Payroll.Orchestration
                         }
                     }
 
-                    // 3. Deduct Pending Advances
+                    // 3. Deduct Approved Advances
                     var advances = await _context.SalaryAdvances
-                        .Where(a => a.EmployeeId == empId && a.Status == "Pending")
+                        .Where(a => a.EmployeeId == empId && a.Status == "Approved")
                         .ToListAsync();
                     var advanceDeduction = advances.Sum(a => a.Amount);
 

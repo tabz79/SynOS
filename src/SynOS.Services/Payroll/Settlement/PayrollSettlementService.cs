@@ -89,7 +89,7 @@ namespace SynOS.Services.Payroll.Settlement
                 var remaining = p.NetPayable - p.AmountPaid;
                 if (remaining > 0)
                 {
-                    await SettleSalaryAsync(p.EmployeePayableId, remaining, method, $"BULK-RUN-{payrollRunId}");
+                    await SettleSalaryAsync(p.EmployeePayableId, remaining, method, $"BULK-RUN-{payrollRunId}-{p.EmployeePayableId}");
                 }
             }
         }
