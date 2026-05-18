@@ -94,6 +94,92 @@ export const FinanceApi = {
         return response.json();
     },
 
+    initializeOverheads: async (month, userId) => {
+        const response = await fetch(`/api/v1/OverheadExpenses/initialize?month=${month}&userId=${userId}`, {
+            method: 'POST',
+            headers: FinanceApi.getHeaders()
+        });
+        if (!response.ok) {
+            const errText = await response.text();
+            throw new Error(errText || "Failed to initialize overhead template");
+        }
+        return response.json();
+    },
+
+    createOverheadPayable: async (data) => {
+        const response = await fetch('/api/v1/OverheadExpenses', {
+            method: 'POST',
+            headers: FinanceApi.getHeaders(),
+            body: JSON.stringify({
+                category: data.category,
+                amount: data.amount,
+                description: data.description,
+                expenseDate: data.expenseDate || new Date().toISOString(),
+                userId: localStorage.getItem('synos_user_id') || '00000000-0000-0000-0000-000000000000'
+            })
+        });
+        if (!response.ok) {
+            const errText = await response.text();
+            throw new Error(errText || "Failed to record overhead bill");
+        }
+        return response.json();
+    },
+
+    getOverheadTemplates: async () => {
+        const response = await fetch('/api/v1/OverheadExpenses/templates', {
+            headers: FinanceApi.getHeaders()
+        });
+        if (!response.ok) throw new Error("Failed to load overhead templates");
+        return response.json();
+    },
+
+    createOverheadTemplate: async (data) => {
+        const response = await fetch('/api/v1/OverheadExpenses/templates', {
+            method: 'POST',
+            headers: FinanceApi.getHeaders(),
+            body: JSON.stringify({
+                category: data.category,
+                amount: data.amount,
+                description: data.description,
+                expenseDate: data.expenseDate || new Date().toISOString(),
+                userId: localStorage.getItem('synos_user_id') || '00000000-0000-0000-0000-000000000000'
+            })
+        });
+        if (!response.ok) {
+            const errText = await response.text();
+            throw new Error(errText || "Failed to create template");
+        }
+        return response.json();
+    },
+
+    deleteOverheadTemplate: async (id) => {
+        const response = await fetch(`/api/v1/OverheadExpenses/templates/${id}`, {
+            method: 'DELETE',
+            headers: FinanceApi.getHeaders()
+        });
+        if (!response.ok) throw new Error("Failed to delete template");
+        return response;
+    },
+
+    updateOverheadTemplate: async (id, data) => {
+        const response = await fetch(`/api/v1/OverheadExpenses/templates/${id}`, {
+            method: 'PUT',
+            headers: FinanceApi.getHeaders(),
+            body: JSON.stringify({
+                category: data.category,
+                amount: data.amount,
+                description: data.description,
+                expenseDate: data.expenseDate || new Date().toISOString(),
+                userId: localStorage.getItem('synos_user_id') || '00000000-0000-0000-0000-000000000000'
+            })
+        });
+        if (!response.ok) {
+            const errText = await response.text();
+            throw new Error(errText || "Failed to update template");
+        }
+        return response.json();
+    },
+
     /**
      * Fetches outsourced test payables.
      */

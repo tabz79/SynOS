@@ -131,6 +131,217 @@ namespace SynOS.Api.Controllers
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
+
+        [HttpGet("templates")]
+        public async Task<ActionResult<IEnumerable<OverheadExpense>>> GetTemplates()
+        {
+            return await _context.OverheadExpenses
+                .OrderBy(e => e.Category)
+                .ToListAsync();
+        }
+
+        [HttpPost("templates")]
+        public async Task<IActionResult> CreateTemplate([FromBody] OverheadExpenseRequestDto request)
+        {
+            if (request == null || request.Amount <= 0)
+            {
+                return BadRequest("Valid amount is required.");
+            }
+
+            var template = new OverheadExpense
+            {
+                Id = Guid.NewGuid(),
+                Category = request.Category,
+                Amount = request.Amount,
+                Description = request.Description,
+                ExpenseDate = request.ExpenseDate,
+                CreatedAt = DateTime.UtcNow,
+                CreatedBy = request.UserId
+            };
+
+            await _context.OverheadExpenses.AddAsync(template);
+            await _context.SaveChangesAsync();
+
+            return Ok(template);
+        }
+
+        [HttpDelete("templates/{id}")]
+        public async Task<IActionResult> DeleteTemplate(Guid id)
+        {
+            var template = await _context.OverheadExpenses.FindAsync(id);
+            if (template == null) return NotFound("Template not found.");
+
+            _context.OverheadExpenses.Remove(template);
+            await _context.SaveChangesAsync();
+
+            return Ok();
+        }
+
+        [HttpPut("templates/{id}")]
+        public async Task<IActionResult> UpdateTemplate(Guid id, [FromBody] OverheadExpenseRequestDto request)
+        {
+            if (request == null || request.Amount <= 0)
+            {
+                return BadRequest("Valid amount is required.");
+            }
+
+            var template = await _context.OverheadExpenses.FindAsync(id);
+            if (template == null) return NotFound("Template not found.");
+
+            template.Category = request.Category;
+            template.Amount = request.Amount;
+            template.Description = request.Description;
+            template.ExpenseDate = request.ExpenseDate;
+
+            await _context.SaveChangesAsync();
+
+            return Ok(template);
+        }
+
+        [HttpPost("initialize")]
+        public async Task<IActionResult> InitializeMonth([FromQuery] string month, [FromQuery] Guid userId)
+        {
+            if (string.IsNullOrEmpty(month)) return BadRequest("Month is required.");
+            
+            try
+            {
+                var parts = month.Split('-');
+                if (parts.Length < 2) return BadRequest("Invalid month format. Expected YYYY-MM.");
+                
+                var year = int.Parse(parts[0]);
+                var monthNum = int.Parse(parts[1]);
+                var start = new DateTime(year, monthNum, 1, 0, 0, 0, DateTimeKind.Utc);
+
+                // 1. Seed default templates into OverheadExpenses if it is empty
+                if (!await _context.OverheadExpenses.AnyAsync())
+                {
+                    var defaults = new List<OverheadExpense>
+                    {
+                        new() {
+                            Id = Guid.NewGuid(),
+                            Category = OverheadExpenseCategory.Rent,
+                            Amount = 55000m,
+                            Description = "Monthly Facility Rent / Lease [Cycle: Monthly]",
+                            ExpenseDate = start.AddDays(4), // default 5th
+                            CreatedBy = userId
+                        },
+                        new() {
+                            Id = Guid.NewGuid(),
+                            Category = OverheadExpenseCategory.Power,
+                            Amount = 18500m,
+                            Description = "Main Lab Electricity Grid Invoice [Cycle: Monthly]",
+                            ExpenseDate = start.AddDays(9), // default 10th
+                            CreatedBy = userId
+                        },
+                        new() {
+                            Id = Guid.NewGuid(),
+                            Category = OverheadExpenseCategory.Internet,
+                            Amount = 15000m,
+                            Description = "Broadband Fiber Annual Internet [Cycle: Annual]",
+                            ExpenseDate = start.AddDays(17), // May 18th (default start)
+                            CreatedBy = userId
+                        },
+                        new() {
+                            Id = Guid.NewGuid(),
+                            Category = OverheadExpenseCategory.IT,
+                            Amount = 10000m,
+                            Description = "Laboratory LIS SaaS License & AMC [Cycle: Monthly]",
+                            ExpenseDate = start.AddDays(14), // default 15th
+                            CreatedBy = userId
+                        },
+                        new() {
+                            Id = Guid.NewGuid(),
+                            Category = OverheadExpenseCategory.Misc,
+                            Amount = 4500m,
+                            Description = "Bio-medical Waste Safe Disposal Contract [Cycle: Monthly]",
+                            CreatedBy = userId,
+                            ExpenseDate = start.AddDays(24) // default 25th
+                        }
+                    };
+
+                    await _context.OverheadExpenses.AddRangeAsync(defaults);
+                    await _context.SaveChangesAsync();
+                }
+
+                // 2. Query all configured templates
+                var templates = await _context.OverheadExpenses.ToListAsync();
+                var newPayables = new List<OverheadPayableFact>();
+
+                foreach (var template in templates)
+                {
+                    var desc = template.Description ?? "";
+                    bool shouldGenerate = false;
+
+                    // Calculate total months difference from template start date to target active period
+                    int monthsDiff = ((year - template.ExpenseDate.Year) * 12) + monthNum - template.ExpenseDate.Month;
+
+                    if (monthsDiff >= 0)
+                    {
+                        if (desc.Contains("[Cycle: Annual]") || desc.Contains("[Cycle: 1 Year]"))
+                        {
+                            shouldGenerate = monthsDiff % 12 == 0;
+                        }
+                        else if (desc.Contains("[Cycle: Quarterly]"))
+                        {
+                            shouldGenerate = monthsDiff % 3 == 0;
+                        }
+                        else if (desc.Contains("[Cycle: 6 Months]"))
+                        {
+                            shouldGenerate = monthsDiff % 6 == 0;
+                        }
+                        else if (desc.Contains("[Cycle: One-Time]"))
+                        {
+                            shouldGenerate = monthsDiff == 0;
+                        }
+                        else
+                        {
+                            // Monthly (default)
+                            shouldGenerate = true;
+                        }
+                    }
+
+                    if (!shouldGenerate) continue;
+
+                    // Check duplicate for this specific template in the selected month
+                    var alreadyExists = await _context.OverheadPayableFacts
+                        .AnyAsync(e => e.DueDate.Year == year && e.DueDate.Month == monthNum && e.Category == template.Category && e.Description == template.Description);
+
+                    if (alreadyExists) continue;
+
+                    // Calculate due date based on day of month from the template
+                    int dueDay = template.ExpenseDate.Day;
+                    if (dueDay < 1 || dueDay > 28) dueDay = 5;
+
+                    var dueDate = new DateTime(year, monthNum, dueDay, 0, 0, 0, DateTimeKind.Utc);
+
+                    var payable = new OverheadPayableFact
+                    {
+                        OverheadPayableId = Guid.NewGuid(),
+                        Category = template.Category,
+                        AmountDue = template.Amount,
+                        Description = template.Description,
+                        DueDate = dueDate,
+                        Status = VendorPayableStatus.Pending,
+                        CreatedAt = DateTime.UtcNow,
+                        CreatedBy = userId
+                    };
+
+                    newPayables.Add(payable);
+                }
+
+                if (newPayables.Count > 0)
+                {
+                    await _context.OverheadPayableFacts.AddRangeAsync(newPayables);
+                    await _context.SaveChangesAsync();
+                }
+
+                return Ok(newPayables);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
     }
 
     public class OverheadExpenseRequestDto

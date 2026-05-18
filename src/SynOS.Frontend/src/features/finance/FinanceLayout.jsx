@@ -44,7 +44,8 @@ export function FinanceLayout() {
                 { name: "Expense Feed", path: "/finance/expenses/feed" },
                 { name: "Vendor Payables", path: "/finance/expenses/payables" },
                 { name: "Vendor Master", path: "/finance/expenses/vendors" },
-                { name: "Daily Expenses", path: "/finance/expenses/daily" }
+                { name: "Daily Expenses", path: "/finance/expenses/daily" },
+                { name: "Monthly Overheads", path: "/finance/expenses/overheads" }
             ]
         },
         {
@@ -81,11 +82,6 @@ export function FinanceLayout() {
                 { name: "Payroll History", path: "/finance/workforce/history" },
                 { name: "Advances & Deductions", path: "/finance/workforce/adjustments" }
             ]
-        },
-        {
-            name: "Overheads",
-            path: "/finance/overheads",
-            icon: Building2
         },
         {
             name: "Economics Intelligence",

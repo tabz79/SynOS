@@ -20,6 +20,7 @@ import { FinanceOverview } from '@/features/finance/FinanceOverview'
 import { BillsCollectionsScreen, PendingReceivablesScreen, CollectionHistoryScreen, RevenueOverview } from '@/features/finance/RevenueScreens'
 import { ExpenseFeedScreen, VendorPayablesScreen, DailyExpensesScreen, OutsourcedPayablesScreen } from '@/features/finance/ExpenseScreens'
 import { VendorMasterScreen } from '@/features/finance/VendorMasterScreen'
+import { OverheadExpensesScreen } from '@/features/finance/OverheadScreens'
 import { IntelligenceDashboard } from '@/features/finance/IntelligenceScreens'
 import { ReferralTerminal } from '@/features/finance/ReferralTerminal'
 import { StaffRegistryScreen, IdentityProvisioningScreen, SalaryProcessingScreen, PayrollHistoryScreen, AdvancesDeductionsScreen, AttendanceLeavesScreen } from '@/features/finance/WorkforceScreens' // UPDATED
@@ -176,8 +177,7 @@ function App() {
                 <Route path="/finance/expenses/payables" element={<VendorPayablesScreen />} />
                 <Route path="/finance/expenses/vendors" element={<VendorMasterScreen />} />
                 <Route path="/finance/expenses/daily" element={<DailyExpensesScreen />} />
-                
-                <Route path="/finance/overheads" element={<DailyExpensesScreen />} />
+                <Route path="/finance/expenses/overheads" element={<OverheadExpensesScreen />} />
                 <Route path="/finance/outsourcing" element={<OutsourcedPayablesScreen />} />
                 <Route path="/finance/outsourcing/:tab" element={<OutsourcedPayablesScreen />} />
 
