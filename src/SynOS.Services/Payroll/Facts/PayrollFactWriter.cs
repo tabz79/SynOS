@@ -48,7 +48,8 @@ namespace SynOS.Services.Payroll.Facts
                 throw new PayrollFactWriteViolationException($"Facts for PayrollRunId '{payrollRun.PayrollRunId}' have already been written.");
             }
 
-            using var transaction = await _context.Database.BeginTransactionAsync();
+            var hasActiveTransaction = _context.Database.CurrentTransaction != null;
+            using var transaction = hasActiveTransaction ? null : await _context.Database.BeginTransactionAsync();
 
             try
             {
@@ -67,7 +68,10 @@ namespace SynOS.Services.Payroll.Facts
                 }
 
                 await _context.SaveChangesAsync();
-                await transaction.CommitAsync();
+                if (transaction != null)
+                {
+                    await transaction.CommitAsync();
+                }
             }
             catch (DbUpdateException ex)
             {

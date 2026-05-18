@@ -16,6 +16,7 @@ namespace SynOS.Models.Entities.HR
         public Guid EmployeeId { get; set; }
         public string FirstName { get; set; }
         public string LastName { get; set; }
+        public string? Email { get; set; }
 
         // Employment Classification
         public EmploymentType EmploymentType { get; set; }
@@ -31,6 +32,24 @@ namespace SynOS.Models.Entities.HR
         public string? BankName { get; set; } // ADDED
         public string? AccountNumber { get; set; } // ADDED
         public string? IFSC { get; set; } // ADDED
+
+        // Statutory Settings (Payroll Phase 1)
+        public bool PFEnabled { get; set; } = true;
+        [Column(TypeName = "decimal(18, 4)")]
+        public decimal PFPercentage { get; set; } = 12.0m;
+
+        public bool ESIEnabled { get; set; } = true;
+        [Column(TypeName = "decimal(18, 4)")]
+        public decimal ESIPercentage { get; set; } = 0.75m; // Standard default
+
+        public bool TDSEnabled { get; set; } = false;
+        public TaxCalculationMode TDSMode { get; set; } = TaxCalculationMode.Fixed;
+        [Column(TypeName = "decimal(18, 4)")]
+        public decimal TDSValue { get; set; } = 0;
+
+        // Identification (Optional for now)
+        public string? PanNumber { get; set; }
+        public string? AadhaarNumber { get; set; }
 
         // Contacts
         public string? Phone { get; set; } // ADDED

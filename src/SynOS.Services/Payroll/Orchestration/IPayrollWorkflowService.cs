@@ -13,5 +13,7 @@ namespace SynOS.Services.Payroll.Orchestration
         Task ExecuteCalculationAsync(Guid payrollRunId);
         Task FinalizePayrollRunAsync(Guid payrollRunId);
         Task VoidPayrollRunAsync(Guid payrollRunId);
+        Task<System.Collections.Generic.List<PayrollPeriodSummaryView>> GetPeriodSummariesAsync();
+        Task ProvisionAccessAsync(Guid employeeId, string initialPassword, Guid actorUserId);
     }
 }

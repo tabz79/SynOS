@@ -607,7 +607,7 @@ namespace SynOS.Data
                         Department = "General",
                         JoinDate = DateTimeOffset.UtcNow.AddMonths(-6), // Simulation: existed for 6 months
                         IsActive = user.IsActive,
-                        BaseSalary = 0, // Manual setup still required by HR
+                        BaseSalary = 50000, // Assigned for testing
                         CreatedAt = DateTime.UtcNow,
                         UpdatedAt = DateTime.UtcNow
                     };

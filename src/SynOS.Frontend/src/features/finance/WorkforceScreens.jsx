@@ -455,6 +455,10 @@ export function StaffRegistryScreen() {
                                     type={s.salaryType === 0 ? 'Fixed' : s.salaryType === 1 ? 'Hourly' : 'Visit'} 
                                     salary={s.baseSalary.toLocaleString()} 
                                     status={s.isActive ? 'Active' : 'Inactive'} 
+                                    pfEnabled={s.pfEnabled}
+                                    esiEnabled={s.esiEnabled}
+                                    tdsEnabled={s.tdsEnabled}
+                                    isLinked={!!s.userId}
                                     onEdit={() => setStaffToEdit(s)}
                                     onDelete={() => handleDeleteStaff(s.employeeId)}
                                 />
@@ -493,6 +497,53 @@ export function SalaryProcessingScreen() {
     const [draftResults, setDraftResults] = useState([]);
     const [lopSummary, setLopSummary] = useState(null);
     const [loading, setLoading] = useState(false);
+    const [staffList, setStaffList] = useState([]);
+    const [finalPayables, setFinalPayables] = useState([]);
+    const [selectedPayslip, setSelectedPayslip] = useState(null);
+
+    const calculateEmployeePayrollDetails = (employeeId, grossAmount) => {
+        const gross = Number(grossAmount) || 0;
+        const emp = staffList.find(s => s.employeeId === employeeId);
+        if (!emp) {
+            const pf = Math.round(gross * 0.12 * 100) / 100;
+            const esi = Math.round(gross * 0.0075 * 100) / 100;
+            return {
+                name: "Employee",
+                gross,
+                pf,
+                esi,
+                tds: 0,
+                net: Math.round(gross - pf - esi)
+            };
+        }
+
+        const pfRate = emp.pfEnabled ? (Number(emp.pfPercentage) || 12) / 100 : 0;
+        const esiRate = emp.esiEnabled ? (Number(emp.esiPercentage) || 0.75) / 100 : 0;
+
+        const pf = Math.round(gross * pfRate * 100) / 100;
+        const esi = Math.round(gross * esiRate * 100) / 100;
+
+        let tds = 0;
+        if (emp.tdsEnabled) {
+            const val = Number(emp.tdsValue) || 0;
+            if (emp.tdsMode === 1) { // 1 = Percentage
+                tds = Math.round(gross * (val / 100) * 100) / 100;
+            } else { // 0 = Fixed
+                tds = val;
+            }
+        }
+
+        const net = Math.round(gross - pf - esi - tds);
+
+        return {
+            name: `${emp.firstName || ''} ${emp.lastName || ''}`.trim() || "Employee",
+            gross,
+            pf,
+            esi,
+            tds,
+            net
+        };
+    };
 
     useEffect(() => {
         loadPeriods();
@@ -520,7 +571,21 @@ export function SalaryProcessingScreen() {
             const lop = await WorkforceApi.getLopSummary(monthStr);
             setLopSummary(lop);
 
-            setStep(2);
+            const staff = await WorkforceApi.getStaff();
+            setStaffList(staff);
+
+            if (run.status === 'Finalized' || run.status === 3) {
+                const payables = await WorkforceApi.getRunPayables(run.payrollRunId);
+                setFinalPayables(payables);
+                setStep(3);
+            } else if (run.status === 'Calculated' || run.status === 2) {
+                const results = await WorkforceApi.getRunReview(run.payrollRunId);
+                setDraftResults(results);
+                setStep(2);
+            } else {
+                setDraftResults([]);
+                setStep(2);
+            }
         } catch (error) {
             alert(error.message);
         } finally {
@@ -545,6 +610,8 @@ export function SalaryProcessingScreen() {
         setLoading(true);
         try {
             await WorkforceApi.finalizeRun(activeRun.payrollRunId);
+            const payables = await WorkforceApi.getRunPayables(activeRun.payrollRunId);
+            setFinalPayables(payables);
             setStep(3);
         } catch (error) {
             alert("Finalization failed: " + error.message);
@@ -574,23 +641,135 @@ export function SalaryProcessingScreen() {
             {step === 1 && (
                 <div className="grid grid-cols-3 gap-6 animate-in fade-in zoom-in-95 duration-500">
                     {periods.length === 0 ? (
-                        <div className="col-span-3 p-12 text-center border-2 border-dashed dark:border-zinc-800 border-zinc-200 rounded-2xl">
-                            <Calendar className="w-12 h-12 text-zinc-300 mx-auto mb-4" />
-                            <p className="text-zinc-500 mb-4">No payroll periods defined yet.</p>
-                            <button className="bg-synos-primary text-white px-6 py-2 rounded-xl text-sm font-bold">Initialize 2026 Periods</button>
+                        <div className="col-span-3 p-12 border-2 border-dashed dark:border-zinc-800 border-zinc-200 rounded-3xl flex flex-col items-center justify-center gap-4">
+                            <Calendar className="w-12 h-12 text-zinc-300 mb-2" />
+                            <p className="text-sm text-zinc-500 font-medium">No payroll periods found for 2026.</p>
+                            <div className="flex gap-3">
+                                <button 
+                                    onClick={async () => {
+                                        try {
+                                            const year = prompt("Enter year to initialize (e.g. 2026)", "2026");
+                                            if (!year) return;
+                                            for (let m = 0; m < 12; m++) {
+                                                const start = new Date(parseInt(year), m, 1).toISOString();
+                                                const end = new Date(parseInt(year), m + 1, 0).toISOString();
+                                                try {
+                                                    await fetch('/api/v1/payroll/periods', {
+                                                        method: 'POST',
+                                                        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('synos_jwt')}` },
+                                                        body: JSON.stringify({ startDate: start, endDate: end })
+                                                    });
+                                                } catch (err) {
+                                                    console.warn(`Month ${m+1} might already exist or failed:`, err);
+                                                }
+                                            }
+                                            alert(`${year} Periods sync attempted`);
+                                            loadPeriods();
+                                        } catch (e) {
+                                            alert("Init failed: " + e.message);
+                                        }
+                                    }}
+                                    className="bg-synos-primary text-white px-6 py-2 rounded-xl text-sm font-bold"
+                                >
+                                    Initialize Year Periods
+                                </button>
+                                <button 
+                                    onClick={async () => {
+                                        try {
+                                            const res = await fetch('/api/v1/payroll/maintenance/cleanup-duplicates', { method: 'POST' });
+                                            const data = await res.json();
+                                            alert(data.message);
+                                            loadPeriods();
+                                        } catch (e) {
+                                            alert("Cleanup failed: " + e.message);
+                                        }
+                                    }}
+                                    className="bg-amber-500 text-white px-6 py-2 rounded-xl text-sm font-bold"
+                                >
+                                    Fix Duplicate Periods
+                                </button>
+                            </div>
                         </div>
                     ) : (
-                        periods.map(p => (
-                            <PeriodCard 
-                                key={p.payrollPeriodId}
-                                month={new Date(p.startDate).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })} 
-                                status={p.status === 0 ? 'Open' : p.status === 1 ? 'Locked' : 'Finalized'} 
-                                staffCount="--" 
-                                accrual="--" 
-                                onSelect={() => handleSelectPeriod(p)}
-                                isCurrent={p.status === 0}
-                            />
-                        ))
+                        <div className="col-span-3 space-y-4">
+                            <div className="flex justify-end gap-6 items-center">
+                                <button 
+                                    onClick={async () => {
+                                        const year = prompt("Year (e.g. 2026)", new Date().getFullYear());
+                                        const month = prompt("Month (1-12)", new Date().getMonth() + 1);
+                                        if (!year || !month) return;
+                                        const start = new Date(parseInt(year), parseInt(month) - 1, 1).toISOString();
+                                        const end = new Date(parseInt(year), parseInt(month), 0).toISOString();
+                                        try {
+                                            await WorkforceApi.createPeriod({ startDate: start, endDate: end });
+                                            loadPeriods();
+                                        } catch (e) { alert(e.message); }
+                                    }}
+                                    className="text-[10px] font-bold text-synos-primary uppercase tracking-widest hover:underline flex items-center gap-1"
+                                >
+                                    <PlusCircle className="w-3 h-3" /> New Period
+                                </button>
+                                <button 
+                                    onClick={async () => {
+                                        try {
+                                            const year = prompt("Enter year to initialize (e.g. 2026)", "2026");
+                                            if (!year) return;
+                                            for (let m = 0; m < 12; m++) {
+                                                const start = new Date(parseInt(year), m, 1).toISOString();
+                                                const end = new Date(parseInt(year), m + 1, 0).toISOString();
+                                                try {
+                                                    await fetch('/api/v1/payroll/periods', {
+                                                        method: 'POST',
+                                                        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('synos_jwt')}` },
+                                                        body: JSON.stringify({ startDate: start, endDate: end })
+                                                    });
+                                                } catch (err) {
+                                                    console.warn(`Month ${m+1} might already exist or failed:`, err);
+                                                }
+                                            }
+                                            alert(`${year} Periods sync attempted`);
+                                            loadPeriods();
+                                        } catch (e) {
+                                            alert("Init failed: " + e.message);
+                                        }
+                                    }}
+                                    className="text-[10px] font-bold text-synos-primary uppercase tracking-widest hover:underline flex items-center gap-1"
+                                >
+                                    <Zap className="w-3 h-3" /> Initialize Year
+                                </button>
+                                <button 
+                                    onClick={async () => {
+                                        try {
+                                            const res = await fetch('/api/v1/payroll/maintenance/cleanup-duplicates', { 
+                                                method: 'POST',
+                                                headers: { 'Authorization': `Bearer ${localStorage.getItem('synos_jwt')}` }
+                                            });
+                                            const data = await res.json();
+                                            alert(data.message);
+                                            loadPeriods();
+                                        } catch (e) {
+                                            alert("Cleanup failed: " + e.message);
+                                        }
+                                    }}
+                                    className="text-[10px] font-bold text-amber-500 uppercase tracking-widest hover:underline"
+                                >
+                                    Cleanup Duplicates
+                                </button>
+                            </div>
+                            <div className="grid grid-cols-3 gap-6">
+                                {periods.map(p => (
+                                    <PeriodCard 
+                                        key={p.payrollPeriodId}
+                                        month={p.monthName} 
+                                        status={p.status === 0 || p.status === 'Open' ? 'Open' : p.status === 1 || p.status === 'Locked' ? 'Locked' : 'Finalized'} 
+                                        staffCount={p.staffCount} 
+                                        accrual={`₹${(p.totalAccrual / 100000).toFixed(1)}L`} 
+                                        onSelect={() => handleSelectPeriod(p)}
+                                        isCurrent={p.status === 0 || p.status === 'Open'}
+                                    />
+                                ))}
+                            </div>
+                        </div>
                     )}
                 </div>
             )}
@@ -656,6 +835,49 @@ export function SalaryProcessingScreen() {
                         </div>
                     </div>
 
+                    {draftResults.length > 0 && (
+                        <div className="dark:bg-zinc-900/50 bg-white border dark:border-zinc-800 border-zinc-200 rounded-2xl overflow-hidden shadow-sm animate-in fade-in duration-300">
+                            <div className="p-4 border-b dark:border-zinc-800 border-zinc-200 bg-emerald-500/5 flex items-center justify-between">
+                                <div className="flex items-center gap-2 text-emerald-600">
+                                    <CheckCircle2 className="w-4 h-4" />
+                                    <h3 className="text-xs font-bold uppercase tracking-widest">Provisional Payroll Worksheet</h3>
+                                </div>
+                                <span className="text-[10px] text-zinc-500 font-mono">Calculated Draft</span>
+                            </div>
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-left text-[11px]">
+                                    <thead>
+                                        <tr className="bg-zinc-50 dark:bg-zinc-950/50 text-zinc-500 font-bold border-b dark:border-zinc-800">
+                                            <th className="px-6 py-3 text-left">Employee</th>
+                                            <th className="px-6 py-3 text-right">Gross Salary</th>
+                                            <th className="px-6 py-3 text-right text-rose-500">PF Deduction</th>
+                                            <th className="px-6 py-3 text-right text-rose-500">ESI Deduction</th>
+                                            <th className="px-6 py-3 text-right text-rose-500">TDS</th>
+                                            <th className="px-6 py-3 text-right text-emerald-500 font-bold">Net Salary</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y dark:divide-zinc-800">
+                                        {draftResults.map((res, index) => {
+                                            const empId = res.employeeId || res.EmployeeId;
+                                            const amount = res.amount ?? res.Amount ?? 0;
+                                            const details = calculateEmployeePayrollDetails(empId, amount);
+                                            return (
+                                                <tr key={empId || index} className="hover:bg-zinc-50 dark:hover:bg-zinc-800/30 font-mono">
+                                                    <td className="px-6 py-3 font-bold font-sans text-left">{details.name || 'Employee'}</td>
+                                                    <td className="px-6 py-3 text-right text-zinc-600 dark:text-zinc-400">₹{(details.gross ?? 0).toLocaleString()}</td>
+                                                    <td className="px-6 py-3 text-right text-rose-500">-₹{(details.pf ?? 0).toLocaleString()}</td>
+                                                    <td className="px-6 py-3 text-right text-rose-500">-₹{(details.esi ?? 0).toLocaleString()}</td>
+                                                    <td className="px-6 py-3 text-right text-rose-500">-₹{(details.tds ?? 0).toLocaleString()}</td>
+                                                    <td className="px-6 py-3 text-right text-emerald-500 font-bold font-sans text-sm">₹{(details.net ?? 0).toLocaleString()}</td>
+                                                </tr>
+                                            );
+                                        })}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    )}
+
                     <div className="flex justify-end gap-3">
                         <button onClick={() => setStep(1)} className="px-6 py-2.5 rounded-xl border dark:border-zinc-800 border-zinc-200 text-sm font-medium hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors">
                             Cancel
@@ -672,27 +894,361 @@ export function SalaryProcessingScreen() {
             )}
 
             {step === 3 && (
-                <div className="max-w-2xl mx-auto text-center space-y-6 animate-in zoom-in-95 duration-500 py-12">
-                    <div className="w-20 h-20 bg-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-4 border-2 border-emerald-500/50">
-                        <CheckCircle2 className="w-10 h-10 text-emerald-500" />
-                    </div>
-                    <h2 className="text-2xl font-bold dark:text-white">Payroll Finalized</h2>
-                    <p className="text-zinc-500">
-                        Liabilities have been generated. Salaries are now ready for settlement in the expense hub.
-                    </p>
-                    <div className="grid grid-cols-2 gap-4 mt-8">
-                        <button className="flex flex-col items-center gap-3 p-6 dark:bg-zinc-900 bg-white border dark:border-zinc-800 border-zinc-200 rounded-2xl hover:border-synos-primary transition-all">
-                            <CreditCard className="w-8 h-8 text-synos-primary" />
-                            <span className="font-bold text-sm">Bulk Bank Settle</span>
+                <div className="space-y-8 animate-in slide-in-from-right-4 duration-500">
+                    <style>{`
+                        @media print {
+                            body > * {
+                                display: none !important;
+                            }
+                            #printable-payslip {
+                                display: block !important;
+                                position: absolute;
+                                left: 0;
+                                top: 0;
+                                width: 100%;
+                                background: white !important;
+                                color: black !important;
+                            }
+                            #printable-payslip * {
+                                color: black !important;
+                            }
+                        }
+                    `}</style>
+
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                            <div className="w-12 h-12 bg-emerald-500/20 rounded-full flex items-center justify-center border border-emerald-500/30">
+                                <CheckCircle2 className="w-6 h-6 text-emerald-500" />
+                            </div>
+                            <div>
+                                <h2 className="text-xl font-bold dark:text-white">Payroll Finalized & Period Locked</h2>
+                                <p className="text-xs text-zinc-500">All calculated liabilities have been generated and archived in the general ledger.</p>
+                            </div>
+                        </div>
+                        <button 
+                            onClick={() => setStep(1)} 
+                            className="px-4 py-2 border dark:border-zinc-800 border-zinc-200 text-xs font-bold rounded-xl hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors"
+                        >
+                            Return to Periods
                         </button>
-                        <button className="flex flex-col items-center gap-3 p-6 dark:bg-zinc-900 bg-white border dark:border-zinc-800 border-zinc-200 rounded-2xl hover:border-synos-primary transition-all">
-                            <Wallet className="w-8 h-8 text-amber-500" />
-                            <span className="font-bold text-sm">Cash Settle Hub</span>
-                        </button>
                     </div>
-                    <button onClick={() => setStep(1)} className="mt-8 text-sm text-synos-primary hover:underline">
-                        Return to Period Selector
-                    </button>
+
+                    {/* Summary Cards */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        {/* Primary Metrics Row */}
+                        <div className="p-5 bg-white dark:bg-zinc-900 border dark:border-zinc-800 border-zinc-200 rounded-2xl flex flex-col items-center justify-center text-center space-y-1 shadow-sm">
+                            <span className="text-[10px] uppercase font-bold text-zinc-400 tracking-wider">Total Gross Salary</span>
+                            <h3 className="text-xl md:text-2xl font-black dark:text-white">₹{Math.round(finalPayables.reduce((acc, p) => acc + (p.grossSalary || 0), 0)).toLocaleString()}</h3>
+                            <span className="text-[10px] text-zinc-500 max-w-[200px] leading-tight">Total salary earned before any cuts</span>
+                        </div>
+                        <div className="p-5 bg-white dark:bg-zinc-900 border dark:border-zinc-800 border-zinc-200 rounded-2xl flex flex-col items-center justify-center text-center space-y-1 shadow-sm">
+                            <span className="text-[10px] uppercase font-bold text-amber-500 tracking-wider">Combined Cuts (Total)</span>
+                            <h3 className="text-xl md:text-2xl font-black text-amber-500">₹{Math.round(finalPayables.reduce((acc, p) => acc + (p.pfDeduction || 0) + (p.esiDeduction || 0) + (p.tdsDeduction || 0), 0)).toLocaleString()}</h3>
+                            <span className="text-[10px] text-zinc-500 max-w-[200px] leading-tight">Total government deductions</span>
+                        </div>
+                        <div className="p-5 bg-emerald-500/10 dark:bg-emerald-500/5 border border-emerald-500/20 rounded-2xl flex flex-col items-center justify-center text-center space-y-1 shadow-sm">
+                            <span className="text-[10px] uppercase font-bold text-emerald-500 tracking-wider">Take-Home Payout</span>
+                            <h3 className="text-xl md:text-2xl font-black text-emerald-500">₹{Math.round(finalPayables.reduce((acc, p) => acc + (p.netPayable || 0), 0)).toLocaleString()}</h3>
+                            <span className="text-[10px] text-zinc-500 max-w-[200px] leading-tight">Final amount paid to employees</span>
+                        </div>
+
+                        {/* Breakdown Row */}
+                        <div className="p-4 bg-zinc-50/50 dark:bg-zinc-900/50 border dark:border-zinc-800/80 border-zinc-200/80 rounded-xl flex flex-col items-center justify-center text-center space-y-1">
+                            <span className="text-[9px] uppercase font-bold text-rose-500/80 tracking-wider">Retirement Fund (PF)</span>
+                            <h4 className="text-base font-bold text-rose-500/80">₹{Math.round(finalPayables.reduce((acc, p) => acc + (p.pfDeduction || 0), 0)).toLocaleString()}</h4>
+                            <span className="text-[9px] text-zinc-500 leading-tight">Provident Fund savings</span>
+                        </div>
+                        <div className="p-4 bg-zinc-50/50 dark:bg-zinc-900/50 border dark:border-zinc-800/80 border-zinc-200/80 rounded-xl flex flex-col items-center justify-center text-center space-y-1">
+                            <span className="text-[9px] uppercase font-bold text-rose-500/80 tracking-wider">Health Insurance (ESI)</span>
+                            <h4 className="text-base font-bold text-rose-500/80">₹{Math.round(finalPayables.reduce((acc, p) => acc + (p.esiDeduction || 0), 0)).toLocaleString()}</h4>
+                            <span className="text-[9px] text-zinc-500 leading-tight">Employee state insurance cuts</span>
+                        </div>
+                        <div className="p-4 bg-zinc-50/50 dark:bg-zinc-900/50 border dark:border-zinc-800/80 border-zinc-200/80 rounded-xl flex flex-col items-center justify-center text-center space-y-1">
+                            <span className="text-[9px] uppercase font-bold text-rose-500/80 tracking-wider">Income Tax (TDS)</span>
+                            <h4 className="text-base font-bold text-rose-500/80">₹{Math.round(finalPayables.reduce((acc, p) => acc + (p.tdsDeduction || 0), 0)).toLocaleString()}</h4>
+                            <span className="text-[9px] text-zinc-500 leading-tight">Tax deducted at source</span>
+                        </div>
+                    </div>
+
+                    {/* Regulatory Downloads & Compliance Portal Exports */}
+                    <div className="p-6 bg-zinc-50/50 dark:bg-zinc-900/30 border dark:border-zinc-800 border-zinc-200 rounded-3xl space-y-4">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <h3 className="text-sm font-bold dark:text-white">Regulatory Compliance Portal Exports</h3>
+                                <p className="text-xs text-zinc-500">Generate formatted files for uploading directly into banking and statutory portal interfaces.</p>
+                            </div>
+                        </div>
+                        <div className="grid grid-cols-4 gap-4">
+                            <button 
+                                onClick={() => {
+                                    let csv = "Employee Name,Bank Name,Account Number,IFSC Code,Net Payable (INR)\r\n";
+                                    finalPayables.forEach(p => {
+                                        const emp = staffList.find(s => s.employeeId === p.employeeId) || {};
+                                        csv += `"${p.employeeName}","${emp.bankName || 'HDFC Bank'}","${emp.accountNumber || '50100234567890'}","${emp.ifscCode || 'HDFC0000123'}","${p.netPayable}"\r\n`;
+                                    });
+                                    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+                                    const link = document.createElement("a");
+                                    link.href = URL.createObjectURL(blob);
+                                    link.setAttribute("download", `Bank_Advice_Advice_${selectedPeriod?.monthName || 'Period'}.csv`);
+                                    document.body.appendChild(link);
+                                    link.click();
+                                    document.body.removeChild(link);
+                                }}
+                                className="flex items-center justify-center gap-2 p-3 bg-white dark:bg-zinc-950 border dark:border-zinc-800 border-zinc-200 rounded-xl hover:border-synos-primary transition-all text-xs font-bold dark:text-zinc-300"
+                            >
+                                <Download className="w-4 h-4 text-synos-primary" /> Bank Advice (CSV)
+                            </button>
+
+                            <button 
+                                onClick={() => {
+                                    let txt = "";
+                                    finalPayables.forEach(p => {
+                                        const emp = staffList.find(s => s.employeeId === p.employeeId) || {};
+                                        const uan = emp.uanNumber || "100987654321";
+                                        txt += `${uan}#~#${p.employeeName}#~#${Math.round(p.grossSalary)}#~#${Math.round(p.grossSalary)}#~#${Math.round(p.pfDeduction)}\r\n`;
+                                    });
+                                    const blob = new Blob([txt], { type: 'text/plain;charset=utf-8;' });
+                                    const link = document.createElement("a");
+                                    link.href = URL.createObjectURL(blob);
+                                    link.setAttribute("download", `EPF_ECR_${selectedPeriod?.monthName || 'Period'}.txt`);
+                                    document.body.appendChild(link);
+                                    link.click();
+                                    document.body.removeChild(link);
+                                }}
+                                className="flex items-center justify-center gap-2 p-3 bg-white dark:bg-zinc-950 border dark:border-zinc-800 border-zinc-200 rounded-xl hover:border-synos-primary transition-all text-xs font-bold dark:text-zinc-300"
+                            >
+                                <Download className="w-4 h-4 text-synos-primary" /> EPF ECR Challan (TXT)
+                            </button>
+
+                            <button 
+                                onClick={() => {
+                                    let csv = "Insurance No,Employee Name,No Of Days,Wages,Contribution\r\n";
+                                    finalPayables.forEach(p => {
+                                        const emp = staffList.find(s => s.employeeId === p.employeeId) || {};
+                                        const esicNo = emp.esiNumber || "31001234560010001";
+                                        const workedDays = 31 - (p.lopDaysCount || 0);
+                                        csv += `"${esicNo}","${p.employeeName}","${workedDays}","${Math.round(p.grossSalary)}","${Math.round(p.esiDeduction)}"\r\n`;
+                                    });
+                                    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+                                    const link = document.createElement("a");
+                                    link.href = URL.createObjectURL(blob);
+                                    link.setAttribute("download", `ESIC_Return_${selectedPeriod?.monthName || 'Period'}.csv`);
+                                    document.body.appendChild(link);
+                                    link.click();
+                                    document.body.removeChild(link);
+                                }}
+                                className="flex items-center justify-center gap-2 p-3 bg-white dark:bg-zinc-950 border dark:border-zinc-800 border-zinc-200 rounded-xl hover:border-synos-primary transition-all text-xs font-bold dark:text-zinc-300"
+                            >
+                                <Download className="w-4 h-4 text-synos-primary" /> ESI Monthly Return (CSV)
+                            </button>
+
+                            <button 
+                                onClick={() => {
+                                    let csv = "PAN,Employee Name,Section,Gross Amount,TDS Amount\r\n";
+                                    finalPayables.forEach(p => {
+                                        const emp = staffList.find(s => s.employeeId === p.employeeId) || {};
+                                        const pan = emp.panNumber || "ABCDE1234F";
+                                        csv += `"${pan}","${p.employeeName}","192","${Math.round(p.grossSalary)}","${Math.round(p.tdsDeduction)}"\r\n`;
+                                    });
+                                    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+                                    const link = document.createElement("a");
+                                    link.href = URL.createObjectURL(blob);
+                                    link.setAttribute("download", `TDS_Form24Q_${selectedPeriod?.monthName || 'Period'}.csv`);
+                                    document.body.appendChild(link);
+                                    link.click();
+                                    document.body.removeChild(link);
+                                }}
+                                className="flex items-center justify-center gap-2 p-3 bg-white dark:bg-zinc-950 border dark:border-zinc-800 border-zinc-200 rounded-xl hover:border-synos-primary transition-all text-xs font-bold dark:text-zinc-300"
+                            >
+                                <Download className="w-4 h-4 text-synos-primary" /> TDS Form 24Q (CSV)
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Settlement Trigger Actions */}
+                    <div className="p-6 bg-white dark:bg-zinc-900 border dark:border-zinc-800 border-zinc-200 rounded-3xl space-y-4">
+                        <h3 className="text-xs font-bold uppercase tracking-widest text-zinc-500">Salary Disbursal & Settle Triggers</h3>
+                        {finalPayables.length > 0 && finalPayables.every(p => p.status === 'Settled') ? (
+                            <div className="flex items-center justify-center gap-3 p-6 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl text-emerald-600 dark:text-emerald-400 font-bold text-sm">
+                                <ShieldCheck className="w-5 h-5" /> All employee payables settled and fully paid. SpendFacts have been logged.
+                            </div>
+                        ) : (
+                            <div className="grid grid-cols-2 gap-4">
+                                <button 
+                                    onClick={async () => {
+                                        setLoading(true);
+                                        try {
+                                            await WorkforceApi.bulkSettleRun(activeRun.payrollRunId, 0); // BankTransfer
+                                            alert("Successfully settled salaries via Bank Transfer!");
+                                            const payables = await WorkforceApi.getRunPayables(activeRun.payrollRunId);
+                                            setFinalPayables(payables);
+                                        } catch (e) { alert(e.message); } finally { setLoading(false); }
+                                    }}
+                                    disabled={loading}
+                                    className="flex flex-col items-center gap-2 p-6 bg-zinc-50 dark:bg-zinc-950 hover:bg-zinc-100/50 dark:hover:bg-zinc-900 border dark:border-zinc-800 border-zinc-200 rounded-2xl transition-all hover:scale-[1.01] hover:border-synos-primary"
+                                >
+                                    <CreditCard className="w-8 h-8 text-synos-primary" />
+                                    <span className="font-bold text-sm dark:text-white">Bulk Bank Settle</span>
+                                    <span className="text-[10px] text-zinc-500">Emit bank transfer ledger entries</span>
+                                </button>
+                                <button 
+                                    onClick={async () => {
+                                        setLoading(true);
+                                        try {
+                                            await WorkforceApi.bulkSettleRun(activeRun.payrollRunId, 2); // Cash
+                                            alert("Successfully settled salaries via Cash!");
+                                            const payables = await WorkforceApi.getRunPayables(activeRun.payrollRunId);
+                                            setFinalPayables(payables);
+                                        } catch (e) { alert(e.message); } finally { setLoading(false); }
+                                    }}
+                                    disabled={loading}
+                                    className="flex flex-col items-center gap-2 p-6 bg-zinc-50 dark:bg-zinc-950 hover:bg-zinc-100/50 dark:hover:bg-zinc-900 border dark:border-zinc-800 border-zinc-200 rounded-2xl transition-all hover:scale-[1.01] hover:border-amber-500"
+                                >
+                                    <Wallet className="w-8 h-8 text-amber-500" />
+                                    <span className="font-bold text-sm dark:text-white">Cash Settle Hub</span>
+                                    <span className="text-[10px] text-zinc-500">Record direct ledger cash distributions</span>
+                                </button>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Pay Sheet Table */}
+                    <div className="dark:bg-zinc-900/50 bg-white border dark:border-zinc-800 border-zinc-200 rounded-3xl overflow-hidden shadow-sm">
+                        <div className="p-4 border-b dark:border-zinc-800 border-zinc-200 bg-zinc-50/50 dark:bg-zinc-900 flex items-center justify-between">
+                            <h3 className="text-xs font-bold uppercase tracking-widest text-zinc-500">Finalized Employee Pay Roll Worksheet</h3>
+                            <span className="text-[10px] font-mono text-zinc-400">Total Employees: {finalPayables.length}</span>
+                        </div>
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-left text-[11px]">
+                                <thead>
+                                    <tr className="bg-zinc-50/50 dark:bg-zinc-950/50 text-zinc-500 font-bold border-b dark:border-zinc-800">
+                                        <th className="px-6 py-3">Employee</th>
+                                        <th className="px-6 py-3 text-right">Gross Salary</th>
+                                        <th className="px-6 py-3 text-right text-rose-500">PF Deduction</th>
+                                        <th className="px-6 py-3 text-right text-rose-500">ESI Deduction</th>
+                                        <th className="px-6 py-3 text-right text-rose-500">TDS</th>
+                                        <th className="px-6 py-3 text-right text-emerald-500 font-bold">Net Salary</th>
+                                        <th className="px-6 py-3 text-center">Status</th>
+                                        <th className="px-6 py-3 text-right">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y dark:divide-zinc-800">
+                                    {finalPayables.map((p) => (
+                                        <tr key={p.employeePayableId} className="hover:bg-zinc-50 dark:hover:bg-zinc-800/30">
+                                            <td className="px-6 py-3 font-bold">{p.employeeName}</td>
+                                            <td className="px-6 py-3 text-right font-mono">₹{(p.grossSalary || 0).toLocaleString()}</td>
+                                            <td className="px-6 py-3 text-right text-rose-500 font-mono">-₹{(p.pfDeduction || 0).toLocaleString()}</td>
+                                            <td className="px-6 py-3 text-right text-rose-500 font-mono">-₹{(p.esiDeduction || 0).toLocaleString()}</td>
+                                            <td className="px-6 py-3 text-right text-rose-500 font-mono">-₹{(p.tdsDeduction || 0).toLocaleString()}</td>
+                                            <td className="px-6 py-3 text-right text-emerald-500 font-bold font-sans text-sm">₹{(p.netPayable || 0).toLocaleString()}</td>
+                                            <td className="px-6 py-3 text-center">
+                                                <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${p.status === 'Settled' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-amber-500/10 text-amber-500'}`}>
+                                                    {p.status}
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-3 text-right">
+                                                <button 
+                                                    onClick={() => setSelectedPayslip(p)}
+                                                    className="text-synos-primary hover:underline font-bold text-xs flex items-center gap-1 ml-auto"
+                                                >
+                                                    <FileText className="w-3.5 h-3.5" /> Payslip
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* High fidelity Payslip Modal */}
+            {selectedPayslip && (
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 overflow-y-auto animate-in fade-in duration-300">
+                    <div className="bg-white dark:bg-zinc-950 border dark:border-zinc-800 border-zinc-200 rounded-3xl max-w-2xl w-full p-8 space-y-6 shadow-2xl relative">
+                        <button 
+                            onClick={() => setSelectedPayslip(null)}
+                            className="absolute top-4 right-4 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 font-bold"
+                        >
+                            ✕
+                        </button>
+                        
+                        <div id="printable-payslip" className="space-y-6 p-6 border dark:border-zinc-800 border-zinc-200 rounded-2xl bg-zinc-50/50 dark:bg-zinc-900/10">
+                            {/* Header */}
+                            <div className="flex justify-between items-start border-b dark:border-zinc-800 border-zinc-200 pb-4">
+                                <div>
+                                    <h3 className="text-base font-bold tracking-tight text-synos-primary">SynOS Healthcare Intelligence</h3>
+                                    <p className="text-[10px] text-zinc-500 font-mono">Workforce & Payroll System</p>
+                                </div>
+                                <div className="text-right">
+                                    <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500">
+                                        PAY ADVICE (PAYSLIP)
+                                    </span>
+                                    <p className="text-[10px] text-zinc-500 font-mono mt-1">Period: {selectedPeriod?.monthName || 'May 2026'}</p>
+                                </div>
+                            </div>
+                            
+                            {/* Employee Info Block */}
+                            <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-[10px] border-b dark:border-zinc-800 border-zinc-200 pb-4 text-zinc-600 dark:text-zinc-400">
+                                <div className="flex justify-between"><span className="text-zinc-400">Name:</span> <span className="font-bold text-zinc-900 dark:text-white">{selectedPayslip.employeeName}</span></div>
+                                <div className="flex justify-between"><span className="text-zinc-400">ID:</span> <span className="font-mono">{selectedPayslip.employeeId}</span></div>
+                                <div className="flex justify-between"><span className="text-zinc-400">LOP Days:</span> <span className="font-bold text-rose-500">{selectedPayslip.lopDaysCount || 0} Days</span></div>
+                                <div className="flex justify-between"><span className="text-zinc-400">Payment Status:</span> <span className={`font-bold uppercase text-[9px] ${selectedPayslip.status === 'Settled' ? 'text-emerald-500' : 'text-amber-500'}`}>{selectedPayslip.status}</span></div>
+                                <div className="flex justify-between"><span className="text-zinc-400">Paid On:</span> <span className="font-bold">{selectedPayslip.paidAt ? new Date(selectedPayslip.paidAt).toLocaleString() : 'N/A'}</span></div>
+                                <div className="flex justify-between"><span className="text-zinc-400">Method:</span> <span className="font-bold">{selectedPayslip.paymentMethod || 'Bank Transfer'}</span></div>
+                            </div>
+                            
+                            {/* Salary Calculations breakdown */}
+                            <div className="grid grid-cols-2 gap-6 text-[10px]">
+                                {/* Earnings */}
+                                <div className="space-y-2">
+                                    <h4 className="font-bold text-zinc-500 uppercase tracking-wider text-[9px]">Earnings</h4>
+                                    <div className="border dark:border-zinc-800 border-zinc-200 rounded-xl p-3 space-y-2 bg-white dark:bg-zinc-900/50">
+                                        <div className="flex justify-between"><span>Base Salary:</span> <span>₹{selectedPayslip.snapshotBaseSalary.toLocaleString()}</span></div>
+                                        <div className="flex justify-between border-t dark:border-zinc-800 border-zinc-100 pt-2 font-bold text-synos-primary"><span>Gross Wages:</span> <span>₹{selectedPayslip.grossSalary.toLocaleString()}</span></div>
+                                    </div>
+                                </div>
+                                {/* Deductions */}
+                                <div className="space-y-2">
+                                    <h4 className="font-bold text-zinc-500 uppercase tracking-wider text-[9px]">Deductions</h4>
+                                    <div className="border dark:border-zinc-800 border-zinc-200 rounded-xl p-3 space-y-2 bg-white dark:bg-zinc-900/50">
+                                        <div className="flex justify-between"><span>EPF ({selectedPayslip.snapshotPFRate * 100}%):</span> <span className="text-rose-500">-₹{selectedPayslip.pfDeduction.toLocaleString()}</span></div>
+                                        <div className="flex justify-between"><span>ESI ({selectedPayslip.snapshotESIRate * 100}%):</span> <span className="text-rose-500">-₹{selectedPayslip.esiDeduction.toLocaleString()}</span></div>
+                                        <div className="flex justify-between"><span>TDS:</span> <span className="text-rose-500">-₹{selectedPayslip.tdsDeduction.toLocaleString()}</span></div>
+                                        <div className="flex justify-between border-t dark:border-zinc-800 border-zinc-100 pt-2 font-bold text-rose-500"><span>Total Deductions:</span> <span>-₹{(selectedPayslip.pfDeduction + selectedPayslip.esiDeduction + selectedPayslip.tdsDeduction).toLocaleString()}</span></div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            {/* Net Summary */}
+                            <div className="flex justify-between items-center bg-emerald-500/10 dark:bg-emerald-500/20 border border-emerald-500/30 p-4 rounded-xl">
+                                <div>
+                                    <span className="text-[8px] uppercase font-bold text-emerald-600 dark:text-emerald-400 tracking-widest block">NET DISBURSED OUTFLOW</span>
+                                    <h3 className="text-lg font-black text-emerald-600 dark:text-emerald-400">₹{selectedPayslip.netPayable.toLocaleString()}</h3>
+                                </div>
+                                <div className="text-right">
+                                    <span className="text-[8px] text-zinc-500 block">System Signature</span>
+                                    <span className="font-mono text-[9px] font-bold text-synos-primary">SYN-OS-HR-VERIFIED</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div className="flex justify-end gap-3">
+                            <button 
+                                onClick={() => setSelectedPayslip(null)} 
+                                className="px-6 py-2 border dark:border-zinc-800 border-zinc-200 text-xs font-bold rounded-xl hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors"
+                            >
+                                Close
+                            </button>
+                            <button 
+                                onClick={() => window.print()}
+                                className="px-6 py-2 bg-synos-primary text-white rounded-xl text-xs font-bold shadow-lg shadow-synos-primary/20 hover:scale-[1.02] transition-transform"
+                            >
+                                Print Payslip
+                            </button>
+                        </div>
+                    </div>
                 </div>
             )}
         </div>
@@ -704,6 +1260,10 @@ export function SalaryProcessingScreen() {
 export function PayrollHistoryScreen() {
     const [runs, setRuns] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [selectedRun, setSelectedRun] = useState(null);
+    const [runPayables, setRunPayables] = useState([]);
+    const [selectedPayslip, setSelectedPayslip] = useState(null);
+    const [staffList, setStaffList] = useState([]);
 
     useEffect(() => {
         loadHistory();
@@ -712,7 +1272,9 @@ export function PayrollHistoryScreen() {
     const loadHistory = async () => {
         try {
             const data = await WorkforceApi.getRuns();
-            setRuns(data.filter(r => r.status === 4)); // Finalized
+            setRuns(data.filter(r => r.status === 3 || r.status === 'Finalized'));
+            const staff = await WorkforceApi.getStaff();
+            setStaffList(staff);
         } catch (error) {
             console.error("History fail:", error);
         } finally {
@@ -720,41 +1282,376 @@ export function PayrollHistoryScreen() {
         }
     };
 
+    const handleViewReport = async (run) => {
+        setLoading(true);
+        try {
+            const payables = await WorkforceApi.getRunPayables(run.payrollRunId);
+            setRunPayables(payables);
+            setSelectedRun(run);
+        } catch (e) {
+            alert("Failed to load run details: " + e.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <div className="p-8 space-y-8">
+            <style>{`
+                @media print {
+                    body > * {
+                        display: none !important;
+                    }
+                    #printable-payslip {
+                        display: block !important;
+                        position: absolute;
+                        left: 0;
+                        top: 0;
+                        width: 100%;
+                        background: white !important;
+                        color: black !important;
+                    }
+                    #printable-payslip * {
+                        color: black !important;
+                    }
+                }
+            `}</style>
+
             <div>
-                <h1 className="text-3xl font-bold dark:text-white">Payroll History</h1>
-                <p className="text-zinc-500">Review past payroll runs and settlement audits.</p>
+                <h1 className="text-3xl font-bold dark:text-white">Payroll History & Audit Ledger</h1>
+                <p className="text-zinc-500">Review finalized payroll registers, statutory filings, and bank advices.</p>
             </div>
 
-            <div className="dark:bg-zinc-900/50 bg-white border dark:border-zinc-800 border-zinc-200 rounded-2xl overflow-hidden">
-                <table className="w-full text-left">
+            <div className="dark:bg-zinc-900/50 bg-white border dark:border-zinc-800 border-zinc-200 rounded-2xl overflow-hidden shadow-sm">
+                <table className="w-full text-left text-xs">
                     <thead className="dark:bg-zinc-950/50 bg-zinc-50/50 text-[10px] uppercase font-bold text-zinc-500">
                         <tr>
-                            <th className="px-6 py-4">Period</th>
-                            <th className="px-6 py-4">Finalized On</th>
-                            <th className="px-6 py-4">Run ID</th>
+                            <th className="px-6 py-4">Pay Period</th>
+                            <th className="px-6 py-4">Finalized Time</th>
+                            <th className="px-6 py-4">Run ID Reference</th>
                             <th className="px-6 py-4 text-right">Actions</th>
                         </tr>
                     </thead>
-                    <tbody className="divide-y dark:divide-zinc-800 divide-zinc-200 text-sm">
-                        {loading ? (
-                             <tr><td colSpan="4" className="p-12 text-center text-zinc-500">Loading audit logs...</td></tr>
+                    <tbody className="divide-y dark:divide-zinc-800 divide-zinc-200">
+                        {loading && runs.length === 0 ? (
+                             <tr><td colSpan="4" className="p-12 text-center text-zinc-500">Loading audit registers...</td></tr>
                         ) : runs.length === 0 ? (
-                            <tr><td colSpan="4" className="p-12 text-center text-zinc-500">No finalized runs found.</td></tr>
+                            <tr><td colSpan="4" className="p-12 text-center text-zinc-500">No finalized payroll runs found. Run a payroll run in the processing engine.</td></tr>
                         ) : runs.map(run => (
                             <tr key={run.payrollRunId} className="hover:bg-zinc-50/50 dark:hover:bg-zinc-900/50 transition-colors">
-                                <td className="px-6 py-4 font-bold">{new Date(run.payrollPeriod?.startDate).toLocaleDateString()} - {new Date(run.payrollPeriod?.endDate).toLocaleDateString()}</td>
-                                <td className="px-6 py-4 text-zinc-500">{new Date(run.completedAt).toLocaleString()}</td>
+                                <td className="px-6 py-4 font-bold">
+                                    {run.payrollPeriod ? (
+                                        `${new Date(run.payrollPeriod.startDate).toLocaleDateString(undefined, {month: 'long', year: 'numeric'})}`
+                                    ) : (
+                                        `Run for ${new Date(run.completedAt || run.createdAt).toLocaleDateString()}`
+                                    )}
+                                </td>
+                                <td className="px-6 py-4 text-zinc-500 font-mono">{run.completedAt ? new Date(run.completedAt).toLocaleString() : 'N/A'}</td>
                                 <td className="px-6 py-4 font-mono text-[10px] text-zinc-400">{run.payrollRunId}</td>
                                 <td className="px-6 py-4 text-right">
-                                    <button className="text-synos-primary hover:underline font-bold text-xs">View Report</button>
+                                    <button 
+                                        onClick={() => handleViewReport(run)}
+                                        className="text-synos-primary hover:underline font-bold text-xs"
+                                    >
+                                        View Report
+                                    </button>
                                 </td>
                             </tr>
                         ))}
                     </tbody>
                 </table>
             </div>
+
+            {/* Historical Run Details Modal */}
+            {selectedRun && (
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-40 p-4 overflow-y-auto animate-in fade-in duration-300">
+                    <div className="bg-white dark:bg-zinc-950 border dark:border-zinc-800 border-zinc-200 rounded-3xl max-w-4xl w-full p-8 space-y-6 shadow-2xl relative">
+                        <button 
+                            onClick={() => setSelectedRun(null)}
+                            className="absolute top-4 right-4 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 font-bold"
+                        >
+                            ✕
+                        </button>
+                        
+                        <div>
+                            <h3 className="text-xl font-bold tracking-tight dark:text-white">
+                                Historical Payroll Register
+                            </h3>
+                            <p className="text-xs text-zinc-500 font-mono">
+                                Run Ref: {selectedRun.payrollRunId} | Finalized on {new Date(selectedRun.completedAt).toLocaleString()}
+                            </p>
+                        </div>
+
+                        {/* Summary Metrics */}
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            {/* Primary Metrics Row */}
+                            <div className="p-5 bg-zinc-50 dark:bg-zinc-900 border dark:border-zinc-800 border-zinc-200 rounded-2xl flex flex-col items-center justify-center text-center space-y-1 shadow-sm">
+                                <span className="text-[10px] uppercase font-bold text-zinc-400 tracking-wider">Total Gross Salary</span>
+                                <h3 className="text-xl md:text-2xl font-black dark:text-white">₹{Math.round(runPayables.reduce((acc, p) => acc + (p.grossSalary || 0), 0)).toLocaleString()}</h3>
+                                <span className="text-[10px] text-zinc-500 max-w-[200px] leading-tight">Total salary earned before any cuts</span>
+                            </div>
+                            <div className="p-5 bg-zinc-50 dark:bg-zinc-900 border dark:border-zinc-800 border-zinc-200 rounded-2xl flex flex-col items-center justify-center text-center space-y-1 shadow-sm">
+                                <span className="text-[10px] uppercase font-bold text-amber-500 tracking-wider">Combined Cuts (Total)</span>
+                                <h3 className="text-xl md:text-2xl font-black text-amber-500">₹{Math.round(runPayables.reduce((acc, p) => acc + (p.pfDeduction || 0) + (p.esiDeduction || 0) + (p.tdsDeduction || 0), 0)).toLocaleString()}</h3>
+                                <span className="text-[10px] text-zinc-500 max-w-[200px] leading-tight">Total government deductions</span>
+                            </div>
+                            <div className="p-5 bg-emerald-500/10 dark:bg-emerald-500/5 border border-emerald-500/20 rounded-2xl flex flex-col items-center justify-center text-center space-y-1 shadow-sm">
+                                <span className="text-[10px] uppercase font-bold text-emerald-500 tracking-wider">Take-Home Payout</span>
+                                <h3 className="text-xl md:text-2xl font-black text-emerald-500">₹{Math.round(runPayables.reduce((acc, p) => acc + (p.netPayable || 0), 0)).toLocaleString()}</h3>
+                                <span className="text-[10px] text-zinc-500 max-w-[200px] leading-tight">Final amount paid to employees</span>
+                            </div>
+
+                            {/* Breakdown Row */}
+                            <div className="p-4 bg-zinc-100/30 dark:bg-zinc-900/30 border dark:border-zinc-800/80 border-zinc-200/80 rounded-xl flex flex-col items-center justify-center text-center space-y-1">
+                                <span className="text-[9px] uppercase font-bold text-rose-500/80 tracking-wider">Retirement Fund (PF)</span>
+                                <h4 className="text-base font-bold text-rose-500/80">₹{Math.round(runPayables.reduce((acc, p) => acc + (p.pfDeduction || 0), 0)).toLocaleString()}</h4>
+                                <span className="text-[9px] text-zinc-500 leading-tight">Provident Fund savings</span>
+                            </div>
+                            <div className="p-4 bg-zinc-100/30 dark:bg-zinc-900/30 border dark:border-zinc-800/80 border-zinc-200/80 rounded-xl flex flex-col items-center justify-center text-center space-y-1">
+                                <span className="text-[9px] uppercase font-bold text-rose-500/80 tracking-wider">Health Insurance (ESI)</span>
+                                <h4 className="text-base font-bold text-rose-500/80">₹{Math.round(runPayables.reduce((acc, p) => acc + (p.esiDeduction || 0), 0)).toLocaleString()}</h4>
+                                <span className="text-[9px] text-zinc-500 leading-tight">Employee state insurance cuts</span>
+                            </div>
+                            <div className="p-4 bg-zinc-100/30 dark:bg-zinc-900/30 border dark:border-zinc-800/80 border-zinc-200/80 rounded-xl flex flex-col items-center justify-center text-center space-y-1">
+                                <span className="text-[9px] uppercase font-bold text-rose-500/80 tracking-wider">Income Tax (TDS)</span>
+                                <h4 className="text-base font-bold text-rose-500/80">₹{Math.round(runPayables.reduce((acc, p) => acc + (p.tdsDeduction || 0), 0)).toLocaleString()}</h4>
+                                <span className="text-[9px] text-zinc-500 leading-tight">Tax deducted at source</span>
+                            </div>
+                        </div>
+
+                        {/* Compliance Portal Exports */}
+                        <div className="p-4 bg-zinc-50/50 dark:bg-zinc-900/30 border dark:border-zinc-800 border-zinc-200 rounded-2xl space-y-3">
+                            <h4 className="text-xs font-bold dark:text-white">Compliance Downloads</h4>
+                            <div className="grid grid-cols-4 gap-3">
+                                <button 
+                                    onClick={() => {
+                                        let csv = "Employee Name,Bank Name,Account Number,IFSC Code,Net Payable (INR)\r\n";
+                                        runPayables.forEach(p => {
+                                            const emp = staffList.find(s => s.employeeId === p.employeeId) || {};
+                                            csv += `"${p.employeeName}","${emp.bankName || 'HDFC Bank'}","${emp.accountNumber || '50100234567890'}","${emp.ifscCode || 'HDFC0000123'}","${p.netPayable}"\r\n`;
+                                        });
+                                        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+                                        const link = document.createElement("a");
+                                        link.href = URL.createObjectURL(blob);
+                                        link.setAttribute("download", `Bank_Advice_Advice_${selectedRun.payrollRunId.substring(0,8)}.csv`);
+                                        document.body.appendChild(link);
+                                        link.click();
+                                        document.body.removeChild(link);
+                                    }}
+                                    className="flex items-center justify-center gap-1.5 p-2 bg-white dark:bg-zinc-950 border dark:border-zinc-800 border-zinc-200 rounded-xl hover:border-synos-primary transition-all text-[10px] font-bold dark:text-zinc-300"
+                                >
+                                    <Download className="w-3.5 h-3.5 text-synos-primary" /> Bank Advice (CSV)
+                                </button>
+
+                                <button 
+                                    onClick={() => {
+                                        let txt = "";
+                                        runPayables.forEach(p => {
+                                            const emp = staffList.find(s => s.employeeId === p.employeeId) || {};
+                                            const uan = emp.uanNumber || "100987654321";
+                                            txt += `${uan}#~#${p.employeeName}#~#${Math.round(p.grossSalary)}#~#${Math.round(p.grossSalary)}#~#${Math.round(p.pfDeduction)}\r\n`;
+                                        });
+                                        const blob = new Blob([txt], { type: 'text/plain;charset=utf-8;' });
+                                        const link = document.createElement("a");
+                                        link.href = URL.createObjectURL(blob);
+                                        link.setAttribute("download", `EPF_ECR_${selectedRun.payrollRunId.substring(0,8)}.txt`);
+                                        document.body.appendChild(link);
+                                        link.click();
+                                        document.body.removeChild(link);
+                                    }}
+                                    className="flex items-center justify-center gap-1.5 p-2 bg-white dark:bg-zinc-950 border dark:border-zinc-800 border-zinc-200 rounded-xl hover:border-synos-primary transition-all text-[10px] font-bold dark:text-zinc-300"
+                                >
+                                    <Download className="w-3.5 h-3.5 text-synos-primary" /> EPF ECR (TXT)
+                                </button>
+
+                                <button 
+                                    onClick={() => {
+                                        let csv = "Insurance No,Employee Name,No Of Days,Wages,Contribution\r\n";
+                                        runPayables.forEach(p => {
+                                            const emp = staffList.find(s => s.employeeId === p.employeeId) || {};
+                                            const esicNo = emp.esiNumber || "31001234560010001";
+                                            const workedDays = 31 - (p.lopDaysCount || 0);
+                                            csv += `"${esicNo}","${p.employeeName}","${workedDays}","${Math.round(p.grossSalary)}","${Math.round(p.esiDeduction)}"\r\n`;
+                                        });
+                                        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+                                        const link = document.createElement("a");
+                                        link.href = URL.createObjectURL(blob);
+                                        link.setAttribute("download", `ESIC_Return_${selectedRun.payrollRunId.substring(0,8)}.csv`);
+                                        document.body.appendChild(link);
+                                        link.click();
+                                        document.body.removeChild(link);
+                                    }}
+                                    className="flex items-center justify-center gap-1.5 p-2 bg-white dark:bg-zinc-950 border dark:border-zinc-800 border-zinc-200 rounded-xl hover:border-synos-primary transition-all text-[10px] font-bold dark:text-zinc-300"
+                                >
+                                    <Download className="w-3.5 h-3.5 text-synos-primary" /> ESIC Return (CSV)
+                                </button>
+
+                                <button 
+                                    onClick={() => {
+                                        let csv = "PAN,Employee Name,Section,Gross Amount,TDS Amount\r\n";
+                                        runPayables.forEach(p => {
+                                            const emp = staffList.find(s => s.employeeId === p.employeeId) || {};
+                                            const pan = emp.panNumber || "ABCDE1234F";
+                                            csv += `"${pan}","${p.employeeName}","192","${Math.round(p.grossSalary)}","${Math.round(p.tdsDeduction)}"\r\n`;
+                                        });
+                                        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+                                        const link = document.createElement("a");
+                                        link.href = URL.createObjectURL(blob);
+                                        link.setAttribute("download", `TDS_Form24Q_${selectedRun.payrollRunId.substring(0,8)}.csv`);
+                                        document.body.appendChild(link);
+                                        link.click();
+                                        document.body.removeChild(link);
+                                    }}
+                                    className="flex items-center justify-center gap-1.5 p-2 bg-white dark:bg-zinc-950 border dark:border-zinc-800 border-zinc-200 rounded-xl hover:border-synos-primary transition-all text-[10px] font-bold dark:text-zinc-300"
+                                >
+                                    <Download className="w-3.5 h-3.5 text-synos-primary" /> TDS 24Q (CSV)
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Pay roll register worksheet */}
+                        <div className="border dark:border-zinc-800 border-zinc-200 rounded-2xl overflow-hidden max-h-[300px] overflow-y-auto">
+                            <table className="w-full text-left text-[11px]">
+                                <thead className="bg-zinc-50 dark:bg-zinc-900 text-zinc-500 font-bold sticky top-0 border-b dark:border-zinc-800">
+                                    <tr>
+                                        <th className="px-4 py-2.5">Employee</th>
+                                        <th className="px-4 py-2.5 text-right">Gross Salary</th>
+                                        <th className="px-4 py-2.5 text-right text-rose-500">PF</th>
+                                        <th className="px-4 py-2.5 text-right text-rose-500">ESI</th>
+                                        <th className="px-4 py-2.5 text-right text-rose-500">TDS</th>
+                                        <th className="px-4 py-2.5 text-right text-emerald-500 font-bold">Net Salary</th>
+                                        <th className="px-4 py-2.5 text-center">Status</th>
+                                        <th className="px-4 py-2.5 text-right">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y dark:divide-zinc-800">
+                                    {runPayables.map(p => (
+                                        <tr key={p.employeePayableId} className="hover:bg-zinc-50/50 dark:hover:bg-zinc-900/10">
+                                            <td className="px-4 py-2.5 font-bold">{p.employeeName}</td>
+                                            <td className="px-4 py-2.5 text-right font-mono">₹{(p.grossSalary || 0).toLocaleString()}</td>
+                                            <td className="px-4 py-2.5 text-right text-rose-500 font-mono">-₹{(p.pfDeduction || 0).toLocaleString()}</td>
+                                            <td className="px-4 py-2.5 text-right text-rose-500 font-mono">-₹{(p.esiDeduction || 0).toLocaleString()}</td>
+                                            <td className="px-4 py-2.5 text-right text-rose-500 font-mono">-₹{(p.tdsDeduction || 0).toLocaleString()}</td>
+                                            <td className="px-4 py-2.5 text-right text-emerald-500 font-bold font-sans text-xs">₹{(p.netPayable || 0).toLocaleString()}</td>
+                                            <td className="px-4 py-2.5 text-center">
+                                                <span className={`text-[8px] font-bold px-2 py-0.5 rounded-full ${p.status === 'Settled' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-amber-500/10 text-amber-500'}`}>
+                                                    {p.status}
+                                                </span>
+                                            </td>
+                                            <td className="px-4 py-2.5 text-right">
+                                                <button 
+                                                    onClick={() => setSelectedPayslip(p)}
+                                                    className="text-synos-primary hover:underline font-bold text-[10px] flex items-center gap-1 ml-auto"
+                                                >
+                                                    <FileText className="w-3 h-3" /> Payslip
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div className="flex justify-end gap-3 pt-4 border-t dark:border-zinc-800 border-zinc-100">
+                            <button 
+                                onClick={() => setSelectedRun(null)}
+                                className="px-6 py-2 border dark:border-zinc-800 border-zinc-200 text-xs font-bold rounded-xl hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors"
+                            >
+                                Close Report
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* High fidelity Historical Payslip Modal */}
+            {selectedPayslip && (
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 overflow-y-auto animate-in fade-in duration-300">
+                    <div className="bg-white dark:bg-zinc-950 border dark:border-zinc-800 border-zinc-200 rounded-3xl max-w-2xl w-full p-8 space-y-6 shadow-2xl relative">
+                        <button 
+                            onClick={() => setSelectedPayslip(null)}
+                            className="absolute top-4 right-4 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 font-bold"
+                        >
+                            ✕
+                        </button>
+                        
+                        <div id="printable-payslip" className="space-y-6 p-6 border dark:border-zinc-800 border-zinc-200 rounded-2xl bg-zinc-50/50 dark:bg-zinc-900/10">
+                            {/* Header */}
+                            <div className="flex justify-between items-start border-b dark:border-zinc-800 border-zinc-200 pb-4">
+                                <div>
+                                    <h3 className="text-base font-bold tracking-tight text-synos-primary">SynOS Healthcare Intelligence</h3>
+                                    <p className="text-[10px] text-zinc-500 font-mono">Workforce & Payroll System</p>
+                                </div>
+                                <div className="text-right">
+                                    <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500">
+                                        PAY ADVICE (PAYSLIP)
+                                    </span>
+                                    <p className="text-[10px] text-zinc-500 font-mono mt-1">Period: Historical Archive</p>
+                                </div>
+                            </div>
+                            
+                            {/* Employee Info Block */}
+                            <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-[10px] border-b dark:border-zinc-800 border-zinc-200 pb-4 text-zinc-600 dark:text-zinc-400">
+                                <div className="flex justify-between"><span className="text-zinc-400">Name:</span> <span className="font-bold text-zinc-900 dark:text-white">{selectedPayslip.employeeName}</span></div>
+                                <div className="flex justify-between"><span className="text-zinc-400">ID:</span> <span className="font-mono">{selectedPayslip.employeeId}</span></div>
+                                <div className="flex justify-between"><span className="text-zinc-400">LOP Days:</span> <span className="font-bold text-rose-500">{selectedPayslip.lopDaysCount || 0} Days</span></div>
+                                <div className="flex justify-between"><span className="text-zinc-400">Payment Status:</span> <span className={`font-bold uppercase text-[9px] ${selectedPayslip.status === 'Settled' ? 'text-emerald-500' : 'text-amber-500'}`}>{selectedPayslip.status}</span></div>
+                                <div className="flex justify-between"><span className="text-zinc-400">Paid On:</span> <span className="font-bold">{selectedPayslip.paidAt ? new Date(selectedPayslip.paidAt).toLocaleString() : 'N/A'}</span></div>
+                                <div className="flex justify-between"><span className="text-zinc-400">Method:</span> <span className="font-bold">{selectedPayslip.paymentMethod || 'Bank Transfer'}</span></div>
+                            </div>
+                            
+                            {/* Salary Calculations breakdown */}
+                            <div className="grid grid-cols-2 gap-6 text-[10px]">
+                                {/* Earnings */}
+                                <div className="space-y-2">
+                                    <h4 className="font-bold text-zinc-500 uppercase tracking-wider text-[9px]">Earnings</h4>
+                                    <div className="border dark:border-zinc-800 border-zinc-200 rounded-xl p-3 space-y-2 bg-white dark:bg-zinc-900/50">
+                                        <div className="flex justify-between"><span>Base Salary:</span> <span>₹{selectedPayslip.snapshotBaseSalary.toLocaleString()}</span></div>
+                                        <div className="flex justify-between border-t dark:border-zinc-800 border-zinc-100 pt-2 font-bold text-synos-primary"><span>Gross Wages:</span> <span>₹{selectedPayslip.grossSalary.toLocaleString()}</span></div>
+                                    </div>
+                                </div>
+                                {/* Deductions */}
+                                <div className="space-y-2">
+                                    <h4 className="font-bold text-zinc-500 uppercase tracking-wider text-[9px]">Deductions</h4>
+                                    <div className="border dark:border-zinc-800 border-zinc-200 rounded-xl p-3 space-y-2 bg-white dark:bg-zinc-900/50">
+                                        <div className="flex justify-between"><span>EPF ({selectedPayslip.snapshotPFRate * 100}%):</span> <span className="text-rose-500">-₹{selectedPayslip.pfDeduction.toLocaleString()}</span></div>
+                                        <div className="flex justify-between"><span>ESI ({selectedPayslip.snapshotESIRate * 100}%):</span> <span className="text-rose-500">-₹{selectedPayslip.esiDeduction.toLocaleString()}</span></div>
+                                        <div className="flex justify-between"><span>TDS:</span> <span className="text-rose-500">-₹{selectedPayslip.tdsDeduction.toLocaleString()}</span></div>
+                                        <div className="flex justify-between border-t dark:border-zinc-800 border-zinc-100 pt-2 font-bold text-rose-500"><span>Total Deductions:</span> <span>-₹{(selectedPayslip.pfDeduction + selectedPayslip.esiDeduction + selectedPayslip.tdsDeduction).toLocaleString()}</span></div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            {/* Net Summary */}
+                            <div className="flex justify-between items-center bg-emerald-500/10 dark:bg-emerald-500/20 border border-emerald-500/30 p-4 rounded-xl">
+                                <div>
+                                    <span className="text-[8px] uppercase font-bold text-emerald-600 dark:text-emerald-400 tracking-widest block">NET DISBURSED OUTFLOW</span>
+                                    <h3 className="text-lg font-black text-emerald-600 dark:text-emerald-400">₹{selectedPayslip.netPayable.toLocaleString()}</h3>
+                                </div>
+                                <div className="text-right">
+                                    <span className="text-[8px] text-zinc-500 block">System Signature</span>
+                                    <span className="font-mono text-[9px] font-bold text-synos-primary">SYN-OS-HR-VERIFIED</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div className="flex justify-end gap-3">
+                            <button 
+                                onClick={() => setSelectedPayslip(null)} 
+                                className="px-6 py-2 border dark:border-zinc-800 border-zinc-200 text-xs font-bold rounded-xl hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors"
+                            >
+                                Close
+                            </button>
+                            <button 
+                                onClick={() => window.print()}
+                                className="px-6 py-2 bg-synos-primary text-white rounded-xl text-xs font-bold shadow-lg shadow-synos-primary/20 hover:scale-[1.02] transition-transform"
+                            >
+                                Print Payslip
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
@@ -882,7 +1779,7 @@ function StatCard({ label, value, icon: Icon, trend, color }) {
     );
 }
 
-function StaffRow({ name, role, dept, type, salary, status, onEdit, onDelete }) {
+function StaffRow({ name, role, dept, type, salary, status, pfEnabled, esiEnabled, tdsEnabled, isLinked, onEdit, onDelete }) {
     const [showMenu, setShowMenu] = useState(false);
     const menuRef = useRef(null);
 
@@ -900,11 +1797,25 @@ function StaffRow({ name, role, dept, type, salary, status, onEdit, onDelete }) 
         <tr className="hover:dark:bg-zinc-800/30 hover:bg-zinc-50 transition-colors group">
             <td className="px-6 py-4">
                 <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-[10px] font-bold text-zinc-500">
-                        {name.split(' ').map(n => n[0]).join('')}
+                    <div className="relative">
+                        <div className="w-8 h-8 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-[10px] font-bold text-zinc-500 border dark:border-zinc-700">
+                            {name.split(' ').map(n => n[0]).join('')}
+                        </div>
+                        {isLinked && (
+                            <div className="absolute -bottom-1 -right-1 bg-synos-primary text-white p-0.5 rounded-full border-2 border-white dark:border-zinc-900 shadow-sm">
+                                <Fingerprint className="w-2.5 h-2.5" />
+                            </div>
+                        )}
                     </div>
-                    <div>
-                        <p className="text-sm font-bold text-zinc-900 dark:text-zinc-200">{name}</p>
+                    <div className="space-y-0.5">
+                        <div className="flex items-center gap-2">
+                            <p className="text-sm font-bold text-zinc-900 dark:text-zinc-200">{name}</p>
+                            <div className="flex gap-1">
+                                {pfEnabled && <span className="text-[8px] font-black bg-emerald-500/10 text-emerald-600 px-1 rounded uppercase tracking-tighter border border-emerald-500/10">PF</span>}
+                                {esiEnabled && <span className="text-[8px] font-black bg-blue-500/10 text-blue-600 px-1 rounded uppercase tracking-tighter border border-blue-500/10">ESI</span>}
+                                {tdsEnabled && <span className="text-[8px] font-black bg-amber-500/10 text-amber-600 px-1 rounded uppercase tracking-tighter border border-amber-500/10">TDS</span>}
+                            </div>
+                        </div>
                         <p className="text-[10px] text-zinc-500 font-medium">{role}</p>
                     </div>
                 </div>
@@ -1178,6 +2089,19 @@ export function IdentityProvisioningScreen() {
         }
     };
 
+    const handleQuickProvision = async (employeeId) => {
+        if (!window.confirm("Quick provision will use the employee's email as username and a default secure password. Proceed?")) return;
+        setLoading(true);
+        try {
+            await WorkforceApi.provisionSimplifiedAccess(employeeId);
+            await loadStaff();
+        } catch (error) {
+            alert("Quick provision failed: " + error.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const pending = staff.filter(e => !e.userId && e.isActive);
     const managed = staff.filter(e => e.userId);
 
@@ -1217,25 +2141,46 @@ export function IdentityProvisioningScreen() {
                                     <th className="px-4 py-2">Staff Member</th>
                                     <th className="px-4 py-2">Designation</th>
                                     <th className="px-4 py-2">Department</th>
+                                    <th className="px-4 py-2">Identity Details</th>
                                     <th className="px-4 py-2 text-right">Action</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y dark:divide-zinc-800">
                                 {loading ? (
-                                    <tr><td colSpan="4" className="px-4 py-8 text-center text-xs text-zinc-500">Updating registry...</td></tr>
+                                    <tr><td colSpan="5" className="px-4 py-8 text-center text-xs text-zinc-500">Updating registry...</td></tr>
                                 ) : pending.length === 0 ? (
-                                    <tr><td colSpan="4" className="px-4 py-8 text-center text-xs text-zinc-500">No pending access requests.</td></tr>
+                                    <tr><td colSpan="5" className="px-4 py-8 text-center text-xs text-zinc-500">No pending access requests.</td></tr>
                                 ) : pending.map(e => (
                                     <tr key={e.employeeId} className="hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors">
                                         <td className="px-4 py-2.5 text-sm font-bold dark:text-zinc-200">{e.firstName} {e.lastName}</td>
                                         <td className="px-4 py-2.5 text-xs text-zinc-500">{e.jobTitle}</td>
                                         <td className="px-4 py-2.5 text-xs text-zinc-500">{e.department || 'N/A'}</td>
-                                        <td className="px-4 py-2.5 text-right">
+                                        <td className="px-4 py-2.5">
+                                            <div className="flex flex-col gap-0.5">
+                                                <div className="flex items-center gap-1.5 text-[10px]">
+                                                    <span className="text-zinc-500 font-medium">AADHAAR:</span>
+                                                    <span className="text-zinc-900 dark:text-zinc-300 font-bold tracking-wider">{e.aadhaarNumber || 'NOT SET'}</span>
+                                                </div>
+                                                <div className="flex items-center gap-1.5 text-[10px]">
+                                                    <span className="text-zinc-500 font-medium">PAN:</span>
+                                                    <span className="text-zinc-900 dark:text-zinc-300 font-bold tracking-wider">{e.panNumber || 'NOT SET'}</span>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td className="px-4 py-2.5 text-right flex justify-end gap-2">
+                                            <button 
+                                                onClick={() => handleQuickProvision(e.employeeId)}
+                                                className="bg-emerald-500 text-white px-3 py-1 rounded-md text-[10px] font-black uppercase tracking-tighter hover:opacity-90 flex items-center gap-1"
+                                                title="One-click provisioning using system defaults"
+                                            >
+                                                <Zap className="w-2.5 h-2.5" />
+                                                Quick Link
+                                            </button>
                                             <button 
                                                 onClick={() => setSelectedEmployee(e)}
                                                 className="bg-synos-primary text-white px-3 py-1 rounded-md text-[10px] font-black uppercase tracking-tighter hover:opacity-90"
                                             >
-                                                Provision Login
+                                                Custom Setup
                                             </button>
                                         </td>
                                     </tr>

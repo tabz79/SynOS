@@ -49,6 +49,24 @@ namespace SynOS.Models.Entities.Payables
         public DateTime? SettledAt { get; set; }
 
         public string? Remarks { get; set; }
+        
+        // Stability Snapshots (Audit Trail)
+        [Column(TypeName = "decimal(18, 4)")]
+        public decimal SnapshotBaseSalary { get; set; }
+        
+        [Column(TypeName = "decimal(18, 4)")]
+        public decimal SnapshotPFRate { get; set; }
+        
+        [Column(TypeName = "decimal(18, 4)")]
+        public decimal SnapshotESIRate { get; set; }
+        
+        public TaxCalculationMode SnapshotTDSMode { get; set; }
+        
+        [Column(TypeName = "decimal(18, 4)")]
+        public decimal SnapshotTDSValue { get; set; }
+        
+        [Column(TypeName = "decimal(18, 2)")]
+        public decimal LopDaysCount { get; set; }
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;

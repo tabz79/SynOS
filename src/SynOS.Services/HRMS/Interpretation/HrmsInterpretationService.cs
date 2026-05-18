@@ -460,9 +460,13 @@ namespace SynOS.Services.HRMS.Interpretation
                 
                 int paidUsed = paidUsedFacts.Sum(l => (l.EndTime.Date - l.StartTime.Date).Days + 1);
 
-                var lopDays = await _context.AttendanceLogs.AsNoTracking()
-                    .Where(l => l.EmployeeId == emp.EmployeeId && (l.Status == "UnpaidLeave" || l.Status == "Absent") && l.ClockIn >= monthStart && l.ClockIn <= monthEnd)
-                    .CountAsync();
+                var attendanceLogs = await _context.AttendanceLogs.AsNoTracking()
+                    .Where(l => l.EmployeeId == emp.EmployeeId && l.ClockIn >= monthStart && l.ClockIn <= monthEnd)
+                    .ToListAsync();
+
+                decimal lopDays = attendanceLogs.Sum(l => 
+                    (l.Status == "UnpaidLeave" || l.Status == "Absent") ? 1.0m : 
+                    (l.Status == "HalfDay" ? 0.5m : 0.0m));
 
                 decimal dailyRate = CalculateDailyRate(emp.BaseSalary, daysInMonth);
 

@@ -124,6 +124,7 @@ namespace SynOS.Services
                 UserId = Guid.NewGuid(),
                 Email = dto.Email,
                 Name = dto.Name,
+                Designation = dto.Designation,
                 PasswordHash = HashPassword(dto.Password),
                 IsActive = true,
                 CreatedAt = DateTime.UtcNow, // Corrected to DateTime.UtcNow

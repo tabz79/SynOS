@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using SynOS.Models.Exceptions;
+using SynOS.Services.Payroll.Orchestration;
 
 namespace SynOS.Api.Controllers.Admin
 {
@@ -19,10 +20,12 @@ namespace SynOS.Api.Controllers.Admin
     public class DebugController : ControllerBase
     {
         private readonly IReportingService _reportingService;
+        private readonly IPayrollWorkflowService _payrollWorkflowService;
 
-        public DebugController(IReportingService reportingService)
+        public DebugController(IReportingService reportingService, IPayrollWorkflowService payrollWorkflowService)
         {
             _reportingService = reportingService;
+            _payrollWorkflowService = payrollWorkflowService;
         }
 
         [HttpGet("ping")]
@@ -239,6 +242,48 @@ namespace SynOS.Api.Controllers.Admin
                 context.ReportVersions.Remove(version);
                 context.Reports.Remove(report);
                 await context.SaveChangesAsync();
+            }
+        }
+
+        [HttpPost("payroll-calc-test/{runId}")]
+        [AllowAnonymous]
+        public async Task<IActionResult> PayrollCalcTest(Guid runId)
+        {
+            try
+            {
+                await _payrollWorkflowService.ExecuteCalculationAsync(runId);
+                return Ok(new { Message = "Calculation executed via debug harness." });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new 
+                { 
+                    Error = ex.Message, 
+                    Inner = ex.InnerException?.Message,
+                    Source = ex.Source,
+                    StackTrace = ex.StackTrace 
+                });
+            }
+        }
+
+        [HttpPost("payroll-finalize-test/{runId}")]
+        [AllowAnonymous]
+        public async Task<IActionResult> PayrollFinalizeTest(Guid runId)
+        {
+            try
+            {
+                await _payrollWorkflowService.FinalizePayrollRunAsync(runId);
+                return Ok(new { Message = "Finalization executed via debug harness." });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new 
+                { 
+                    Error = ex.Message, 
+                    Inner = ex.InnerException?.Message,
+                    Source = ex.Source,
+                    StackTrace = ex.StackTrace 
+                });
             }
         }
     }

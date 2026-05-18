@@ -1,47 +1,117 @@
-# Identity-Workforce Governance Architecture (SynOS)
+The payroll engine itself is not broken. The current 400 errors are expected state and duplicate protection behavior, so stop spending time deep-debugging them.
 
-This document formalizes the architectural relationship between **Identity (User)** and **Employment (Staff)** within SynOS, transitioning from a role-based login system to organizational identity infrastructure.
+We are now in the payroll data-completion and hardening phase, not architecture debugging phase.
 
-## 1. Core Distinction
+Please stop over-investigating:
 
-| Layer | Entity | Authority | Purpose |
-| :--- | :--- | :--- | :--- |
-| **Workforce** | `Employee` | HR / Management | Salary, Leave, Attendance, Organizational Truth |
-| **Identity** | `User` | IT / Admin | Login, Credentials, Auth, Technical Access |
-| **Permissions** | `Role` | Operations | Operational Capabilities & Limits |
+* SignalR warnings
+* duplicate payroll period protections
+* recalculation state guards
 
-## 2. The Production Lifecycle (HR-First)
+Those protections are working correctly.
 
-The standard organizational workflow follows a two-stage process:
+Current priority is to operationalize Payroll Phase 1 cleanly and fast.
 
-### Stage 1: Workforce Onboarding (HR)
-- **Action**: HR/Management creates an `Employee` record.
-- **Data**: Legal Name, Designation, Department, Salary, Joining Date.
-- **State**: The person exists operationally and financially, but has **no digital access** yet.
+Proceed with this implementation order ONLY:
 
-### Stage 2: Access Provisioning (Admin)
-- **Action**: Admin views the **"Pending Access Provisioning"** queue.
-- **Decision**: Select an Employee and click "Grant System Access".
-- **Result**: `User` account is created and linked via `Employee.UserId`.
-- **Note**: Not all employees (e.g., cleaners, temporary staff) require this stage.
+1. Complete Employee Payroll Fields
+   Inside Employee/Staff Registry add and properly wire:
 
-## 3. Development Shortcut (Seeding)
+* BaseSalary
+* JoiningDate
+* EmploymentStatus
+* PFEnabled
+* PFPercentage (default 12%, editable)
+* ESIEnabled
+* ESIPercentage (default standard %, editable)
+* TDSEnabled
+* TDSMode (Fixed / Percentage)
+* TDSValue
+* BankName
+* AccountNumber
+* IFSC
 
-To maintain development velocity and ensure functional dashboards (Burn charts, Headcount), the system uses an automated seeding strategy:
+Keep Aadhaar/PAN optional and nullable.
 
-- **Logic**: During `DbInitializer.Initialize`, all seeded operational users are automatically provisioned as `Employee` records.
-- **Defaults**: Basic metadata (Name, Designation) is synced; financial data (Salary) defaults to 0.00 to indicate "Pending HR Finalization".
+2. Attendance → Payroll Interpretation
+   Ensure payroll correctly interprets:
 
-## 4. Governance Principles
+* Absent
+* UnpaidLeave
+* HalfDay
 
-- **Separation of Concerns**: Payroll history and audit trails reside in the `Employee` layer.
-- **Persistence**: Deactivating a `User` (Identity) must **never** delete the `Employee` record. The employment history must remain for compliance and audit.
-- **Mapping**: `Employee.UserId` is the primary bridge. One `Employee` record should correspond to exactly one `User` record (where applicable).
-- **Naming**: Use `DisplayName` as the source of truth to accommodate varied naming formats (single names, initials) common in diverse laboratory environments.
+Present remains virtual default.
 
-## 5. Implementation Roadmap (Phase 9)
+HalfDay must deduct 0.5 day proportionally.
 
-1. **Backend Integration**: Implement `SyncStaffFromUsersAsync` for development seeding.
-2. **Provisioning API**: Create endpoints to list "Employees without Access" and "Users without Staff Profiles".
-3. **Frontend Dashboard**: Add the **Identity Provisioning** tab to the Workforce Management module.
-4. **Lifecycle Hooks**: Ensure user deactivation triggers a check on employment status.
+3. Remove Dependency on PayStructure System
+   Bypass/deprecate PayStructure logic safely.
+   Payroll Phase 1 should calculate directly from:
+   Employee.BaseSalary
+
+Do NOT build HRA/basic/conveyance component systems now.
+
+4. Payroll Lifecycle
+   Maintain clean states:
+
+* Draft
+* Calculated
+* Finalized
+* Paid
+
+Once finalized:
+
+* attendance freezes
+* leave edits freeze
+* payroll recalculation freezes
+
+5. Historical Snapshotting
+   When payroll is processed, snapshot:
+
+* salary used
+* PF %
+* ESI %
+* TDS
+* LOP days
+* deductions
+
+Future employee edits must NEVER alter finalized payroll history.
+
+6. Payroll Formula
+   Phase 1 formula:
+
+Base Salary
+
+* LOP deductions
+* advances
+* manual deductions
+
+- bonuses/manual additions
+
+* PF
+* ESI
+* TDS
+  = Net Payable
+
+7. Keep Payroll Simple
+   Do NOT drift into:
+
+* enterprise payroll engines
+* formula builders
+* dynamic salary component systems
+* complex compliance abstractions
+
+We are building a practical healthcare payroll system first.
+
+8. Next Milestone
+   After the above is complete:
+   run ONE clean real payroll scenario end-to-end:
+
+* one employee
+* one leave
+* one PF deduction
+* one adjustment
+* finalize payroll
+* mark salary paid
+
+That becomes the Payroll Phase 1 operational validation.

@@ -29,6 +29,8 @@ namespace SynOS.Models.DTOs.Admin
         public string Role { get; set; }
 
         public string? Department { get; set; }
+
+        public string? Designation { get; set; }
     }
 
     public class UpdateUserDto

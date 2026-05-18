@@ -15,7 +15,7 @@ namespace SynOS.Models.DTOs.HRMS.Interpretation
         public string EmployeeName { get; set; } = null!;
         public int PaidLeaveUsed { get; set; }
         public int PaidLeaveQuota { get; set; }
-        public int LopDays { get; set; }
+        public decimal LopDays { get; set; }
         public decimal BaseSalary { get; set; }
         public decimal EstimatedDeduction { get; set; }
     }

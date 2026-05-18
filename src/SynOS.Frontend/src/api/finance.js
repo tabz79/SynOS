@@ -643,6 +643,20 @@ export const FinanceApi = {
             if (!response.ok) throw new Error("Finalization failed");
             return response.json();
         },
+        getRunPayables: async (runId) => {
+            const response = await fetch(`/api/v1/payroll/runs/${runId}/payables`, { headers: FinanceApi.getHeaders() });
+            if (!response.ok) throw new Error("Failed to load finalized payables");
+            return response.json();
+        },
+        bulkSettleRun: async (runId, method = 0) => {
+            const response = await fetch(`/api/v1/payroll/runs/${runId}/bulk-settle`, {
+                method: 'POST',
+                headers: FinanceApi.getHeaders(),
+                body: JSON.stringify({ method })
+            });
+            if (!response.ok) throw new Error("Bulk settlement failed");
+            return response.json();
+        },
 
         // Admin (Advances, Statutory)
         getStatutoryConfigs: async () => {
@@ -757,6 +771,18 @@ export const FinanceApi = {
             if (!response.ok) {
                 const err = await response.json();
                 throw new Error(err.message || "Failed to provision login");
+            }
+            return response.json();
+        },
+        provisionSimplifiedAccess: async (employeeId, initialPassword) => {
+            const response = await fetch('/api/v1/payroll/provision-access', {
+                method: 'POST',
+                headers: FinanceApi.getHeaders(),
+                body: JSON.stringify({ employeeId, initialPassword })
+            });
+            if (!response.ok) {
+                const err = await response.json();
+                throw new Error(err.message || "Failed to provision system access");
             }
             return response.json();
         },

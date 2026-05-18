@@ -26,10 +26,8 @@ namespace SynOS.Api.Controllers
         [HttpGet("periods")]
         public async Task<IActionResult> GetPeriods()
         {
-            var periods = await _context.PayrollPeriods
-                .OrderByDescending(p => p.StartDate)
-                .ToListAsync();
-            return Ok(periods);
+            var summaries = await _payrollWorkflowService.GetPeriodSummariesAsync();
+            return Ok(summaries);
         }
 
         [HttpPost("periods")]
@@ -39,6 +37,20 @@ namespace SynOS.Api.Controllers
             {
                 var period = await _payrollWorkflowService.CreatePayrollPeriodAsync(request.StartDate, request.EndDate);
                 return Ok(period);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        [HttpPost("periods/{periodId}/lock")]
+        public async Task<IActionResult> LockPeriod(Guid periodId)
+        {
+            try
+            {
+                await _payrollWorkflowService.LockPayrollPeriodAsync(periodId);
+                return Ok(new { message = "Period locked successfully." });
             }
             catch (Exception ex)
             {
@@ -109,6 +121,38 @@ namespace SynOS.Api.Controllers
             }
         }
 
+        [HttpGet("runs/{runId}/payables")]
+        public async Task<IActionResult> GetPayablesForRun(Guid runId)
+        {
+            var payables = await (from p in _context.EmployeePayables
+                                  join e in _context.Employees on p.EmployeeId equals e.EmployeeId into empJoin
+                                  from e in empJoin.DefaultIfEmpty()
+                                  where p.PayrollRunId == runId
+                                  select new {
+                                      p.EmployeePayableId,
+                                      p.PayrollRunId,
+                                      p.EmployeeId,
+                                      EmployeeName = e != null ? $"{e.FirstName} {e.LastName}" : "Unknown",
+                                      p.GrossSalary,
+                                      p.PFDeduction,
+                                      p.ESIDeduction,
+                                      p.TDSDeduction,
+                                      p.NetPayable,
+                                      p.LopDaysCount,
+                                      p.SnapshotBaseSalary,
+                                      p.SnapshotPFRate,
+                                      p.SnapshotESIRate,
+                                      p.SnapshotTDSMode,
+                                      p.SnapshotTDSValue,
+                                      p.Status,
+                                      PaymentMethod = "BankTransfer",
+                                      PaymentReference = "",
+                                      PaidAt = p.SettledAt
+                                  })
+                                  .ToListAsync();
+            return Ok(payables);
+        }
+
         [HttpPost("settle/{payableId}")]
         public async Task<IActionResult> SettleSalary(Guid payableId, [FromBody] SettlementRequest request)
         {
@@ -130,6 +174,44 @@ namespace SynOS.Api.Controllers
             {
                 await _settlementService.BulkSettleAsync(runId, request.Method);
                 return Ok(new { message = "Bulk settlement completed." });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        [HttpPost("maintenance/cleanup-duplicates")]
+        public async Task<IActionResult> CleanupDuplicates()
+        {
+            var allPeriods = await _context.PayrollPeriods.ToListAsync();
+            
+            var groups = allPeriods
+                .GroupBy(p => new { p.StartDate.Year, p.StartDate.Month })
+                .Where(g => g.Count() > 1);
+
+            int deletedCount = 0;
+            foreach (var group in groups)
+            {
+                var toDelete = group.OrderBy(p => p.Status).Skip(1).ToList(); // Keep the one with highest status
+                _context.PayrollPeriods.RemoveRange(toDelete);
+                deletedCount += toDelete.Count;
+            }
+
+            await _context.SaveChangesAsync();
+            return Ok(new { message = $"Cleanup complete. Deleted {deletedCount} duplicate periods." });
+        }
+
+        [HttpPost("provision-access")]
+        public async Task<IActionResult> ProvisionAccess([FromBody] PayrollProvisionAccessRequest request)
+        {
+            try
+            {
+                // In a real app, actorUserId would come from User.FindFirstValue(ClaimTypes.NameIdentifier)
+                // For now, using a system ID or Guid.Empty if not provided
+                var actorUserId = Guid.Empty; 
+                await _payrollWorkflowService.ProvisionAccessAsync(request.EmployeeId, request.InitialPassword, actorUserId);
+                return Ok(new { message = "System access provisioned successfully." });
             }
             catch (Exception ex)
             {
@@ -159,5 +241,11 @@ namespace SynOS.Api.Controllers
     public class BulkSettlementRequest
     {
         public SynOS.Models.Enums.PaymentMethod Method { get; set; }
+    }
+
+    public class PayrollProvisionAccessRequest
+    {
+        public Guid EmployeeId { get; set; }
+        public string InitialPassword { get; set; }
     }
 }

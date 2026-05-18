@@ -13,6 +13,9 @@ using SynOS.Services.SpendEngine;
 using SynOS.Models.Entities.SpendEngine;
 using SynOS.Models.Entities.Payables; // ADDED
 using System.Text.Json; // For ProvisionalResultData serialization
+using SynOS.Models.DTOs.Admin;
+using SynOS.Models.Entities;
+using SynOS.Services;
 
 namespace SynOS.Services.Payroll.Orchestration
 {
@@ -22,17 +25,20 @@ namespace SynOS.Services.Payroll.Orchestration
         private readonly IPayrollCalculationLogic _calculationLogic;
         private readonly IPayrollFactWriter _factWriter;
         private readonly ISpendFactWriter _spendFactWriter;
+        private readonly IUserService _userService;
 
         public PayrollWorkflowService(
             SynOSDbContext context,
             IPayrollCalculationLogic calculationLogic,
             IPayrollFactWriter factWriter,
-            ISpendFactWriter spendFactWriter)
+            ISpendFactWriter spendFactWriter,
+            IUserService userService)
         {
             _context = context;
             _calculationLogic = calculationLogic;
             _factWriter = factWriter;
             _spendFactWriter = spendFactWriter;
+            _userService = userService;
         }
 
         public async Task<PayrollPeriod> CreatePayrollPeriodAsync(DateTime startDate, DateTime endDate)
@@ -40,6 +46,16 @@ namespace SynOS.Services.Payroll.Orchestration
             if (startDate >= endDate)
             {
                 throw new PayrollOrchestrationException("Payroll period start date must be before end date.");
+            }
+
+            // Check for existing period in the same month/year
+            var existingMonthPeriod = await _context.PayrollPeriods
+                .AsNoTracking()
+                .AnyAsync(pp => pp.StartDate.Year == startDate.Year && pp.StartDate.Month == startDate.Month);
+
+            if (existingMonthPeriod)
+            {
+                throw new PayrollOrchestrationException($"A payroll period already exists for {startDate:MMMM yyyy}.");
             }
 
             // Check for overlapping periods
@@ -89,21 +105,30 @@ namespace SynOS.Services.Payroll.Orchestration
             {
                 throw new PayrollOrchestrationException($"Payroll Period with ID '{payrollPeriodId}' not found.");
             }
-            if (period.Status != PayrollPeriodStatus.Locked)
+
+            // Auto-lock if Open
+            if (period.Status == PayrollPeriodStatus.Open)
             {
-                throw new PayrollOrchestrationException($"Payroll Period with ID '{payrollPeriodId}' is not in Locked status. Cannot start a run.");
+                period.Status = PayrollPeriodStatus.Locked;
+                await _context.SaveChangesAsync();
+            }
+            else if (period.Status != PayrollPeriodStatus.Locked)
+            {
+                throw new PayrollOrchestrationException($"Payroll Period with ID '{payrollPeriodId}' is in {period.Status} status. Cannot start a run.");
             }
 
-            // Check for active runs (Draft, Processing, Calculated)
-            var activeRun = await _context.PayrollRuns
-                .AsNoTracking()
-                .AnyAsync(pr => pr.PayrollPeriodId == payrollPeriodId &&
+            // Check for active runs (Draft, Processing, Calculated) - Idempotent return
+            var existingRun = await _context.PayrollRuns
+                .Where(pr => pr.PayrollPeriodId == payrollPeriodId &&
                                 (pr.Status == PayrollRunStatus.Draft ||
                                  pr.Status == PayrollRunStatus.Processing ||
-                                 pr.Status == PayrollRunStatus.Calculated));
-            if (activeRun)
+                                 pr.Status == PayrollRunStatus.Calculated))
+                .OrderByDescending(pr => pr.CreatedAt)
+                .FirstOrDefaultAsync();
+
+            if (existingRun != null)
             {
-                throw new PayrollOrchestrationException($"An active payroll run already exists for Payroll Period ID '{payrollPeriodId}'.");
+                return existingRun;
             }
 
             var newRun = new PayrollRun
@@ -221,38 +246,50 @@ namespace SynOS.Services.Payroll.Orchestration
                     .Where(e => employeeIds.Contains(e.EmployeeId))
                     .ToDictionaryAsync(e => e.EmployeeId, e => e);
 
-                // Get active statutory rates (PF, ESI)
-                var statutoryRates = await _context.StatutoryConfigs
+                // Get global fallback statutory rates (PF, ESI)
+                var globalStatutoryRates = await _context.StatutoryConfigs
                     .Where(c => c.IsActive)
                     .ToListAsync();
                 
-                var pfRate = statutoryRates.FirstOrDefault(r => r.ComponentName == "PF")?.EmployeeRate ?? 0.12m;
-                var esiRate = statutoryRates.FirstOrDefault(r => r.ComponentName == "ESI")?.EmployeeRate ?? 0.0075m;
+                var globalPfRate = globalStatutoryRates.FirstOrDefault(r => r.ComponentName == "PF")?.EmployeeRate ?? 0.12m;
+                var globalEsiRate = globalStatutoryRates.FirstOrDefault(r => r.ComponentName == "ESI")?.EmployeeRate ?? 0.0075m;
 
                 foreach (var empId in employeeIds)
                 {
                     employees.TryGetValue(empId, out var emp);
-                    var empResults = provisionalResults.Where(r => r.EmployeeId == empId);
+                    var empResult = provisionalResults.FirstOrDefault(r => r.EmployeeId == empId);
+                    if (emp == null || empResult == null) continue;
                     
-                    // Simple aggregation for V1
-                    var grossSalary = empResults.Sum(r => r.Amount);
+                    var grossSalary = empResult.Amount;
                     
-                    // Statutory Deductions
+                    // 1. Statutory Deductions (Employee-Level or Global Fallback)
+                    decimal pfRate = emp.PFEnabled ? emp.PFPercentage / 100m : 0;
+                    decimal esiRate = emp.ESIEnabled ? emp.ESIPercentage / 100m : 0;
+                    
                     var pfDeduction = Math.Round(grossSalary * pfRate, 2);
                     var esiDeduction = Math.Round(grossSalary * esiRate, 2);
                     
-                    // Manual TDS Override (Search for specific adjustment if exists)
-                    var tdsAdjustment = await _context.PayrollAdjustments
-                        .Where(a => a.EmployeeId == empId && a.PayrollRunId == run.PayrollRunId && a.Notes != null && a.Notes.Contains("TDS"))
-                        .FirstOrDefaultAsync();
-                    var tdsDeduction = tdsAdjustment?.Amount ?? 0;
+                    // 2. TDS Calculation
+                    decimal tdsDeduction = 0;
+                    if (emp.TDSEnabled)
+                    {
+                        if (emp.TDSMode == TaxCalculationMode.Percentage)
+                        {
+                            tdsDeduction = Math.Round(grossSalary * (emp.TDSValue / 100m), 2);
+                        }
+                        else
+                        {
+                            tdsDeduction = emp.TDSValue;
+                        }
+                    }
 
-                    // Deduct Pending Advances (if any)
+                    // 3. Deduct Pending Advances
                     var advances = await _context.SalaryAdvances
                         .Where(a => a.EmployeeId == empId && a.Status == "Pending")
                         .ToListAsync();
                     var advanceDeduction = advances.Sum(a => a.Amount);
 
+                    // 4. Final Net Calculation
                     var netPayable = grossSalary - pfDeduction - esiDeduction - tdsDeduction - advanceDeduction;
 
                     var payable = new EmployeePayable
@@ -266,10 +303,19 @@ namespace SynOS.Services.Payroll.Orchestration
                         ESIDeduction = esiDeduction,
                         TDSDeduction = tdsDeduction,
                         OtherDeductions = advanceDeduction,
-                        NetPayable = netPayable,
+                        NetPayable = Math.Round(netPayable, 0), // ROUND TO NEAREST RUPEE
                         AmountPaid = 0,
                         Status = "Due",
                         Remarks = $"Generated via Payroll Run {run.PayrollRunId}",
+                        
+                        // Stability Snapshots (Audit Trail)
+                        SnapshotBaseSalary = emp.BaseSalary,
+                        SnapshotPFRate = pfRate,
+                        SnapshotESIRate = esiRate,
+                        SnapshotTDSMode = emp.TDSMode,
+                        SnapshotTDSValue = emp.TDSValue,
+                        LopDaysCount = empResult.LopDays,
+
                         CreatedAt = DateTime.UtcNow,
                         UpdatedAt = DateTime.UtcNow
                     };
@@ -322,6 +368,73 @@ namespace SynOS.Services.Payroll.Orchestration
             await _context.SaveChangesAsync();
 
             // Do NOT change the status of the parent PayrollPeriod.
+        }
+
+        public async Task<System.Collections.Generic.List<PayrollPeriodSummaryView>> GetPeriodSummariesAsync()
+        {
+            var periods = await _context.PayrollPeriods
+                .OrderByDescending(p => p.StartDate)
+                .ToListAsync();
+
+            var summaries = new System.Collections.Generic.List<PayrollPeriodSummaryView>();
+
+            var currentStaffCount = await _context.Employees.CountAsync(e => e.IsActive);
+            var currentTotalSalary = await _context.Employees.Where(e => e.IsActive).SumAsync(e => e.BaseSalary);
+
+            foreach (var p in periods)
+            {
+                var summary = new PayrollPeriodSummaryView
+                {
+                    PayrollPeriodId = p.PayrollPeriodId,
+                    StartDate = p.StartDate,
+                    EndDate = p.EndDate,
+                    Status = p.Status,
+                    StaffCount = currentStaffCount,
+                    TotalAccrual = currentTotalSalary
+                };
+
+                // If finalized, get actuals from payables
+                if (p.Status == PayrollPeriodStatus.Finalized)
+                {
+                    var payables = await _context.EmployeePayables
+                        .Where(ep => ep.PayrollPeriodId == p.PayrollPeriodId)
+                        .ToListAsync();
+                    
+                    if (payables.Any())
+                    {
+                        summary.StaffCount = payables.Count;
+                        summary.TotalAccrual = payables.Sum(ep => ep.GrossSalary);
+                    }
+                }
+
+                summaries.Add(summary);
+            }
+
+            return summaries;
+        }
+
+        public async Task ProvisionAccessAsync(Guid employeeId, string initialPassword, Guid actorUserId)
+        {
+            var emp = await _context.Employees.FindAsync(employeeId);
+            if (emp == null) throw new PayrollOrchestrationException("Employee not found.");
+            if (emp.UserId != null) throw new PayrollOrchestrationException("Employee already has system access.");
+            if (string.IsNullOrWhiteSpace(emp.Email)) throw new PayrollOrchestrationException("Employee email is required for provisioning.");
+
+            var dto = new CreateUserDto
+            {
+                Email = emp.Email,
+                Name = $"{emp.FirstName} {emp.LastName}",
+                Password = initialPassword,
+                Role = "Staff", // Default role for operational staff
+                Designation = emp.JobTitle
+            };
+
+            var user = await _userService.CreateUserAsync(dto, actorUserId);
+            
+            emp.UserId = user.UserId;
+            emp.UpdatedAt = DateTime.UtcNow;
+            
+            await _context.SaveChangesAsync();
         }
     }
 }
