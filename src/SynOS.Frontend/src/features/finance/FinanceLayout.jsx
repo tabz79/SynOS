@@ -97,17 +97,45 @@ export function FinanceLayout() {
     ];
 
     return (
-        <div className="flex flex-col h-screen w-screen overflow-hidden dark:bg-zinc-950 bg-zinc-50 text-zinc-900 dark:text-zinc-300 selection:bg-synos-primary/20">
-            {/* Clinical Aesthetic Accents */}
+        <div className="flex flex-col h-screen w-screen overflow-hidden dark:bg-zinc-950 bg-transparent text-zinc-900 dark:text-zinc-300 selection:bg-synos-primary/20">
+            {/* High-Complexity Atmospheric Accents (PERFORMANCE OPTIMIZED) */}
             <div className="fixed inset-0 pointer-events-none overflow-hidden z-[-1] dark:hidden">
+                {/* 1. Grain/Noise Base */}
                 <div className="absolute inset-0 opacity-[0.015]" style={{ backgroundImage: `url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyBAMAAADsEZWCAAAAGFBMVEUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAt66YlAAAAB3RSTlMAo7S066u0v76zAAABJklEQVQ4jXWSwW7DIAyGvRNoV9HeIdp7B2nvHaK9d7D27lX836VpY6t0p8oHicDHP4Z99qGf96HvX+h7NfSmX8U8z9M0z6+P/m8X6fB6L78XpX4X5X4O6fc8l7e8n+T9KO87ed+m77pP33Wfvuu6T991nb7rum/ed5+87z55333yvvvkfffJ++6T990n77pP33Wfvus6fdd13rrvu67rvXXfd13ne+u+77rO99Z933Wdt67rtnXdt67rtnWdt67rtjW999Y9ve9997mPu8997uPus9fZZ6+zz15nn73OPnudvU9f0+v0Nb1OX9Pr9DW9Tm9O9vTmaE5vjua09f7o/db7rff7f9H3v6XvP9TzL/X+U8+/1fMv9fw7fQ==")` }} />
+
+                {/* Static Blooms */}
+                <div
+                    className="absolute top-[-15%] left-[-5%] w-[50%] h-[55%]"
+                    style={{ background: 'radial-gradient(circle at 40% 40%, rgba(6, 182, 212, 0.05) 0%, rgba(6, 182, 212, 0) 70%)' }}
+                />
+
+                <div
+                    className="absolute top-[-10%] right-[10%] w-[45%] h-[50%]"
+                    style={{ background: 'radial-gradient(circle at center, rgba(37, 99, 235, 0.03) 0%, rgba(37, 99, 235, 0) 80%)' }}
+                />
+
+                <div
+                    className="absolute top-[-25%] right-[-10%] w-[60%] h-[65%]"
+                    style={{ background: 'radial-gradient(circle at 60% 30%, rgba(52, 211, 153, 0.04) 0%, rgba(52, 211, 153, 0) 70%)' }}
+                />
             </div>
 
             <SystemBar syncStatus="Synced" />
 
-            <div className="flex flex-1 overflow-hidden">
-                <aside className="w-72 border-r dark:border-zinc-900 border-zinc-200 dark:bg-zinc-950 bg-white flex flex-col relative">
-                    <div className="flex-1 overflow-y-auto p-4 pt-6 space-y-1">
+            <div className="flex flex-1 overflow-hidden relative z-10">
+                {/* Sidebar - Frosted Light Mode Model */}
+                <aside 
+                    style={{
+                        backgroundImage: `url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyBAMAAADsEZWCAAAAGFBMVEUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAt66YlAAAAB3RSTlMAo7S066u0v76zAAABJklEQVQ4jXWSwW7DIAyGvRNoV9HeIdp7B2nvHaK9d7D27lX836VpY6t0p8oHicDHP4Z99qGf96HvX+h7NfSmX8U8z9M0z6+P/m8X6fB6L78XpX4X5X4O6fc8l7e8n+T9KO87ed+m77pP33Wfvuu6T991nb7rum/ed5+87z55333yvvvkfffJ++6T990n77pP33Wfvus6fdd13rrvu67rvXXfd13ne+u+77rO99Z933Wdt67rtnXdt67rtnWdt67rtjW999Y9ve9997mPu8997uPus9fZZ6+zz15nn73OPnudvU9f0+v0Nb1OX9Pr9DW9Tm9O9vTmaE5vjua09f7o/db7rff7f9H3v6XvP9TzL/X+U8+/1fMv9fw7fQ==")`,
+                        backgroundBlendMode: 'overlay',
+                        backgroundRepeat: 'repeat'
+                    }}
+                    className="w-72 border-r dark:border-zinc-900 border-zinc-200 dark:bg-zinc-950 bg-gradient-to-b from-white/98 to-zinc-50/95 flex flex-col relative"
+                >
+                    {/* Interior Highlighting (Edge Refraction) */}
+                    <div className="absolute inset-0 border-r border-white/40 pointer-events-none" />
+
+                    <div className="flex-1 overflow-y-auto p-4 pt-6 space-y-1 relative z-10">
                         <div className="px-3 pb-4">
                             <h2 className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 dark:text-zinc-600">Finance Operations</h2>
                         </div>
@@ -117,7 +145,7 @@ export function FinanceLayout() {
                     </div>
 
                     <div className="p-4 border-t dark:border-zinc-900 border-zinc-200">
-                        <div className="flex items-center gap-3 p-3 rounded-xl dark:bg-zinc-900/50 bg-zinc-50 border dark:border-zinc-800 border-zinc-200">
+                        <div className="flex items-center gap-3 p-3 rounded-xl dark:bg-zinc-900/50 bg-white border dark:border-zinc-800 border-zinc-200 shadow-sm">
                             <div className="w-8 h-8 rounded-full dark:bg-zinc-800 bg-zinc-200 flex items-center justify-center text-[10px] font-bold text-zinc-500 uppercase">
                                 {user?.name?.substring(0, 2) || "FC"}
                             </div>
@@ -129,7 +157,7 @@ export function FinanceLayout() {
                     </div>
                 </aside>
 
-                <main className="flex-1 overflow-y-auto bg-zinc-50/50 dark:bg-zinc-950/50">
+                <main className="flex-1 overflow-y-auto bg-transparent">
                     <Outlet />
                 </main>
             </div>
