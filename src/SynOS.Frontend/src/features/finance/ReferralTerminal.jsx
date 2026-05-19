@@ -31,6 +31,7 @@ export const ReferralTerminal = () => {
     const navigate = useNavigate();
     const [summary, setSummary] = useState(null);
     const [loading, setLoading] = useState(true);
+    const tabsRef = React.useRef(null);
 
     const tabs = [
         { id: 'overview', label: 'Overview', icon: LayoutDashboard },
@@ -44,6 +45,15 @@ export const ReferralTerminal = () => {
     useEffect(() => {
         loadSummary();
     }, []);
+
+    useEffect(() => {
+        if (tabsRef.current) {
+            const activeTabEl = tabsRef.current.querySelector('[data-active-tab="true"]');
+            if (activeTabEl) {
+                activeTabEl.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+            }
+        }
+    }, [tab]);
 
     const loadSummary = async () => {
         try {
@@ -96,12 +106,13 @@ export const ReferralTerminal = () => {
             </div>
 
             {/* TAB NAVIGATION */}
-            <div className="flex items-center gap-1 px-8 py-2 bg-white dark:bg-zinc-950 border-b dark:border-zinc-900 border-zinc-100">
+            <div ref={tabsRef} className="flex items-center gap-1 px-8 py-2 bg-white dark:bg-zinc-950 border-b dark:border-zinc-900 border-zinc-100 overflow-x-auto scrollbar-thin">
                 {tabs.map(t => (
                     <button
                         key={t.id}
                         onClick={() => setActiveTab(t.id)}
-                        className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${
+                        data-active-tab={tab === t.id ? "true" : "false"}
+                        className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all shrink-0 ${
                             tab === t.id 
                             ? 'bg-synos-primary/10 text-synos-primary' 
                             : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-50 dark:hover:bg-zinc-900'

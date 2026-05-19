@@ -31,6 +31,7 @@ export function FinanceLayout() {
             path: "/finance/revenue",
             icon: TrendingUp,
             subItems: [
+                { name: "Overview", path: "/finance/revenue/overview" },
                 { name: "Bills & Collections", path: "/finance/revenue/bills" },
                 { name: "Pending Receivables", path: "/finance/revenue/receivables" },
                 { name: "Collection History", path: "/finance/revenue/history" }
@@ -41,6 +42,7 @@ export function FinanceLayout() {
             path: "/finance/expenses",
             icon: TrendingDown,
             subItems: [
+                { name: "Overview", path: "/finance/expenses/overview" },
                 { name: "Expense Feed", path: "/finance/expenses/feed" },
                 { name: "Vendor Payables", path: "/finance/expenses/payables" },
                 { name: "Vendor Master", path: "/finance/expenses/vendors" },
@@ -53,10 +55,12 @@ export function FinanceLayout() {
             path: "/finance/referrals",
             icon: Users,
             subItems: [
+                { name: "Overview", path: "/finance/referrals/overview" },
                 { name: "Partner Registry", path: "/finance/referrals/registry" },
-                { name: "Payouts", path: "/finance/referrals/payouts" },
+                { name: "Pending Payouts", path: "/finance/referrals/payouts" },
+                { name: "Partner Receivables", path: "/finance/referrals/receivables" },
                 { name: "Settlement History", path: "/finance/referrals/history" },
-                { name: "Rules", path: "/finance/referrals/rules" }
+                { name: "Commission Rules", path: "/finance/referrals/rules" }
             ]
         },
         {
@@ -64,9 +68,10 @@ export function FinanceLayout() {
             path: "/finance/outsourcing",
             icon: Beaker,
             subItems: [
+                { name: "Overview", path: "/finance/outsourcing/overview" },
                 { name: "Active Outsourced", path: "/finance/outsourcing/active" },
+                { name: "Pending Pricing", path: "/finance/outsourcing/pricing" },
                 { name: "Reference Labs", path: "/finance/outsourcing/labs" },
-                { name: "Pending Payments", path: "/finance/outsourcing/pending" },
                 { name: "Settlement History", path: "/finance/outsourcing/history" }
             ]
         },
@@ -75,6 +80,7 @@ export function FinanceLayout() {
             path: "/finance/workforce",
             icon: Users2,
             subItems: [
+                { name: "Overview", path: "/finance/workforce/overview" },
                 { name: "Staff Registry", path: "/finance/workforce/staff" },
                 { name: "Identity & Access", path: "/finance/workforce/identity" },
                 { name: "Attendance & Leaves", path: "/finance/workforce/attendance" },

@@ -24,7 +24,8 @@ import {
     PlusCircle,
     Trash2,
     Key,
-    Fingerprint
+    Fingerprint,
+    LayoutDashboard
 } from 'lucide-react';
 import { FinanceApi } from '@/api/finance';
 import { AddStaffModal } from './components/workforce/AddStaffModal';
@@ -2449,3 +2450,205 @@ function ProvisionAccessModal({ employee, onClose, onSuccess }) {
         </div>
     );
 }
+
+// --- UNIFIED WORKFORCE TERMINAL & OVERVIEW TAB ---
+
+import { useParams, useNavigate } from 'react-router-dom';
+
+export const WorkforceOverviewTab = () => {
+    const [stats, setStats] = useState(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const load = async () => {
+            try {
+                setLoading(true);
+                const [staff, advances, runs] = await Promise.all([
+                    WorkforceApi.getStaff().catch(() => []),
+                    WorkforceApi.getAdvances().catch(() => []),
+                    WorkforceApi.getRuns().catch(() => [])
+                ]);
+
+                const calculated = {
+                    staffCount: staff.length,
+                    activeAdvances: advances.filter(a => a.status === 'Pending').length,
+                    totalAdvancesAmt: advances.reduce((acc, a) => acc + a.amount, 0),
+                    payrollRunsCount: runs.length,
+                    staff: staff.slice(0, 5),
+                    advances: advances.slice(0, 5)
+                };
+                setStats(calculated);
+            } catch (err) {
+                console.error("Failed to load workforce overview stats:", err);
+            } finally {
+                setLoading(false);
+            }
+        };
+        load();
+    }, []);
+
+    if (loading || !stats) return <div className="py-20 text-center animate-pulse text-zinc-500 font-bold uppercase tracking-widest text-[10px]">Syncing human resources ledger...</div>;
+
+    const cards = [
+        { title: "Active Employees", value: stats.staffCount.toString(), icon: Users, color: "text-blue-500", bg: "bg-blue-500/10", description: "Registered operational members" },
+        { title: "Active Advances", value: stats.activeAdvances.toString(), type: stats.activeAdvances > 0 ? "warning" : "neutral", icon: Wallet, color: "text-rose-500", bg: "bg-rose-500/10", description: "Salary advances awaiting settlement" },
+        { title: "Total Loans Issued", value: `₹${stats.totalAdvancesAmt.toLocaleString()}`, icon: CreditCard, color: "text-emerald-500", bg: "bg-emerald-500/10", description: "Cumulative outstanding loans" },
+        { title: "Payroll Runs", value: stats.payrollRunsCount.toString(), icon: Calculator, color: "text-amber-500", bg: "bg-amber-500/10", description: "Completed salary processing runs" }
+    ];
+
+    return (
+        <div className="p-8 space-y-8 animate-in slide-in-from-bottom-4 duration-500">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                {cards.map((card, idx) => (
+                    <div key={idx} className="p-6 bg-white dark:bg-zinc-950 border dark:border-zinc-900 border-zinc-100 rounded-3xl shadow-sm hover:shadow-md transition-all">
+                        <div className="flex justify-between items-start mb-4">
+                            <div className={`p-3 rounded-2xl ${card.bg} ${card.color}`}>
+                                <card.icon size={20} />
+                            </div>
+                            {card.type === 'warning' && <Clock className="w-4 h-4 text-amber-500 animate-none" />}
+                        </div>
+                        <h3 className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">{card.title}</h3>
+                        <p className="text-2xl font-black dark:text-white text-zinc-900 mt-1">{card.value}</p>
+                        <p className="text-[10px] text-zinc-400 mt-2 font-medium">{card.description}</p>
+                    </div>
+                ))}
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div className="lg:col-span-2 bg-white dark:bg-zinc-950 border dark:border-zinc-900 border-zinc-100 rounded-3xl p-8 shadow-sm">
+                    <h2 className="text-lg font-bold dark:text-white text-zinc-900 mb-6">Staff Distribution</h2>
+                    {stats.staff.length === 0 ? (
+                        <div className="py-16 text-center text-zinc-400 border border-dashed dark:border-zinc-800 rounded-2xl">
+                            <p className="text-xs font-semibold">No registered staff members found.</p>
+                        </div>
+                    ) : (
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-left text-xs border-collapse">
+                                <thead>
+                                    <tr className="border-b dark:border-zinc-900 border-zinc-100 pb-2 text-[10px] uppercase font-bold text-zinc-400">
+                                        <th className="pb-3">Name</th>
+                                        <th className="pb-3">Designation</th>
+                                        <th className="pb-3 text-right">Base Salary</th>
+                                        <th className="pb-3 text-center">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {stats.staff.map((s, idx) => (
+                                        <tr key={idx} className="border-b dark:border-zinc-900/50 border-zinc-100/50 last:border-0 hover:bg-zinc-50/50 dark:hover:bg-zinc-900/30 transition-colors">
+                                            <td className="py-3 font-semibold dark:text-zinc-200">{s.fullName}</td>
+                                            <td className="py-3 text-zinc-500">{s.designation}</td>
+                                            <td className="py-3 text-right font-black text-zinc-900 dark:text-zinc-100">₹{s.baseSalary?.toLocaleString()}</td>
+                                            <td className="py-3 text-center">
+                                                <span className={`px-2 py-0.5 rounded-full text-[9px] uppercase tracking-wider font-bold border ${
+                                                    s.isActive 
+                                                        ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' 
+                                                        : 'bg-zinc-500/10 text-zinc-500 border-zinc-500/20'
+                                                }`}>
+                                                    {s.isActive ? 'Active' : 'Inactive'}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    )}
+                </div>
+
+                <div className="bg-white dark:bg-zinc-950 border dark:border-zinc-900 border-zinc-100 rounded-3xl p-8 shadow-sm">
+                    <h2 className="text-lg font-bold dark:text-white text-zinc-900 mb-6">Recent Advances</h2>
+                    {stats.advances.length === 0 ? (
+                        <div className="py-10 text-center text-zinc-400 border border-dashed dark:border-zinc-800 rounded-2xl text-xs font-semibold">
+                            No active salary advance requests.
+                        </div>
+                    ) : (
+                        <div className="space-y-4">
+                            {stats.advances.map((a, idx) => (
+                                <div key={idx} className="p-4 bg-zinc-50 dark:bg-zinc-900/40 rounded-2xl border dark:border-zinc-800/50 border-zinc-200/50 flex items-center justify-between">
+                                    <div>
+                                        <p className="text-xs font-bold dark:text-zinc-200">{a.staffName || 'Employee advance'}</p>
+                                        <p className="text-[9px] text-zinc-400 uppercase tracking-tighter mt-1">{a.status}</p>
+                                    </div>
+                                    <div className="text-right">
+                                        <p className="text-xs font-black text-rose-500">₹{a.amount?.toLocaleString()}</p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+};
+
+export const WorkforceTerminal = () => {
+    const { tab = 'overview' } = useParams();
+    const navigate = useNavigate();
+    const tabsRef = useRef(null);
+
+    const tabs = [
+        { id: 'overview', label: 'Overview', icon: LayoutDashboard },
+        { id: 'staff', label: 'Staff Registry', icon: Users },
+        { id: 'identity', label: 'Identity & Access', icon: Key },
+        { id: 'attendance', label: 'Attendance & Leaves', icon: Calendar },
+        { id: 'process', label: 'Salary Processing', icon: Calculator },
+        { id: 'history', label: 'Payroll History', icon: History },
+        { id: 'adjustments', label: 'Advances & Deductions', icon: CreditCard }
+    ];
+
+    useEffect(() => {
+        if (tabsRef.current) {
+            const activeTabEl = tabsRef.current.querySelector('[data-active-tab="true"]');
+            if (activeTabEl) {
+                activeTabEl.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+            }
+        }
+    }, [tab]);
+
+    return (
+        <div className="flex flex-col h-full bg-zinc-50/50 dark:bg-zinc-950/50">
+            {/* HEADER SECTION */}
+            <div className="p-8 pb-4 border-b dark:border-zinc-900 border-zinc-200 bg-white dark:bg-zinc-950 flex flex-col gap-6">
+                <div className="flex flex-col gap-1">
+                    <h1 className="text-2xl font-black dark:text-white text-zinc-900 tracking-tight flex items-center gap-2">
+                        <Users className="w-6 h-6 text-synos-primary animate-none" />
+                        Workforce Hub
+                    </h1>
+                    <p className="text-xs text-zinc-500 font-medium">Coordinate employee rosters, system provisioning, attendance tracking, and monthly payroll calculation.</p>
+                </div>
+
+                {/* TABS STRIP */}
+                <div ref={tabsRef} className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-thin">
+                    {tabs.map((t) => (
+                        <button
+                            key={t.id}
+                            onClick={() => navigate(`/finance/workforce/${t.id}`)}
+                            data-active-tab={tab === t.id ? "true" : "false"}
+                            className={`flex items-center gap-2 px-4 py-2 text-[10px] font-bold uppercase tracking-widest rounded-xl transition-all border shrink-0 ${
+                                tab === t.id
+                                    ? 'bg-synos-primary/10 border-synos-primary/30 text-synos-primary shadow-sm shadow-synos-primary/5'
+                                    : 'bg-transparent border-transparent text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'
+                            }`}
+                        >
+                            <t.icon className="w-3.5 h-3.5" />
+                            {t.label}
+                        </button>
+                    ))}
+                </div>
+            </div>
+
+            {/* ACTIVE TAB CONTENT */}
+            <div className="flex-1 overflow-y-auto">
+                {tab === 'overview' && <WorkforceOverviewTab />}
+                {tab === 'staff' && <StaffRegistryScreen />}
+                {tab === 'identity' && <IdentityProvisioningScreen />}
+                {tab === 'attendance' && <AttendanceLeavesScreen />}
+                {tab === 'process' && <SalaryProcessingScreen />}
+                {tab === 'history' && <PayrollHistoryScreen />}
+                {tab === 'adjustments' && <AdvancesDeductionsScreen />}
+            </div>
+        </div>
+    );
+};
+

@@ -30,6 +30,7 @@ namespace SynOS.Api.Controllers.AR
                         {
                             receivableFactId = r.ReceivableFactId,
                             sourceVisitId = r.SourceVisitId,
+                            referralPartnerId = r.ReferralPartnerId,
                             partnerName = r.ReferralPartner != null ? r.ReferralPartner.Name : "Unknown Partner",
                             amount = r.Amount,
                             amountReceived = r.AmountReceived,

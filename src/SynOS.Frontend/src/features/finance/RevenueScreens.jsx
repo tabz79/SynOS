@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { 
     Search, 
     Filter, 
@@ -8,7 +9,14 @@ import {
     Clock, 
     AlertCircle,
     User,
-    ArrowRight
+    ArrowRight,
+    LayoutDashboard,
+    IndianRupee,
+    History,
+    TrendingUp,
+    Wallet,
+    ArrowUpRight,
+    ArrowDownRight
 } from 'lucide-react';
 import { RecordCollectionModal } from './components/RecordCollectionModal';
 import { BulkSettleModal } from './components/BulkSettleModal';
@@ -19,18 +27,135 @@ import { useAuth } from '@/context/AuthContext';
 
 // --- SCREENS ---
 
-export const RevenueOverview = () => {
+export const RevenueOverviewTab = ({ stats }) => {
+  const [recentTransactions, setRecentTransactions] = useState([]);
+  const [loadingTransactions, setLoadingTransactions] = useState(true);
+
+  useEffect(() => {
+    const fetchRecent = async () => {
+      try {
+        setLoadingTransactions(true);
+        const data = await FinanceApi.getRevenueHistory().catch(() => []);
+        setRecentTransactions(data.slice(0, 5));
+      } catch (err) {
+        console.error("Failed to fetch recent revenue transactions:", err);
+      } finally {
+        setLoadingTransactions(false);
+      }
+    };
+    fetchRecent();
+  }, []);
+
+  const cards = [
+    { title: "Cash Collected", value: `₹${((stats.cashInflow || 0) / 100000).toFixed(2)}L`, type: 'positive' },
+    { title: "Accrual Revenue", value: `₹${((stats.totalRevenueAccrual || 0) / 100000).toFixed(2)}L` },
+    { title: "Receivables", value: `₹${((stats.pendingCollections || 0) / 100000).toFixed(2)}L`, type: 'negative' },
+    { title: "Cash Margin", value: `${(stats.cashMarginPercentage || 0).toFixed(1)}%`, type: (stats.cashMarginPercentage || 0) > 20 ? 'positive' : 'negative' }
+  ];
+
+  return (
+    <div className="p-8 space-y-8 animate-in slide-in-from-bottom-4 duration-500">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {cards.map((card, idx) => (
+          <div key={idx} className="p-6 bg-white dark:bg-zinc-950 border dark:border-zinc-900 border-zinc-100 rounded-3xl shadow-sm hover:shadow-md transition-all">
+            <div className="flex justify-between items-start mb-4">
+              <h3 className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">{card.title}</h3>
+              {card.type === 'positive' && <ArrowUpRight className="w-4 h-4 text-emerald-500 animate-none" />}
+              {card.type === 'negative' && <ArrowDownRight className="w-4 h-4 text-rose-500 animate-none" />}
+            </div>
+            <p className="text-2xl font-black dark:text-white text-zinc-900 mt-1">{card.value}</p>
+          </div>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-2 bg-white dark:bg-zinc-950 border dark:border-zinc-900 border-zinc-100 rounded-3xl p-8 shadow-sm">
+          <h2 className="text-lg font-bold dark:text-white text-zinc-900 mb-6">Recent Collections</h2>
+          {loadingTransactions ? (
+            <div className="py-20 text-center text-zinc-400 animate-pulse">Scanning ledger...</div>
+          ) : recentTransactions.length === 0 ? (
+            <div className="py-16 text-center text-zinc-400 border border-dashed dark:border-zinc-800 rounded-2xl">
+              <p className="text-xs font-semibold">No recent collections recorded.</p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr className="border-b dark:border-zinc-900 border-zinc-100 pb-2 text-[10px] uppercase font-bold text-zinc-400">
+                    <th className="pb-3">Date</th>
+                    <th className="pb-3">Category</th>
+                    <th className="pb-3 text-right">Amount</th>
+                    <th className="pb-3 text-center">Payment Mode</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {recentTransactions.map((t, idx) => (
+                    <tr key={idx} className="border-b dark:border-zinc-900/50 border-zinc-100/50 last:border-0 hover:bg-zinc-50/50 dark:hover:bg-zinc-900/30 transition-colors">
+                      <td className="py-3 text-zinc-500">{new Date(t.occurredAt).toLocaleDateString()}</td>
+                      <td className="py-3 font-semibold dark:text-zinc-200">{t.sourceType}</td>
+                      <td className="py-3 text-right font-black text-emerald-500">₹{t.amount?.toLocaleString()}</td>
+                      <td className="py-3 text-center">
+                        <span className="px-2 py-0.5 rounded-full text-[9px] uppercase tracking-wider bg-zinc-100 dark:bg-zinc-800 text-zinc-500">
+                          {t.paymentMode}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+
+        <div className="bg-white dark:bg-zinc-950 border dark:border-zinc-900 border-zinc-100 rounded-3xl p-8 shadow-sm flex flex-col justify-between">
+          <div>
+            <h2 className="text-lg font-bold dark:text-white text-zinc-900 mb-6">Drawer Balance</h2>
+            <div className="space-y-6">
+              <div className="p-4 bg-zinc-50 dark:bg-zinc-900/40 rounded-2xl border dark:border-zinc-800/50 border-zinc-200/50 flex justify-between items-center">
+                <div>
+                  <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Physical Cash Drawer</p>
+                  <p className="text-xl font-black dark:text-white text-zinc-900 mt-1">₹{(stats.cashCollected || 0).toLocaleString()}</p>
+                </div>
+                <Wallet className="w-8 h-8 text-zinc-400 opacity-40" />
+              </div>
+              <div className="p-4 bg-zinc-50 dark:bg-zinc-900/40 rounded-2xl border dark:border-zinc-800/50 border-zinc-200/50 flex justify-between items-center">
+                <div>
+                  <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Digital Online Inflow</p>
+                  <p className="text-xl font-black dark:text-white text-zinc-900 mt-1">₹{(stats.onlineCollected || 0).toLocaleString()}</p>
+                </div>
+                <TrendingUp className="w-8 h-8 text-emerald-500 opacity-40" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export const RevenueTerminal = () => {
+  const { tab = 'overview' } = useParams();
+  const navigate = useNavigate();
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
+  const tabsRef = React.useRef(null);
 
   useEffect(() => {
     loadStats();
   }, []);
 
+  useEffect(() => {
+    if (tabsRef.current) {
+      const activeTabEl = tabsRef.current.querySelector('[data-active-tab="true"]');
+      if (activeTabEl) {
+        activeTabEl.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+      }
+    }
+  }, [tab]);
+
   const loadStats = async () => {
     try {
       setLoading(true);
-      // Use last 30 days by default
       const start = new Date();
       start.setDate(start.getDate() - 30);
       const data = await FinanceApi.getProfitabilitySummary(start.toISOString(), new Date().toISOString());
@@ -41,6 +166,13 @@ export const RevenueOverview = () => {
       setLoading(false);
     }
   };
+
+  const tabs = [
+    { id: 'overview', label: 'Overview', icon: LayoutDashboard },
+    { id: 'bills', label: 'Bills & Collections', icon: IndianRupee },
+    { id: 'receivables', label: 'Pending Receivables', icon: Clock },
+    { id: 'history', label: 'Collection History', icon: History }
+  ];
 
   if (loading) return <div className="p-20 text-center animate-pulse text-zinc-500 font-bold uppercase tracking-widest text-[10px]">Synchronizing economic truth...</div>;
   
@@ -56,23 +188,45 @@ export const RevenueOverview = () => {
   );
 
   return (
-    <DepartmentOverview 
-      title="Revenue"
-      description="Monitor incoming payments and outstanding collections."
-      stats={[
-        { title: "Cash Collected", value: `₹${(stats.cashInflow / 100000).toFixed(2)}L`, type: 'positive' },
-        { title: "Accrual Revenue", value: `₹${(stats.totalRevenueAccrual / 100000).toFixed(2)}L` },
-        { title: "Receivables", value: `₹${(stats.pendingCollections / 100000).toFixed(2)}L`, type: 'warning' },
-        { title: "Cash Margin", value: `${stats.cashMarginPercentage.toFixed(1)}%`, type: stats.cashMarginPercentage > 20 ? 'positive' : 'warning' }
-      ]}
-      activity={[
-        { title: "Cash Drawer", meta: "Physical cash in hand", amount: `₹${stats.cashCollected.toLocaleString()}`, time: "Today's Drawer" },
-        { title: "Online Payments", meta: "UPI, Card, Bank Transfer", amount: `₹${stats.onlineCollected.toLocaleString()}`, time: "Digital Inflow" }
-      ]}
-      shortcuts={["Record Collection", "Settle Pending Dues", "Review Billing Issues"]}
-    />
+    <div className="flex flex-col h-full bg-zinc-50/50 dark:bg-zinc-950/50">
+      {/* HEADER SECTION */}
+      <div className="p-8 pb-4 border-b dark:border-zinc-900 border-zinc-200 bg-white dark:bg-zinc-950 flex flex-col gap-6">
+        <div className="flex flex-col gap-1">
+          <h1 className="text-2xl font-black dark:text-white text-zinc-900 tracking-tight">Revenue Command Center</h1>
+          <p className="text-xs text-zinc-500 font-medium">Monitor incoming payments, receivables, and drawer balances.</p>
+        </div>
+
+        {/* TABS STRIP */}
+        <div ref={tabsRef} className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-thin">
+          {tabs.map((t) => (
+            <button
+              key={t.id}
+              onClick={() => navigate(`/finance/revenue/${t.id}`)}
+              data-active-tab={tab === t.id ? "true" : "false"}
+              className={`flex items-center gap-2 px-4 py-2 text-[10px] font-bold uppercase tracking-widest rounded-xl transition-all border shrink-0 ${
+                tab === t.id
+                  ? 'bg-synos-primary/10 border-synos-primary/30 text-synos-primary shadow-sm shadow-synos-primary/5'
+                  : 'bg-transparent border-transparent text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'
+              }`}
+            >
+              <t.icon className="w-3.5 h-3.5" />
+              {t.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* ACTIVE TAB CONTENT */}
+      <div className="flex-1 overflow-y-auto">
+        {tab === 'overview' && <RevenueOverviewTab stats={stats} />}
+        {tab === 'bills' && <BillsCollectionsScreen />}
+        {tab === 'receivables' && <PendingReceivablesScreen />}
+        {tab === 'history' && <CollectionHistoryScreen />}
+      </div>
+    </div>
   );
 };
+
 
 // --- SHARED COMPONENTS ---
 

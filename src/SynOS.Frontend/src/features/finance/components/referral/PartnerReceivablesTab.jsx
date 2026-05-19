@@ -41,14 +41,16 @@ export const PartnerReceivablesTab = () => {
 
     const groupReceivables = (data) => {
         const groups = {};
+        if (!Array.isArray(data)) return [];
         data.forEach(r => {
+            if (!r || !r.referralPartnerId) return; // Skip if not a referral partner receivable
             if (!groups[r.referralPartnerId]) {
                 groups[r.referralPartnerId] = {
                     partnerId: r.referralPartnerId,
-                    partnerName: r.partnerName,
+                    partnerName: r.partnerName || 'Unknown Partner',
                     totalAmount: 0,
                     billCount: 0,
-                    oldestDate: r.occurredAt,
+                    oldestDate: r.occurredAt || new Date().toISOString(),
                     items: []
                 };
             }
@@ -140,7 +142,7 @@ export const PartnerReceivablesTab = () => {
                                                 </button>
                                                 <div className="flex flex-col">
                                                     <span className="text-sm font-bold dark:text-white text-zinc-900">{partner.partnerName}</span>
-                                                    <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-tighter">PARTNER ID: {partner.partnerId.toString().substring(0, 8)}</span>
+                                                    <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-tighter">PARTNER ID: {partner.partnerId?.toString()?.substring(0, 8) || 'N/A'}</span>
                                                 </div>
                                             </div>
                                         </td>

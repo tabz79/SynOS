@@ -36,6 +36,8 @@ import {
 } from 'lucide-react';
 import { FinanceApi } from '@/api/finance';
 import { cn } from '@/lib/utils';
+import { VendorMasterScreen } from './VendorMasterScreen';
+import { OverheadExpensesScreen } from './OverheadScreens';
 
 // --- SHARED COMPONENTS (Finance Screens Pattern) ---
 
@@ -860,7 +862,7 @@ const ResolvePricingModal = ({ isOpen, onClose, payable, onResolved }) => {
     );
 };
 
-export const OutsourcedPayablesScreen = () => {
+export const OutsourcedPayablesScreen = ({ isTerminal = false }) => {
     const { tab = 'active' } = useParams();
     const navigate = useNavigate();
     const [payables, setPayables] = useState([]);
@@ -909,42 +911,46 @@ export const OutsourcedPayablesScreen = () => {
 
     return (
         <div className="p-6 space-y-6 animate-in fade-in duration-500">
-            <div className="flex flex-col gap-1">
-                <div className="flex items-center justify-between">
-                    <h1 className="text-xl font-bold dark:text-white text-zinc-900 flex items-center gap-2">
-                        <Beaker className="w-5 h-5 text-synos-primary" />
-                        Outsourced Lab Payables
-                    </h1>
-                    <div className="flex items-center gap-1 bg-zinc-100 dark:bg-white/5 p-1 rounded-xl border dark:border-white/10 border-zinc-200">
-                        {['active', 'pricing', 'labs', 'history'].map((t) => (
-                            <button
-                                key={t}
-                                onClick={() => navigate(`/finance/outsourcing/${t}`)}
-                                className={`px-4 py-1.5 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all relative ${
-                                    tab === t 
-                                        ? 'bg-white dark:bg-zinc-800 text-synos-primary shadow-sm shadow-black/5' 
-                                        : 'text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'
-                                }`}
-                            >
-                                {t.replace('-', ' ')}
-                                {t === 'pricing' && stats.pendingPricing > 0 && (
-                                    <span className="absolute -top-1 -right-1 w-4 h-4 bg-rose-500 text-white text-[8px] flex items-center justify-center rounded-full border-2 border-white dark:border-zinc-950 animate-pulse">
-                                        {stats.pendingPricing}
-                                    </span>
-                                )}
-                            </button>
-                        ))}
+            {!isTerminal && (
+                <>
+                    <div className="flex flex-col gap-1">
+                        <div className="flex items-center justify-between">
+                            <h1 className="text-xl font-bold dark:text-white text-zinc-900 flex items-center gap-2">
+                                <Beaker className="w-5 h-5 text-synos-primary" />
+                                Outsourced Lab Payables
+                            </h1>
+                            <div className="flex items-center gap-1 bg-zinc-100 dark:bg-white/5 p-1 rounded-xl border dark:border-white/10 border-zinc-200">
+                                {['active', 'pricing', 'labs', 'history'].map((t) => (
+                                    <button
+                                        key={t}
+                                        onClick={() => navigate(`/finance/outsourcing/${t}`)}
+                                        className={`px-4 py-1.5 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all relative ${
+                                            tab === t 
+                                                ? 'bg-white dark:bg-zinc-800 text-synos-primary shadow-sm shadow-black/5' 
+                                                : 'text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'
+                                        }`}
+                                    >
+                                        {t.replace('-', ' ')}
+                                        {t === 'pricing' && stats.pendingPricing > 0 && (
+                                            <span className="absolute -top-1 -right-1 w-4 h-4 bg-rose-500 text-white text-[8px] flex items-center justify-center rounded-full border-2 border-white dark:border-zinc-950 animate-pulse">
+                                                {stats.pendingPricing}
+                                            </span>
+                                        )}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                        <p className="text-xs text-zinc-500 tracking-tight">Reference lab reconciliation and external test settlement management.</p>
                     </div>
-                </div>
-                <p className="text-xs text-zinc-500 tracking-tight">Reference lab reconciliation and external test settlement management.</p>
-            </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <SummaryCard title="Total Lab Liability" value={stats.totalDue.toLocaleString()} subtitle="Aggregate balance due" />
-                <SummaryCard title="Pending Pricing" value={stats.pendingPricing.toString()} type={stats.pendingPricing > 0 ? 'negative' : 'neutral'} subtitle="Missing Vendor Costs" />
-                <SummaryCard title="Pending Payouts" value={stats.pendingCount.toString()} type="warning" subtitle="Awaiting settlement" />
-                <SummaryCard title="Settled Today" value={stats.settledToday.toLocaleString()} type="positive" subtitle="Confirmed money-out" />
-            </div>
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <SummaryCard title="Total Lab Liability" value={stats.totalDue.toLocaleString()} subtitle="Aggregate balance due" />
+                        <SummaryCard title="Pending Pricing" value={stats.pendingPricing.toString()} type={stats.pendingPricing > 0 ? 'negative' : 'neutral'} subtitle="Missing Vendor Costs" />
+                        <SummaryCard title="Pending Payouts" value={stats.pendingCount.toString()} type="warning" subtitle="Awaiting settlement" />
+                        <SummaryCard title="Settled Today" value={stats.settledToday.toLocaleString()} type="positive" subtitle="Confirmed money-out" />
+                    </div>
+                </>
+            )}
 
             <div className="bg-white dark:bg-zinc-900/20 border dark:border-zinc-800 border-zinc-200 rounded-xl overflow-hidden shadow-sm">
                 <div className="p-4 border-b dark:border-zinc-800 border-zinc-200 flex items-center justify-between bg-zinc-50/50 dark:bg-zinc-900/40">
@@ -1772,3 +1778,358 @@ const ReferenceLabPartnerModal = ({ onClose, onSave, lab }) => {
         </div>
     );
 };
+
+// --- UNIFIED EXPENSES TERMINAL & OVERVIEW TAB ---
+
+export const ExpenseOverviewTab = () => {
+    const [stats, setStats] = useState(null);
+    const [recentExpenses, setRecentExpenses] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const load = async () => {
+            try {
+                setLoading(true);
+                const [prof, payablesSum, overheads, feed] = await Promise.all([
+                    FinanceApi.getProfitabilitySummary().catch(() => ({})),
+                    FinanceApi.getVendorPayablesSummary().catch(() => ({})),
+                    FinanceApi.getOverheadExpenses().catch(() => []),
+                    FinanceApi.getExpenseFeed().catch(() => [])
+                ]);
+
+                const totalOverheadObligation = overheads.reduce((acc, o) => acc + o.amount, 0);
+                const unpaidOverheads = overheads.filter(o => o.status !== 'Settled').reduce((acc, o) => acc + o.amount, 0);
+
+                setStats({
+                    totalPaid: prof.totalExpensesCash || 0,
+                    vendorDue: payablesSum.totalDue || 0,
+                    overheadObligation: totalOverheadObligation,
+                    unpaidOverheads: unpaidOverheads
+                });
+                setRecentExpenses(feed.slice(0, 5));
+            } catch (err) {
+                console.error("Failed to load expense stats:", err);
+            } finally {
+                setLoading(false);
+            }
+        };
+        load();
+    }, []);
+
+    if (loading || !stats) return <div className="py-20 text-center animate-pulse text-zinc-500 font-bold uppercase tracking-widest text-[10px]">Syncing expense ledger...</div>;
+
+    const cards = [
+        { title: "Total Paid Out", value: `₹${stats.totalPaid.toLocaleString()}`, description: "Cash outflow (30 days)" },
+        { title: "Vendor Liability", value: `₹${stats.vendorDue.toLocaleString()}`, type: "negative", description: "Awaiting settlement" },
+        { title: "Active Overheads", value: `₹${stats.overheadObligation.toLocaleString()}`, description: "Total registered monthly template bills" },
+        { title: "Unpaid Overheads", value: `₹${stats.unpaidOverheads.toLocaleString()}`, type: "warning", description: "Due in current billing cycle" }
+    ];
+
+    return (
+        <div className="p-8 space-y-8 animate-in slide-in-from-bottom-4 duration-500">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                {cards.map((card, idx) => (
+                    <div key={idx} className="p-6 bg-white dark:bg-zinc-950 border dark:border-zinc-900 border-zinc-100 rounded-3xl shadow-sm hover:shadow-md transition-all">
+                        <div className="flex justify-between items-start mb-4">
+                            <h3 className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">{card.title}</h3>
+                            {card.type === 'negative' && <ArrowDownRight className="w-4 h-4 text-rose-500 animate-none" />}
+                            {card.type === 'warning' && <Clock className="w-4 h-4 text-amber-500 animate-none" />}
+                        </div>
+                        <p className="text-2xl font-black dark:text-white text-zinc-900 mt-1">{card.value}</p>
+                        <p className="text-[10px] text-zinc-400 mt-2 font-medium">{card.description}</p>
+                    </div>
+                ))}
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div className="lg:col-span-2 bg-white dark:bg-zinc-950 border dark:border-zinc-900 border-zinc-100 rounded-3xl p-8 shadow-sm">
+                    <h2 className="text-lg font-bold dark:text-white text-zinc-900 mb-6">Recent Outflows Feed</h2>
+                    {recentExpenses.length === 0 ? (
+                        <div className="py-16 text-center text-zinc-400 border border-dashed dark:border-zinc-800 rounded-2xl">
+                            <p className="text-xs font-semibold">No recent payouts registered.</p>
+                        </div>
+                    ) : (
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-left text-xs border-collapse">
+                                <thead>
+                                    <tr className="border-b dark:border-zinc-900 border-zinc-100 pb-2 text-[10px] uppercase font-bold text-zinc-400">
+                                        <th className="pb-3">Date</th>
+                                        <th className="pb-3">Description</th>
+                                        <th className="pb-3 text-right">Amount</th>
+                                        <th className="pb-3 text-center">Category</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {recentExpenses.map((t, idx) => (
+                                        <tr key={idx} className="border-b dark:border-zinc-900/50 border-zinc-100/50 last:border-0 hover:bg-zinc-50/50 dark:hover:bg-zinc-900/30 transition-colors">
+                                            <td className="py-3 text-zinc-500">{new Date(t.occurredAt).toLocaleDateString()}</td>
+                                            <td className="py-3 font-semibold dark:text-zinc-200">{t.description || t.notes || 'Operational Payout'}</td>
+                                            <td className="py-3 text-right font-black text-rose-500">₹{t.amount?.toLocaleString()}</td>
+                                            <td className="py-3 text-center">
+                                                <span className="px-2 py-0.5 rounded-full text-[9px] uppercase tracking-wider bg-zinc-100 dark:bg-zinc-800 text-zinc-500 font-bold">
+                                                    {t.sourceType}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    )}
+                </div>
+
+                <div className="bg-white dark:bg-zinc-950 border dark:border-zinc-900 border-zinc-100 rounded-3xl p-8 shadow-sm flex flex-col justify-between">
+                    <div>
+                        <h2 className="text-lg font-bold dark:text-white text-zinc-900 mb-6">Distribution</h2>
+                        <div className="space-y-4">
+                            <div className="p-4 bg-zinc-50 dark:bg-zinc-900/40 rounded-2xl border dark:border-zinc-800/50 border-zinc-200/50">
+                                <div className="flex justify-between items-center">
+                                    <span className="text-xs font-bold text-zinc-500 uppercase">Vendor settlements</span>
+                                    <span className="text-xs font-black dark:text-white">₹{stats.vendorDue.toLocaleString()}</span>
+                                </div>
+                                <div className="w-full bg-zinc-200 dark:bg-zinc-800 h-1.5 rounded-full mt-2 overflow-hidden">
+                                    <div className="bg-synos-primary h-full" style={{ width: '40%' }} />
+                                </div>
+                            </div>
+                            <div className="p-4 bg-zinc-50 dark:bg-zinc-900/40 rounded-2xl border dark:border-zinc-800/50 border-zinc-200/50">
+                                <div className="flex justify-between items-center">
+                                    <span className="text-xs font-bold text-zinc-500 uppercase">Overhead Payables</span>
+                                    <span className="text-xs font-black dark:text-white">₹{stats.unpaidOverheads.toLocaleString()}</span>
+                                </div>
+                                <div className="w-full bg-zinc-200 dark:bg-zinc-800 h-1.5 rounded-full mt-2 overflow-hidden">
+                                    <div className="bg-rose-500 h-full" style={{ width: '60%' }} />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+export const ExpenseTerminal = () => {
+    const { tab = 'overview' } = useParams();
+    const navigate = useNavigate();
+    const tabsRef = React.useRef(null);
+
+    const tabs = [
+        { id: 'overview', label: 'Overview', icon: Settings },
+        { id: 'feed', label: 'Expense Feed', icon: History },
+        { id: 'payables', label: 'Vendor Payables', icon: IndianRupee },
+        { id: 'vendors', label: 'Vendor Master', icon: Building2 },
+        { id: 'daily', label: 'Daily Expenses', icon: Zap },
+        { id: 'overheads', label: 'Monthly Overheads', icon: Calendar }
+    ];
+
+    useEffect(() => {
+        if (tabsRef.current) {
+            const activeTabEl = tabsRef.current.querySelector('[data-active-tab="true"]');
+            if (activeTabEl) {
+                activeTabEl.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+            }
+        }
+    }, [tab]);
+
+    return (
+        <div className="flex flex-col h-full bg-zinc-50/50 dark:bg-zinc-950/50">
+            {/* HEADER SECTION */}
+            <div className="p-8 pb-4 border-b dark:border-zinc-900 border-zinc-200 bg-white dark:bg-zinc-950 flex flex-col gap-6">
+                <div className="flex flex-col gap-1">
+                    <h1 className="text-2xl font-black dark:text-white text-zinc-900 tracking-tight flex items-center gap-2">
+                        <TrendingDown className="w-6 h-6 text-synos-primary animate-none" />
+                        Expenses Command Center
+                    </h1>
+                    <p className="text-xs text-zinc-500 font-medium">Audit and register daily spending, vendor payouts, and recurring overheads.</p>
+                </div>
+
+                {/* TABS STRIP */}
+                <div ref={tabsRef} className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-thin">
+                    {tabs.map((t) => (
+                        <button
+                            key={t.id}
+                            onClick={() => navigate(`/finance/expenses/${t.id}`)}
+                            data-active-tab={tab === t.id ? "true" : "false"}
+                            className={`flex items-center gap-2 px-4 py-2 text-[10px] font-bold uppercase tracking-widest rounded-xl transition-all border shrink-0 ${
+                                tab === t.id
+                                    ? 'bg-synos-primary/10 border-synos-primary/30 text-synos-primary shadow-sm shadow-synos-primary/5'
+                                    : 'bg-transparent border-transparent text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'
+                            }`}
+                        >
+                            <t.icon className="w-3.5 h-3.5" />
+                            {t.label}
+                        </button>
+                    ))}
+                </div>
+            </div>
+
+            {/* ACTIVE TAB CONTENT */}
+            <div className="flex-1 overflow-y-auto">
+                {tab === 'overview' && <ExpenseOverviewTab />}
+                {tab === 'feed' && <ExpenseFeedScreen />}
+                {tab === 'payables' && <VendorPayablesScreen />}
+                {tab === 'vendors' && <VendorMasterScreen />}
+                {tab === 'daily' && <DailyExpensesScreen />}
+                {tab === 'overheads' && <OverheadExpensesScreen />}
+            </div>
+        </div>
+    );
+};
+
+// --- UNIFIED OUTSOURCED TESTS TERMINAL & OVERVIEW TAB ---
+
+export const OutsourcingOverviewTab = () => {
+    const [stats, setStats] = useState(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const load = async () => {
+            try {
+                setLoading(true);
+                const payables = await FinanceApi.getOutsourcedPayables().catch(() => []);
+                const calculatedStats = {
+                    totalDue: payables.reduce((acc, p) => acc + (p.amountDue - p.amountPaid), 0),
+                    pendingCount: payables.filter(p => p.status === 'Pending' || p.status === 'PartiallyPaid').length,
+                    pendingPricing: payables.filter(p => p.status === 'PendingPricing').length,
+                    settledToday: payables.filter(p => p.status === 'Settled' && new Date(p.settledAt).toDateString() === new Date().toDateString())
+                        .reduce((acc, p) => acc + p.amountPaid, 0),
+                    recent: payables.slice(0, 5)
+                };
+                setStats(calculatedStats);
+            } catch (err) {
+                console.error("Failed to load outsourced stats:", err);
+            } finally {
+                setLoading(false);
+            }
+        };
+        load();
+    }, []);
+
+    if (loading || !stats) return <div className="py-20 text-center animate-pulse text-zinc-500 font-bold uppercase tracking-widest text-[10px]">Syncing reference lab ledger...</div>;
+
+    const cards = [
+        { title: "Total Lab Liability", value: `₹${stats.totalDue.toLocaleString()}`, description: "Aggregate balance due" },
+        { title: "Pending Pricing", value: stats.pendingPricing.toString(), type: stats.pendingPricing > 0 ? "negative" : "neutral", description: "Missing Vendor Costs" },
+        { title: "Pending Payouts", value: stats.pendingCount.toString(), type: "warning", description: "Awaiting settlement" },
+        { title: "Settled Today", value: `₹${stats.settledToday.toLocaleString()}`, type: "positive", description: "Confirmed money-out" }
+    ];
+
+    return (
+        <div className="p-8 space-y-8 animate-in slide-in-from-bottom-4 duration-500">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                {cards.map((card, idx) => (
+                    <div key={idx} className="p-6 bg-white dark:bg-zinc-950 border dark:border-zinc-900 border-zinc-100 rounded-3xl shadow-sm hover:shadow-md transition-all">
+                        <div className="flex justify-between items-start mb-4">
+                            <h3 className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">{card.title}</h3>
+                            {card.type === 'negative' && <ArrowDownRight className="w-4 h-4 text-rose-500 animate-none" />}
+                            {card.type === 'warning' && <Clock className="w-4 h-4 text-amber-500 animate-none" />}
+                            {card.type === 'positive' && <ArrowUpRight className="w-4 h-4 text-emerald-500 animate-none" />}
+                        </div>
+                        <p className="text-2xl font-black dark:text-white text-zinc-900 mt-1">{card.value}</p>
+                        <p className="text-[10px] text-zinc-400 mt-2 font-medium">{card.description}</p>
+                    </div>
+                ))}
+            </div>
+
+            <div className="bg-white dark:bg-zinc-950 border dark:border-zinc-900 border-zinc-100 rounded-3xl p-8 shadow-sm">
+                <h2 className="text-lg font-bold dark:text-white text-zinc-900 mb-6">Recent Lab Referrals</h2>
+                {stats.recent.length === 0 ? (
+                    <div className="py-16 text-center text-zinc-400 border border-dashed dark:border-zinc-800 rounded-2xl">
+                        <p className="text-xs font-semibold">No recent outsourced patient referrals.</p>
+                    </div>
+                ) : (
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-left text-xs border-collapse">
+                            <thead>
+                                <tr className="border-b dark:border-zinc-900 border-zinc-100 pb-2 text-[10px] uppercase font-bold text-zinc-400">
+                                    <th className="pb-3">Reference Lab</th>
+                                    <th className="pb-3">Patient</th>
+                                    <th className="pb-3">Test</th>
+                                    <th className="pb-3 text-right">Balance Due</th>
+                                    <th className="pb-3 text-center">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {stats.recent.map((p, idx) => (
+                                    <tr key={idx} className="border-b dark:border-zinc-900/50 border-zinc-100/50 last:border-0 hover:bg-zinc-50/50 dark:hover:bg-zinc-900/30 transition-colors">
+                                        <td className="py-3 font-semibold dark:text-zinc-200">{p.referenceLabName}</td>
+                                        <td className="py-3 text-zinc-500">{p.patientName}</td>
+                                        <td className="py-3 dark:text-zinc-400">{p.testName}</td>
+                                        <td className="py-3 text-right font-black text-rose-500">₹{(p.amountDue - p.amountPaid).toLocaleString()}</td>
+                                        <td className="py-3 text-center">
+                                            <StatusBadge status={p.status} />
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+};
+
+export const OutsourcingTerminal = () => {
+    const { tab = 'overview' } = useParams();
+    const navigate = useNavigate();
+    const tabsRef = React.useRef(null);
+
+    const tabs = [
+        { id: 'overview', label: 'Overview', icon: Settings },
+        { id: 'active', label: 'Active Outsourced', icon: Beaker },
+        { id: 'pricing', label: 'Pending Pricing', icon: AlertCircle },
+        { id: 'labs', label: 'Reference Labs', icon: Building2 },
+        { id: 'history', label: 'Settlement History', icon: History }
+    ];
+
+    useEffect(() => {
+        if (tabsRef.current) {
+            const activeTabEl = tabsRef.current.querySelector('[data-active-tab="true"]');
+            if (activeTabEl) {
+                activeTabEl.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+            }
+        }
+    }, [tab]);
+
+    return (
+        <div className="flex flex-col h-full bg-zinc-50/50 dark:bg-zinc-950/50">
+            {/* HEADER SECTION */}
+            <div className="p-8 pb-4 border-b dark:border-zinc-900 border-zinc-200 bg-white dark:bg-zinc-950 flex flex-col gap-6">
+                <div className="flex flex-col gap-1">
+                    <h1 className="text-2xl font-black dark:text-white text-zinc-900 tracking-tight flex items-center gap-2">
+                        <Beaker className="w-6 h-6 text-synos-primary animate-none" />
+                        Outsourced Lab Payables
+                    </h1>
+                    <p className="text-xs text-zinc-500 font-medium">Reference lab reconciliation and external test settlement management.</p>
+                </div>
+
+                {/* TABS STRIP */}
+                <div ref={tabsRef} className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-thin">
+                    {tabs.map((t) => (
+                        <button
+                            key={t.id}
+                            onClick={() => navigate(`/finance/outsourcing/${t.id}`)}
+                            data-active-tab={tab === t.id ? "true" : "false"}
+                            className={`flex items-center gap-2 px-4 py-2 text-[10px] font-bold uppercase tracking-widest rounded-xl transition-all border shrink-0 ${
+                                tab === t.id
+                                    ? 'bg-synos-primary/10 border-synos-primary/30 text-synos-primary shadow-sm shadow-synos-primary/5'
+                                    : 'bg-transparent border-transparent text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'
+                            }`}
+                        >
+                            <t.icon className="w-3.5 h-3.5" />
+                            {t.label}
+                        </button>
+                    ))}
+                </div>
+            </div>
+
+            {/* ACTIVE TAB CONTENT */}
+            <div className="flex-1 overflow-y-auto">
+                {tab === 'overview' && <OutsourcingOverviewTab />}
+                {tab !== 'overview' && <OutsourcedPayablesScreen isTerminal={true} />}
+            </div>
+        </div>
+    );
+};
+

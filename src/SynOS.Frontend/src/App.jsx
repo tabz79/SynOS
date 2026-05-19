@@ -17,13 +17,13 @@ import { ImsRoleMappingScreen } from '@/features/admin/ImsRoleMappingScreen'
 import { InventoryTerminal } from '@/features/inventory/InventoryTerminal'
 import { FinanceLayout } from '@/features/finance/FinanceLayout'
 import { FinanceOverview } from '@/features/finance/FinanceOverview'
-import { BillsCollectionsScreen, PendingReceivablesScreen, CollectionHistoryScreen, RevenueOverview } from '@/features/finance/RevenueScreens'
-import { ExpenseFeedScreen, VendorPayablesScreen, DailyExpensesScreen, OutsourcedPayablesScreen } from '@/features/finance/ExpenseScreens'
+import { RevenueTerminal } from '@/features/finance/RevenueScreens'
+import { ExpenseTerminal, OutsourcingTerminal } from '@/features/finance/ExpenseScreens'
 import { VendorMasterScreen } from '@/features/finance/VendorMasterScreen'
 import { OverheadExpensesScreen } from '@/features/finance/OverheadScreens'
 import { IntelligenceDashboard } from '@/features/finance/IntelligenceScreens'
 import { ReferralTerminal } from '@/features/finance/ReferralTerminal'
-import { StaffRegistryScreen, IdentityProvisioningScreen, SalaryProcessingScreen, PayrollHistoryScreen, AdvancesDeductionsScreen, AttendanceLeavesScreen } from '@/features/finance/WorkforceScreens' // UPDATED
+import { WorkforceTerminal } from '@/features/finance/WorkforceScreens'
 import { StaffLayout } from '@/features/employee/StaffLayout'
 import { MyHRDashboard } from '@/features/employee/MyHRDashboard'
 import { LeaveApplication } from '@/features/employee/LeaveApplication'
@@ -166,33 +166,22 @@ function App() {
               }>
                 <Route path="/finance" element={<FinanceOverview />} />
                 {/* Revenue Department */}
-                <Route path="/finance/revenue" element={<RevenueOverview />} />
-                <Route path="/finance/revenue/bills" element={<BillsCollectionsScreen />} />
-                <Route path="/finance/revenue/receivables" element={<PendingReceivablesScreen />} />
-                <Route path="/finance/revenue/history" element={<CollectionHistoryScreen />} />
+                <Route path="/finance/revenue" element={<RevenueTerminal />} />
+                <Route path="/finance/revenue/:tab" element={<RevenueTerminal />} />
                 
                 {/* Expense Department */}
-                <Route path="/finance/expenses" element={<Navigate to="/finance/expenses/feed" replace />} />
-                <Route path="/finance/expenses/feed" element={<ExpenseFeedScreen />} />
-                <Route path="/finance/expenses/payables" element={<VendorPayablesScreen />} />
-                <Route path="/finance/expenses/vendors" element={<VendorMasterScreen />} />
-                <Route path="/finance/expenses/daily" element={<DailyExpensesScreen />} />
-                <Route path="/finance/expenses/overheads" element={<OverheadExpensesScreen />} />
-                <Route path="/finance/outsourcing" element={<OutsourcedPayablesScreen />} />
-                <Route path="/finance/outsourcing/:tab" element={<OutsourcedPayablesScreen />} />
+                <Route path="/finance/expenses" element={<ExpenseTerminal />} />
+                <Route path="/finance/expenses/:tab" element={<ExpenseTerminal />} />
+                <Route path="/finance/outsourcing" element={<OutsourcingTerminal />} />
+                <Route path="/finance/outsourcing/:tab" element={<OutsourcingTerminal />} />
 
                 {/* Referral Department */}
                 <Route path="/finance/referrals" element={<ReferralTerminal />} />
                 <Route path="/finance/referrals/:tab" element={<ReferralTerminal />} />
 
                 {/* Workforce & Payroll Department */}
-                <Route path="/finance/workforce" element={<Navigate to="/finance/workforce/staff" replace />} />
-                <Route path="/finance/workforce/staff" element={<StaffRegistryScreen />} />
-                <Route path="/finance/workforce/identity" element={<IdentityProvisioningScreen />} />
-                <Route path="/finance/workforce/attendance" element={<AttendanceLeavesScreen />} />
-                <Route path="/finance/workforce/process" element={<SalaryProcessingScreen />} />
-                <Route path="/finance/workforce/history" element={<PayrollHistoryScreen />} />
-                <Route path="/finance/workforce/adjustments" element={<AdvancesDeductionsScreen />} />
+                <Route path="/finance/workforce" element={<WorkforceTerminal />} />
+                <Route path="/finance/workforce/:tab" element={<WorkforceTerminal />} />
 
                 {/* Intelligence Department */}
                 <Route path="/finance/intelligence" element={<IntelligenceDashboard />} />
