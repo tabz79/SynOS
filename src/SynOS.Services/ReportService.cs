@@ -16,6 +16,7 @@ using SynOS.Services.Operations;
 using SynOS.Services.Security;
 using SynOS.Services.Storage;
 using SynOS.Services.Forensic;
+using SynOS.Models.Domain;
 
 namespace SynOS.Services
 {
@@ -64,20 +65,8 @@ namespace SynOS.Services
             var report = await _context.Reports.FirstOrDefaultAsync(r => r.ReportId == reportId);
             if (report == null) throw new KeyNotFoundException();
 
-            // Always pull fresh truth for draft snapshots
-            var reportData = await GetReportDataForPdfAsync(report.ReportId, forceLive: true);
             if (report.Status != "Draft")
                 throw new BadHttpRequestException($"Cannot submit report with status {report.Status}. Must be Draft.");
-
-            if (reportData != null)
-            {
-                var jsonOptions = new System.Text.Json.JsonSerializerOptions
-                {
-                    PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase,
-                    DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
-                };
-                report.DraftSnapshotJson = System.Text.Json.JsonSerializer.Serialize(reportData, jsonOptions);
-            }
 
             // 2. Capture Formal Version & Structure Snapshot (Frozen state for Editor/Detail view)
             if (report.CurrentVersion == 0) report.CurrentVersion = 1;
@@ -332,17 +321,52 @@ namespace SynOS.Services
                 report.SignedByUserId = signedByUserId;
                 report.SignedAt = timestamp;
 
-                // Sync Final Snapshot for PDF consistency
-                var jsonOptions = new System.Text.Json.JsonSerializerOptions
-                {
-                    PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase,
-                    DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
-                };
+                var reportVersion = await _context.ReportVersions
+                    .Include(rv => rv.Snapshot)
+                    .FirstOrDefaultAsync(rv => rv.ReportId == reportId && rv.VersionNumber == requestedVersion);
 
-                var finalData = await GetReportDataForPdfAsync(report.ReportId, forceLive: true);
-                if (finalData != null)
+                if (reportVersion != null)
                 {
-                    report.FinalSnapshotJson = System.Text.Json.JsonSerializer.Serialize(finalData, jsonOptions);
+                    var domainState = structure.ToDomain();
+                    domainState.Status = "Signed";
+                    domainState.SignedAt = timestamp;
+                    domainState.SignedBy = user.Name;
+
+                    domainState.Signatures = new List<SignatureState>
+                    {
+                        new SignatureState
+                        {
+                            Name = user.Name,
+                            Designation = user.Designation,
+                            SignatureImageUrl = user.SignatureImageUrl,
+                            Hash = signatureImageHash,
+                            SignedAt = timestamp
+                        }
+                    };
+
+                    domainState.Verification = new VerificationState
+                    {
+                        QrCodeContent = $"https://synos.com/verify/{report.ReportId}",
+                        ReportVersion = requestedVersion,
+                        VersionHash = contentHash,
+                        Status = "SIGNED"
+                    };
+
+                    var updatedJson = System.Text.Json.JsonSerializer.Serialize(domainState);
+                    if (reportVersion.Snapshot != null)
+                    {
+                        reportVersion.Snapshot.SnapshotJson = updatedJson;
+                    }
+                    else
+                    {
+                        var snapshot = new ReportSnapshot
+                        {
+                            ReportVersionId = reportVersion.ReportVersionId,
+                            SnapshotJson = updatedJson,
+                            CreatedAt = timestamp
+                        };
+                        _context.ReportSnapshots.Add(snapshot);
+                    }
                 }
 
                 await _context.SaveChangesAsync();
@@ -613,49 +637,66 @@ namespace SynOS.Services
 
             // 1. DETERMINE DATA SOURCE (GPT-5 Rule: Lifecycle-Aware Truth)
             bool isLocked = report.Status == "Signed" || report.Status == "ManualVerified";
-            
-            // Snapshot Prioritization Logic (GPT-5 Rule: forceLive ALWAYS wins)
+                       // Snapshot Prioritization Logic (GPT-5 Rule: forceLive ALWAYS wins)
             string? snapshotJson = null;
             if (!forceLive)
             {
-                // If NOT forceLive, we prefer snapshots for efficiency or forensic integrity
-                snapshotJson = !string.IsNullOrEmpty(report.FinalSnapshotJson) ? report.FinalSnapshotJson : 
-                              (!string.IsNullOrEmpty(report.DraftSnapshotJson) ? report.DraftSnapshotJson : null);
+                var latestVersion = await _context.ReportVersions
+                    .Include(rv => rv.Snapshot)
+                    .Where(rv => rv.ReportId == reportId)
+                    .OrderByDescending(rv => rv.VersionNumber)
+                    .FirstOrDefaultAsync();
+
+                if (latestVersion?.Snapshot != null)
+                {
+                    snapshotJson = latestVersion.Snapshot.SnapshotJson;
+                }
             }
 
             if (snapshotJson != null)
             {
                 try
                 {
-                    // Peek version (Lenient GPT-5 Detection: If it looks like V2, it IS V2)
                     using var doc = JsonDocument.Parse(snapshotJson);
-                    bool isV2 = doc.RootElement.TryGetProperty("Metadata", out _) || 
-                                doc.RootElement.TryGetProperty("metadata", out _) ||
-                                doc.RootElement.TryGetProperty("Results", out _) ||
-                                doc.RootElement.TryGetProperty("results", out _);
-                    
-                    var jsonOptions = new System.Text.Json.JsonSerializerOptions
-                    {
-                        PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase,
-                        PropertyNameCaseInsensitive = true,
-                        DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
-                    };
+                    bool isDomainState = doc.RootElement.TryGetProperty("columnDefinitions", out _) || 
+                                         doc.RootElement.TryGetProperty("ColumnDefinitions", out _);
+                    bool isDtoState = doc.RootElement.TryGetProperty("Groups", out _) || 
+                                      doc.RootElement.TryGetProperty("groups", out _);
 
-                    if (isV2)
+                    if (isDomainState)
                     {
-                        // CASE-AWARE DESERIALIZATION: Handles both legacy Pascal and modern camelCase
+                        var domainState = System.Text.Json.JsonSerializer.Deserialize<ClinicalReportState>(snapshotJson);
+                        if (domainState != null)
+                        {
+                            var mapped = await MapDomainToReportDataModelAsync(domainState, report, order);
+                            mapped.Metadata.GeneratedFrom = "snapshot";
+                            return mapped;
+                        }
+                    }
+                    else if (isDtoState)
+                    {
+                        var dtoState = System.Text.Json.JsonSerializer.Deserialize<ReportStructureDto>(snapshotJson);
+                        if (dtoState != null)
+                        {
+                            var mapped = await MapDomainToReportDataModelAsync(dtoState.ToDomain(), report, order);
+                            mapped.Metadata.GeneratedFrom = "snapshot-dto-converted";
+                            return mapped;
+                        }
+                    }
+                    else
+                    {
+                        var jsonOptions = new System.Text.Json.JsonSerializerOptions
+                        {
+                            PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase,
+                            PropertyNameCaseInsensitive = true,
+                            DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
+                        };
                         var v2Data = System.Text.Json.JsonSerializer.Deserialize<ReportDataModel>(snapshotJson, jsonOptions);
                         if (v2Data != null)
                         {
                             v2Data.Metadata.GeneratedFrom = "snapshot";
                             return v2Data;
                         }
-                    }
-                    else
-                    {
-                        // FALLBACK: Legacy V1 detected. Map to V2 in-memory.
-                        var v1Data = JsonSerializer.Deserialize<LegacyReportDataModel>(snapshotJson);
-                        if (v1Data != null) return MapLegacyToV2(v1Data, report, order);
                     }
                 }
                 catch (Exception ex)
@@ -673,6 +714,136 @@ namespace SynOS.Services
 
             // 2. LIVE TRUTH FACTORY (For Drafts or Corrupted Snapshots)
             return await BuildReportDataModelV2Async(report, order, forceLive);
+        }
+
+        private async Task<ReportDataModel> MapDomainToReportDataModelAsync(ClinicalReportState domain, Report report, Order order)
+        {
+            var now = DateTimeOffset.UtcNow;
+            
+            var specimen = await _context.Specimens
+                .AsNoTracking()
+                .FirstOrDefaultAsync(s => s.SpecimenId == order.SpecimenId);
+                
+            var labProfile = await _context.LabProfiles.AsNoTracking().FirstOrDefaultAsync() ?? new LabProfile 
+            { 
+                Name = "SynOS Laboratory", 
+                Address = "Default Address",
+                FooterDisclaimer = "* Clinical correlation required."
+            };
+
+            var model = new ReportDataModel
+            {
+                Lab = new LabDetails
+                {
+                    Name = labProfile.Name,
+                    Subtitle = labProfile.Tagline ?? "Enterprise Lab Intelligence System",
+                    Address = labProfile.Address,
+                    Email = labProfile.Email,
+                    Website = labProfile.Website,
+                    Phone = labProfile.Phone,
+                    Accreditation = labProfile.Accreditation ?? string.Empty,
+                    FooterDisclaimer = labProfile.FooterDisclaimer,
+                    LogoUrl = labProfile.HeaderLogoUrl
+                },
+                Metadata = new ReportMetadata
+                {
+                    ContractVersion = 2,
+                    GeneratedFrom = "snapshot",
+                    IsDraft = domain.Status != "Signed",
+                    GeneratedAt = now,
+                    GeneratedAtFormatted = now.ToString("dd MMM yyyy, hh:mm tt"),
+                    SampleCollectedAt = specimen?.CollectedAt,
+                    SampleCollectedAtFormatted = (specimen != null && specimen.CollectedAt.HasValue) 
+                        ? specimen.CollectedAt.Value.ToString("dd MMM yyyy, hh:mm tt") 
+                        : "N/A",
+                    SampleReceivedAt = specimen?.CreatedAt,
+                    SampleReceivedAtFormatted = specimen != null 
+                        ? specimen.CreatedAt.ToString("dd MMM yyyy, hh:mm tt") 
+                        : "N/A",
+                    ReferenceDoctor = order.Visit?.Referrer?.ProviderName ?? "Self / Walk-in",
+                    BillingDateFormatted = order.Visit?.CreatedAt.ToString("dd-MMM-yyyy") ?? "N/A",
+                    PreparedBy = report.TypedByUser?.Name ?? "N/A"
+                },
+                Modality = domain.Department,
+                ReportTitle = $"{domain.Department} Diagnostic Report",
+                Patient = new PatientInfo
+                {
+                    PatientId = domain.Patient.MRN,
+                    Name = domain.Patient.Name,
+                    DateOfBirth = domain.Patient.DateOfBirth ?? "N/A",
+                    Gender = domain.Patient.Gender,
+                    ContactInfo = domain.Patient.Phone ?? "N/A"
+                },
+                Results = domain.Results.Select(g => new ResultGroup
+                {
+                    GroupName = g.GroupName,
+                    Sequence = g.Sequence,
+                    Parameters = g.Parameters.Select((p, idx) => new ParameterResult
+                    {
+                        Name = p.Name,
+                        Code = p.Code,
+                        Value = p.Value,
+                        DisplayValue = p.Value,
+                        Unit = p.Unit,
+                        ReferenceRangeText = p.ReferenceRangeText,
+                        Flag = (p.Flag == "Normal" || string.IsNullOrEmpty(p.Flag)) ? null : p.Flag,
+                        IsAbnormal = p.IsAbnormal,
+                        Sequence = idx,
+                        Method = p.Method
+                    }).ToList()
+                }).ToList(),
+                Comments = domain.Comments,
+                Interpretation = domain.Interpretation,
+                Recommendations = domain.Recommendations,
+                Signatures = domain.Signatures.Select(s => new ReportSignatureDetails
+                {
+                    DoctorName = s.Name,
+                    Credentials = s.Designation,
+                    Role = s.Designation.Contains("Director") ? "Chief Pathologist / Director" : "Pathologist",
+                    SignedAt = s.SignedAt,
+                    Hash = s.Hash,
+                    Version = domain.Verification.ReportVersion
+                }).ToList(),
+                Verification = new VerificationInfo
+                {
+                    QrCodeContent = domain.Verification.QrCodeContent,
+                    ReportVersion = domain.Verification.ReportVersion,
+                    VersionHash = domain.Verification.VersionHash,
+                    Status = domain.Verification.Status
+                }
+            };
+
+            foreach (var sig in model.Signatures)
+            {
+                var domainSig = domain.Signatures.FirstOrDefault(s => s.Name == sig.DoctorName);
+                if (domainSig != null && !string.IsNullOrEmpty(domainSig.SignatureImageUrl))
+                {
+                    try
+                    {
+                        using var stream = await _fileStorageService.GetFileStreamAsync(domainSig.SignatureImageUrl);
+                        using var ms = new MemoryStream();
+                        await stream.CopyToAsync(ms);
+                        var bytes = ms.ToArray();
+                        sig.SignatureImage = bytes;
+                        sig.SignatureImageBase64 = Convert.ToBase64String(bytes);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning(ex, "Failed to load signature image in mapping: {Path}", domainSig.SignatureImageUrl);
+                    }
+                }
+            }
+
+            if (domain.ColumnDefinitions != null && domain.ColumnDefinitions.Any())
+            {
+                model.ParameterTableConfig = new SynOS.Models.DTOs.ReportTemplateDsl.ParameterTableConfig
+                {
+                    VisibleColumns = domain.ColumnDefinitions.Select(c => c.Code).ToList(),
+                    ColumnWeights = domain.ColumnDefinitions.Select(c => c.Weight).ToList()
+                };
+            }
+
+            return model;
         }
 
         private async Task<ReportDataModel> BuildReportDataModelV2Async(Report report, Order order, bool forceLive = false)
@@ -934,6 +1105,34 @@ namespace SynOS.Services
                     Status = report.Status == "Signed" ? "SIGNED" : "PENDING" // GPT-5 Rule: Status-driven
                 }
             };
+
+            // Fetch default template configuration and set ParameterTableConfig
+            try
+            {
+                var template = await _context.ReportTemplates
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(t => t.Modality == order.Department && t.IsDefault)
+                    ?? await _context.ReportTemplates.AsNoTracking().FirstOrDefaultAsync(t => t.IsDefault);
+
+                if (template != null)
+                {
+                    var templateModel = System.Text.Json.JsonSerializer.Deserialize<SynOS.Models.DTOs.ReportTemplateDsl.TemplateModel>(template.TemplateJson);
+                    if (templateModel?.Sections != null)
+                    {
+                        var parameterTableSection = templateModel.Sections
+                            .FirstOrDefault(s => s.Type == "ParameterTable");
+                        if (parameterTableSection != null)
+                        {
+                            var tableConfig = System.Text.Json.JsonSerializer.Deserialize<SynOS.Models.DTOs.ReportTemplateDsl.ParameterTableConfig>(parameterTableSection.Config.GetRawText());
+                            model.ParameterTableConfig = tableConfig;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to load default report template for table config.");
+            }
 
             return model;
         }

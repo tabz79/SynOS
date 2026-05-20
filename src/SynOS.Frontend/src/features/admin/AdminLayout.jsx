@@ -10,6 +10,7 @@ import {
     UserCheck, 
     Truck, 
     Box, 
+    Layout,
     IndianRupee, 
     Users, 
     Settings2, 
@@ -41,8 +42,9 @@ export function AdminLayout() {
     ];
 
     const standaloneItems = [
+        { name: "Test Master", icon: Settings2, path: "/admin/test-master" },
+        { name: "Report Templates", icon: Layout, path: "/admin/report-templates" },
         { name: "Inventory Setup", icon: Box, path: "/admin/inventory/setup" },
-        { name: "Lab Setup", icon: Settings2, path: "/admin/setup", disabled: true },
         { name: "Staff Master", icon: Users, path: "/admin/staff", disabled: true },
         { name: "Intelligence", icon: BarChart3, path: "/admin/intelligence", disabled: true },
         { name: "System Settings", icon: Settings, path: "/admin/settings", disabled: true },

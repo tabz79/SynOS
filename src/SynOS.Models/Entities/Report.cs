@@ -63,6 +63,10 @@ namespace SynOS.Models.Entities
         public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
         public DateTimeOffset? UpdatedAt { get; set; }
 
+        public Guid? SupersededReportId { get; set; }
+        [ForeignKey("SupersededReportId")]
+        public virtual Report? SupersededReport { get; set; }
+
         public virtual Visit? Visit { get; set; }
 
         // Navigation property for Radiology-specific report details (1-1 relationship)

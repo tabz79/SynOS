@@ -30,6 +30,35 @@ export const ReportA4 = ({ reportData }) => {
     return flag.charAt(0);
   };
 
+  const visibleColumns = reportData.parameterTableConfig?.visibleColumns || ["Parameter", "Value", "Unit", "ReferenceRange"];
+  const columnWeights = reportData.parameterTableConfig?.columnWeights || [3, 2, 1, 3];
+  const totalWeight = columnWeights.reduce((sum, w) => sum + w, 0);
+
+  const getColWidthStyle = (index) => {
+    const weight = columnWeights[index] || 1;
+    return { width: `${(weight / totalWeight) * 100}%` };
+  };
+
+  const getColHeaderName = (col) => {
+    switch (col) {
+      case "Parameter": return "Test Name";
+      case "Value": return "Results";
+      case "Unit": return "Unit";
+      case "ReferenceRange": return "Normal Range";
+      default: return col;
+    }
+  };
+
+  const getAlignClass = (col) => {
+    switch (col) {
+      case "Parameter": return "text-left";
+      case "Value": return "text-center";
+      case "Unit": return "text-center";
+      case "ReferenceRange": return "text-right";
+      default: return "text-left";
+    }
+  };
+
   return (
     <div id="printable-report" className="mx-auto bg-white text-black font-sans w-[210mm] min-h-[297mm] print:min-h-0 relative selection:bg-none print:m-0 print:p-0">
       
@@ -81,9 +110,11 @@ export const ReportA4 = ({ reportData }) => {
         <table className="w-full border-collapse">
           <thead>
             <tr className="border-t border-b border-black text-[11px] font-bold uppercase">
-              <th className="py-1 text-left w-[45%]">Test Name</th>
-              <th className="py-1 text-center w-[20%]">Results</th>
-              <th className="py-1 text-right w-[35%]">Normal Range</th>
+              {visibleColumns.map((col, idx) => (
+                <th key={col} className={`py-1 ${getAlignClass(col)}`} style={getColWidthStyle(idx)}>
+                  {getColHeaderName(col)}
+                </th>
+              ))}
             </tr>
           </thead>
           <tbody className="text-[12px]">
@@ -91,23 +122,46 @@ export const ReportA4 = ({ reportData }) => {
               <Fragment key={(group.groupName || 'NoGroup') + group.sequence}>
                 {/* Group Header */}
                 <tr>
-                  <td colSpan="3" className="pt-4 pb-1 font-bold text-black border-none uppercase underline underline-offset-2">
+                  <td colSpan={visibleColumns.length} className="pt-4 pb-1 font-bold text-black border-none uppercase underline underline-offset-2">
                     {group.groupName}
                   </td>
                 </tr>
                 {/* Parameters */}
                 {group.parameters?.map((param) => (
                   <tr key={param.code + param.sequence} className="break-inside-avoid">
-                    <td className="py-1 pr-2">
-                       <span className="font-medium uppercase">{param.name}</span>
-                       {param.method && <div className="text-[9px] text-zinc-500 italic lowercase print:hidden">Method: {param.method}</div>}
-                    </td>
-                    <td className={`py-1 text-center ${param.isAbnormal ? 'font-black text-[13px] border-b border-zinc-200' : 'font-semibold'}`}>
-                      {param.displayValue} {param.unit}
-                    </td>
-                    <td className="py-1 text-right font-medium">
-                      {param.referenceRangeText}
-                    </td>
+                    {visibleColumns.map((col, idx) => {
+                      if (col === "Parameter") {
+                        return (
+                          <td key={col} className="py-1 pr-2 text-left" style={getColWidthStyle(idx)}>
+                             <span className="font-medium uppercase">{param.name}</span>
+                             {param.method && <div className="text-[9px] text-zinc-500 italic lowercase print:hidden">Method: {param.method}</div>}
+                          </td>
+                        );
+                      }
+                      if (col === "Value") {
+                        const showSeparateUnit = visibleColumns.includes("Unit");
+                        return (
+                          <td key={col} className={`py-1 text-center ${param.isAbnormal ? 'font-black text-[13px] border-b border-zinc-200' : 'font-semibold'}`} style={getColWidthStyle(idx)}>
+                            {param.displayValue || param.value} {!showSeparateUnit && param.unit}
+                          </td>
+                        );
+                      }
+                      if (col === "Unit") {
+                        return (
+                          <td key={col} className="py-1 text-center font-medium text-zinc-600" style={getColWidthStyle(idx)}>
+                            {param.unit}
+                          </td>
+                        );
+                      }
+                      if (col === "ReferenceRange") {
+                        return (
+                          <td key={col} className="py-1 text-right font-medium" style={getColWidthStyle(idx)}>
+                            {param.referenceRangeText || param.referenceRange}
+                          </td>
+                        );
+                      }
+                      return <td key={col} className="py-1" style={getColWidthStyle(idx)}></td>;
+                    })}
                   </tr>
                 ))}
               </Fragment>

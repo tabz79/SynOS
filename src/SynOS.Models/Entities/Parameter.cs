@@ -38,6 +38,9 @@ namespace SynOS.Models.Entities
         public DateTimeOffset UpdatedAt { get; set; } = DateTimeOffset.UtcNow; // Added
 
         // Navigation Property
+        [ForeignKey("ParameterCode")]
+        public virtual ParameterMaster? ParameterMaster { get; set; }
+
         public virtual ICollection<ReferenceRange> ReferenceRanges { get; set; } = new List<ReferenceRange>();
     }
 }

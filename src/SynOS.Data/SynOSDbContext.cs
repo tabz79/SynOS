@@ -243,6 +243,13 @@ namespace SynOS.Data
         public DbSet<SynOS.Models.Entities.Governance.Assignment> Assignments { get; set; }
         public DbSet<SynOS.Models.Entities.Governance.ApprovalRule> ApprovalRules { get; set; }
 
+        // Report Governance DbSets
+        public DbSet<ParameterMaster> ParameterMasters { get; set; } = null!;
+        public DbSet<DerivedParameterRule> DerivedParameterRules { get; set; } = null!;
+        public DbSet<AnalyzerParameterMap> AnalyzerParameterMaps { get; set; } = null!;
+        public DbSet<RangeProfile> RangeProfiles { get; set; } = null!;
+        public DbSet<RangeCondition> RangeConditions { get; set; } = null!;
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -1445,6 +1452,67 @@ modelBuilder.Entity<ReceivableFact>(entity =>
                 entity.HasOne(e => e.ChildTest)
                       .WithMany(t => t.ChildMappings)
                       .HasForeignKey(e => e.ChildTestCode)
+                      .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            // Report Governance Configurations
+            modelBuilder.Entity<ParameterMaster>(entity =>
+            {
+                entity.ToTable("ParameterMasters");
+                entity.HasKey(e => e.ParameterCode);
+            });
+
+            modelBuilder.Entity<DerivedParameterRule>(entity =>
+            {
+                entity.ToTable("DerivedParameterRules");
+                entity.HasKey(e => e.RuleId);
+                entity.HasOne(e => e.ParameterMaster)
+                      .WithMany(pm => pm.DerivedRules)
+                      .HasForeignKey(e => e.ParameterCode)
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            modelBuilder.Entity<AnalyzerParameterMap>(entity =>
+            {
+                entity.ToTable("AnalyzerParameterMaps");
+                entity.HasKey(e => e.MapId);
+                entity.HasIndex(e => new { e.AnalyzerId, e.ExternalParameterCode }).IsUnique();
+                entity.HasOne(e => e.ParameterMaster)
+                      .WithMany(pm => pm.AnalyzerMaps)
+                      .HasForeignKey(e => e.InternalParameterCode)
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            modelBuilder.Entity<RangeProfile>(entity =>
+            {
+                entity.ToTable("RangeProfiles");
+                entity.HasKey(e => e.ProfileId);
+                entity.HasOne(e => e.ParameterMaster)
+                      .WithMany(pm => pm.RangeProfiles)
+                      .HasForeignKey(e => e.ParameterCode)
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            modelBuilder.Entity<RangeCondition>(entity =>
+            {
+                entity.ToTable("RangeConditions");
+                entity.HasKey(e => e.ConditionId);
+                entity.HasOne(e => e.RangeProfile)
+                      .WithMany(p => p.RangeConditions)
+                      .HasForeignKey(e => e.ProfileId)
+                      .OnDelete(DeleteBehavior.Cascade);
+
+                entity.Property(e => e.MinNormal).HasColumnType("decimal(18, 4)");
+                entity.Property(e => e.MaxNormal).HasColumnType("decimal(18, 4)");
+                entity.Property(e => e.MinCritical).HasColumnType("decimal(18, 4)");
+                entity.Property(e => e.MaxCritical).HasColumnType("decimal(18, 4)");
+            });
+
+            modelBuilder.Entity<Report>(entity =>
+            {
+                entity.HasOne(e => e.SupersededReport)
+                      .WithMany()
+                      .HasForeignKey(e => e.SupersededReportId)
                       .OnDelete(DeleteBehavior.Restrict);
             });
         }

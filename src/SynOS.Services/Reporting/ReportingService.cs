@@ -10,6 +10,7 @@ using SynOS.Data;
 using SynOS.Models.DTOs.Reporting;
 using SynOS.Models.Entities;
 using SynOS.Models.Entities.Catalog;
+using SynOS.Models.Domain;
 
 namespace SynOS.Services.Reporting
 {
@@ -60,7 +61,27 @@ namespace SynOS.Services.Reporting
 
                 try 
                 {
-                    var snapshotData = JsonSerializer.Deserialize<ReportStructureDto>(latestVersion.Snapshot.SnapshotJson);
+                    ClinicalReportState? domainState = null;
+                    try
+                    {
+                        using var doc = JsonDocument.Parse(latestVersion.Snapshot.SnapshotJson);
+                        if (doc.RootElement.TryGetProperty("columnDefinitions", out _) || doc.RootElement.TryGetProperty("ColumnDefinitions", out _))
+                        {
+                            domainState = JsonSerializer.Deserialize<ClinicalReportState>(latestVersion.Snapshot.SnapshotJson);
+                        }
+                    }
+                    catch { }
+
+                    ReportStructureDto? snapshotData = null;
+                    if (domainState != null)
+                    {
+                        snapshotData = ReportStructureDto.FromDomain(domainState);
+                    }
+                    else
+                    {
+                        snapshotData = JsonSerializer.Deserialize<ReportStructureDto>(latestVersion.Snapshot.SnapshotJson);
+                    }
+
                     if (snapshotData == null || snapshotData.Groups == null || !snapshotData.Groups.Any())
                     {
                         throw new Models.Exceptions.SnapshotIntegrityException(
@@ -130,7 +151,71 @@ namespace SynOS.Services.Reporting
             if (visit == null) throw new KeyNotFoundException($"Visit {version.Report.VisitId} not found.");
 
             var structure = await BuildDynamicStructureAsync(version.Report, visit);
-            var json = JsonSerializer.Serialize(structure);
+            var domainState = structure.ToDomain();
+
+            try
+            {
+                var order = await _context.Orders.FirstOrDefaultAsync(o => o.OrderId == version.Report.SourceId);
+                var modality = order?.Department ?? "General";
+                var template = await _context.ReportTemplates
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(t => t.Modality == modality && t.IsDefault)
+                    ?? await _context.ReportTemplates.AsNoTracking().FirstOrDefaultAsync(t => t.IsDefault);
+
+                if (template != null)
+                {
+                    var templateModel = JsonSerializer.Deserialize<SynOS.Models.DTOs.ReportTemplateDsl.TemplateModel>(template.TemplateJson);
+                    if (templateModel?.Sections != null)
+                    {
+                        var parameterTableSection = templateModel.Sections
+                            .FirstOrDefault(s => s.Type == "ParameterTable");
+                        if (parameterTableSection != null)
+                        {
+                            var tableConfig = JsonSerializer.Deserialize<SynOS.Models.DTOs.ReportTemplateDsl.ParameterTableConfig>(parameterTableSection.Config.GetRawText());
+                            if (tableConfig != null && tableConfig.VisibleColumns != null)
+                            {
+                                domainState.ColumnDefinitions = tableConfig.VisibleColumns.Select((col, idx) => new ColumnDefinitionState
+                                {
+                                    Code = col,
+                                    Title = col == "Parameter" ? "Test Name" :
+                                            col == "Value" ? "Results" :
+                                            col == "Unit" ? "Unit" :
+                                            col == "ReferenceRange" ? "Normal Range" : col,
+                                    Weight = tableConfig.ColumnWeights != null && idx < tableConfig.ColumnWeights.Count ? tableConfig.ColumnWeights[idx] : 1,
+                                    Align = col == "Parameter" ? "Left" :
+                                            col == "Value" ? "Center" :
+                                            col == "Unit" ? "Center" : "Right",
+                                    HighlightRule = "None"
+                                }).ToList();
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to load default report template for table config.");
+            }
+
+            if (domainState.ColumnDefinitions == null || !domainState.ColumnDefinitions.Any())
+            {
+                domainState.ColumnDefinitions = new List<ColumnDefinitionState>
+                {
+                    new() { Code = "Parameter", Title = "Test Name", Weight = 3, Align = "Left" },
+                    new() { Code = "Value", Title = "Results", Weight = 2, Align = "Center" },
+                    new() { Code = "Unit", Title = "Unit", Weight = 1, Align = "Center" },
+                    new() { Code = "ReferenceRange", Title = "Normal Range", Weight = 3, Align = "Right" }
+                };
+            }
+
+            var interpretationData = await _context.ReportInterpretations.AsNoTracking().FirstOrDefaultAsync(ri => ri.ReportId == version.ReportId);
+            if (interpretationData != null)
+            {
+                domainState.Comments = interpretationData.Notes ?? string.Empty;
+                domainState.Interpretation = interpretationData.Summary ?? string.Empty;
+            }
+
+            var json = JsonSerializer.Serialize(domainState);
 
             if (version.Snapshot != null)
             {

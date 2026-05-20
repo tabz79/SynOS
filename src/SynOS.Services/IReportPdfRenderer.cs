@@ -20,6 +20,7 @@ namespace SynOS.Services
         public string Recommendations { get; set; } = string.Empty;
         public List<ReportSignatureDetails> Signatures { get; set; } = new List<ReportSignatureDetails>();
         public VerificationInfo Verification { get; set; } = new VerificationInfo();
+        public ParameterTableConfig? ParameterTableConfig { get; set; }
     }
 
     public class ReportMetadata

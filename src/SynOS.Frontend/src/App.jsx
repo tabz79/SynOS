@@ -14,6 +14,8 @@ import { AdminLayout } from '@/features/admin/AdminLayout'
 import { ControlTowerDashboard } from '@/features/admin/ControlTowerDashboard'
 import { PendingRequestsQueue } from '@/features/admin/PendingRequestsQueue'
 import { ImsRoleMappingScreen } from '@/features/admin/ImsRoleMappingScreen'
+import { TestMasterScreen } from '@/features/admin/TestMasterScreen'
+import { ReportTemplatesScreen } from '@/features/admin/ReportTemplatesScreen'
 import { InventoryTerminal } from '@/features/inventory/InventoryTerminal'
 import { FinanceLayout } from '@/features/finance/FinanceLayout'
 import { FinanceOverview } from '@/features/finance/FinanceOverview'
@@ -193,6 +195,8 @@ function App() {
                 <Route path="/admin" element={<ControlTowerDashboard />} />
                 <Route path="/admin/inventory" element={<PendingRequestsQueue />} />
                 <Route path="/admin/inventory/setup" element={<ImsRoleMappingScreen />} />
+                <Route path="/admin/test-master" element={<TestMasterScreen />} />
+                <Route path="/admin/report-templates" element={<ReportTemplatesScreen />} />
               </Route>
             </Route>
 

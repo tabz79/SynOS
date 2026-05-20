@@ -19,6 +19,8 @@ namespace SynOS.Models.DTOs.ReportTemplateDsl
     {
         public bool ShowReferenceRanges { get; set; } = true;
         public bool HighlightCriticalValues { get; set; } = true;
+        public System.Collections.Generic.List<string>? VisibleColumns { get; set; }
+        public System.Collections.Generic.List<int>? ColumnWeights { get; set; }
     }
 
     public class CommentsConfig

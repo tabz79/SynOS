@@ -148,9 +148,61 @@ namespace SynOS.Services
             });
         }
 
+        private string GetColumnHeaderName(string col)
+        {
+            return col switch
+            {
+                "Parameter" => "Parameter",
+                "Value" => "Value",
+                "Unit" => "Unit",
+                "ReferenceRange" => "Reference Range",
+                _ => col
+            };
+        }
+
+        private void RenderColumnCell(IContainer cell, string col, ParameterResult parameter)
+        {
+            switch (col)
+            {
+                case "Parameter":
+                    cell.AlignLeft().Text(parameter.Name);
+                    break;
+                case "Value":
+                    var val = string.IsNullOrWhiteSpace(parameter.DisplayValue) ? parameter.Value : parameter.DisplayValue;
+                    var valCell = cell.AlignCenter();
+                    if (parameter.IsAbnormal)
+                    {
+                        valCell.Text(val).FontColor(Colors.Red.Medium).SemiBold();
+                    }
+                    else
+                    {
+                        valCell.Text(val);
+                    }
+                    break;
+                case "Unit":
+                    cell.AlignCenter().Text(parameter.Unit);
+                    break;
+                case "ReferenceRange":
+                    cell.AlignRight().Text(parameter.ReferenceRangeText);
+                    break;
+                default:
+                    cell.Text("");
+                    break;
+            }
+        }
+
         private void RenderParameterTable(ColumnDescriptor column, ReportDataModel data, ParameterTableConfig? config)
         {
             if (config == null) return;
+
+            var visibleColumns = config.VisibleColumns ?? new List<string> { "Parameter", "Value", "Unit", "ReferenceRange" };
+            var columnWeights = config.ColumnWeights ?? new List<int> { 3, 2, 1, 3 };
+
+            if (columnWeights.Count < visibleColumns.Count)
+            {
+                columnWeights = visibleColumns.Select(_ => 1).ToList();
+            }
+
             column.Item().PaddingBottom(10).Column(tableCol =>
             {
                 tableCol.Item().Text("Test Results").FontSize(14).SemiBold();
@@ -159,42 +211,38 @@ namespace SynOS.Services
                 {
                     table.ColumnsDefinition(columns =>
                     {
-                        columns.RelativeColumn(3);
-                        columns.RelativeColumn(2);
-                        columns.RelativeColumn(1);
-                        columns.RelativeColumn(3);
+                        for (int i = 0; i < visibleColumns.Count; i++)
+                        {
+                            columns.RelativeColumn(columnWeights[i]);
+                        }
                     });
 
                     table.Header(header =>
                     {
-                        header.Cell().BorderBottom(1).Text("Parameter").SemiBold();
-                        header.Cell().BorderBottom(1).Text("Value").SemiBold();
-                        header.Cell().BorderBottom(1).Text("Unit").SemiBold();
-                        header.Cell().BorderBottom(1).Text("Reference Range").SemiBold();
+                        foreach (var col in visibleColumns)
+                        {
+                            var cell = header.Cell().BorderBottom(1);
+                            if (col == "Parameter") cell.AlignLeft();
+                            else if (col == "Value" || col == "Unit") cell.AlignCenter();
+                            else if (col == "ReferenceRange") cell.AlignRight();
+                            
+                            cell.Text(GetColumnHeaderName(col)).SemiBold();
+                        }
                     });
 
                     foreach (var group in data.Results)
                     {
                         // Group Heading
-                        table.Cell().ColumnSpan(4).Background(Colors.Grey.Lighten4).PaddingVertical(2).PaddingHorizontal(5)
+                        table.Cell().ColumnSpan((uint)visibleColumns.Count).Background(Colors.Grey.Lighten4).PaddingVertical(2).PaddingHorizontal(5)
                              .Text(group.GroupName).SemiBold().FontSize(11);
 
                         foreach (var parameter in group.Parameters)
                         {
-                            table.Cell().BorderBottom(0.5f).BorderColor(Colors.Grey.Lighten3).PaddingVertical(3).Text(parameter.Name);
-                            
-                            var valueCell = table.Cell().BorderBottom(0.5f).BorderColor(Colors.Grey.Lighten3).PaddingVertical(3);
-                            if (parameter.IsAbnormal)
+                            foreach (var col in visibleColumns)
                             {
-                                valueCell.Text(parameter.DisplayValue ?? parameter.Value).FontColor(Colors.Red.Medium).SemiBold();
+                                var cell = table.Cell().BorderBottom(0.5f).BorderColor(Colors.Grey.Lighten3).PaddingVertical(3);
+                                RenderColumnCell(cell, col, parameter);
                             }
-                            else
-                            {
-                                valueCell.Text(parameter.DisplayValue ?? parameter.Value);
-                            }
-
-                            table.Cell().BorderBottom(0.5f).BorderColor(Colors.Grey.Lighten3).PaddingVertical(3).Text(parameter.Unit);
-                            table.Cell().BorderBottom(0.5f).BorderColor(Colors.Grey.Lighten3).PaddingVertical(3).Text(parameter.ReferenceRangeText);
                         }
                     }
                 });
