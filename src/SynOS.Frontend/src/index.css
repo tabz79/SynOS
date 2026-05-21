@@ -189,12 +189,12 @@
 
   /* Role: Section Dividers (THE STANDARD) */
   .type-section-header {
-    @apply text-[10px] uppercase font-bold tracking-widest text-zinc-500;
+    @apply text-[10px] font-semibold tracking-wider text-zinc-600 dark:text-zinc-400;
   }
 
   /* Role: Form Labels, Input Hints */
   .type-label {
-    @apply text-xs font-medium text-zinc-500;
+    @apply text-xs font-medium text-zinc-600 dark:text-zinc-400;
   }
 
   /* Role: Instructions, Long text */
@@ -209,7 +209,7 @@
 
   /* Role: Badges, Timestamps, Secondary info */
   .type-meta {
-    @apply text-[10px] font-medium text-zinc-500;
+    @apply text-[10px] font-medium text-zinc-600 dark:text-zinc-400;
   }
 
   /* Role: MRNs, Test Codes, Search Inputs */

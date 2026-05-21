@@ -35,3 +35,9 @@
 * When building new features, prioritize the user's mental model over the database schema.
 * If a feature requires complex configuration, abstract it behind a simple toggle or progressive disclosure mechanism.
 * Always maintain the established visual canon (e.g., specific tailwind color palettes, Lucide icons, glassmorphism where appropriate).
+* **Strict Signature Role Enforcements**: Only allow `Default Pathologist (Lab Owner)`, `Additional Pathologist`, and `Radiologist` slots. Do not introduce any text inputs for freeform signature roles. Enforce programmatically that `Default Pathologist (Lab Owner)` is required, pre-selected, and disabled from edit or delete operations.
+* **Base64 Image Management**: Never allow raw text input fields for local logos or branding images. Ensure all image picker selections leverage React/JavaScript FileReader interfaces to convert files (e.g., PNGs) to Base64 data URLs.
+* **Preprinted vs. Digital PDF Printing Modes**: Programmatically hide branding elements, header text, and footers when in Preprinted mode to prevent overlaying colors on physical letterhead. Preserve configurable top and bottom margins (margins must not be overridden/ignored during physical print). Render full graphics, logo, and metadata only when `usePreprinted` is false.
+* **High Contrast and Accessibility**: Maintain readable typography colors. Standard operational labels, metadata descriptions, and disabled or inactive controls must follow the polished high-contrast theme (using `text-zinc-600 dark:text-zinc-400` or higher contrast, rather than low-contrast muted colors) to maintain premium accessibility standards.
+
+

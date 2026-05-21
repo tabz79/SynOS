@@ -144,7 +144,7 @@ export function AdminLayout() {
 function SidebarLink({ item }) {
     if (item.disabled) {
         return (
-            <div className="flex items-center gap-3 px-3 py-2 rounded-md text-zinc-700 cursor-not-allowed opacity-50 select-none">
+            <div className="flex items-center gap-3 px-3 py-2 rounded-md text-zinc-400 dark:text-zinc-600 cursor-not-allowed opacity-50 select-none">
                 <item.icon className="w-4 h-4 shrink-0" />
                 <span className="type-label">{item.name}</span>
             </div>
@@ -158,13 +158,17 @@ function SidebarLink({ item }) {
             className={({ isActive }) => `
                 flex items-center gap-3 px-3 py-2 rounded-md transition-all duration-200 group border
                 ${isActive 
-                    ? 'bg-synos-primary/10 dark:text-white text-synos-primary dark:border-synos-primary/20 border-synos-primary/30' 
-                    : 'text-zinc-500 dark:hover:bg-zinc-900 hover:bg-zinc-200/50 hover:text-zinc-900 border-transparent'
+                    ? 'bg-synos-primary/10 dark:text-white text-synos-primary dark:border-synos-primary/20 border-synos-primary/30 font-medium' 
+                    : 'text-zinc-600 dark:text-zinc-400 dark:hover:bg-zinc-900 hover:bg-zinc-200/50 hover:text-zinc-900 border-transparent'
                 }
             `}
         >
-            <item.icon className={`w-4 h-4 shrink-0 transition-colors ${item.isActive ? 'text-synos-primary' : 'group-hover:text-synos-primary'}`} />
-            <span className="type-label !text-zinc-500 group-hover:text-zinc-900 dark:group-hover:text-zinc-300 transition-colors">{item.name}</span>
+            {({ isActive }) => (
+                <>
+                    <item.icon className={`w-4 h-4 shrink-0 transition-colors ${isActive ? 'text-synos-primary' : 'text-zinc-400 dark:text-zinc-500 group-hover:text-synos-primary'}`} />
+                    <span className={`type-label transition-colors ${isActive ? 'text-synos-primary dark:text-white font-medium' : 'text-zinc-600 dark:text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-zinc-200'}`}>{item.name}</span>
+                </>
+            )}
         </NavLink>
     );
 }

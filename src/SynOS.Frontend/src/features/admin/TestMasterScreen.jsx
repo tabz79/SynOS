@@ -26,6 +26,248 @@ import {
 } from 'lucide-react';
 import { cn } from "@/lib/utils";
 
+// Seed default templates matching ReportTemplatesScreen.jsx
+const DEFAULT_TEMPLATES = [
+  {
+    id: "temp-hematology",
+    modality: "Hematology",
+    title: "Hematology Compact",
+    density: "Compact",
+    usePreprinted: true,
+    topMargin: 45,
+    bottomMargin: 35,
+    leftRightMargin: 15,
+    includeBranding: false,
+    clinicName: "SynOS Diagnostics Lab",
+    themeColor: "Indigo",
+    watermarkText: "SYNOS DIAGNOSTICS",
+    watermarkOpacity: 0.05,
+    footerText: "Sector 4, Phase 2, Health City | Email: reports@synos.in",
+    logoUrl: "",
+    logoPosition: "Left",
+    logoLayout: "logo-left",
+    logoSize: 40,
+    brandNameText: "SynOS Diagnostics Lab",
+    brandNameSize: 16,
+    brandNameWeight: "900",
+    brandNameColor: "#312e81",
+    brandSubtitleText: "Accredited Diagnostics Lab",
+    brandSubtitleSize: 9,
+    brandSubtitleColor: "#71717a",
+    showHeaderDivider: true,
+    headerDividerThickness: 2,
+    headerDividerStyle: "solid",
+    headerDividerColor: "#4f46e5",
+    watermarkSize: 32,
+    watermarkRotation: 12,
+    bgType: "solid",
+    bgColor: "#ffffff",
+    bgGradientStart: "#ffffff",
+    bgGradientEnd: "#f1f5f9",
+    bgGradientAngle: 135,
+    bgImageUrl: "",
+    bgImageOpacity: 0.05,
+    borderWidth: 1,
+    borderColor: "#e2e8f0",
+    borderStyle: "solid",
+    borderRadius: 12,
+    pagePadding: 24,
+    columns: [
+      { code: "Parameter", title: "Test Parameter", weight: 3, alignment: "Left", bold: true },
+      { code: "Value", title: "Observed Value", weight: 2, alignment: "Center", bold: false },
+      { code: "Unit", title: "Unit", weight: 1, alignment: "Center", bold: false },
+      { code: "ReferenceRange", title: "Reference Ranges", weight: 3, alignment: "Right", bold: false }
+    ],
+    signatureSlots: [
+      { slotId: 0, title: "Default Pathologist (Lab Owner)", required: true }
+    ]
+  },
+  {
+    id: "temp-biochemistry",
+    modality: "Biochemistry",
+    title: "Biochemistry Standard",
+    density: "Comfortable",
+    usePreprinted: false,
+    topMargin: 40,
+    bottomMargin: 30,
+    leftRightMargin: 20,
+    includeBranding: true,
+    clinicName: "SynOS Clinical Chemistry",
+    themeColor: "Emerald",
+    watermarkText: "VERIFIED REPORT",
+    watermarkOpacity: 0.04,
+    footerText: "Chemical Division, SynOS Labs | Hotline: 1800-SYNOS",
+    logoUrl: "",
+    logoPosition: "Left",
+    logoLayout: "logo-left",
+    logoSize: 40,
+    brandNameText: "SynOS Clinical Chemistry",
+    brandNameSize: 16,
+    brandNameWeight: "900",
+    brandNameColor: "#065f46",
+    brandSubtitleText: "Accredited Diagnostics Lab",
+    brandSubtitleSize: 9,
+    brandSubtitleColor: "#71717a",
+    showHeaderDivider: true,
+    headerDividerThickness: 2,
+    headerDividerStyle: "solid",
+    headerDividerColor: "#10b981",
+    watermarkSize: 32,
+    watermarkRotation: 12,
+    bgType: "solid",
+    bgColor: "#ffffff",
+    bgGradientStart: "#ffffff",
+    bgGradientEnd: "#ecfdf5",
+    bgGradientAngle: 135,
+    bgImageUrl: "",
+    bgImageOpacity: 0.05,
+    borderWidth: 1,
+    borderColor: "#e2e8f0",
+    borderStyle: "solid",
+    borderRadius: 12,
+    pagePadding: 24,
+    columns: [
+      { code: "Parameter", title: "Analysis", weight: 4, alignment: "Left", bold: true },
+      { code: "Value", title: "Result", weight: 3, alignment: "Center", bold: false },
+      { code: "Unit", title: "Biological Unit", weight: 2, alignment: "Center", bold: false },
+      { code: "ReferenceRange", title: "Biological Reference Interval", weight: 4, alignment: "Right", bold: false },
+      { code: "Methodology", title: "Methodology", weight: 3, alignment: "Right", bold: false }
+    ],
+    signatureSlots: [
+      { slotId: 0, title: "Default Pathologist (Lab Owner)", required: true }
+    ]
+  },
+  {
+    id: "temp-radiology",
+    modality: "Radiology",
+    title: "Radiology Narrative",
+    density: "Comfortable",
+    usePreprinted: false,
+    topMargin: 40,
+    bottomMargin: 35,
+    leftRightMargin: 20,
+    includeBranding: true,
+    clinicName: "SynOS Imaging Center",
+    themeColor: "Dark Zinc",
+    watermarkText: "RADIOLOGY COPY",
+    watermarkOpacity: 0.03,
+    footerText: "Imaging Wing, SynOS Diagnostics | Tel: 011-224466",
+    logoUrl: "",
+    logoPosition: "Left",
+    logoLayout: "logo-left",
+    logoSize: 40,
+    brandNameText: "SynOS Imaging Center",
+    brandNameSize: 16,
+    brandNameWeight: "900",
+    brandNameColor: "#18181b",
+    brandSubtitleText: "Accredited Diagnostics Lab",
+    brandSubtitleSize: 9,
+    brandSubtitleColor: "#71717a",
+    showHeaderDivider: true,
+    headerDividerThickness: 2,
+    headerDividerStyle: "solid",
+    headerDividerColor: "#27272a",
+    watermarkSize: 32,
+    watermarkRotation: 12,
+    bgType: "solid",
+    bgColor: "#ffffff",
+    bgGradientStart: "#ffffff",
+    bgGradientEnd: "#fafafa",
+    bgGradientAngle: 135,
+    bgImageUrl: "",
+    bgImageOpacity: 0.05,
+    borderWidth: 1,
+    borderColor: "#e2e8f0",
+    borderStyle: "solid",
+    borderRadius: 12,
+    pagePadding: 24,
+    columns: [
+      { code: "Parameter", title: "Investigation", weight: 3, alignment: "Left", bold: true },
+      { code: "Value", title: "Findings / Commentary", weight: 8, alignment: "Left", bold: false }
+    ],
+    signatureSlots: [
+      { slotId: 0, title: "Default Pathologist (Lab Owner)", required: true },
+      { slotId: 1, title: "Radiologist", required: true }
+    ]
+  },
+  {
+    id: "temp-histopathology",
+    modality: "Histopathology",
+    title: "Histopathology Detailed",
+    density: "Large-print",
+    usePreprinted: false,
+    topMargin: 45,
+    bottomMargin: 40,
+    leftRightMargin: 25,
+    includeBranding: true,
+    clinicName: "SynOS Pathological Institute",
+    themeColor: "Amber",
+    watermarkText: "HISTOLOGY REPORT",
+    watermarkOpacity: 0.05,
+    footerText: "Advanced Histology Wing, SynOS Labs",
+    logoUrl: "",
+    logoPosition: "Left",
+    logoLayout: "logo-left",
+    logoSize: 40,
+    brandNameText: "SynOS Pathological Institute",
+    brandNameSize: 16,
+    brandNameWeight: "900",
+    brandNameColor: "#78350f",
+    brandSubtitleText: "Accredited Diagnostics Lab",
+    brandSubtitleSize: 9,
+    brandSubtitleColor: "#71717a",
+    showHeaderDivider: true,
+    headerDividerThickness: 2,
+    headerDividerStyle: "solid",
+    headerDividerColor: "#f59e0b",
+    watermarkSize: 32,
+    watermarkRotation: 12,
+    bgType: "solid",
+    bgColor: "#ffffff",
+    bgGradientStart: "#ffffff",
+    bgGradientEnd: "#fffbeb",
+    bgGradientAngle: 135,
+    bgImageUrl: "",
+    bgImageOpacity: 0.05,
+    borderWidth: 1,
+    borderColor: "#e2e8f0",
+    borderStyle: "solid",
+    borderRadius: 12,
+    pagePadding: 24,
+    columns: [
+      { code: "Parameter", title: "Tissue / Specimen", weight: 3, alignment: "Left", bold: true },
+      { code: "Value", title: "Microscopic Description", weight: 8, alignment: "Left", bold: false }
+    ],
+    signatureSlots: [
+      { slotId: 0, title: "Default Pathologist (Lab Owner)", required: true }
+    ]
+  }
+];
+
+// Helper to look up active template case-insensitively using test department Modality
+const getActiveTemplate = (test) => {
+  if (!test) return DEFAULT_TEMPLATES[0];
+  const saved = localStorage.getItem("synos_report_templates");
+  let templatesList = DEFAULT_TEMPLATES;
+  if (saved) {
+    try {
+      templatesList = JSON.parse(saved);
+    } catch (e) {
+      console.error("Failed to parse templates from localStorage:", e);
+    }
+  }
+
+  const dept = (test.department || "").toLowerCase().trim();
+  
+  // Try case-insensitive matching: test department matches template modality, or vice-versa
+  let found = templatesList.find(t => {
+    const modality = (t.modality || "").toLowerCase().trim();
+    return modality && (dept.includes(modality) || modality.includes(dept));
+  });
+
+  return found || templatesList[0] || DEFAULT_TEMPLATES[0];
+};
+
 // Seed Catalog with extended operational structures
 const INITIAL_TEST_CATALOG = [
   {
@@ -95,7 +337,7 @@ const INITIAL_TEST_CATALOG = [
       }
     ],
     reportStyle: "Standard A4",
-    signatureSlots: ["Lab Technician", "Pathologist"],
+    signatureSlots: ["Default Pathologist (Lab Owner)"],
     showRange: true,
     showMethod: true,
     showInterpretation: true,
@@ -183,7 +425,7 @@ const INITIAL_TEST_CATALOG = [
       }
     ],
     reportStyle: "Modern Tabular",
-    signatureSlots: ["Biochemist", "Consultant Pathologist"],
+    signatureSlots: ["Default Pathologist (Lab Owner)"],
     showRange: true,
     showMethod: true,
     showInterpretation: true,
@@ -257,7 +499,7 @@ const INITIAL_TEST_CATALOG = [
       }
     ],
     reportStyle: "Modern Tabular",
-    signatureSlots: ["Biochemist", "Consultant Pathologist"],
+    signatureSlots: ["Default Pathologist (Lab Owner)"],
     showRange: true,
     showMethod: true,
     showInterpretation: true,
@@ -274,7 +516,7 @@ const INITIAL_TEST_CATALOG = [
     includedTestIds: ["cbc-001", "lft-002", "lipid-003"],
     parameters: [],
     reportStyle: "Standard A4",
-    signatureSlots: ["Lab Technician", "Biochemist", "Pathologist"],
+    signatureSlots: ["Default Pathologist (Lab Owner)"],
     showRange: true,
     showMethod: true,
     showInterpretation: true,
@@ -284,26 +526,51 @@ const INITIAL_TEST_CATALOG = [
 ];
 
 const SIGNATURE_SLOT_PRESETS = [
-  "Lab Technician",
-  "Pathologist",
-  "Biochemist",
-  "Consultant Pathologist",
-  "Director",
-  "Microbiologist"
+  "Default Pathologist (Lab Owner)",
+  "Additional Pathologist",
+  "Radiologist"
 ];
 
 const DEPARTMENTS = ["All", "Hematology", "Biochemistry", "Health Panels", "Microbiology", "Serology"];
+
+const sanitizeCatalogSigs = (catalogList) => {
+  return catalogList.map(test => {
+    let currentSlots = test.signatureSlots || [];
+    if (!Array.isArray(currentSlots)) {
+      currentSlots = [];
+    }
+    
+    const newSlots = new Set();
+    // Default Pathologist (Lab Owner) must always be present
+    newSlots.add("Default Pathologist (Lab Owner)");
+    
+    currentSlots.forEach(sig => {
+      const lower = sig.toLowerCase();
+      if (lower.includes("radiologist")) {
+        newSlots.add("Radiologist");
+      } else if (lower.includes("additional pathologist")) {
+        newSlots.add("Additional Pathologist");
+      }
+    });
+    
+    return {
+      ...test,
+      signatureSlots: Array.from(newSlots)
+    };
+  });
+};
 
 const getInitialCatalog = () => {
   const saved = localStorage.getItem("synos_test_catalog");
   if (saved) {
     try {
-      return JSON.parse(saved);
+      const parsed = JSON.parse(saved);
+      return sanitizeCatalogSigs(parsed);
     } catch (e) {
       console.error("Failed to parse catalog from localStorage:", e);
     }
   }
-  return INITIAL_TEST_CATALOG;
+  return sanitizeCatalogSigs(INITIAL_TEST_CATALOG);
 };
 
 const getInitialSelectedTest = (catalogList) => {
@@ -417,7 +684,7 @@ export function TestMasterScreen() {
         }
       ],
       reportStyle: "Standard A4",
-      signatureSlots: ["Lab Technician", "Pathologist"],
+      signatureSlots: ["Default Pathologist (Lab Owner)"],
       showRange: true,
       showMethod: true,
       showInterpretation: true,
@@ -593,6 +860,7 @@ export function TestMasterScreen() {
   };
 
   const handleToggleSignatureSlot = (sig) => {
+    if (sig === "Default Pathologist (Lab Owner)") return;
     const alreadySelected = selectedTest.signatureSlots.includes(sig);
     const newSigs = alreadySelected 
       ? selectedTest.signatureSlots.filter(s => s !== sig)
@@ -634,7 +902,7 @@ export function TestMasterScreen() {
   });
 
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-6 animate-in fade-in duration-300 relative overflow-hidden">
+    <div className="w-full px-6 py-6 space-y-6 animate-in fade-in duration-500 relative overflow-hidden">
       
       {/* Header bar */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-zinc-200 dark:border-zinc-800 pb-5">
@@ -668,9 +936,9 @@ export function TestMasterScreen() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         
         {/* Left Panel: Test Catalog */}
-        <div className="lg:col-span-4 bg-white dark:bg-zinc-900/40 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 flex flex-col gap-4 shadow-sm">
+        <div className="lg:col-span-3 bg-white dark:bg-zinc-900/40 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 flex flex-col gap-4 shadow-sm">
           <div className="flex items-center justify-between">
-            <h3 className="text-sm font-black uppercase tracking-wider text-zinc-400 dark:text-zinc-500">Test Catalog</h3>
+            <h3 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">Test Catalog</h3>
             <button 
               onClick={handleAddTest}
               className="p-1.5 bg-synos-primary/10 text-synos-primary border border-synos-primary/20 rounded-lg hover:bg-synos-primary hover:text-white transition-colors flex items-center gap-1 text-xs font-bold px-3"
@@ -718,13 +986,13 @@ export function TestMasterScreen() {
                   "w-full text-left p-4 rounded-xl border transition-all flex items-center justify-between group cursor-pointer",
                   selectedTest.id === test.id
                     ? "bg-synos-primary/10 border-synos-primary/30 text-zinc-900 dark:text-white"
-                    : "bg-white dark:bg-zinc-900/10 border-zinc-200 dark:border-zinc-800/80 text-zinc-600 dark:text-zinc-400 hover:border-zinc-300 dark:hover:border-zinc-700"
+                    : "bg-white dark:bg-zinc-900/10 border-zinc-200 dark:border-zinc-800/80 text-zinc-600 dark:text-zinc-400 dark:text-zinc-400 hover:border-zinc-300 dark:hover:border-zinc-700"
                 )}
               >
                 <div className="flex-1 min-w-0 pr-2">
-                  <span className="font-bold text-sm tracking-tight text-zinc-800 dark:text-zinc-200 block truncate">{test.name}</span>
+                  <span className="font-bold text-sm tracking-tight text-zinc-805 dark:text-zinc-200 block truncate">{test.name}</span>
                   <div className="flex items-center gap-1.5 mt-1.5 text-[11px] font-bold">
-                    <span className="bg-synos-primary/10 text-synos-primary border border-synos-primary/20 px-1.5 py-0.5 rounded uppercase tracking-wider">{test.code}</span>
+                    <span className="bg-synos-primary/10 text-synos-primary border border-synos-primary/20 px-1.5 py-0.5 rounded uppercase tracking-wider font-mono">{test.code}</span>
                     <span className="bg-indigo-500/10 text-indigo-500 border border-indigo-500/20 px-1.5 py-0.5 rounded uppercase tracking-wider truncate max-w-[90px]">{test.department}</span>
                     {test.isProfile && (
                       <span className="bg-amber-500/10 text-amber-500 border border-amber-500/20 px-1.5 py-0.5 rounded uppercase tracking-wider flex items-center gap-0.5">
@@ -734,10 +1002,10 @@ export function TestMasterScreen() {
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-xs font-black text-zinc-550 group-hover:text-zinc-750 dark:group-hover:text-zinc-250">₹{test.basePrice}</span>
+                  <span className="text-xs font-semibold text-zinc-600 dark:text-zinc-400 group-hover:text-zinc-600 dark:text-zinc-400 dark:group-hover:text-zinc-800 dark:group-hover:text-zinc-200">₹{test.basePrice}</span>
                   <button 
                     onClick={(e) => handleDeleteTest(test.id, e)}
-                    className="p-1 hover:bg-rose-500/10 text-zinc-350 hover:text-rose-500 rounded-lg transition-colors opacity-0 group-hover:opacity-100"
+                    className="p-1 hover:bg-rose-500/10 text-zinc-500 dark:text-zinc-400 hover:text-rose-500 rounded-lg transition-colors opacity-0 group-hover:opacity-100"
                     title="Delete test"
                   >
                     <Trash2 className="w-4 h-4" />
@@ -747,7 +1015,7 @@ export function TestMasterScreen() {
               </div>
             ))}
             {filteredCatalog.length === 0 && (
-              <div className="p-8 text-center text-sm text-zinc-400 border border-dashed border-zinc-200 dark:border-zinc-800 rounded-xl">
+              <div className="p-8 text-center text-sm text-zinc-600 dark:text-zinc-400 border border-dashed border-zinc-200 dark:border-zinc-800 rounded-xl">
                 No matching tests found.
               </div>
             )}
@@ -755,7 +1023,7 @@ export function TestMasterScreen() {
         </div>
 
         {/* Center Workspace & Editor Area */}
-        <div className="lg:col-span-8 space-y-4">
+        <div className="lg:col-span-9 space-y-4">
           
           {/* Metadata Top Bar */}
           <div className="bg-white dark:bg-zinc-900/40 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 shadow-sm flex items-center justify-between">
@@ -763,27 +1031,27 @@ export function TestMasterScreen() {
               {isEditingMetadata ? (
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
                   <div className="md:col-span-2">
-                    <label className="text-xs font-black uppercase text-zinc-450 dark:text-zinc-500 block mb-1">Test Name</label>
+                    <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 block mb-1">Test Name</label>
                     <input 
                       type="text" 
-                      className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-250 dark:border-zinc-800 rounded-xl px-3.5 py-2 text-sm w-full text-zinc-900 dark:text-zinc-100 outline-none focus:ring-1 focus:ring-synos-primary" 
+                      className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 dark:border-zinc-800 rounded-xl px-3.5 py-2 text-sm w-full text-zinc-900 dark:text-zinc-100 outline-none focus:ring-1 focus:ring-synos-primary" 
                       value={metaName}
                       onChange={(e) => setMetaName(e.target.value)}
                     />
                   </div>
                   <div>
-                    <label className="text-xs font-black uppercase text-zinc-450 dark:text-zinc-500 block mb-1">Code</label>
+                    <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 block mb-1">Code</label>
                     <input 
                       type="text" 
-                      className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-250 dark:border-zinc-800 rounded-xl px-3.5 py-2 text-sm w-full text-zinc-900 dark:text-zinc-100 outline-none focus:ring-1 focus:ring-synos-primary" 
+                      className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 dark:border-zinc-800 rounded-xl px-3.5 py-2 text-sm w-full text-zinc-900 dark:text-zinc-100 outline-none focus:ring-1 focus:ring-synos-primary" 
                       value={metaCode}
                       onChange={(e) => setMetaCode(e.target.value)}
                     />
                   </div>
                   <div>
-                    <label className="text-xs font-black uppercase text-zinc-450 dark:text-zinc-500 block mb-1">Dept</label>
+                    <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 block mb-1">Department</label>
                     <select
-                      className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-250 dark:border-zinc-800 rounded-xl px-2.5 py-2 text-sm w-full text-zinc-900 dark:text-zinc-100 outline-none focus:ring-1 focus:ring-synos-primary"
+                      className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 dark:border-zinc-800 rounded-xl px-2.5 py-2 text-sm w-full text-zinc-900 dark:text-zinc-100 outline-none focus:ring-1 focus:ring-synos-primary"
                       value={metaDept}
                       onChange={(e) => setMetaDept(e.target.value)}
                     >
@@ -842,7 +1110,7 @@ export function TestMasterScreen() {
               <button
                 id="btn-edit-metadata-active"
                 onClick={() => setIsEditingMetadata(true)}
-                className="py-2.5 px-4 bg-zinc-50 dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-850 border border-zinc-250 dark:border-zinc-800 rounded-xl text-zinc-650 dark:text-zinc-350 transition-all flex items-center gap-1.5 text-xs font-bold shadow-xs shrink-0"
+                className="py-2.5 px-4 bg-zinc-50 dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 dark:border-zinc-800 rounded-xl text-zinc-600 dark:text-zinc-400 dark:text-zinc-500 dark:text-zinc-400 transition-all flex items-center gap-1.5 text-xs font-bold shadow-xs shrink-0"
               >
                 <Edit2 className="w-4 h-4" /> Modify Details
               </button>
@@ -850,12 +1118,12 @@ export function TestMasterScreen() {
           </div>
 
           {/* Central Workflow Tab Switchers & Preview Toggle */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-zinc-250 dark:border-zinc-800 pb-px gap-2">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-zinc-200 dark:border-zinc-800 dark:border-zinc-800 pb-px gap-2">
             <div className="flex flex-wrap gap-1">
               <button
                 onClick={() => setActiveTab("parameters")}
                 className={cn(
-                  "px-5 py-2.5 text-sm font-black uppercase tracking-wider border-b-2 transition-all flex items-center gap-1.5 -mb-px",
+                  "px-5 py-2.5 text-sm font-semibold border-b-2 transition-all flex items-center gap-1.5 -mb-px",
                   activeTab === "parameters"
                     ? "border-synos-primary text-synos-primary"
                     : "border-transparent text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300"
@@ -866,7 +1134,7 @@ export function TestMasterScreen() {
               <button
                 onClick={() => setActiveTab("report-setup")}
                 className={cn(
-                  "px-5 py-2.5 text-sm font-black uppercase tracking-wider border-b-2 transition-all flex items-center gap-1.5 -mb-px",
+                  "px-5 py-2.5 text-sm font-semibold border-b-2 transition-all flex items-center gap-1.5 -mb-px",
                   activeTab === "report-setup"
                     ? "border-synos-primary text-synos-primary"
                     : "border-transparent text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300"
@@ -877,7 +1145,7 @@ export function TestMasterScreen() {
               <button
                 onClick={() => setActiveTab("pricing")}
                 className={cn(
-                  "px-5 py-2.5 text-sm font-black uppercase tracking-wider border-b-2 transition-all flex items-center gap-1.5 -mb-px",
+                  "px-5 py-2.5 text-sm font-semibold border-b-2 transition-all flex items-center gap-1.5 -mb-px",
                   activeTab === "pricing"
                     ? "border-synos-primary text-synos-primary"
                     : "border-transparent text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300"
@@ -889,7 +1157,7 @@ export function TestMasterScreen() {
                 <button
                   onClick={() => setActiveTab("profile-builder")}
                   className={cn(
-                    "px-5 py-2.5 text-sm font-black uppercase tracking-wider border-b-2 transition-all flex items-center gap-1.5 -mb-px",
+                    "px-5 py-2.5 text-sm font-semibold border-b-2 transition-all flex items-center gap-1.5 -mb-px",
                     activeTab === "profile-builder"
                       ? "border-synos-primary text-synos-primary"
                       : "border-transparent text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300"
@@ -902,12 +1170,12 @@ export function TestMasterScreen() {
 
             {/* Checkbox of Live Renderer Layout Preview */}
             <div className="flex items-center gap-2 px-3 py-2 self-end sm:self-auto select-none">
-              <label className="flex items-center gap-2 cursor-pointer text-xs font-bold text-zinc-600 dark:text-zinc-405">
+              <label className="flex items-center gap-2 cursor-pointer text-xs font-bold text-zinc-600 dark:text-zinc-400">
                 <input
                   type="checkbox"
                   checked={showLivePreview}
                   onChange={(e) => setShowLivePreview(e.target.checked)}
-                  className="rounded border-zinc-350 dark:border-zinc-700 text-synos-primary focus:ring-synos-primary w-4.5 h-4.5"
+                  className="rounded border-zinc-300 dark:border-zinc-700 dark:border-zinc-700 text-synos-primary focus:ring-synos-primary w-4.5 h-4.5"
                 />
                 <span>Live Preview Layout</span>
               </label>
@@ -921,13 +1189,13 @@ export function TestMasterScreen() {
             {activeTab === "parameters" && (
               <div className="bg-white dark:bg-zinc-900/40 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 shadow-sm space-y-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-black uppercase tracking-wider text-zinc-400 dark:text-zinc-500">Parameters Specification Grid</span>
-                  <div className="text-xs text-zinc-450 dark:text-zinc-450 font-bold flex items-center gap-1.5">
+                  <span className="text-xs font-semibold text-zinc-600 dark:text-zinc-400">Parameters Specification Grid</span>
+                  <div className="text-xs text-zinc-600 dark:text-zinc-400 dark:text-zinc-600 dark:text-zinc-400 font-bold flex items-center gap-1.5">
                     <Sliders className="w-4 h-4 text-synos-primary" /> Changes are instantly recorded.
                   </div>
                 </div>
 
-                <div className="overflow-x-auto border border-zinc-250 dark:border-zinc-800 rounded-xl">
+                <div className="overflow-x-auto border border-zinc-200 dark:border-zinc-800 dark:border-zinc-800 rounded-xl">
                   <table className="w-full text-left border-collapse text-sm">
                     <thead>
                       <tr className="bg-zinc-50 dark:bg-zinc-950 border-b border-zinc-200 dark:border-zinc-800">
@@ -963,7 +1231,7 @@ export function TestMasterScreen() {
                           <td className="py-1.5 px-1.5">
                             <input
                               type="text"
-                              className="w-full bg-transparent hover:bg-zinc-50 dark:hover:bg-zinc-900 focus:bg-white dark:focus:bg-zinc-950 focus:ring-1 focus:ring-synos-primary outline-none px-3 py-2 rounded text-zinc-600 dark:text-zinc-400 text-sm"
+                              className="w-full bg-transparent hover:bg-zinc-50 dark:hover:bg-zinc-900 focus:bg-white dark:focus:bg-zinc-950 focus:ring-1 focus:ring-synos-primary outline-none px-3 py-2 rounded text-zinc-600 dark:text-zinc-400 dark:text-zinc-400 text-sm"
                               value={p.unit}
                               onChange={(e) => handleParamCellChange(idx, 'unit', e.target.value)}
                             />
@@ -987,7 +1255,7 @@ export function TestMasterScreen() {
                           <td className="py-1.5 px-1.5">
                             <input
                               type="text"
-                              className="w-full bg-transparent hover:bg-zinc-50 dark:hover:bg-zinc-900 focus:bg-white dark:focus:bg-zinc-950 focus:ring-1 focus:ring-synos-primary outline-none px-3 py-2 rounded text-zinc-600 dark:text-zinc-400 text-sm"
+                              className="w-full bg-transparent hover:bg-zinc-50 dark:hover:bg-zinc-900 focus:bg-white dark:focus:bg-zinc-950 focus:ring-1 focus:ring-synos-primary outline-none px-3 py-2 rounded text-zinc-600 dark:text-zinc-400 dark:text-zinc-400 text-sm"
                               value={p.method}
                               onChange={(e) => handleParamCellChange(idx, 'method', e.target.value)}
                             />
@@ -1007,7 +1275,7 @@ export function TestMasterScreen() {
                               >
                                 <Settings className="w-4 h-4" />
                                 {p.hasFormula && (
-                                  <span className="absolute -top-1 -right-1 bg-purple-500 text-white text-[7px] font-black px-0.5 rounded-md scale-75 leading-none">
+                                  <span className="absolute -top-1 -right-1 bg-purple-500 text-white text-[7px] font-semibold px-0.5 rounded-md scale-75 leading-none">
                                     fx
                                   </span>
                                 )}
@@ -1017,7 +1285,7 @@ export function TestMasterScreen() {
                           <td className="py-1.5 px-1.5 text-center">
                             <button
                               onClick={() => handleDeleteParameterRow(idx)}
-                              className="p-1.5 hover:bg-rose-500/10 text-zinc-350 hover:text-rose-500 rounded-lg transition-colors opacity-0 group-hover:opacity-100 flex items-center justify-center mx-auto"
+                              className="p-1.5 hover:bg-rose-500/10 text-zinc-500 dark:text-zinc-400 hover:text-rose-500 rounded-lg transition-colors opacity-0 group-hover:opacity-100 flex items-center justify-center mx-auto"
                               title="Delete parameter"
                             >
                               <Trash2 className="w-4 h-4" />
@@ -1052,13 +1320,13 @@ export function TestMasterScreen() {
                   "bg-white dark:bg-zinc-900/40 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 shadow-sm space-y-6",
                   showLivePreview ? "md:col-span-6" : "md:col-span-12"
                 )}>
-                  <h3 className="text-sm font-black uppercase tracking-wider text-zinc-400 dark:text-zinc-500">Report Presentation Settings</h3>
+                  <h3 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">Report Presentation Settings</h3>
                   
                   <div className="space-y-4">
                     <div className="space-y-1.5">
-                      <label className="text-xs font-black uppercase text-zinc-450 dark:text-zinc-500 block ml-1">Report Layout Style</label>
+                      <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 block ml-1">Report layout style</label>
                       <select
-                        className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-250 dark:border-zinc-800 rounded-xl px-3.5 py-2.5 text-sm w-full text-zinc-900 dark:text-zinc-100 outline-none focus:ring-1 focus:ring-synos-primary"
+                        className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 dark:border-zinc-800 rounded-xl px-3.5 py-2.5 text-sm w-full text-zinc-900 dark:text-zinc-100 outline-none focus:ring-1 focus:ring-synos-primary"
                         value={selectedTest.reportStyle || "Standard A4"}
                         onChange={(e) => handleReportSetupFieldChange("reportStyle", e.target.value)}
                       >
@@ -1070,23 +1338,27 @@ export function TestMasterScreen() {
                     </div>
 
                     <div className="space-y-2">
-                      <label className="text-xs font-black uppercase text-zinc-450 dark:text-zinc-500 block ml-1">Pathologist / Technician Signature Slots</label>
+                      <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 block ml-1">Pathologist / technician signature slots</label>
                       <div className="grid grid-cols-2 gap-2">
                         {SIGNATURE_SLOT_PRESETS.map(sig => {
-                          const isChecked = selectedTest.signatureSlots?.includes(sig);
+                          const isDefaultPathologist = sig === "Default Pathologist (Lab Owner)";
+                          const isChecked = isDefaultPathologist || selectedTest.signatureSlots?.includes(sig);
                           return (
                             <label
                               key={sig}
                               className={cn(
-                                "flex items-center gap-2.5 px-4 py-3 border rounded-xl cursor-pointer select-none transition-all",
-                                isChecked
-                                  ? "bg-synos-primary/10 border-synos-primary/20 text-synos-primary"
-                                  : "bg-zinc-50 dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-850 hover:bg-zinc-100/50 text-zinc-500 dark:text-zinc-400"
+                                "flex items-center gap-2.5 px-4 py-3 border rounded-xl select-none transition-all",
+                                isDefaultPathologist
+                                  ? "bg-synos-primary/10 border-synos-primary/20 text-synos-primary opacity-60 cursor-not-allowed"
+                                  : "cursor-pointer hover:bg-zinc-100/50",
+                                !isDefaultPathologist && isChecked && "bg-synos-primary/10 border-synos-primary/20 text-synos-primary",
+                                !isDefaultPathologist && !isChecked && "bg-zinc-50 dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800 text-zinc-500 dark:text-zinc-400"
                               )}
                             >
                               <input
                                 type="checkbox"
                                 checked={isChecked}
+                                disabled={isDefaultPathologist}
                                 onChange={() => handleToggleSignatureSlot(sig)}
                                 className="hidden"
                               />
@@ -1099,7 +1371,7 @@ export function TestMasterScreen() {
                     </div>
 
                     <div className="border-t border-zinc-200 dark:border-zinc-800 pt-4 space-y-4">
-                      <span className="text-xs font-black uppercase text-zinc-450 dark:text-zinc-500 block ml-1">Presentation Details</span>
+                      <span className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 block ml-1">Presentation details</span>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <label className="flex items-center gap-2.5 cursor-pointer">
                           <input
@@ -1108,7 +1380,7 @@ export function TestMasterScreen() {
                             onChange={(e) => handleReportSetupFieldChange("showRange", e.target.checked)}
                             className="rounded border-zinc-300 text-synos-primary focus:ring-synos-primary w-4.5 h-4.5"
                           />
-                          <span className="text-sm font-bold text-zinc-650 dark:text-zinc-400">Biological Reference Interval</span>
+                          <span className="text-sm font-bold text-zinc-600 dark:text-zinc-400 dark:text-zinc-400">Biological Reference Interval</span>
                         </label>
                         <label className="flex items-center gap-2.5 cursor-pointer">
                           <input
@@ -1117,7 +1389,7 @@ export function TestMasterScreen() {
                             onChange={(e) => handleReportSetupFieldChange("showMethod", e.target.checked)}
                             className="rounded border-zinc-300 text-synos-primary focus:ring-synos-primary w-4.5 h-4.5"
                           />
-                          <span className="text-sm font-bold text-zinc-650 dark:text-zinc-400">Diagnostic Methodology</span>
+                          <span className="text-sm font-bold text-zinc-600 dark:text-zinc-400 dark:text-zinc-400">Diagnostic Methodology</span>
                         </label>
                         <label className="flex items-center gap-2.5 cursor-pointer col-span-1 md:col-span-2">
                           <input
@@ -1126,16 +1398,16 @@ export function TestMasterScreen() {
                             onChange={(e) => handleReportSetupFieldChange("showInterpretation", e.target.checked)}
                             className="rounded border-zinc-300 text-synos-primary focus:ring-synos-primary w-4.5 h-4.5"
                           />
-                          <span className="text-sm font-bold text-zinc-650 dark:text-zinc-400">Interpretation Commentaries</span>
+                          <span className="text-sm font-bold text-zinc-600 dark:text-zinc-400 dark:text-zinc-400">Interpretation Commentaries</span>
                         </label>
                       </div>
 
                       {selectedTest.showInterpretation && (
                         <div className="space-y-1.5 animate-in slide-in-from-top-2 duration-200">
-                          <label className="text-xs font-black uppercase text-zinc-450 dark:text-zinc-500 block ml-1">Interpretation Commentary Text</label>
+                          <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 block ml-1">Interpretation commentary text</label>
                           <textarea
                             rows="4"
-                            className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-250 dark:border-zinc-800 rounded-xl px-3.5 py-2.5 text-sm w-full text-zinc-900 dark:text-zinc-100 outline-none focus:ring-1 focus:ring-synos-primary placeholder-zinc-400 font-medium"
+                            className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 dark:border-zinc-800 rounded-xl px-3.5 py-2.5 text-sm w-full text-zinc-900 dark:text-zinc-100 outline-none focus:ring-1 focus:ring-synos-primary placeholder-zinc-400 font-medium"
                             placeholder="Type standard medical commentaries or test explanations to render inside report..."
                             value={selectedTest.interpretationComment ?? (selectedTest.parameters?.[0]?.narrativeTemplate ?? "")}
                             onChange={(e) => handleReportSetupFieldChange("interpretationComment", e.target.value)}
@@ -1148,163 +1420,417 @@ export function TestMasterScreen() {
 
                 {/* Live Preview Card */}
                 {showLivePreview && (
-                  <div className="md:col-span-6 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-855 rounded-2xl p-5 shadow-inner space-y-4">
+                  <div className="md:col-span-6 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 shadow-inner space-y-4">
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-black uppercase tracking-wider text-zinc-400 dark:text-zinc-500">Live Renderer Layout Preview</span>
+                      <span className="text-xs font-semibold text-zinc-600 dark:text-zinc-400">Live Renderer Layout Preview</span>
                       <span className="bg-emerald-500/10 text-emerald-500 border border-emerald-500/25 px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-widest flex items-center gap-0.5">
                         <Sparkles className="w-2.5 h-2.5" /> PDF WYSIWYG
                       </span>
                     </div>
 
-                    <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-5 shadow-sm text-xs text-zinc-800 dark:text-zinc-200 font-sans space-y-4 scale-95 origin-top transition-all">
-                      
-                      {/* Mock Invoice Header */}
-                      <div className="border-b border-zinc-250 dark:border-zinc-800 pb-2.5 flex justify-between items-start">
-                        <div>
-                          <h4 className="font-extrabold text-xs text-synos-primary">SynOS Diagnostics Lab</h4>
-                          <p className="text-[8px] text-zinc-400 mt-0.5">Report Generated On: 20-May-2026</p>
-                        </div>
-                        <div className="text-right">
-                          <p className="font-bold text-[9px]">PATIENT ID: SY-9812</p>
-                          <p className="text-[8px] text-zinc-400">Name: Rajesh Kumar, M / 32Y</p>
-                        </div>
-                      </div>
-
-                      {/* Dynamic Test Table Preview */}
-                      <div className="mt-2">
-                        <div className="font-extrabold text-[10px] text-zinc-900 dark:text-white uppercase mb-1">{selectedTest.name} ({selectedTest.code})</div>
-                        
-                        {selectedTest.reportStyle === "Two Column Grid" ? (
-                          <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-[8px] mt-2">
-                            {selectedTest.parameters && selectedTest.parameters.map((p, i) => (
-                              <div key={i} className="border-b border-zinc-100 dark:border-zinc-850 pb-1 flex justify-between items-center">
-                                <div>
-                                  <span className="font-semibold block text-[8px]">{p.name}</span>
-                                  {selectedTest.showMethod && p.method && <span className="text-[6px] text-zinc-450 italic">{p.method}</span>}
-                                </div>
-                                <div className="text-right">
-                                  <span className="font-mono font-bold text-[8px]">{(p.minRange + (p.maxRange - p.minRange)/2).toFixed(1)} {p.unit}</span>
-                                  {selectedTest.showRange && <span className="text-[6px] text-zinc-550 block">Ref: {p.minRange}-{p.maxRange}</span>}
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        ) : selectedTest.reportStyle === "Descriptive Narrative" ? (
-                          <div className="space-y-2 text-[8px] text-zinc-700 dark:text-zinc-300 mt-2">
-                            {selectedTest.parameters && selectedTest.parameters.map((p, i) => (
-                              <div key={i} className="bg-zinc-50/50 dark:bg-zinc-900/50 p-2 rounded-lg border border-zinc-150 dark:border-zinc-800">
-                                <span className="font-bold text-zinc-900 dark:text-white block text-[8px]">{p.name} ({p.code})</span>
-                                <p className="mt-1 leading-normal text-[7.5px]">
-                                  The analyte value is measured at <strong className="font-mono text-zinc-900 dark:text-white">{(p.minRange + (p.maxRange - p.minRange)/2).toFixed(1)} {p.unit}</strong>.
-                                  {selectedTest.showRange && ` The physiological biological reference interval for healthy adults is ${p.minRange} - ${p.maxRange} ${p.unit}.`}
-                                  {selectedTest.showMethod && p.method && ` Methodology used for estimation: ${p.method}.`}
-                                </p>
-                              </div>
-                            ))}
-                          </div>
-                        ) : selectedTest.reportStyle === "Modern Tabular" ? (
-                          <table className="w-full text-left text-[8px] border-collapse mt-2">
-                            <thead>
-                              <tr className="bg-zinc-100 dark:bg-zinc-850 text-zinc-650 dark:text-zinc-300 font-bold border-t border-b border-zinc-200 dark:border-zinc-750">
-                                <th className="py-1 px-1">Analyte</th>
-                                <th className="py-1 px-1 text-center">Value</th>
-                                <th className="py-1 px-1 text-center">Unit</th>
-                                {selectedTest.showRange && <th className="py-1 px-1 text-right">Reference Interval</th>}
-                                {selectedTest.showMethod && <th className="py-1 px-1 text-right">Methodology</th>}
-                              </tr>
-                            </thead>
-                            <tbody className="divide-y divide-zinc-150 dark:divide-zinc-850">
-                              {selectedTest.parameters && selectedTest.parameters.map((p, i) => (
-                                <tr key={i} className={i % 2 === 1 ? "bg-zinc-50/30 dark:bg-zinc-900/10" : ""}>
-                                  <td className="py-1 px-1 font-semibold">{p.name}</td>
-                                  <td className="py-1 px-1 text-center font-mono font-bold">{(p.minRange + (p.maxRange - p.minRange)/2).toFixed(1)}</td>
-                                  <td className="py-1 px-1 text-center font-mono text-zinc-500">{p.unit}</td>
-                                  {selectedTest.showRange && (
-                                    <td className="py-1 px-1 text-right font-mono text-zinc-650">
-                                      {p.minRange} - {p.maxRange}
-                                    </td>
-                                  )}
-                                  {selectedTest.showMethod && (
-                                    <td className="py-1 px-1 text-right text-zinc-450 italic text-[6.5px]">{p.method}</td>
-                                  )}
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
+                    {/* High-Fidelity preview box */}
+                    {(() => {
+                      const activeTemplate = getActiveTemplate(selectedTest);
+                      const logoEl = activeTemplate.includeBranding ? (
+                        activeTemplate.logoUrl ? (
+                          <img 
+                            src={activeTemplate.logoUrl} 
+                            alt="Logo" 
+                            style={{ width: `${activeTemplate.logoSize || 40}px`, height: 'auto', objectFit: 'contain' }}
+                            className="max-h-12 relative z-10"
+                          />
                         ) : (
-                          /* Standard A4 Layout */
-                          <table className="w-full text-left text-[8px] border-collapse border border-zinc-200 dark:border-zinc-800 mt-2">
-                            <thead>
-                              <tr className="bg-zinc-50 dark:bg-zinc-950 border-b border-zinc-200 dark:border-zinc-800 text-zinc-400 dark:text-zinc-500 font-bold">
-                                <th className="py-1 px-2 border-r border-zinc-200 dark:border-zinc-800">Analyte</th>
-                                <th className="py-1 px-2 text-center border-r border-zinc-200 dark:border-zinc-800">Value</th>
-                                <th className="py-1 px-2 text-center border-r border-zinc-200 dark:border-zinc-800">Unit</th>
-                                {selectedTest.showRange && <th className="py-1 px-2 text-right border-r border-zinc-200 dark:border-zinc-800">Reference Range</th>}
-                                {selectedTest.showMethod && <th className="py-1 px-2 text-right">Method</th>}
-                              </tr>
-                            </thead>
-                            <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
-                              {selectedTest.parameters && selectedTest.parameters.map((p, i) => (
-                                <tr key={i}>
-                                  <td className="py-1 px-2 border-r border-zinc-200 dark:border-zinc-800 font-semibold">{p.name}</td>
-                                  <td className="py-1 px-2 text-center border-r border-zinc-200 dark:border-zinc-800 font-mono">{(p.minRange + (p.maxRange - p.minRange)/2).toFixed(1)}</td>
-                                  <td className="py-1 px-2 text-center border-r border-zinc-200 dark:border-zinc-800 font-mono text-zinc-500">{p.unit}</td>
-                                  {selectedTest.showRange && (
-                                    <td className="py-1 px-2 text-right border-r border-zinc-200 dark:border-zinc-800 font-mono text-zinc-650">
-                                      {p.minRange} - {p.maxRange}
-                                    </td>
-                                  )}
-                                  {selectedTest.showMethod && (
-                                    <td className="py-1 px-2 text-right text-zinc-450 italic text-[6.5px]">{p.method}</td>
-                                  )}
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                        )}
-                      </div>
+                          <div 
+                            className="rounded-lg flex items-center justify-center font-semibold text-white select-none relative z-10 animate-pulse"
+                            style={{
+                              width: `${activeTemplate.logoSize || 32}px`,
+                              height: `${activeTemplate.logoSize || 32}px`,
+                              backgroundColor: activeTemplate.brandNameColor || "#4f46e5",
+                              fontSize: `${Math.max(10, (activeTemplate.logoSize || 32) * 0.35)}px`
+                            }}
+                          >
+                            {(activeTemplate.brandNameText || activeTemplate.clinicName || "SY").substring(0, 2).toUpperCase()}
+                          </div>
+                        )
+                      ) : null;
 
-                      {/* Interpretations commentaries */}
-                      {selectedTest.showInterpretation && (selectedTest.interpretationComment || (selectedTest.parameters && selectedTest.parameters[0]?.narrativeTemplate)) && (
-                        <div className="bg-zinc-50 dark:bg-zinc-950 p-2.5 rounded-lg border border-zinc-200 dark:border-zinc-850 mt-3">
-                          <span className="font-bold block text-[7px] text-zinc-450 uppercase tracking-wide">Commentaries & Remarks</span>
-                          <p className="text-[7.5px] italic text-zinc-650 mt-0.5 leading-normal">
-                            {selectedTest.interpretationComment ?? selectedTest.parameters[0].narrativeTemplate}
+                      const brandTextEl = activeTemplate.includeBranding ? (
+                        <div className="relative z-10 text-left">
+                          <h4 
+                            style={{
+                              fontSize: `${activeTemplate.brandNameSize || 14}px`,
+                              fontWeight: activeTemplate.brandNameWeight || "900",
+                              color: activeTemplate.brandNameColor || "#1e1b4b"
+                            }}
+                            className="uppercase tracking-tight leading-tight"
+                          >
+                            {activeTemplate.brandNameText || activeTemplate.clinicName || "SynOS Diagnostics"}
+                          </h4>
+                          <p 
+                            style={{
+                              fontSize: `${activeTemplate.brandSubtitleSize || 8}px`,
+                              color: activeTemplate.brandSubtitleColor || "#71717a"
+                            }}
+                            className="font-medium mt-0.5 leading-none"
+                          >
+                            {activeTemplate.brandSubtitleText || "Accredited Diagnostics Lab"}
                           </p>
                         </div>
-                      )}
+                      ) : null;
 
-                      {/* Signatures */}
-                      {selectedTest.signatureSlots && selectedTest.signatureSlots.length > 0 && (
-                        <div className="pt-3 border-t border-zinc-200 dark:border-zinc-800 flex justify-end gap-6 items-end">
-                          {selectedTest.signatureSlots.map(sig => (
-                            <div key={sig} className="text-center">
-                              <div className="h-6 flex items-end justify-center">
-                                <span className="font-mono text-[7px] text-zinc-350 italic">/Signed electronically/</span>
-                              </div>
-                              <span className="block border-t border-zinc-200 dark:border-zinc-800 pt-0.5 text-[7px] font-bold text-zinc-500">{sig}</span>
-                            </div>
-                          ))}
+                      const dividerStyle = (activeTemplate.includeBranding && activeTemplate.showHeaderDivider !== false) ? {
+                        borderBottomWidth: `${activeTemplate.headerDividerThickness ?? 2}px`,
+                        borderBottomStyle: activeTemplate.headerDividerStyle || "solid",
+                        borderBottomColor: activeTemplate.headerDividerColor || "#e2e8f0"
+                      } : {};
+
+                      const patientInfoEl = (
+                        <div className="text-[7.5px] text-zinc-600 dark:text-zinc-400 dark:text-zinc-400 leading-normal font-medium text-right self-center relative z-10">
+                          <p><span className="font-bold text-zinc-600 dark:text-zinc-400 dark:text-zinc-300">Patient:</span> Rajesh Kumar, M / 32Y</p>
+                          <p><span className="font-bold text-zinc-600 dark:text-zinc-400 dark:text-zinc-300">Referrer:</span> Dr. S. Sharma, MD</p>
+                          <p><span className="font-bold text-zinc-600 dark:text-zinc-400 dark:text-zinc-300">ID:</span> SY-9812-D01 &bull; <span className="font-bold text-zinc-600 dark:text-zinc-400 dark:text-zinc-300">Date:</span> 20-May-2026</p>
                         </div>
-                      )}
-                    </div>
+                      );
+
+                      const renderHeader = () => {
+                        if (!activeTemplate.includeBranding) {
+                          if (activeTemplate.usePreprinted) {
+                            return (
+                              <div className="h-[90px] border border-dashed border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/10 rounded-lg flex flex-col justify-center items-center mb-6 relative z-10">
+                                <span className="text-[8px] font-semibold tracking-wider text-zinc-600 dark:text-zinc-400">Physical pre-printed sheet header region</span>
+                                <span className="text-[7px] text-zinc-400 dark:text-zinc-500 font-mono mt-0.5">Top Safe Margins: {activeTemplate.topMargin}mm (~90px gap)</span>
+                              </div>
+                            );
+                          }
+                          return (
+                            <div className="border-b border-zinc-200 dark:border-zinc-800 dark:border-zinc-800 pb-2.5 flex justify-between items-start mb-3">
+                              <div>
+                                <h4 className="font-extrabold text-xs text-synos-primary">SynOS Diagnostics Lab</h4>
+                                <p className="text-[8px] text-zinc-400 mt-0.5">Report Generated On: 20-May-2026</p>
+                              </div>
+                              <div className="text-right">
+                                <p className="font-bold text-[9px]">PATIENT ID: SY-9812</p>
+                                <p className="text-[8px] text-zinc-400">Name: Rajesh Kumar, M / 32Y</p>
+                              </div>
+                            </div>
+                          );
+                        }
+
+                        if (activeTemplate.logoPosition === "Center") {
+                          return (
+                            <div className="w-full pb-2 mb-3 space-y-2.5 relative z-10" style={dividerStyle}>
+                              <div className="flex flex-col items-center text-center gap-1.5">
+                                {logoEl}
+                                {brandTextEl}
+                              </div>
+                              <div className="flex justify-between items-center text-[7px] border-t border-zinc-100 dark:border-zinc-800 pt-1.5 font-medium text-zinc-500">
+                                <div>
+                                  <span className="font-bold text-zinc-600 dark:text-zinc-400 dark:text-zinc-300">Patient:</span> Rajesh Kumar, M / 32Y
+                                </div>
+                                <div>
+                                  <span className="font-bold text-zinc-600 dark:text-zinc-400 dark:text-zinc-300">Referrer:</span> Dr. S. Sharma, MD
+                                </div>
+                                <div>
+                                  <span className="font-bold text-zinc-600 dark:text-zinc-400 dark:text-zinc-300">Date:</span> 20-May-2026
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        } else if (activeTemplate.logoPosition === "Right") {
+                          return (
+                            <div className="w-full pb-2 mb-3 flex justify-between items-stretch gap-4 relative z-10" style={dividerStyle}>
+                              <div className="text-left text-[7.5px] text-zinc-600 dark:text-zinc-400 dark:text-zinc-400 leading-normal font-medium self-center">
+                                <p><span className="font-bold text-zinc-600 dark:text-zinc-400 dark:text-zinc-300">Patient:</span> Rajesh Kumar, M / 32Y</p>
+                                <p><span className="font-bold text-zinc-600 dark:text-zinc-400 dark:text-zinc-300">Referrer:</span> Dr. S. Sharma, MD</p>
+                                <p><span className="font-bold text-zinc-600 dark:text-zinc-400 dark:text-zinc-300">Date:</span> 20-May-2026</p>
+                              </div>
+                              <div className="flex items-center gap-2.5 text-right">
+                                {brandTextEl}
+                                {logoEl}
+                              </div>
+                            </div>
+                          );
+                        } else {
+                          return (
+                            <div className="w-full pb-2 mb-3 flex justify-between items-stretch gap-4 relative z-10" style={dividerStyle}>
+                              <div className="flex items-center gap-2.5">
+                                {logoEl}
+                                {brandTextEl}
+                              </div>
+                              {patientInfoEl}
+                            </div>
+                          );
+                        }
+                      };
+
+                      const hasTemplateColumns = activeTemplate.columns && activeTemplate.columns.length > 0;
+                      const totalWeight = hasTemplateColumns ? activeTemplate.columns.reduce((sum, c) => sum + c.weight, 0) : 1;
+
+                      return (
+                        <div 
+                          className={cn(
+                            "shadow-md max-w-2xl mx-auto min-h-[420px] flex flex-col justify-between relative overflow-hidden select-none transition-all duration-200",
+                            activeTemplate.density === "Compact" ? "font-sans text-[7.5px]" : "font-serif text-xs",
+                            activeTemplate.density === "Large-print" ? "text-sm" : ""
+                          )}
+                          style={{
+                            padding: `${activeTemplate.pagePadding ?? 20}px`,
+                            borderWidth: `${activeTemplate.borderWidth ?? 1}px`,
+                            borderStyle: activeTemplate.borderStyle || "solid",
+                            borderColor: activeTemplate.borderColor || "#e2e8f0",
+                            borderRadius: `${activeTemplate.borderRadius ?? 12}px`,
+                            backgroundColor: activeTemplate.bgType === "solid" ? (activeTemplate.bgColor || "#ffffff") : undefined,
+                            backgroundImage: activeTemplate.bgType === "gradient" 
+                              ? `linear-gradient(${activeTemplate.bgGradientAngle || 135}deg, ${activeTemplate.bgGradientStart || '#ffffff'}, ${activeTemplate.bgGradientEnd || '#f1f5f9'})` 
+                              : undefined
+                          }}
+                        >
+                          {/* Background Image layer */}
+                          {activeTemplate.bgType === "image" && activeTemplate.bgImageUrl && (
+                            <div 
+                              className="absolute inset-0 bg-cover bg-center pointer-events-none"
+                              style={{ 
+                                backgroundImage: `url(${activeTemplate.bgImageUrl})`, 
+                                opacity: activeTemplate.bgImageOpacity ?? 0.05,
+                                zIndex: 0 
+                              }} 
+                            />
+                          )}
+
+                          {/* Watermark overlay */}
+                          {activeTemplate.includeBranding && activeTemplate.watermarkText && (
+                            <div 
+                              className="absolute inset-0 flex items-center justify-center pointer-events-none select-none font-semibold font-mono tracking-wider"
+                              style={{ 
+                                opacity: activeTemplate.watermarkOpacity || 0.05, 
+                                color: '#000',
+                                fontSize: `${activeTemplate.watermarkSize || 32}px`,
+                                transform: `rotate(${activeTemplate.watermarkRotation ?? 12}deg)`,
+                                zIndex: 5
+                              }}
+                            >
+                              {activeTemplate.watermarkText}
+                            </div>
+                          )}
+
+                          <div className="relative z-10 flex flex-col flex-1 justify-between">
+                            <div>
+                              {renderHeader()}
+
+                              {/* Dynamic Test Table Preview */}
+                              <div className="mt-2">
+                                <div className="font-extrabold text-[10px] text-zinc-900 dark:text-white uppercase mb-1">{selectedTest.name} ({selectedTest.code})</div>
+                                
+                                {selectedTest.reportStyle === "Two Column Grid" ? (
+                                  <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-[8px] mt-2">
+                                    {selectedTest.parameters && selectedTest.parameters.map((p, i) => (
+                                      <div key={i} className="border-b border-zinc-200 dark:border-zinc-800 dark:border-zinc-800 pb-1 flex justify-between items-center">
+                                        <div>
+                                          <span className="font-semibold block text-[8px]">{p.name}</span>
+                                          {selectedTest.showMethod && p.method && <span className="text-[6px] text-zinc-600 dark:text-zinc-400 dark:text-zinc-500 italic">{p.method}</span>}
+                                        </div>
+                                        <div className="text-right">
+                                          <span className="font-mono font-bold text-[8px]">{(Number(p.minRange) + (Number(p.maxRange) - Number(p.minRange))/2).toFixed(1)} {p.unit}</span>
+                                          {selectedTest.showRange && <span className="text-[6px] text-zinc-500 dark:text-zinc-600 dark:text-zinc-400 block">Ref: {p.minRange}-{p.maxRange}</span>}
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                ) : selectedTest.reportStyle === "Descriptive Narrative" ? (
+                                  <div className="space-y-2 text-[8px] text-zinc-700 dark:text-zinc-300 mt-2">
+                                    {selectedTest.parameters && selectedTest.parameters.map((p, i) => (
+                                      <div key={i} className="bg-zinc-50/50 dark:bg-zinc-900/50 p-2 rounded-lg border border-zinc-200 dark:border-zinc-800 dark:border-zinc-800">
+                                        <span className="font-bold text-zinc-900 dark:text-white block text-[8px]">{p.name} ({p.code})</span>
+                                        <p className="mt-1 leading-normal text-[7.5px]">
+                                          The analyte value is measured at <strong className="font-mono text-zinc-900 dark:text-white">{(Number(p.minRange) + (Number(p.maxRange) - Number(p.minRange))/2).toFixed(1)} {p.unit}</strong>.
+                                          {selectedTest.showRange && ` The physiological biological reference interval for healthy adults is ${p.minRange} - ${p.maxRange} ${p.unit}.`}
+                                          {selectedTest.showMethod && p.method && ` Methodology used for estimation: ${p.method}.`}
+                                        </p>
+                                      </div>
+                                    ))}
+                                  </div>
+                                ) : hasTemplateColumns ? (
+                                  /* Dynamic Tabular layout utilizing active template's columns configuration */
+                                  <table className={cn(
+                                    "w-full text-left text-[8px] border-collapse mt-2",
+                                    selectedTest.reportStyle === "Standard A4" && "border border-zinc-200 dark:border-zinc-800"
+                                  )}>
+                                    <thead>
+                                      <tr className={cn(
+                                        selectedTest.reportStyle === "Modern Tabular"
+                                          ? "bg-zinc-100 dark:bg-zinc-800 dark:bg-zinc-950 text-zinc-600 dark:text-zinc-300 font-bold border-t border-b border-zinc-200 dark:border-zinc-750"
+                                          : "bg-zinc-50 dark:bg-zinc-950 border-b border-zinc-200 dark:border-zinc-800 text-zinc-400 dark:text-zinc-500 font-bold"
+                                      )}>
+                                        {activeTemplate.columns.map((col, idx) => (
+                                          <th
+                                            key={idx}
+                                            className={cn(
+                                              "py-1 px-2",
+                                              selectedTest.reportStyle === "Standard A4" && "border-r border-zinc-200 dark:border-zinc-800 last:border-r-0",
+                                              col.alignment === "Left" ? "text-left" : col.alignment === "Center" ? "text-center" : "text-right"
+                                            )}
+                                            style={{ width: `${(col.weight / totalWeight) * 100}%` }}
+                                          >
+                                            {col.title}
+                                          </th>
+                                        ))}
+                                      </tr>
+                                    </thead>
+                                    <tbody className={cn(
+                                      selectedTest.reportStyle === "Modern Tabular"
+                                        ? "divide-y divide-zinc-150 dark:divide-zinc-850"
+                                        : "divide-y divide-zinc-200 dark:divide-zinc-800"
+                                    )}>
+                                      {selectedTest.parameters && selectedTest.parameters.map((p, i) => (
+                                        <tr 
+                                          key={i} 
+                                          className={cn(
+                                            selectedTest.reportStyle === "Modern Tabular" && i % 2 === 1 && "bg-zinc-50/30 dark:bg-zinc-900/10"
+                                          )}
+                                        >
+                                          {activeTemplate.columns.map((col, idx) => {
+                                            let text = "";
+                                            if (col.code === "Parameter") text = p.name;
+                                            else if (col.code === "Value") {
+                                              const val = (Number(p.minRange) + (Number(p.maxRange) - Number(p.minRange)) / 2);
+                                              text = isNaN(val) ? "0.0" : val.toFixed(1);
+                                            }
+                                            else if (col.code === "Unit") text = p.unit;
+                                            else if (col.code === "ReferenceRange") text = selectedTest.showRange ? `${p.minRange} - ${p.maxRange}` : "";
+                                            else if (col.code === "Methodology") text = selectedTest.showMethod ? p.method : "";
+
+                                            return (
+                                              <td
+                                                key={idx}
+                                                className={cn(
+                                                  "py-1 px-2",
+                                                  selectedTest.reportStyle === "Standard A4" && "border-r border-zinc-200 dark:border-zinc-800 last:border-r-0",
+                                                  col.bold && "font-bold text-zinc-950 dark:text-white",
+                                                  col.alignment === "Left" ? "text-left" : col.alignment === "Center" ? "text-center" : "text-right"
+                                                )}
+                                              >
+                                                {text}
+                                              </td>
+                                            );
+                                          })}
+                                        </tr>
+                                      ))}
+                                    </tbody>
+                                  </table>
+                                ) : (
+                                  /* Fallback to simple tables if template columns are missing */
+                                  <table className={cn(
+                                    "w-full text-left text-[8px] border-collapse mt-2",
+                                    selectedTest.reportStyle === "Standard A4" && "border border-zinc-200 dark:border-zinc-800"
+                                  )}>
+                                    <thead>
+                                      <tr className={cn(
+                                        selectedTest.reportStyle === "Modern Tabular"
+                                          ? "bg-zinc-100 dark:bg-zinc-800 dark:bg-zinc-950 text-zinc-600 dark:text-zinc-400 dark:text-zinc-300 font-bold border-t border-b border-zinc-200 dark:border-zinc-750"
+                                          : "bg-zinc-50 dark:bg-zinc-950 border-b border-zinc-200 dark:border-zinc-800 text-zinc-400 dark:text-zinc-500 font-bold"
+                                      )}>
+                                        <th className={cn("py-1 px-2", selectedTest.reportStyle === "Standard A4" && "border-r border-zinc-200 dark:border-zinc-800")}>Analyte</th>
+                                        <th className={cn("py-1 px-2 text-center", selectedTest.reportStyle === "Standard A4" && "border-r border-zinc-200 dark:border-zinc-800")}>Value</th>
+                                        <th className={cn("py-1 px-2 text-center", selectedTest.reportStyle === "Standard A4" && "border-r border-zinc-200 dark:border-zinc-800")}>Unit</th>
+                                        {selectedTest.showRange && <th className={cn("py-1 px-2 text-right", selectedTest.reportStyle === "Standard A4" && "border-r border-zinc-200 dark:border-zinc-800")}>Reference Interval</th>}
+                                        {selectedTest.showMethod && <th className="py-1 px-2 text-right">Methodology</th>}
+                                      </tr>
+                                    </thead>
+                                    <tbody className={cn(
+                                      selectedTest.reportStyle === "Modern Tabular"
+                                        ? "divide-y divide-zinc-150 dark:divide-zinc-850"
+                                        : "divide-y divide-zinc-200 dark:divide-zinc-800"
+                                    )}>
+                                      {selectedTest.parameters && selectedTest.parameters.map((p, i) => (
+                                        <tr 
+                                          key={i} 
+                                          className={cn(
+                                            selectedTest.reportStyle === "Modern Tabular" && i % 2 === 1 && "bg-zinc-50/30 dark:bg-zinc-900/10"
+                                          )}
+                                        >
+                                          <td className={cn("py-1 px-2 font-semibold", selectedTest.reportStyle === "Standard A4" && "border-r border-zinc-200 dark:border-zinc-800")}>{p.name}</td>
+                                          <td className={cn("py-1 px-2 text-center font-mono font-bold", selectedTest.reportStyle === "Standard A4" && "border-r border-zinc-200 dark:border-zinc-800")}>{(Number(p.minRange) + (Number(p.maxRange) - Number(p.minRange))/2).toFixed(1)}</td>
+                                          <td className={cn("py-1 px-2 text-center font-mono text-zinc-500", selectedTest.reportStyle === "Standard A4" && "border-r border-zinc-200 dark:border-zinc-800")}>{p.unit}</td>
+                                          {selectedTest.showRange && (
+                                            <td className={cn("py-1 px-2 text-right font-mono text-zinc-600 dark:text-zinc-400", selectedTest.reportStyle === "Standard A4" && "border-r border-zinc-200 dark:border-zinc-800")}>
+                                              {p.minRange} - {p.maxRange}
+                                            </td>
+                                          )}
+                                          {selectedTest.showMethod && (
+                                            <td className="py-1 px-2 text-right text-zinc-600 dark:text-zinc-400 italic text-[6.5px]">{p.method}</td>
+                                          )}
+                                        </tr>
+                                      ))}
+                                    </tbody>
+                                  </table>
+                                )}
+                              </div>
+
+                              {/* Interpretations commentaries */}
+                              {selectedTest.showInterpretation && (selectedTest.interpretationComment || (selectedTest.parameters && selectedTest.parameters[0]?.narrativeTemplate)) && (
+                                <div className="bg-zinc-50 dark:bg-zinc-950/50 p-2.5 rounded-lg border border-zinc-200 dark:border-zinc-800 mt-3">
+                                  <span className="font-bold block text-[7px] text-zinc-600 dark:text-zinc-400 dark:text-zinc-500 uppercase tracking-wide">Commentaries & Remarks</span>
+                                  <p className="text-[7.5px] italic text-zinc-600 dark:text-zinc-400 dark:text-zinc-400 mt-0.5 leading-normal">
+                                    {selectedTest.interpretationComment ?? selectedTest.parameters[0].narrativeTemplate}
+                                  </p>
+                                </div>
+                              )}
+                            </div>
+
+                            {/* Footer & Signatures Slots */}
+                            <div className="mt-6">
+                              {/* Signatures */}
+                              {selectedTest.signatureSlots && selectedTest.signatureSlots.length > 0 && (
+                                <div className="pt-3 border-t border-dashed border-zinc-200 dark:border-zinc-800 flex justify-end gap-6 items-end">
+                                  {selectedTest.signatureSlots.map(sig => (
+                                    <div key={sig} className="text-center">
+                                      <div className="h-6 flex items-end justify-center">
+                                        {activeTemplate.includeBranding && (
+                                          <span className="font-mono text-[7px] text-zinc-500 dark:text-zinc-400 dark:text-zinc-600 italic">/Signed digitally/</span>
+                                        )}
+                                      </div>
+                                      <span className="block border-t border-zinc-200 dark:border-zinc-800 pt-0.5 text-[7px] font-semibold text-zinc-600 dark:text-zinc-400">{sig}</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+
+                              {/* Physical Preprinted Bottom Margins indicator */}
+                              {activeTemplate.usePreprinted && (
+                                <div className="h-[70px] border border-dashed border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/10 rounded-lg flex flex-col justify-center items-center mt-4 relative">
+                                  <span className="text-[8px] font-semibold tracking-wider text-zinc-600 dark:text-zinc-400">Physical pre-printed sheet footer region</span>
+                                  <span className="text-[7px] text-zinc-400 dark:text-zinc-500 font-mono mt-0.5">Bottom Safe Margins: {activeTemplate.bottomMargin}mm (~70px gap)</span>
+                                </div>
+                              )}
+
+                              {/* Digital mode Footer bar */}
+                              {!activeTemplate.usePreprinted && activeTemplate.includeBranding && activeTemplate.footerText && (
+                                <div className="mt-4 pt-2 border-t border-zinc-200 dark:border-zinc-800 text-center text-[7px] text-zinc-400 font-medium">
+                                  {activeTemplate.footerText}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })()}
                   </div>
                 )}
               </div>
             )}
-                        {/* Tab: Pricing */}
+            {/* Tab: Pricing */}
             {activeTab === "pricing" && (
               <div className="bg-white dark:bg-zinc-900/40 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 shadow-sm space-y-6">
-                <h3 className="text-sm font-black uppercase tracking-wider text-zinc-400 dark:text-zinc-500">Tiered Pricing Catalog Setup</h3>
+                <h3 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">Tiered Pricing Catalog Setup</h3>
                 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <div className="space-y-1.5">
-                    <label className="text-xs font-black uppercase text-zinc-450 dark:text-zinc-500 block ml-1">Base Price (Global Default)</label>
+                    <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 block ml-1">Base price (global default)</label>
                     <div className="relative">
-                      <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm font-black text-zinc-400">₹</span>
+                      <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm font-semibold text-zinc-500 dark:text-zinc-400">₹</span>
                       <input
                         type="number"
-                        className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-250 dark:border-zinc-800 rounded-xl pl-9 pr-4 py-2.5 text-sm w-full text-zinc-900 dark:text-zinc-100 font-bold outline-none focus:ring-1 focus:ring-synos-primary"
+                        className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 dark:border-zinc-800 rounded-xl pl-9 pr-4 py-2.5 text-sm w-full text-zinc-900 dark:text-zinc-100 font-bold outline-none focus:ring-1 focus:ring-synos-primary"
                         value={selectedTest.basePrice || 0}
                         onChange={(e) => {
                           const updatedTest = { ...selectedTest, basePrice: Number(e.target.value) || 0 };
@@ -1317,12 +1843,12 @@ export function TestMasterScreen() {
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-xs font-black uppercase text-zinc-450 dark:text-zinc-500 block ml-1">Branch A Clinic Price</label>
+                    <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 block ml-1">Branch A clinic price</label>
                     <div className="relative">
-                      <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm font-black text-zinc-400">₹</span>
+                      <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm font-semibold text-zinc-500 dark:text-zinc-400">₹</span>
                       <input
                         type="number"
-                        className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-250 dark:border-zinc-800 rounded-xl pl-9 pr-4 py-2.5 text-sm w-full text-zinc-900 dark:text-zinc-100 font-bold outline-none focus:ring-1 focus:ring-synos-primary"
+                        className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 dark:border-zinc-800 rounded-xl pl-9 pr-4 py-2.5 text-sm w-full text-zinc-900 dark:text-zinc-100 font-bold outline-none focus:ring-1 focus:ring-synos-primary"
                         value={selectedTest.pricing?.branchA || 0}
                         onChange={(e) => handlePricingChange("branchA", e.target.value)}
                       />
@@ -1331,12 +1857,12 @@ export function TestMasterScreen() {
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-xs font-black uppercase text-zinc-450 dark:text-zinc-500 block ml-1">Branch B Diagnostic Price</label>
+                    <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 block ml-1">Branch B diagnostic price</label>
                     <div className="relative">
-                      <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm font-black text-zinc-400">₹</span>
+                      <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm font-semibold text-zinc-500 dark:text-zinc-400">₹</span>
                       <input
                         type="number"
-                        className="bg-zinc-50 dark:bg-zinc-955 border border-zinc-250 dark:border-zinc-800 rounded-xl pl-9 pr-4 py-2.5 text-sm w-full text-zinc-900 dark:text-zinc-100 font-bold outline-none focus:ring-1 focus:ring-synos-primary"
+                        className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 dark:border-zinc-800 rounded-xl pl-9 pr-4 py-2.5 text-sm w-full text-zinc-900 dark:text-zinc-100 font-bold outline-none focus:ring-1 focus:ring-synos-primary"
                         value={selectedTest.pricing?.branchB || 0}
                         onChange={(e) => handlePricingChange("branchB", e.target.value)}
                       />
@@ -1347,19 +1873,19 @@ export function TestMasterScreen() {
 
                 <div className="border-t border-zinc-200 dark:border-zinc-800 pt-5">
                   <div className="max-w-md space-y-3 bg-zinc-50 dark:bg-zinc-950 p-4 border border-zinc-200 dark:border-zinc-800 rounded-2xl">
-                    <span className="text-xs font-black uppercase text-zinc-400 dark:text-zinc-500 block">Corporate / B2B Referral Partner Price</span>
+                    <span className="text-xs font-semibold text-zinc-600 dark:text-zinc-400 block">Corporate / B2B Referral Partner Price</span>
                     <div className="flex gap-4 items-center">
                       <div className="relative flex-1">
-                        <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm font-black text-zinc-400">₹</span>
+                        <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm font-semibold text-zinc-500 dark:text-zinc-400">₹</span>
                         <input
                           type="number"
-                          className="bg-white dark:bg-zinc-900 border border-zinc-250 dark:border-zinc-800 rounded-xl pl-9 pr-3 py-2 text-sm w-full text-zinc-900 dark:text-zinc-100 font-bold outline-none focus:ring-1 focus:ring-synos-primary"
+                          className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 dark:border-zinc-800 rounded-xl pl-9 pr-3 py-2 text-sm w-full text-zinc-900 dark:text-zinc-100 font-bold outline-none focus:ring-1 focus:ring-synos-primary"
                           value={selectedTest.pricing?.corporate || 0}
                           onChange={(e) => handlePricingChange("corporate", e.target.value)}
                         />
                       </div>
-                      <div className="text-xs text-zinc-450 leading-snug">
-                        <span className="font-bold block text-zinc-650 dark:text-zinc-350">Default Corporate B2B Tier</span>
+                      <div className="text-xs text-zinc-600 dark:text-zinc-400 leading-snug">
+                        <span className="font-bold block text-zinc-600 dark:text-zinc-400 dark:text-zinc-500 dark:text-zinc-400">Default Corporate B2B Tier</span>
                         Applied when diagnostic requests are billed directly to diagnostic referral networks.
                       </div>
                     </div>
@@ -1373,7 +1899,7 @@ export function TestMasterScreen() {
               <div className="bg-white dark:bg-zinc-900/40 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 shadow-sm space-y-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h3 className="text-xs font-black uppercase tracking-wider text-zinc-400 dark:text-zinc-500">Compose Panel / Profiles</h3>
+                    <h3 className="text-xs font-semibold text-zinc-600 dark:text-zinc-400">Compose Panel / Profiles</h3>
                     <p className="text-[10px] text-zinc-500 mt-0.5">Select the individual tests that compile into this comprehensive panel package.</p>
                   </div>
                   <span className="bg-amber-500/10 text-amber-500 border border-amber-500/25 px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider">
@@ -1394,7 +1920,7 @@ export function TestMasterScreen() {
                             "p-3 rounded-xl border cursor-pointer select-none transition-all flex items-center justify-between group",
                             isIncluded
                               ? "bg-amber-500/5 border-amber-500/30 text-zinc-800 dark:text-zinc-250"
-                              : "bg-zinc-50 dark:bg-zinc-900/10 border-zinc-200 dark:border-zinc-850 hover:bg-zinc-100/50"
+                              : "bg-zinc-50 dark:bg-zinc-900/10 border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100/50"
                           )}
                         >
                           <div>
@@ -1429,25 +1955,25 @@ export function TestMasterScreen() {
           {/* Drawer Header */}
           <div className="p-4 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between bg-zinc-50/50 dark:bg-zinc-900/20">
             <div>
-              <span className="bg-synos-primary/10 text-synos-primary border border-synos-primary/20 px-2 py-0.5 rounded text-[9px] font-mono uppercase tracking-wider font-black">
+              <span className="bg-synos-primary/10 text-synos-primary border border-synos-primary/20 px-2 py-0.5 rounded text-[9px] font-mono font-semibold">
                 {drawerParamCode}
               </span>
-              <h3 className="text-xs font-black uppercase text-zinc-500 dark:text-zinc-400 tracking-wider mt-1">Advanced Parameter settings</h3>
+              <h3 className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 mt-1">Advanced Parameter settings</h3>
             </div>
             <button
               onClick={() => setDrawerOpen(false)}
-              className="p-1.5 hover:bg-zinc-100 dark:hover:bg-zinc-850 rounded-lg text-zinc-400 transition-colors"
+              className="p-1.5 hover:bg-zinc-100 dark:hover:bg-zinc-800 dark:bg-zinc-950 rounded-lg text-zinc-400 transition-colors"
             >
               <X className="w-4 h-4" />
             </button>
           </div>
 
           {/* Drawer Navigation */}
-          <div className="flex border-b border-zinc-200 dark:border-zinc-850 bg-zinc-50/20 dark:bg-zinc-900/10">
+          <div className="flex border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50/20 dark:bg-zinc-900/10">
             <button
               onClick={() => setDrawerMode("formula")}
               className={cn(
-                "flex-1 py-2 text-[10px] font-black uppercase tracking-wider border-b-2 text-center transition-all",
+                "flex-1 py-2 text-[10px] font-semibold tracking-wide border-b-2 text-center transition-all",
                 drawerMode === "formula" ? "border-synos-primary text-synos-primary" : "border-transparent text-zinc-400 dark:text-zinc-500"
               )}
             >
@@ -1456,7 +1982,7 @@ export function TestMasterScreen() {
             <button
               onClick={() => setDrawerMode("ranges")}
               className={cn(
-                "flex-1 py-2 text-[10px] font-black uppercase tracking-wider border-b-2 text-center transition-all",
+                "flex-1 py-2 text-[10px] font-semibold tracking-wide border-b-2 text-center transition-all",
                 drawerMode === "ranges" ? "border-synos-primary text-synos-primary" : "border-transparent text-zinc-400 dark:text-zinc-500"
               )}
             >
@@ -1465,7 +1991,7 @@ export function TestMasterScreen() {
             <button
               onClick={() => setDrawerMode("analyzer")}
               className={cn(
-                "flex-1 py-2 text-[10px] font-black uppercase tracking-wider border-b-2 text-center transition-all",
+                "flex-1 py-2 text-[10px] font-semibold tracking-wide border-b-2 text-center transition-all",
                 drawerMode === "analyzer" ? "border-synos-primary text-synos-primary" : "border-transparent text-zinc-400 dark:text-zinc-500"
               )}
             >
@@ -1474,7 +2000,7 @@ export function TestMasterScreen() {
             <button
               onClick={() => setDrawerMode("narrative")}
               className={cn(
-                "flex-1 py-2 text-[10px] font-black uppercase tracking-wider border-b-2 text-center transition-all",
+                "flex-1 py-2 text-[10px] font-semibold tracking-wide border-b-2 text-center transition-all",
                 drawerMode === "narrative" ? "border-synos-primary text-synos-primary" : "border-transparent text-zinc-400 dark:text-zinc-500"
               )}
             >
@@ -1489,8 +2015,8 @@ export function TestMasterScreen() {
             {drawerMode === "formula" && (
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <label className="text-[10px] font-black uppercase text-zinc-450 dark:text-zinc-500 block">Calculation Expression</label>
-                  <label className="flex items-center gap-1.5 cursor-pointer text-[10px] font-bold text-zinc-650 dark:text-zinc-400">
+                  <label className="text-[10px] font-semibold text-zinc-700 dark:text-zinc-300 block">Calculation expression</label>
+                  <label className="flex items-center gap-1.5 cursor-pointer text-[10px] font-bold text-zinc-600 dark:text-zinc-400 dark:text-zinc-400">
                     <input
                       type="checkbox"
                       checked={editHasFormula}
@@ -1506,16 +2032,16 @@ export function TestMasterScreen() {
                     <div className="space-y-1.5">
                       <input
                         type="text"
-                        className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-250 dark:border-zinc-800 rounded-xl px-3 py-2 text-xs w-full text-zinc-900 dark:text-zinc-100 font-mono outline-none focus:ring-1 focus:ring-synos-primary"
+                        className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 dark:border-zinc-800 rounded-xl px-3 py-2 text-xs w-full text-zinc-900 dark:text-zinc-100 font-mono outline-none focus:ring-1 focus:ring-synos-primary"
                         placeholder="e.g. CHO - HDL - (TRIG / 5)"
                         value={editFormula}
                         onChange={(e) => setEditFormula(e.target.value)}
                       />
-                      <p className="text-[9px] text-zinc-450 leading-tight">Write mathematical expressions using the precise parameter codes listed below.</p>
+                      <p className="text-[9px] text-zinc-600 dark:text-zinc-400 leading-tight">Write mathematical expressions using the precise parameter codes listed below.</p>
                     </div>
 
                     <div className="space-y-2">
-                      <span className="text-[9px] font-black uppercase text-zinc-400 dark:text-zinc-500 block">Parameter Variables Chips</span>
+                      <span className="text-[9px] font-semibold text-zinc-600 dark:text-zinc-400 block">Parameter Variables Chips</span>
                       <div className="flex flex-wrap gap-1">
                         {selectedTest.parameters && selectedTest.parameters
                           .filter(p => p.code !== drawerParamCode)
@@ -1534,7 +2060,7 @@ export function TestMasterScreen() {
                     </div>
                   </div>
                 ) : (
-                  <div className="p-6 text-center text-xs text-zinc-400 border border-dashed border-zinc-250 dark:border-zinc-800 rounded-xl bg-zinc-50/20 dark:bg-zinc-900/10">
+                  <div className="p-6 text-center text-xs text-zinc-400 border border-dashed border-zinc-200 dark:border-zinc-800 dark:border-zinc-800 rounded-xl bg-zinc-50/20 dark:bg-zinc-900/10">
                     <Calculator className="w-8 h-8 text-zinc-300 dark:text-zinc-700 mx-auto mb-2" />
                     Turn on "Enable Calculation" to configure math formulas using other analytes.
                   </div>
@@ -1545,10 +2071,10 @@ export function TestMasterScreen() {
             {/* Drawer context: reference overrides */}
             {drawerMode === "ranges" && (
               <div className="space-y-4">
-                <span className="text-[10px] font-black uppercase text-zinc-400 dark:text-zinc-500 block">Biological Reference Intervals</span>
+                <span className="text-[10px] font-semibold text-zinc-700 dark:text-zinc-300 block">Biological Reference Intervals</span>
                 
-                <div className="bg-zinc-50 dark:bg-zinc-900/30 p-3 rounded-2xl border border-zinc-200 dark:border-zinc-850 space-y-3">
-                  <span className="text-[9px] font-black text-indigo-500 uppercase tracking-widest block">Male Specific Overrides</span>
+                <div className="bg-zinc-50 dark:bg-zinc-900/30 p-3 rounded-2xl border border-zinc-200 dark:border-zinc-800 space-y-3">
+                  <span className="text-[9px] font-semibold text-indigo-600 dark:text-indigo-400 block">Male Specific Overrides</span>
                   <div className="grid grid-cols-2 gap-2">
                     <div>
                       <label className="text-[8px] font-bold text-zinc-400 dark:text-zinc-500 uppercase">Male Min</label>
@@ -1571,8 +2097,8 @@ export function TestMasterScreen() {
                   </div>
                 </div>
 
-                <div className="bg-zinc-50 dark:bg-zinc-900/30 p-3 rounded-2xl border border-zinc-200 dark:border-zinc-850 space-y-3">
-                  <span className="text-[9px] font-black text-rose-500 uppercase tracking-widest block">Female Specific Overrides</span>
+                <div className="bg-zinc-50 dark:bg-zinc-900/30 p-3 rounded-2xl border border-zinc-200 dark:border-zinc-800 space-y-3">
+                  <span className="text-[9px] font-semibold text-rose-600 dark:text-rose-400 block">Female Specific Overrides</span>
                   <div className="grid grid-cols-2 gap-2">
                     <div>
                       <label className="text-[8px] font-bold text-zinc-400 dark:text-zinc-500 uppercase">Female Min</label>
@@ -1602,13 +2128,13 @@ export function TestMasterScreen() {
             {/* Drawer context: analyzer mapping */}
             {drawerMode === "analyzer" && (
               <div className="space-y-4">
-                <span className="text-[10px] font-black uppercase text-zinc-400 dark:text-zinc-500 block text-left">Analyzer Hardware Interface Mapping</span>
+                <span className="text-[10px] font-semibold text-zinc-700 dark:text-zinc-300 block text-left">Analyzer Hardware Interface Mapping</span>
                 
                 <div className="space-y-3">
                   <div className="space-y-1">
                     <label className="text-[9px] font-bold text-zinc-500 dark:text-zinc-400 uppercase ml-1">Analyzer Device Model</label>
                     <select
-                      className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-250 dark:border-zinc-800 rounded-xl px-3 py-2 text-xs w-full text-zinc-900 dark:text-zinc-100 outline-none"
+                      className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 dark:border-zinc-800 rounded-xl px-3 py-2 text-xs w-full text-zinc-900 dark:text-zinc-100 outline-none"
                       value={editAnalyzerModel}
                       onChange={(e) => setEditAnalyzerModel(e.target.value)}
                     >
@@ -1624,7 +2150,7 @@ export function TestMasterScreen() {
                     <label className="text-[9px] font-bold text-zinc-500 dark:text-zinc-400 uppercase ml-1">Instrument Channel / ID</label>
                     <input
                       type="text"
-                      className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-250 dark:border-zinc-800 rounded-xl px-3 py-2 text-xs w-full text-zinc-900 dark:text-zinc-100 font-mono outline-none"
+                      className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 dark:border-zinc-800 rounded-xl px-3 py-2 text-xs w-full text-zinc-900 dark:text-zinc-100 font-mono outline-none"
                       placeholder="e.g. CH-HB-01"
                       value={editAnalyzerChannel}
                       onChange={(e) => setEditAnalyzerChannel(e.target.value)}
@@ -1632,7 +2158,7 @@ export function TestMasterScreen() {
                   </div>
                 </div>
 
-                <div className="bg-zinc-50 dark:bg-zinc-900/30 p-3 rounded-2xl border border-zinc-200 dark:border-zinc-850 flex gap-2 items-start text-[9px] text-zinc-500">
+                <div className="bg-zinc-50 dark:bg-zinc-900/30 p-3 rounded-2xl border border-zinc-200 dark:border-zinc-800 flex gap-2 items-start text-[9px] text-zinc-500">
                   <Cpu className="w-5 h-5 text-synos-primary shrink-0" />
                   <p>When configured, values generated by laboratory diagnostic instruments will automatically map directly into patient reports via this interface code.</p>
                 </div>
@@ -1642,10 +2168,10 @@ export function TestMasterScreen() {
             {/* Drawer context: narrative template */}
             {drawerMode === "narrative" && (
               <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase text-zinc-450 dark:text-zinc-500 block">Default Narrative / Interpretation template</label>
+                <label className="text-[10px] font-semibold text-zinc-700 dark:text-zinc-300 block">Default narrative / interpretation template</label>
                 <textarea
                   rows="6"
-                  className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-250 dark:border-zinc-800 rounded-xl px-3 py-2 text-xs w-full text-zinc-900 dark:text-zinc-100 outline-none focus:ring-1 focus:ring-synos-primary placeholder-zinc-400"
+                  className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 dark:border-zinc-800 rounded-xl px-3 py-2 text-xs w-full text-zinc-900 dark:text-zinc-100 outline-none focus:ring-1 focus:ring-synos-primary placeholder-zinc-400"
                   placeholder="Type standard medical commentaries or test explanations to render inside report PDF..."
                   value={editNarrative}
                   onChange={(e) => setEditNarrative(e.target.value)}
