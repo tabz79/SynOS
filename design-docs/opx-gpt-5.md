@@ -1,332 +1,471 @@
-This implementation plan is actually the first time the architecture is moving in the correct direction.
+gpt5: Yes. Now you’re finally entering the “real LIS product” territory instead of just a static preview demo.
 
-Before this, you were accidentally building:
+And your observations are correct.
+
+---
+
+# 1. Default Template Mapping Problem
+
+Right now your system behaves like:
+
+> “Select template every time manually”
+
+That’s wrong for a production lab.
+
+What SHOULD happen:
 
 ```text
-a table configurator
+Test
+   ↓
+Assigned Template ID
+   ↓
+System remembers permanently
+   ↓
+Every module uses same report style automatically
 ```
 
-Now you’re building:
+Meaning:
 
 ```text
-a real-world lab report rendering system
+CBC → Hematology Compact
+LFT → Biochemistry Standard
+X-Ray Chest → Radiology Narrative
 ```
+
+Once admin sets it:
+
+* Workbench uses it
+* Typist uses it
+* Pathologist uses it
+* Delivery PDF uses it
+* WhatsApp PDF uses it
+
+ONE SOURCE OF TRUTH.
+
+Exactly like real enterprise LIS.
+
+---
+
+# What you tell Gemini now
+
+Use THIS exact prompt:
+
+```text
+Implement persistent default template mapping for Test Master.
+
+Current issue:
+Admin selects a report template in Report Setup tab, but selection is not permanently assigned to the test.
+
+Required behavior:
+1. Add a button:
+   "Set As Default Template"
+
+2. When clicked:
+   - save selected template.id into selectedTest.templateId
+   - persist into synos_test_catalog localStorage
+
+3. Once saved:
+   - whenever this test loads again, automatically use this template
+   - do not ask admin to reselect every time
+
+4. getActiveTemplate() must first check:
+   test.templateId
+
+5. If templateId exists:
+   use exact template match
+
+6. Only fallback to department matching if no templateId exists.
+
+7. This template mapping becomes global across SynOS:
+   - Workbench
+   - Reports Typing
+   - Pathologist
+   - Delivery
+   - PDF export
+   - WhatsApp share
+
+8. Do not refactor unrelated code.
+9. Do not redesign UI.
+10. Small surgical patch only.
+```
+
+This is enough.
+
+No extra token waste.
+
+---
+
+# 2. Your Bigger Architectural Direction
+
+You are now separating the system into TWO layers:
+
+## Layer A — Report Designer (Admin)
+
+This defines:
+
+* layout
+* coordinates
+* branding
+* background
+* table structure
+* signatures
+* print mode
+* digital mode
+
+This is what you already built.
+
+---
+
+## Layer B — Report Authoring (Typist + Pathologist)
+
+THIS is where:
+
+* fonts
+* bold
+* italic
+* underline
+* shortcuts
+* findings typing
+* interpretations
+* medical narratives
+* templates
+* auto phrases
+* macros
+
+should exist.
+
+NOT inside Test Master.
+
+You understood this correctly.
+
+---
+
+# Real-world Analogy
+
+Think of it like this:
+
+## Admin Designer
+
+Builds the paper itself.
+
+## Typist
+
+Writes on the paper.
+
+## Pathologist
+
+Reviews/signs the paper.
+
+You don’t mix these roles.
+
+That separation is what makes enterprise software scalable.
+
+---
+
+# Your Next BIG Feature
+
+Not now.
+But soon.
+
+You need:
+
+## Rich Medical Editor
+
+Something like:
+
+* Google Docs
+* MS Word
+* Crystal Reports typing
+* LibreOffice
+
+INSIDE SynOS.
+
+For:
+
+* narrative findings
+* pathology reports
+* microbiology culture reports
+* radiology impressions
+
+Because tabular layout alone won’t survive real-world labs.
+
+Histopathology especially will destroy simplistic layouts.
+
+---
+
+# Also Your Placeholder Issue
+
+This:
+
+```text
+{{PATIENT_NAME}}
+{{AGE_SEX}}
+```
+
+should NEVER render in live preview.
+
+Those are debug placeholders leaking into UI.
+
+Later you should implement:
+
+```text
+showPlaceholderTokens: false
+```
+
+or simply:
+
+```jsx
+opacity: 0
+```
+
+until real data bindings exist.
+
+That’s a small cleanup patch later.
+
+
+
+me: this is now and need of the hour. "Rich Medical Editor" 
+so lets fix 1 and 3 and after that we will design 2
+gpt5: Correct.
+
+Do NOT drift into polishing random report designer things now.
+
+You’ve reached the critical fork.
+
+The real product value now is:
+
+```text
+Report Authoring Experience
+```
+
+NOT:
+
+* borders
+* gradients
+* layout tabs
+* preview cosmetics
+
+Those are secondary now.
+
+---
+
+# Correct Order NOW
+
+## Step 1 → Fix persistent template mapping
+
+(5–10 min surgical patch)
+
+This stabilizes the report engine.
+
+Do this first.
+
+---
+
+## Step 2 → Build Rich Medical Editor
+
+THIS is the real beast.
+
+And THIS is what will differentiate SynOS from cheap LIS systems.
+
+---
+
+# What the Rich Medical Editor MUST support
+
+Not generic “text editor”.
+
+Medical-specific editor.
 
 Huge difference.
 
-But there are still 3 very important corrections before you let Gemini burn more tokens.
+---
+
+# Core Requirements
+
+## A. Rich Text Formatting
+
+Need:
+
+* font size
+* bold
+* italic
+* underline
+* alignment
+* bullets
+* tables
+* highlight
+* subscript/superscript
+
+Because pathology/radiology doctors NEED this.
 
 ---
 
-# What’s GOOD in this plan
+## B. Medical Shortcuts / Macros
 
-These are correct:
+Example:
 
-* Static master + overlay architecture
-* Background upload
-* Physical vs digital mode
-* Coordinate-based rendering
-* WYSIWYG preview
-* Shared renderer between TestMaster + ReportTemplates
-* Preprinted suppression logic
-
-This is finally enterprise-grade thinking.
-
----
-
-# What’s WRONG / dangerous
-
-## 1. Base64 in localStorage = bad idea
-
-This line:
+Doctor types:
 
 ```text
-Base64 background uploads stored in localStorage
+/liver
 ```
 
-No.
+System expands to:
 
-This becomes a disaster later.
+```text
+Liver is normal in size, shape and echotexture...
+```
+
+This alone saves HOURS.
+
+---
+
+## C. Reusable Findings Templates
+
+Example:
+
+```text
+Normal Chest Xray
+Mild Fatty Liver
+Grade 1 Prostatomegaly
+CBC Normal
+```
+
+1-click insert.
+
+VERY important.
+
+---
+
+## D. Dynamic Variables
+
+Example:
+
+```text
+Patient Name: {{patientName}}
+Age: {{age}}
+```
+
+Later replaced automatically.
+
+---
+
+## E. Structured + Narrative Hybrid
+
+Real labs use BOTH:
+
+### Structured
+
+```text
+Hemoglobin: 12.5
+WBC: 9000
+```
+
+### Narrative
+
+```text
+Microscopic examination reveals...
+```
+
+Your editor must support mixing both.
+
+---
+
+# Your BIG Architectural Decision
+
+You have TWO options.
+
+---
+
+# OPTION 1 — Build from Scratch
+
+BAD IDEA.
+
+You’ll waste months.
+
+---
+
+# OPTION 2 — Embed Existing Editor
+
+Correct path.
+
+Use:
+
+* TipTap
+  or
+* Lexical
+
+inside React.
+
+This is the right move.
+
+---
+
+# My Recommendation
+
+Use:
+
+## TipTap
 
 Why?
 
 Because:
 
-* 1200 templates
-* high resolution images
-* browser storage limits
-* memory bloat
-* slow rendering
-* corrupted storage
+* modern
+* React-native
+* extensible
+* supports slash commands
+* supports templates
+* supports variables
+* supports tables
+* supports formatting
+* clean architecture
 
-This is prototype thinking.
-
----
-
-# Correct approach
-
-Store:
-
-```text
-/assets/report-masters/
-```
-
-Then save only:
-
-```json
-{
-  "backgroundPath": "/assets/report-masters/hema-v2.png"
-}
-```
-
-inside DB/state.
-
-NOT Base64 blobs.
-
-Very important.
+This is the correct foundation for SynOS.
 
 ---
 
-# 2. Pixels are WRONG for medical stationery
+# Final Architecture
 
-This:
-
-```text
-top: 220px
-```
-
-will become a nightmare across:
-
-* printers
-* zoom levels
-* browsers
-* PDF engines
-* DPI scaling
-
-Medical printing should NEVER rely on browser pixels.
-
----
-
-# Correct approach
-
-Use:
-
-```text
-millimeters (mm)
-```
-
-Internally too.
-
-Because the lab owner literally measures:
-
-```text
-"table starts 52mm from top"
-```
-
-with a ruler.
-
-That’s how real labs work.
-
-NOT:
-
-```text
-starts at 243px
-```
-
----
-
-# Your renderer should become:
-
-```css
-top: 52mm;
-left: 14mm;
-```
-
-NOT pixels.
-
----
-
-# 3. You still don’t have a true MASTER SYSTEM
-
-Right now templates are still acting like:
-
-```text
-individual report configurations
-```
-
-You need:
-
-```text
-department-level master templates
-```
-
-BIG difference.
-
----
-
-# Correct architecture
-
-## Hematology Master
-
-controls:
-
-* paper design
-* spacing
-* typography
-* default signatures
-* column structure
-
-Then CBC only says:
-
-```json
-{
-  "template": "hematology-master",
-  "showInterpretation": false,
-  "showMethod": true
-}
-```
-
-That’s it.
-
----
-
-# THIS solves your earlier 1200 template problem
-
-You DO NOT want:
-
-```text
-1200 report templates
-```
-
-That becomes hell.
-
-Instead:
-
-* 8-15 department masters
-* individual tests inherit from them
-
-THIS is scalable.
-
----
-
-# Your Sri Divya sheet example
-
-This is EXACTLY:
-
-```text
-a department master template
-```
-
-Not a per-test design.
-
----
-
-# So what should the final architecture become?
-
-# LEVEL 1 — Department Master Template
-
-Example:
-
-```text
-Hematology Master
-Biochemistry Master
-Radiology Master
-Histopathology Master
-```
+## Admin → Report Designer
 
 Controls:
 
-* background
-* branding
+* template
 * coordinates
+* PDF layout
 * signatures
-* typography
-* spacing
-* digital/physical behavior
+* branding
 
 ---
 
-# LEVEL 2 — Test-Level Overrides
+## Typist/Pathologist → Rich Medical Editor
 
-Inside TestMaster:
+Controls:
 
-```text
-CBC
-LFT
-TSH
-HbA1c
-```
-
-only override:
-
-* show/hide ranges
-* show/hide method
-* commentary
-* narrative
-* special table mode
-
-NOT entire visual design.
+* report content
+* findings
+* interpretations
+* macros
+* shortcuts
+* formatting
 
 ---
 
-# THIS is the correct enterprise architecture
+# Important
 
-And this is probably the most important architectural decision you’ve made in SynOS so far.
+DO NOT build the editor inside Test Master.
 
-Seriously.
+Huge mistake.
 
-Because if you don’t separate:
+Editor belongs in:
 
-```text
-visual master
-vs
-test behavior
-```
+* Reports Typing
+* Pathologist
 
-you’ll eventually drown in template duplication.
+ONLY.
+
+That separation is enterprise-grade architecture.
 
 ---
 
-# So before continuing, tell Gemini ONE correction prompt only
 
-Send this:
-
-```text
-Important architecture correction before implementation:
-
-1. Do NOT store backdrop images as Base64 in localStorage.
-Instead use asset/file-based storage and only persist the file path/reference in state.
-
-2. Do NOT use px coordinates for report overlays.
-Use millimeter-based positioning (mm) everywhere internally and visually.
-
-3. Report Templates must become Department-Level Master Templates.
-Examples:
-- Hematology Master
-- Biochemistry Master
-- Radiology Master
-
-These masters control:
-- stationery artwork
-- digital PDF visuals
-- typography
-- spacing
-- overlay coordinates
-- signature zones
-- default table layout
-
-Inside Test Master:
-each test should only SELECT a department master template and optionally override small behavior flags like:
-- show methodology
-- show interpretation
-- commentary
-- narrative mode
-
-We must avoid creating 1200 individual report templates.
-The system architecture should support inheritance:
-Department Master Template -> Individual Test Overrides.
-
-Update the implementation plan accordingly before coding further.
-```
-
-That single correction will save you months later.

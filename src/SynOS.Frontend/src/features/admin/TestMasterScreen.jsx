@@ -245,34 +245,37 @@ const DEFAULT_TEMPLATES = [
 ];
 
 // Helper to look up active template case-insensitively using test department Modality
-const getActiveTemplate = (test) => {
+const getActiveTemplate = (test, templatesList) => {
   if (!test) return DEFAULT_TEMPLATES[0];
-  const saved = localStorage.getItem("synos_report_templates");
-  let templatesList = DEFAULT_TEMPLATES;
-  if (saved) {
-    try {
-      templatesList = JSON.parse(saved);
-    } catch (e) {
-      console.error("Failed to parse templates from localStorage:", e);
+  let list = templatesList;
+  if (!list) {
+    const saved = localStorage.getItem("synos_report_templates");
+    list = DEFAULT_TEMPLATES;
+    if (saved) {
+      try {
+        list = JSON.parse(saved);
+      } catch (e) {
+        console.error("Failed to parse templates from localStorage:", e);
+      }
     }
   }
 
   let found = null;
   // If manual templateId override exists, match by exact template ID
   if (test.templateId) {
-    found = templatesList.find(t => t.id === test.templateId);
+    found = list.find(t => t.id === test.templateId);
   }
 
   // Fallback to case-insensitive modality matching
   if (!found) {
     const dept = (test.department || "").toLowerCase().trim();
-    found = templatesList.find(t => {
+    found = list.find(t => {
       const modality = (t.modality || "").toLowerCase().trim();
       return modality && (dept.includes(modality) || modality.includes(dept));
     });
   }
 
-  const rawTemplate = found || templatesList[0] || DEFAULT_TEMPLATES[0];
+  const rawTemplate = found || list[0] || DEFAULT_TEMPLATES[0];
 
   return {
     ...rawTemplate,
@@ -293,6 +296,45 @@ const getActiveTemplate = (test) => {
       rawTemplate.modality === "Histopathology" ? "/assets/report-masters/histopathology-master.svg" :
       "/assets/report-masters/default-master.svg"
     )
+  };
+};
+
+const getCoordinates = (template) => {
+  const margin = template.leftRightMargin ?? 15;
+  const pY = template.patientBlockY ?? 55;
+  const tY = template.tableBlockY ?? 95;
+  const sY = template.signatureBlockY ?? 25;
+  
+  return {
+    patientNameX: template.patientNameX !== undefined ? template.patientNameX : margin,
+    patientNameY: template.patientNameY !== undefined ? template.patientNameY : pY,
+    
+    patientAgeSexX: template.patientAgeSexX !== undefined ? template.patientAgeSexX : margin,
+    patientAgeSexY: template.patientAgeSexY !== undefined ? template.patientAgeSexY : (pY + 12),
+    
+    refDoctorX: template.refDoctorX !== undefined ? template.refDoctorX : (margin + 60),
+    refDoctorY: template.refDoctorY !== undefined ? template.refDoctorY : pY,
+    
+    patientIdX: template.patientIdX !== undefined ? template.patientIdX : (margin + 60),
+    patientIdY: template.patientIdY !== undefined ? template.patientIdY : (pY + 12),
+    
+    billingDateX: template.billingDateX !== undefined ? template.billingDateX : (margin + 120),
+    billingDateY: template.billingDateY !== undefined ? template.billingDateY : pY,
+    
+    reportDateX: template.reportDateX !== undefined ? template.reportDateX : (margin + 120),
+    reportDateY: template.reportDateY !== undefined ? template.reportDateY : (pY + 12),
+    
+    testTitleX: template.testTitleX !== undefined ? template.testTitleX : margin,
+    testTitleY: template.testTitleY !== undefined ? template.testTitleY : tY,
+    
+    resultsTableX: template.resultsTableX !== undefined ? template.resultsTableX : margin,
+    resultsTableY: template.resultsTableY !== undefined ? template.resultsTableY : (tY + 8),
+    
+    interpretationX: template.interpretationX !== undefined ? template.interpretationX : margin,
+    interpretationY: template.interpretationY !== undefined ? template.interpretationY : (tY + 55),
+    
+    signatureX: template.signatureX !== undefined ? template.signatureX : margin,
+    signatureY: template.signatureY !== undefined ? template.signatureY : sY,
   };
 };
 
@@ -673,6 +715,52 @@ export function TestMasterScreen() {
 
     return () => observer.disconnect();
   }, [showLivePreview]);
+
+  const handleStartDrag = (e, activeTemplateId, fieldX, fieldY, initValX, initValY, isBottom = false) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    const startX = e.clientX;
+    const startY = e.clientY;
+    
+    const currentScale = scale || 1;
+    const mmPerPixel = 1 / (currentScale * 3.78095);
+    
+    const handlePointerMove = (moveEvent) => {
+      const dx = moveEvent.clientX - startX;
+      const dy = moveEvent.clientY - startY;
+      
+      const deltaXMm = dx * mmPerPixel;
+      const deltaYMm = dy * mmPerPixel;
+      
+      let nextX = initValX + deltaXMm;
+      let nextY = isBottom ? (initValY - deltaYMm) : (initValY + deltaYMm);
+      
+      nextX = Math.max(0, Math.min(210, nextX));
+      nextY = Math.max(0, Math.min(297, nextY));
+      
+      setReportTemplatesList(prevList => 
+        prevList.map(t => t.id === activeTemplateId ? {
+          ...t,
+          [fieldX]: Math.round(nextX * 10) / 10,
+          [fieldY]: Math.round(nextY * 10) / 10
+        } : t)
+      );
+    };
+    
+    const handlePointerUp = () => {
+      document.removeEventListener('pointermove', handlePointerMove);
+      document.removeEventListener('pointerup', handlePointerUp);
+      
+      setReportTemplatesList(currentTemplates => {
+        localStorage.setItem("synos_report_templates", JSON.stringify(currentTemplates));
+        return currentTemplates;
+      });
+    };
+    
+    document.addEventListener('pointermove', handlePointerMove);
+    document.addEventListener('pointerup', handlePointerUp);
+  };
 
   // Metadata Edit States
   const [metaName, setMetaName] = useState(selectedTest.name);
@@ -1554,9 +1642,11 @@ export function TestMasterScreen() {
 
                     {/* High-Fidelity preview box */}
                     {(() => {
-                      const activeTemplate = getActiveTemplate(selectedTest);
+                      const activeTemplate = getActiveTemplate(selectedTest, reportTemplatesList);
+                      const coords = getCoordinates(activeTemplate);
                       const hasTemplateColumns = activeTemplate.columns && activeTemplate.columns.length > 0;
-                      const totalWeight = hasTemplateColumns ? activeTemplate.columns.reduce((sum, c) => sum + c.weight, 0) : 1;                      return (
+                      const totalWeight = hasTemplateColumns ? activeTemplate.columns.reduce((sum, c) => sum + c.weight, 0) : 1;
+                      return (
                         <div ref={containerRef} className="w-full overflow-x-auto border border-zinc-200 dark:border-zinc-800 rounded-xl bg-zinc-100 dark:bg-zinc-950 p-4 flex justify-center">
                           <div 
                             className="relative transition-all" 
@@ -1741,17 +1831,7 @@ export function TestMasterScreen() {
 
                                   {/* Patient Info block */}
                                   {activeTemplate.enableAbsolutePositioning ? (
-                                    /* High-fidelity transparent overlay text anchors for absolute positioning */
-                                    <div
-                                      style={{
-                                        position: 'absolute',
-                                        top: `${activeTemplate.patientBlockY ?? 55}mm`,
-                                        left: `${activeTemplate.leftRightMargin ?? 15}mm`,
-                                        width: `calc(210mm - ${(activeTemplate.leftRightMargin ?? 15) * 2}mm)`,
-                                        zIndex: 10
-                                      }}
-                                      className="bg-transparent border-0 shadow-none p-0 text-[10px] text-zinc-850 dark:text-zinc-200 transition-all select-none"
-                                    >
+                                    <>
                                       {/* Invisible placeholders for future workflow binding - mapping structure */}
                                       <span className="hidden" data-patient-name-placeholder={"{" + "{" + "PATIENT_NAME" + "}" + "}"} />
                                       <span className="hidden" data-ref-doctor-placeholder={"{" + "{" + "REF_DOCTOR" + "}" + "}"} />
@@ -1760,50 +1840,102 @@ export function TestMasterScreen() {
                                       <span className="hidden" data-billing-date-placeholder={"{" + "{" + "BILLING_DATE" + "}" + "}"} />
                                       <span className="hidden" data-report-date-placeholder={"{" + "{" + "REPORT_DATE" + "}" + "}"} />
 
-                                      <div className="grid grid-cols-3 gap-y-2.5 gap-x-6">
-                                        {/* Column 1: Patient Details */}
-                                        <div className="space-y-1">
-                                          <div>
-                                            <span className="text-[8px] font-extrabold uppercase tracking-widest text-zinc-450 dark:text-zinc-500 block">Patient Name</span>
-                                            <span className="font-bold text-zinc-800 dark:text-zinc-100">Rajesh Kumar</span>
-                                            <span className="text-[8px] text-zinc-400 font-mono ml-1">{"(" + "{" + "{" + "PATIENT_NAME" + "}" + "}" + ")"}</span>
-                                          </div>
-                                          <div>
-                                            <span className="text-[8px] font-extrabold uppercase tracking-widest text-zinc-450 dark:text-zinc-500 block">Age / Sex</span>
-                                            <span className="font-semibold text-zinc-700 dark:text-zinc-300">32Y / Male</span>
-                                            <span className="text-[8px] text-zinc-400 font-mono ml-1">{"(" + "{" + "{" + "AGE_SEX" + "}" + "}" + ")"}</span>
-                                          </div>
-                                        </div>
-
-                                        {/* Column 2: Referral Details */}
-                                        <div className="space-y-1">
-                                          <div>
-                                            <span className="text-[8px] font-extrabold uppercase tracking-widest text-zinc-450 dark:text-zinc-500 block">Ref. Doctor</span>
-                                            <span className="font-bold text-zinc-850 dark:text-zinc-100">Dr. S. Sharma, MD</span>
-                                            <span className="text-[8px] text-zinc-400 font-mono ml-1">{"(" + "{" + "{" + "REF_DOCTOR" + "}" + "}" + ")"}</span>
-                                          </div>
-                                          <div>
-                                            <span className="text-[8px] font-extrabold uppercase tracking-widest text-zinc-450 dark:text-zinc-500 block">Patient ID</span>
-                                            <span className="font-semibold font-mono text-zinc-700 dark:text-zinc-300">PID-2026-8940</span>
-                                            <span className="text-[8px] text-zinc-400 font-mono ml-1">{"(" + "{" + "{" + "PATIENT_ID" + "}" + "}" + ")"}</span>
-                                          </div>
-                                        </div>
-
-                                        {/* Column 3: Dates */}
-                                        <div className="space-y-1">
-                                          <div>
-                                            <span className="text-[8px] font-extrabold uppercase tracking-widest text-zinc-450 dark:text-zinc-500 block">Billing Date</span>
-                                            <span className="font-semibold text-zinc-700 dark:text-zinc-300">20-May-2026</span>
-                                            <span className="text-[8px] text-zinc-400 font-mono ml-1">{"(" + "{" + "{" + "BILLING_DATE" + "}" + "}" + ")"}</span>
-                                          </div>
-                                          <div>
-                                            <span className="text-[8px] font-extrabold uppercase tracking-widest text-zinc-450 dark:text-zinc-500 block">Report Date</span>
-                                            <span className="font-bold text-zinc-800 dark:text-zinc-100">22-May-2026</span>
-                                            <span className="text-[8px] text-zinc-400 font-mono ml-1">{"(" + "{" + "{" + "REPORT_DATE" + "}" + "}" + ")"}</span>
-                                          </div>
-                                        </div>
+                                      {/* 1. Patient Name */}
+                                      <div
+                                        style={{
+                                          position: 'absolute',
+                                          left: `${coords.patientNameX}mm`,
+                                          top: `${coords.patientNameY}mm`,
+                                          cursor: 'grab',
+                                          zIndex: 20
+                                        }}
+                                        onPointerDown={(e) => handleStartDrag(e, activeTemplate.id, 'patientNameX', 'patientNameY', coords.patientNameX, coords.patientNameY)}
+                                        className="bg-transparent border-0 shadow-none p-1 text-[10px] text-zinc-850 dark:text-zinc-200 transition-all select-none hover:ring-1 hover:ring-synos-primary/50 hover:bg-synos-primary/5 rounded"
+                                      >
+                                        <span className="font-bold text-zinc-800 dark:text-zinc-100">Rajesh Kumar</span>
+                                        <span className="text-[8px] text-zinc-400 font-mono ml-1">{"(" + "{" + "{" + "PATIENT_NAME" + "}" + "}" + ")"}</span>
                                       </div>
-                                    </div>
+
+                                      {/* 2. Age / Sex */}
+                                      <div
+                                        style={{
+                                          position: 'absolute',
+                                          left: `${coords.patientAgeSexX}mm`,
+                                          top: `${coords.patientAgeSexY}mm`,
+                                          cursor: 'grab',
+                                          zIndex: 20
+                                        }}
+                                        onPointerDown={(e) => handleStartDrag(e, activeTemplate.id, 'patientAgeSexX', 'patientAgeSexY', coords.patientAgeSexX, coords.patientAgeSexY)}
+                                        className="bg-transparent border-0 shadow-none p-1 text-[10px] text-zinc-850 dark:text-zinc-200 transition-all select-none hover:ring-1 hover:ring-synos-primary/50 hover:bg-synos-primary/5 rounded"
+                                      >
+                                        <span className="font-semibold text-zinc-700 dark:text-zinc-300">32Y / Male</span>
+                                        <span className="text-[8px] text-zinc-400 font-mono ml-1">{"(" + "{" + "{" + "AGE_SEX" + "}" + "}" + ")"}</span>
+                                      </div>
+
+                                      {/* 3. Ref Doctor */}
+                                      <div
+                                        style={{
+                                          position: 'absolute',
+                                          left: `${coords.refDoctorX}mm`,
+                                          top: `${coords.refDoctorY}mm`,
+                                          cursor: 'grab',
+                                          zIndex: 20
+                                        }}
+                                        onPointerDown={(e) => handleStartDrag(e, activeTemplate.id, 'refDoctorX', 'refDoctorY', coords.refDoctorX, coords.refDoctorY)}
+                                        className="bg-transparent border-0 shadow-none p-1 text-[10px] text-zinc-850 dark:text-zinc-200 transition-all select-none hover:ring-1 hover:ring-synos-primary/50 hover:bg-synos-primary/5 rounded"
+                                      >
+                                        <span className="font-bold text-zinc-850 dark:text-zinc-100">Dr. S. Sharma, MD</span>
+                                        <span className="text-[8px] text-zinc-400 font-mono ml-1">{"(" + "{" + "{" + "REF_DOCTOR" + "}" + "}" + ")"}</span>
+                                      </div>
+
+                                      {/* 4. Patient ID */}
+                                      <div
+                                        style={{
+                                          position: 'absolute',
+                                          left: `${coords.patientIdX}mm`,
+                                          top: `${coords.patientIdY}mm`,
+                                          cursor: 'grab',
+                                          zIndex: 20
+                                        }}
+                                        onPointerDown={(e) => handleStartDrag(e, activeTemplate.id, 'patientIdX', 'patientIdY', coords.patientIdX, coords.patientIdY)}
+                                        className="bg-transparent border-0 shadow-none p-1 text-[10px] text-zinc-850 dark:text-zinc-200 transition-all select-none hover:ring-1 hover:ring-synos-primary/50 hover:bg-synos-primary/5 rounded"
+                                      >
+                                        <span className="font-semibold font-mono text-zinc-700 dark:text-zinc-300">PID-2026-8940</span>
+                                        <span className="text-[8px] text-zinc-400 font-mono ml-1">{"(" + "{" + "{" + "PATIENT_ID" + "}" + "}" + ")"}</span>
+                                      </div>
+
+                                      {/* 5. Billing Date */}
+                                      <div
+                                        style={{
+                                          position: 'absolute',
+                                          left: `${coords.billingDateX}mm`,
+                                          top: `${coords.billingDateY}mm`,
+                                          cursor: 'grab',
+                                          zIndex: 20
+                                        }}
+                                        onPointerDown={(e) => handleStartDrag(e, activeTemplate.id, 'billingDateX', 'billingDateY', coords.billingDateX, coords.billingDateY)}
+                                        className="bg-transparent border-0 shadow-none p-1 text-[10px] text-zinc-850 dark:text-zinc-200 transition-all select-none hover:ring-1 hover:ring-synos-primary/50 hover:bg-synos-primary/5 rounded"
+                                      >
+                                        <span className="font-semibold text-zinc-700 dark:text-zinc-300">20-May-2026</span>
+                                        <span className="text-[8px] text-zinc-400 font-mono ml-1">{"(" + "{" + "{" + "BILLING_DATE" + "}" + "}" + ")"}</span>
+                                      </div>
+
+                                      {/* 6. Report Date */}
+                                      <div
+                                        style={{
+                                          position: 'absolute',
+                                          left: `${coords.reportDateX}mm`,
+                                          top: `${coords.reportDateY}mm`,
+                                          cursor: 'grab',
+                                          zIndex: 20
+                                        }}
+                                        onPointerDown={(e) => handleStartDrag(e, activeTemplate.id, 'reportDateX', 'reportDateY', coords.reportDateX, coords.reportDateY)}
+                                        className="bg-transparent border-0 shadow-none p-1 text-[10px] text-zinc-850 dark:text-zinc-200 transition-all select-none hover:ring-1 hover:ring-synos-primary/50 hover:bg-synos-primary/5 rounded"
+                                      >
+                                        <span className="font-bold text-zinc-800 dark:text-zinc-100">22-May-2026</span>
+                                        <span className="text-[8px] text-zinc-400 font-mono ml-1">{"(" + "{" + "{" + "REPORT_DATE" + "}" + "}" + ")"}</span>
+                                      </div>
+                                    </>
                                   ) : (
                                     /* Default/Legacy Patient Info block */
                                     <div
@@ -1827,21 +1959,47 @@ export function TestMasterScreen() {
                                     </div>
                                   )}
 
-                                  {/* Dynamic Test Table / Findings Preview */}
+                                  {/* 7. Test Title */}
+                                  {activeTemplate.enableAbsolutePositioning ? (
+                                    <div
+                                      style={{
+                                        position: 'absolute',
+                                        left: `${coords.testTitleX}mm`,
+                                        top: `${coords.testTitleY}mm`,
+                                        cursor: 'grab',
+                                        zIndex: 20
+                                      }}
+                                      onPointerDown={(e) => handleStartDrag(e, activeTemplate.id, 'testTitleX', 'testTitleY', coords.testTitleX, coords.testTitleY)}
+                                      className="bg-transparent border-0 shadow-none p-1 transition-all select-none hover:ring-1 hover:ring-synos-primary/50 hover:bg-synos-primary/5 rounded animate-in fade-in duration-200"
+                                    >
+                                      <div className="font-extrabold text-[10px] text-zinc-900 uppercase">
+                                        {selectedTest.name} ({selectedTest.code})
+                                      </div>
+                                    </div>
+                                  ) : null}
+
+                                  {/* 8. Results Table */}
                                   <div
                                     style={activeTemplate.enableAbsolutePositioning ? {
                                       position: 'absolute',
-                                      top: `${activeTemplate.tableBlockY ?? 95}mm`,
-                                      left: `${activeTemplate.leftRightMargin ?? 15}mm`,
+                                      top: `${coords.resultsTableY}mm`,
+                                      left: `${coords.resultsTableX}mm`,
                                       width: `calc(210mm - ${(activeTemplate.leftRightMargin ?? 15) * 2}mm)`,
+                                      cursor: 'grab',
                                       zIndex: 10
                                     } : {
                                       marginTop: '20px',
                                       flex: 1
                                     }}
-                                    className="transition-all"
+                                    onPointerDown={activeTemplate.enableAbsolutePositioning ? (e) => handleStartDrag(e, activeTemplate.id, 'resultsTableX', 'resultsTableY', coords.resultsTableX, coords.resultsTableY) : undefined}
+                                    className={cn(
+                                      "transition-all",
+                                      activeTemplate.enableAbsolutePositioning && "hover:ring-1 hover:ring-synos-primary/50 hover:bg-synos-primary/5 p-1 rounded"
+                                    )}
                                   >
-                                    <div className="font-extrabold text-[10px] text-zinc-900 uppercase mb-1">{selectedTest.name} ({selectedTest.code})</div>
+                                    {!activeTemplate.enableAbsolutePositioning && (
+                                      <div className="font-extrabold text-[10px] text-zinc-900 uppercase mb-1">{selectedTest.name} ({selectedTest.code})</div>
+                                    )}
                                     
                                     {selectedTest.reportStyle === "Two Column Grid" ? (
                                       <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-[8px] mt-2">
@@ -1986,13 +2144,9 @@ export function TestMasterScreen() {
                                       </table>
                                     )}
 
-                                    {/* Interpretations commentaries */}
-                                     {selectedTest.showInterpretation && (selectedTest.interpretationComment || (selectedTest.parameters && selectedTest.parameters[0]?.narrativeTemplate)) && (
-                                       <div className={cn(
-                                         activeTemplate.enableAbsolutePositioning 
-                                           ? "bg-transparent p-0 border-t border-dashed border-zinc-200 mt-3 text-left pt-2 rounded-none" 
-                                           : "bg-zinc-50 p-2.5 rounded-lg border border-zinc-200 mt-3 text-left"
-                                       )}>
+                                    {/* Interpretations commentaries in legacy mode */}
+                                    {!activeTemplate.enableAbsolutePositioning && selectedTest.showInterpretation && (selectedTest.interpretationComment || (selectedTest.parameters && selectedTest.parameters[0]?.narrativeTemplate)) && (
+                                      <div className="bg-zinc-50 p-2.5 rounded-lg border border-zinc-200 mt-3 text-left">
                                         <span className="font-bold block text-[7px] text-zinc-500 uppercase tracking-wide">Commentaries & Remarks</span>
                                         <p className="text-[7.5px] italic text-zinc-650 mt-0.5 leading-normal">
                                           {selectedTest.interpretationComment ?? selectedTest.parameters[0].narrativeTemplate}
@@ -2000,61 +2154,89 @@ export function TestMasterScreen() {
                                       </div>
                                     )}
                                   </div>
-                                </div>
 
-                                {/* Footer & Signatures Region */}
-                                <div>
-                                  {/* Signatures */}
-                                  {(activeTemplate.includeSignatures ?? true) && selectedTest.signatureSlots && selectedTest.signatureSlots.length > 0 && (
-                                    <div 
-                                      style={activeTemplate.enableAbsolutePositioning ? {
+                                  {/* 9. Interpretation Comments (Draggable absolute position mode) */}
+                                  {activeTemplate.enableAbsolutePositioning && selectedTest.showInterpretation && (selectedTest.interpretationComment || (selectedTest.parameters && selectedTest.parameters[0]?.narrativeTemplate)) && (
+                                    <div
+                                      style={{
                                         position: 'absolute',
-                                        bottom: `${activeTemplate.signatureBlockY ?? 25}mm`,
-                                        left: `${activeTemplate.leftRightMargin ?? 15}mm`,
+                                        top: `${coords.interpretationY}mm`,
+                                        left: `${coords.interpretationX}mm`,
                                         width: `calc(210mm - ${(activeTemplate.leftRightMargin ?? 15) * 2}mm)`,
+                                        cursor: 'grab',
                                         zIndex: 10
-                                      } : {
-                                        marginTop: '30px'
                                       }}
-                                      className="grid grid-cols-3 gap-6 pt-4 border-t border-dashed border-zinc-200 transition-all text-center"
+                                      onPointerDown={(e) => handleStartDrag(e, activeTemplate.id, 'interpretationX', 'interpretationY', coords.interpretationX, coords.interpretationY)}
+                                      className="bg-transparent border-0 shadow-none p-1 transition-all select-none hover:ring-1 hover:ring-synos-primary/50 hover:bg-synos-primary/5 rounded animate-in fade-in duration-200"
                                     >
-                                      {selectedTest.signatureSlots.map((sig, sigIdx) => (
-                                        <div key={sigIdx} className="text-center min-h-[45px] flex flex-col justify-end">
-                                          {((previewMode === "digital") || (previewMode === "physical" && !activeTemplate.usePreprinted)) && activeTemplate.includeBranding && (
-                                            <span className="font-mono text-[7px] text-zinc-500 italic block mb-0.5">/Signed digitally/</span>
-                                          )}
-                                          <div className="border-t border-zinc-300 pt-1 text-[8px] font-semibold text-zinc-650">
-                                            {sig}
-                                          </div>
-                                        </div>
-                                      ))}
-                                    </div>
-                                  )}
-
-                                  {/* Physical Preprinted Bottom Margins indicator in non-absolute layout */}
-                                  {!activeTemplate.enableAbsolutePositioning && previewMode === "physical" && activeTemplate.usePreprinted && (
-                                    <div className="h-[70px] border border-dashed border-zinc-200 bg-zinc-50/50 rounded-lg flex flex-col justify-center items-center mt-4 relative z-10">
-                                      <span className="text-[8px] font-semibold tracking-wider text-zinc-600">Physical pre-printed sheet region</span>
-                                      <span className="text-[7px] text-zinc-400 font-mono mt-0.5">Bottom Safe Margins: {activeTemplate.bottomMargin}mm (~70px gap)</span>
-                                    </div>
-                                  )}
-
-                                  {/* Digital mode Footer bar */}
-                                  {((previewMode === "digital") || (previewMode === "physical" && !activeTemplate.usePreprinted)) && activeTemplate.includeBranding && (activeTemplate.includeFooter ?? true) && activeTemplate.footerText && (
-                                    <div 
-                                      style={activeTemplate.enableAbsolutePositioning ? {
-                                        position: 'absolute',
-                                        bottom: '8mm',
-                                        left: `${activeTemplate.leftRightMargin ?? 15}mm`,
-                                        width: `calc(210mm - ${(activeTemplate.leftRightMargin ?? 15) * 2}mm)`,
-                                        zIndex: 10
-                                      } : {}}
-                                      className="mt-4 pt-2 border-t border-zinc-200 text-center text-[7px] text-zinc-400 font-medium"
-                                    >
-                                      {activeTemplate.footerText}
+                                      <div className="bg-transparent p-0 border-t border-dashed border-zinc-200 text-left pt-2">
+                                        <span className="font-bold block text-[7px] text-zinc-500 uppercase tracking-wide">Commentaries & Remarks</span>
+                                        <p className="text-[7.5px] italic text-zinc-650 mt-0.5 leading-normal">
+                                          {selectedTest.interpretationComment ?? selectedTest.parameters[0].narrativeTemplate}
+                                        </p>
+                                      </div>
                                     </div>
                                   )}
                                 </div>
+
+                              {/* Footer & Signatures Region */}
+                              <div>
+                                {/* 10. Signature Area */}
+                                {(activeTemplate.includeSignatures ?? true) && selectedTest.signatureSlots && selectedTest.signatureSlots.length > 0 && (
+                                  <div 
+                                    style={activeTemplate.enableAbsolutePositioning ? {
+                                      position: 'absolute',
+                                      bottom: `${coords.signatureY}mm`,
+                                      left: `${coords.signatureX}mm`,
+                                      width: `calc(210mm - ${(activeTemplate.leftRightMargin ?? 15) * 2}mm)`,
+                                      cursor: 'grab',
+                                      zIndex: 10
+                                    } : {
+                                      marginTop: '30px'
+                                    }}
+                                    onPointerDown={activeTemplate.enableAbsolutePositioning ? (e) => handleStartDrag(e, activeTemplate.id, 'signatureX', 'signatureY', coords.signatureX, coords.signatureY, true) : undefined}
+                                    className={cn(
+                                      "grid grid-cols-3 gap-6 pt-4 border-t border-dashed border-zinc-200 transition-all text-center",
+                                      activeTemplate.enableAbsolutePositioning && "hover:ring-1 hover:ring-synos-primary/50 hover:bg-synos-primary/5 p-1 rounded"
+                                    )}
+                                  >
+                                    {selectedTest.signatureSlots.map((sig, sigIdx) => (
+                                      <div key={sigIdx} className="text-center min-h-[45px] flex flex-col justify-end">
+                                        {((previewMode === "digital") || (previewMode === "physical" && !activeTemplate.usePreprinted)) && activeTemplate.includeBranding && (
+                                          <span className="font-mono text-[7px] text-zinc-500 italic block mb-0.5">/Signed digitally/</span>
+                                        )}
+                                        <div className="border-t border-zinc-300 pt-1 text-[8px] font-semibold text-zinc-650">
+                                          {sig}
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
+
+                                {/* Physical Preprinted Bottom Margins indicator in non-absolute layout */}
+                                {!activeTemplate.enableAbsolutePositioning && previewMode === "physical" && activeTemplate.usePreprinted && (
+                                  <div className="h-[70px] border border-dashed border-zinc-200 bg-zinc-50/50 rounded-lg flex flex-col justify-center items-center mt-4 relative z-10">
+                                    <span className="text-[8px] font-semibold tracking-wider text-zinc-600">Physical pre-printed sheet region</span>
+                                    <span className="text-[7px] text-zinc-400 font-mono mt-0.5">Bottom Safe Margins: {activeTemplate.bottomMargin}mm (~70px gap)</span>
+                                  </div>
+                                )}
+
+                                {/* Digital mode Footer bar */}
+                                {((previewMode === "digital") || (previewMode === "physical" && !activeTemplate.usePreprinted)) && activeTemplate.includeBranding && (activeTemplate.includeFooter ?? true) && activeTemplate.footerText && (
+                                  <div 
+                                    style={activeTemplate.enableAbsolutePositioning ? {
+                                      position: 'absolute',
+                                      bottom: '8mm',
+                                      left: `${activeTemplate.leftRightMargin ?? 15}mm`,
+                                      width: `calc(210mm - ${(activeTemplate.leftRightMargin ?? 15) * 2}mm)`,
+                                      zIndex: 10
+                                    } : {}}
+                                    className="mt-4 pt-2 border-t border-zinc-200 text-center text-[7px] text-zinc-400 font-medium"
+                                  >
+                                    {activeTemplate.footerText}
+                                  </div>
+                                )}
+                              </div>
                               </div>
 
                             </div>
