@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 210 297" width="210mm" height="297mm">
+  <!-- Professional Master Background - Radiology Modality -->
+  
+  <!-- Sleek dark-themed top decorative design -->
+  <path d="M 0 0 L 210 0 L 210 16 L 180 16 L 170 10 L 0 10 Z" fill="#18181b" opacity="0.95"/>
+  <rect x="0" y="10" width="170" height="2" fill="#71717a"/>
+  <rect x="170" y="10" width="10" height="6" fill="#a1a1aa" opacity="0.8"/>
+  
+  <!-- Double side border rules -->
+  <line x1="8" y1="30" x2="8" y2="270" stroke="#e2e8f0" stroke-width="0.3"/>
+  <line x1="10" y1="32" x2="10" y2="268" stroke="#e2e8f0" stroke-width="0.15"/>
+  
+  <!-- Diagnostic imaging scanning lines graphic on the side -->
+  <g transform="translate(198, 100)" stroke="#71717a" stroke-width="0.2" opacity="0.3">
+    <line x1="-3" y1="0" x2="5" y2="0"/>
+    <line x1="-5" y1="5" x2="5" y2="5"/>
+    <line x1="-2" y1="10" x2="5" y2="10"/>
+    <line x1="-6" y1="15" x2="5" y2="15"/>
+    <line x1="-4" y1="20" x2="5" y2="20"/>
+  </g>
+
+  <!-- Watermark in center - Radiology Target / Compass Globe -->
+  <g transform="translate(105, 148.5) scale(0.6)" opacity="0.025" fill="none" stroke="#18181b" stroke-width="3">
+    <circle cx="0" cy="0" r="45"/>
+    <circle cx="0" cy="0" r="30" stroke-dasharray="2 2"/>
+    <circle cx="0" cy="0" r="15"/>
+    <line x1="-55" y1="0" x2="55" y2="0" stroke-width="1.5"/>
+    <line x1="0" y1="-55" x2="0" y2="55" stroke-width="1.5"/>
+  </g>
+
+  <!-- Elegant Footer Graphics -->
+  <rect x="15" y="275" width="180" height="0.5" fill="#e2e8f0"/>
+  <rect x="15" y="277" width="5" height="5" fill="#27272a" rx="1"/>
+  <rect x="23" y="277" width="5" height="5" fill="#71717a" rx="1" opacity="0.7"/>
+  <rect x="31" y="277" width="5" height="5" fill="#18181b" rx="1" opacity="0.4"/>
+  <text x="195" y="281" font-family="sans-serif" font-size="3.5" font-weight="bold" fill="#64748b" text-anchor="end">SYNOS IMAGING & DIAGNOSTIC CENTER</text>
+</svg>

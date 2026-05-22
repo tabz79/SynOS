@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { 
   Search, 
   Plus, 
@@ -257,15 +257,43 @@ const getActiveTemplate = (test) => {
     }
   }
 
-  const dept = (test.department || "").toLowerCase().trim();
-  
-  // Try case-insensitive matching: test department matches template modality, or vice-versa
-  let found = templatesList.find(t => {
-    const modality = (t.modality || "").toLowerCase().trim();
-    return modality && (dept.includes(modality) || modality.includes(dept));
-  });
+  let found = null;
+  // If manual templateId override exists, match by exact template ID
+  if (test.templateId) {
+    found = templatesList.find(t => t.id === test.templateId);
+  }
 
-  return found || templatesList[0] || DEFAULT_TEMPLATES[0];
+  // Fallback to case-insensitive modality matching
+  if (!found) {
+    const dept = (test.department || "").toLowerCase().trim();
+    found = templatesList.find(t => {
+      const modality = (t.modality || "").toLowerCase().trim();
+      return modality && (dept.includes(modality) || modality.includes(dept));
+    });
+  }
+
+  const rawTemplate = found || templatesList[0] || DEFAULT_TEMPLATES[0];
+
+  return {
+    ...rawTemplate,
+    enableAbsolutePositioning: rawTemplate.enableAbsolutePositioning !== undefined ? rawTemplate.enableAbsolutePositioning : true,
+    patientBlockY: rawTemplate.patientBlockY !== undefined ? rawTemplate.patientBlockY : 55,
+    tableBlockY: rawTemplate.tableBlockY !== undefined ? rawTemplate.tableBlockY : 95,
+    signatureBlockY: rawTemplate.signatureBlockY !== undefined ? rawTemplate.signatureBlockY : 25,
+    includeLogo: rawTemplate.includeLogo !== undefined ? rawTemplate.includeLogo : true,
+    includeHeaderName: rawTemplate.includeHeaderName !== undefined ? rawTemplate.includeHeaderName : true,
+    includeHeaderSubtitle: rawTemplate.includeHeaderSubtitle !== undefined ? rawTemplate.includeHeaderSubtitle : true,
+    includeWatermark: rawTemplate.includeWatermark !== undefined ? rawTemplate.includeWatermark : true,
+    includeFooter: rawTemplate.includeFooter !== undefined ? rawTemplate.includeFooter : true,
+    includeSignatures: rawTemplate.includeSignatures !== undefined ? rawTemplate.includeSignatures : true,
+    backgroundPath: rawTemplate.backgroundPath || (
+      rawTemplate.modality === "Hematology" ? "/assets/report-masters/hematology-master.svg" :
+      rawTemplate.modality === "Biochemistry" ? "/assets/report-masters/biochemistry-master.svg" :
+      rawTemplate.modality === "Radiology" ? "/assets/report-masters/radiology-master.svg" :
+      rawTemplate.modality === "Histopathology" ? "/assets/report-masters/histopathology-master.svg" :
+      "/assets/report-masters/default-master.svg"
+    )
+  };
 };
 
 // Seed Catalog with extended operational structures
@@ -587,12 +615,64 @@ export function TestMasterScreen() {
   const [selectedTest, setSelectedTest] = useState(() => getInitialSelectedTest(catalog));
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedDept, setSelectedDept] = useState("All");
+
+  const [scale, setScale] = useState(1);
+  const containerRef = useRef(null);
   
   // Workspace UI States
   const [activeTab, setActiveTab] = useState("parameters"); // parameters | report-setup | pricing | profile-builder
   const [showLivePreview, setShowLivePreview] = useState(false);
+  const [previewMode, setPreviewMode] = useState("digital"); // digital | physical
   const [isSavedSuccessfully, setIsSavedSuccessfully] = useState(false);
+
+  // Dynamic Template List Hook
+  const [reportTemplatesList, setReportTemplatesList] = useState(() => {
+    const saved = localStorage.getItem("synos_report_templates");
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        console.error("Failed to parse templates from localStorage:", e);
+      }
+    }
+    return DEFAULT_TEMPLATES;
+  });
+
+  useEffect(() => {
+    const saved = localStorage.getItem("synos_report_templates");
+    if (saved) {
+      try {
+        setReportTemplatesList(JSON.parse(saved));
+      } catch (e) {
+        console.error("Failed to parse templates from localStorage:", e);
+      }
+    }
+  }, [activeTab]);
   const [isEditingMetadata, setIsEditingMetadata] = useState(false);
+
+  useEffect(() => {
+    if (!containerRef.current) return;
+    
+    const handleResize = (entries) => {
+      for (let entry of entries) {
+        const { width } = entry.contentRect;
+        const baseWidth = 794;
+        const newScale = Math.min(1, width / baseWidth);
+        setScale(newScale);
+      }
+    };
+
+    const observer = new ResizeObserver(handleResize);
+    observer.observe(containerRef.current);
+
+    // Initial check
+    const rect = containerRef.current.getBoundingClientRect();
+    if (rect.width > 0) {
+      setScale(Math.min(1, rect.width / 794));
+    }
+
+    return () => observer.disconnect();
+  }, [showLivePreview]);
 
   // Metadata Edit States
   const [metaName, setMetaName] = useState(selectedTest.name);
@@ -902,10 +982,10 @@ export function TestMasterScreen() {
   });
 
   return (
-    <div className="w-full px-6 py-6 space-y-6 animate-in fade-in duration-500 relative overflow-hidden">
+    <div className="w-full lg:h-[calc(100vh-56px)] flex flex-col overflow-hidden px-6 pt-4 pb-6 space-y-4 animate-in fade-in duration-500 relative">
       
       {/* Header bar */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-zinc-200 dark:border-zinc-800 pb-5">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-zinc-200 dark:border-zinc-800 pb-5 shrink-0">
         <div className="flex flex-col gap-1">
           <h1 className="text-2xl font-bold text-zinc-900 dark:text-white tracking-tight flex items-center gap-2">
             <Beaker className="w-6 h-6 text-synos-primary" />
@@ -933,11 +1013,11 @@ export function TestMasterScreen() {
         </button>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch flex-1 min-h-0 overflow-hidden pb-4">
         
         {/* Left Panel: Test Catalog */}
-        <div className="lg:col-span-3 bg-white dark:bg-zinc-900/40 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 flex flex-col gap-4 shadow-sm">
-          <div className="flex items-center justify-between">
+        <div className="lg:col-span-3 bg-white dark:bg-zinc-900/40 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 flex flex-col gap-4 shadow-sm lg:h-full min-h-0 overflow-hidden">
+          <div className="flex items-center justify-between shrink-0">
             <h3 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">Test Catalog</h3>
             <button 
               onClick={handleAddTest}
@@ -947,7 +1027,7 @@ export function TestMasterScreen() {
             </button>
           </div>
 
-          <div className="relative">
+          <div className="relative shrink-0">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
             <input
               id="test-catalog-search-input"
@@ -960,7 +1040,7 @@ export function TestMasterScreen() {
           </div>
 
           {/* Department Quick Filter Badges */}
-          <div className="flex flex-wrap gap-1.5 pb-1">
+          <div className="flex flex-wrap gap-1.5 pb-1 shrink-0">
             {DEPARTMENTS.map(dept => (
               <button
                 key={dept}
@@ -977,7 +1057,7 @@ export function TestMasterScreen() {
             ))}
           </div>
 
-          <div className="space-y-1.5 max-h-[460px] overflow-y-auto pr-1 custom-scrollbar">
+          <div className="space-y-1.5 flex-1 min-h-0 overflow-y-auto pr-1 custom-scrollbar">
             {filteredCatalog.map(test => (
               <div
                 key={test.id}
@@ -1023,10 +1103,10 @@ export function TestMasterScreen() {
         </div>
 
         {/* Center Workspace & Editor Area */}
-        <div className="lg:col-span-9 space-y-4">
+        <div className="lg:col-span-9 flex flex-col lg:h-full min-h-0 space-y-4 overflow-hidden">
           
           {/* Metadata Top Bar */}
-          <div className="bg-white dark:bg-zinc-900/40 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 shadow-sm flex items-center justify-between">
+          <div className="bg-white dark:bg-zinc-900/40 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 shadow-sm flex items-center justify-between shrink-0">
             <div className="flex-1 min-w-0 pr-4">
               {isEditingMetadata ? (
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
@@ -1118,7 +1198,7 @@ export function TestMasterScreen() {
           </div>
 
           {/* Central Workflow Tab Switchers & Preview Toggle */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-zinc-200 dark:border-zinc-800 dark:border-zinc-800 pb-px gap-2">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-zinc-200 dark:border-zinc-800 dark:border-zinc-800 pb-px gap-2 shrink-0">
             <div className="flex flex-wrap gap-1">
               <button
                 onClick={() => setActiveTab("parameters")}
@@ -1183,11 +1263,11 @@ export function TestMasterScreen() {
           </div>
 
           {/* Tab Workspaces */}
-          <div className="min-h-[400px]">
+          <div className="flex-1 min-h-0 overflow-hidden">
             
             {/* Tab: Parameters (Excel spreadsheet structure) */}
             {activeTab === "parameters" && (
-              <div className="bg-white dark:bg-zinc-900/40 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 shadow-sm space-y-4">
+              <div className="bg-white dark:bg-zinc-900/40 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 shadow-sm space-y-4 lg:h-full lg:overflow-y-auto custom-scrollbar">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-semibold text-zinc-600 dark:text-zinc-400">Parameters Specification Grid</span>
                   <div className="text-xs text-zinc-600 dark:text-zinc-400 dark:text-zinc-600 dark:text-zinc-400 font-bold flex items-center gap-1.5">
@@ -1313,16 +1393,32 @@ export function TestMasterScreen() {
 
             {/* Tab: Report Setup (Simple and Live Preview) */}
             {activeTab === "report-setup" && (
-              <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch lg:h-full min-h-0 overflow-hidden">
                 
                 {/* Style Pickers Form */}
                 <div className={cn(
-                  "bg-white dark:bg-zinc-900/40 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 shadow-sm space-y-6",
-                  showLivePreview ? "md:col-span-6" : "md:col-span-12"
+                  "bg-white dark:bg-zinc-900/40 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 shadow-sm space-y-6 lg:h-full lg:overflow-y-auto custom-scrollbar",
+                  showLivePreview ? "lg:col-span-6" : "lg:col-span-12"
                 )}>
                   <h3 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">Report Presentation Settings</h3>
                   
                   <div className="space-y-4">
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 block ml-1">Report design template</label>
+                      <select
+                        className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 dark:border-zinc-800 rounded-xl px-3.5 py-2.5 text-sm w-full text-zinc-900 dark:text-zinc-100 outline-none focus:ring-1 focus:ring-synos-primary font-bold"
+                        value={selectedTest.templateId || ""}
+                        onChange={(e) => handleReportSetupFieldChange("templateId", e.target.value)}
+                      >
+                        <option value="">Default (Auto-detect by modality)</option>
+                        {reportTemplatesList.map(template => (
+                          <option key={template.id} value={template.id}>
+                            {template.title} ({template.modality})
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
                     <div className="space-y-1.5">
                       <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 block ml-1">Report layout style</label>
                       <select
@@ -1420,395 +1516,547 @@ export function TestMasterScreen() {
 
                 {/* Live Preview Card */}
                 {showLivePreview && (
-                  <div className="md:col-span-6 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 shadow-inner space-y-4">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-semibold text-zinc-600 dark:text-zinc-400">Live Renderer Layout Preview</span>
-                      <span className="bg-emerald-500/10 text-emerald-500 border border-emerald-500/25 px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-widest flex items-center gap-0.5">
-                        <Sparkles className="w-2.5 h-2.5" /> PDF WYSIWYG
-                      </span>
+                  <div className="lg:col-span-6 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 shadow-inner space-y-4 lg:h-full lg:overflow-y-auto custom-scrollbar flex flex-col min-h-0">
+                    <div className="flex items-center justify-between gap-4">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-semibold text-zinc-600 dark:text-zinc-400">Live Renderer Layout Preview</span>
+                        <span className="bg-emerald-500/10 text-emerald-500 border border-emerald-500/25 px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-widest flex items-center gap-0.5">
+                          <Sparkles className="w-2.5 h-2.5" /> PDF WYSIWYG
+                        </span>
+                      </div>
+                      
+                      {/* Segmented Mode Selector Toggle */}
+                      <div className="flex bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 p-0.5 rounded-xl text-[10px] font-bold">
+                        <button
+                          onClick={() => setPreviewMode("digital")}
+                          className={cn(
+                            "px-3 py-1 rounded-lg transition-all",
+                            previewMode === "digital" 
+                              ? "bg-white dark:bg-zinc-800 shadow-sm text-synos-primary font-extrabold" 
+                              : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-950 dark:hover:text-zinc-200"
+                          )}
+                        >
+                          Digital
+                        </button>
+                        <button
+                          onClick={() => setPreviewMode("physical")}
+                          className={cn(
+                            "px-3 py-1 rounded-lg transition-all",
+                            previewMode === "physical" 
+                              ? "bg-white dark:bg-zinc-800 shadow-sm text-zinc-800 dark:text-zinc-200 font-extrabold" 
+                              : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-950 dark:hover:text-zinc-200"
+                          )}
+                        >
+                          Physical
+                        </button>
+                      </div>
                     </div>
 
                     {/* High-Fidelity preview box */}
                     {(() => {
                       const activeTemplate = getActiveTemplate(selectedTest);
-                      const logoEl = activeTemplate.includeBranding ? (
-                        activeTemplate.logoUrl ? (
-                          <img 
-                            src={activeTemplate.logoUrl} 
-                            alt="Logo" 
-                            style={{ width: `${activeTemplate.logoSize || 40}px`, height: 'auto', objectFit: 'contain' }}
-                            className="max-h-12 relative z-10"
-                          />
-                        ) : (
-                          <div 
-                            className="rounded-lg flex items-center justify-center font-semibold text-white select-none relative z-10 animate-pulse"
-                            style={{
-                              width: `${activeTemplate.logoSize || 32}px`,
-                              height: `${activeTemplate.logoSize || 32}px`,
-                              backgroundColor: activeTemplate.brandNameColor || "#4f46e5",
-                              fontSize: `${Math.max(10, (activeTemplate.logoSize || 32) * 0.35)}px`
-                            }}
-                          >
-                            {(activeTemplate.brandNameText || activeTemplate.clinicName || "SY").substring(0, 2).toUpperCase()}
-                          </div>
-                        )
-                      ) : null;
-
-                      const brandTextEl = activeTemplate.includeBranding ? (
-                        <div className="relative z-10 text-left">
-                          <h4 
-                            style={{
-                              fontSize: `${activeTemplate.brandNameSize || 14}px`,
-                              fontWeight: activeTemplate.brandNameWeight || "900",
-                              color: activeTemplate.brandNameColor || "#1e1b4b"
-                            }}
-                            className="uppercase tracking-tight leading-tight"
-                          >
-                            {activeTemplate.brandNameText || activeTemplate.clinicName || "SynOS Diagnostics"}
-                          </h4>
-                          <p 
-                            style={{
-                              fontSize: `${activeTemplate.brandSubtitleSize || 8}px`,
-                              color: activeTemplate.brandSubtitleColor || "#71717a"
-                            }}
-                            className="font-medium mt-0.5 leading-none"
-                          >
-                            {activeTemplate.brandSubtitleText || "Accredited Diagnostics Lab"}
-                          </p>
-                        </div>
-                      ) : null;
-
-                      const dividerStyle = (activeTemplate.includeBranding && activeTemplate.showHeaderDivider !== false) ? {
-                        borderBottomWidth: `${activeTemplate.headerDividerThickness ?? 2}px`,
-                        borderBottomStyle: activeTemplate.headerDividerStyle || "solid",
-                        borderBottomColor: activeTemplate.headerDividerColor || "#e2e8f0"
-                      } : {};
-
-                      const patientInfoEl = (
-                        <div className="text-[7.5px] text-zinc-600 dark:text-zinc-400 dark:text-zinc-400 leading-normal font-medium text-right self-center relative z-10">
-                          <p><span className="font-bold text-zinc-600 dark:text-zinc-400 dark:text-zinc-300">Patient:</span> Rajesh Kumar, M / 32Y</p>
-                          <p><span className="font-bold text-zinc-600 dark:text-zinc-400 dark:text-zinc-300">Referrer:</span> Dr. S. Sharma, MD</p>
-                          <p><span className="font-bold text-zinc-600 dark:text-zinc-400 dark:text-zinc-300">ID:</span> SY-9812-D01 &bull; <span className="font-bold text-zinc-600 dark:text-zinc-400 dark:text-zinc-300">Date:</span> 20-May-2026</p>
-                        </div>
-                      );
-
-                      const renderHeader = () => {
-                        if (!activeTemplate.includeBranding) {
-                          if (activeTemplate.usePreprinted) {
-                            return (
-                              <div className="h-[90px] border border-dashed border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/10 rounded-lg flex flex-col justify-center items-center mb-6 relative z-10">
-                                <span className="text-[8px] font-semibold tracking-wider text-zinc-600 dark:text-zinc-400">Physical pre-printed sheet header region</span>
-                                <span className="text-[7px] text-zinc-400 dark:text-zinc-500 font-mono mt-0.5">Top Safe Margins: {activeTemplate.topMargin}mm (~90px gap)</span>
-                              </div>
-                            );
-                          }
-                          return (
-                            <div className="border-b border-zinc-200 dark:border-zinc-800 dark:border-zinc-800 pb-2.5 flex justify-between items-start mb-3">
-                              <div>
-                                <h4 className="font-extrabold text-xs text-synos-primary">SynOS Diagnostics Lab</h4>
-                                <p className="text-[8px] text-zinc-400 mt-0.5">Report Generated On: 20-May-2026</p>
-                              </div>
-                              <div className="text-right">
-                                <p className="font-bold text-[9px]">PATIENT ID: SY-9812</p>
-                                <p className="text-[8px] text-zinc-400">Name: Rajesh Kumar, M / 32Y</p>
-                              </div>
-                            </div>
-                          );
-                        }
-
-                        if (activeTemplate.logoPosition === "Center") {
-                          return (
-                            <div className="w-full pb-2 mb-3 space-y-2.5 relative z-10" style={dividerStyle}>
-                              <div className="flex flex-col items-center text-center gap-1.5">
-                                {logoEl}
-                                {brandTextEl}
-                              </div>
-                              <div className="flex justify-between items-center text-[7px] border-t border-zinc-100 dark:border-zinc-800 pt-1.5 font-medium text-zinc-500">
-                                <div>
-                                  <span className="font-bold text-zinc-600 dark:text-zinc-400 dark:text-zinc-300">Patient:</span> Rajesh Kumar, M / 32Y
-                                </div>
-                                <div>
-                                  <span className="font-bold text-zinc-600 dark:text-zinc-400 dark:text-zinc-300">Referrer:</span> Dr. S. Sharma, MD
-                                </div>
-                                <div>
-                                  <span className="font-bold text-zinc-600 dark:text-zinc-400 dark:text-zinc-300">Date:</span> 20-May-2026
-                                </div>
-                              </div>
-                            </div>
-                          );
-                        } else if (activeTemplate.logoPosition === "Right") {
-                          return (
-                            <div className="w-full pb-2 mb-3 flex justify-between items-stretch gap-4 relative z-10" style={dividerStyle}>
-                              <div className="text-left text-[7.5px] text-zinc-600 dark:text-zinc-400 dark:text-zinc-400 leading-normal font-medium self-center">
-                                <p><span className="font-bold text-zinc-600 dark:text-zinc-400 dark:text-zinc-300">Patient:</span> Rajesh Kumar, M / 32Y</p>
-                                <p><span className="font-bold text-zinc-600 dark:text-zinc-400 dark:text-zinc-300">Referrer:</span> Dr. S. Sharma, MD</p>
-                                <p><span className="font-bold text-zinc-600 dark:text-zinc-400 dark:text-zinc-300">Date:</span> 20-May-2026</p>
-                              </div>
-                              <div className="flex items-center gap-2.5 text-right">
-                                {brandTextEl}
-                                {logoEl}
-                              </div>
-                            </div>
-                          );
-                        } else {
-                          return (
-                            <div className="w-full pb-2 mb-3 flex justify-between items-stretch gap-4 relative z-10" style={dividerStyle}>
-                              <div className="flex items-center gap-2.5">
-                                {logoEl}
-                                {brandTextEl}
-                              </div>
-                              {patientInfoEl}
-                            </div>
-                          );
-                        }
-                      };
-
                       const hasTemplateColumns = activeTemplate.columns && activeTemplate.columns.length > 0;
-                      const totalWeight = hasTemplateColumns ? activeTemplate.columns.reduce((sum, c) => sum + c.weight, 0) : 1;
-
-                      return (
-                        <div 
-                          className={cn(
-                            "shadow-md max-w-2xl mx-auto min-h-[420px] flex flex-col justify-between relative overflow-hidden select-none transition-all duration-200",
-                            activeTemplate.density === "Compact" ? "font-sans text-[7.5px]" : "font-serif text-xs",
-                            activeTemplate.density === "Large-print" ? "text-sm" : ""
-                          )}
-                          style={{
-                            padding: `${activeTemplate.pagePadding ?? 20}px`,
-                            borderWidth: `${activeTemplate.borderWidth ?? 1}px`,
-                            borderStyle: activeTemplate.borderStyle || "solid",
-                            borderColor: activeTemplate.borderColor || "#e2e8f0",
-                            borderRadius: `${activeTemplate.borderRadius ?? 12}px`,
-                            backgroundColor: activeTemplate.bgType === "solid" ? (activeTemplate.bgColor || "#ffffff") : undefined,
-                            backgroundImage: activeTemplate.bgType === "gradient" 
-                              ? `linear-gradient(${activeTemplate.bgGradientAngle || 135}deg, ${activeTemplate.bgGradientStart || '#ffffff'}, ${activeTemplate.bgGradientEnd || '#f1f5f9'})` 
-                              : undefined
-                          }}
-                        >
-                          {/* Background Image layer */}
-                          {activeTemplate.bgType === "image" && activeTemplate.bgImageUrl && (
+                      const totalWeight = hasTemplateColumns ? activeTemplate.columns.reduce((sum, c) => sum + c.weight, 0) : 1;                      return (
+                        <div ref={containerRef} className="w-full overflow-x-auto border border-zinc-200 dark:border-zinc-800 rounded-xl bg-zinc-100 dark:bg-zinc-950 p-4 flex justify-center">
+                          <div 
+                            className="relative transition-all" 
+                            style={{ 
+                              width: `${794 * scale}px`, 
+                              height: `${1123 * scale + 32}px`, 
+                              overflow: "hidden" 
+                            }}
+                          >
                             <div 
-                              className="absolute inset-0 bg-cover bg-center pointer-events-none"
-                              style={{ 
-                                backgroundImage: `url(${activeTemplate.bgImageUrl})`, 
-                                opacity: activeTemplate.bgImageOpacity ?? 0.05,
-                                zIndex: 0 
-                              }} 
-                            />
-                          )}
-
-                          {/* Watermark overlay */}
-                          {activeTemplate.includeBranding && activeTemplate.watermarkText && (
-                            <div 
-                              className="absolute inset-0 flex items-center justify-center pointer-events-none select-none font-semibold font-mono tracking-wider"
-                              style={{ 
-                                opacity: activeTemplate.watermarkOpacity || 0.05, 
-                                color: '#000',
-                                fontSize: `${activeTemplate.watermarkSize || 32}px`,
-                                transform: `rotate(${activeTemplate.watermarkRotation ?? 12}deg)`,
-                                zIndex: 5
+                              id="report-a4-canvas"
+                              className={cn(
+                                activeTemplate.enableAbsolutePositioning 
+                                  ? "text-zinc-900 relative select-none transition-all box-border overflow-hidden text-left" 
+                                  : "bg-white text-zinc-900 shadow-2xl relative select-none transition-all box-border overflow-hidden text-left",
+                                activeTemplate.density === "Compact" ? "font-sans" : "font-serif"
+                              )}
+                              style={{
+                                width: "794px",
+                                height: "1123px",
+                                transform: `scale(${scale})`,
+                                transformOrigin: "top left",
+                                padding: activeTemplate.enableAbsolutePositioning ? 0 : `${activeTemplate.pagePadding ?? 24}px`,
+                                borderWidth: activeTemplate.enableAbsolutePositioning ? 0 : `${activeTemplate.borderWidth ?? 1}px`,
+                                borderStyle: activeTemplate.enableAbsolutePositioning ? "none" : (activeTemplate.borderStyle || "solid"),
+                                borderColor: activeTemplate.enableAbsolutePositioning ? "transparent" : (activeTemplate.borderColor || "#e2e8f0"),
+                                borderRadius: activeTemplate.enableAbsolutePositioning ? 0 : `${activeTemplate.borderRadius ?? 0}px`,
+                                backgroundColor: activeTemplate.enableAbsolutePositioning 
+                                  ? "transparent" 
+                                  : (activeTemplate.bgType === "solid" ? (activeTemplate.bgColor || "#ffffff") : "#ffffff"),
+                                position: "absolute",
+                                top: 0,
+                                left: 0
                               }}
                             >
-                              {activeTemplate.watermarkText}
-                            </div>
-                          )}
+                              
+                              {/* Background Backdrop Master Artwork */}
+                              {((previewMode === "digital") || (previewMode === "physical" && !activeTemplate.usePreprinted)) && activeTemplate.backgroundPath && (
+                                <div 
+                                  className="absolute inset-0 bg-cover bg-center pointer-events-none"
+                                  style={{ 
+                                    backgroundImage: `url(${activeTemplate.backgroundPath})`, 
+                                    opacity: activeTemplate.bgImageOpacity ?? 0.05,
+                                    zIndex: 0 
+                                  }} 
+                                />
+                              )}
 
-                          <div className="relative z-10 flex flex-col flex-1 justify-between">
-                            <div>
-                              {renderHeader()}
+                              {/* Background Gradient layer */}
+                              {((previewMode === "digital") || (previewMode === "physical" && !activeTemplate.usePreprinted)) && activeTemplate.bgType === "gradient" && (
+                                <div 
+                                  className="absolute inset-0 pointer-events-none"
+                                  style={{ 
+                                    backgroundImage: `linear-gradient(${activeTemplate.bgGradientAngle || 135}deg, ${activeTemplate.bgGradientStart || '#ffffff'}, ${activeTemplate.bgGradientEnd || '#f1f5f9'})`,
+                                    zIndex: 0 
+                                  }} 
+                                />
+                              )}
 
-                              {/* Dynamic Test Table Preview */}
-                              <div className="mt-2">
-                                <div className="font-extrabold text-[10px] text-zinc-900 dark:text-white uppercase mb-1">{selectedTest.name} ({selectedTest.code})</div>
-                                
-                                {selectedTest.reportStyle === "Two Column Grid" ? (
-                                  <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-[8px] mt-2">
-                                    {selectedTest.parameters && selectedTest.parameters.map((p, i) => (
-                                      <div key={i} className="border-b border-zinc-200 dark:border-zinc-800 dark:border-zinc-800 pb-1 flex justify-between items-center">
-                                        <div>
-                                          <span className="font-semibold block text-[8px]">{p.name}</span>
-                                          {selectedTest.showMethod && p.method && <span className="text-[6px] text-zinc-600 dark:text-zinc-400 dark:text-zinc-500 italic">{p.method}</span>}
-                                        </div>
-                                        <div className="text-right">
-                                          <span className="font-mono font-bold text-[8px]">{(Number(p.minRange) + (Number(p.maxRange) - Number(p.minRange))/2).toFixed(1)} {p.unit}</span>
-                                          {selectedTest.showRange && <span className="text-[6px] text-zinc-500 dark:text-zinc-600 dark:text-zinc-400 block">Ref: {p.minRange}-{p.maxRange}</span>}
-                                        </div>
-                                      </div>
-                                    ))}
-                                  </div>
-                                ) : selectedTest.reportStyle === "Descriptive Narrative" ? (
-                                  <div className="space-y-2 text-[8px] text-zinc-700 dark:text-zinc-300 mt-2">
-                                    {selectedTest.parameters && selectedTest.parameters.map((p, i) => (
-                                      <div key={i} className="bg-zinc-50/50 dark:bg-zinc-900/50 p-2 rounded-lg border border-zinc-200 dark:border-zinc-800 dark:border-zinc-800">
-                                        <span className="font-bold text-zinc-900 dark:text-white block text-[8px]">{p.name} ({p.code})</span>
-                                        <p className="mt-1 leading-normal text-[7.5px]">
-                                          The analyte value is measured at <strong className="font-mono text-zinc-900 dark:text-white">{(Number(p.minRange) + (Number(p.maxRange) - Number(p.minRange))/2).toFixed(1)} {p.unit}</strong>.
-                                          {selectedTest.showRange && ` The physiological biological reference interval for healthy adults is ${p.minRange} - ${p.maxRange} ${p.unit}.`}
-                                          {selectedTest.showMethod && p.method && ` Methodology used for estimation: ${p.method}.`}
-                                        </p>
-                                      </div>
-                                    ))}
-                                  </div>
-                                ) : hasTemplateColumns ? (
-                                  /* Dynamic Tabular layout utilizing active template's columns configuration */
-                                  <table className={cn(
-                                    "w-full text-left text-[8px] border-collapse mt-2",
-                                    selectedTest.reportStyle === "Standard A4" && "border border-zinc-200 dark:border-zinc-800"
-                                  )}>
-                                    <thead>
-                                      <tr className={cn(
-                                        selectedTest.reportStyle === "Modern Tabular"
-                                          ? "bg-zinc-100 dark:bg-zinc-800 dark:bg-zinc-950 text-zinc-600 dark:text-zinc-300 font-bold border-t border-b border-zinc-200 dark:border-zinc-750"
-                                          : "bg-zinc-50 dark:bg-zinc-950 border-b border-zinc-200 dark:border-zinc-800 text-zinc-400 dark:text-zinc-500 font-bold"
-                                      )}>
-                                        {activeTemplate.columns.map((col, idx) => (
-                                          <th
-                                            key={idx}
-                                            className={cn(
-                                              "py-1 px-2",
-                                              selectedTest.reportStyle === "Standard A4" && "border-r border-zinc-200 dark:border-zinc-800 last:border-r-0",
-                                              col.alignment === "Left" ? "text-left" : col.alignment === "Center" ? "text-center" : "text-right"
-                                            )}
-                                            style={{ width: `${(col.weight / totalWeight) * 100}%` }}
-                                          >
-                                            {col.title}
-                                          </th>
-                                        ))}
-                                      </tr>
-                                    </thead>
-                                    <tbody className={cn(
-                                      selectedTest.reportStyle === "Modern Tabular"
-                                        ? "divide-y divide-zinc-150 dark:divide-zinc-850"
-                                        : "divide-y divide-zinc-200 dark:divide-zinc-800"
-                                    )}>
-                                      {selectedTest.parameters && selectedTest.parameters.map((p, i) => (
-                                        <tr 
-                                          key={i} 
-                                          className={cn(
-                                            selectedTest.reportStyle === "Modern Tabular" && i % 2 === 1 && "bg-zinc-50/30 dark:bg-zinc-900/10"
-                                          )}
+                              {/* Digital mode Watermark overlay */}
+                              {((previewMode === "digital") || (previewMode === "physical" && !activeTemplate.usePreprinted)) && activeTemplate.includeBranding && (activeTemplate.includeWatermark ?? true) && activeTemplate.watermarkText && (
+                                <div 
+                                  className="absolute inset-0 flex items-center justify-center pointer-events-none select-none font-semibold font-mono tracking-wider"
+                                  style={{ 
+                                    opacity: activeTemplate.watermarkOpacity || 0.05, 
+                                    color: '#000',
+                                    fontSize: `${activeTemplate.watermarkSize || 32}px`,
+                                    transform: `rotate(${activeTemplate.watermarkRotation ?? 12}deg)`,
+                                    zIndex: 5
+                                  }}
+                                >
+                                  {activeTemplate.watermarkText}
+                                </div>
+                              )}
+
+                              {/* Content Box */}
+                              <div className="relative z-10 w-full h-full flex flex-col justify-between">
+                                <div>
+                                  {/* Brand headers with custom logo, positioning, colors and fonts */}
+                                  {((previewMode === "digital") || (previewMode === "physical" && !activeTemplate.usePreprinted)) && activeTemplate.includeBranding && (() => {
+                                    const hasLogo = (activeTemplate.includeLogo ?? true) && !!activeTemplate.logoUrl;
+                                    const hasTitle = activeTemplate.includeHeaderName ?? true;
+                                    const hasSubtitle = activeTemplate.includeHeaderSubtitle ?? true;
+
+                                    if (!hasLogo && !hasTitle && !hasSubtitle) return null;
+
+                                    const logoEl = hasLogo ? (
+                                      <img 
+                                        src={activeTemplate.logoUrl} 
+                                        alt="Logo" 
+                                        style={{ width: `${activeTemplate.logoSize || 40}px`, height: 'auto', objectFit: 'contain' }}
+                                        className="max-h-12 relative z-10"
+                                      />
+                                    ) : (
+                                      (activeTemplate.includeLogo ?? true) ? (
+                                        <div 
+                                          className="rounded-lg flex items-center justify-center font-semibold text-white select-none relative z-10 animate-pulse"
+                                          style={{
+                                            width: `${activeTemplate.logoSize || 32}px`,
+                                            height: `${activeTemplate.logoSize || 32}px`,
+                                            backgroundColor: activeTemplate.brandNameColor || "#4f46e5",
+                                            fontSize: `${Math.max(10, (activeTemplate.logoSize || 32) * 0.35)}px`
+                                          }}
                                         >
-                                          {activeTemplate.columns.map((col, idx) => {
-                                            let text = "";
-                                            if (col.code === "Parameter") text = p.name;
-                                            else if (col.code === "Value") {
-                                              const val = (Number(p.minRange) + (Number(p.maxRange) - Number(p.minRange)) / 2);
-                                              text = isNaN(val) ? "0.0" : val.toFixed(1);
-                                            }
-                                            else if (col.code === "Unit") text = p.unit;
-                                            else if (col.code === "ReferenceRange") text = selectedTest.showRange ? `${p.minRange} - ${p.maxRange}` : "";
-                                            else if (col.code === "Methodology") text = selectedTest.showMethod ? p.method : "";
+                                          {(activeTemplate.brandNameText || activeTemplate.clinicName || "SY").substring(0, 2).toUpperCase()}
+                                        </div>
+                                      ) : null
+                                    );
 
-                                            return (
-                                              <td
+                                    const brandTextEl = (hasTitle || hasSubtitle) ? (
+                                      <div className="relative z-10 text-left">
+                                        {hasTitle && (
+                                          <h4 
+                                            style={{
+                                              fontSize: `${activeTemplate.brandNameSize || 14}px`,
+                                              fontWeight: activeTemplate.brandNameWeight || "900",
+                                              color: activeTemplate.brandNameColor || "#1e1b4b"
+                                            }}
+                                            className="uppercase tracking-tight leading-tight"
+                                          >
+                                            {activeTemplate.brandNameText || activeTemplate.clinicName || "SynOS Diagnostics"}
+                                          </h4>
+                                        )}
+                                        {hasSubtitle && (
+                                          <p 
+                                            style={{
+                                              fontSize: `${activeTemplate.brandSubtitleSize || 8}px`,
+                                              color: activeTemplate.brandSubtitleColor || "#71717a"
+                                            }}
+                                            className="font-medium mt-0.5 leading-none"
+                                          >
+                                            {activeTemplate.brandSubtitleText || "Accredited Diagnostics Lab"}
+                                          </p>
+                                        )}
+                                      </div>
+                                    ) : null;
+
+                                    const dividerStyle = activeTemplate.showHeaderDivider !== false ? {
+                                      borderBottomWidth: `${activeTemplate.headerDividerThickness ?? 2}px`,
+                                      borderBottomStyle: activeTemplate.headerDividerStyle || "solid",
+                                      borderBottomColor: activeTemplate.headerDividerColor || "#e2e8f0"
+                                    } : {};
+
+                                    if (activeTemplate.logoPosition === "Center") {
+                                      return (
+                                        <div className="w-full pb-2 mb-3 space-y-2.5 relative z-10" style={dividerStyle}>
+                                          <div className="flex flex-col items-center text-center gap-1.5">
+                                            {logoEl}
+                                            {brandTextEl}
+                                          </div>
+                                        </div>
+                                      );
+                                    } else if (activeTemplate.logoPosition === "Right") {
+                                      return (
+                                        <div className="w-full pb-2 mb-3 flex justify-between items-stretch gap-4 relative z-10" style={dividerStyle}>
+                                          <div className="w-[10px]" />
+                                          <div className="flex items-center gap-2.5 text-right">
+                                            {brandTextEl}
+                                            {logoEl}
+                                          </div>
+                                        </div>
+                                      );
+                                    } else {
+                                      return (
+                                        <div className="w-full pb-2 mb-3 flex justify-between items-stretch gap-4 relative z-10" style={dividerStyle}>
+                                          <div className="flex items-center gap-2.5">
+                                            {logoEl}
+                                            {brandTextEl}
+                                          </div>
+                                        </div>
+                                      );
+                                    }
+                                  })()}
+
+                                  {/* Physical Preprinted top space indicators in non-absolute layout */}
+                                  {!activeTemplate.enableAbsolutePositioning && previewMode === "physical" && activeTemplate.usePreprinted && (
+                                    <div className="h-[90px] border border-dashed border-zinc-200 bg-zinc-50/50 rounded-lg flex flex-col justify-center items-center mb-6 relative z-10">
+                                      <span className="text-[8px] font-semibold tracking-wider text-zinc-650">Physical pre-printed sheet header region</span>
+                                      <span className="text-[7px] text-zinc-400 font-mono mt-0.5">Top Safe Margins: {activeTemplate.topMargin}mm (~90px gap)</span>
+                                    </div>
+                                  )}
+
+                                  {/* Patient Info block */}
+                                  {activeTemplate.enableAbsolutePositioning ? (
+                                    /* High-fidelity transparent overlay text anchors for absolute positioning */
+                                    <div
+                                      style={{
+                                        position: 'absolute',
+                                        top: `${activeTemplate.patientBlockY ?? 55}mm`,
+                                        left: `${activeTemplate.leftRightMargin ?? 15}mm`,
+                                        width: `calc(210mm - ${(activeTemplate.leftRightMargin ?? 15) * 2}mm)`,
+                                        zIndex: 10
+                                      }}
+                                      className="bg-transparent border-0 shadow-none p-0 text-[10px] text-zinc-850 dark:text-zinc-200 transition-all select-none"
+                                    >
+                                      {/* Invisible placeholders for future workflow binding - mapping structure */}
+                                      <span className="hidden" data-patient-name-placeholder={"{" + "{" + "PATIENT_NAME" + "}" + "}"} />
+                                      <span className="hidden" data-ref-doctor-placeholder={"{" + "{" + "REF_DOCTOR" + "}" + "}"} />
+                                      <span className="hidden" data-age-sex-placeholder={"{" + "{" + "AGE_SEX" + "}" + "}"} />
+                                      <span className="hidden" data-patient-id-placeholder={"{" + "{" + "PATIENT_ID" + "}" + "}"} />
+                                      <span className="hidden" data-billing-date-placeholder={"{" + "{" + "BILLING_DATE" + "}" + "}"} />
+                                      <span className="hidden" data-report-date-placeholder={"{" + "{" + "REPORT_DATE" + "}" + "}"} />
+
+                                      <div className="grid grid-cols-3 gap-y-2.5 gap-x-6">
+                                        {/* Column 1: Patient Details */}
+                                        <div className="space-y-1">
+                                          <div>
+                                            <span className="text-[8px] font-extrabold uppercase tracking-widest text-zinc-450 dark:text-zinc-500 block">Patient Name</span>
+                                            <span className="font-bold text-zinc-800 dark:text-zinc-100">Rajesh Kumar</span>
+                                            <span className="text-[8px] text-zinc-400 font-mono ml-1">{"(" + "{" + "{" + "PATIENT_NAME" + "}" + "}" + ")"}</span>
+                                          </div>
+                                          <div>
+                                            <span className="text-[8px] font-extrabold uppercase tracking-widest text-zinc-450 dark:text-zinc-500 block">Age / Sex</span>
+                                            <span className="font-semibold text-zinc-700 dark:text-zinc-300">32Y / Male</span>
+                                            <span className="text-[8px] text-zinc-400 font-mono ml-1">{"(" + "{" + "{" + "AGE_SEX" + "}" + "}" + ")"}</span>
+                                          </div>
+                                        </div>
+
+                                        {/* Column 2: Referral Details */}
+                                        <div className="space-y-1">
+                                          <div>
+                                            <span className="text-[8px] font-extrabold uppercase tracking-widest text-zinc-450 dark:text-zinc-500 block">Ref. Doctor</span>
+                                            <span className="font-bold text-zinc-850 dark:text-zinc-100">Dr. S. Sharma, MD</span>
+                                            <span className="text-[8px] text-zinc-400 font-mono ml-1">{"(" + "{" + "{" + "REF_DOCTOR" + "}" + "}" + ")"}</span>
+                                          </div>
+                                          <div>
+                                            <span className="text-[8px] font-extrabold uppercase tracking-widest text-zinc-450 dark:text-zinc-500 block">Patient ID</span>
+                                            <span className="font-semibold font-mono text-zinc-700 dark:text-zinc-300">PID-2026-8940</span>
+                                            <span className="text-[8px] text-zinc-400 font-mono ml-1">{"(" + "{" + "{" + "PATIENT_ID" + "}" + "}" + ")"}</span>
+                                          </div>
+                                        </div>
+
+                                        {/* Column 3: Dates */}
+                                        <div className="space-y-1">
+                                          <div>
+                                            <span className="text-[8px] font-extrabold uppercase tracking-widest text-zinc-450 dark:text-zinc-500 block">Billing Date</span>
+                                            <span className="font-semibold text-zinc-700 dark:text-zinc-300">20-May-2026</span>
+                                            <span className="text-[8px] text-zinc-400 font-mono ml-1">{"(" + "{" + "{" + "BILLING_DATE" + "}" + "}" + ")"}</span>
+                                          </div>
+                                          <div>
+                                            <span className="text-[8px] font-extrabold uppercase tracking-widest text-zinc-450 dark:text-zinc-500 block">Report Date</span>
+                                            <span className="font-bold text-zinc-800 dark:text-zinc-100">22-May-2026</span>
+                                            <span className="text-[8px] text-zinc-400 font-mono ml-1">{"(" + "{" + "{" + "REPORT_DATE" + "}" + "}" + ")"}</span>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  ) : (
+                                    /* Default/Legacy Patient Info block */
+                                    <div
+                                      style={{
+                                        marginTop: '10px',
+                                        marginBottom: '15px'
+                                      }}
+                                      className="transition-all"
+                                    >
+                                      <div className="flex justify-between items-center text-[9px] border-b border-zinc-150 pb-1.5 font-semibold text-zinc-650 dark:text-zinc-400">
+                                        <div>
+                                          <span className="font-bold text-zinc-800">Patient:</span> Rajesh Kumar, M / 32Y
+                                        </div>
+                                        <div>
+                                          <span className="font-bold text-zinc-800">Referrer:</span> Dr. S. Sharma, MD
+                                        </div>
+                                        <div>
+                                          <span className="font-bold text-zinc-800">Date:</span> 20-May-2026
+                                        </div>
+                                      </div>
+                                    </div>
+                                  )}
+
+                                  {/* Dynamic Test Table / Findings Preview */}
+                                  <div
+                                    style={activeTemplate.enableAbsolutePositioning ? {
+                                      position: 'absolute',
+                                      top: `${activeTemplate.tableBlockY ?? 95}mm`,
+                                      left: `${activeTemplate.leftRightMargin ?? 15}mm`,
+                                      width: `calc(210mm - ${(activeTemplate.leftRightMargin ?? 15) * 2}mm)`,
+                                      zIndex: 10
+                                    } : {
+                                      marginTop: '20px',
+                                      flex: 1
+                                    }}
+                                    className="transition-all"
+                                  >
+                                    <div className="font-extrabold text-[10px] text-zinc-900 uppercase mb-1">{selectedTest.name} ({selectedTest.code})</div>
+                                    
+                                    {selectedTest.reportStyle === "Two Column Grid" ? (
+                                      <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-[8px] mt-2">
+                                        {selectedTest.parameters && selectedTest.parameters.map((p, i) => (
+                                          <div key={i} className="border-b border-zinc-200 pb-1 flex justify-between items-center">
+                                            <div>
+                                              <span className="font-semibold block text-[8px]">{p.name}</span>
+                                              {selectedTest.showMethod && p.method && <span className="text-[6px] text-zinc-600 italic">{p.method}</span>}
+                                            </div>
+                                            <div className="text-right">
+                                              <span className="font-mono font-bold text-[8px]">{(Number(p.minRange) + (Number(p.maxRange) - Number(p.minRange))/2).toFixed(1)} {p.unit}</span>
+                                              {selectedTest.showRange && <span className="text-[6px] text-zinc-500 block">Ref: {p.minRange}-{p.maxRange}</span>}
+                                            </div>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    ) : selectedTest.reportStyle === "Descriptive Narrative" ? (
+                                      <div className="space-y-2 text-[8px] text-zinc-700 mt-2">
+                                        {selectedTest.parameters && selectedTest.parameters.map((p, i) => (
+                                          <div 
+                                            key={i} 
+                                            className={cn(
+                                              activeTemplate.enableAbsolutePositioning 
+                                                ? "bg-transparent p-0 pb-2 border-b border-zinc-200 shadow-none rounded-none" 
+                                                : "bg-zinc-50 p-2 rounded-lg border border-zinc-200"
+                                            )}
+                                          >
+                                            <span className="font-bold text-zinc-900 block text-[8px]">{p.name} ({p.code})</span>
+                                            <p className="mt-1 leading-normal text-[7.5px]">
+                                              The analyte value is measured at <strong className="font-mono text-zinc-900">{(Number(p.minRange) + (Number(p.maxRange) - Number(p.minRange))/2).toFixed(1)} {p.unit}</strong>.
+                                              {selectedTest.showRange && ` The physiological biological reference interval for healthy adults is ${p.minRange} - ${p.maxRange} ${p.unit}.`}
+                                              {selectedTest.showMethod && p.method && ` Methodology used for estimation: ${p.method}.`}
+                                            </p>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    ) : hasTemplateColumns ? (
+                                      /* Dynamic Tabular layout utilizing active template's columns configuration */
+                                      <table className={cn(
+                                        "w-full text-left text-[8px] border-collapse mt-2",
+                                        selectedTest.reportStyle === "Standard A4" && !activeTemplate.enableAbsolutePositioning && "border border-zinc-200"
+                                      )}>
+                                        <thead>
+                                          <tr className={cn(
+                                            selectedTest.reportStyle === "Modern Tabular"
+                                              ? (activeTemplate.enableAbsolutePositioning ? "bg-transparent text-zinc-600 font-bold border-t border-b border-zinc-200" : "bg-zinc-100 text-zinc-600 font-bold border-t border-b border-zinc-200")
+                                              : (activeTemplate.enableAbsolutePositioning ? "bg-transparent border-t border-b border-zinc-200 text-zinc-400 font-bold" : "bg-zinc-50 border-b border-zinc-200 text-zinc-400 font-bold")
+                                          )}>
+                                            {activeTemplate.columns.map((col, idx) => (
+                                              <th
                                                 key={idx}
                                                 className={cn(
                                                   "py-1 px-2",
-                                                  selectedTest.reportStyle === "Standard A4" && "border-r border-zinc-200 dark:border-zinc-800 last:border-r-0",
-                                                  col.bold && "font-bold text-zinc-950 dark:text-white",
+                                                  selectedTest.reportStyle === "Standard A4" && "border-r border-zinc-200 last:border-r-0",
                                                   col.alignment === "Left" ? "text-left" : col.alignment === "Center" ? "text-center" : "text-right"
                                                 )}
+                                                style={{ width: `${(col.weight / totalWeight) * 100}%` }}
                                               >
-                                                {text}
-                                              </td>
-                                            );
-                                          })}
-                                        </tr>
-                                      ))}
-                                    </tbody>
-                                  </table>
-                                ) : (
-                                  /* Fallback to simple tables if template columns are missing */
-                                  <table className={cn(
-                                    "w-full text-left text-[8px] border-collapse mt-2",
-                                    selectedTest.reportStyle === "Standard A4" && "border border-zinc-200 dark:border-zinc-800"
-                                  )}>
-                                    <thead>
-                                      <tr className={cn(
-                                        selectedTest.reportStyle === "Modern Tabular"
-                                          ? "bg-zinc-100 dark:bg-zinc-800 dark:bg-zinc-950 text-zinc-600 dark:text-zinc-400 dark:text-zinc-300 font-bold border-t border-b border-zinc-200 dark:border-zinc-750"
-                                          : "bg-zinc-50 dark:bg-zinc-950 border-b border-zinc-200 dark:border-zinc-800 text-zinc-400 dark:text-zinc-500 font-bold"
+                                                {col.title}
+                                              </th>
+                                            ))}
+                                          </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-zinc-200 text-zinc-800">
+                                          {selectedTest.parameters && selectedTest.parameters.map((p, i) => (
+                                            <tr 
+                                              key={i} 
+                                              className={cn(
+                                                selectedTest.reportStyle === "Modern Tabular" && i % 2 === 1 && !activeTemplate.enableAbsolutePositioning && "bg-zinc-50/30"
+                                              )}
+                                            >
+                                              {activeTemplate.columns.map((col, idx) => {
+                                                let text = "";
+                                                if (col.code === "Parameter") text = p.name;
+                                                else if (col.code === "Value") {
+                                                  const val = (Number(p.minRange) + (Number(p.maxRange) - Number(p.minRange)) / 2);
+                                                  text = isNaN(val) ? "0.0" : val.toFixed(1);
+                                                }
+                                                else if (col.code === "Unit") text = p.unit;
+                                                else if (col.code === "ReferenceRange") text = selectedTest.showRange ? `${p.minRange} - ${p.maxRange}` : "";
+                                                else if (col.code === "Methodology") text = selectedTest.showMethod ? p.method : "";
+
+                                                return (
+                                                  <td
+                                                    key={idx}
+                                                    className={cn(
+                                                      "py-1 px-2",
+                                                      selectedTest.reportStyle === "Standard A4" && "border-r border-zinc-200 last:border-r-0",
+                                                      col.bold && "font-bold text-zinc-950",
+                                                      col.alignment === "Left" ? "text-left" : col.alignment === "Center" ? "text-center" : "text-right"
+                                                    )}
+                                                  >
+                                                    {text}
+                                                  </td>
+                                                );
+                                              })}
+                                            </tr>
+                                          ))}
+                                        </tbody>
+                                      </table>
+                                    ) : (
+                                      /* Fallback to simple tables if template columns are missing */
+                                      <table className={cn(
+                                        "w-full text-left text-[8px] border-collapse mt-2",
+                                        selectedTest.reportStyle === "Standard A4" && !activeTemplate.enableAbsolutePositioning && "border border-zinc-200"
                                       )}>
-                                        <th className={cn("py-1 px-2", selectedTest.reportStyle === "Standard A4" && "border-r border-zinc-200 dark:border-zinc-800")}>Analyte</th>
-                                        <th className={cn("py-1 px-2 text-center", selectedTest.reportStyle === "Standard A4" && "border-r border-zinc-200 dark:border-zinc-800")}>Value</th>
-                                        <th className={cn("py-1 px-2 text-center", selectedTest.reportStyle === "Standard A4" && "border-r border-zinc-200 dark:border-zinc-800")}>Unit</th>
-                                        {selectedTest.showRange && <th className={cn("py-1 px-2 text-right", selectedTest.reportStyle === "Standard A4" && "border-r border-zinc-200 dark:border-zinc-800")}>Reference Interval</th>}
-                                        {selectedTest.showMethod && <th className="py-1 px-2 text-right">Methodology</th>}
-                                      </tr>
-                                    </thead>
-                                    <tbody className={cn(
-                                      selectedTest.reportStyle === "Modern Tabular"
-                                        ? "divide-y divide-zinc-150 dark:divide-zinc-850"
-                                        : "divide-y divide-zinc-200 dark:divide-zinc-800"
-                                    )}>
-                                      {selectedTest.parameters && selectedTest.parameters.map((p, i) => (
-                                        <tr 
-                                          key={i} 
-                                          className={cn(
-                                            selectedTest.reportStyle === "Modern Tabular" && i % 2 === 1 && "bg-zinc-50/30 dark:bg-zinc-900/10"
+                                        <thead>
+                                          <tr className={cn(
+                                            selectedTest.reportStyle === "Modern Tabular"
+                                              ? (activeTemplate.enableAbsolutePositioning ? "bg-transparent text-zinc-600 font-bold border-t border-b border-zinc-200" : "bg-zinc-100 text-zinc-600 font-bold border-t border-b border-zinc-200")
+                                              : (activeTemplate.enableAbsolutePositioning ? "bg-transparent border-t border-b border-zinc-200 text-zinc-400 font-bold" : "bg-zinc-50 border-b border-zinc-200 text-zinc-400 font-bold")
+                                          )}>
+                                            <th className={cn("py-1 px-2", selectedTest.reportStyle === "Standard A4" && !activeTemplate.enableAbsolutePositioning && "border-r border-zinc-200")}>Analyte</th>
+                                            <th className={cn("py-1 px-2 text-center", selectedTest.reportStyle === "Standard A4" && !activeTemplate.enableAbsolutePositioning && "border-r border-zinc-200")}>Value</th>
+                                            <th className={cn("py-1 px-2 text-center", selectedTest.reportStyle === "Standard A4" && !activeTemplate.enableAbsolutePositioning && "border-r border-zinc-200")}>Unit</th>
+                                            {selectedTest.showRange && <th className={cn("py-1 px-2 text-right", selectedTest.reportStyle === "Standard A4" && !activeTemplate.enableAbsolutePositioning && "border-r border-zinc-200")}>Reference Interval</th>}
+                                            {selectedTest.showMethod && <th className="py-1 px-2 text-right">Methodology</th>}
+                                          </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-zinc-200 text-zinc-800">
+                                          {selectedTest.parameters && selectedTest.parameters.map((p, i) => (
+                                            <tr 
+                                              key={i} 
+                                              className={cn(
+                                                selectedTest.reportStyle === "Modern Tabular" && i % 2 === 1 && !activeTemplate.enableAbsolutePositioning && "bg-zinc-50/30"
+                                              )}
+                                            >
+                                              <td className={cn("py-1 px-2 font-semibold", selectedTest.reportStyle === "Standard A4" && !activeTemplate.enableAbsolutePositioning && "border-r border-zinc-200")}>{p.name}</td>
+                                              <td className={cn("py-1 px-2 text-center font-mono font-bold", selectedTest.reportStyle === "Standard A4" && !activeTemplate.enableAbsolutePositioning && "border-r border-zinc-200")}>{(Number(p.minRange) + (Number(p.maxRange) - Number(p.minRange))/2).toFixed(1)}</td>
+                                              <td className={cn("py-1 px-2 text-center font-mono text-zinc-500", selectedTest.reportStyle === "Standard A4" && !activeTemplate.enableAbsolutePositioning && "border-r border-zinc-200")}>{p.unit}</td>
+                                              {selectedTest.showRange && (
+                                                <td className={cn("py-1 px-2 text-right font-mono text-zinc-650", selectedTest.reportStyle === "Standard A4" && !activeTemplate.enableAbsolutePositioning && "border-r border-zinc-200")}>
+                                                  {p.minRange} - {p.maxRange}
+                                                </td>
+                                              )}
+                                              {selectedTest.showMethod && (
+                                                <td className="py-1 px-2 text-right text-zinc-650 italic text-[6.5px]">{p.method}</td>
+                                              )}
+                                            </tr>
+                                          ))}
+                                        </tbody>
+                                      </table>
+                                    )}
+
+                                    {/* Interpretations commentaries */}
+                                     {selectedTest.showInterpretation && (selectedTest.interpretationComment || (selectedTest.parameters && selectedTest.parameters[0]?.narrativeTemplate)) && (
+                                       <div className={cn(
+                                         activeTemplate.enableAbsolutePositioning 
+                                           ? "bg-transparent p-0 border-t border-dashed border-zinc-200 mt-3 text-left pt-2 rounded-none" 
+                                           : "bg-zinc-50 p-2.5 rounded-lg border border-zinc-200 mt-3 text-left"
+                                       )}>
+                                        <span className="font-bold block text-[7px] text-zinc-500 uppercase tracking-wide">Commentaries & Remarks</span>
+                                        <p className="text-[7.5px] italic text-zinc-650 mt-0.5 leading-normal">
+                                          {selectedTest.interpretationComment ?? selectedTest.parameters[0].narrativeTemplate}
+                                        </p>
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+
+                                {/* Footer & Signatures Region */}
+                                <div>
+                                  {/* Signatures */}
+                                  {(activeTemplate.includeSignatures ?? true) && selectedTest.signatureSlots && selectedTest.signatureSlots.length > 0 && (
+                                    <div 
+                                      style={activeTemplate.enableAbsolutePositioning ? {
+                                        position: 'absolute',
+                                        bottom: `${activeTemplate.signatureBlockY ?? 25}mm`,
+                                        left: `${activeTemplate.leftRightMargin ?? 15}mm`,
+                                        width: `calc(210mm - ${(activeTemplate.leftRightMargin ?? 15) * 2}mm)`,
+                                        zIndex: 10
+                                      } : {
+                                        marginTop: '30px'
+                                      }}
+                                      className="grid grid-cols-3 gap-6 pt-4 border-t border-dashed border-zinc-200 transition-all text-center"
+                                    >
+                                      {selectedTest.signatureSlots.map((sig, sigIdx) => (
+                                        <div key={sigIdx} className="text-center min-h-[45px] flex flex-col justify-end">
+                                          {((previewMode === "digital") || (previewMode === "physical" && !activeTemplate.usePreprinted)) && activeTemplate.includeBranding && (
+                                            <span className="font-mono text-[7px] text-zinc-500 italic block mb-0.5">/Signed digitally/</span>
                                           )}
-                                        >
-                                          <td className={cn("py-1 px-2 font-semibold", selectedTest.reportStyle === "Standard A4" && "border-r border-zinc-200 dark:border-zinc-800")}>{p.name}</td>
-                                          <td className={cn("py-1 px-2 text-center font-mono font-bold", selectedTest.reportStyle === "Standard A4" && "border-r border-zinc-200 dark:border-zinc-800")}>{(Number(p.minRange) + (Number(p.maxRange) - Number(p.minRange))/2).toFixed(1)}</td>
-                                          <td className={cn("py-1 px-2 text-center font-mono text-zinc-500", selectedTest.reportStyle === "Standard A4" && "border-r border-zinc-200 dark:border-zinc-800")}>{p.unit}</td>
-                                          {selectedTest.showRange && (
-                                            <td className={cn("py-1 px-2 text-right font-mono text-zinc-600 dark:text-zinc-400", selectedTest.reportStyle === "Standard A4" && "border-r border-zinc-200 dark:border-zinc-800")}>
-                                              {p.minRange} - {p.maxRange}
-                                            </td>
-                                          )}
-                                          {selectedTest.showMethod && (
-                                            <td className="py-1 px-2 text-right text-zinc-600 dark:text-zinc-400 italic text-[6.5px]">{p.method}</td>
-                                          )}
-                                        </tr>
+                                          <div className="border-t border-zinc-300 pt-1 text-[8px] font-semibold text-zinc-650">
+                                            {sig}
+                                          </div>
+                                        </div>
                                       ))}
-                                    </tbody>
-                                  </table>
-                                )}
+                                    </div>
+                                  )}
+
+                                  {/* Physical Preprinted Bottom Margins indicator in non-absolute layout */}
+                                  {!activeTemplate.enableAbsolutePositioning && previewMode === "physical" && activeTemplate.usePreprinted && (
+                                    <div className="h-[70px] border border-dashed border-zinc-200 bg-zinc-50/50 rounded-lg flex flex-col justify-center items-center mt-4 relative z-10">
+                                      <span className="text-[8px] font-semibold tracking-wider text-zinc-600">Physical pre-printed sheet region</span>
+                                      <span className="text-[7px] text-zinc-400 font-mono mt-0.5">Bottom Safe Margins: {activeTemplate.bottomMargin}mm (~70px gap)</span>
+                                    </div>
+                                  )}
+
+                                  {/* Digital mode Footer bar */}
+                                  {((previewMode === "digital") || (previewMode === "physical" && !activeTemplate.usePreprinted)) && activeTemplate.includeBranding && (activeTemplate.includeFooter ?? true) && activeTemplate.footerText && (
+                                    <div 
+                                      style={activeTemplate.enableAbsolutePositioning ? {
+                                        position: 'absolute',
+                                        bottom: '8mm',
+                                        left: `${activeTemplate.leftRightMargin ?? 15}mm`,
+                                        width: `calc(210mm - ${(activeTemplate.leftRightMargin ?? 15) * 2}mm)`,
+                                        zIndex: 10
+                                      } : {}}
+                                      className="mt-4 pt-2 border-t border-zinc-200 text-center text-[7px] text-zinc-400 font-medium"
+                                    >
+                                      {activeTemplate.footerText}
+                                    </div>
+                                  )}
+                                </div>
                               </div>
 
-                              {/* Interpretations commentaries */}
-                              {selectedTest.showInterpretation && (selectedTest.interpretationComment || (selectedTest.parameters && selectedTest.parameters[0]?.narrativeTemplate)) && (
-                                <div className="bg-zinc-50 dark:bg-zinc-950/50 p-2.5 rounded-lg border border-zinc-200 dark:border-zinc-800 mt-3">
-                                  <span className="font-bold block text-[7px] text-zinc-600 dark:text-zinc-400 dark:text-zinc-500 uppercase tracking-wide">Commentaries & Remarks</span>
-                                  <p className="text-[7.5px] italic text-zinc-600 dark:text-zinc-400 dark:text-zinc-400 mt-0.5 leading-normal">
-                                    {selectedTest.interpretationComment ?? selectedTest.parameters[0].narrativeTemplate}
-                                  </p>
-                                </div>
-                              )}
-                            </div>
-
-                            {/* Footer & Signatures Slots */}
-                            <div className="mt-6">
-                              {/* Signatures */}
-                              {selectedTest.signatureSlots && selectedTest.signatureSlots.length > 0 && (
-                                <div className="pt-3 border-t border-dashed border-zinc-200 dark:border-zinc-800 flex justify-end gap-6 items-end">
-                                  {selectedTest.signatureSlots.map(sig => (
-                                    <div key={sig} className="text-center">
-                                      <div className="h-6 flex items-end justify-center">
-                                        {activeTemplate.includeBranding && (
-                                          <span className="font-mono text-[7px] text-zinc-500 dark:text-zinc-400 dark:text-zinc-600 italic">/Signed digitally/</span>
-                                        )}
-                                      </div>
-                                      <span className="block border-t border-zinc-200 dark:border-zinc-800 pt-0.5 text-[7px] font-semibold text-zinc-600 dark:text-zinc-400">{sig}</span>
-                                    </div>
-                                  ))}
-                                </div>
-                              )}
-
-                              {/* Physical Preprinted Bottom Margins indicator */}
-                              {activeTemplate.usePreprinted && (
-                                <div className="h-[70px] border border-dashed border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/10 rounded-lg flex flex-col justify-center items-center mt-4 relative">
-                                  <span className="text-[8px] font-semibold tracking-wider text-zinc-600 dark:text-zinc-400">Physical pre-printed sheet footer region</span>
-                                  <span className="text-[7px] text-zinc-400 dark:text-zinc-500 font-mono mt-0.5">Bottom Safe Margins: {activeTemplate.bottomMargin}mm (~70px gap)</span>
-                                </div>
-                              )}
-
-                              {/* Digital mode Footer bar */}
-                              {!activeTemplate.usePreprinted && activeTemplate.includeBranding && activeTemplate.footerText && (
-                                <div className="mt-4 pt-2 border-t border-zinc-200 dark:border-zinc-800 text-center text-[7px] text-zinc-400 font-medium">
-                                  {activeTemplate.footerText}
-                                </div>
-                              )}
                             </div>
                           </div>
                         </div>
@@ -1820,7 +2068,7 @@ export function TestMasterScreen() {
             )}
             {/* Tab: Pricing */}
             {activeTab === "pricing" && (
-              <div className="bg-white dark:bg-zinc-900/40 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 shadow-sm space-y-6">
+              <div className="bg-white dark:bg-zinc-900/40 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 shadow-sm space-y-6 lg:h-full lg:overflow-y-auto custom-scrollbar">
                 <h3 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">Tiered Pricing Catalog Setup</h3>
                 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -1896,7 +2144,7 @@ export function TestMasterScreen() {
 
             {/* Tab: Profile Builder (Conditional) */}
             {activeTab === "profile-builder" && selectedTest.isProfile && (
-              <div className="bg-white dark:bg-zinc-900/40 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 shadow-sm space-y-4">
+              <div className="bg-white dark:bg-zinc-900/40 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 shadow-sm space-y-4 lg:h-full lg:overflow-y-auto custom-scrollbar">
                 <div className="flex items-center justify-between">
                   <div>
                     <h3 className="text-xs font-semibold text-zinc-600 dark:text-zinc-400">Compose Panel / Profiles</h3>

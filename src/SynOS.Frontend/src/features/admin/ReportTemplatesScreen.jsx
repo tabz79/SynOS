@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { 
   Columns, 
   Layout, 
@@ -51,13 +51,17 @@ const DEFAULT_TEMPLATES = [
     headerDividerColor: "#4f46e5",
     watermarkSize: 32,
     watermarkRotation: 12,
-    bgType: "solid",
+    bgType: "image",
     bgColor: "#ffffff",
     bgGradientStart: "#ffffff",
     bgGradientEnd: "#f1f5f9",
     bgGradientAngle: 135,
-    bgImageUrl: "",
+    backgroundPath: "/assets/report-masters/hematology-master.svg",
     bgImageOpacity: 0.05,
+    enableAbsolutePositioning: true,
+    patientBlockY: 55,
+    tableBlockY: 95,
+    signatureBlockY: 25,
     borderWidth: 1,
     borderColor: "#e2e8f0",
     borderStyle: "solid",
@@ -105,13 +109,17 @@ const DEFAULT_TEMPLATES = [
     headerDividerColor: "#10b981",
     watermarkSize: 32,
     watermarkRotation: 12,
-    bgType: "solid",
+    bgType: "image",
     bgColor: "#ffffff",
     bgGradientStart: "#ffffff",
     bgGradientEnd: "#ecfdf5",
     bgGradientAngle: 135,
-    bgImageUrl: "",
+    backgroundPath: "/assets/report-masters/biochemistry-master.svg",
     bgImageOpacity: 0.05,
+    enableAbsolutePositioning: true,
+    patientBlockY: 55,
+    tableBlockY: 95,
+    signatureBlockY: 25,
     borderWidth: 1,
     borderColor: "#e2e8f0",
     borderStyle: "solid",
@@ -160,13 +168,17 @@ const DEFAULT_TEMPLATES = [
     headerDividerColor: "#27272a",
     watermarkSize: 32,
     watermarkRotation: 12,
-    bgType: "solid",
+    bgType: "image",
     bgColor: "#ffffff",
     bgGradientStart: "#ffffff",
     bgGradientEnd: "#fafafa",
     bgGradientAngle: 135,
-    bgImageUrl: "",
-    bgImageOpacity: 0.05,
+    backgroundPath: "/assets/report-masters/radiology-master.svg",
+    bgImageOpacity: 0.03,
+    enableAbsolutePositioning: true,
+    patientBlockY: 55,
+    tableBlockY: 95,
+    signatureBlockY: 25,
     borderWidth: 1,
     borderColor: "#e2e8f0",
     borderStyle: "solid",
@@ -213,13 +225,17 @@ const DEFAULT_TEMPLATES = [
     headerDividerColor: "#f59e0b",
     watermarkSize: 32,
     watermarkRotation: 12,
-    bgType: "solid",
+    bgType: "image",
     bgColor: "#ffffff",
     bgGradientStart: "#ffffff",
     bgGradientEnd: "#fffbeb",
     bgGradientAngle: 135,
-    bgImageUrl: "",
+    backgroundPath: "/assets/report-masters/histopathology-master.svg",
     bgImageOpacity: 0.05,
+    enableAbsolutePositioning: true,
+    patientBlockY: 55,
+    tableBlockY: 95,
+    signatureBlockY: 25,
     borderWidth: 1,
     borderColor: "#e2e8f0",
     borderStyle: "solid",
@@ -271,6 +287,23 @@ const sanitizeTemplates = (list) => {
     
     return {
       ...t,
+      enableAbsolutePositioning: t.enableAbsolutePositioning !== undefined ? t.enableAbsolutePositioning : true,
+      patientBlockY: t.patientBlockY !== undefined ? t.patientBlockY : 55,
+      tableBlockY: t.tableBlockY !== undefined ? t.tableBlockY : 95,
+      signatureBlockY: t.signatureBlockY !== undefined ? t.signatureBlockY : 25,
+      includeLogo: t.includeLogo !== undefined ? t.includeLogo : true,
+      includeHeaderName: t.includeHeaderName !== undefined ? t.includeHeaderName : true,
+      includeHeaderSubtitle: t.includeHeaderSubtitle !== undefined ? t.includeHeaderSubtitle : true,
+      includeWatermark: t.includeWatermark !== undefined ? t.includeWatermark : true,
+      includeFooter: t.includeFooter !== undefined ? t.includeFooter : true,
+      includeSignatures: t.includeSignatures !== undefined ? t.includeSignatures : true,
+      backgroundPath: t.backgroundPath || (
+        t.modality === "Hematology" ? "/assets/report-masters/hematology-master.svg" :
+        t.modality === "Biochemistry" ? "/assets/report-masters/biochemistry-master.svg" :
+        t.modality === "Radiology" ? "/assets/report-masters/radiology-master.svg" :
+        t.modality === "Histopathology" ? "/assets/report-masters/histopathology-master.svg" :
+        "/assets/report-masters/default-master.svg"
+      ),
       signatureSlots: newSlots
     };
   });
@@ -303,6 +336,35 @@ export function ReportTemplatesScreen() {
   const [isSavedSuccessfully, setIsSavedSuccessfully] = useState(false);
   const [activeColIndex, setActiveColIndex] = useState(0);
 
+  const [showGuidelines, setShowGuidelines] = useState(true);
+  const [scale, setScale] = useState(1);
+  const containerRef = useRef(null);
+
+  useEffect(() => {
+    if (!containerRef.current) return;
+    
+    const handleResize = (entries) => {
+      for (let entry of entries) {
+        const { width } = entry.contentRect;
+        const baseWidth = 794;
+        const newScale = Math.min(1, width / baseWidth);
+        setScale(newScale);
+      }
+    };
+
+    const observer = new ResizeObserver(handleResize);
+    observer.observe(containerRef.current);
+
+    // Initial check
+    const rect = containerRef.current.getBoundingClientRect();
+    if (rect.width > 0) {
+      setScale(Math.min(1, rect.width / 794));
+    }
+
+    return () => observer.disconnect();
+  }, []);
+
+
   // Column form states
   const [newColCode, setNewColCode] = useState("");
   const [newColTitle, setNewColTitle] = useState("");
@@ -332,57 +394,23 @@ export function ReportTemplatesScreen() {
     if (!newTemplateTitle.trim() || !modalityVal) return;
 
     const newId = `temp-${modalityVal.toLowerCase().replace(/[^a-z0-9]/g, "-")}-${Date.now()}`;
+    
+    // Smart Cloning: If selectedTemplate exists, clone all visual styles, spacing, borders, background, margins, coordinates, columns, and signature slots
+    const baseTemplate = selectedTemplate || {};
     const newTemplate = {
+      ...baseTemplate,
       id: newId,
       modality: modalityVal,
       title: newTemplateTitle.trim(),
-      density: "Comfortable",
-      usePreprinted: false,
-      topMargin: 40,
-      bottomMargin: 30,
-      leftRightMargin: 20,
-      includeBranding: true,
-      clinicName: "SynOS Clinical Wing",
-      themeColor: "Indigo",
-      watermarkText: "CONFIDENTIAL",
-      watermarkOpacity: 0.05,
-      footerText: "SynOS System Generated Report",
-      logoUrl: "",
-      logoPosition: "Left",
-      logoLayout: "logo-left",
-      logoSize: 40,
       brandNameText: newTemplateTitle.trim(),
-      brandNameSize: 16,
-      brandNameWeight: "900",
-      brandNameColor: "#312e81",
-      brandSubtitleText: "Accredited Diagnostics Lab",
-      brandSubtitleSize: 9,
-      brandSubtitleColor: "#71717a",
-      showHeaderDivider: true,
-      headerDividerThickness: 2,
-      headerDividerStyle: "solid",
-      headerDividerColor: "#4f46e5",
-      watermarkSize: 32,
-      watermarkRotation: 12,
-      bgType: "solid",
-      bgColor: "#ffffff",
-      bgGradientStart: "#ffffff",
-      bgGradientEnd: "#f1f5f9",
-      bgGradientAngle: 135,
-      bgImageUrl: "",
-      bgImageOpacity: 0.05,
-      borderWidth: 1,
-      borderColor: "#e2e8f0",
-      borderStyle: "solid",
-      borderRadius: 12,
-      pagePadding: 24,
-      columns: [
+      // Deep copy to avoid reference sharing
+      columns: baseTemplate.columns ? baseTemplate.columns.map(c => ({ ...c })) : [
         { code: "Parameter", title: "Test Parameter", weight: 3, alignment: "Left", bold: true },
         { code: "Value", title: "Observed Value", weight: 2, alignment: "Center", bold: false },
         { code: "Unit", title: "Unit", weight: 1, alignment: "Center", bold: false },
         { code: "ReferenceRange", title: "Reference Ranges", weight: 3, alignment: "Right", bold: false }
       ],
-      signatureSlots: [
+      signatureSlots: baseTemplate.signatureSlots ? baseTemplate.signatureSlots.map(s => ({ ...s })) : [
         { slotId: 0, title: "Default Pathologist (Lab Owner)", required: true }
       ]
     };
@@ -432,6 +460,45 @@ export function ReportTemplatesScreen() {
       reader.readAsDataURL(file);
     }
   };
+
+  const handleBgImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 1.5 * 1024 * 1024) {
+        alert("Image exceeds the 1.5MB limit. Please select a smaller, compressed background artwork image.");
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        handleUpdateTemplateField("bgImageUrl", reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleCustomBackdropUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 2 * 1024 * 1024) {
+        alert("Image exceeds the 2MB limit. Please select a smaller backdrop image.");
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const updatedTemplate = {
+          ...selectedTemplate,
+          bgType: "image",
+          backgroundPath: reader.result,
+          bgImageOpacity: 1.0
+        };
+        setSelectedTemplate(updatedTemplate);
+        setTemplates(templates.map(t => t.id === selectedTemplate.id ? updatedTemplate : t));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+
 
   const handleUpdateColumn = (index, field, value) => {
     const updatedCols = [...selectedTemplate.columns];
@@ -536,9 +603,9 @@ export function ReportTemplatesScreen() {
   };
 
   return (
-    <div className="w-full px-6 py-6 space-y-6 animate-in fade-in duration-500">
+    <div className="w-full lg:h-[calc(100vh-56px)] flex flex-col overflow-hidden px-6 pt-4 pb-6 space-y-4 animate-in fade-in duration-500">
       {/* Header bar */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-zinc-200 dark:border-zinc-800 pb-5">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-zinc-200 dark:border-zinc-800 pb-5 shrink-0">
         <div className="flex flex-col gap-1">
           <h1 className="text-2xl font-semibold text-zinc-900 dark:text-white tracking-tight flex items-center gap-2">
             <Layout className="w-6 h-6 text-synos-primary" />
@@ -565,11 +632,11 @@ export function ReportTemplatesScreen() {
         </button>
       </div>
 
-      <div className="grid grid-cols-12 gap-6 items-start">
+      <div className="grid grid-cols-12 gap-6 items-stretch flex-1 min-h-0 overflow-hidden pb-4">
         {/* Left Panel: Available Modality Templates */}
-        <div className="col-span-12 lg:col-span-3 bg-white dark:bg-zinc-900/40 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 flex flex-col gap-4 shadow-sm">
+        <div className="col-span-12 lg:col-span-3 bg-white dark:bg-zinc-900/40 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 flex flex-col gap-4 shadow-sm lg:h-full lg:overflow-y-auto custom-scrollbar">
           <span className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">Modality Templates</span>
-          <div className="space-y-2 max-h-[500px] overflow-y-auto pr-1 custom-scrollbar">
+          <div className="space-y-2 pr-1">
             {templates.map(t => (
               <button
                 key={t.id}
@@ -663,7 +730,7 @@ export function ReportTemplatesScreen() {
         </div>
 
         {/* Center Panel: Settings Tab Workspace */}
-        <div className="col-span-12 lg:col-span-5 bg-white dark:bg-zinc-900/40 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 shadow-sm flex flex-col gap-6">
+        <div className="col-span-12 lg:col-span-5 bg-white dark:bg-zinc-900/40 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 shadow-sm flex flex-col gap-6 lg:h-full lg:overflow-y-auto custom-scrollbar">
           {/* Tab selector */}
           <div className="flex flex-wrap items-center gap-2 border-b border-zinc-100 dark:border-zinc-800 pb-3 shrink-0">
             {["columns", "signatures", "settings"].map(tab => (
@@ -970,7 +1037,20 @@ export function ReportTemplatesScreen() {
 
             {activeTab === "signatures" && (
               <div className="space-y-6">
-                <div className="space-y-3">
+                <label className="flex items-center gap-2.5 cursor-pointer bg-zinc-50 dark:bg-zinc-900/20 p-3.5 rounded-xl border border-zinc-200 dark:border-zinc-800/80">
+                  <input
+                    type="checkbox"
+                    checked={selectedTemplate.includeSignatures ?? true}
+                    onChange={(e) => handleUpdateTemplateField("includeSignatures", e.target.checked)}
+                    className="rounded border-zinc-300 dark:border-zinc-700 text-synos-primary focus:ring-synos-primary w-4.5 h-4.5"
+                  />
+                  <div>
+                    <span className="text-xs font-bold text-zinc-800 dark:text-zinc-200 block">Include Signatures Block</span>
+                    <span className="text-[9px] text-zinc-400 block">Render pathologist / radiologist signature lines on reports</span>
+                  </div>
+                </label>
+
+                <div className={cn("space-y-3 transition-all", !(selectedTemplate.includeSignatures ?? true) && "opacity-40 pointer-events-none")}>
                   {selectedTemplate.signatureSlots.map((slot, idx) => {
                     const isDefaultPathologist = slot.title === "Default Pathologist (Lab Owner)";
                     return (
@@ -1018,7 +1098,7 @@ export function ReportTemplatesScreen() {
                   })}
                 </div>
 
-                <form onSubmit={handleAddSignatureSlot} className="bg-zinc-50/50 dark:bg-zinc-900/10 border border-dashed border-zinc-200 dark:border-zinc-800 rounded-xl p-5 space-y-4">
+                <form onSubmit={handleAddSignatureSlot} className={cn("bg-zinc-50/50 dark:bg-zinc-900/10 border border-dashed border-zinc-200 dark:border-zinc-800 rounded-xl p-5 space-y-4 transition-all", !(selectedTemplate.includeSignatures ?? true) && "opacity-40 pointer-events-none")}>
                   <span className="text-[10px] font-semibold text-zinc-700 dark:text-zinc-300 block">Add doctor signature slot</span>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3 items-end">
                     <div className="space-y-1">
@@ -1067,7 +1147,7 @@ export function ReportTemplatesScreen() {
                   </div>
                 )}
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-6">
                   {/* Card 1: Canvas, Margins & density */}
                   <div className="bg-white dark:bg-zinc-900/40 border border-zinc-200 dark:border-zinc-800 rounded-xl p-5 space-y-4">
                     <h3 className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 flex items-center gap-1.5">
@@ -1289,15 +1369,74 @@ export function ReportTemplatesScreen() {
 
                     {selectedTemplate.bgType === "image" && (
                       <div className="space-y-3 animate-in slide-in-from-top-1 duration-150">
-                        <div className="space-y-1">
-                          <label className="text-[9px] font-semibold text-zinc-600 dark:text-zinc-400 dark:text-zinc-500">Background Image URL</label>
-                          <input
-                            type="text"
-                            placeholder="https://example.com/logo-opacity.png"
-                            className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl px-3 py-1.5 text-xs w-full text-zinc-900 dark:text-zinc-100 outline-none focus:ring-1 focus:ring-synos-primary"
-                            value={selectedTemplate.bgImageUrl || ""}
-                            onChange={(e) => handleUpdateTemplateField("bgImageUrl", e.target.value)}
-                          />
+                        <div className="space-y-1.5">
+                          <label className="text-[9px] font-semibold text-zinc-650 dark:text-zinc-400 block">Department Master Backdrop Theme</label>
+                          <div className="grid grid-cols-2 gap-2">
+                            {[
+                              { name: "Hematology", path: "/assets/report-masters/hematology-master.svg", color: "bg-indigo-500/10 border-indigo-500/30" },
+                              { name: "Biochemistry", path: "/assets/report-masters/biochemistry-master.svg", color: "bg-emerald-500/10 border-emerald-500/30" },
+                              { name: "Radiology", path: "/assets/report-masters/radiology-master.svg", color: "bg-zinc-500/10 border-zinc-500/30" },
+                              { name: "Histopathology", path: "/assets/report-masters/histopathology-master.svg", color: "bg-amber-500/10 border-amber-500/30" },
+                              { name: "Default Master", path: "/assets/report-masters/default-master.svg", color: "bg-blue-500/10 border-blue-500/30" }
+                            ].map((theme) => {
+                              const isSelected = selectedTemplate.backgroundPath === theme.path;
+                              return (
+                                <button
+                                  key={theme.path}
+                                  type="button"
+                                  onClick={() => handleUpdateTemplateField("backgroundPath", theme.path)}
+                                  className={cn(
+                                    "flex flex-col items-center justify-center p-2 rounded-xl border text-center transition-all",
+                                    isSelected 
+                                      ? "border-synos-primary bg-synos-primary/5 shadow-sm text-synos-primary ring-1 ring-synos-primary" 
+                                      : "border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 hover:bg-zinc-50 dark:hover:bg-zinc-900/50 text-zinc-600 dark:text-zinc-400"
+                                  )}
+                                >
+                                  <div className={cn("w-full h-8 rounded border mb-1 flex items-center justify-center text-[8px] font-bold uppercase tracking-wider", theme.color)}>
+                                    {theme.name.substring(0, 4)}
+                                  </div>
+                                  <span className="text-[9px] font-bold block">{theme.name}</span>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                        <div className="space-y-1.5 border-t border-zinc-100 dark:border-zinc-800 pt-3">
+                          <label className="text-[9px] font-semibold text-zinc-650 dark:text-zinc-400 block">External Custom Backdrop (Canva/Crystal)</label>
+                          {selectedTemplate.backgroundPath && selectedTemplate.backgroundPath.startsWith("data:") ? (
+                            <div className="flex items-center gap-3 bg-white dark:bg-zinc-950 p-2 border border-zinc-200 dark:border-zinc-800 rounded-xl">
+                              <img src={selectedTemplate.backgroundPath} alt="Custom Backdrop Preview" className="h-10 w-10 object-contain rounded border border-zinc-100 dark:border-zinc-800" />
+                              <div className="flex-1 min-w-0">
+                                <span className="text-[10px] text-zinc-500 block truncate font-mono">Custom Backdrop Active</span>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const defaultPath = selectedTemplate.modality === "Hematology" ? "/assets/report-masters/hematology-master.svg" :
+                                    selectedTemplate.modality === "Biochemistry" ? "/assets/report-masters/biochemistry-master.svg" :
+                                    selectedTemplate.modality === "Radiology" ? "/assets/report-masters/radiology-master.svg" :
+                                    selectedTemplate.modality === "Histopathology" ? "/assets/report-masters/histopathology-master.svg" :
+                                    "/assets/report-masters/default-master.svg";
+                                  handleUpdateTemplateField("backgroundPath", defaultPath);
+                                }}
+                                className="p-1.5 hover:bg-rose-500/10 text-rose-500 rounded-lg transition-colors border border-transparent hover:border-rose-500/20"
+                                title="Remove Custom Backdrop"
+                              >
+                                <X className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          ) : (
+                            <div className="relative group flex flex-col items-center justify-center border border-dashed border-zinc-300 dark:border-zinc-800 rounded-xl p-3 bg-white dark:bg-zinc-950 hover:bg-zinc-50/50 dark:hover:bg-zinc-900/10 transition-all cursor-pointer">
+                              <input
+                                type="file"
+                                accept="image/*"
+                                onChange={handleCustomBackdropUpload}
+                                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                              />
+                              <Plus className="w-4 h-4 text-zinc-400 group-hover:text-synos-primary transition-colors mb-1" />
+                              <span className="text-[10px] text-zinc-500 font-semibold group-hover:text-zinc-600 transition-colors">Upload Canva/A4 preprinted PNG</span>
+                            </div>
+                          )}
                         </div>
                         <div className="space-y-1">
                           <div className="flex justify-between text-[9px] font-semibold text-zinc-600 dark:text-zinc-400 font-medium">
@@ -1307,10 +1446,10 @@ export function ReportTemplatesScreen() {
                           <input
                             type="range"
                             min="0.01"
-                            max="0.5"
+                            max="1.0"
                             step="0.01"
                             className="w-full accent-synos-primary h-1 bg-zinc-200 dark:bg-zinc-800 rounded-lg cursor-pointer"
-                            value={selectedTemplate.bgImageOpacity || 0.05}
+                            value={selectedTemplate.bgImageOpacity ?? 0.05}
                             onChange={(e) => handleUpdateTemplateField("bgImageOpacity", Number(e.target.value))}
                           />
                         </div>
@@ -1403,8 +1542,78 @@ export function ReportTemplatesScreen() {
                     </div>
                   </div>
 
+                  {/* Card: Stationery Overlay Coordinates */}
+                  <div className="bg-white dark:bg-zinc-900/40 border border-zinc-200 dark:border-zinc-800 rounded-xl p-5 space-y-4">
+                    <h3 className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 flex items-center gap-1.5">
+                      <Sliders className="w-3.5 h-3.5" /> Stationery Overlay Coordinates (mm)
+                    </h3>
+                    
+                    <label className="flex items-center gap-2 cursor-pointer bg-zinc-50 dark:bg-zinc-950 p-3 rounded-lg border border-zinc-200 dark:border-zinc-800">
+                      <input
+                        type="checkbox"
+                        checked={selectedTemplate.enableAbsolutePositioning || false}
+                        onChange={(e) => handleUpdateTemplateField("enableAbsolutePositioning", e.target.checked)}
+                        className="rounded border-zinc-300 dark:border-zinc-700 text-synos-primary focus:ring-synos-primary w-4.5 h-4.5"
+                      />
+                      <div>
+                        <span className="text-[11px] font-bold text-zinc-800 dark:text-zinc-200 block">Enable Absolute Coordinates</span>
+                        <span className="text-[9px] text-zinc-400 block">Overlay blocks using physical millimeter rulers</span>
+                      </div>
+                    </label>
+
+                    <div className={cn(
+                      "space-y-3 transition-all duration-300",
+                      selectedTemplate.enableAbsolutePositioning ? "opacity-100 animate-in slide-in-from-top-1 duration-150" : "opacity-40 pointer-events-none select-none"
+                    )}>
+                      <div className="space-y-1">
+                        <div className="flex justify-between text-[9px] font-semibold text-zinc-650 dark:text-zinc-400">
+                          <span>Patient Block Y-Offset</span>
+                          <span className="font-mono font-bold text-synos-primary">{selectedTemplate.patientBlockY ?? 55} mm</span>
+                        </div>
+                        <input
+                          type="range"
+                          min="10"
+                          max="120"
+                          className="w-full accent-synos-primary h-1 bg-zinc-200 dark:bg-zinc-800 rounded-lg cursor-pointer"
+                          value={selectedTemplate.patientBlockY ?? 55}
+                          onChange={(e) => handleUpdateTemplateField("patientBlockY", Number(e.target.value))}
+                        />
+                      </div>
+
+                      <div className="space-y-1">
+                        <div className="flex justify-between text-[9px] font-semibold text-zinc-650 dark:text-zinc-400">
+                          <span>Findings Table Y-Offset</span>
+                          <span className="font-mono font-bold text-synos-primary">{selectedTemplate.tableBlockY ?? 95} mm</span>
+                        </div>
+                        <input
+                          type="range"
+                          min="30"
+                          max="220"
+                          className="w-full accent-synos-primary h-1 bg-zinc-200 dark:bg-zinc-800 rounded-lg cursor-pointer"
+                          value={selectedTemplate.tableBlockY ?? 95}
+                          onChange={(e) => handleUpdateTemplateField("tableBlockY", Number(e.target.value))}
+                        />
+                      </div>
+
+                      <div className="space-y-1">
+                        <div className="flex justify-between text-[9px] font-semibold text-zinc-650 dark:text-zinc-400">
+                          <span>Signature Block Y-Offset (from bottom)</span>
+                          <span className="font-mono font-bold text-synos-primary">{selectedTemplate.signatureBlockY ?? 25} mm</span>
+                        </div>
+                        <input
+                          type="range"
+                          min="5"
+                          max="80"
+                          className="w-full accent-synos-primary h-1 bg-zinc-200 dark:bg-zinc-800 rounded-lg cursor-pointer"
+                          value={selectedTemplate.signatureBlockY ?? 25}
+                          onChange={(e) => handleUpdateTemplateField("signatureBlockY", Number(e.target.value))}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
                   {/* Card 3: Advanced Brand Visual overrides */}
-                  <div className="bg-white dark:bg-zinc-900/40 border border-zinc-200 dark:border-zinc-800 rounded-xl p-5 space-y-4 col-span-1 md:col-span-2">
+                  <div className="bg-white dark:bg-zinc-900/40 border border-zinc-200 dark:border-zinc-800 rounded-xl p-5 space-y-4">
                     <h3 className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 flex items-center gap-1.5">
                       <Type className="w-3.5 h-3.5" /> Advanced Brand Visual overrides & Clinic Branding
                     </h3>
@@ -1414,7 +1623,29 @@ export function ReportTemplatesScreen() {
                       <div className="space-y-4 bg-zinc-50/50 dark:bg-zinc-950/20 p-4 rounded-xl border border-zinc-200/60 dark:border-zinc-800">
                         <span className="text-[10px] font-semibold text-zinc-600 dark:text-zinc-400 block">Brand Typography & Header text</span>
                         
-                        <div className="space-y-1.5">
+                        <div className="flex gap-4 border-b border-zinc-200/60 dark:border-zinc-850 pb-2">
+                          <label className="flex items-center gap-2 cursor-pointer select-none">
+                            <input
+                              type="checkbox"
+                              className="rounded border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-950 text-synos-primary focus:ring-0 w-3.5 h-3.5"
+                              checked={selectedTemplate.includeHeaderName ?? true}
+                              onChange={(e) => handleUpdateTemplateField("includeHeaderName", e.target.checked)}
+                            />
+                            <span className="text-[10px] font-semibold text-zinc-750 dark:text-zinc-300">Show Brand Title</span>
+                          </label>
+
+                          <label className="flex items-center gap-2 cursor-pointer select-none">
+                            <input
+                              type="checkbox"
+                              className="rounded border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-950 text-synos-primary focus:ring-0 w-3.5 h-3.5"
+                              checked={selectedTemplate.includeHeaderSubtitle ?? true}
+                              onChange={(e) => handleUpdateTemplateField("includeHeaderSubtitle", e.target.checked)}
+                            />
+                            <span className="text-[10px] font-semibold text-zinc-750 dark:text-zinc-300">Show Subtitle</span>
+                          </label>
+                        </div>
+
+                        <div className={cn("space-y-1.5 transition-all duration-300", !(selectedTemplate.includeHeaderName ?? true) && "opacity-40 pointer-events-none select-none")}>
                           <label className="text-[9px] font-semibold text-zinc-600 dark:text-zinc-400">Brand Main Title Text</label>
                           <input
                             type="text"
@@ -1424,7 +1655,7 @@ export function ReportTemplatesScreen() {
                           />
                         </div>
 
-                        <div className="grid grid-cols-3 gap-2">
+                        <div className={cn("grid grid-cols-3 gap-2 transition-all duration-300", !(selectedTemplate.includeHeaderName ?? true) && "opacity-40 pointer-events-none select-none")}>
                           <div className="space-y-1">
                             <label className="text-[8px] font-semibold text-zinc-400 block mb-0.5">Size (px)</label>
                             <input
@@ -1460,7 +1691,7 @@ export function ReportTemplatesScreen() {
                         </div>
 
                         {/* Subtitle details */}
-                        <div className="space-y-1.5 border-t border-zinc-200 dark:border-zinc-800 pt-3">
+                        <div className={cn("space-y-1.5 border-t border-zinc-200 dark:border-zinc-800 pt-3 transition-all duration-300", !(selectedTemplate.includeHeaderSubtitle ?? true) && "opacity-40 pointer-events-none select-none")}>
                           <label className="text-[9px] font-semibold text-zinc-600 dark:text-zinc-400">Brand Subtitle Text</label>
                           <input
                             type="text"
@@ -1470,7 +1701,7 @@ export function ReportTemplatesScreen() {
                           />
                         </div>
 
-                        <div className="grid grid-cols-2 gap-2">
+                        <div className={cn("grid grid-cols-2 gap-2 transition-all duration-300", !(selectedTemplate.includeHeaderSubtitle ?? true) && "opacity-40 pointer-events-none select-none")}>
                           <div className="space-y-1">
                             <label className="text-[8px] font-semibold text-zinc-400 block mb-0.5">Size (px)</label>
                             <input
@@ -1494,62 +1725,75 @@ export function ReportTemplatesScreen() {
 
                       {/* Sub-section: Logo URL, alignment, sizes */}
                       <div className="space-y-4 bg-zinc-50/50 dark:bg-zinc-950/25 p-4 rounded-xl border border-zinc-200/60 dark:border-zinc-800">
-                        <span className="text-[10px] font-semibold text-zinc-600 dark:text-zinc-400 block">Brand Logo & Header Dividers</span>
-
-                        <div className="space-y-1.5">
-                          <label className="text-[9px] font-semibold text-zinc-650 dark:text-zinc-400 block">Clinic Logo (PNG/Image)</label>
-                          {selectedTemplate.logoUrl ? (
-                            <div className="flex items-center gap-3 bg-white dark:bg-zinc-950 p-2 border border-zinc-200 dark:border-zinc-800 rounded-xl">
-                              <img src={selectedTemplate.logoUrl} alt="Logo Preview" className="h-10 w-10 object-contain rounded border border-zinc-100 dark:border-zinc-800" />
-                              <div className="flex-1 min-w-0">
-                                <span className="text-[10px] text-zinc-500 block truncate">Logo loaded</span>
-                              </div>
-                              <button
-                                type="button"
-                                onClick={() => handleUpdateTemplateField("logoUrl", "")}
-                                className="p-1.5 hover:bg-rose-500/10 text-rose-500 rounded-lg transition-colors border border-transparent hover:border-rose-500/20"
-                                title="Remove Logo"
-                              >
-                                <X className="w-3.5 h-3.5" />
-                              </button>
-                            </div>
-                          ) : (
-                            <div className="relative group flex flex-col items-center justify-center border border-dashed border-zinc-300 dark:border-zinc-800 rounded-xl p-3 bg-white dark:bg-zinc-950 hover:bg-zinc-50/50 dark:hover:bg-zinc-900/10 transition-all cursor-pointer">
-                              <input
-                                type="file"
-                                accept="image/*"
-                                onChange={handleLogoChange}
-                                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                              />
-                              <Plus className="w-4 h-4 text-zinc-400 group-hover:text-synos-primary transition-colors mb-1" />
-                              <span className="text-[10px] text-zinc-500 font-semibold group-hover:text-zinc-600 transition-colors">Choose local logo image</span>
-                            </div>
-                          )}
+                        <div className="flex items-center justify-between border-b border-zinc-150 dark:border-zinc-800 pb-2">
+                          <span className="text-[10px] font-semibold text-zinc-650 dark:text-zinc-400 block">Brand Logo & Header Dividers</span>
+                          <label className="flex items-center gap-2 cursor-pointer select-none">
+                            <input
+                              type="checkbox"
+                              className="rounded border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-950 text-synos-primary focus:ring-0 w-3.5 h-3.5"
+                              checked={selectedTemplate.includeLogo ?? true}
+                              onChange={(e) => handleUpdateTemplateField("includeLogo", e.target.checked)}
+                            />
+                            <span className="text-[10px] font-semibold text-zinc-700 dark:text-zinc-300">Show Clinic Logo</span>
+                          </label>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-3.5">
-                          <div className="space-y-1">
-                            <label className="text-[8px] font-semibold text-zinc-400 block mb-0.5">Logo Width (px)</label>
-                            <input
-                              type="number"
-                              min="20"
-                              max="200"
-                              className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded px-2 py-1 text-xs w-full font-mono text-center outline-none"
-                              value={selectedTemplate.logoSize || 40}
-                              onChange={(e) => handleUpdateTemplateField("logoSize", Number(e.target.value) || 40)}
-                            />
+                        <div className={cn("space-y-4 transition-all duration-300", !(selectedTemplate.includeLogo ?? true) && "opacity-40 pointer-events-none select-none")}>
+                          <div className="space-y-1.5">
+                            <label className="text-[9px] font-semibold text-zinc-650 dark:text-zinc-400 block">Clinic Logo (PNG/Image)</label>
+                            {selectedTemplate.logoUrl ? (
+                              <div className="flex items-center gap-3 bg-white dark:bg-zinc-950 p-2 border border-zinc-200 dark:border-zinc-800 rounded-xl">
+                                <img src={selectedTemplate.logoUrl} alt="Logo Preview" className="h-10 w-10 object-contain rounded border border-zinc-100 dark:border-zinc-800" />
+                                <div className="flex-1 min-w-0">
+                                  <span className="text-[10px] text-zinc-500 block truncate">Logo loaded</span>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() => handleUpdateTemplateField("logoUrl", "")}
+                                  className="p-1.5 hover:bg-rose-500/10 text-rose-500 rounded-lg transition-colors border border-transparent hover:border-rose-500/20"
+                                  title="Remove Logo"
+                                >
+                                  <X className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
+                            ) : (
+                              <div className="relative group flex flex-col items-center justify-center border border-dashed border-zinc-300 dark:border-zinc-800 rounded-xl p-3 bg-white dark:bg-zinc-950 hover:bg-zinc-50/50 dark:hover:bg-zinc-900/10 transition-all cursor-pointer">
+                                <input
+                                  type="file"
+                                  accept="image/*"
+                                  onChange={handleLogoChange}
+                                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                />
+                                <Plus className="w-4 h-4 text-zinc-400 group-hover:text-synos-primary transition-colors mb-1" />
+                                <span className="text-[10px] text-zinc-500 font-semibold group-hover:text-zinc-600 transition-colors">Choose local logo image</span>
+                              </div>
+                            )}
                           </div>
-                          <div className="space-y-1">
-                            <label className="text-[8px] font-semibold text-zinc-400 block mb-0.5">Logo Position</label>
-                            <select
-                              className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded px-1.5 py-1 text-xs w-full text-zinc-600 dark:text-zinc-400 outline-none font-bold"
-                              value={selectedTemplate.logoPosition || "Left"}
-                              onChange={(e) => handleUpdateTemplateField("logoPosition", e.target.value)}
-                            >
-                              <option value="Left">Left Side</option>
-                              <option value="Center">Centered</option>
-                              <option value="Right">Right Side</option>
-                            </select>
+
+                          <div className="grid grid-cols-2 gap-3.5">
+                            <div className="space-y-1">
+                              <label className="text-[8px] font-semibold text-zinc-400 block mb-0.5">Logo Width (px)</label>
+                              <input
+                                type="number"
+                                min="20"
+                                max="200"
+                                className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded px-2 py-1 text-xs w-full font-mono text-center outline-none"
+                                value={selectedTemplate.logoSize || 40}
+                                onChange={(e) => handleUpdateTemplateField("logoSize", Number(e.target.value) || 40)}
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <label className="text-[8px] font-semibold text-zinc-400 block mb-0.5">Logo Position</label>
+                              <select
+                                className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded px-1.5 py-1 text-xs w-full text-zinc-600 dark:text-zinc-400 outline-none font-bold"
+                                value={selectedTemplate.logoPosition || "Left"}
+                                onChange={(e) => handleUpdateTemplateField("logoPosition", e.target.value)}
+                              >
+                                <option value="Left">Left Side</option>
+                                <option value="Center">Centered</option>
+                                <option value="Right">Right Side</option>
+                              </select>
+                            </div>
                           </div>
                         </div>
 
@@ -1605,16 +1849,38 @@ export function ReportTemplatesScreen() {
                   </div>
 
                   {/* Card 4: Watermark & Footer Branding */}
-                  <div className="bg-white dark:bg-zinc-900/40 border border-zinc-200 dark:border-zinc-800 rounded-xl p-5 space-y-4 col-span-1 md:col-span-2">
+                  <div className="bg-white dark:bg-zinc-900/40 border border-zinc-200 dark:border-zinc-800 rounded-xl p-5 space-y-4">
                     <h3 className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 flex items-center gap-1.5">
                       <FileText className="w-3.5 h-3.5" /> Watermark Overlay & Footer Branding
                     </h3>
 
+                    <div className="flex flex-wrap items-center gap-6 border-b border-zinc-150 dark:border-zinc-800 pb-2.5">
+                      <label className="flex items-center gap-2 cursor-pointer select-none">
+                        <input
+                          type="checkbox"
+                          className="rounded border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-950 text-synos-primary focus:ring-0 w-3.5 h-3.5"
+                          checked={selectedTemplate.includeWatermark ?? true}
+                          onChange={(e) => handleUpdateTemplateField("includeWatermark", e.target.checked)}
+                        />
+                        <span className="text-[10px] font-semibold text-zinc-750 dark:text-zinc-300">Enable Watermark Settings</span>
+                      </label>
+
+                      <label className="flex items-center gap-2 cursor-pointer select-none">
+                        <input
+                          type="checkbox"
+                          className="rounded border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-950 text-synos-primary focus:ring-0 w-3.5 h-3.5"
+                          checked={selectedTemplate.includeFooter ?? true}
+                          onChange={(e) => handleUpdateTemplateField("includeFooter", e.target.checked)}
+                        />
+                        <span className="text-[10px] font-semibold text-zinc-750 dark:text-zinc-300">Enable Footer Settings</span>
+                      </label>
+                    </div>
+
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="space-y-4">
+                      <div className={cn("space-y-4 transition-all duration-300", !(selectedTemplate.includeWatermark ?? true) && "opacity-40 pointer-events-none select-none")}>
                         <div className="grid grid-cols-3 gap-2">
                           <div className="col-span-2 space-y-1.5">
-                            <label className="text-[9px] font-semibold text-zinc-600 dark:text-zinc-400">Watermark Overlay Text</label>
+                            <label className="text-[9px] font-semibold text-zinc-650 dark:text-zinc-400">Watermark Overlay Text</label>
                             <input
                               type="text"
                               className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl px-3 py-1.5 text-xs w-full text-zinc-900 dark:text-zinc-100 outline-none"
@@ -1669,7 +1935,7 @@ export function ReportTemplatesScreen() {
                         </div>
                       </div>
 
-                      <div className="space-y-4">
+                      <div className={cn("space-y-4 transition-all duration-300", !(selectedTemplate.includeFooter ?? true) && "opacity-40 pointer-events-none select-none")}>
                         <div className="space-y-1.5">
                           <label className="text-[9px] font-semibold text-zinc-600 dark:text-zinc-400">Footer Brand Subtext</label>
                           <input
@@ -1705,9 +1971,20 @@ export function ReportTemplatesScreen() {
         </div>
 
         {/* Column 3: Live Report Preview */}
-        <div className="col-span-12 lg:col-span-4 bg-white dark:bg-zinc-900/40 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 shadow-sm space-y-6">
+        <div className="col-span-12 lg:col-span-4 bg-white dark:bg-zinc-900/40 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 shadow-sm space-y-6 lg:h-full lg:overflow-y-auto custom-scrollbar">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-            <span className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 block uppercase tracking-wider">Live Report Preview</span>
+            <div className="flex items-center gap-3">
+              <span className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 block uppercase tracking-wider">Live Report Preview</span>
+              <label className="flex items-center gap-1.5 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  className="rounded border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-950 text-synos-primary focus:ring-0 w-3.5 h-3.5"
+                  checked={showGuidelines}
+                  onChange={(e) => setShowGuidelines(e.target.checked)}
+                />
+                <span className="text-[9px] font-bold text-zinc-500 dark:text-zinc-450 uppercase tracking-wider">Guidelines</span>
+              </label>
+            </div>
             
             {/* Segmented Mode Selector Toggle */}
             <div className="flex bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 p-0.5 rounded-xl text-xs font-bold">
@@ -1736,268 +2013,453 @@ export function ReportTemplatesScreen() {
             </div>
           </div>
 
-          {/* High-Fidelity preview box */}
-          <div 
-            className={cn(
-              "text-zinc-900 shadow-xl max-w-2xl mx-auto min-h-[420px] flex flex-col justify-between relative overflow-hidden select-none transition-all w-full",
-              selectedTemplate.density === "Compact" ? "font-sans" : "font-serif"
-            )}
-            style={{
-              padding: `${selectedTemplate.pagePadding ?? 24}px`,
-              borderWidth: `${selectedTemplate.borderWidth ?? 1}px`,
-              borderStyle: selectedTemplate.borderStyle || "solid",
-              borderColor: selectedTemplate.borderColor || "#e2e8f0",
-              borderRadius: `${selectedTemplate.borderRadius ?? 12}px`,
-              backgroundColor: selectedTemplate.bgType === "solid" ? (selectedTemplate.bgColor || "#ffffff") : undefined,
-              backgroundImage: selectedTemplate.bgType === "gradient" 
-                ? `linear-gradient(${selectedTemplate.bgGradientAngle || 135}deg, ${selectedTemplate.bgGradientStart || '#ffffff'}, ${selectedTemplate.bgGradientEnd || '#f1f5f9'})` 
-                : undefined
-            }}
-          >
-            
-            {/* Background Image layer */}
-            {selectedTemplate.bgType === "image" && selectedTemplate.bgImageUrl && (
+          {/* High-Fidelity A4 Scrollable Container Preview */}
+          <div ref={containerRef} className="w-full overflow-x-auto border border-zinc-200 dark:border-zinc-800 rounded-xl bg-zinc-100 dark:bg-zinc-950 p-4 flex justify-center">
+            <div 
+              className="relative transition-all" 
+              style={{ 
+                width: `${794 * scale}px`, 
+                height: `${1123 * scale + 32}px`, 
+                overflow: "hidden" 
+              }}
+            >
               <div 
-                className="absolute inset-0 bg-cover bg-center pointer-events-none"
-                style={{ 
-                  backgroundImage: `url(${selectedTemplate.bgImageUrl})`, 
-                  opacity: selectedTemplate.bgImageOpacity ?? 0.05,
-                  zIndex: 0 
-                }} 
-              />
-            )}
-
-            {/* Brand headers with custom logo, positioning, colors and fonts */}
-            {previewMode === "digital" && selectedTemplate.includeBranding && (() => {
-              const hasLogo = !!selectedTemplate.logoUrl;
-              const logoEl = hasLogo ? (
-                <img 
-                  src={selectedTemplate.logoUrl} 
-                  alt="Logo" 
-                  style={{ width: `${selectedTemplate.logoSize || 40}px`, height: 'auto', objectFit: 'contain' }}
-                  className="max-h-12 relative z-10"
-                />
-              ) : (
-                <div 
-                  className="rounded-lg flex items-center justify-center font-semibold text-white select-none relative z-10 animate-pulse"
-                  style={{
-                    width: `${selectedTemplate.logoSize || 32}px`,
-                    height: `${selectedTemplate.logoSize || 32}px`,
-                    backgroundColor: selectedTemplate.brandNameColor || "#4f46e5",
-                    fontSize: `${Math.max(10, (selectedTemplate.logoSize || 32) * 0.35)}px`
-                  }}
-                >
-                  {(selectedTemplate.brandNameText || selectedTemplate.clinicName || "SY").substring(0, 2).toUpperCase()}
-                </div>
-              );
-
-              const brandTextEl = (
-                <div className="relative z-10 text-left">
-                  <h4 
-                    style={{
-                      fontSize: `${selectedTemplate.brandNameSize || 14}px`,
-                      fontWeight: selectedTemplate.brandNameWeight || "900",
-                      color: selectedTemplate.brandNameColor || "#1e1b4b"
-                    }}
-                    className="uppercase tracking-tight leading-tight"
-                  >
-                    {selectedTemplate.brandNameText || selectedTemplate.clinicName || "SynOS Diagnostics"}
-                  </h4>
-                  <p 
-                    style={{
-                      fontSize: `${selectedTemplate.brandSubtitleSize || 8}px`,
-                      color: selectedTemplate.brandSubtitleColor || "#71717a"
-                    }}
-                    className="font-medium mt-0.5 leading-none"
-                  >
-                    {selectedTemplate.brandSubtitleText || "Accredited Diagnostics Lab"}
-                  </p>
-                </div>
-              );
-
-              const dividerStyle = selectedTemplate.showHeaderDivider !== false ? {
-                borderBottomWidth: `${selectedTemplate.headerDividerThickness ?? 2}px`,
-                borderBottomStyle: selectedTemplate.headerDividerStyle || "solid",
-                borderBottomColor: selectedTemplate.headerDividerColor || "#e2e8f0"
-              } : {};
-
-              const patientInfoEl = (
-                <div className="text-[7.5px] text-zinc-650 dark:text-zinc-400 leading-normal font-medium text-right self-center relative z-10">
-                  <p><span className="font-bold text-zinc-650 dark:text-zinc-400">Patient:</span> Rajesh Kumar, M / 32Y</p>
-                  <p><span className="font-bold text-zinc-650 dark:text-zinc-400">Referrer:</span> Dr. S. Sharma, MD</p>
-                  <p><span className="font-bold text-zinc-650 dark:text-zinc-400">ID:</span> SY-9812-D01 &bull; <span className="font-bold text-zinc-650 dark:text-zinc-400">Date:</span> 20-May-2026</p>
-                </div>
-              );
-
-              if (selectedTemplate.logoPosition === "Center") {
-                return (
-                  <div className="w-full pb-2 mb-3 space-y-2.5 relative z-10" style={dividerStyle}>
-                    <div className="flex flex-col items-center text-center gap-1.5">
-                      {logoEl}
-                      {brandTextEl}
-                    </div>
-                    <div className="flex justify-between items-center text-[7px] border-t border-zinc-100 pt-1.5 font-medium text-zinc-500">
-                      <div>
-                        <span className="font-bold text-zinc-650 dark:text-zinc-400">Patient:</span> Rajesh Kumar, M / 32Y
-                      </div>
-                      <div>
-                        <span className="font-bold text-zinc-650 dark:text-zinc-400">Referrer:</span> Dr. S. Sharma, MD
-                      </div>
-                      <div>
-                        <span className="font-bold text-zinc-650 dark:text-zinc-400">Date:</span> 20-May-2026
-                      </div>
-                    </div>
-                  </div>
-                );
-              } else if (selectedTemplate.logoPosition === "Right") {
-                return (
-                  <div className="w-full pb-2 mb-3 flex justify-between items-stretch gap-4 relative z-10" style={dividerStyle}>
-                    <div className="text-left text-[7.5px] text-zinc-650 dark:text-zinc-400 leading-normal font-medium self-center">
-                      <p><span className="font-bold text-zinc-650 dark:text-zinc-400">Patient:</span> Rajesh Kumar, M / 32Y</p>
-                      <p><span className="font-bold text-zinc-650 dark:text-zinc-400">Referrer:</span> Dr. S. Sharma, MD</p>
-                      <p><span className="font-bold text-zinc-650 dark:text-zinc-400">Date:</span> 20-May-2026</p>
-                    </div>
-                    <div className="flex items-center gap-2.5 text-right">
-                      {brandTextEl}
-                      {logoEl}
-                    </div>
-                  </div>
-                );
-              } else {
-                return (
-                  <div className="w-full pb-2 mb-3 flex justify-between items-stretch gap-4 relative z-10" style={dividerStyle}>
-                    <div className="flex items-center gap-2.5">
-                      {logoEl}
-                      {brandTextEl}
-                    </div>
-                    {patientInfoEl}
-                  </div>
-                );
-              }
-            })()}
-
-            {/* Physical Preprinted top space indicators */}
-            {previewMode === "physical" && selectedTemplate.usePreprinted && (
-              <div className="h-[90px] border border-dashed border-zinc-200 bg-zinc-50/50 rounded-lg flex flex-col justify-center items-center mb-6 relative z-10">
-                <span className="text-[8px] font-semibold tracking-wider text-zinc-600 dark:text-zinc-400">Physical pre-printed sheet header region</span>
-                <span className="text-[7px] text-zinc-400 font-mono mt-0.5">Top Safe Margins: {selectedTemplate.topMargin}mm (~90px gap)</span>
-              </div>
-            )}
-
-            {/* Digital mode Watermark overlay */}
-            {previewMode === "digital" && selectedTemplate.includeBranding && selectedTemplate.watermarkText && (
-              <div 
-                className="absolute inset-0 flex items-center justify-center pointer-events-none select-none font-semibold font-mono tracking-wider"
-                style={{ 
-                  opacity: selectedTemplate.watermarkOpacity || 0.05, 
-                  color: '#000',
-                  fontSize: `${selectedTemplate.watermarkSize || 32}px`,
-                  transform: `rotate(${selectedTemplate.watermarkRotation ?? 12}deg)`,
-                  zIndex: 5
+                id="report-a4-canvas"
+                className={cn(
+                  selectedTemplate.enableAbsolutePositioning 
+                    ? "text-zinc-900 relative select-none transition-all box-border overflow-hidden" 
+                    : "bg-white text-zinc-900 shadow-2xl relative select-none transition-all box-border overflow-hidden",
+                  selectedTemplate.density === "Compact" ? "font-sans" : "font-serif"
+                )}
+                style={{
+                  width: "794px",
+                  height: "1123px",
+                  transform: `scale(${scale})`,
+                  transformOrigin: "top left",
+                  padding: selectedTemplate.enableAbsolutePositioning ? 0 : `${selectedTemplate.pagePadding ?? 24}px`,
+                  borderWidth: selectedTemplate.enableAbsolutePositioning ? 0 : `${selectedTemplate.borderWidth ?? 1}px`,
+                  borderStyle: selectedTemplate.enableAbsolutePositioning ? "none" : (selectedTemplate.borderStyle || "solid"),
+                  borderColor: selectedTemplate.enableAbsolutePositioning ? "transparent" : (selectedTemplate.borderColor || "#e2e8f0"),
+                  borderRadius: selectedTemplate.enableAbsolutePositioning ? 0 : `${selectedTemplate.borderRadius ?? 0}px`,
+                  backgroundColor: selectedTemplate.enableAbsolutePositioning 
+                    ? "transparent" 
+                    : (selectedTemplate.bgType === "solid" ? (selectedTemplate.bgColor || "#ffffff") : "#ffffff"),
+                  position: "absolute",
+                  top: 0,
+                  left: 0
                 }}
               >
-                {selectedTemplate.watermarkText}
-              </div>
-            )}
+              
+              {/* Background Backdrop Master Artwork */}
+              {((previewMode === "digital") || (previewMode === "physical" && !selectedTemplate.usePreprinted)) && selectedTemplate.backgroundPath && (
+                <div 
+                  className="absolute inset-0 bg-cover bg-center pointer-events-none"
+                  style={{ 
+                    backgroundImage: `url(${selectedTemplate.backgroundPath})`, 
+                    opacity: selectedTemplate.bgImageOpacity ?? 0.05,
+                    zIndex: 0 
+                  }} 
+                />
+              )}
 
-            {/* Table Column headers based on configuration */}
-            <div className="flex-1">
-              <div className={cn(
-                "text-[9px] tracking-wider text-zinc-600 dark:text-zinc-400 mb-2 font-semibold",
-                selectedTemplate.density === "Compact" && "py-0.5",
-                selectedTemplate.density === "Comfortable" && "py-1.5",
-                selectedTemplate.density === "Large-print" && "py-2.5 text-xs"
-              )}>
-                Clinical Investigation Findings
-              </div>
-              <table className="w-full border-collapse">
-                <thead>
-                  <tr className="border-t border-b border-zinc-900 text-[9px] font-semibold text-zinc-700 dark:text-zinc-300">
-                    {selectedTemplate.columns.map((col, idx) => (
-                      <th
-                        key={idx}
-                        className={cn(
-                          "py-1.5 px-2",
-                          col.alignment === "Left" ? "text-left" : col.alignment === "Center" ? "text-center" : "text-right"
-                        )}
-                        style={{ width: `${(col.weight / selectedTemplate.columns.reduce((sum, c) => sum + c.weight, 0)) * 100}%` }}
-                      >
-                        {col.title}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody className="text-[10px] text-zinc-800">
-                  {[
-                    { name: "GLUCOSE ESTIMATION, FASTING", val: "104.5", unit: "mg/dL", ref: "70.0 - 110.0", meth: "Hexokinase" },
-                    { name: "GLUCOSE ESTIMATION, POST-PRANDIAL", val: "142.8", unit: "mg/dL", ref: "70.0 - 140.0", meth: "GOD-PAP" }
-                  ].map((row, rIdx) => (
-                    <tr 
-                      key={rIdx} 
-                      className={cn(
-                        "border-b border-zinc-100",
-                        selectedTemplate.density === "Compact" ? "leading-tight" :
-                        selectedTemplate.density === "Large-print" ? "py-3 text-xs" : "py-1.5"
-                      )}
-                    >
-                      {selectedTemplate.columns.map((col, cIdx) => {
-                        let text = "";
-                        if (col.code === "Parameter") text = row.name;
-                        else if (col.code === "Value") text = row.val;
-                        else if (col.code === "Unit") text = row.unit;
-                        else if (col.code === "ReferenceRange") text = row.ref;
-                        else if (col.code === "Methodology") text = row.meth;
+              {/* Background Gradient layer */}
+              {((previewMode === "digital") || (previewMode === "physical" && !selectedTemplate.usePreprinted)) && selectedTemplate.bgType === "gradient" && (
+                <div 
+                  className="absolute inset-0 pointer-events-none"
+                  style={{ 
+                    backgroundImage: `linear-gradient(${selectedTemplate.bgGradientAngle || 135}deg, ${selectedTemplate.bgGradientStart || '#ffffff'}, ${selectedTemplate.bgGradientEnd || '#f1f5f9'})`,
+                    zIndex: 0 
+                  }} 
+                />
+              )}
 
-                        return (
-                          <td
-                            key={cIdx}
-                            className={cn(
-                              col.bold && "font-bold text-zinc-950",
-                              col.alignment === "Left" ? "text-left" : col.alignment === "Center" ? "text-center" : "text-right",
-                              selectedTemplate.density === "Compact" ? "py-1 px-2" :
-                              selectedTemplate.density === "Large-print" ? "py-3 px-2 text-xs" : "py-2 px-2"
-                            )}
-                          >
-                            {text}
-                          </td>
-                        );
-                      })}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+              {/* Digital mode Watermark overlay */}
+              {previewMode === "digital" && selectedTemplate.includeBranding && (selectedTemplate.includeWatermark ?? true) && selectedTemplate.watermarkText && (
+                <div 
+                  className="absolute inset-0 flex items-center justify-center pointer-events-none select-none font-semibold font-mono tracking-wider"
+                  style={{ 
+                    opacity: selectedTemplate.watermarkOpacity || 0.05, 
+                    color: '#000',
+                    fontSize: `${selectedTemplate.watermarkSize || 32}px`,
+                    transform: `rotate(${selectedTemplate.watermarkRotation ?? 12}deg)`,
+                    zIndex: 5
+                  }}
+                >
+                  {selectedTemplate.watermarkText}
+                </div>
+              )}
 
-            {/* Signatures Slots */}
-            <div className="grid grid-cols-3 gap-6 mt-12 pt-4 border-t border-dashed border-zinc-200">
-              {selectedTemplate.signatureSlots.map((slot, idx) => (
-                <div key={idx} className="text-center min-h-[45px] flex flex-col justify-end">
-                  {previewMode === "digital" && selectedTemplate.includeBranding && (
-                    <span className="font-mono text-[7px] text-zinc-500 dark:text-zinc-400 italic block mb-0.5">/Signed digitally/</span>
-                  )}
-                  <div className="border-t border-zinc-300 pt-1 text-[8px] font-semibold text-zinc-650 dark:text-zinc-400">
-                    {slot.title}
-                    {slot.required && <span className="text-rose-500 font-bold ml-0.5">*</span>}
+              {/* Absolute coordinates guidelines overlay (suppressed in printing) */}
+              {showGuidelines && selectedTemplate.enableAbsolutePositioning && (
+                <div className="absolute inset-0 pointer-events-none z-30 select-none print:hidden">
+                  {/* Patient Block Y Guideline */}
+                  <div 
+                    className="absolute left-0 right-0 border-t border-dashed border-indigo-400/80"
+                    style={{ top: `${selectedTemplate.patientBlockY ?? 55}mm` }}
+                  >
+                    <span className="absolute right-4 -top-3 bg-indigo-600 text-white font-mono text-[8px] font-bold px-1.5 py-0.5 rounded shadow-sm">
+                      Patient Y: {selectedTemplate.patientBlockY ?? 55}mm
+                    </span>
+                  </div>
+
+                  {/* Table Block Y Guideline */}
+                  <div 
+                    className="absolute left-0 right-0 border-t border-dashed border-emerald-400/80"
+                    style={{ top: `${selectedTemplate.tableBlockY ?? 95}mm` }}
+                  >
+                    <span className="absolute right-4 -top-3 bg-emerald-600 text-white font-mono text-[8px] font-bold px-1.5 py-0.5 rounded shadow-sm">
+                      Table Y: {selectedTemplate.tableBlockY ?? 95}mm
+                    </span>
+                  </div>
+
+                  {/* Signature Block Y Guideline */}
+                  <div 
+                    className="absolute left-0 right-0 border-b border-dashed border-violet-400/80"
+                    style={{ bottom: `${selectedTemplate.signatureBlockY ?? 25}mm` }}
+                  >
+                    <span className="absolute right-4 -bottom-3 bg-violet-600 text-white font-mono text-[8px] font-bold px-1.5 py-0.5 rounded shadow-sm">
+                      Signature Bottom Y: {selectedTemplate.signatureBlockY ?? 25}mm
+                    </span>
                   </div>
                 </div>
-              ))}
+              )}
+
+              {/* Content Box */}
+              <div className="relative z-10 w-full h-full flex flex-col justify-between">
+                <div>
+                  {/* Brand headers with custom logo, positioning, colors and fonts */}
+                  {((previewMode === "digital") || (previewMode === "physical" && !selectedTemplate.usePreprinted)) && selectedTemplate.includeBranding && (() => {
+                    const hasLogo = (selectedTemplate.includeLogo ?? true) && !!selectedTemplate.logoUrl;
+                    const hasTitle = selectedTemplate.includeHeaderName ?? true;
+                    const hasSubtitle = selectedTemplate.includeHeaderSubtitle ?? true;
+
+                    if (!hasLogo && !hasTitle && !hasSubtitle) return null;
+
+                    const logoEl = hasLogo ? (
+                      <img 
+                        src={selectedTemplate.logoUrl} 
+                        alt="Logo" 
+                        style={{ width: `${selectedTemplate.logoSize || 40}px`, height: 'auto', objectFit: 'contain' }}
+                        className="max-h-12 relative z-10"
+                      />
+                    ) : (
+                      (selectedTemplate.includeLogo ?? true) ? (
+                        <div 
+                          className="rounded-lg flex items-center justify-center font-semibold text-white select-none relative z-10 animate-pulse"
+                          style={{
+                            width: `${selectedTemplate.logoSize || 32}px`,
+                            height: `${selectedTemplate.logoSize || 32}px`,
+                            backgroundColor: selectedTemplate.brandNameColor || "#4f46e5",
+                            fontSize: `${Math.max(10, (selectedTemplate.logoSize || 32) * 0.35)}px`
+                          }}
+                        >
+                          {(selectedTemplate.brandNameText || selectedTemplate.clinicName || "SY").substring(0, 2).toUpperCase()}
+                        </div>
+                      ) : null
+                    );
+
+                    const brandTextEl = (hasTitle || hasSubtitle) ? (
+                      <div className="relative z-10 text-left">
+                        {hasTitle && (
+                          <h4 
+                            style={{
+                              fontSize: `${selectedTemplate.brandNameSize || 14}px`,
+                              fontWeight: selectedTemplate.brandNameWeight || "900",
+                              color: selectedTemplate.brandNameColor || "#1e1b4b"
+                            }}
+                            className="uppercase tracking-tight leading-tight"
+                          >
+                            {selectedTemplate.brandNameText || selectedTemplate.clinicName || "SynOS Diagnostics"}
+                          </h4>
+                        )}
+                        {hasSubtitle && (
+                          <p 
+                            style={{
+                              fontSize: `${selectedTemplate.brandSubtitleSize || 8}px`,
+                              color: selectedTemplate.brandSubtitleColor || "#71717a"
+                            }}
+                            className="font-medium mt-0.5 leading-none"
+                          >
+                            {selectedTemplate.brandSubtitleText || "Accredited Diagnostics Lab"}
+                          </p>
+                        )}
+                      </div>
+                    ) : null;
+
+                    const dividerStyle = selectedTemplate.showHeaderDivider !== false ? {
+                      borderBottomWidth: `${selectedTemplate.headerDividerThickness ?? 2}px`,
+                      borderBottomStyle: selectedTemplate.headerDividerStyle || "solid",
+                      borderBottomColor: selectedTemplate.headerDividerColor || "#e2e8f0"
+                    } : {};
+
+                    if (selectedTemplate.logoPosition === "Center") {
+                      return (
+                        <div className="w-full pb-2 mb-3 space-y-2.5 relative z-10" style={dividerStyle}>
+                          <div className="flex flex-col items-center text-center gap-1.5">
+                            {logoEl}
+                            {brandTextEl}
+                          </div>
+                        </div>
+                      );
+                    } else if (selectedTemplate.logoPosition === "Right") {
+                      return (
+                        <div className="w-full pb-2 mb-3 flex justify-between items-stretch gap-4 relative z-10" style={dividerStyle}>
+                          <div className="w-[10px]" />
+                          <div className="flex items-center gap-2.5 text-right">
+                            {brandTextEl}
+                            {logoEl}
+                          </div>
+                        </div>
+                      );
+                    } else {
+                      return (
+                        <div className="w-full pb-2 mb-3 flex justify-between items-stretch gap-4 relative z-10" style={dividerStyle}>
+                          <div className="flex items-center gap-2.5">
+                            {logoEl}
+                            {brandTextEl}
+                          </div>
+                        </div>
+                      );
+                    }
+                  })()}
+
+                  {/* Physical Preprinted top space indicators in non-absolute layout */}
+                  {!selectedTemplate.enableAbsolutePositioning && previewMode === "physical" && selectedTemplate.usePreprinted && (
+                    <div className="h-[90px] border border-dashed border-zinc-200 bg-zinc-50/50 rounded-lg flex flex-col justify-center items-center mb-6 relative z-10">
+                      <span className="text-[8px] font-semibold tracking-wider text-zinc-600 dark:text-zinc-400">Physical pre-printed sheet header region</span>
+                      <span className="text-[7px] text-zinc-400 font-mono mt-0.5">Top Safe Margins: {selectedTemplate.topMargin}mm (~90px gap)</span>
+                    </div>
+                  )}
+
+                  {/* Patient Info block */}
+                  {selectedTemplate.enableAbsolutePositioning ? (
+                    /* High-fidelity transparent overlay text anchors for absolute positioning */
+                    <div
+                      style={{
+                        position: 'absolute',
+                        top: `${selectedTemplate.patientBlockY ?? 55}mm`,
+                        left: `${selectedTemplate.leftRightMargin ?? 15}mm`,
+                        width: `calc(210mm - ${(selectedTemplate.leftRightMargin ?? 15) * 2}mm)`,
+                        zIndex: 10
+                      }}
+                      className="bg-transparent border-0 shadow-none p-0 text-[10px] text-zinc-850 dark:text-zinc-200 transition-all select-none"
+                    >
+                      {/* Invisible placeholders for future workflow binding - mapping structure */}
+                      <span className="hidden" data-patient-name-placeholder={"{" + "{" + "PATIENT_NAME" + "}" + "}"} />
+                      <span className="hidden" data-ref-doctor-placeholder={"{" + "{" + "REF_DOCTOR" + "}" + "}"} />
+                      <span className="hidden" data-age-sex-placeholder={"{" + "{" + "AGE_SEX" + "}" + "}"} />
+                      <span className="hidden" data-patient-id-placeholder={"{" + "{" + "PATIENT_ID" + "}" + "}"} />
+                      <span className="hidden" data-billing-date-placeholder={"{" + "{" + "BILLING_DATE" + "}" + "}"} />
+                      <span className="hidden" data-report-date-placeholder={"{" + "{" + "REPORT_DATE" + "}" + "}"} />
+
+                      <div className="grid grid-cols-3 gap-y-2.5 gap-x-6">
+                        {/* Column 1: Patient Details */}
+                        <div className="space-y-1">
+                          <div>
+                            <span className="text-[8px] font-extrabold uppercase tracking-widest text-zinc-450 dark:text-zinc-500 block">Patient Name</span>
+                            <span className="font-bold text-zinc-800 dark:text-zinc-100">Rajesh Kumar</span>
+                            <span className="text-[8px] text-zinc-400 font-mono ml-1">{"(" + "{" + "{" + "PATIENT_NAME" + "}" + "}" + ")"}</span>
+                          </div>
+                          <div>
+                            <span className="text-[8px] font-extrabold uppercase tracking-widest text-zinc-450 dark:text-zinc-500 block">Age / Sex</span>
+                            <span className="font-semibold text-zinc-700 dark:text-zinc-300">32Y / Male</span>
+                            <span className="text-[8px] text-zinc-400 font-mono ml-1">{"(" + "{" + "{" + "AGE_SEX" + "}" + "}" + ")"}</span>
+                          </div>
+                        </div>
+
+                        {/* Column 2: Referral Details */}
+                        <div className="space-y-1">
+                          <div>
+                            <span className="text-[8px] font-extrabold uppercase tracking-widest text-zinc-450 dark:text-zinc-500 block">Ref. Doctor</span>
+                            <span className="font-bold text-zinc-850 dark:text-zinc-100">Dr. S. Sharma, MD</span>
+                            <span className="text-[8px] text-zinc-400 font-mono ml-1">{"(" + "{" + "{" + "REF_DOCTOR" + "}" + "}" + ")"}</span>
+                          </div>
+                          <div>
+                            <span className="text-[8px] font-extrabold uppercase tracking-widest text-zinc-450 dark:text-zinc-500 block">Patient ID</span>
+                            <span className="font-semibold font-mono text-zinc-700 dark:text-zinc-300">PID-2026-8940</span>
+                            <span className="text-[8px] text-zinc-400 font-mono ml-1">{"(" + "{" + "{" + "PATIENT_ID" + "}" + "}" + ")"}</span>
+                          </div>
+                        </div>
+
+                        {/* Column 3: Dates */}
+                        <div className="space-y-1">
+                          <div>
+                            <span className="text-[8px] font-extrabold uppercase tracking-widest text-zinc-450 dark:text-zinc-500 block">Billing Date</span>
+                            <span className="font-semibold text-zinc-700 dark:text-zinc-300">20-May-2026</span>
+                            <span className="text-[8px] text-zinc-400 font-mono ml-1">{"(" + "{" + "{" + "BILLING_DATE" + "}" + "}" + ")"}</span>
+                          </div>
+                          <div>
+                            <span className="text-[8px] font-extrabold uppercase tracking-widest text-zinc-450 dark:text-zinc-500 block">Report Date</span>
+                            <span className="font-bold text-zinc-800 dark:text-zinc-100">22-May-2026</span>
+                            <span className="text-[8px] text-zinc-400 font-mono ml-1">{"(" + "{" + "{" + "REPORT_DATE" + "}" + "}" + ")"}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    /* Default/Legacy Patient Info block */
+                    <div
+                      style={{
+                        marginTop: '10px',
+                        marginBottom: '15px'
+                      }}
+                      className="transition-all"
+                    >
+                      <div className="flex justify-between items-center text-[9px] border-b border-zinc-150 pb-1.5 font-semibold text-zinc-650 dark:text-zinc-400">
+                        <div>
+                          <span className="font-bold text-zinc-800">Patient:</span> Rajesh Kumar, M / 32Y
+                        </div>
+                        <div>
+                          <span className="font-bold text-zinc-800">Referrer:</span> Dr. S. Sharma, MD
+                        </div>
+                        <div>
+                          <span className="font-bold text-zinc-800">Date:</span> 20-May-2026
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Table Column headers based on configuration */}
+                  <div
+                    style={selectedTemplate.enableAbsolutePositioning ? {
+                      position: 'absolute',
+                      top: `${selectedTemplate.tableBlockY ?? 95}mm`,
+                      left: `${selectedTemplate.leftRightMargin ?? 15}mm`,
+                      width: `calc(210mm - ${(selectedTemplate.leftRightMargin ?? 15) * 2}mm)`,
+                      zIndex: 10
+                    } : {
+                      marginTop: '20px',
+                      flex: 1
+                    }}
+                    className="transition-all"
+                  >
+                    <div className={cn(
+                      "text-[9px] tracking-wider text-zinc-600 dark:text-zinc-400 mb-2 font-semibold",
+                      selectedTemplate.density === "Compact" && "py-0.5",
+                      selectedTemplate.density === "Comfortable" && "py-1.5",
+                      selectedTemplate.density === "Large-print" && "py-2.5 text-xs"
+                    )}>
+                      Clinical Investigation Findings
+                    </div>
+                    <table className="w-full border-collapse">
+                      <thead>
+                        <tr className="border-t border-b border-zinc-900 text-[9px] font-bold text-zinc-800">
+                          {selectedTemplate.columns.map((col, idx) => (
+                            <th
+                              key={idx}
+                              className={cn(
+                                "py-1.5 px-2",
+                                col.alignment === "Left" ? "text-left" : col.alignment === "Center" ? "text-center" : "text-right"
+                              )}
+                              style={{ width: `${(col.weight / selectedTemplate.columns.reduce((sum, c) => sum + c.weight, 0)) * 100}%` }}
+                            >
+                              {col.title}
+                            </th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody className="text-[10px] text-zinc-800">
+                        {[
+                          { name: "GLUCOSE ESTIMATION, FASTING", val: "104.5", unit: "mg/dL", ref: "70.0 - 110.0", meth: "Hexokinase" },
+                          { name: "GLUCOSE ESTIMATION, POST-PRANDIAL", val: "142.8", unit: "mg/dL", ref: "70.0 - 140.0", meth: "GOD-PAP" }
+                        ].map((row, rIdx) => (
+                          <tr 
+                            key={rIdx} 
+                            className={cn(
+                              "border-b border-zinc-100",
+                              selectedTemplate.density === "Compact" ? "leading-tight" :
+                              selectedTemplate.density === "Large-print" ? "py-3 text-xs" : "py-1.5"
+                            )}
+                          >
+                            {selectedTemplate.columns.map((col, cIdx) => {
+                              let text = "";
+                              if (col.code === "Parameter") text = row.name;
+                              else if (col.code === "Value") text = row.val;
+                              else if (col.code === "Unit") text = row.unit;
+                              else if (col.code === "ReferenceRange") text = row.ref;
+                              else if (col.code === "Methodology") text = row.meth;
+
+                              return (
+                                <td
+                                  key={cIdx}
+                                  className={cn(
+                                    col.bold && "font-bold text-zinc-950",
+                                    col.alignment === "Left" ? "text-left" : col.alignment === "Center" ? "text-center" : "text-right",
+                                    selectedTemplate.density === "Compact" ? "py-1 px-2" :
+                                    selectedTemplate.density === "Large-print" ? "py-3 px-2 text-xs" : "py-2 px-2"
+                                  )}
+                                >
+                                  {text}
+                                </td>
+                              );
+                            })}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+
+                </div>
+
+                {/* Signatures & Footer Blocks */}
+                <div>
+                  {/* Signatures Slots */}
+                  {(selectedTemplate.includeSignatures ?? true) && (
+                    <div
+                      style={selectedTemplate.enableAbsolutePositioning ? {
+                        position: 'absolute',
+                        bottom: `${selectedTemplate.signatureBlockY ?? 25}mm`,
+                        left: `${selectedTemplate.leftRightMargin ?? 15}mm`,
+                        width: `calc(210mm - ${(selectedTemplate.leftRightMargin ?? 15) * 2}mm)`,
+                        zIndex: 10
+                      } : {
+                        marginTop: '30px'
+                      }}
+                      className="grid grid-cols-3 gap-6 pt-4 border-t border-dashed border-zinc-200 transition-all"
+                    >
+                      {selectedTemplate.signatureSlots.map((slot, idx) => (
+                        <div key={idx} className="text-center min-h-[45px] flex flex-col justify-end">
+                          {previewMode === "digital" && selectedTemplate.includeBranding && (
+                            <span className="font-mono text-[7px] text-zinc-500 italic block mb-0.5">/Signed digitally/</span>
+                          )}
+                          <div className="border-t border-zinc-300 pt-1 text-[8px] font-semibold text-zinc-650">
+                            {slot.title}
+                            {slot.required && <span className="text-rose-500 font-bold ml-0.5">*</span>}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Physical Preprinted Bottom Margins indicator in non-absolute layout */}
+                  {!selectedTemplate.enableAbsolutePositioning && previewMode === "physical" && selectedTemplate.usePreprinted && (
+                    <div className="h-[70px] border border-dashed border-zinc-200 bg-zinc-50/50 rounded-lg flex flex-col justify-center items-center mt-4 relative">
+                      <span className="text-[8px] font-semibold tracking-wider text-zinc-600 dark:text-zinc-400">Physical pre-printed sheet region</span>
+                      <span className="text-[7px] text-zinc-400 font-mono mt-0.5">Bottom Safe Margins: {selectedTemplate.bottomMargin}mm (~70px gap)</span>
+                    </div>
+                  )}
+
+                  {/* Digital mode Footer bar */}
+                  {((previewMode === "digital") || (previewMode === "physical" && !selectedTemplate.usePreprinted)) && selectedTemplate.includeBranding && (selectedTemplate.includeFooter ?? true) && selectedTemplate.footerText && (
+                    <div 
+                      style={selectedTemplate.enableAbsolutePositioning ? {
+                        position: 'absolute',
+                        bottom: '8mm',
+                        left: `${selectedTemplate.leftRightMargin ?? 15}mm`,
+                        width: `calc(210mm - ${(selectedTemplate.leftRightMargin ?? 15) * 2}mm)`,
+                        zIndex: 10
+                      } : {}}
+                      className="mt-4 pt-2 border-t border-zinc-200 text-center text-[7px] text-zinc-400 font-medium"
+                    >
+                      {selectedTemplate.footerText}
+                    </div>
+                  )}
+                </div>
+
+              </div>
+
             </div>
-
-            {/* Physical Preprinted Bottom Margins space indicator */}
-            {previewMode === "physical" && selectedTemplate.usePreprinted && (
-              <div className="h-[70px] border border-dashed border-zinc-200 bg-zinc-50/50 rounded-lg flex flex-col justify-center items-center mt-4 relative">
-                <span className="text-[8px] font-semibold tracking-wider text-zinc-600 dark:text-zinc-400">Physical pre-printed sheet region</span>
-                <span className="text-[7px] text-zinc-400 font-mono mt-0.5">Bottom Safe Margins: {selectedTemplate.bottomMargin}mm (~70px gap)</span>
-              </div>
-            )}
-
-            {/* Digital mode Footer bar */}
-            {previewMode === "digital" && selectedTemplate.includeBranding && selectedTemplate.footerText && (
-              <div className="mt-4 pt-2 border-t border-zinc-200 text-center text-[7px] text-zinc-400 font-medium">
-                {selectedTemplate.footerText}
-              </div>
-            )}
-
+            </div>
           </div>
         </div>
       </div>
