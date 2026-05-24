@@ -167,7 +167,9 @@ namespace SynOS.Api.Controllers.Admin
             }
 
             var test = await _testMasterService.CreateTestAsync(dto, GetCurrentUserId());
-            return Ok(_mapper.Map<TestDto>(test));
+            var testDto = _mapper.Map<TestDto>(test);
+            var enriched = await EnrichTestDtoAsync(testDto);
+            return Ok(enriched);
         }
 
         [HttpGet]
@@ -210,7 +212,9 @@ namespace SynOS.Api.Controllers.Admin
             }
 
             var test = await _testMasterService.UpdateTestAsync(id, dto, GetCurrentUserId());
-            return Ok(_mapper.Map<TestDto>(test));
+            var testDto = _mapper.Map<TestDto>(test);
+            var enriched = await EnrichTestDtoAsync(testDto);
+            return Ok(enriched);
         }
 
         [HttpDelete("{id}")]
@@ -311,7 +315,7 @@ namespace SynOS.Api.Controllers.Admin
                     {
                         paramDto.Methodology = catParam.Methodology;
                         paramDto.Formula = catParam.Formula;
-                        paramDto.IsCalculated = catParam.IsCalculated;
+                        paramDto.IsCalculated = catParam.IsCalculated || !string.IsNullOrWhiteSpace(catParam.Formula);
                         paramDto.ReferenceRange = catParam.ReferenceRange;
                     }
                 }

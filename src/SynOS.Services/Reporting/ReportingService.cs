@@ -340,7 +340,9 @@ namespace SynOS.Services.Reporting
                     Methodology = meta.Methodology,
                     IsOverridden = result?.IsOverridden ?? false,
                     OverrideReason = result?.OverrideReason,
-                    IsCalculated = meta.IsCalculated
+                    IsCalculated = meta.IsCalculated || !string.IsNullOrWhiteSpace(meta.Formula),
+                    HasFormula = meta.IsCalculated || !string.IsNullOrWhiteSpace(meta.Formula),
+                    Formula = meta.Formula
                 };
 
                 // NEW: Dynamic Formula Engine (GPT-5 Hardened)

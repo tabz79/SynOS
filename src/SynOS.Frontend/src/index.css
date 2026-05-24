@@ -233,11 +233,24 @@
     height: auto !important;
     overflow: visible !important;
     background: white !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 210mm !important;
+    min-width: 210mm !important;
   }
 
   /* Remove viewport constraints */
   .h-screen {
     height: auto !important;
+  }
+
+  .min-h-screen {
+    min-height: 0 !important;
+  }
+
+  .py-12 {
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
   }
 
   /* Fix scroll containers (VERY IMPORTANT for multi-page reports) */
@@ -250,11 +263,17 @@
   #printable-report {
     position: relative !important;
     width: 210mm !important; /* Force A4 Width */
+    height: 296.5mm !important;
+    min-height: 296.5mm !important;
+    max-width: 210mm !important;
     display: block !important;
     visibility: visible !important;
     box-shadow: none !important;
     border: none !important;
-    margin: 0 auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    box-sizing: border-box !important;
   }
 
   /* Prevent row splitting and group orphans */

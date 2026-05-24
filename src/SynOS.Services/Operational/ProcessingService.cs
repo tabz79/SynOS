@@ -375,9 +375,9 @@ namespace SynOS.Services.Operational
                                 IsRequired = cp.IsRequired,
                                 EnumOptions = cp.EnumOptions,
                                 ExistingResultValue = results.FirstOrDefault(r => r.OrderId == o.OrderId && r.ParameterCode == cp.ParameterCode)?.Value,
-                                IsCalculated = cp.IsCalculated,
+                                IsCalculated = cp.IsCalculated || !string.IsNullOrWhiteSpace(cp.Formula),
                                 Formula = cp.Formula,
-                                HasFormula = cp.IsCalculated || !string.IsNullOrEmpty(cp.Formula)
+                                HasFormula = cp.IsCalculated || !string.IsNullOrWhiteSpace(cp.Formula)
                             }).ToList() ?? new List<AssignmentParameterDto>()
                     };
                 })

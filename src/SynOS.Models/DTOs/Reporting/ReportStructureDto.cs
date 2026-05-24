@@ -62,6 +62,8 @@ namespace SynOS.Models.DTOs.Reporting
                         IsOverridden = p.IsOverridden,
                         OverrideReason = p.OverrideReason,
                         IsCalculated = p.IsCalculated,
+                        HasFormula = p.HasFormula,
+                        Formula = p.Formula,
                         IsAbnormal = p.IsAbnormal
                     }).ToList()
                 }).ToList(),
@@ -111,6 +113,8 @@ namespace SynOS.Models.DTOs.Reporting
                         IsOverridden = p.IsOverridden,
                         OverrideReason = p.OverrideReason,
                         IsCalculated = p.IsCalculated,
+                        HasFormula = p.HasFormula,
+                        Formula = p.Formula,
                         IsAbnormal = p.IsAbnormal
                     }).ToList()
                 }).ToList(),
@@ -155,6 +159,8 @@ namespace SynOS.Models.DTOs.Reporting
         public bool IsOverridden { get; set; }
         public string? OverrideReason { get; set; }
         public bool IsCalculated { get; set; }
+        public bool HasFormula { get; set; }
+        public string? Formula { get; set; }
         public bool IsAbnormal { get; set; }
     }
 

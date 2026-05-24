@@ -123,6 +123,7 @@ namespace SynOS.Tests
             catalogTest.Parameters.Add(new CatalogParameter { ParameterCode = "HB", ParameterName = "Hemoglobin", SortOrder = 1, DataType = "Numeric" });
             catalogTest.Parameters.Add(new CatalogParameter { ParameterCode = "WBC", ParameterName = "White Blood Cells", SortOrder = 2, DataType = "Numeric" });
             catalogTest.Parameters.Add(new CatalogParameter { ParameterCode = "MCH", ParameterName = "Mean Cell Hemoglobin", SortOrder = 3, DataType = "Numeric", IsCalculated = true, Formula = "HB / RBC" });
+            catalogTest.Parameters.Add(new CatalogParameter { ParameterCode = "GLOB", ParameterName = "Globulin", SortOrder = 4, DataType = "Numeric", IsCalculated = false, Formula = "TP - ALB" });
             db.CatalogTests.Add(catalogTest);
 
             // 8. Seed Existing Result
@@ -157,7 +158,7 @@ namespace SynOS.Tests
             Assert.Equal(order.OrderId, detail.Tests[0].OrderId);
 
             // Verify Parameters and Result Matching
-            Assert.Equal(3, detail.Tests[0].Parameters.Count);
+            Assert.Equal(4, detail.Tests[0].Parameters.Count);
             
             var hbParam = detail.Tests[0].Parameters.First(p => p.ParameterCode == "HB");
             Assert.Equal("14.5", hbParam.ExistingResultValue);
@@ -169,7 +170,13 @@ namespace SynOS.Tests
 
             var mchParam = detail.Tests[0].Parameters.First(p => p.ParameterCode == "MCH");
             Assert.True(mchParam.HasFormula);
+            Assert.True(mchParam.IsCalculated);
             Assert.Equal("HB / RBC", mchParam.Formula);
+
+            var globParam = detail.Tests[0].Parameters.First(p => p.ParameterCode == "GLOB");
+            Assert.True(globParam.HasFormula);
+            Assert.True(globParam.IsCalculated);
+            Assert.Equal("TP - ALB", globParam.Formula);
         }
     }
 }

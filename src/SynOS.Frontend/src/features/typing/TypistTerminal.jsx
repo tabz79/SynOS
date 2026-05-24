@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { cn } from "@/lib/utils";
 import { SystemBar } from '@/components/layout/SystemBar';
 import { useAuth } from '@/context/AuthContext';
@@ -19,6 +19,79 @@ import {
 } from 'lucide-react';
 import { ReportA4 } from '../documents/templates/ReportA4';
 import { StockRequestPanel } from '../inventory/StockRequestPanel';
+
+const evaluateFormula = (formula, values) => {
+    if (!formula) return null;
+
+    try {
+        const tokens = formula.match(/\b[A-Za-z_][A-Za-z0-9_]*\b/g) || [];
+        let expression = formula;
+
+        for (const token of [...new Set(tokens)].sort((a, b) => b.length - a.length)) {
+            const rawValue = values[token];
+            if (rawValue === undefined || rawValue === null || rawValue === '' || rawValue === '-') {
+                return null;
+            }
+
+            const numericValue = Number(rawValue);
+            if (!Number.isFinite(numericValue)) return null;
+
+            expression = expression.replace(new RegExp(`\\b${token}\\b`, 'g'), String(numericValue));
+        }
+
+        if (!/^[0-9+\-*/().\s]+$/.test(expression)) return null;
+
+        const result = Function(`"use strict"; return (${expression})`)();
+        if (!Number.isFinite(result)) return '-';
+
+        return Number(result).toFixed(2);
+    } catch {
+        return null;
+    }
+};
+
+const applyCalculatedValues = (structure) => {
+    if (!structure?.groups?.length) return structure;
+
+    const valueMap = {};
+    structure.groups.forEach(group => {
+        group.parameters?.forEach(param => {
+            if (param.parameterCode && param.value !== undefined && param.value !== null && param.value !== '') {
+                valueMap[param.parameterCode] = param.value;
+            }
+        });
+    });
+
+    const groups = structure.groups.map(group => ({
+        ...group,
+        parameters: (group.parameters || []).map(param => ({ ...param }))
+    }));
+
+    const calculatedRows = groups.flatMap(group =>
+        group.parameters.filter(param => param.isCalculated || param.hasFormula || !!param.formula)
+    );
+
+    for (let pass = 0; pass < Math.max(1, calculatedRows.length); pass++) {
+        let changed = false;
+
+        for (const param of calculatedRows) {
+            if (!param.formula) continue;
+
+            const nextValue = evaluateFormula(param.formula, valueMap);
+            if (nextValue === null) continue;
+
+            if (param.value !== nextValue) {
+                param.value = nextValue;
+                valueMap[param.parameterCode] = nextValue;
+                changed = true;
+            }
+        }
+
+        if (!changed) break;
+    }
+
+    return { ...structure, groups };
+};
 
 
 export function TypistTerminal() {
@@ -41,6 +114,11 @@ export function TypistTerminal() {
     const [searchTerm, setSearchTerm] = useState("");
 
     const requestCounter = useRef(0);
+
+    const calculatedReportStructure = useMemo(
+        () => applyCalculatedValues(reportStructure),
+        [reportStructure]
+    );
 
 
     // Initial Fetch
@@ -331,11 +409,11 @@ export function TypistTerminal() {
                                             <User className="w-6 h-6" />
                                         </div>
                                         <div>
-                                            <h2 className="text-2xl font-black tracking-tight dark:text-zinc-200 uppercase">{reportStructure?.patientName}</h2>
+                                            <h2 className="text-2xl font-black tracking-tight dark:text-zinc-200 uppercase">{calculatedReportStructure?.patientName}</h2>
                                             <div className="flex items-center gap-2 dark:text-zinc-500 text-zinc-500 text-sm font-medium">
-                                                <span>{reportStructure?.patientAgeGender}</span>
+                                                <span>{calculatedReportStructure?.patientAgeGender}</span>
                                                 <span className="w-1 h-1 dark:bg-zinc-700 bg-zinc-300 rounded-full" />
-                                                <span className="font-mono tracking-tighter opacity-70">{reportStructure?.token}</span>
+                                                <span className="font-mono tracking-tighter opacity-70">{calculatedReportStructure?.token}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -343,11 +421,11 @@ export function TypistTerminal() {
                                         <span className="text-[10px] uppercase font-black dark:text-zinc-600 text-zinc-400 block mb-1 tracking-widest">Stage</span>
                                         <div className={cn(
                                             "px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest",
-                                            reportStructure?.status === 'ReadyForVerification' 
+                                            calculatedReportStructure?.status === 'ReadyForVerification' 
                                                 ? "bg-amber-500/10 text-amber-600 border border-amber-500/20"
                                                 : "bg-synos-primary/10 text-synos-primary border border-synos-primary/20"
                                         )}>
-                                            {reportStructure?.status === 'ReadyForVerification' ? 'SUBMITTED' : (reportStructure?.status?.replace(/([A-Z])/g, ' $1').trim() || 'Draft')}
+                                            {calculatedReportStructure?.status === 'ReadyForVerification' ? 'SUBMITTED' : (calculatedReportStructure?.status?.replace(/([A-Z])/g, ' $1').trim() || 'Draft')}
                                         </div>
                                     </div>
                                 </div>
@@ -362,7 +440,7 @@ export function TypistTerminal() {
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {reportStructure?.groups?.map((group, gIdx) => (
+                                            {calculatedReportStructure?.groups?.map((group, gIdx) => (
                                                 <React.Fragment key={gIdx}>
                                                     {group.groupName && (
                                                         <tr className="contents">

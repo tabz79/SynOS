@@ -57,6 +57,8 @@ namespace SynOS.Models.Domain
         public bool IsOverridden { get; set; }
         public string? OverrideReason { get; set; }
         public bool IsCalculated { get; set; }
+        public bool HasFormula { get; set; }
+        public string? Formula { get; set; }
         public bool IsAbnormal { get; set; }
     }
 

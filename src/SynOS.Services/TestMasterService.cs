@@ -543,6 +543,16 @@ namespace SynOS.Services
             }
         }
 
+        private static string? NormalizeFormula(string? formula)
+        {
+            return string.IsNullOrWhiteSpace(formula) ? null : formula.Trim();
+        }
+
+        private static bool HasCalculation(ParameterSaveDto parameter)
+        {
+            return parameter.IsCalculated || !string.IsNullOrWhiteSpace(parameter.Formula);
+        }
+
         private async Task<Guid> EnsureTestExistsAsync(string testCode, string deptCode)
         {
             var test = await _context.Tests.FirstOrDefaultAsync(t => t.TestCode == testCode);
@@ -702,6 +712,8 @@ namespace SynOS.Services
             {
                 var normParamCode = paramDto.ParameterCode.Trim().ToUpperInvariant();
                 var catParam = catalogParams.FirstOrDefault(cp => cp.ParameterCode.ToUpperInvariant() == normParamCode);
+                var formula = NormalizeFormula(paramDto.Formula);
+                var isCalculated = HasCalculation(paramDto);
                 if (catParam == null)
                 {
                     catParam = new CatalogParameter
@@ -715,8 +727,8 @@ namespace SynOS.Services
                         ReferenceRange = paramDto.ReferenceRange,
                         SortOrder = paramDto.SortOrder,
                         Methodology = paramDto.Methodology,
-                        Formula = paramDto.Formula,
-                        IsCalculated = paramDto.IsCalculated,
+                        Formula = formula,
+                        IsCalculated = isCalculated,
                         IsActive = true,
                         CreatedBy = actorUserId,
                         CreatedAt = DateTimeOffset.UtcNow,
@@ -732,8 +744,8 @@ namespace SynOS.Services
                     catParam.ReferenceRange = paramDto.ReferenceRange;
                     catParam.SortOrder = paramDto.SortOrder;
                     catParam.Methodology = paramDto.Methodology;
-                    catParam.Formula = paramDto.Formula;
-                    catParam.IsCalculated = paramDto.IsCalculated;
+                    catParam.Formula = formula;
+                    catParam.IsCalculated = isCalculated;
                     catParam.IsActive = true;
                     catParam.UpdatedBy = actorUserId;
                     catParam.UpdatedAt = DateTimeOffset.UtcNow;

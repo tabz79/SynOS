@@ -187,7 +187,7 @@ export const ReportA4 = ({ reportData }) => {
   return (
     <div 
       id="printable-report" 
-      className="mx-auto bg-white text-black font-sans w-[210mm] min-h-[297mm] print:min-h-0 relative selection:bg-none print:m-0 print:p-0 print:border-none print:rounded-none print:shadow-none"
+      className="mx-auto bg-white text-black font-sans w-[210mm] min-h-[297mm] print:w-[210mm] print:min-h-[296.5mm] print:h-[296.5mm] relative selection:bg-none print:m-0 print:border-none print:rounded-none print:shadow-none print:overflow-hidden"
       style={pageStyle}
     >
       {/* 🖼️ BACKGROUND IMAGE BACKDROP */}
@@ -198,7 +198,7 @@ export const ReportA4 = ({ reportData }) => {
             backgroundImage: `url(${activeTemplate.backgroundPath})`,
             backgroundRepeat: 'no-repeat',
             backgroundPosition: 'center',
-            backgroundSize: 'contain',
+            backgroundSize: '100% 100%',
             opacity: activeTemplate.bgImageOpacity || 0.05,
             mixBlendMode: 'multiply',
             zIndex: 0
