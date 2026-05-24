@@ -25,6 +25,7 @@ import {
   Cpu
 } from 'lucide-react';
 import { cn } from "@/lib/utils";
+import { AdminApi } from '../../api/admin';
 
 // Seed default templates matching ReportTemplatesScreen.jsx
 const DEFAULT_TEMPLATES = [
@@ -348,6 +349,7 @@ const INITIAL_TEST_CATALOG = [
     basePrice: 450,
     isProfile: false,
     includedTestIds: [],
+    specimenTypeCode: "EDTA",
     parameters: [
       { 
         code: "HB", 
@@ -422,6 +424,7 @@ const INITIAL_TEST_CATALOG = [
     basePrice: 900,
     isProfile: false,
     includedTestIds: [],
+    specimenTypeCode: "SERUM",
     parameters: [
       { 
         code: "BIL_T", 
@@ -510,6 +513,7 @@ const INITIAL_TEST_CATALOG = [
     basePrice: 850,
     isProfile: false,
     includedTestIds: [],
+    specimenTypeCode: "SERUM",
     parameters: [
       { 
         code: "CHO", 
@@ -603,6 +607,16 @@ const SIGNATURE_SLOT_PRESETS = [
 
 const DEPARTMENTS = ["All", "Hematology", "Biochemistry", "Health Panels", "Microbiology", "Serology"];
 
+const SPECIMEN_TYPES = [
+  { code: "SERUM", name: "Serum (Red Cap)" },
+  { code: "EDTA", name: "EDTA Whole Blood (Purple Cap)" },
+  { code: "PLASMA", name: "Plasma (Green/Grey Cap)" },
+  { code: "URINE", name: "Urine Sample" },
+  { code: "CSF", name: "Cerebrospinal Fluid" },
+  { code: "SST", name: "Serum Separator Tube (Gold Cap)" },
+  { code: "SWAB", name: "Swab Sample" }
+];
+
 const sanitizeCatalogSigs = (catalogList) => {
   return catalogList.map(test => {
     let currentSlots = test.signatureSlots || [];
@@ -652,9 +666,251 @@ const getInitialSelectedTest = (catalogList) => {
   return catalogList[0] || INITIAL_TEST_CATALOG[0];
 };
 
+const formatReferenceRange = (p) => {
+  if (!p) return "";
+  const parts = [];
+  if (p.useMale && p.maleMin !== undefined && p.maleMax !== undefined && p.maleMin !== "" && p.maleMax !== "" && p.maleMin !== null && p.maleMax !== null) {
+    parts.push(`M: ${p.maleMin}-${p.maleMax}`);
+  }
+  if (p.useFemale && p.femaleMin !== undefined && p.femaleMax !== undefined && p.femaleMin !== "" && p.femaleMax !== "" && p.femaleMin !== null && p.femaleMax !== null) {
+    parts.push(`F: ${p.femaleMin}-${p.femaleMax}`);
+  }
+  if (p.useInfant && p.infantMin !== undefined && p.infantMax !== undefined && p.infantMin !== "" && p.infantMax !== "" && p.infantMin !== null && p.infantMax !== null) {
+    parts.push(`Infant: ${p.infantMin}-${p.infantMax}`);
+  }
+  if (p.useChild && p.childMin !== undefined && p.childMax !== undefined && p.childMin !== "" && p.childMax !== "" && p.childMin !== null && p.childMax !== null) {
+    parts.push(`Child: ${p.childMin}-${p.childMax}`);
+  }
+  if (p.useAdult && p.adultMin !== undefined && p.adultMax !== undefined && p.adultMin !== "" && p.adultMax !== "" && p.adultMin !== null && p.adultMax !== null) {
+    parts.push(`Adult: ${p.adultMin}-${p.adultMax}`);
+  }
+
+  if (parts.length > 0) {
+    return parts.join(", ");
+  }
+
+  if (p.referenceRange && p.referenceRange.trim() !== "") {
+    return p.referenceRange;
+  }
+
+  if (p.minRange !== undefined && p.maxRange !== undefined && p.minRange !== "" && p.maxRange !== "" && p.minRange !== null && p.maxRange !== null) {
+    const minNum = Number(p.minRange);
+    const maxNum = Number(p.maxRange);
+    if (!isNaN(minNum) && !isNaN(maxNum)) {
+      return `${minNum} - ${maxNum}`;
+    }
+  }
+  return "";
+};
+
+const getParamMidpoint = (p) => {
+  if (!p) return "0.0";
+  const minVal = p.minRange !== undefined && p.minRange !== null && p.minRange !== "" ? Number(p.minRange) : 0;
+  const maxVal = p.maxRange !== undefined && p.maxRange !== null && p.maxRange !== "" ? Number(p.maxRange) : 0;
+  const min = isNaN(minVal) ? 0 : minVal;
+  const max = isNaN(maxVal) ? 0 : maxVal;
+  return (min + (max - min) / 2).toFixed(1);
+};
+
+const normalizeDbTest = (dbTest) => {
+  if (!dbTest) return null;
+  const testId = dbTest.testId || dbTest.TestId || dbTest.id;
+  const testCode = dbTest.testCode || dbTest.TestCode || dbTest.code;
+  const testName = dbTest.testName || dbTest.TestName || dbTest.name;
+  const department = dbTest.department || dbTest.Department;
+  const basePrice = dbTest.basePrice !== undefined ? dbTest.basePrice : (dbTest.BasePrice !== undefined ? dbTest.BasePrice : 0);
+  const category = dbTest.category || dbTest.Category || "";
+  const tatHours = dbTest.tat_Hours || dbTest.TAT_Hours || dbTest.tatHours || dbTest.TaT_Hours || 24;
+  const isOutsourced = dbTest.isOutsourced !== undefined ? dbTest.isOutsourced : (dbTest.IsOutsourced !== undefined ? dbTest.IsOutsourced : false);
+  const isActive = dbTest.isActive !== undefined ? dbTest.isActive : (dbTest.IsActive !== undefined ? dbTest.IsActive : true);
+  const specimenTypeCode = dbTest.specimenTypeCode || dbTest.SpecimenTypeCode || "";
+
+  return {
+    id: testId,
+    code: testCode,
+    name: testName,
+    department: department,
+    basePrice: Number(basePrice) || 0,
+    category: category,
+    tatHours: Number(tatHours) || 24,
+    isOutsourced: !!isOutsourced,
+    isActive: !!isActive,
+    specimenTypeCode: specimenTypeCode,
+    isProfile: !!dbTest.isProfile,
+    parameters: (dbTest.parameters || []).map(p => {
+      let minRange = undefined;
+      let maxRange = undefined;
+      if (p.referenceRange && p.referenceRange.includes(" - ")) {
+        const parts = p.referenceRange.split(" - ");
+        if (parts.length === 2 && !isNaN(parts[0].trim()) && !isNaN(parts[1].trim())) {
+          minRange = Number(parts[0].trim());
+          maxRange = Number(parts[1].trim());
+        }
+      }
+      return {
+        code: p.parameterCode,
+        name: p.parameterName,
+        unit: p.unit || "",
+        minRange: minRange,
+        maxRange: maxRange,
+        referenceRange: p.referenceRange || "",
+        method: p.methodology || "",
+        formula: p.formula || "",
+        hasFormula: !!p.isCalculated,
+        dataType: p.dataType || "Numeric",
+        sortOrder: p.sortOrder || 1,
+        useMale: !!p.useMale,
+        maleMin: p.maleMin !== null && p.maleMin !== undefined ? p.maleMin : "",
+        maleMax: p.maleMax !== null && p.maleMax !== undefined ? p.maleMax : "",
+        useFemale: !!p.useFemale,
+        femaleMin: p.femaleMin !== null && p.femaleMin !== undefined ? p.femaleMin : "",
+        femaleMax: p.femaleMax !== null && p.femaleMax !== undefined ? p.femaleMax : "",
+        useInfant: !!p.useInfant,
+        infantMin: p.infantMin !== null && p.infantMin !== undefined ? p.infantMin : "",
+        infantMax: p.infantMax !== null && p.infantMax !== undefined ? p.infantMax : "",
+        useChild: !!p.useChild,
+        childMin: p.childMin !== null && p.childMin !== undefined ? p.childMin : "",
+        childMax: p.childMax !== null && p.childMax !== undefined ? p.childMax : "",
+        useAdult: !!p.useAdult,
+        adultMin: p.adultMin !== null && p.adultMin !== undefined ? p.adultMin : "",
+        adultMax: p.adultMax !== null && p.adultMax !== undefined ? p.adultMax : ""
+      };
+    }),
+    dbIncludedTestCodes: dbTest.includedTestCodes || []
+  };
+};
+
+const mergeCatalog = (dbTestsList, localCatalog) => {
+  const normalizedDbTests = (dbTestsList || []).map(normalizeDbTest).filter(Boolean);
+  
+  // Prune local catalog items that have GUID IDs but are missing from the active db list
+  const activeLocalCatalog = (localCatalog || []).filter(localTest => {
+    const isGuid = localTest.id && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(localTest.id);
+    if (!isGuid) return true; // Keep temporary unsaved items in memory
+    
+    // Check if it exists in the active DB list
+    const exists = normalizedDbTests.some(
+      dbTest => (dbTest.id && dbTest.id === localTest.id) ||
+                (dbTest.code && dbTest.code.toLowerCase() === localTest.code.toLowerCase())
+    );
+    return exists;
+  });
+
+  const merged = [...activeLocalCatalog];
+
+  normalizedDbTests.forEach(dbTest => {
+    // 1. Search for a local test with the EXACT SAME ID
+    let existingIndex = merged.findIndex(
+      localTest => localTest.id && dbTest.id && localTest.id === dbTest.id
+    );
+
+    // 2. If not found by ID, search by CODE
+    if (existingIndex === -1) {
+      existingIndex = merged.findIndex(
+        localTest => localTest.code && localTest.code.toLowerCase() === dbTest.code.toLowerCase()
+      );
+    }
+
+    if (existingIndex > -1) {
+      merged[existingIndex] = {
+        ...merged[existingIndex],
+        id: dbTest.id,
+        name: dbTest.name,
+        code: dbTest.code,
+        department: dbTest.department,
+        basePrice: dbTest.basePrice,
+        tatHours: dbTest.tatHours,
+        isOutsourced: dbTest.isOutsourced,
+        isActive: dbTest.isActive,
+        category: dbTest.category,
+        specimenTypeCode: dbTest.specimenTypeCode || merged[existingIndex].specimenTypeCode || "SERUM",
+        isProfile: dbTest.isProfile,
+        parameters: dbTest.parameters && dbTest.parameters.length > 0 ? dbTest.parameters : merged[existingIndex].parameters,
+        dbIncludedTestCodes: dbTest.dbIncludedTestCodes
+      };
+    } else {
+      merged.push({
+        id: dbTest.id,
+        name: dbTest.name,
+        code: dbTest.code,
+        department: dbTest.department || "Biochemistry",
+        basePrice: dbTest.basePrice || 0,
+        isProfile: dbTest.isProfile,
+        includedTestIds: [],
+        dbIncludedTestCodes: dbTest.dbIncludedTestCodes,
+        parameters: dbTest.parameters || [],
+        reportStyle: "Standard A4",
+        signatureSlots: ["Default Pathologist (Lab Owner)"],
+        showRange: true,
+        showMethod: true,
+        showInterpretation: true,
+        pricing: { branchA: dbTest.basePrice, branchB: dbTest.basePrice, corporate: dbTest.basePrice },
+        outsource: { enabled: dbTest.isOutsourced, partnerLab: "", fee: 0, instructions: "" },
+        tatHours: dbTest.tatHours,
+        isOutsourced: dbTest.isOutsourced,
+        isActive: dbTest.isActive,
+        category: dbTest.category,
+        specimenTypeCode: dbTest.specimenTypeCode || "SERUM"
+      });
+    }
+  });
+
+  // Resolve includedTestIds from dbIncludedTestCodes
+  merged.forEach(item => {
+    if (item.dbIncludedTestCodes && item.dbIncludedTestCodes.length > 0) {
+      item.includedTestIds = item.dbIncludedTestCodes.map(code => {
+        const found = merged.find(t => t.code && t.code.toLowerCase() === code.toLowerCase());
+        return found ? found.id : null;
+      }).filter(Boolean);
+    }
+  });
+
+  // Self-healing post-merge deduplication stage
+  const seenIds = new Set();
+  const seenCodes = new Set();
+  const uniqueMerged = [];
+
+  merged.forEach(test => {
+    const testId = test.id;
+    const testCode = (test.code || "").toUpperCase().trim();
+    if (!seenIds.has(testId) && !seenCodes.has(testCode)) {
+      uniqueMerged.push(test);
+      seenIds.add(testId);
+      seenCodes.add(testCode);
+    }
+  });
+
+  return uniqueMerged;
+};
+
 export function TestMasterScreen() {
   const [catalog, setCatalog] = useState(getInitialCatalog);
+
+  const getCompiledProfileParameters = (test, catalogList) => {
+    if (!test || !test.isProfile) {
+      return test?.parameters || [];
+    }
+    const compiled = [];
+    const includedIds = test.includedTestIds || [];
+    includedIds.forEach(childId => {
+      const childTest = (catalogList || []).find(t => t.id === childId);
+      if (childTest && childTest.parameters) {
+        childTest.parameters.forEach(p => {
+          compiled.push({
+            ...p,
+            childTestName: childTest.name,
+            childTestCode: childTest.code,
+            isFromChild: true
+          });
+        });
+      }
+    });
+    return compiled;
+  };
+
   const [selectedTest, setSelectedTest] = useState(() => getInitialSelectedTest(catalog));
+  const [originalDbTests, setOriginalDbTests] = useState([]);
+  const [isLoadingTests, setIsLoadingTests] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedDept, setSelectedDept] = useState("All");
 
@@ -716,6 +972,57 @@ export function TestMasterScreen() {
     return () => observer.disconnect();
   }, [showLivePreview]);
 
+  useEffect(() => {
+    const loadDbTestsAndMerge = async () => {
+      setIsLoadingTests(true);
+      try {
+        const dbTests = await AdminApi.getTests();
+        setOriginalDbTests(dbTests || []);
+        
+        const savedCatalog = localStorage.getItem("synos_test_catalog");
+        let localCatalogList = INITIAL_TEST_CATALOG;
+        if (savedCatalog) {
+          try {
+            localCatalogList = JSON.parse(savedCatalog);
+          } catch (e) {
+            console.error("Failed to parse catalog from localStorage:", e);
+          }
+        }
+        
+        localCatalogList = sanitizeCatalogSigs(localCatalogList);
+        
+        const merged = mergeCatalog(dbTests, localCatalogList);
+        setCatalog(merged);
+        localStorage.setItem("synos_test_catalog", JSON.stringify(merged));
+        
+        const savedSelectedId = localStorage.getItem("synos_selected_test_id");
+        let currentSelected = selectedTest;
+        if (!currentSelected && savedSelectedId) {
+          currentSelected = merged.find(t => t.id === savedSelectedId);
+        }
+        
+        if (currentSelected) {
+          const updatedSelected = merged.find(t => t.code === currentSelected.code) || 
+                                  merged.find(t => t.id === currentSelected.id) || 
+                                  merged[0];
+          if (updatedSelected) {
+            setSelectedTest(updatedSelected);
+            localStorage.setItem("synos_selected_test_id", updatedSelected.id);
+          }
+        } else if (merged.length > 0) {
+          setSelectedTest(merged[0]);
+          localStorage.setItem("synos_selected_test_id", merged[0].id);
+        }
+      } catch (err) {
+        console.error("Failed to fetch database tests on mount:", err);
+      } finally {
+        setIsLoadingTests(false);
+      }
+    };
+    
+    loadDbTestsAndMerge();
+  }, []);
+
   const handleStartDrag = (e, activeTemplateId, fieldX, fieldY, initValX, initValY, isBottom = false) => {
     e.preventDefault();
     e.stopPropagation();
@@ -763,10 +1070,11 @@ export function TestMasterScreen() {
   };
 
   // Metadata Edit States
-  const [metaName, setMetaName] = useState(selectedTest.name);
-  const [metaCode, setMetaCode] = useState(selectedTest.code);
-  const [metaDept, setMetaDept] = useState(selectedTest.department);
-  const [metaIsProfile, setMetaIsProfile] = useState(selectedTest.isProfile);
+  const [metaName, setMetaName] = useState(selectedTest?.name || "");
+  const [metaCode, setMetaCode] = useState(selectedTest?.code || "");
+  const [metaDept, setMetaDept] = useState(selectedTest?.department || "");
+  const [metaIsProfile, setMetaIsProfile] = useState(selectedTest?.isProfile || false);
+  const [metaSpecimenTypeCode, setMetaSpecimenTypeCode] = useState(selectedTest?.specimenTypeCode || "SERUM");
 
   // Right Drawer Contextual States
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -779,10 +1087,21 @@ export function TestMasterScreen() {
   const [editNarrative, setEditNarrative] = useState("");
   const [editAnalyzerModel, setEditAnalyzerModel] = useState("");
   const [editAnalyzerChannel, setEditAnalyzerChannel] = useState("");
+  const [editUseMale, setEditUseMale] = useState(false);
   const [editMaleMin, setEditMaleMin] = useState("");
   const [editMaleMax, setEditMaleMax] = useState("");
+  const [editUseFemale, setEditUseFemale] = useState(false);
   const [editFemaleMin, setEditFemaleMin] = useState("");
   const [editFemaleMax, setEditFemaleMax] = useState("");
+  const [editUseInfant, setEditUseInfant] = useState(false);
+  const [editInfantMin, setEditInfantMin] = useState("");
+  const [editInfantMax, setEditInfantMax] = useState("");
+  const [editUseChild, setEditUseChild] = useState(false);
+  const [editChildMin, setEditChildMin] = useState("");
+  const [editChildMax, setEditChildMax] = useState("");
+  const [editUseAdult, setEditUseAdult] = useState(false);
+  const [editAdultMin, setEditAdultMin] = useState("");
+  const [editAdultMax, setEditAdultMax] = useState("");
 
   const handleSelectTest = (test) => {
     setSelectedTest(test);
@@ -791,6 +1110,7 @@ export function TestMasterScreen() {
     setMetaCode(test.code);
     setMetaDept(test.department);
     setMetaIsProfile(test.isProfile);
+    setMetaSpecimenTypeCode(test.specimenTypeCode || "SERUM");
     setIsEditingMetadata(false);
     setDrawerOpen(false);
 
@@ -808,7 +1128,8 @@ export function TestMasterScreen() {
           name: metaName,
           code: metaCode.toUpperCase(),
           department: metaDept,
-          isProfile: metaIsProfile
+          isProfile: metaIsProfile,
+          specimenTypeCode: metaSpecimenTypeCode
         };
       }
       return t;
@@ -835,6 +1156,7 @@ export function TestMasterScreen() {
       basePrice: 500,
       isProfile: false,
       includedTestIds: [],
+      specimenTypeCode: "SERUM",
       parameters: [
         { 
           code: "PARAM1", 
@@ -868,17 +1190,56 @@ export function TestMasterScreen() {
     setMetaCode(newTest.code);
     setMetaDept(newTest.department);
     setMetaIsProfile(newTest.isProfile);
+    setMetaSpecimenTypeCode("SERUM");
     setIsEditingMetadata(true);
     setDrawerOpen(false);
   };
 
-  const handleDeleteTest = (testId, e) => {
+  const handleDeleteTest = async (testId, e) => {
     e.stopPropagation();
     if (catalog.length <= 1) return;
-    const remaining = catalog.filter(t => t.id !== testId);
-    setCatalog(remaining);
-    if (selectedTest.id === testId) {
-      handleSelectTest(remaining[0]);
+
+    const testToDelete = catalog.find(t => t.id === testId);
+    if (!testToDelete) return;
+
+    const isConfirmed = window.confirm(`Are you sure you want to permanently delete "${testToDelete.name}"?`);
+    if (!isConfirmed) return;
+
+    setIsLoadingTests(true);
+    try {
+      const isPersisted = testId && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(testId);
+      if (isPersisted) {
+        // Call the backend API immediately to delete it
+        await AdminApi.deleteTest(testId);
+      }
+
+      const remaining = catalog.filter(t => t.id !== testId);
+      setCatalog(remaining);
+      
+      // Update originalDbTests state as well to sync deleted list
+      setOriginalDbTests(prev => prev.filter(ot => {
+        const otId = ot.testId || ot.TestId || ot.id;
+        return otId !== testId;
+      }));
+
+      // Update localStorage immediately
+      localStorage.setItem("synos_test_catalog", JSON.stringify(remaining));
+
+      if (selectedTest && selectedTest.id === testId) {
+        const fallback = remaining[0] || null;
+        if (fallback) {
+          handleSelectTest(fallback);
+        }
+      }
+
+      // Show temporary save success micro-animation
+      setIsSavedSuccessfully(true);
+      setTimeout(() => setIsSavedSuccessfully(false), 2000);
+    } catch (err) {
+      console.error(`Failed to permanently delete test ${testId}:`, err);
+      alert(`Error deleting test: ${err.message || err}`);
+    } finally {
+      setIsLoadingTests(false);
     }
   };
 
@@ -886,7 +1247,10 @@ export function TestMasterScreen() {
   const handleParamCellChange = (paramIdx, field, val) => {
     let finalVal = val;
     if (field === 'minRange' || field === 'maxRange') {
-      finalVal = val === '' ? '' : Number(val);
+      if (val !== "" && !/^-?\d*\.?\d*$/.test(val)) {
+        return;
+      }
+      finalVal = val;
     }
     if (field === 'code') {
       finalVal = val.toUpperCase();
@@ -958,10 +1322,22 @@ export function TestMasterScreen() {
     setEditNarrative(param.narrativeTemplate || "");
     setEditAnalyzerModel(param.analyzerModel || "");
     setEditAnalyzerChannel(param.analyzerChannel || "");
-    setEditMaleMin(param.genderRanges?.maleMin ?? param.minRange);
-    setEditMaleMax(param.genderRanges?.maleMax ?? param.maxRange);
-    setEditFemaleMin(param.genderRanges?.femaleMin ?? param.minRange);
-    setEditFemaleMax(param.genderRanges?.femaleMax ?? param.maxRange);
+    setEditMaleMin(param.maleMin !== undefined && param.maleMin !== null && param.maleMin !== "" ? param.maleMin : (param.genderRanges?.maleMin ?? ""));
+    setEditMaleMax(param.maleMax !== undefined && param.maleMax !== null && param.maleMax !== "" ? param.maleMax : (param.genderRanges?.maleMax ?? ""));
+    setEditFemaleMin(param.femaleMin !== undefined && param.femaleMin !== null && param.femaleMin !== "" ? param.femaleMin : (param.genderRanges?.femaleMin ?? ""));
+    setEditFemaleMax(param.femaleMax !== undefined && param.femaleMax !== null && param.femaleMax !== "" ? param.femaleMax : (param.genderRanges?.femaleMax ?? ""));
+    
+    setEditUseMale(param.useMale ?? (param.maleMin !== undefined && param.maleMin !== "" && param.maleMin !== null) ?? (param.genderRanges?.maleMin !== undefined && param.genderRanges?.maleMin !== 0));
+    setEditUseFemale(param.useFemale ?? (param.femaleMin !== undefined && param.femaleMin !== "" && param.femaleMin !== null) ?? (param.genderRanges?.femaleMin !== undefined && param.genderRanges?.femaleMin !== 0));
+    setEditUseInfant(!!param.useInfant);
+    setEditInfantMin(param.infantMin !== undefined && param.infantMin !== null ? param.infantMin : "");
+    setEditInfantMax(param.infantMax !== undefined && param.infantMax !== null ? param.infantMax : "");
+    setEditUseChild(!!param.useChild);
+    setEditChildMin(param.childMin !== undefined && param.childMin !== null ? param.childMin : "");
+    setEditChildMax(param.childMax !== undefined && param.childMax !== null ? param.childMax : "");
+    setEditUseAdult(!!param.useAdult);
+    setEditAdultMin(param.adultMin !== undefined && param.adultMin !== null ? param.adultMin : "");
+    setEditAdultMax(param.adultMax !== undefined && param.adultMax !== null ? param.adultMax : "");
 
     setDrawerOpen(true);
   };
@@ -977,11 +1353,26 @@ export function TestMasterScreen() {
           narrativeTemplate: editNarrative,
           analyzerModel: editAnalyzerModel,
           analyzerChannel: editAnalyzerChannel,
+          useMale: editUseMale,
+          maleMin: editUseMale ? (editMaleMin !== "" ? Number(editMaleMin) : null) : null,
+          maleMax: editUseMale ? (editMaleMax !== "" ? Number(editMaleMax) : null) : null,
+          useFemale: editUseFemale,
+          femaleMin: editUseFemale ? (editFemaleMin !== "" ? Number(editFemaleMin) : null) : null,
+          femaleMax: editUseFemale ? (editFemaleMax !== "" ? Number(editFemaleMax) : null) : null,
+          useInfant: editUseInfant,
+          infantMin: editUseInfant ? (editInfantMin !== "" ? Number(editInfantMin) : null) : null,
+          infantMax: editUseInfant ? (editInfantMax !== "" ? Number(editInfantMax) : null) : null,
+          useChild: editUseChild,
+          childMin: editUseChild ? (editChildMin !== "" ? Number(editChildMin) : null) : null,
+          childMax: editUseChild ? (editChildMax !== "" ? Number(editChildMax) : null) : null,
+          useAdult: editUseAdult,
+          adultMin: editUseAdult ? (editAdultMin !== "" ? Number(editAdultMin) : null) : null,
+          adultMax: editUseAdult ? (editAdultMax !== "" ? Number(editAdultMax) : null) : null,
           genderRanges: {
-            maleMin: Number(editMaleMin) || 0,
-            maleMax: Number(editMaleMax) || 0,
-            femaleMin: Number(editFemaleMin) || 0,
-            femaleMax: Number(editFemaleMax) || 0
+            maleMin: editUseMale ? Number(editMaleMin) || 0 : 0,
+            maleMax: editUseMale ? Number(editMaleMax) || 0 : 0,
+            femaleMin: editUseFemale ? Number(editFemaleMin) || 0 : 0,
+            femaleMax: editUseFemale ? Number(editFemaleMax) || 0 : 0
           }
         };
       }
@@ -1055,11 +1446,229 @@ export function TestMasterScreen() {
   };
 
 
-  const handleSaveAll = () => {
-    localStorage.setItem("synos_test_catalog", JSON.stringify(catalog));
+  const handleSetDefaultTemplate = () => {
+    const currentTemplateId = selectedTest.templateId || "";
+    const updatedTest = {
+      ...selectedTest,
+      templateId: currentTemplateId
+    };
+    const updatedCatalog = catalog.map(t => t.id === selectedTest.id ? updatedTest : t);
+    setCatalog(updatedCatalog);
+    setSelectedTest(updatedTest);
+    localStorage.setItem("synos_test_catalog", JSON.stringify(updatedCatalog));
     localStorage.setItem("synos_selected_test_id", selectedTest.id);
     setIsSavedSuccessfully(true);
     setTimeout(() => setIsSavedSuccessfully(false), 2500);
+  };
+
+  const handleSaveAll = async () => {
+    // 1. Client-side uniqueness validation
+    const codeToTestMap = new Map();
+    for (const item of catalog) {
+      const normCode = (item.code || "").trim().toUpperCase();
+      if (!normCode) {
+        alert(`Test name "${item.name}" must have a valid test code.`);
+        return;
+      }
+      if (codeToTestMap.has(normCode)) {
+        alert(`Duplicate test code detected: "${normCode}". Each test must have a unique code.`);
+        return;
+      }
+      codeToTestMap.set(normCode, item);
+    }
+
+    for (const item of catalog) {
+      const normCode = (item.code || "").trim().toUpperCase();
+      // Find if a test with the same code already exists in the database
+      const dbConflict = originalDbTests.find(
+        dt => (dt.testCode || dt.TestCode || dt.code || "").toUpperCase() === normCode
+      );
+
+      if (dbConflict && dbConflict.isActive !== false) {
+        const dbConflictId = dbConflict.testId || dbConflict.TestId || dbConflict.id;
+        const isTempId = !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(item.id);
+        if (isTempId || item.id !== dbConflictId) {
+          alert(`The test code "${normCode}" is already registered in the system (associated with test "${dbConflict.testName || dbConflict.TestName || dbConflict.name}").\n\nPlease use a unique code.`);
+          return;
+        }
+      }
+    }
+
+    setIsLoadingTests(true);
+    try {
+      const currentCatalog = catalog.map(item => ({
+        ...item,
+        parameters: (item.parameters || []).map(p => {
+          const minNum = p.minRange !== undefined && p.minRange !== null && p.minRange !== "" ? Number(p.minRange) : null;
+          const maxNum = p.maxRange !== undefined && p.maxRange !== null && p.maxRange !== "" ? Number(p.maxRange) : null;
+          return {
+            ...p,
+            minRange: minNum !== null && !isNaN(minNum) ? minNum : undefined,
+            maxRange: maxNum !== null && !isNaN(maxNum) ? maxNum : undefined
+          };
+        })
+      }));
+      const dbTestsMap = new Map();
+      originalDbTests.forEach(t => {
+        const id = t.testId || t.TestId || t.id;
+        if (id) dbTestsMap.set(id, t);
+      });
+
+      // 1. Handle Deletions
+      const deletedTests = originalDbTests.filter(ot => {
+        const otId = ot.testId || ot.TestId || ot.id;
+        return otId && !currentCatalog.some(ct => ct.id === otId);
+      });
+
+      for (const dt of deletedTests) {
+        const dtId = dt.testId || dt.TestId || dt.id;
+        try {
+          await AdminApi.deleteTest(dtId);
+        } catch (err) {
+          console.error(`Failed to delete test ${dtId}:`, err);
+        }
+      }
+
+      // We will construct the updated catalog with persisted IDs
+      let updatedCatalog = [];
+      let updatedSelectedTest = selectedTest ? { ...selectedTest } : null;
+
+      const mapToDto = (item) => {
+        return {
+          TestCode: item.code,
+          TestName: item.name,
+          Department: item.department || "Biochemistry",
+          Category: item.category || "General",
+          BasePrice: Number(item.basePrice) || 0,
+          TAT_Hours: Number(item.tatHours || item.TAT_Hours) || 24,
+          IsOutsourced: !!(item.isOutsourced || (item.outsource && item.outsource.enabled)),
+          SpecimenTypeCode: item.specimenTypeCode || "SERUM",
+          IsProfile: !!item.isProfile,
+          Parameters: (item.parameters || []).map((p, idx) => ({
+            ParameterCode: p.code,
+            ParameterName: p.name,
+            Unit: p.unit || null,
+            DataType: p.dataType || (p.minRange !== undefined || p.maxRange !== undefined ? "Numeric" : "Text"),
+            SortOrder: Number(p.sortOrder || idx + 1),
+            Methodology: p.method || null,
+            Formula: p.formula || null,
+            IsCalculated: !!(p.hasFormula || p.formula),
+            ReferenceRange: formatReferenceRange(p),
+            UseMale: !!p.useMale,
+            MaleMin: p.useMale && p.maleMin !== undefined && p.maleMin !== "" && p.maleMin !== null ? Number(p.maleMin) : null,
+            MaleMax: p.useMale && p.maleMax !== undefined && p.maleMax !== "" && p.maleMax !== null ? Number(p.maleMax) : null,
+            UseFemale: !!p.useFemale,
+            FemaleMin: p.useFemale && p.femaleMin !== undefined && p.femaleMin !== "" && p.femaleMin !== null ? Number(p.femaleMin) : null,
+            FemaleMax: p.useFemale && p.femaleMax !== undefined && p.femaleMax !== "" && p.femaleMax !== null ? Number(p.femaleMax) : null,
+            UseInfant: !!p.useInfant,
+            InfantMin: p.useInfant && p.infantMin !== undefined && p.infantMin !== "" && p.infantMin !== null ? Number(p.infantMin) : null,
+            InfantMax: p.useInfant && p.infantMax !== undefined && p.infantMax !== "" && p.infantMax !== null ? Number(p.infantMax) : null,
+            UseChild: !!p.useChild,
+            ChildMin: p.useChild && p.childMin !== undefined && p.childMin !== "" && p.childMin !== null ? Number(p.childMin) : null,
+            ChildMax: p.useChild && p.childMax !== undefined && p.childMax !== "" && p.childMax !== null ? Number(p.childMax) : null,
+            UseAdult: !!p.useAdult,
+            AdultMin: p.useAdult && p.adultMin !== undefined && p.adultMin !== "" && p.adultMin !== null ? Number(p.adultMin) : null,
+            AdultMax: p.useAdult && p.adultMax !== undefined && p.adultMax !== "" && p.adultMax !== null ? Number(p.adultMax) : null
+          })),
+          IncludedTestCodes: (item.includedTestIds || []).map(childId => {
+            const childTest = currentCatalog.find(t => t.id === childId);
+            return childTest ? childTest.code : null;
+          }).filter(Boolean)
+        };
+      };
+
+      // Sort to save individual tests first, and profiles last to prevent blank child test placeholders
+      const sortedCatalog = [...currentCatalog].sort((a, b) => {
+        if (a.isProfile && !b.isProfile) return 1;
+        if (!a.isProfile && b.isProfile) return -1;
+        return 0;
+      });
+
+      const savedItemsMap = new Map();
+
+      // 2. Handle Insertions and Updates in dependency-safe order
+      for (const item of sortedCatalog) {
+        // Find if a test with the same code already exists in the DB (active or inactive) to prevent unique index constraint errors
+        const matchingDbTest = originalDbTests.find(
+          dt => (dt.testCode || dt.TestCode || dt.code || "").toLowerCase() === item.code.toLowerCase()
+        );
+
+        const dbId = matchingDbTest ? (matchingDbTest.testId || matchingDbTest.TestId || matchingDbTest.id) : null;
+        const hasValidDbId = dbId && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(dbId);
+
+        const isExistingInDb = (dbTestsMap.has(item.id) && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(item.id)) || hasValidDbId;
+        const targetId = isExistingInDb ? (dbTestsMap.has(item.id) ? item.id : dbId) : item.id;
+
+        if (isExistingInDb) {
+          const dto = {
+            ...mapToDto(item),
+            IsActive: item.isActive !== false
+          };
+          try {
+            await AdminApi.updateTest(targetId, dto);
+          } catch (err) {
+            console.error(`Failed to update test ${targetId}:`, err);
+          }
+          
+          const updatedItem = {
+            ...item,
+            id: targetId
+          };
+          savedItemsMap.set(item.id, updatedItem);
+
+          if (selectedTest && (selectedTest.id === item.id || selectedTest.code === item.code)) {
+            updatedSelectedTest = updatedItem;
+          }
+        } else {
+          const dto = mapToDto(item);
+          try {
+            const createdTest = await AdminApi.createTest(dto);
+            const returnedId = createdTest.testId || createdTest.TestId || createdTest.id;
+            
+            const newlyCreatedItem = {
+              ...item,
+              id: returnedId
+            };
+            savedItemsMap.set(item.id, newlyCreatedItem);
+
+            if (selectedTest && (selectedTest.id === item.id || selectedTest.code === item.code)) {
+              updatedSelectedTest = newlyCreatedItem;
+            }
+          } catch (err) {
+            console.error(`Failed to create test ${item.code}:`, err);
+            savedItemsMap.set(item.id, item);
+          }
+        }
+      }
+
+      // Reconstruct updatedCatalog in original UI order
+      updatedCatalog = currentCatalog.map(item => savedItemsMap.get(item.id) || item);
+
+      // 3. Fetch fresh database list and update state
+      const freshDbTests = await AdminApi.getTests();
+      setOriginalDbTests(freshDbTests || []);
+
+      // 4. Update catalog and selected test states
+      setCatalog(updatedCatalog);
+      localStorage.setItem("synos_test_catalog", JSON.stringify(updatedCatalog));
+
+      if (updatedSelectedTest) {
+        const found = updatedCatalog.find(t => t.id === updatedSelectedTest.id);
+        if (found) {
+          updatedSelectedTest = found;
+        }
+        setSelectedTest(updatedSelectedTest);
+        localStorage.setItem("synos_selected_test_id", updatedSelectedTest.id);
+      }
+
+      setIsSavedSuccessfully(true);
+      setTimeout(() => setIsSavedSuccessfully(false), 2500);
+
+    } catch (error) {
+      console.error("Critical error during catalog sync:", error);
+    } finally {
+      setIsLoadingTests(false);
+    }
   };
 
   const filteredCatalog = catalog.filter(t => {
@@ -1087,9 +1696,14 @@ export function TestMasterScreen() {
         <button
           id="btn-save-catalog-master"
           onClick={handleSaveAll}
-          className="px-6 py-2.5 bg-synos-primary hover:bg-synos-primary/95 text-white font-bold text-sm uppercase tracking-wider rounded-xl shadow-md shadow-synos-primary/10 active:scale-95 transition-all flex items-center gap-2 self-start md:self-auto"
+          disabled={isLoadingTests}
+          className="px-6 py-2.5 bg-synos-primary hover:bg-synos-primary/95 text-white font-bold text-sm uppercase tracking-wider rounded-xl shadow-md shadow-synos-primary/10 active:scale-95 transition-all flex items-center gap-2 self-start md:self-auto disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {isSavedSuccessfully ? (
+          {isLoadingTests ? (
+            <>
+              <span className="w-4 h-4 rounded-full border-2 border-white border-t-transparent animate-spin" /> Saving Changes...
+            </>
+          ) : isSavedSuccessfully ? (
             <>
               <Check className="w-4 h-4 text-white animate-bounce" /> Catalog Saved Successfully
             </>
@@ -1228,20 +1842,53 @@ export function TestMasterScreen() {
                       ))}
                     </select>
                   </div>
-                  <div className="md:col-span-2 flex items-center gap-6 py-2">
+                  <div>
+                    <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 block mb-1">Specimen Type</label>
+                    <select
+                      className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 dark:border-zinc-800 rounded-xl px-2.5 py-2 text-sm w-full text-zinc-900 dark:text-zinc-100 outline-none focus:ring-1 focus:ring-synos-primary"
+                      value={metaSpecimenTypeCode}
+                      onChange={(e) => setMetaSpecimenTypeCode(e.target.value)}
+                    >
+                      {SPECIMEN_TYPES.map(spec => (
+                        <option key={spec.code} value={spec.code}>{spec.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="md:col-span-1 flex items-center gap-6 py-2">
                     <label className="flex items-center gap-2 cursor-pointer select-none">
                       <input 
                         type="checkbox"
                         checked={metaIsProfile}
-                        onChange={(e) => setMetaIsProfile(e.target.checked)}
+                        onChange={(e) => {
+                          const checked = e.target.checked;
+                          setMetaIsProfile(checked);
+                          setSelectedTest(prev => ({ ...prev, isProfile: checked }));
+                          if (checked) {
+                            setActiveTab("profile-builder");
+                          } else {
+                            if (activeTab === "profile-builder") {
+                              setActiveTab("parameters");
+                            }
+                          }
+                        }}
                         className="rounded border-zinc-300 text-synos-primary focus:ring-synos-primary w-4.5 h-4.5"
                       />
-                      <span className="text-sm font-bold text-zinc-700 dark:text-zinc-300">Is Profile / Package Panel</span>
+                      <span className="text-sm font-bold text-zinc-700 dark:text-zinc-300">Is Profile</span>
                     </label>
                   </div>
                   <div className="md:col-span-2 flex justify-end gap-2">
                     <button 
-                      onClick={() => setIsEditingMetadata(false)}
+                      onClick={() => {
+                        setIsEditingMetadata(false);
+                        const originalTest = catalog.find(t => t.id === selectedTest.id);
+                        if (originalTest) {
+                          setMetaIsProfile(originalTest.isProfile);
+                          setSelectedTest(originalTest);
+                          if (!originalTest.isProfile && activeTab === "profile-builder") {
+                            setActiveTab("parameters");
+                          }
+                        }
+                      }}
                       className="px-4 py-2 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 text-sm rounded-xl font-bold transition-all"
                     >
                       Cancel
@@ -1268,7 +1915,7 @@ export function TestMasterScreen() {
                     )}
                   </div>
                   <p className="text-xs text-zinc-500 dark:text-zinc-400 font-medium uppercase tracking-wider mt-1.5">
-                    Department: {selectedTest.department} &bull; Base Price: ₹{selectedTest.basePrice}
+                    Department: {selectedTest.department} &bull; Base Price: ₹{selectedTest.basePrice} &bull; Specimen: {selectedTest.specimenTypeCode || "SERUM"}
                   </p>
                 </div>
               )}
@@ -1352,132 +1999,219 @@ export function TestMasterScreen() {
 
           {/* Tab Workspaces */}
           <div className="flex-1 min-h-0 overflow-hidden">
-            
-            {/* Tab: Parameters (Excel spreadsheet structure) */}
-            {activeTab === "parameters" && (
-              <div className="bg-white dark:bg-zinc-900/40 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 shadow-sm space-y-4 lg:h-full lg:overflow-y-auto custom-scrollbar">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold text-zinc-600 dark:text-zinc-400">Parameters Specification Grid</span>
-                  <div className="text-xs text-zinc-600 dark:text-zinc-400 dark:text-zinc-600 dark:text-zinc-400 font-bold flex items-center gap-1.5">
-                    <Sliders className="w-4 h-4 text-synos-primary" /> Changes are instantly recorded.
+                      {/* Tab: Parameters (Excel spreadsheet structure) */}
+            {activeTab === "parameters" && (() => {
+              const childParams = getCompiledProfileParameters(selectedTest, catalog);
+              const childCodes = new Set(childParams.map(cp => cp.code));
+              const nativeParams = (selectedTest.parameters || []).filter(np => !childCodes.has(np.code));
+              const combinedParams = [...childParams, ...nativeParams];
+
+              return (
+                <div className="bg-white dark:bg-zinc-900/40 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 shadow-sm space-y-4 lg:h-full lg:overflow-y-auto custom-scrollbar">
+                  {selectedTest.isProfile && (
+                    <div className="bg-amber-500/10 border border-amber-500/25 rounded-xl p-4 flex items-start gap-3">
+                      <Sliders className="w-5 h-5 text-amber-600 dark:text-amber-500 shrink-0 mt-0.5 animate-pulse" />
+                      <div>
+                        <h4 className="text-xs font-extrabold text-amber-800 dark:text-amber-400">Profile Parameter Integration Mode</h4>
+                        <p className="text-[10px] text-amber-600 dark:text-amber-500 mt-1 font-medium leading-relaxed">
+                          This is a composite Profile/Panel test. The parameters highlighted with source badges (e.g. <span className="bg-zinc-100 dark:bg-zinc-850 px-1 py-0.5 rounded font-bold font-mono">Child Test</span>) are dynamically compiled from child tests selected in the **Profile Builder** tab.
+                          You can click **Add Parameter Row** to define native profile-level custom or calculated parameters (which can use the child parameter codes in formulas!).
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-semibold text-zinc-650 dark:text-zinc-400">Parameters Specification Grid</span>
+                    <div className="text-xs text-zinc-600 dark:text-zinc-400 dark:text-zinc-600 dark:text-zinc-400 font-bold flex items-center gap-1.5">
+                      <Sliders className="w-4 h-4 text-synos-primary" /> Changes are instantly recorded.
+                    </div>
+                  </div>
+
+                  <div className="overflow-x-auto border border-zinc-200 dark:border-zinc-800 dark:border-zinc-800 rounded-xl">
+                    <table className="w-full text-left border-collapse text-sm">
+                      <thead>
+                        <tr className="bg-zinc-50 dark:bg-zinc-950 border-b border-zinc-200 dark:border-zinc-800">
+                          {selectedTest.isProfile && <th className="py-3 px-4 font-bold text-zinc-500 dark:text-zinc-400 text-xs uppercase w-[150px]">Source</th>}
+                          <th className="py-3 px-4 font-bold text-zinc-500 dark:text-zinc-400 text-xs uppercase w-[100px]">Code</th>
+                          <th className="py-3 px-4 font-bold text-zinc-500 dark:text-zinc-400 text-xs uppercase min-w-[170px]">Parameter Name</th>
+                          <th className="py-3 px-4 font-bold text-zinc-500 dark:text-zinc-400 text-xs uppercase w-[80px]">Unit</th>
+                          <th className="py-3 px-4 font-bold text-zinc-500 dark:text-zinc-400 text-xs uppercase w-[80px]">Min</th>
+                          <th className="py-3 px-4 font-bold text-zinc-500 dark:text-zinc-400 text-xs uppercase w-[80px]">Max</th>
+                          <th className="py-3 px-4 font-bold text-zinc-500 dark:text-zinc-400 text-xs uppercase w-[150px]">Ref Range (Text Override)</th>
+                          <th className="py-3 px-4 font-bold text-zinc-500 dark:text-zinc-400 text-xs uppercase w-[130px]">Methodology</th>
+                          <th className="py-3 px-4 font-bold text-zinc-500 dark:text-zinc-400 text-xs uppercase w-[120px] text-center">Settings</th>
+                          <th className="py-3 px-4 font-bold text-zinc-500 dark:text-zinc-400 text-xs uppercase w-[50px] text-center"></th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800 bg-white/50 dark:bg-zinc-900/10">
+                        {combinedParams.map((p, idx) => {
+                          const isFromChild = !!p.isFromChild;
+                          const nativeIdx = idx - childParams.length;
+
+                          return (
+                            <tr key={idx} className={cn("hover:bg-zinc-50/50 dark:hover:bg-zinc-800/10 group transition-colors", isFromChild && "bg-zinc-50/20 dark:bg-zinc-950/5")}>
+                              {selectedTest.isProfile && (
+                                <td className="py-2.5 px-4">
+                                  {isFromChild ? (
+                                    <span className="bg-amber-500/10 border border-amber-500/25 text-amber-600 dark:text-amber-400 px-2 py-1 rounded-md text-[9px] font-extrabold uppercase tracking-wide inline-block max-w-[130px] truncate" title={p.childTestName}>
+                                      {p.childTestName}
+                                    </span>
+                                  ) : (
+                                    <span className="bg-synos-primary/10 border border-synos-primary/25 text-synos-primary px-2 py-1 rounded-md text-[9px] font-extrabold uppercase tracking-wide inline-block">
+                                      Profile Native
+                                    </span>
+                                  )}
+                                </td>
+                              )}
+                              <td className="py-1.5 px-1.5">
+                                <input
+                                  type="text"
+                                  readOnly={isFromChild}
+                                  className={cn(
+                                    "w-full bg-transparent hover:bg-zinc-50 dark:hover:bg-zinc-900 focus:bg-white dark:focus:bg-zinc-950 focus:ring-1 focus:ring-synos-primary outline-none px-3 py-2 rounded font-mono font-bold text-zinc-800 dark:text-zinc-200 text-sm uppercase",
+                                    isFromChild && "text-zinc-400 dark:text-zinc-500 font-medium cursor-not-allowed hover:bg-transparent dark:hover:bg-transparent"
+                                  )}
+                                  value={p.code ?? ""}
+                                  onChange={(e) => !isFromChild && handleParamCellChange(nativeIdx, 'code', e.target.value)}
+                                />
+                              </td>
+                              <td className="py-1.5 px-1.5">
+                                <input
+                                  type="text"
+                                  readOnly={isFromChild}
+                                  className={cn(
+                                    "w-full bg-transparent hover:bg-zinc-50 dark:hover:bg-zinc-900 focus:bg-white dark:focus:bg-zinc-950 focus:ring-1 focus:ring-synos-primary outline-none px-3 py-2 rounded text-zinc-800 dark:text-zinc-200 font-medium text-sm",
+                                    isFromChild && "text-zinc-400 dark:text-zinc-500 cursor-not-allowed hover:bg-transparent dark:hover:bg-transparent"
+                                  )}
+                                  value={p.name ?? ""}
+                                  onChange={(e) => !isFromChild && handleParamCellChange(nativeIdx, 'name', e.target.value)}
+                                />
+                              </td>
+                              <td className="py-1.5 px-1.5">
+                                <input
+                                  type="text"
+                                  readOnly={isFromChild}
+                                  className={cn(
+                                    "w-full bg-transparent hover:bg-zinc-50 dark:hover:bg-zinc-900 focus:bg-white dark:focus:bg-zinc-950 focus:ring-1 focus:ring-synos-primary outline-none px-3 py-2 rounded text-zinc-650 dark:text-zinc-400 text-sm",
+                                    isFromChild && "text-zinc-400 dark:text-zinc-500 cursor-not-allowed hover:bg-transparent dark:hover:bg-transparent"
+                                  )}
+                                  value={p.unit ?? ""}
+                                  onChange={(e) => !isFromChild && handleParamCellChange(nativeIdx, 'unit', e.target.value)}
+                                />
+                              </td>
+                              <td className="py-1.5 px-1.5">
+                                <input
+                                  type="text"
+                                  readOnly={isFromChild}
+                                  className={cn(
+                                    "w-full bg-transparent hover:bg-zinc-50 dark:hover:bg-zinc-900 focus:bg-white dark:focus:bg-zinc-950 focus:ring-1 focus:ring-synos-primary outline-none px-3 py-2 rounded font-mono text-zinc-700 dark:text-zinc-350 text-sm",
+                                    isFromChild && "text-zinc-400 dark:text-zinc-500 cursor-not-allowed hover:bg-transparent dark:hover:bg-transparent"
+                                  )}
+                                  value={p.minRange ?? ""}
+                                  onChange={(e) => !isFromChild && handleParamCellChange(nativeIdx, 'minRange', e.target.value)}
+                                />
+                              </td>
+                              <td className="py-1.5 px-1.5">
+                                <input
+                                  type="text"
+                                  readOnly={isFromChild}
+                                  className={cn(
+                                    "w-full bg-transparent hover:bg-zinc-50 dark:hover:bg-zinc-900 focus:bg-white dark:focus:bg-zinc-950 focus:ring-1 focus:ring-synos-primary outline-none px-3 py-2 rounded font-mono text-zinc-700 dark:text-zinc-300 text-sm",
+                                    isFromChild && "text-zinc-400 dark:text-zinc-500 cursor-not-allowed hover:bg-transparent dark:hover:bg-transparent"
+                                  )}
+                                  value={p.maxRange ?? ""}
+                                  onChange={(e) => !isFromChild && handleParamCellChange(nativeIdx, 'maxRange', e.target.value)}
+                                />
+                              </td>
+                              <td className="py-1.5 px-1.5">
+                                <input
+                                  type="text"
+                                  readOnly={isFromChild}
+                                  className={cn(
+                                    "w-full bg-transparent hover:bg-zinc-50 dark:hover:bg-zinc-900 focus:bg-white dark:focus:bg-zinc-950 focus:ring-1 focus:ring-synos-primary outline-none px-3 py-2 rounded text-zinc-700 dark:text-zinc-300 text-sm",
+                                    isFromChild && "text-zinc-400 dark:text-zinc-500 cursor-not-allowed hover:bg-transparent dark:hover:bg-transparent"
+                                  )}
+                                  placeholder={p.minRange !== undefined && p.maxRange !== undefined && p.minRange !== "" && p.maxRange !== "" && p.minRange !== null && p.maxRange !== null ? `${p.minRange} - ${p.maxRange}` : "e.g. 1.2 - 2.5 : 1"}
+                                  value={p.referenceRange ?? ""}
+                                  onChange={(e) => !isFromChild && handleParamCellChange(nativeIdx, 'referenceRange', e.target.value)}
+                                />
+                              </td>
+                              <td className="py-1.5 px-1.5">
+                                <input
+                                  type="text"
+                                  readOnly={isFromChild}
+                                  className={cn(
+                                    "w-full bg-transparent hover:bg-zinc-50 dark:hover:bg-zinc-900 focus:bg-white dark:focus:bg-zinc-950 focus:ring-1 focus:ring-synos-primary outline-none px-3 py-2 rounded text-zinc-600 dark:text-zinc-400 dark:text-zinc-400 text-sm",
+                                    isFromChild && "text-zinc-400 dark:text-zinc-500 cursor-not-allowed hover:bg-transparent dark:hover:bg-transparent"
+                                  )}
+                                  value={p.method ?? ""}
+                                  onChange={(e) => !isFromChild && handleParamCellChange(nativeIdx, 'method', e.target.value)}
+                                />
+                              </td>
+                              <td className="py-1.5 px-1.5 text-center">
+                                <div className="flex justify-center items-center">
+                                  {isFromChild ? (
+                                    <button
+                                      disabled
+                                      className="p-1.5 rounded-lg border border-zinc-200 dark:border-zinc-800 text-zinc-300 dark:text-zinc-700 cursor-not-allowed flex items-center justify-center"
+                                      title={`Configured on child test: ${p.childTestName}`}
+                                    >
+                                      <Settings className="w-4 h-4" />
+                                    </button>
+                                  ) : (
+                                    <button
+                                      onClick={() => openDrawer(p.code, p.hasFormula ? 'formula' : 'ranges')}
+                                      className={cn(
+                                        "p-1.5 rounded-lg border transition-all active:scale-90 flex items-center justify-center relative",
+                                        p.hasFormula
+                                          ? "bg-purple-500/10 border-purple-500/35 text-purple-600 dark:text-purple-400"
+                                          : "hover:bg-zinc-100 dark:hover:bg-zinc-800 border-zinc-200 dark:border-zinc-800 text-zinc-400 dark:text-zinc-500 hover:text-synos-primary hover:border-synos-primary/20"
+                                      )}
+                                      title={p.hasFormula ? `Calculated formula: ${p.formula}. Click to modify.` : "Configure calculations, reference ranges, analyzer mapping, and comments."}
+                                    >
+                                      <Settings className="w-4 h-4" />
+                                      {p.hasFormula && (
+                                        <span className="absolute -top-1 -right-1 bg-purple-500 text-white text-[7px] font-semibold px-0.5 rounded-md scale-75 leading-none">
+                                          fx
+                                        </span>
+                                      )}
+                                    </button>
+                                  )}
+                                </div>
+                              </td>
+                              <td className="py-1.5 px-1.5 text-center">
+                                {!isFromChild && (
+                                  <button
+                                    onClick={() => handleDeleteParameterRow(nativeIdx)}
+                                    className="p-1.5 hover:bg-rose-500/10 text-zinc-500 dark:text-zinc-400 hover:text-rose-500 rounded-lg transition-colors opacity-0 group-hover:opacity-100 flex items-center justify-center mx-auto"
+                                    title="Delete parameter"
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                  </button>
+                                )}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row justify-between items-center gap-2">
+                    <button
+                      onClick={handleAddParameterRow}
+                      className="px-5 py-2.5 border border-dashed border-zinc-300 dark:border-zinc-800 text-zinc-500 hover:text-synos-primary hover:border-synos-primary/40 rounded-xl text-sm font-bold transition-all flex items-center gap-1.5"
+                    >
+                      <Plus className="w-4.5 h-4.5" /> Add Parameter Row
+                    </button>
+                    <p className="text-xs text-zinc-400 font-medium">
+                      Note: Click the settings icon to configure calculations, reference range overrides, analyzer channels, and narrative templates.
+                    </p>
                   </div>
                 </div>
-
-                <div className="overflow-x-auto border border-zinc-200 dark:border-zinc-800 dark:border-zinc-800 rounded-xl">
-                  <table className="w-full text-left border-collapse text-sm">
-                    <thead>
-                      <tr className="bg-zinc-50 dark:bg-zinc-950 border-b border-zinc-200 dark:border-zinc-800">
-                        <th className="py-3 px-4 font-bold text-zinc-500 dark:text-zinc-400 text-xs uppercase w-[100px]">Code</th>
-                        <th className="py-3 px-4 font-bold text-zinc-500 dark:text-zinc-400 text-xs uppercase min-w-[170px]">Parameter Name</th>
-                        <th className="py-3 px-4 font-bold text-zinc-500 dark:text-zinc-400 text-xs uppercase w-[80px]">Unit</th>
-                        <th className="py-3 px-4 font-bold text-zinc-500 dark:text-zinc-400 text-xs uppercase w-[80px]">Min</th>
-                        <th className="py-3 px-4 font-bold text-zinc-500 dark:text-zinc-400 text-xs uppercase w-[80px]">Max</th>
-                        <th className="py-3 px-4 font-bold text-zinc-500 dark:text-zinc-400 text-xs uppercase w-[130px]">Methodology</th>
-                        <th className="py-3 px-4 font-bold text-zinc-500 dark:text-zinc-400 text-xs uppercase w-[120px] text-center">Settings</th>
-                        <th className="py-3 px-4 font-bold text-zinc-500 dark:text-zinc-400 text-xs uppercase w-[50px] text-center"></th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800 bg-white/50 dark:bg-zinc-900/10">
-                      {selectedTest.parameters && selectedTest.parameters.map((p, idx) => (
-                        <tr key={idx} className="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/10 group transition-colors">
-                          <td className="py-1.5 px-1.5">
-                            <input
-                              type="text"
-                              className="w-full bg-transparent hover:bg-zinc-50 dark:hover:bg-zinc-900 focus:bg-white dark:focus:bg-zinc-950 focus:ring-1 focus:ring-synos-primary outline-none px-3 py-2 rounded font-mono font-bold text-zinc-800 dark:text-zinc-200 text-sm uppercase"
-                              value={p.code}
-                              onChange={(e) => handleParamCellChange(idx, 'code', e.target.value)}
-                            />
-                          </td>
-                          <td className="py-1.5 px-1.5">
-                            <input
-                              type="text"
-                              className="w-full bg-transparent hover:bg-zinc-50 dark:hover:bg-zinc-900 focus:bg-white dark:focus:bg-zinc-950 focus:ring-1 focus:ring-synos-primary outline-none px-3 py-2 rounded text-zinc-800 dark:text-zinc-200 font-medium text-sm"
-                              value={p.name}
-                              onChange={(e) => handleParamCellChange(idx, 'name', e.target.value)}
-                            />
-                          </td>
-                          <td className="py-1.5 px-1.5">
-                            <input
-                              type="text"
-                              className="w-full bg-transparent hover:bg-zinc-50 dark:hover:bg-zinc-900 focus:bg-white dark:focus:bg-zinc-950 focus:ring-1 focus:ring-synos-primary outline-none px-3 py-2 rounded text-zinc-600 dark:text-zinc-400 dark:text-zinc-400 text-sm"
-                              value={p.unit}
-                              onChange={(e) => handleParamCellChange(idx, 'unit', e.target.value)}
-                            />
-                          </td>
-                          <td className="py-1.5 px-1.5">
-                            <input
-                              type="text"
-                              className="w-full bg-transparent hover:bg-zinc-50 dark:hover:bg-zinc-900 focus:bg-white dark:focus:bg-zinc-950 focus:ring-1 focus:ring-synos-primary outline-none px-3 py-2 rounded font-mono text-zinc-700 dark:text-zinc-300 text-sm"
-                              value={p.minRange}
-                              onChange={(e) => handleParamCellChange(idx, 'minRange', e.target.value)}
-                            />
-                          </td>
-                          <td className="py-1.5 px-1.5">
-                            <input
-                              type="text"
-                              className="w-full bg-transparent hover:bg-zinc-50 dark:hover:bg-zinc-900 focus:bg-white dark:focus:bg-zinc-950 focus:ring-1 focus:ring-synos-primary outline-none px-3 py-2 rounded font-mono text-zinc-700 dark:text-zinc-300 text-sm"
-                              value={p.maxRange}
-                              onChange={(e) => handleParamCellChange(idx, 'maxRange', e.target.value)}
-                            />
-                          </td>
-                          <td className="py-1.5 px-1.5">
-                            <input
-                              type="text"
-                              className="w-full bg-transparent hover:bg-zinc-50 dark:hover:bg-zinc-900 focus:bg-white dark:focus:bg-zinc-950 focus:ring-1 focus:ring-synos-primary outline-none px-3 py-2 rounded text-zinc-600 dark:text-zinc-400 dark:text-zinc-400 text-sm"
-                              value={p.method}
-                              onChange={(e) => handleParamCellChange(idx, 'method', e.target.value)}
-                            />
-                          </td>
-                          <td className="py-1.5 px-1.5 text-center">
-                            <div className="flex justify-center items-center">
-                              {/* Advanced Settings Drawer launcher */}
-                              <button
-                                onClick={() => openDrawer(p.code, p.hasFormula ? 'formula' : 'ranges')}
-                                className={cn(
-                                  "p-1.5 rounded-lg border transition-all active:scale-90 flex items-center justify-center relative",
-                                  p.hasFormula
-                                    ? "bg-purple-500/10 border-purple-500/35 text-purple-600 dark:text-purple-400"
-                                    : "hover:bg-zinc-100 dark:hover:bg-zinc-800 border-zinc-200 dark:border-zinc-800 text-zinc-400 dark:text-zinc-500 hover:text-synos-primary hover:border-synos-primary/20"
-                                )}
-                                title={p.hasFormula ? `Calculated formula: ${p.formula}. Click to modify.` : "Configure calculations, reference ranges, analyzer mapping, and comments."}
-                              >
-                                <Settings className="w-4 h-4" />
-                                {p.hasFormula && (
-                                  <span className="absolute -top-1 -right-1 bg-purple-500 text-white text-[7px] font-semibold px-0.5 rounded-md scale-75 leading-none">
-                                    fx
-                                  </span>
-                                )}
-                              </button>
-                            </div>
-                          </td>
-                          <td className="py-1.5 px-1.5 text-center">
-                            <button
-                              onClick={() => handleDeleteParameterRow(idx)}
-                              className="p-1.5 hover:bg-rose-500/10 text-zinc-500 dark:text-zinc-400 hover:text-rose-500 rounded-lg transition-colors opacity-0 group-hover:opacity-100 flex items-center justify-center mx-auto"
-                              title="Delete parameter"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-
-                <div className="flex flex-col sm:flex-row justify-between items-center gap-2">
-                  <button
-                    onClick={handleAddParameterRow}
-                    className="px-5 py-2.5 border border-dashed border-zinc-300 dark:border-zinc-800 text-zinc-500 hover:text-synos-primary hover:border-synos-primary/40 rounded-xl text-sm font-bold transition-all flex items-center gap-1.5"
-                  >
-                    <Plus className="w-4.5 h-4.5" /> Add Parameter Row
-                  </button>
-                  <p className="text-xs text-zinc-400 font-medium">
-                    Note: Click the settings icon to configure calculations, reference range overrides, analyzer channels, and narrative templates.
-                  </p>
-                </div>
-              </div>
-            )}
+              );
+            })()}
 
             {/* Tab: Report Setup (Simple and Live Preview) */}
             {activeTab === "report-setup" && (
@@ -1493,18 +2227,27 @@ export function TestMasterScreen() {
                   <div className="space-y-4">
                     <div className="space-y-1.5">
                       <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 block ml-1">Report design template</label>
-                      <select
-                        className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 dark:border-zinc-800 rounded-xl px-3.5 py-2.5 text-sm w-full text-zinc-900 dark:text-zinc-100 outline-none focus:ring-1 focus:ring-synos-primary font-bold"
-                        value={selectedTest.templateId || ""}
-                        onChange={(e) => handleReportSetupFieldChange("templateId", e.target.value)}
-                      >
-                        <option value="">Default (Auto-detect by modality)</option>
-                        {reportTemplatesList.map(template => (
-                          <option key={template.id} value={template.id}>
-                            {template.title} ({template.modality})
-                          </option>
-                        ))}
-                      </select>
+                      <div className="flex gap-2">
+                        <select
+                          className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 dark:border-zinc-800 rounded-xl px-3.5 py-2.5 text-sm flex-1 text-zinc-900 dark:text-zinc-100 outline-none focus:ring-1 focus:ring-synos-primary font-bold"
+                          value={selectedTest.templateId || ""}
+                          onChange={(e) => handleReportSetupFieldChange("templateId", e.target.value)}
+                        >
+                          <option value="">Default (Auto-detect by modality)</option>
+                          {reportTemplatesList.map(template => (
+                            <option key={template.id} value={template.id}>
+                              {template.title} ({template.modality})
+                            </option>
+                          ))}
+                        </select>
+                        <button
+                          onClick={handleSetDefaultTemplate}
+                          className="px-4 py-2.5 bg-synos-primary hover:bg-synos-primary/95 text-white text-xs rounded-xl font-bold shadow-md shadow-synos-primary/10 transition-all flex items-center gap-1.5 whitespace-nowrap active:scale-[0.98]"
+                          title="Set current template selection as default for this test"
+                        >
+                          <Check className="w-3.5 h-3.5" /> Set As Default Template
+                        </button>
+                      </div>
                     </div>
 
                     <div className="space-y-1.5">
@@ -1646,6 +2389,10 @@ export function TestMasterScreen() {
                       const coords = getCoordinates(activeTemplate);
                       const hasTemplateColumns = activeTemplate.columns && activeTemplate.columns.length > 0;
                       const totalWeight = hasTemplateColumns ? activeTemplate.columns.reduce((sum, c) => sum + c.weight, 0) : 1;
+                      const childParams = getCompiledProfileParameters(selectedTest, catalog);
+                      const childCodes = new Set(childParams.map(cp => cp.code));
+                      const nativeParams = (selectedTest.parameters || []).filter(np => !childCodes.has(np.code));
+                      const displayParams = [...childParams, ...nativeParams];
                       return (
                         <div ref={containerRef} className="w-full overflow-x-auto border border-zinc-200 dark:border-zinc-800 rounded-xl bg-zinc-100 dark:bg-zinc-950 p-4 flex justify-center">
                           <div 
@@ -1838,9 +2585,7 @@ export function TestMasterScreen() {
                                       <span className="hidden" data-age-sex-placeholder={"{" + "{" + "AGE_SEX" + "}" + "}"} />
                                       <span className="hidden" data-patient-id-placeholder={"{" + "{" + "PATIENT_ID" + "}" + "}"} />
                                       <span className="hidden" data-billing-date-placeholder={"{" + "{" + "BILLING_DATE" + "}" + "}"} />
-                                      <span className="hidden" data-report-date-placeholder={"{" + "{" + "REPORT_DATE" + "}" + "}"} />
-
-                                      {/* 1. Patient Name */}
+                                      <span className="hidden" data-report-date-placeholder={"{" + "{" + "REPORT_DATE" + "}" + "}"} />                                      {/* 1. Patient Name */}
                                       <div
                                         style={{
                                           position: 'absolute',
@@ -1853,9 +2598,8 @@ export function TestMasterScreen() {
                                         className="bg-transparent border-0 shadow-none p-1 text-[10px] text-zinc-850 dark:text-zinc-200 transition-all select-none hover:ring-1 hover:ring-synos-primary/50 hover:bg-synos-primary/5 rounded"
                                       >
                                         <span className="font-bold text-zinc-800 dark:text-zinc-100">Rajesh Kumar</span>
-                                        <span className="text-[8px] text-zinc-400 font-mono ml-1">{"(" + "{" + "{" + "PATIENT_NAME" + "}" + "}" + ")"}</span>
                                       </div>
-
+ 
                                       {/* 2. Age / Sex */}
                                       <div
                                         style={{
@@ -1869,9 +2613,8 @@ export function TestMasterScreen() {
                                         className="bg-transparent border-0 shadow-none p-1 text-[10px] text-zinc-850 dark:text-zinc-200 transition-all select-none hover:ring-1 hover:ring-synos-primary/50 hover:bg-synos-primary/5 rounded"
                                       >
                                         <span className="font-semibold text-zinc-700 dark:text-zinc-300">32Y / Male</span>
-                                        <span className="text-[8px] text-zinc-400 font-mono ml-1">{"(" + "{" + "{" + "AGE_SEX" + "}" + "}" + ")"}</span>
                                       </div>
-
+ 
                                       {/* 3. Ref Doctor */}
                                       <div
                                         style={{
@@ -1885,9 +2628,8 @@ export function TestMasterScreen() {
                                         className="bg-transparent border-0 shadow-none p-1 text-[10px] text-zinc-850 dark:text-zinc-200 transition-all select-none hover:ring-1 hover:ring-synos-primary/50 hover:bg-synos-primary/5 rounded"
                                       >
                                         <span className="font-bold text-zinc-850 dark:text-zinc-100">Dr. S. Sharma, MD</span>
-                                        <span className="text-[8px] text-zinc-400 font-mono ml-1">{"(" + "{" + "{" + "REF_DOCTOR" + "}" + "}" + ")"}</span>
                                       </div>
-
+ 
                                       {/* 4. Patient ID */}
                                       <div
                                         style={{
@@ -1901,9 +2643,8 @@ export function TestMasterScreen() {
                                         className="bg-transparent border-0 shadow-none p-1 text-[10px] text-zinc-850 dark:text-zinc-200 transition-all select-none hover:ring-1 hover:ring-synos-primary/50 hover:bg-synos-primary/5 rounded"
                                       >
                                         <span className="font-semibold font-mono text-zinc-700 dark:text-zinc-300">PID-2026-8940</span>
-                                        <span className="text-[8px] text-zinc-400 font-mono ml-1">{"(" + "{" + "{" + "PATIENT_ID" + "}" + "}" + ")"}</span>
                                       </div>
-
+ 
                                       {/* 5. Billing Date */}
                                       <div
                                         style={{
@@ -1917,9 +2658,8 @@ export function TestMasterScreen() {
                                         className="bg-transparent border-0 shadow-none p-1 text-[10px] text-zinc-850 dark:text-zinc-200 transition-all select-none hover:ring-1 hover:ring-synos-primary/50 hover:bg-synos-primary/5 rounded"
                                       >
                                         <span className="font-semibold text-zinc-700 dark:text-zinc-300">20-May-2026</span>
-                                        <span className="text-[8px] text-zinc-400 font-mono ml-1">{"(" + "{" + "{" + "BILLING_DATE" + "}" + "}" + ")"}</span>
                                       </div>
-
+ 
                                       {/* 6. Report Date */}
                                       <div
                                         style={{
@@ -1933,7 +2673,6 @@ export function TestMasterScreen() {
                                         className="bg-transparent border-0 shadow-none p-1 text-[10px] text-zinc-850 dark:text-zinc-200 transition-all select-none hover:ring-1 hover:ring-synos-primary/50 hover:bg-synos-primary/5 rounded"
                                       >
                                         <span className="font-bold text-zinc-800 dark:text-zinc-100">22-May-2026</span>
-                                        <span className="text-[8px] text-zinc-400 font-mono ml-1">{"(" + "{" + "{" + "REPORT_DATE" + "}" + "}" + ")"}</span>
                                       </div>
                                     </>
                                   ) : (
@@ -2000,25 +2739,24 @@ export function TestMasterScreen() {
                                     {!activeTemplate.enableAbsolutePositioning && (
                                       <div className="font-extrabold text-[10px] text-zinc-900 uppercase mb-1">{selectedTest.name} ({selectedTest.code})</div>
                                     )}
-                                    
-                                    {selectedTest.reportStyle === "Two Column Grid" ? (
+                                                                      {selectedTest.reportStyle === "Two Column Grid" ? (
                                       <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-[8px] mt-2">
-                                        {selectedTest.parameters && selectedTest.parameters.map((p, i) => (
+                                        {displayParams && displayParams.map((p, i) => (
                                           <div key={i} className="border-b border-zinc-200 pb-1 flex justify-between items-center">
                                             <div>
                                               <span className="font-semibold block text-[8px]">{p.name}</span>
-                                              {selectedTest.showMethod && p.method && <span className="text-[6px] text-zinc-600 italic">{p.method}</span>}
+                                              {selectedTest.showMethod && p.method && <span className="text-[6px] text-zinc-655 italic">{p.method}</span>}
                                             </div>
                                             <div className="text-right">
-                                              <span className="font-mono font-bold text-[8px]">{(Number(p.minRange) + (Number(p.maxRange) - Number(p.minRange))/2).toFixed(1)} {p.unit}</span>
-                                              {selectedTest.showRange && <span className="text-[6px] text-zinc-500 block">Ref: {p.minRange}-{p.maxRange}</span>}
+                                              <span className="font-mono font-bold text-[8px]">{getParamMidpoint(p)} {p.unit}</span>
+                                              {selectedTest.showRange && <span className="text-[6px] text-zinc-550 block">Ref: {formatReferenceRange(p)}</span>}
                                             </div>
                                           </div>
                                         ))}
                                       </div>
                                     ) : selectedTest.reportStyle === "Descriptive Narrative" ? (
                                       <div className="space-y-2 text-[8px] text-zinc-700 mt-2">
-                                        {selectedTest.parameters && selectedTest.parameters.map((p, i) => (
+                                        {displayParams && displayParams.map((p, i) => (
                                           <div 
                                             key={i} 
                                             className={cn(
@@ -2029,8 +2767,8 @@ export function TestMasterScreen() {
                                           >
                                             <span className="font-bold text-zinc-900 block text-[8px]">{p.name} ({p.code})</span>
                                             <p className="mt-1 leading-normal text-[7.5px]">
-                                              The analyte value is measured at <strong className="font-mono text-zinc-900">{(Number(p.minRange) + (Number(p.maxRange) - Number(p.minRange))/2).toFixed(1)} {p.unit}</strong>.
-                                              {selectedTest.showRange && ` The physiological biological reference interval for healthy adults is ${p.minRange} - ${p.maxRange} ${p.unit}.`}
+                                              The analyte value is measured at <strong className="font-mono text-zinc-900">{getParamMidpoint(p)} {p.unit}</strong>.
+                                              {selectedTest.showRange && ` The physiological biological reference interval is ${formatReferenceRange(p)} ${p.unit}.`}
                                               {selectedTest.showMethod && p.method && ` Methodology used for estimation: ${p.method}.`}
                                             </p>
                                           </div>
@@ -2064,7 +2802,7 @@ export function TestMasterScreen() {
                                           </tr>
                                         </thead>
                                         <tbody className="divide-y divide-zinc-200 text-zinc-800">
-                                          {selectedTest.parameters && selectedTest.parameters.map((p, i) => (
+                                          {displayParams && displayParams.map((p, i) => (
                                             <tr 
                                               key={i} 
                                               className={cn(
@@ -2075,11 +2813,10 @@ export function TestMasterScreen() {
                                                 let text = "";
                                                 if (col.code === "Parameter") text = p.name;
                                                 else if (col.code === "Value") {
-                                                  const val = (Number(p.minRange) + (Number(p.maxRange) - Number(p.minRange)) / 2);
-                                                  text = isNaN(val) ? "0.0" : val.toFixed(1);
+                                                  text = getParamMidpoint(p);
                                                 }
                                                 else if (col.code === "Unit") text = p.unit;
-                                                else if (col.code === "ReferenceRange") text = selectedTest.showRange ? `${p.minRange} - ${p.maxRange}` : "";
+                                                else if (col.code === "ReferenceRange") text = selectedTest.showRange ? formatReferenceRange(p) : "";
                                                 else if (col.code === "Methodology") text = selectedTest.showMethod ? p.method : "";
 
                                                 return (
@@ -2120,7 +2857,7 @@ export function TestMasterScreen() {
                                           </tr>
                                         </thead>
                                         <tbody className="divide-y divide-zinc-200 text-zinc-800">
-                                          {selectedTest.parameters && selectedTest.parameters.map((p, i) => (
+                                          {displayParams && displayParams.map((p, i) => (
                                             <tr 
                                               key={i} 
                                               className={cn(
@@ -2128,11 +2865,11 @@ export function TestMasterScreen() {
                                               )}
                                             >
                                               <td className={cn("py-1 px-2 font-semibold", selectedTest.reportStyle === "Standard A4" && !activeTemplate.enableAbsolutePositioning && "border-r border-zinc-200")}>{p.name}</td>
-                                              <td className={cn("py-1 px-2 text-center font-mono font-bold", selectedTest.reportStyle === "Standard A4" && !activeTemplate.enableAbsolutePositioning && "border-r border-zinc-200")}>{(Number(p.minRange) + (Number(p.maxRange) - Number(p.minRange))/2).toFixed(1)}</td>
+                                              <td className={cn("py-1 px-2 text-center font-mono font-bold", selectedTest.reportStyle === "Standard A4" && !activeTemplate.enableAbsolutePositioning && "border-r border-zinc-200")}>{getParamMidpoint(p)}</td>
                                               <td className={cn("py-1 px-2 text-center font-mono text-zinc-500", selectedTest.reportStyle === "Standard A4" && !activeTemplate.enableAbsolutePositioning && "border-r border-zinc-200")}>{p.unit}</td>
                                               {selectedTest.showRange && (
                                                 <td className={cn("py-1 px-2 text-right font-mono text-zinc-650", selectedTest.reportStyle === "Standard A4" && !activeTemplate.enableAbsolutePositioning && "border-r border-zinc-200")}>
-                                                  {p.minRange} - {p.maxRange}
+                                                   {formatReferenceRange(p)}
                                                 </td>
                                               )}
                                               {selectedTest.showMethod && (
@@ -2145,18 +2882,18 @@ export function TestMasterScreen() {
                                     )}
 
                                     {/* Interpretations commentaries in legacy mode */}
-                                    {!activeTemplate.enableAbsolutePositioning && selectedTest.showInterpretation && (selectedTest.interpretationComment || (selectedTest.parameters && selectedTest.parameters[0]?.narrativeTemplate)) && (
+                                    {!activeTemplate.enableAbsolutePositioning && selectedTest.showInterpretation && (selectedTest.interpretationComment || (displayParams && displayParams[0]?.narrativeTemplate)) && (
                                       <div className="bg-zinc-50 p-2.5 rounded-lg border border-zinc-200 mt-3 text-left">
                                         <span className="font-bold block text-[7px] text-zinc-500 uppercase tracking-wide">Commentaries & Remarks</span>
-                                        <p className="text-[7.5px] italic text-zinc-650 mt-0.5 leading-normal">
-                                          {selectedTest.interpretationComment ?? selectedTest.parameters[0].narrativeTemplate}
+                                        <p className="text-[7.5px] italic text-zinc-655 mt-0.5 leading-normal">
+                                          {selectedTest.interpretationComment ?? displayParams[0]?.narrativeTemplate}
                                         </p>
                                       </div>
                                     )}
                                   </div>
 
                                   {/* 9. Interpretation Comments (Draggable absolute position mode) */}
-                                  {activeTemplate.enableAbsolutePositioning && selectedTest.showInterpretation && (selectedTest.interpretationComment || (selectedTest.parameters && selectedTest.parameters[0]?.narrativeTemplate)) && (
+                                  {activeTemplate.enableAbsolutePositioning && selectedTest.showInterpretation && (selectedTest.interpretationComment || (displayParams && displayParams[0]?.narrativeTemplate)) && (
                                     <div
                                       style={{
                                         position: 'absolute',
@@ -2171,8 +2908,8 @@ export function TestMasterScreen() {
                                     >
                                       <div className="bg-transparent p-0 border-t border-dashed border-zinc-200 text-left pt-2">
                                         <span className="font-bold block text-[7px] text-zinc-500 uppercase tracking-wide">Commentaries & Remarks</span>
-                                        <p className="text-[7.5px] italic text-zinc-650 mt-0.5 leading-normal">
-                                          {selectedTest.interpretationComment ?? selectedTest.parameters[0].narrativeTemplate}
+                                        <p className="text-[7.5px] italic text-zinc-655 mt-0.5 leading-normal">
+                                          {selectedTest.interpretationComment ?? displayParams[0]?.narrativeTemplate}
                                         </p>
                                       </div>
                                     </div>
@@ -2473,20 +3210,52 @@ export function TestMasterScreen() {
                     <div className="space-y-2">
                       <span className="text-[9px] font-semibold text-zinc-600 dark:text-zinc-400 block">Parameter Variables Chips</span>
                       <div className="flex flex-wrap gap-1">
-                        {selectedTest.parameters && selectedTest.parameters
-                          .filter(p => p.code !== drawerParamCode)
-                          .map(p => (
-                            <button
-                              key={p.code}
-                              onClick={() => setEditFormula(prev => prev + (prev === "" ? "" : " ") + p.code)}
-                              className="px-2 py-1 bg-zinc-50 dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 border border-zinc-200 dark:border-zinc-800 rounded-lg text-[9px] font-bold font-mono text-zinc-600 dark:text-zinc-400 hover:text-synos-primary hover:border-synos-primary/30 transition-all flex items-center gap-1"
-                            >
-                              <Plus className="w-2 h-2" /> {p.code}
-                            </button>
-                          ))
-                        }
+                        {(() => {
+                          const childParams = getCompiledProfileParameters(selectedTest, catalog);
+                          const childCodes = new Set(childParams.map(cp => cp.code));
+                          const nativeParams = (selectedTest.parameters || []).filter(np => !childCodes.has(np.code));
+                          const combined = [...childParams, ...nativeParams];
+
+                          // Deduplicate combined by code to avoid duplicate React keys and redundant chips
+                          const uniqueCombined = [];
+                          const seenCodes = new Set();
+                          combined.forEach(p => {
+                            if (p && p.code && !seenCodes.has(p.code)) {
+                              seenCodes.add(p.code);
+                              uniqueCombined.push(p);
+                            }
+                          });
+
+                          return uniqueCombined
+                            .filter(p => p.code !== drawerParamCode)
+                            .map(p => (
+                              <button
+                                key={p.code}
+                                onClick={() => setEditFormula(prev => prev + (prev === "" ? "" : " ") + p.code)}
+                                className="px-2 py-1 bg-zinc-50 dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 border border-zinc-200 dark:border-zinc-800 rounded-lg text-[9px] font-bold font-mono text-zinc-600 dark:text-zinc-400 hover:text-synos-primary hover:border-synos-primary/30 transition-all flex items-center gap-1"
+                              >
+                                <Plus className="w-2 h-2" /> {p.code}
+                              </button>
+                            ));
+                        })()}
                       </div>
                       <p className="text-[8px] text-zinc-400 mt-1">Tip: Click variable chips to insert them into the formula input box automatically.</p>
+                    </div>
+
+                    <div className="space-y-2 pt-1">
+                      <span className="text-[9px] font-semibold text-zinc-600 dark:text-zinc-400 block">Math Operators Chips</span>
+                      <div className="flex flex-wrap gap-1">
+                        {["+", "-", "*", "/", "(", ")", "%"].map(op => (
+                          <button
+                            key={op}
+                            onClick={() => setEditFormula(prev => prev + (prev === "" ? "" : " ") + op)}
+                            className="px-2.5 py-1 bg-zinc-50 dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 border border-zinc-200 dark:border-zinc-800 rounded-lg text-[10px] font-extrabold font-mono text-synos-primary hover:text-synos-primary/80 transition-all flex items-center justify-center min-w-[24px]"
+                          >
+                            {op}
+                          </button>
+                        ))}
+                      </div>
+                      <p className="text-[8px] text-zinc-400 mt-1">Tip: Click operator chips to insert basic math functions into the expression.</p>
                     </div>
                   </div>
                 ) : (
@@ -2503,55 +3272,182 @@ export function TestMasterScreen() {
               <div className="space-y-4">
                 <span className="text-[10px] font-semibold text-zinc-700 dark:text-zinc-300 block">Biological Reference Intervals</span>
                 
+                {/* Male */}
                 <div className="bg-zinc-50 dark:bg-zinc-900/30 p-3 rounded-2xl border border-zinc-200 dark:border-zinc-800 space-y-3">
-                  <span className="text-[9px] font-semibold text-indigo-600 dark:text-indigo-400 block">Male Specific Overrides</span>
-                  <div className="grid grid-cols-2 gap-2">
-                    <div>
-                      <label className="text-[8px] font-bold text-zinc-400 dark:text-zinc-500 uppercase">Male Min</label>
-                      <input
-                        type="number"
-                        className="bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg px-2.5 py-1 text-xs w-full text-zinc-900 dark:text-zinc-100 font-mono outline-none"
-                        value={editMaleMin}
-                        onChange={(e) => setEditMaleMin(e.target.value)}
-                      />
-                    </div>
-                    <div>
-                      <label className="text-[8px] font-bold text-zinc-400 dark:text-zinc-500 uppercase">Male Max</label>
-                      <input
-                        type="number"
-                        className="bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg px-2.5 py-1 text-xs w-full text-zinc-900 dark:text-zinc-100 font-mono outline-none"
-                        value={editMaleMax}
-                        onChange={(e) => setEditMaleMax(e.target.value)}
-                      />
-                    </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-[9px] font-semibold text-indigo-600 dark:text-indigo-400 block">Male Specific Overrides</span>
+                    <input
+                      type="checkbox"
+                      checked={editUseMale}
+                      onChange={(e) => setEditUseMale(e.target.checked)}
+                      className="rounded border-zinc-300 text-indigo-600 focus:ring-indigo-500 w-3.5 h-3.5 cursor-pointer"
+                    />
                   </div>
+                  {editUseMale && (
+                    <div className="grid grid-cols-2 gap-2 animate-in slide-in-from-top-1 duration-100">
+                      <div>
+                        <label className="text-[8px] font-bold text-zinc-400 dark:text-zinc-500 uppercase">Male Min</label>
+                        <input
+                          type="number"
+                          className="bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg px-2.5 py-1 text-xs w-full text-zinc-900 dark:text-zinc-100 font-mono outline-none"
+                          value={editMaleMin}
+                          onChange={(e) => setEditMaleMin(e.target.value)}
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[8px] font-bold text-zinc-400 dark:text-zinc-500 uppercase">Male Max</label>
+                        <input
+                          type="number"
+                          className="bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg px-2.5 py-1 text-xs w-full text-zinc-900 dark:text-zinc-100 font-mono outline-none"
+                          value={editMaleMax}
+                          onChange={(e) => setEditMaleMax(e.target.value)}
+                        />
+                      </div>
+                    </div>
+                  )}
                 </div>
 
+                {/* Female */}
                 <div className="bg-zinc-50 dark:bg-zinc-900/30 p-3 rounded-2xl border border-zinc-200 dark:border-zinc-800 space-y-3">
-                  <span className="text-[9px] font-semibold text-rose-600 dark:text-rose-400 block">Female Specific Overrides</span>
-                  <div className="grid grid-cols-2 gap-2">
-                    <div>
-                      <label className="text-[8px] font-bold text-zinc-400 dark:text-zinc-500 uppercase">Female Min</label>
-                      <input
-                        type="number"
-                        className="bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg px-2.5 py-1 text-xs w-full text-zinc-900 dark:text-zinc-100 font-mono outline-none"
-                        value={editFemaleMin}
-                        onChange={(e) => setEditFemaleMin(e.target.value)}
-                      />
-                    </div>
-                    <div>
-                      <label className="text-[8px] font-bold text-zinc-400 dark:text-zinc-500 uppercase">Female Max</label>
-                      <input
-                        type="number"
-                        className="bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg px-2.5 py-1 text-xs w-full text-zinc-900 dark:text-zinc-100 font-mono outline-none"
-                        value={editFemaleMax}
-                        onChange={(e) => setEditFemaleMax(e.target.value)}
-                      />
-                    </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-[9px] font-semibold text-rose-600 dark:text-rose-400 block">Female Specific Overrides</span>
+                    <input
+                      type="checkbox"
+                      checked={editUseFemale}
+                      onChange={(e) => setEditUseFemale(e.target.checked)}
+                      className="rounded border-zinc-300 text-rose-600 focus:ring-rose-500 w-3.5 h-3.5 cursor-pointer"
+                    />
                   </div>
+                  {editUseFemale && (
+                    <div className="grid grid-cols-2 gap-2 animate-in slide-in-from-top-1 duration-100">
+                      <div>
+                        <label className="text-[8px] font-bold text-zinc-400 dark:text-zinc-500 uppercase">Female Min</label>
+                        <input
+                          type="number"
+                          className="bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg px-2.5 py-1 text-xs w-full text-zinc-900 dark:text-zinc-100 font-mono outline-none"
+                          value={editFemaleMin}
+                          onChange={(e) => setEditFemaleMin(e.target.value)}
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[8px] font-bold text-zinc-400 dark:text-zinc-500 uppercase">Female Max</label>
+                        <input
+                          type="number"
+                          className="bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg px-2.5 py-1 text-xs w-full text-zinc-900 dark:text-zinc-100 font-mono outline-none"
+                          value={editFemaleMax}
+                          onChange={(e) => setEditFemaleMax(e.target.value)}
+                        />
+                      </div>
+                    </div>
+                  )}
                 </div>
-                
-                <p className="text-[8px] text-zinc-400 leading-tight">These overrides apply dynamically in report templates depending on the gender configured inside patient records.</p>
+
+                {/* Infant */}
+                <div className="bg-zinc-50 dark:bg-zinc-900/30 p-3 rounded-2xl border border-zinc-200 dark:border-zinc-800 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[9px] font-semibold text-cyan-600 dark:text-cyan-400 block">Infant Specific Overrides</span>
+                    <input
+                      type="checkbox"
+                      checked={editUseInfant}
+                      onChange={(e) => setEditUseInfant(e.target.checked)}
+                      className="rounded border-zinc-300 text-cyan-600 focus:ring-cyan-500 w-3.5 h-3.5 cursor-pointer"
+                    />
+                  </div>
+                  {editUseInfant && (
+                    <div className="grid grid-cols-2 gap-2 animate-in slide-in-from-top-1 duration-100">
+                      <div>
+                        <label className="text-[8px] font-bold text-zinc-400 dark:text-zinc-500 uppercase">Infant Min</label>
+                        <input
+                          type="number"
+                          className="bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg px-2.5 py-1 text-xs w-full text-zinc-900 dark:text-zinc-100 font-mono outline-none"
+                          value={editInfantMin}
+                          onChange={(e) => setEditInfantMin(e.target.value)}
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[8px] font-bold text-zinc-400 dark:text-zinc-500 uppercase">Infant Max</label>
+                        <input
+                          type="number"
+                          className="bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg px-2.5 py-1 text-xs w-full text-zinc-900 dark:text-zinc-100 font-mono outline-none"
+                          value={editInfantMax}
+                          onChange={(e) => setEditInfantMax(e.target.value)}
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Child */}
+                <div className="bg-zinc-50 dark:bg-zinc-900/30 p-3 rounded-2xl border border-zinc-200 dark:border-zinc-800 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[9px] font-semibold text-emerald-600 dark:text-emerald-400 block">Child Specific Overrides</span>
+                    <input
+                      type="checkbox"
+                      checked={editUseChild}
+                      onChange={(e) => setEditUseChild(e.target.checked)}
+                      className="rounded border-zinc-300 text-emerald-600 focus:ring-emerald-500 w-3.5 h-3.5 cursor-pointer"
+                    />
+                  </div>
+                  {editUseChild && (
+                    <div className="grid grid-cols-2 gap-2 animate-in slide-in-from-top-1 duration-100">
+                      <div>
+                        <label className="text-[8px] font-bold text-zinc-400 dark:text-zinc-500 uppercase">Child Min</label>
+                        <input
+                          type="number"
+                          className="bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg px-2.5 py-1 text-xs w-full text-zinc-900 dark:text-zinc-100 font-mono outline-none"
+                          value={editChildMin}
+                          onChange={(e) => setEditChildMin(e.target.value)}
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[8px] font-bold text-zinc-400 dark:text-zinc-500 uppercase">Child Max</label>
+                        <input
+                          type="number"
+                          className="bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg px-2.5 py-1 text-xs w-full text-zinc-900 dark:text-zinc-100 font-mono outline-none"
+                          value={editChildMax}
+                          onChange={(e) => setEditChildMax(e.target.value)}
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Adult */}
+                <div className="bg-zinc-50 dark:bg-zinc-900/30 p-3 rounded-2xl border border-zinc-200 dark:border-zinc-800 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[9px] font-semibold text-amber-600 dark:text-amber-400 block">Adult Specific Overrides</span>
+                    <input
+                      type="checkbox"
+                      checked={editUseAdult}
+                      onChange={(e) => setEditUseAdult(e.target.checked)}
+                      className="rounded border-zinc-300 text-amber-600 focus:ring-amber-500 w-3.5 h-3.5 cursor-pointer"
+                    />
+                  </div>
+                  {editUseAdult && (
+                    <div className="grid grid-cols-2 gap-2 animate-in slide-in-from-top-1 duration-100">
+                      <div>
+                        <label className="text-[8px] font-bold text-zinc-400 dark:text-zinc-500 uppercase">Adult Min</label>
+                        <input
+                          type="number"
+                          className="bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg px-2.5 py-1 text-xs w-full text-zinc-900 dark:text-zinc-100 font-mono outline-none"
+                          value={editAdultMin}
+                          onChange={(e) => setEditAdultMin(e.target.value)}
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[8px] font-bold text-zinc-400 dark:text-zinc-500 uppercase">Adult Max</label>
+                        <input
+                          type="number"
+                          className="bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg px-2.5 py-1 text-xs w-full text-zinc-900 dark:text-zinc-100 font-mono outline-none"
+                          value={editAdultMax}
+                          onChange={(e) => setEditAdultMax(e.target.value)}
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <p className="text-[8px] text-zinc-400 leading-tight">These overrides apply dynamically in report templates depending on the demographics configured inside patient records.</p>
               </div>
             )}
 

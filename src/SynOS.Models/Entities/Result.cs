@@ -24,7 +24,7 @@ namespace SynOS.Models.Entities
         [MaxLength(20)]
         public string? Unit { get; set; }
 
-        [MaxLength(20)]
+        [MaxLength(1000)]
         public string? ReferenceRange { get; set; }
 
         [MaxLength(10)]

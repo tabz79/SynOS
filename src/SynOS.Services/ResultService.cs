@@ -78,7 +78,7 @@ namespace SynOS.Services
                 if (existingResult != null)
                 {
                     // GPT-5: Clinical Flag Update
-                    var catalogParam = await _context.CatalogParameters.FirstOrDefaultAsync(p => p.ParameterCode == resultDto.ParameterCode);
+                    var catalogParam = await _context.CatalogParameters.FirstOrDefaultAsync(p => p.ParameterCode == resultDto.ParameterCode && p.IsActive);
                     existingResult.Flag = CalculateFlag(resultDto.Value, catalogParam?.ReferenceRange);
                     existingResult.ReferenceRange = catalogParam?.ReferenceRange;
                     existingResult.Unit = catalogParam?.Unit;
@@ -92,7 +92,7 @@ namespace SynOS.Services
                 else
                 {
                     // GPT-5: Clinical Flag Calculation
-                    var catalogParam = await _context.CatalogParameters.FirstOrDefaultAsync(p => p.ParameterCode == resultDto.ParameterCode);
+                    var catalogParam = await _context.CatalogParameters.FirstOrDefaultAsync(p => p.ParameterCode == resultDto.ParameterCode && p.IsActive);
                     var flag = CalculateFlag(resultDto.Value, catalogParam?.ReferenceRange);
 
                     var newResult = new Result

@@ -1,296 +1,243 @@
-react-dom_client.js?v=8e8c482c:20103 Download the React DevTools for a better development experience: https://react.dev/link/react-devtools
-signalr.js:218 SignalR(Branch): Subscriber added (Total: 1)
-signalr.js:211 [2026-05-15T08:29:59.728Z] Information: Normalizing '/branchOperationsHub' to 'http://localhost:5173/branchOperationsHub'.
-signalr.js:239 SignalR(Branch): Starting connection...
-signalr.js:298 SignalR(Branch): Subscriber removed (Total: 0)
-signalr.js:218 SignalR(Branch): Subscriber added (Total: 1)
-signalr.js:223 SignalR(Branch): Aborted scheduled disconnect
-@microsoft_signalr.js?v=8e8c482c:301 [2026-05-15T08:30:00.826Z] Information: WebSocket connected to ws://localhost:5173/branchOperationsHub?access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiI3MjE5ODVjNy1iYmFlLTQzNjgtYTk1OC04YjcyNDA4MmY1MzIiLCJ1bmlxdWVfbmFtZSI6IlN5c3RlbSBBZG1pbiIsInVzZXJuYW1lIjoiYWRtaW4iLCJlbWFpbCI6ImFkbWluQHN5bm9zLmNvbSIsInNlc3Npb25fbW9kZSI6Im9wZXJhdGlvbmFsIiwic2Vzc2lvbl9pZCI6IjZmMGY0MzI0LWE3MzAtNGZkNC1hZjExLTNmNzRiN2UzNWQxYyIsImRlcGFydG1lbnRfY29kZSI6IkdlbmVyYWwiLCJyb2xlIjoiQWRtaW4iLCJSb2xlSWQiOiJjOGNlMjUyZS00MjNmLTQ3OGEtYTFlMy04MDY3NWNhZWVlMDgiLCJicmFuY2hfaWQiOiJhMDAwMDAwMC0wMDAwLTAwMDAtMDAwMC0wMDAwMDAwMDAwMDEiLCJyZXNvdXJjZV9pZCI6ImY3NjA4Nzk5LTQ2MzctNDczNC1hNjY1LTNjNWM5M2VjMzhiMCIsImJyYW5jaF9uYW1lIjoiTWFpbiBMYWJvcmF0b3J5IiwibmJmIjoxNzc4ODMzMTA3LCJleHAiOjE3Nzg5MTk1MDcsImlhdCI6MTc3ODgzMzEwNywiaXNzIjoiU3luT1MuQXBpIiwiYXVkIjoiU3luT1MuQXBwIn0.g8kr0OG0tCwoxqL9Hn9xk0V5krIvYWkPNcCaYu1WLIg.
-@microsoft_signalr.js?v=8e8c482c:301 [2026-05-15T08:30:00.829Z] Information: Using HubProtocol 'json'.
-signalr.js:242 SignalR(Branch): Connected to /branchOperationsHub
-@microsoft_signalr.js?v=8e8c482c:298 [2026-05-15T08:30:01.073Z] Warning: No client method with the name 'capabilityregistered' found.
-log @ @microsoft_signalr.js?v=8e8c482c:298
-_invokeClientMethod @ @microsoft_signalr.js?v=8e8c482c:1374
-_processIncomingData @ @microsoft_signalr.js?v=8e8c482c:1264
-connection.onreceive @ @microsoft_signalr.js?v=8e8c482c:914
-webSocket.onmessage @ @microsoft_signalr.js?v=8e8c482c:2092
-finance.js:663  GET http://localhost:5173/api/v1/workforce-admin/policies 500 (Internal Server Error)
-(anonymous) @ finance.js:663
-$RefreshSig$ @ WorkforcePolicyModal.jsx:22
-$RefreshSig$ @ WorkforcePolicyModal.jsx:16
-react_stack_bottom_frame @ react-dom_client.js?v=8e8c482c:18567
+console logs:
+processing.js:45  POST http://localhost:5173/api/processing/assignment/b0d088f5-2c6b-4aa2-8bae-9405d0d486f6/save 500 (Internal Server Error)
+(anonymous) @ processing.js:45
+$RefreshSig$ @ DepartmentWorkbenchIntentPanel.jsx:117
+executeDispatch @ react-dom_client.js?v=8e8c482c:13622
 runWithFiberInDEV @ react-dom_client.js?v=8e8c482c:997
-commitHookEffectListMount @ react-dom_client.js?v=8e8c482c:9411
-commitHookPassiveMountEffects @ react-dom_client.js?v=8e8c482c:9465
-commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11040
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11066
-flushPassiveEffects @ react-dom_client.js?v=8e8c482c:13150
-flushPendingEffects @ react-dom_client.js?v=8e8c482c:13088
-flushSpawnedWork @ react-dom_client.js?v=8e8c482c:13062
-commitRoot @ react-dom_client.js?v=8e8c482c:12804
-commitRootWhenReady @ react-dom_client.js?v=8e8c482c:12016
-performWorkOnRoot @ react-dom_client.js?v=8e8c482c:11950
-performSyncWorkOnRoot @ react-dom_client.js?v=8e8c482c:13517
-flushSyncWorkAcrossRoots_impl @ react-dom_client.js?v=8e8c482c:13414
-processRootScheduleInMicrotask @ react-dom_client.js?v=8e8c482c:13437
-(anonymous) @ react-dom_client.js?v=8e8c482c:13531
-<WorkforcePolicyModal>
-exports.jsxDEV @ react_jsx-dev-runtime.js?v=8e8c482c:247
-(anonymous) @ WorkforceScreens.jsx:293
-react_stack_bottom_frame @ react-dom_client.js?v=8e8c482c:18509
-renderWithHooksAgain @ react-dom_client.js?v=8e8c482c:5729
-renderWithHooks @ react-dom_client.js?v=8e8c482c:5665
-updateFunctionComponent @ react-dom_client.js?v=8e8c482c:7475
-beginWork @ react-dom_client.js?v=8e8c482c:8525
-runWithFiberInDEV @ react-dom_client.js?v=8e8c482c:997
-performUnitOfWork @ react-dom_client.js?v=8e8c482c:12561
-workLoopSync @ react-dom_client.js?v=8e8c482c:12424
-renderRootSync @ react-dom_client.js?v=8e8c482c:12408
-performWorkOnRoot @ react-dom_client.js?v=8e8c482c:11766
-performWorkOnRootViaSchedulerTask @ react-dom_client.js?v=8e8c482c:13505
-performWorkUntilDeadline @ react-dom_client.js?v=8e8c482c:36
-<AttendanceLeavesScreen>
-exports.jsxDEV @ react_jsx-dev-runtime.js?v=8e8c482c:247
-App @ App.jsx:192
-react_stack_bottom_frame @ react-dom_client.js?v=8e8c482c:18509
-renderWithHooksAgain @ react-dom_client.js?v=8e8c482c:5729
-renderWithHooks @ react-dom_client.js?v=8e8c482c:5665
-updateFunctionComponent @ react-dom_client.js?v=8e8c482c:7475
-beginWork @ react-dom_client.js?v=8e8c482c:8525
-runWithFiberInDEV @ react-dom_client.js?v=8e8c482c:997
-performUnitOfWork @ react-dom_client.js?v=8e8c482c:12561
-workLoopSync @ react-dom_client.js?v=8e8c482c:12424
-renderRootSync @ react-dom_client.js?v=8e8c482c:12408
-performWorkOnRoot @ react-dom_client.js?v=8e8c482c:11766
-performWorkOnRootViaSchedulerTask @ react-dom_client.js?v=8e8c482c:13505
-performWorkUntilDeadline @ react-dom_client.js?v=8e8c482c:36
-<App>
-exports.jsxDEV @ react_jsx-dev-runtime.js?v=8e8c482c:247
-(anonymous) @ main.jsx:10
-WorkforcePolicyModal.jsx:31 Failed to load policy: Error: Failed to load workforce policies
-    at Object.getPolicies (finance.js:664:37)
-    at async loadPolicy (WorkforcePolicyModal.jsx:22:30)
-$RefreshSig$ @ WorkforcePolicyModal.jsx:31
-await in $RefreshSig$
-$RefreshSig$ @ WorkforcePolicyModal.jsx:16
-react_stack_bottom_frame @ react-dom_client.js?v=8e8c482c:18567
-runWithFiberInDEV @ react-dom_client.js?v=8e8c482c:997
-commitHookEffectListMount @ react-dom_client.js?v=8e8c482c:9411
-commitHookPassiveMountEffects @ react-dom_client.js?v=8e8c482c:9465
-commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11040
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11033
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11201
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=8e8c482c:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=8e8c482c:11066
-flushPassiveEffects @ react-dom_client.js?v=8e8c482c:13150
-flushPendingEffects @ react-dom_client.js?v=8e8c482c:13088
-flushSpawnedWork @ react-dom_client.js?v=8e8c482c:13062
-commitRoot @ react-dom_client.js?v=8e8c482c:12804
-commitRootWhenReady @ react-dom_client.js?v=8e8c482c:12016
-performWorkOnRoot @ react-dom_client.js?v=8e8c482c:11950
-performSyncWorkOnRoot @ react-dom_client.js?v=8e8c482c:13517
-flushSyncWorkAcrossRoots_impl @ react-dom_client.js?v=8e8c482c:13414
-processRootScheduleInMicrotask @ react-dom_client.js?v=8e8c482c:13437
-(anonymous) @ react-dom_client.js?v=8e8c482c:13531
-<WorkforcePolicyModal>
-exports.jsxDEV @ react_jsx-dev-runtime.js?v=8e8c482c:247
-(anonymous) @ WorkforceScreens.jsx:293
-react_stack_bottom_frame @ react-dom_client.js?v=8e8c482c:18509
-renderWithHooksAgain @ react-dom_client.js?v=8e8c482c:5729
-renderWithHooks @ react-dom_client.js?v=8e8c482c:5665
-updateFunctionComponent @ react-dom_client.js?v=8e8c482c:7475
-beginWork @ react-dom_client.js?v=8e8c482c:8525
-runWithFiberInDEV @ react-dom_client.js?v=8e8c482c:997
-performUnitOfWork @ react-dom_client.js?v=8e8c482c:12561
-workLoopSync @ react-dom_client.js?v=8e8c482c:12424
-renderRootSync @ react-dom_client.js?v=8e8c482c:12408
-performWorkOnRoot @ react-dom_client.js?v=8e8c482c:11766
-performWorkOnRootViaSchedulerTask @ react-dom_client.js?v=8e8c482c:13505
-performWorkUntilDeadline @ react-dom_client.js?v=8e8c482c:36
-<AttendanceLeavesScreen>
-exports.jsxDEV @ react_jsx-dev-runtime.js?v=8e8c482c:247
-App @ App.jsx:192
-react_stack_bottom_frame @ react-dom_client.js?v=8e8c482c:18509
-renderWithHooksAgain @ react-dom_client.js?v=8e8c482c:5729
-renderWithHooks @ react-dom_client.js?v=8e8c482c:5665
-updateFunctionComponent @ react-dom_client.js?v=8e8c482c:7475
-beginWork @ react-dom_client.js?v=8e8c482c:8525
-runWithFiberInDEV @ react-dom_client.js?v=8e8c482c:997
-performUnitOfWork @ react-dom_client.js?v=8e8c482c:12561
-workLoopSync @ react-dom_client.js?v=8e8c482c:12424
-renderRootSync @ react-dom_client.js?v=8e8c482c:12408
-performWorkOnRoot @ react-dom_client.js?v=8e8c482c:11766
-performWorkOnRootViaSchedulerTask @ react-dom_client.js?v=8e8c482c:13505
-performWorkUntilDeadline @ react-dom_client.js?v=8e8c482c:36
-<App>
-exports.jsxDEV @ react_jsx-dev-runtime.js?v=8e8c482c:247
-(anonymous) @ main.jsx:10
-
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence> dotnet run --project src\SynOS.Api\SynOS.Api.csproj --urls "http://127.0.0.1:59999"
-[13:59:31 INF] Notification Worker Service running.
-[13:59:31 INF] OperationalStatsProjectionWorker is starting in Event-Driven Mode.
-[13:59:31 INF] Worker: Running Consistency Check and Catch-up...
-[13:59:31 INF] Worker: Catch-up complete. Awaiting real-time events...
-[14:00:00 WRN] Failed to determine the https port for redirect.
-[14:00:01 INF] Terminal web-1zy6xxtky authorized and added to Thermal80mm group for Branch a0000000-0000-0000-0000-000000000001.
-[14:00:31 ERR] Failed executing DbCommand (14ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
-SELECT [w].[PolicyId], [w].[ConfigJson], [w].[IsEnabled], [w].[PolicyName], [w].[UpdatedAt]
-FROM [WorkforcePolicies] AS [w]
-[14:00:31 ERR] An exception occurred while iterating over the results of a query for context type 'SynOS.Data.SynOSDbContext'.
-Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid object name 'WorkforcePolicies'.
-   at Microsoft.Data.SqlClient.SqlCommand.<>c.<ExecuteDbDataReaderAsync>b__209_0(Task`1 result)
-   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
-   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+processDispatchQueue @ react-dom_client.js?v=8e8c482c:13658
+(anonymous) @ react-dom_client.js?v=8e8c482c:14071
+batchedUpdates$1 @ react-dom_client.js?v=8e8c482c:2626
+dispatchEventForPluginEventSystem @ react-dom_client.js?v=8e8c482c:13763
+dispatchEvent @ react-dom_client.js?v=8e8c482c:16784
+dispatchDiscreteEvent @ react-dom_client.js?v=8e8c482c:16765Understand this error
+DepartmentWorkbenchIntentPanel.jsx:121 Save Draft failed Error: Failed to save draft
+    at Object.saveDraft (processing.js:54:27)
+    at async handleSaveDraft (DepartmentWorkbenchIntentPanel.jsx:117:13)
+backend logs: 
+PS D:\Projects\SynOS-Synthesized-Lab-Intelligence>dotnet run --project src\SynOS.Api\SynOS.Api.csproj --urls "http://127.0.0.1:59999"
+[09:10:59 INF] Notification Worker Service running.
+[09:10:59 INF] OperationalStatsProjectionWorker is starting in Event-Driven Mode.
+[09:10:59 INF] Worker: Running Consistency Check and Catch-up...
+[09:10:59 INF] Worker: Catch-up complete. Awaiting real-time events...
+[09:11:00 WRN] Failed to determine the https port for redirect.
+[09:11:01 INF] Terminal web-1zy6xxtky authorized and added to Thermal80mm group for Branch a0000000-0000-0000-0000-000000000001.
+[09:12:06 INF] Terminal web-1zy6xxtky authorized and added to Thermal80mm group for Branch a0000000-0000-0000-0000-000000000001.
+[09:12:07 WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+[09:31:05 INF] Terminal web-1zy6xxtky authorized and added to Thermal80mm group for Branch a0000000-0000-0000-0000-000000000001.
+[10:14:48 INF] Terminal web-1zy6xxtky authorized and added to Thermal80mm group for Branch a0000000-0000-0000-0000-000000000001.
+[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=05/24/2026 10:21:56, Today=05/24/2026 00:00:00, Window=[05/24/2026 00:00:00 - 05/25/2026 00:00:00)
+[ActionQueue] Found 0 raw visits.
+[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=05/24/2026 10:21:57, Today=05/24/2026 00:00:00, Window=[05/24/2026 00:00:00 - 05/25/2026 00:00:00)
+[ActionQueue] Found 0 raw visits.
+[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=05/24/2026 10:21:57, Today=05/24/2026 00:00:00, Window=[05/24/2026 00:00:00 - 05/25/2026 00:00:00)
+[ActionQueue] Found 0 raw visits.
+[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=05/24/2026 10:21:57, Today=05/24/2026 00:00:00, Window=[05/24/2026 00:00:00 - 05/25/2026 00:00:00)
+[ActionQueue] Found 0 raw visits.
+[10:22:11 WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+[10:22:12 WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+[10:22:12 INF] EVENT_WRITE for VisitId 40e904bc-d658-47d7-bfd2-260d1beb51eb, Context 75161e02-aa36-4f74-a631-8c1350a52d23:0
+[10:22:12 WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+[10:22:12 INF] EVENT_WRITE for VisitId 40e904bc-d658-47d7-bfd2-260d1beb51eb, Context 75161e02-aa36-4f74-a631-8c1350a52d23:0
+[10:22:12 INF] [ProjectorDebug] Processing Event Type: VISIT_CREATED, BranchId: a0000000-0000-0000-0000-000000000001, SourceId: null, SourceType: null, VisitId: 40e904bc-d658-47d7-bfd2-260d1beb51eb
+[10:22:13 WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+[10:22:13 WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+[10:22:13 INF] [ProjectorDebug] Processing Event Type: VISIT_STARTED, BranchId: a0000000-0000-0000-0000-000000000001, SourceId: null, SourceType: null, VisitId: 40e904bc-d658-47d7-bfd2-260d1beb51eb
+[10:22:13 WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+[10:22:22 INF] EVENT_WRITE for VisitId 40e904bc-d658-47d7-bfd2-260d1beb51eb, Context e2d57bdb-3903-4ad6-b1ee-d2759e4131ee:0
+[10:22:22 INF] [ProjectorDebug] Processing Event Type: VISIT_UPDATED, BranchId: a0000000-0000-0000-0000-000000000001, SourceId: null, SourceType: null, VisitId: 40e904bc-d658-47d7-bfd2-260d1beb51eb
+[10:22:22 WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+[10:22:36 INF] TRACE: AddTestToVisitAsync called. visitId=40e904bc-d658-47d7-bfd2-260d1beb51eb, testCode=LFT
+[10:22:36 WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+[10:22:36 INF] [ExpansionDebug] Starting expansion for LFT. isChild: False, parentOrderId:
+[10:22:36 WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+[10:22:36 WRN] [Validation] Resolving Test: LFT, IsProfile: True, HasChildren: True, SpecimenType: SERUM
+[10:22:36 INF] [ExpansionDebug] Creating Order entry: LFT, ID: 26b1231c-5d6f-4259-8535-14fc62e8da86, Parent:
+[10:22:36 INF] [ExpansionDebug] Order LFT added to context and local collection.
+[10:22:36 INF] [ExpansionDebug] Test LFT is a Profile. Children found in cache: 7
+[10:22:36 INF] [ExpansionDebug] Expanding child: SGOT (ID: 03546eb3-e26a-4f6f-873f-d96ccd2b7a56) for parent: LFT
+[10:22:36 INF] [ExpansionDebug] Starting expansion for SGOT. isChild: True, parentOrderId: 26b1231c-5d6f-4259-8535-14fc62e8da86
+[10:22:36 WRN] [Validation] Resolving Test: SGOT, IsProfile: False, HasChildren: False, SpecimenType: SERUM
+[10:22:36 INF] [ExpansionDebug] Creating Order entry: SGOT, ID: c24856fe-12ea-4f51-ac28-ef43cde8befc, Parent: 26b1231c-5d6f-4259-8535-14fc62e8da86
+[10:22:36 INF] [ExpansionDebug] Order SGOT added to context and local collection.
+[10:22:36 INF] [ExpansionDebug] Expanding child: T_P (ID: bafc3910-73b9-4807-9a70-e540ee18c7f5) for parent: LFT
+[10:22:36 INF] [ExpansionDebug] Starting expansion for T_P. isChild: True, parentOrderId: 26b1231c-5d6f-4259-8535-14fc62e8da86
+[10:22:36 WRN] [Validation] Resolving Test: T_P, IsProfile: False, HasChildren: False, SpecimenType: SERUM
+[10:22:36 INF] [ExpansionDebug] Creating Order entry: T_P, ID: bc398fc7-b12e-4f5a-aa35-c842795cddcc, Parent: 26b1231c-5d6f-4259-8535-14fc62e8da86
+[10:22:36 INF] [ExpansionDebug] Order T_P added to context and local collection.
+[10:22:36 INF] [ExpansionDebug] Expanding child: BIL_T (ID: 97cdafa2-fe07-46ae-8968-af92310cef0d) for parent: LFT
+[10:22:36 INF] [ExpansionDebug] Starting expansion for BIL_T. isChild: True, parentOrderId: 26b1231c-5d6f-4259-8535-14fc62e8da86
+[10:22:36 WRN] [Validation] Resolving Test: BIL_T, IsProfile: False, HasChildren: False, SpecimenType: SERUM
+[10:22:36 INF] [ExpansionDebug] Creating Order entry: BIL_T, ID: 257d9e39-e78e-4f5f-9b9a-8a5941f8e7b0, Parent: 26b1231c-5d6f-4259-8535-14fc62e8da86
+[10:22:36 INF] [ExpansionDebug] Order BIL_T added to context and local collection.
+[10:22:36 INF] [ExpansionDebug] Expanding child: ALB (ID: 4a5316ef-2e6b-49bf-b8f8-2931ed1645a1) for parent: LFT
+[10:22:36 INF] [ExpansionDebug] Starting expansion for ALB. isChild: True, parentOrderId: 26b1231c-5d6f-4259-8535-14fc62e8da86
+[10:22:36 WRN] [Validation] Resolving Test: ALB, IsProfile: False, HasChildren: False, SpecimenType: SERUM
+[10:22:36 INF] [ExpansionDebug] Creating Order entry: ALB, ID: 278bdda8-f82a-4be5-8b31-7ba0b3d0e95d, Parent: 26b1231c-5d6f-4259-8535-14fc62e8da86
+[10:22:36 INF] [ExpansionDebug] Order ALB added to context and local collection.
+[10:22:36 INF] [ExpansionDebug] Expanding child: SGPT (ID: 2177a966-02c0-4eb5-8f58-fcf11759efd4) for parent: LFT
+[10:22:36 INF] [ExpansionDebug] Starting expansion for SGPT. isChild: True, parentOrderId: 26b1231c-5d6f-4259-8535-14fc62e8da86
+[10:22:36 WRN] [Validation] Resolving Test: SGPT, IsProfile: False, HasChildren: False, SpecimenType: SERUM
+[10:22:36 INF] [ExpansionDebug] Creating Order entry: SGPT, ID: e238a6fb-09c8-4c48-8975-d32601689a87, Parent: 26b1231c-5d6f-4259-8535-14fc62e8da86
+[10:22:36 INF] [ExpansionDebug] Order SGPT added to context and local collection.
+[10:22:36 INF] [ExpansionDebug] Expanding child: BIL_D (ID: 51f5f738-c51d-41b5-9b86-5a8aa29413f1) for parent: LFT
+[10:22:36 INF] [ExpansionDebug] Starting expansion for BIL_D. isChild: True, parentOrderId: 26b1231c-5d6f-4259-8535-14fc62e8da86
+[10:22:36 WRN] [Validation] Resolving Test: BIL_D, IsProfile: False, HasChildren: False, SpecimenType: SERUM
+[10:22:36 INF] [ExpansionDebug] Creating Order entry: BIL_D, ID: c384a5b8-6d5f-435f-96e7-13586713f254, Parent: 26b1231c-5d6f-4259-8535-14fc62e8da86
+[10:22:36 INF] [ExpansionDebug] Order BIL_D added to context and local collection.
+[10:22:36 INF] [ExpansionDebug] Expanding child: ALP (ID: 3b59cf91-4937-4343-851c-0fb84880e925) for parent: LFT
+[10:22:36 INF] [ExpansionDebug] Starting expansion for ALP. isChild: True, parentOrderId: 26b1231c-5d6f-4259-8535-14fc62e8da86
+[10:22:36 WRN] [Validation] Resolving Test: ALP, IsProfile: False, HasChildren: False, SpecimenType: SERUM
+[10:22:36 INF] [ExpansionDebug] Creating Order entry: ALP, ID: 450d5f10-c702-4f60-9afd-3e3d6537b644, Parent: 26b1231c-5d6f-4259-8535-14fc62e8da86
+[10:22:36 INF] [ExpansionDebug] Order ALP added to context and local collection.
+[10:22:37 INF] TRACE: SaveChangesAsync reached. Affected rows: 8
+[10:22:49 WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+[10:22:49 WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+[10:22:50 INF] Assigned Official Token MAI-001 to Visit 40e904bc-d658-47d7-bfd2-260d1beb51eb
+[10:22:50 INF] EVENT_WRITE for VisitId 40e904bc-d658-47d7-bfd2-260d1beb51eb, Context 4bec4206-8a2c-46cf-8cd6-742db1a5449c:0
+[10:22:50 INF] [ProjectorDebug] Processing Event Type: PAYMENT_RECEIVED, BranchId: a0000000-0000-0000-0000-000000000001, SourceId: 845a033c-4038-4e30-9f8d-fae7a70f214e, SourceType: RevenueFact, VisitId: 40e904bc-d658-47d7-bfd2-260d1beb51eb
+[10:22:50 INF] [ProjectorDebug] Checking Fact Deduplication for SourceId: 845a033c-4038-4e30-9f8d-fae7a70f214e
+[10:22:50 WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+[10:22:50 INF] [DebugSpecimen] Planning for Visit 40e904bc-d658-47d7-bfd2-260d1beb51eb, Active Orders: 8
+[10:22:50 INF] Creating unclaimed work assignment for SampleCollection (40e904bc-d658-47d7-bfd2-260d1beb51eb) in Pathology
+[10:22:51 WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+[10:22:51 INF] EVENT_WRITE for VisitId 40e904bc-d658-47d7-bfd2-260d1beb51eb, Context 4bec4206-8a2c-46cf-8cd6-742db1a5449c:0
+[10:22:51 WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+[10:22:51 INF] TransitionToSpecimenPlanned: Successfully planned 1 specimens for Visit 40e904bc-d658-47d7-bfd2-260d1beb51eb. Assignment: aa06e236-42c5-4f6f-88f4-af5d6b332ad0
+[10:22:51 INF] Commission Payable recognized for Visit 40e904bc-d658-47d7-bfd2-260d1beb51eb: ₹60.000000
+[10:22:51 INF] EVENT_WRITE for VisitId 40e904bc-d658-47d7-bfd2-260d1beb51eb, Context 4bec4206-8a2c-46cf-8cd6-742db1a5449c:0
+[10:22:51 INF] [ProjectorDebug] Processing Event Type: VISIT_FINALIZED, BranchId: a0000000-0000-0000-0000-000000000001, SourceId: null, SourceType: null, VisitId: 40e904bc-d658-47d7-bfd2-260d1beb51eb
+[10:22:51 INF] Publishing PrintThermalReceiptEvent to Branch-a0000000-0000-0000-0000-000000000001-Lead-Thermal80mm (VisitId: 40e904bc-d658-47d7-bfd2-260d1beb51eb)
+[10:22:51 WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=05/24/2026 10:22:54, Today=05/24/2026 00:00:00, Window=[05/17/2026 00:00:00 - 05/25/2026 00:00:00)
+[ActionQueue] Found 3 raw visits.
+[ActionQueue] Processing Visit MAI-001. Invoice Status: Paid.
+[ActionQueue] Processing Visit MAI-002. Invoice Status: Paid.
+[ActionQueue] Processing Visit MAI-001. Invoice Status: Paid.
+[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=05/24/2026 10:22:57, Today=05/24/2026 00:00:00, Window=[05/24/2026 00:00:00 - 05/25/2026 00:00:00)
+[ActionQueue] Found 1 raw visits.
+[ActionQueue] Processing Visit MAI-001. Invoice Status: Paid.
+[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=05/24/2026 10:23:35, Today=05/24/2026 00:00:00, Window=[05/24/2026 00:00:00 - 05/25/2026 00:00:00)
+[ActionQueue] Found 1 raw visits.
+[ActionQueue] Processing Visit MAI-001. Invoice Status: Paid.
+[ActionQueue] Query: Branch=a0000000-0000-0000-0000-000000000001, Date=05/24/2026 10:23:35, Today=05/24/2026 00:00:00, Window=[05/24/2026 00:00:00 - 05/25/2026 00:00:00)
+[ActionQueue] Found 1 raw visits.
+[ActionQueue] Processing Visit MAI-001. Invoice Status: Paid.
+[10:23:47 INF] Assignment aa06e236-42c5-4f6f-88f4-af5d6b332ad0 successfully claimed by Resource f7608799-4637-4734-a665-3c5c93ec38b0. Now generating reserved accessions.
+[10:24:25 WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+[10:24:28 WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+[10:24:28 INF] ConsumeStockForSpecimenAsync: Participating in existing transaction for Specimen e86801e8-f1c0-44e3-b4b8-061d35de578a
+[10:24:28 WRN] No tube mapping for Test BILRUBIN DIRECT (51f5f738-c51d-41b5-9b86-5a8aa29413f1). Consumption skipped for Specimen e86801e8-f1c0-44e3-b4b8-061d35de578a.
+[10:24:28 WRN] Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+[10:24:29 INF] EVENT_WRITE for VisitId 40e904bc-d658-47d7-bfd2-260d1beb51eb, Context 12aa2723-9e5c-4ee3-88c6-d8b97a89558d:0
+[10:25:04 INF] Terminal web-1zy6xxtky authorized and added to Thermal80mm group for Branch a0000000-0000-0000-0000-000000000001.
+[10:26:32 INF] SaveDraft API HIT → assignmentId=b0d088f5-2c6b-4aa2-8bae-9405d0d486f6
+[10:26:32 INF] ENTER SaveAssignmentDraftAsync → assignmentId=b0d088f5-2c6b-4aa2-8bae-9405d0d486f6, userId=ae9c40e9-3d31-4c9c-96ea-6d2fb4a2a7d5
+[10:26:32 INF] Assignment Details → Status=Claimed, Branch=a0000000-0000-0000-0000-000000000001, Dept=BIO, AssignedResource=06d8f9e6-2f48-4edb-84fe-d5f227d62367, UserResource=06d8f9e6-2f48-4edb-84fe-d5f227d62367
+[10:26:32 INF] Calling EnterResultsAsync for Order c384a5b8-6d5f-435f-96e7-13586713f254
+[10:26:32 INF] EnterResultsAsync START → userId=ae9c40e9-3d31-4c9c-96ea-6d2fb4a2a7d5, request.OrderId=c384a5b8-6d5f-435f-96e7-13586713f254
+[10:26:32 INF] Before HandleProcessingGatingAsync
+[10:26:32 INF] GATING CHECK HIT for Order c384a5b8-6d5f-435f-96e7-13586713f254
+[10:26:32 INF] GATING BYPASSED → specimenId=e86801e8-f1c0-44e3-b4b8-061d35de578a provided by caller
+[10:26:32 INF] After HandleProcessingGatingAsync. Status=Success
+[10:26:32 INF] EVENT_WRITE for VisitId 40e904bc-d658-47d7-bfd2-260d1beb51eb, Context 7b863641-2e9f-4f94-80e8-22caff784875:0
+[10:26:32 INF] EnterResultsAsync success for Order c384a5b8-6d5f-435f-96e7-13586713f254
+[10:26:32 INF] Calling EnterResultsAsync for Order 26b1231c-5d6f-4259-8535-14fc62e8da86
+[10:26:32 INF] EnterResultsAsync START → userId=ae9c40e9-3d31-4c9c-96ea-6d2fb4a2a7d5, request.OrderId=26b1231c-5d6f-4259-8535-14fc62e8da86
+[10:26:32 INF] Before HandleProcessingGatingAsync
+[10:26:32 INF] GATING CHECK HIT for Order 26b1231c-5d6f-4259-8535-14fc62e8da86
+[10:26:32 INF] GATING BYPASSED → specimenId=e86801e8-f1c0-44e3-b4b8-061d35de578a provided by caller
+[10:26:32 INF] After HandleProcessingGatingAsync. Status=Success
+[10:26:32 INF] EnterResultsAsync success for Order 26b1231c-5d6f-4259-8535-14fc62e8da86
+[10:26:32 INF] Calling EnterResultsAsync for Order 450d5f10-c702-4f60-9afd-3e3d6537b644
+[10:26:32 INF] EnterResultsAsync START → userId=ae9c40e9-3d31-4c9c-96ea-6d2fb4a2a7d5, request.OrderId=450d5f10-c702-4f60-9afd-3e3d6537b644
+[10:26:32 INF] Before HandleProcessingGatingAsync
+[10:26:33 INF] GATING CHECK HIT for Order 450d5f10-c702-4f60-9afd-3e3d6537b644
+[10:26:33 INF] GATING BYPASSED → specimenId=e86801e8-f1c0-44e3-b4b8-061d35de578a provided by caller
+[10:26:33 INF] After HandleProcessingGatingAsync. Status=Success
+[10:26:33 ERR] An exception occurred in the database while saving changes for context type 'SynOS.Data.SynOSDbContext'.
+Microsoft.EntityFrameworkCore.DbUpdateException: An error occurred while saving the entity changes. See the inner exception for details.
+ ---> Microsoft.Data.SqlClient.SqlException (0x80131904): String or binary data would be truncated in table 'SynOSDb.dbo.Results', column 'ReferenceRange'. Truncated value: 'Child: 70-570, Adult'.
+   at Microsoft.Data.SqlClient.SqlConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   at Microsoft.Data.SqlClient.SqlInternalConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   at Microsoft.Data.SqlClient.TdsParser.ThrowExceptionAndWarning(TdsParserStateObject stateObj, Boolean callerHasConnectionLock, Boolean asyncClose)
+   at Microsoft.Data.SqlClient.TdsParser.TryRun(RunBehavior runBehavior, SqlCommand cmdHandler, SqlDataReader dataStream, BulkCopySimpleResultSet bulkCopyHandler, TdsParserStateObject stateObj, Boolean& dataReady)
+   at Microsoft.Data.SqlClient.SqlDataReader.TryHasMoreRows(Boolean& moreRows)
+   at Microsoft.Data.SqlClient.SqlDataReader.TryReadInternal(Boolean setTimeout, Boolean& more)
+   at Microsoft.Data.SqlClient.SqlDataReader.ReadAsyncExecute(Task task, Object state)
+   at Microsoft.Data.SqlClient.SqlDataReader.InvokeAsyncCall[T](SqlDataReaderBaseAsyncCallContext`1 context)
 --- End of stack trace from previous location ---
-   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
-   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
---- End of stack trace from previous location ---
-   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.AffectedCountModificationCommandBatch.ConsumeResultSetAsync(Int32 startCommandIndex, RelationalDataReader reader, CancellationToken cancellationToken)
+ClientConnectionId:69f79bec-31b5-48c5-a349-065e27c6e7a3
+Error Number:2628,State:1,Class:16
+   --- End of inner exception stack trace ---
+   at Microsoft.EntityFrameworkCore.Update.AffectedCountModificationCommandBatch.ConsumeResultSetAsync(Int32 startCommandIndex, RelationalDataReader reader, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.AffectedCountModificationCommandBatch.ConsumeAsync(RelationalDataReader reader, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.ReaderModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.ReaderModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Update.Internal.SqlServerModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.ChangeTracking.Internal.StateManager.SaveChangesAsync(IList`1 entriesToSave, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.ChangeTracking.Internal.StateManager.SaveChangesAsync(StateManager stateManager, Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
    at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
-ClientConnectionId:5a3c54fa-8fe0-4276-92d6-bb839e1058ca
-Error Number:208,State:1,Class:16
-Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid object name 'WorkforcePolicies'.
-   at Microsoft.Data.SqlClient.SqlCommand.<>c.<ExecuteDbDataReaderAsync>b__209_0(Task`1 result)
-   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
-   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at Microsoft.EntityFrameworkCore.DbContext.SaveChangesAsync(Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
+Microsoft.EntityFrameworkCore.DbUpdateException: An error occurred while saving the entity changes. See the inner exception for details.
+ ---> Microsoft.Data.SqlClient.SqlException (0x80131904): String or binary data would be truncated in table 'SynOSDb.dbo.Results', column 'ReferenceRange'. Truncated value: 'Child: 70-570, Adult'.
+   at Microsoft.Data.SqlClient.SqlConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   at Microsoft.Data.SqlClient.SqlInternalConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   at Microsoft.Data.SqlClient.TdsParser.ThrowExceptionAndWarning(TdsParserStateObject stateObj, Boolean callerHasConnectionLock, Boolean asyncClose)
+   at Microsoft.Data.SqlClient.TdsParser.TryRun(RunBehavior runBehavior, SqlCommand cmdHandler, SqlDataReader dataStream, BulkCopySimpleResultSet bulkCopyHandler, TdsParserStateObject stateObj, Boolean& dataReady)
+   at Microsoft.Data.SqlClient.SqlDataReader.TryHasMoreRows(Boolean& moreRows)
+   at Microsoft.Data.SqlClient.SqlDataReader.TryReadInternal(Boolean setTimeout, Boolean& more)
+   at Microsoft.Data.SqlClient.SqlDataReader.ReadAsyncExecute(Task task, Object state)
+   at Microsoft.Data.SqlClient.SqlDataReader.InvokeAsyncCall[T](SqlDataReaderBaseAsyncCallContext`1 context)
 --- End of stack trace from previous location ---
-   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
-   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
---- End of stack trace from previous location ---
-   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.AffectedCountModificationCommandBatch.ConsumeResultSetAsync(Int32 startCommandIndex, RelationalDataReader reader, CancellationToken cancellationToken)
+ClientConnectionId:69f79bec-31b5-48c5-a349-065e27c6e7a3
+Error Number:2628,State:1,Class:16
+   --- End of inner exception stack trace ---
+   at Microsoft.EntityFrameworkCore.Update.AffectedCountModificationCommandBatch.ConsumeResultSetAsync(Int32 startCommandIndex, RelationalDataReader reader, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.AffectedCountModificationCommandBatch.ConsumeAsync(RelationalDataReader reader, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.ReaderModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.ReaderModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Update.Internal.SqlServerModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.ChangeTracking.Internal.StateManager.SaveChangesAsync(IList`1 entriesToSave, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.ChangeTracking.Internal.StateManager.SaveChangesAsync(StateManager stateManager, Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
    at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
-ClientConnectionId:5a3c54fa-8fe0-4276-92d6-bb839e1058ca
-Error Number:208,State:1,Class:16
+   at Microsoft.EntityFrameworkCore.DbContext.SaveChangesAsync(Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
+[10:26:33 FTL] EXCEPTION in SaveAssignmentDraftAsync for assignment b0d088f5-2c6b-4aa2-8bae-9405d0d486f6. Message: An error occurred while saving the entity changes. See the inner exception for details.
+Microsoft.EntityFrameworkCore.DbUpdateException: An error occurred while saving the entity changes. See the inner exception for details.
+ ---> Microsoft.Data.SqlClient.SqlException (0x80131904): String or binary data would be truncated in table 'SynOSDb.dbo.Results', column 'ReferenceRange'. Truncated value: 'Child: 70-570, Adult'.
+   at Microsoft.Data.SqlClient.SqlConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   at Microsoft.Data.SqlClient.SqlInternalConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   at Microsoft.Data.SqlClient.TdsParser.ThrowExceptionAndWarning(TdsParserStateObject stateObj, Boolean callerHasConnectionLock, Boolean asyncClose)
+   at Microsoft.Data.SqlClient.TdsParser.TryRun(RunBehavior runBehavior, SqlCommand cmdHandler, SqlDataReader dataStream, BulkCopySimpleResultSet bulkCopyHandler, TdsParserStateObject stateObj, Boolean& dataReady)
+   at Microsoft.Data.SqlClient.SqlDataReader.TryHasMoreRows(Boolean& moreRows)
+   at Microsoft.Data.SqlClient.SqlDataReader.TryReadInternal(Boolean setTimeout, Boolean& more)
+   at Microsoft.Data.SqlClient.SqlDataReader.ReadAsyncExecute(Task task, Object state)
+   at Microsoft.Data.SqlClient.SqlDataReader.InvokeAsyncCall[T](SqlDataReaderBaseAsyncCallContext`1 context)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Update.AffectedCountModificationCommandBatch.ConsumeResultSetAsync(Int32 startCommandIndex, RelationalDataReader reader, CancellationToken cancellationToken)
+ClientConnectionId:69f79bec-31b5-48c5-a349-065e27c6e7a3
+Error Number:2628,State:1,Class:16
+   --- End of inner exception stack trace ---
+   at Microsoft.EntityFrameworkCore.Update.AffectedCountModificationCommandBatch.ConsumeResultSetAsync(Int32 startCommandIndex, RelationalDataReader reader, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.AffectedCountModificationCommandBatch.ConsumeAsync(RelationalDataReader reader, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.ReaderModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.ReaderModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Update.Internal.SqlServerModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.ChangeTracking.Internal.StateManager.SaveChangesAsync(IList`1 entriesToSave, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.ChangeTracking.Internal.StateManager.SaveChangesAsync(StateManager stateManager, Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.DbContext.SaveChangesAsync(Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.DbContext.SaveChangesAsync(Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
+   at SynOS.Data.SynOSDbContext.SaveChangesAsync(CancellationToken cancellationToken) in D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Data\SynOSDbContext.cs:line 33
+   at SynOS.Services.ResultService.EnterResultsAsync(Guid userId, ResultEntryRequestDto request) in D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\ResultService.cs:line 118
+   at SynOS.Services.Operational.ProcessingService.SaveAssignmentDraftAsync(Guid assignmentId, SubmitAssignmentResultsRequestDto request) in D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Services\Operational\ProcessingService.cs:line 478

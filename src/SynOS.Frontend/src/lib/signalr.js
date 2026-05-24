@@ -209,6 +209,31 @@ export const BranchOperationsSignalRService = {
                 .withAutomaticReconnect()
                 .configureLogging(LogLevel.Information)
                 .build();
+
+            // Register default listeners here to ensure they exist before start() is called,
+            // preventing "No client method with the name 'capabilityregistered' found" warnings in browser.
+            branchConnection.on("CapabilityRegistered", (capability, isAuthorized) => {
+                console.log(`SignalR(Branch): Capability '${capability}' registration result: ${isAuthorized ? "AUTHORIZED" : "DENIED"}`);
+                if (window._onCapabilityRegisteredHandler) {
+                    window._onCapabilityRegisteredHandler(capability, isAuthorized);
+                }
+            });
+            branchConnection.on("capabilityregistered", (capability, isAuthorized) => {
+                if (window._onCapabilityRegisteredHandler) {
+                    window._onCapabilityRegisteredHandler(capability, isAuthorized);
+                }
+            });
+            branchConnection.on("capabilityRegistered", (capability, isAuthorized) => {
+                if (window._onCapabilityRegisteredHandler) {
+                    window._onCapabilityRegisteredHandler(capability, isAuthorized);
+                }
+            });
+            branchConnection.on("OnPrintThermalReceipt", (payload) => {
+                console.log("SignalR(Branch): OnPrintThermalReceipt received", payload);
+                if (window._onPrintThermalReceiptHandler) {
+                    window._onPrintThermalReceiptHandler(payload);
+                }
+            });
         }
         return branchConnection;
     },
@@ -273,24 +298,11 @@ export const BranchOperationsSignalRService = {
     },
 
     onCapabilityRegistered: (callback) => {
-        const conn = BranchOperationsSignalRService._getConnection();
-        conn.off("CapabilityRegistered");
-        conn.on("CapabilityRegistered", (capability, isAuthorized) => {
-            console.log(`SignalR(Branch): Capability '${capability}' registration result: ${isAuthorized ? "AUTHORIZED" : "DENIED"}`);
-            callback(capability, isAuthorized);
-        });
-        // Aliases for casing
-        conn.on("capabilityregistered", (cap, auth) => callback(cap, auth));
-        conn.on("capabilityRegistered", (cap, auth) => callback(cap, auth));
+        window._onCapabilityRegisteredHandler = callback;
     },
 
     onPrintThermalReceipt: (callback) => {
-        const conn = BranchOperationsSignalRService._getConnection();
-        conn.off("OnPrintThermalReceipt");
-        conn.on("OnPrintThermalReceipt", (payload) => {
-            console.log("SignalR(Branch): OnPrintThermalReceipt received", payload);
-            callback(payload);
-        });
+        window._onPrintThermalReceiptHandler = callback;
     },
 
     stopConnection: async () => {

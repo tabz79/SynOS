@@ -61,18 +61,41 @@ namespace SynOS.Api
                 .ForMember(dest => dest.ChangedByName, opt => opt.MapFrom(src => src.ChangedByUser != null ? src.ChangedByUser.Name : "System"));
             
             // Test Master Mappings
-            CreateMap<CreateTestDto, Test>();
-            CreateMap<UpdateTestDto, Test>();
+            CreateMap<CreateTestDto, Test>()
+                .ForMember(dest => dest.Parameters, opt => opt.Ignore());
+            CreateMap<UpdateTestDto, Test>()
+                .ForMember(dest => dest.Parameters, opt => opt.Ignore());
             CreateMap<Test, TestDto>()
                 .ForMember(dest => dest.Department, opt => opt.MapFrom(src => src.DepartmentMaster != null ? src.DepartmentMaster.Name : string.Empty))
                 .ForMember(dest => dest.BasePrice, opt => opt.MapFrom(src => 
                     src.TestPricings != null && src.TestPricings.Any()
-                    ? src.TestPricings.OrderByDescending(tp => tp.EffectiveFrom).FirstOrDefault().BasePrice
-                    : 0m));
+                    ? (src.TestPricings.OrderByDescending(tp => tp.EffectiveFrom).FirstOrDefault() != null
+                       ? src.TestPricings.OrderByDescending(tp => tp.EffectiveFrom).FirstOrDefault()!.BasePrice
+                       : 0m)
+                    : 0m))
+                .ForMember(dest => dest.IncludedTestCodes, opt => opt.MapFrom(src => 
+                    src.ProfileChildren != null 
+                    ? src.ProfileChildren.Where(pc => pc.ChildTest != null).Select(pc => pc.ChildTest!.TestCode).ToList() 
+                    : new List<string>()));
 
             CreateMap<CreateParameterDto, Parameter>();
             CreateMap<UpdateParameterDto, Parameter>();
-            CreateMap<Parameter, ParameterDto>();
+            CreateMap<Parameter, ParameterDto>()
+                .ForMember(dest => dest.UseMale, opt => opt.MapFrom(src => src.ReferenceRanges != null && src.ReferenceRanges.Any(r => r.Sex == "Male" && r.AgeGroup == "ALL" && r.IsActive)))
+                .ForMember(dest => dest.MaleMin, opt => opt.MapFrom(src => src.ReferenceRanges != null ? src.ReferenceRanges.Where(r => r.Sex == "Male" && r.AgeGroup == "ALL" && r.IsActive).Select(r => r.RefLow).FirstOrDefault() : null))
+                .ForMember(dest => dest.MaleMax, opt => opt.MapFrom(src => src.ReferenceRanges != null ? src.ReferenceRanges.Where(r => r.Sex == "Male" && r.AgeGroup == "ALL" && r.IsActive).Select(r => r.RefHigh).FirstOrDefault() : null))
+                .ForMember(dest => dest.UseFemale, opt => opt.MapFrom(src => src.ReferenceRanges != null && src.ReferenceRanges.Any(r => r.Sex == "Female" && r.AgeGroup == "ALL" && r.IsActive)))
+                .ForMember(dest => dest.FemaleMin, opt => opt.MapFrom(src => src.ReferenceRanges != null ? src.ReferenceRanges.Where(r => r.Sex == "Female" && r.AgeGroup == "ALL" && r.IsActive).Select(r => r.RefLow).FirstOrDefault() : null))
+                .ForMember(dest => dest.FemaleMax, opt => opt.MapFrom(src => src.ReferenceRanges != null ? src.ReferenceRanges.Where(r => r.Sex == "Female" && r.AgeGroup == "ALL" && r.IsActive).Select(r => r.RefHigh).FirstOrDefault() : null))
+                .ForMember(dest => dest.UseInfant, opt => opt.MapFrom(src => src.ReferenceRanges != null && src.ReferenceRanges.Any(r => r.AgeGroup == "Infant" && r.IsActive)))
+                .ForMember(dest => dest.InfantMin, opt => opt.MapFrom(src => src.ReferenceRanges != null ? src.ReferenceRanges.Where(r => r.AgeGroup == "Infant" && r.IsActive).Select(r => r.RefLow).FirstOrDefault() : null))
+                .ForMember(dest => dest.InfantMax, opt => opt.MapFrom(src => src.ReferenceRanges != null ? src.ReferenceRanges.Where(r => r.AgeGroup == "Infant" && r.IsActive).Select(r => r.RefHigh).FirstOrDefault() : null))
+                .ForMember(dest => dest.UseChild, opt => opt.MapFrom(src => src.ReferenceRanges != null && src.ReferenceRanges.Any(r => r.AgeGroup == "Child" && r.IsActive)))
+                .ForMember(dest => dest.ChildMin, opt => opt.MapFrom(src => src.ReferenceRanges != null ? src.ReferenceRanges.Where(r => r.AgeGroup == "Child" && r.IsActive).Select(r => r.RefLow).FirstOrDefault() : null))
+                .ForMember(dest => dest.ChildMax, opt => opt.MapFrom(src => src.ReferenceRanges != null ? src.ReferenceRanges.Where(r => r.AgeGroup == "Child" && r.IsActive).Select(r => r.RefHigh).FirstOrDefault() : null))
+                .ForMember(dest => dest.UseAdult, opt => opt.MapFrom(src => src.ReferenceRanges != null && src.ReferenceRanges.Any(r => r.AgeGroup == "Adult" && r.IsActive)))
+                .ForMember(dest => dest.AdultMin, opt => opt.MapFrom(src => src.ReferenceRanges != null ? src.ReferenceRanges.Where(r => r.AgeGroup == "Adult" && r.IsActive).Select(r => r.RefLow).FirstOrDefault() : null))
+                .ForMember(dest => dest.AdultMax, opt => opt.MapFrom(src => src.ReferenceRanges != null ? src.ReferenceRanges.Where(r => r.AgeGroup == "Adult" && r.IsActive).Select(r => r.RefHigh).FirstOrDefault() : null));
 
             CreateMap<CreateReferenceRangeDto, ReferenceRange>();
             CreateMap<UpdateReferenceRangeDto, ReferenceRange>();
@@ -86,7 +109,7 @@ namespace SynOS.Api
             CreateMap<CreateUserDto, User>();
             CreateMap<UpdateUserDto, User>();
             CreateMap<User, UserManagementDto>()
-                .ForMember(dest => dest.Role, opt => opt.MapFrom(src => src.UserRoles != null && src.UserRoles.Any() && src.UserRoles.FirstOrDefault().Role != null ? src.UserRoles.FirstOrDefault().Role.Name : "Unknown"));
+                .ForMember(dest => dest.Role, opt => opt.MapFrom(src => src.UserRoles != null && src.UserRoles.Any() && src.UserRoles.FirstOrDefault() != null && src.UserRoles.FirstOrDefault()!.Role != null ? src.UserRoles.FirstOrDefault()!.Role!.Name : "Unknown"));
 
             CreateMap<Patient, PatientDto>();
 

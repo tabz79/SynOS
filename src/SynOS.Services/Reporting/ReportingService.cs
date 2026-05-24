@@ -255,7 +255,7 @@ namespace SynOS.Services.Reporting
 
             // 3. Fetch Catalog Metadata for all these tests
             var catalogParams = await _context.CatalogParameters
-                .Where(cp => allTestCodes.Contains(cp.TestCode))
+                .Where(cp => allTestCodes.Contains(cp.TestCode) && cp.IsActive)
                 .ToListAsync();
 
             // 4. Fetch Results (only latest for each parameter)
@@ -568,23 +568,30 @@ namespace SynOS.Services.Reporting
                     if (total.HasValue && direct.HasValue) return (total.Value - direct.Value).ToString("F2");
                 }
 
-                // Globulin (GLOB) = Total Protein (TP) - Albumin (ALB)
+                // Globulin (GLOB) = Total Protein (TP/T_P) - Albumin (ALB)
                 if (code == "GLOB" || code == "GLOBULIN")
                 {
-                    var tp = GetValue(allResults, "TP") ?? GetValue(allResults, "TOTAL_PROTEIN");
+                    var tp = GetValue(allResults, "TP") ?? GetValue(allResults, "T_P") ?? GetValue(allResults, "TOTAL_PROTEIN");
                     var alb = GetValue(allResults, "ALB") ?? GetValue(allResults, "ALBUMIN");
                     if (tp.HasValue && alb.HasValue) return (tp.Value - alb.Value).ToString("F2");
                 }
 
                 // A/G Ratio = Albumin / Globulin
-                if (code == "AG_RATIO")
+                if (code == "AG_RATIO" || code == "ALB : GLOB")
                 {
                     var alb = GetValue(allResults, "ALB") ?? GetValue(allResults, "ALBUMIN");
-                    var tp = GetValue(allResults, "TP") ?? GetValue(allResults, "TOTAL_PROTEIN");
-                    if (alb.HasValue && tp.HasValue && tp.Value > alb.Value) 
+                    var tp = GetValue(allResults, "TP") ?? GetValue(allResults, "T_P") ?? GetValue(allResults, "TOTAL_PROTEIN");
+                    if (alb.HasValue && tp.HasValue) 
                     {
                         var glob = tp.Value - alb.Value;
-                        return (alb.Value / glob).ToString("F2");
+                        if (glob != 0)
+                        {
+                            return (alb.Value / glob).ToString("F2");
+                        }
+                        else
+                        {
+                            return "-";
+                        }
                     }
                 }
             }

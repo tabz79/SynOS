@@ -40,11 +40,11 @@ VALUES
 (@HDL, 'HDL', 'HDL Cholesterol', 'Clinical BIO', 0, @BIO, 24, 1, GETUTCDATE(), GETUTCDATE()),
 (@LDL, 'LDL', 'LDL Cholesterol', 'Clinical BIO', 0, @BIO, 24, 1, GETUTCDATE(), GETUTCDATE());
 
--- 4. Seed Profiles
+-- 4. Seed LFT & LIPID as Atomic Tests
 INSERT INTO Tests (TestId, TestCode, TestName, Category, IsProfile, DepartmentId, TAT_Hours, IsActive, CreatedAt, UpdatedAt)
 VALUES 
-(@LFT, 'LFT', 'Liver Function Test', 'Profile', 1, @BIO, 24, 1, GETUTCDATE(), GETUTCDATE()),
-(@LIPID, 'LIPID', 'Lipid Profile', 'Profile', 1, @BIO, 24, 1, GETUTCDATE(), GETUTCDATE());
+(@LFT, 'LFT', 'Liver Function Test', 'Clinical BIO', 0, @BIO, 24, 1, GETUTCDATE(), GETUTCDATE()),
+(@LIPID, 'LIPID', 'Lipid Profile', 'Clinical BIO', 0, @BIO, 24, 1, GETUTCDATE(), GETUTCDATE());
 
 -- 5. Seed TestPricing (Available since 2024-01-01)
 INSERT INTO TestPricing (PricingId, TestId, BasePrice, EffectiveFrom, CreatedAt, CreatedByUserId)
@@ -59,13 +59,6 @@ VALUES
 (NEWID(), @LIPID, 700, '2024-01-01', GETUTCDATE(), '00000000-0000-0000-0000-000000000000');
 
 -- 6. Seed ProfileMaps (Expansion Logic)
-INSERT INTO ProfileMaps (ProfileMapId, ParentTestId, ChildTestId, Sequence)
-VALUES 
-(NEWID(), @LFT, @ALT, 1),
-(NEWID(), @LFT, @AST, 2),
-(NEWID(), @LIPID, @CHOL, 1),
-(NEWID(), @LIPID, @TRIG, 2),
-(NEWID(), @LIPID, @HDL, 3),
-(NEWID(), @LIPID, @LDL, 4);
+-- LFT and LIPID are atomic, no profile maps seeded here.
 
 PRINT 'Registry Seeded Successfully: 3 Depts, 8 Tests, 8 Prices, 6 Profile Maps.';

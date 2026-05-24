@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using SynOS.Data;
 using SynOS.Models.DTOs.Admin;
 using SynOS.Models.Entities;
+using SynOS.Models.Entities.Catalog;
 
 namespace SynOS.Services
 {
@@ -34,11 +35,18 @@ namespace SynOS.Services
         // -------------------------
         public async Task<Test> CreateTestAsync(CreateTestDto dto, Guid actorUserId)
         {
+            var exists = await _context.Tests.AnyAsync(t => t.TestCode.ToUpper() == dto.TestCode.ToUpper());
+            if (exists)
+            {
+                throw new InvalidOperationException($"Test code '{dto.TestCode}' already exists.");
+            }
+
             var test = _mapper.Map<Test>(dto);
             test.TestId = Guid.NewGuid();
             test.CreatedAt = DateTimeOffset.UtcNow;
             test.IsActive = true;
             test.IsOutsourced = dto.IsOutsourced;
+            test.SpecimenTypeCode = dto.SpecimenTypeCode;
 
             // Phase 8: Resolve DepartmentId from string
             if (!string.IsNullOrEmpty(dto.Department))
@@ -88,9 +96,11 @@ namespace SynOS.Services
             _context.Tests.Add(test);
             await _context.SaveChangesAsync();
 
+            await SyncToCatalogAsync(test, dto, actorUserId);
+
             // Audit: map to DTO to avoid EF circular refs
-            var testDto = _mapper.Map<TestDto>(test);
-            await _auditService.LogAsync(actorUserId, "CreateTest", "Test", test.TestId, testDto);
+            var testDtoNew = _mapper.Map<TestDto>(test);
+            await _auditService.LogAsync(actorUserId, "CreateTest", "Test", test.TestId, testDtoNew);
 
             _testsCacheService?.InvalidateTestsCache();
             return test;
@@ -104,6 +114,16 @@ namespace SynOS.Services
                 .FirstOrDefaultAsync(t => t.TestId == testId);
                 
             if (test == null) throw new KeyNotFoundException("Test not found");
+
+            if (dto.TestCode != null && dto.TestCode.Trim().ToUpper() != test.TestCode.ToUpper())
+            {
+                var exists = await _context.Tests.AnyAsync(t => t.TestId != testId && t.TestCode.ToUpper() == dto.TestCode.Trim().ToUpper());
+                if (exists)
+                {
+                    throw new InvalidOperationException($"Test code '{dto.TestCode}' already exists.");
+                }
+                test.TestCode = dto.TestCode.Trim().ToUpper();
+            }
 
             var oldDto = _mapper.Map<TestDto>(test);
 
@@ -150,6 +170,8 @@ namespace SynOS.Services
             test.TAT_Hours = dto.TAT_Hours;
             test.IsActive = dto.IsActive;
             test.IsOutsourced = dto.IsOutsourced;
+            test.SpecimenTypeCode = dto.SpecimenTypeCode;
+            test.IsProfile = dto.IsProfile;
             
             // _mapper.Map(dto, test); // CAUTION: If DTO has BasePrice/Department, this might try to set non-existent props? 
             // Since props are removed from Test, AutoMapper fails silently or errors depending on config.
@@ -158,6 +180,8 @@ namespace SynOS.Services
             test.UpdatedAt = DateTimeOffset.UtcNow;
 
             await _context.SaveChangesAsync();
+
+            await SyncToCatalogAsync(test, dto, actorUserId);
 
             var newDto = _mapper.Map<TestDto>(test);
             await _auditService.LogAsync(actorUserId, "UpdateTest", "Test", test.TestId, new { Old = oldDto, New = newDto });
@@ -169,13 +193,13 @@ namespace SynOS.Services
         public async Task<Test?> GetTestAsync(Guid testId)
         {
             return await _context.Tests
-                .Include(t => t.Parameters)
-                    .ThenInclude(p => p.ReferenceRanges)
-                .Include(t => t.Parameters)
+                .Include(t => t.Parameters.Where(p => p.IsActive))
                     .ThenInclude(p => p.ReferenceRanges)
                 .Include(t => t.PriceConfigs)
-                .Include(t => t.TestPricings) // Added
-                .Include(t => t.DepartmentMaster) // Added
+                .Include(t => t.TestPricings) 
+                .Include(t => t.DepartmentMaster) 
+                .Include(t => t.ProfileChildren)
+                    .ThenInclude(pc => pc.ChildTest)
                 .AsNoTracking()
                 .FirstOrDefaultAsync(t => t.TestId == testId);
         }
@@ -183,9 +207,13 @@ namespace SynOS.Services
         public async Task<IReadOnlyList<Test>> GetTestsAsync()
         {
             return await _context.Tests
-                .Include(t => t.Parameters)
+                .Where(t => t.IsActive)
+                .Include(t => t.Parameters.Where(p => p.IsActive))
+                    .ThenInclude(p => p.ReferenceRanges)
                 .Include(t => t.TestPricings)
                 .Include(t => t.DepartmentMaster)
+                .Include(t => t.ProfileChildren)
+                    .ThenInclude(pc => pc.ChildTest)
                 .AsNoTracking()
                 .ToListAsync();
         }
@@ -195,8 +223,95 @@ namespace SynOS.Services
             var test = await _context.Tests.FindAsync(testId);
             if (test == null) throw new KeyNotFoundException("Test not found");
 
+            // ALWAYS soft-delete and rename code to release original code for future use with ZERO risk of foreign key failures
+            var originalCode = test.TestCode;
+            var suffix = $"_DEL_{DateTime.UtcNow.Ticks}";
+            var maxLen = 50 - suffix.Length;
+            if (originalCode.Length > maxLen)
+            {
+                originalCode = originalCode.Substring(0, maxLen);
+            }
+            
+            var newCode = originalCode + suffix;
+
+            // 1. Remove CatalogPanelMappings referencing this test to prevent Restrict constraint failures
+            var catalogPanelMappings = await _context.CatalogPanelMappings
+                .Where(m => m.PanelTestCode == originalCode || m.ChildTestCode == originalCode)
+                .ToListAsync();
+            _context.CatalogPanelMappings.RemoveRange(catalogPanelMappings);
+
+            // 2. Remove operational ProfileMaps referencing this test
+            var profileMaps = await _context.ProfileMaps
+                .Where(pm => pm.ParentTestId == testId || pm.ChildTestId == testId)
+                .ToListAsync();
+            _context.ProfileMaps.RemoveRange(profileMaps);
+
+            // 3. Update operational parameters to be inactive (uses TestId, which is not modified)
+            var opParams = await _context.Parameters.Where(p => p.TestId == testId).ToListAsync();
+            foreach (var p in opParams)
+            {
+                p.IsActive = false;
+                p.UpdatedAt = DateTimeOffset.UtcNow;
+            }
+
+            // 4. Update the main Test record (TestId is key, TestCode is not key, so update is allowed!)
+            test.TestCode = newCode;
             test.IsActive = false;
             test.UpdatedAt = DateTimeOffset.UtcNow;
+
+            // 5. Handle CatalogTest and CatalogParameters. TestCode is part of primary/identifying keys, 
+            // so EF Core forbids updating it. Instead, we delete the old records and insert new inactive ones.
+            var catalogTest = await _context.CatalogTests.FirstOrDefaultAsync(ct => ct.TestCode == originalCode);
+            if (catalogTest != null)
+            {
+                var catalogParams = await _context.CatalogParameters.Where(cp => cp.TestCode == originalCode).ToListAsync();
+
+                // DTO data extraction for recreation
+                var newCatalogTest = new CatalogTest
+                {
+                    TestCode = newCode,
+                    TestName = catalogTest.TestName,
+                    DepartmentCode = catalogTest.DepartmentCode,
+                    SpecimenCode = catalogTest.SpecimenCode,
+                    TubeCode = catalogTest.TubeCode,
+                    Price = catalogTest.Price,
+                    IsPanel = catalogTest.IsPanel,
+                    IsActive = false,
+                    CreatedBy = catalogTest.CreatedBy,
+                    UpdatedBy = actorUserId,
+                    CreatedAt = catalogTest.CreatedAt,
+                    UpdatedAt = DateTimeOffset.UtcNow
+                };
+
+                var newParams = catalogParams.Select(cp => new CatalogParameter
+                {
+                    Id = Guid.NewGuid(),
+                    TestCode = newCode,
+                    ParameterCode = cp.ParameterCode,
+                    ParameterName = cp.ParameterName,
+                    DataType = cp.DataType,
+                    Unit = cp.Unit,
+                    ReferenceRange = cp.ReferenceRange,
+                    SortOrder = cp.SortOrder,
+                    Methodology = cp.Methodology,
+                    Formula = cp.Formula,
+                    IsCalculated = cp.IsCalculated,
+                    IsActive = false,
+                    CreatedBy = cp.CreatedBy,
+                    UpdatedBy = actorUserId,
+                    CreatedAt = cp.CreatedAt,
+                    UpdatedAt = DateTimeOffset.UtcNow
+                }).ToList();
+
+                // Delete old records first to release the old key LFT
+                _context.CatalogParameters.RemoveRange(catalogParams);
+                _context.CatalogTests.Remove(catalogTest);
+                await _context.SaveChangesAsync();
+
+                // Add the new inactive records under the new suffixed key
+                _context.CatalogTests.Add(newCatalogTest);
+                _context.CatalogParameters.AddRange(newParams);
+            }
 
             await _context.SaveChangesAsync();
 
@@ -379,7 +494,7 @@ namespace SynOS.Services
 
             var query = _context.Tests
                 .AsNoTracking()
-                .Include(t => t.Parameters)
+                .Include(t => t.Parameters.Where(p => p.IsActive))
                     .ThenInclude(p => p.ReferenceRanges)
                 .Include(t => t.PriceConfigs)
                 .Include(t => t.DepartmentMaster) // Added
@@ -394,6 +509,417 @@ namespace SynOS.Services
             }
 
             return await query.FirstOrDefaultAsync();
+        }
+
+        private string MapSpecimenToTube(string specimenCode)
+        {
+            if (string.IsNullOrWhiteSpace(specimenCode)) return "PLAIN";
+            var normalized = specimenCode.Trim().ToUpperInvariant();
+            switch (normalized)
+            {
+                case "SERUM": return "PLAIN";
+                case "EDTA": return "EDTA";
+                case "PLASMA": return "PLAIN";
+                case "SST": return "SST";
+                case "URINE": return "PLAIN";
+                case "CSF": return "PLAIN";
+                case "SWAB": return "PLAIN";
+                default: return "PLAIN";
+            }
+        }
+
+        private string GetTubeColor(string tubeCode)
+        {
+            if (string.IsNullOrWhiteSpace(tubeCode)) return "Red";
+            var normalized = tubeCode.Trim().ToUpperInvariant();
+            switch (normalized)
+            {
+                case "EDTA": return "Purple";
+                case "SST": return "Yellow";
+                case "FLUORIDE": return "Grey";
+                case "CITRATE": return "Blue";
+                case "PLAIN": return "Red";
+                default: return "Red";
+            }
+        }
+
+        private async Task<Guid> EnsureTestExistsAsync(string testCode, string deptCode)
+        {
+            var test = await _context.Tests.FirstOrDefaultAsync(t => t.TestCode == testCode);
+            if (test == null)
+            {
+                var defaultDept = await _context.DepartmentMasters.FirstOrDefaultAsync(d => d.Code == deptCode || d.Name == deptCode);
+                if (defaultDept == null)
+                {
+                    defaultDept = await _context.DepartmentMasters.FirstOrDefaultAsync(d => d.Name == "Biochemistry");
+                }
+                
+                test = new Test
+                {
+                    TestId = Guid.NewGuid(),
+                    TestCode = testCode,
+                    TestName = testCode,
+                    DepartmentId = defaultDept?.DepartmentId,
+                    IsActive = true,
+                    CreatedAt = DateTimeOffset.UtcNow,
+                    UpdatedAt = DateTimeOffset.UtcNow
+                };
+                _context.Tests.Add(test);
+                await _context.SaveChangesAsync();
+            }
+            return test.TestId;
+        }
+
+        private async Task EnsureCatalogTestExistsAsync(string testCode, string deptCode, Guid actorUserId)
+        {
+            var catalogTest = await _context.CatalogTests.FirstOrDefaultAsync(c => c.TestCode == testCode);
+            if (catalogTest == null)
+            {
+                catalogTest = new CatalogTest
+                {
+                    TestCode = testCode,
+                    TestName = testCode,
+                    DepartmentCode = deptCode,
+                    SpecimenCode = "SERUM",
+                    TubeCode = "PLAIN",
+                    Price = 0,
+                    IsPanel = false,
+                    IsActive = true,
+                    CreatedBy = actorUserId,
+                    CreatedAt = DateTimeOffset.UtcNow,
+                    UpdatedAt = DateTimeOffset.UtcNow
+                };
+                _context.CatalogTests.Add(catalogTest);
+                await _context.SaveChangesAsync();
+            }
+        }
+
+        private async Task SyncToCatalogAsync(Test test, CreateTestDto dto, Guid actorUserId)
+        {
+            var deptCode = test.DepartmentMaster?.Code ?? "BIO";
+            var catalogDept = await _context.CatalogProcessingDepartments.FirstOrDefaultAsync(d => d.DepartmentCode == deptCode);
+            if (catalogDept == null)
+            {
+                catalogDept = new CatalogProcessingDepartment
+                {
+                    DepartmentCode = deptCode,
+                    DepartmentName = deptCode,
+                    ServiceCategoryCode = "LAB",
+                    RequiresSpecimen = !string.Equals(deptCode, "RAD", StringComparison.OrdinalIgnoreCase),
+                    IsActive = true,
+                    CreatedAt = DateTimeOffset.UtcNow,
+                    UpdatedAt = DateTimeOffset.UtcNow
+                };
+                _context.CatalogProcessingDepartments.Add(catalogDept);
+                await _context.SaveChangesAsync();
+            }
+
+            var specCode = (test.SpecimenTypeCode ?? "SERUM").ToUpperInvariant();
+            var catalogSpec = await _context.CatalogSpecimenTypes.FirstOrDefaultAsync(s => s.SpecimenCode == specCode);
+            if (catalogSpec == null)
+            {
+                catalogSpec = new CatalogSpecimenType
+                {
+                    SpecimenCode = specCode,
+                    SpecimenName = specCode,
+                    IsActive = true,
+                    CreatedAt = DateTimeOffset.UtcNow,
+                    UpdatedAt = DateTimeOffset.UtcNow
+                };
+                _context.CatalogSpecimenTypes.Add(catalogSpec);
+                await _context.SaveChangesAsync();
+            }
+
+            var tubeCode = MapSpecimenToTube(specCode);
+            var catalogTube = await _context.CatalogTubeTypes.FirstOrDefaultAsync(t => t.TubeCode == tubeCode);
+            if (catalogTube == null)
+            {
+                catalogTube = new CatalogTubeType
+                {
+                    TubeCode = tubeCode,
+                    TubeName = tubeCode,
+                    Color = GetTubeColor(tubeCode),
+                    IsActive = true,
+                    CreatedAt = DateTimeOffset.UtcNow,
+                    UpdatedAt = DateTimeOffset.UtcNow
+                };
+                _context.CatalogTubeTypes.Add(catalogTube);
+                await _context.SaveChangesAsync();
+            }
+
+            var specType = await _context.SpecimenTypes.FirstOrDefaultAsync(s => s.Code == specCode);
+            if (specType == null)
+            {
+                specType = new SpecimenType
+                {
+                    Code = specCode,
+                    Name = specCode,
+                    ContainerCategory = "General",
+                    IsActive = true,
+                    CreatedAt = DateTimeOffset.UtcNow
+                };
+                _context.SpecimenTypes.Add(specType);
+                await _context.SaveChangesAsync();
+            }
+
+            var catalogTest = await _context.CatalogTests.FirstOrDefaultAsync(ct => ct.TestCode == test.TestCode);
+            if (catalogTest == null)
+            {
+                catalogTest = new CatalogTest
+                {
+                    TestCode = test.TestCode,
+                    TestName = test.TestName,
+                    DepartmentCode = deptCode,
+                    SpecimenCode = specCode,
+                    TubeCode = tubeCode,
+                    Price = dto.BasePrice,
+                    IsPanel = dto.IsProfile,
+                    IsActive = test.IsActive,
+                    CreatedBy = actorUserId,
+                    CreatedAt = DateTimeOffset.UtcNow,
+                    UpdatedAt = DateTimeOffset.UtcNow
+                };
+                _context.CatalogTests.Add(catalogTest);
+            }
+            else
+            {
+                catalogTest.TestName = test.TestName;
+                catalogTest.DepartmentCode = deptCode;
+                catalogTest.SpecimenCode = specCode;
+                catalogTest.TubeCode = tubeCode;
+                catalogTest.Price = dto.BasePrice;
+                catalogTest.IsPanel = dto.IsProfile;
+                catalogTest.IsActive = test.IsActive;
+                catalogTest.UpdatedBy = actorUserId;
+                catalogTest.UpdatedAt = DateTimeOffset.UtcNow;
+            }
+            await _context.SaveChangesAsync();
+
+            var inputParamCodes = (dto.Parameters ?? new List<ParameterSaveDto>()).Select(p => p.ParameterCode.ToUpperInvariant()).ToList();
+            
+            var catalogParams = await _context.CatalogParameters.Where(cp => cp.TestCode == test.TestCode).ToListAsync();
+            foreach (var paramDto in dto.Parameters ?? new List<ParameterSaveDto>())
+            {
+                var normParamCode = paramDto.ParameterCode.Trim().ToUpperInvariant();
+                var catParam = catalogParams.FirstOrDefault(cp => cp.ParameterCode.ToUpperInvariant() == normParamCode);
+                if (catParam == null)
+                {
+                    catParam = new CatalogParameter
+                    {
+                        Id = Guid.NewGuid(),
+                        TestCode = test.TestCode,
+                        ParameterCode = paramDto.ParameterCode,
+                        ParameterName = paramDto.ParameterName,
+                        DataType = paramDto.DataType,
+                        Unit = paramDto.Unit,
+                        ReferenceRange = paramDto.ReferenceRange,
+                        SortOrder = paramDto.SortOrder,
+                        Methodology = paramDto.Methodology,
+                        Formula = paramDto.Formula,
+                        IsCalculated = paramDto.IsCalculated,
+                        IsActive = true,
+                        CreatedBy = actorUserId,
+                        CreatedAt = DateTimeOffset.UtcNow,
+                        UpdatedAt = DateTimeOffset.UtcNow
+                    };
+                    _context.CatalogParameters.Add(catParam);
+                }
+                else
+                {
+                    catParam.ParameterName = paramDto.ParameterName;
+                    catParam.DataType = paramDto.DataType;
+                    catParam.Unit = paramDto.Unit;
+                    catParam.ReferenceRange = paramDto.ReferenceRange;
+                    catParam.SortOrder = paramDto.SortOrder;
+                    catParam.Methodology = paramDto.Methodology;
+                    catParam.Formula = paramDto.Formula;
+                    catParam.IsCalculated = paramDto.IsCalculated;
+                    catParam.IsActive = true;
+                    catParam.UpdatedBy = actorUserId;
+                    catParam.UpdatedAt = DateTimeOffset.UtcNow;
+                }
+            }
+
+            foreach (var catParam in catalogParams)
+            {
+                if (!inputParamCodes.Contains(catParam.ParameterCode.ToUpperInvariant()))
+                {
+                    catParam.IsActive = false;
+                    catParam.UpdatedAt = DateTimeOffset.UtcNow;
+                }
+            }
+
+            var opParams = await _context.Parameters.Where(p => p.TestId == test.TestId).ToListAsync();
+            var opParamIds = opParams.Select(p => p.ParameterId).ToList();
+            var opRanges = await _context.ReferenceRanges.Where(r => opParamIds.Contains(r.ParameterId)).ToListAsync();
+
+            foreach (var paramDto in dto.Parameters ?? new List<ParameterSaveDto>())
+            {
+                var normParamCode = paramDto.ParameterCode.Trim().ToUpperInvariant();
+                var opParam = opParams.FirstOrDefault(p => p.ParameterCode.ToUpperInvariant() == normParamCode);
+                if (opParam == null)
+                {
+                    opParam = new Parameter
+                    {
+                        ParameterId = Guid.NewGuid(),
+                        TestId = test.TestId,
+                        ParameterCode = paramDto.ParameterCode,
+                        ParameterName = paramDto.ParameterName,
+                        Unit = paramDto.Unit,
+                        DataType = paramDto.DataType,
+                        SortOrder = paramDto.SortOrder,
+                        IsActive = true,
+                        CreatedAt = DateTimeOffset.UtcNow,
+                        UpdatedAt = DateTimeOffset.UtcNow
+                    };
+                    _context.Parameters.Add(opParam);
+                }
+                else
+                {
+                    opParam.ParameterName = paramDto.ParameterName;
+                    opParam.Unit = paramDto.Unit;
+                    opParam.DataType = paramDto.DataType;
+                    opParam.SortOrder = paramDto.SortOrder;
+                    opParam.IsActive = true;
+                    opParam.UpdatedAt = DateTimeOffset.UtcNow;
+                }
+                
+                await _context.SaveChangesAsync();
+
+                // Sync demographic reference ranges
+                var currentParamRanges = opRanges.Where(r => r.ParameterId == opParam.ParameterId).ToList();
+
+                void SyncRange(bool use, string sex, string ageGroup, decimal? min, decimal? max)
+                {
+                    var existing = currentParamRanges.FirstOrDefault(r => r.Sex == sex && r.AgeGroup == ageGroup);
+                    if (use)
+                    {
+                        if (existing == null)
+                        {
+                            var newRange = new ReferenceRange
+                            {
+                                ReferenceRangeId = Guid.NewGuid(),
+                                ParameterId = opParam.ParameterId,
+                                AgeGroup = ageGroup,
+                                Sex = sex,
+                                RefLow = min,
+                                RefHigh = max,
+                                EffectiveFrom = DateTime.UtcNow.Date,
+                                IsActive = true,
+                                CreatedAt = DateTimeOffset.UtcNow,
+                                UpdatedAt = DateTimeOffset.UtcNow
+                            };
+                            _context.ReferenceRanges.Add(newRange);
+                        }
+                        else
+                        {
+                            existing.RefLow = min;
+                            existing.RefHigh = max;
+                            existing.IsActive = true;
+                            existing.UpdatedAt = DateTimeOffset.UtcNow;
+                        }
+                    }
+                    else
+                    {
+                        if (existing != null)
+                        {
+                            _context.ReferenceRanges.Remove(existing);
+                        }
+                    }
+                }
+
+                SyncRange(paramDto.UseMale, "Male", "ALL", paramDto.MaleMin, paramDto.MaleMax);
+                SyncRange(paramDto.UseFemale, "Female", "ALL", paramDto.FemaleMin, paramDto.FemaleMax);
+                SyncRange(paramDto.UseInfant, "ALL", "Infant", paramDto.InfantMin, paramDto.InfantMax);
+                SyncRange(paramDto.UseChild, "ALL", "Child", paramDto.ChildMin, paramDto.ChildMax);
+                SyncRange(paramDto.UseAdult, "ALL", "Adult", paramDto.AdultMin, paramDto.AdultMax);
+
+                if (!string.IsNullOrWhiteSpace(paramDto.ReferenceRange))
+                {
+                    var range = currentParamRanges.FirstOrDefault(r => r.ParameterId == opParam.ParameterId && r.AgeGroup == "ALL" && r.Sex == "ALL");
+                    if (range == null)
+                    {
+                        range = new ReferenceRange
+                        {
+                            ReferenceRangeId = Guid.NewGuid(),
+                            ParameterId = opParam.ParameterId,
+                            AgeGroup = "ALL",
+                            Sex = "ALL",
+                            TextRange = paramDto.ReferenceRange,
+                            EffectiveFrom = DateTime.UtcNow.Date,
+                            IsActive = true,
+                            CreatedAt = DateTimeOffset.UtcNow,
+                            UpdatedAt = DateTimeOffset.UtcNow
+                        };
+                        _context.ReferenceRanges.Add(range);
+                    }
+                    else
+                    {
+                        range.TextRange = paramDto.ReferenceRange;
+                        range.IsActive = true;
+                        range.UpdatedAt = DateTimeOffset.UtcNow;
+                    }
+                }
+                else
+                {
+                    var range = currentParamRanges.FirstOrDefault(r => r.ParameterId == opParam.ParameterId && r.AgeGroup == "ALL" && r.Sex == "ALL");
+                    if (range != null)
+                    {
+                        _context.ReferenceRanges.Remove(range);
+                    }
+                }
+            }
+
+            foreach (var opParam in opParams)
+            {
+                if (!inputParamCodes.Contains(opParam.ParameterCode.ToUpperInvariant()))
+                {
+                    opParam.IsActive = false;
+                    opParam.UpdatedAt = DateTimeOffset.UtcNow;
+                }
+            }
+            await _context.SaveChangesAsync();
+
+            var existingCatalogMappings = await _context.CatalogPanelMappings.Where(m => m.PanelTestCode == test.TestCode).ToListAsync();
+            _context.CatalogPanelMappings.RemoveRange(existingCatalogMappings);
+
+            var existingOpMappings = await _context.ProfileMaps.Where(m => m.ParentTestId == test.TestId).ToListAsync();
+            _context.ProfileMaps.RemoveRange(existingOpMappings);
+            await _context.SaveChangesAsync();
+
+            if (dto.IsProfile && dto.IncludedTestCodes != null && dto.IncludedTestCodes.Any())
+            {
+                int sequence = 1;
+                foreach (var childCode in dto.IncludedTestCodes)
+                {
+                    if (string.IsNullOrWhiteSpace(childCode)) continue;
+
+                    var childTestId = await EnsureTestExistsAsync(childCode, deptCode);
+                    await EnsureCatalogTestExistsAsync(childCode, deptCode, actorUserId);
+
+                    var catMapping = new CatalogPanelMapping
+                    {
+                        Id = Guid.NewGuid(),
+                        PanelTestCode = test.TestCode,
+                        ChildTestCode = childCode,
+                        SortOrder = sequence,
+                        CreatedAt = DateTimeOffset.UtcNow
+                    };
+                    _context.CatalogPanelMappings.Add(catMapping);
+
+                    var opMapping = new SynOS.Models.Entities.ProfileMap
+                    {
+                        ProfileMapId = Guid.NewGuid(),
+                        ParentTestId = test.TestId,
+                        ChildTestId = childTestId,
+                        Sequence = sequence
+                    };
+                    _context.ProfileMaps.Add(opMapping);
+
+                    sequence++;
+                }
+                await _context.SaveChangesAsync();
+            }
         }
     }
 }

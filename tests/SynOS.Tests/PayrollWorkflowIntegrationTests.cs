@@ -12,6 +12,8 @@ using SynOS.Services.Payroll.Calculation;
 using SynOS.Services.Payroll.Facts;
 using SynOS.Services.Payroll.Orchestration;
 using Xunit;
+using Moq;
+using SynOS.Models.Entities.Time;
 
 namespace SynOS.Tests
 {
@@ -21,6 +23,7 @@ namespace SynOS.Tests
         {
             var options = new DbContextOptionsBuilder<SynOSDbContext>()
                 .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
+                .ConfigureWarnings(x => x.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.InMemoryEventId.TransactionIgnoredWarning))
                 .Options;
             return new SynOSDbContext(options);
         }
@@ -50,7 +53,8 @@ namespace SynOS.Tests
                 ESIPercentage = 0.75m,
                 TDSEnabled = true,
                 TDSMode = TaxCalculationMode.Percentage,
-                TDSValue = 10.0m // 10% TDS
+                TDSValue = 10.0m, // 10% TDS
+                JobTitle = "Technician"
             };
             db.Employees.Add(employee);
 
@@ -71,21 +75,19 @@ namespace SynOS.Tests
             // Let's add: 1 Unpaid Leave (Absent) = 1.0 day LOP, 1 HalfDay = 0.5 day LOP. Total LOP = 1.5 days.
             db.AttendanceLogs.Add(new AttendanceLog
             {
-                AttendanceLogId = Guid.NewGuid(),
+                AttendanceId = Guid.NewGuid(),
                 EmployeeId = employeeId,
                 ClockIn = new DateTime(2026, 5, 10, 9, 0, 0),
                 ClockOut = new DateTime(2026, 5, 10, 18, 0, 0),
-                Status = "Absent",
-                RawStatus = "Absent"
+                Status = "Absent"
             });
             db.AttendanceLogs.Add(new AttendanceLog
             {
-                AttendanceLogId = Guid.NewGuid(),
+                AttendanceId = Guid.NewGuid(),
                 EmployeeId = employeeId,
                 ClockIn = new DateTime(2026, 5, 15, 9, 0, 0),
                 ClockOut = new DateTime(2026, 5, 15, 13, 0, 0),
-                Status = "HalfDay",
-                RawStatus = "HalfDay"
+                Status = "HalfDay"
             });
 
             await db.SaveChangesAsync();
@@ -93,7 +95,9 @@ namespace SynOS.Tests
             // Instantiate components
             var calculationLogic = new PayrollCalculationLogicStub(db);
             var factWriter = new PayrollFactWriter(db);
-            var workflowService = new PayrollWorkflowService(db, calculationLogic, factWriter);
+            var spendFactWriterMock = new Mock<SynOS.Services.SpendEngine.ISpendFactWriter>();
+            var userServiceMock = new Mock<SynOS.Services.IUserService>();
+            var workflowService = new PayrollWorkflowService(db, calculationLogic, factWriter, spendFactWriterMock.Object, userServiceMock.Object);
 
             // Act - Step 1: Start Run
             var run = await workflowService.StartPayrollRunAsync(periodId);

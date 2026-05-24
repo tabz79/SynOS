@@ -39,6 +39,7 @@ namespace SynOS.Services
         // NEW: Production Metadata (Resolution from Photo)
         public string? BillingDateFormatted { get; set; }
         public string? PreparedBy { get; set; } // Typist Initial
+        public string? TestCode { get; set; }
     }
 
     public class LabDetails

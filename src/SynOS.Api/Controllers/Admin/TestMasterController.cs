@@ -7,6 +7,9 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using SynOS.Models.DTOs.Admin;
 using SynOS.Services;
+using Microsoft.EntityFrameworkCore;
+using System.Linq;
+using SynOS.Models.Entities.Catalog;
 
 namespace SynOS.Api.Controllers.Admin
 {
@@ -19,19 +22,22 @@ namespace SynOS.Api.Controllers.Admin
         private readonly ICatalogImportService _catalogImportService;
         private readonly ICatalogProvisioningService _provisioningService;
         private readonly IMapper _mapper;
+        private readonly SynOS.Data.SynOSDbContext _context;
 
         public TestMasterController(
             ITestMasterService testMasterService, 
             ICsvService csvService, 
             ICatalogImportService catalogImportService,
             ICatalogProvisioningService provisioningService,
-            IMapper mapper)
+            IMapper mapper,
+            SynOS.Data.SynOSDbContext context)
         {
             _testMasterService = testMasterService;
             _csvService = csvService;
             _catalogImportService = catalogImportService;
             _provisioningService = provisioningService;
             _mapper = mapper;
+            _context = context;
         }
 
         [HttpPost("catalog/import")]
@@ -75,6 +81,91 @@ namespace SynOS.Api.Controllers.Admin
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> CreateTest([FromBody] CreateTestDto dto)
         {
+            if (string.IsNullOrWhiteSpace(dto.TestCode))
+            {
+                return BadRequest(new { Message = "Test code is required." });
+            }
+
+            var conflictingTest = await _context.Tests.FirstOrDefaultAsync(t => t.TestCode.ToUpper() == dto.TestCode.Trim().ToUpper());
+            if (conflictingTest != null)
+            {
+                if (!conflictingTest.IsActive)
+                {
+                    // Dynamically rename the soft-deleted test to free up the code
+                    var suffix = $"_DEL_{DateTime.UtcNow.Ticks}";
+                    var maxLen = 50 - suffix.Length;
+                    var originalCode = conflictingTest.TestCode;
+                    if (originalCode.Length > maxLen)
+                    {
+                        originalCode = originalCode.Substring(0, maxLen);
+                    }
+                    
+                    var newCode = originalCode + suffix;
+                    
+                    conflictingTest.TestCode = newCode;
+                    conflictingTest.UpdatedAt = DateTimeOffset.UtcNow;
+
+                    var catalogTest = await _context.CatalogTests.FirstOrDefaultAsync(ct => ct.TestCode == dto.TestCode.Trim());
+                    if (catalogTest != null)
+                    {
+                        var catalogParams = await _context.CatalogParameters.Where(cp => cp.TestCode == catalogTest.TestCode).ToListAsync();
+
+                        var newCatalogTest = new CatalogTest
+                        {
+                            TestCode = newCode,
+                            TestName = catalogTest.TestName,
+                            DepartmentCode = catalogTest.DepartmentCode,
+                            SpecimenCode = catalogTest.SpecimenCode,
+                            TubeCode = catalogTest.TubeCode,
+                            Price = catalogTest.Price,
+                            IsPanel = catalogTest.IsPanel,
+                            IsActive = false,
+                            CreatedBy = catalogTest.CreatedBy,
+                            UpdatedBy = GetCurrentUserId(),
+                            CreatedAt = catalogTest.CreatedAt,
+                            UpdatedAt = DateTimeOffset.UtcNow
+                        };
+
+                        var newParams = catalogParams.Select(cp => new CatalogParameter
+                        {
+                            Id = Guid.NewGuid(),
+                            TestCode = newCode,
+                            ParameterCode = cp.ParameterCode,
+                            ParameterName = cp.ParameterName,
+                            DataType = cp.DataType,
+                            Unit = cp.Unit,
+                            ReferenceRange = cp.ReferenceRange,
+                            SortOrder = cp.SortOrder,
+                            Methodology = cp.Methodology,
+                            Formula = cp.Formula,
+                            IsCalculated = cp.IsCalculated,
+                            IsActive = false,
+                            CreatedBy = cp.CreatedBy,
+                            UpdatedBy = GetCurrentUserId(),
+                            CreatedAt = cp.CreatedAt,
+                            UpdatedAt = DateTimeOffset.UtcNow
+                        }).ToList();
+
+                        var catalogPanelMappings = await _context.CatalogPanelMappings
+                            .Where(m => m.PanelTestCode == catalogTest.TestCode || m.ChildTestCode == catalogTest.TestCode)
+                            .ToListAsync();
+                        _context.CatalogPanelMappings.RemoveRange(catalogPanelMappings);
+
+                        _context.CatalogParameters.RemoveRange(catalogParams);
+                        _context.CatalogTests.Remove(catalogTest);
+                        await _context.SaveChangesAsync();
+
+                        _context.CatalogTests.Add(newCatalogTest);
+                        _context.CatalogParameters.AddRange(newParams);
+                    }
+                    await _context.SaveChangesAsync();
+                }
+                else
+                {
+                    return BadRequest(new { Message = $"Test code '{dto.TestCode}' already exists." });
+                }
+            }
+
             var test = await _testMasterService.CreateTestAsync(dto, GetCurrentUserId());
             return Ok(_mapper.Map<TestDto>(test));
         }
@@ -84,7 +175,9 @@ namespace SynOS.Api.Controllers.Admin
         public async Task<IActionResult> GetTests()
         {
             var tests = await _testMasterService.GetTestsAsync();
-            return Ok(_mapper.Map<IReadOnlyList<TestDto>>(tests));
+            var dtos = _mapper.Map<IReadOnlyList<TestDto>>(tests).ToList();
+            var enriched = await EnrichTestDtosAsync(dtos);
+            return Ok(enriched);
         }
 
         [HttpGet("{id}")]
@@ -93,13 +186,29 @@ namespace SynOS.Api.Controllers.Admin
         {
             var test = await _testMasterService.GetTestAsync(id);
             if (test == null) return NotFound();
-            return Ok(_mapper.Map<TestDto>(test));
+            var dto = _mapper.Map<TestDto>(test);
+            var enriched = await EnrichTestDtoAsync(dto);
+            return Ok(enriched);
         }
 
         [HttpPut("{id}")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> UpdateTest(Guid id, [FromBody] UpdateTestDto dto)
         {
+            if (dto.TestCode != null)
+            {
+                if (string.IsNullOrWhiteSpace(dto.TestCode))
+                {
+                    return BadRequest(new { Message = "Test code cannot be empty." });
+                }
+
+                var exists = await _context.Tests.AnyAsync(t => t.TestId != id && t.TestCode.ToUpper() == dto.TestCode.Trim().ToUpper());
+                if (exists)
+                {
+                    return BadRequest(new { Message = $"Test code '{dto.TestCode}' already exists." });
+                }
+            }
+
             var test = await _testMasterService.UpdateTestAsync(id, dto, GetCurrentUserId());
             return Ok(_mapper.Map<TestDto>(test));
         }
@@ -163,6 +272,58 @@ namespace SynOS.Api.Controllers.Admin
                 return userId;
             }
             return Guid.Empty;
+        }
+
+        private async Task<List<TestDto>> EnrichTestDtosAsync(List<TestDto> dtos)
+        {
+            if (dtos == null || !dtos.Any()) return dtos ?? new List<TestDto>();
+
+            var testCodes = dtos.Select(d => d.TestCode).ToList();
+            var catalogParams = await _context.CatalogParameters
+                .Where(cp => testCodes.Contains(cp.TestCode))
+                .ToListAsync();
+
+            var catalogTests = await _context.CatalogTests
+                .Where(ct => testCodes.Contains(ct.TestCode))
+                .ToListAsync();
+
+            foreach (var dto in dtos)
+            {
+                var catTest = catalogTests.FirstOrDefault(ct => ct.TestCode == dto.TestCode);
+                if (catTest != null)
+                {
+                    dto.IsProfile = catTest.IsPanel;
+                }
+
+                if (dto.IsProfile)
+                {
+                    var childMappings = await _context.CatalogPanelMappings
+                        .Where(m => m.PanelTestCode == dto.TestCode)
+                        .Select(m => m.ChildTestCode)
+                        .ToListAsync();
+                    dto.IncludedTestCodes = childMappings;
+                }
+
+                foreach (var paramDto in dto.Parameters)
+                {
+                    var catParam = catalogParams.FirstOrDefault(cp => cp.TestCode == dto.TestCode && cp.ParameterCode == paramDto.ParameterCode);
+                    if (catParam != null)
+                    {
+                        paramDto.Methodology = catParam.Methodology;
+                        paramDto.Formula = catParam.Formula;
+                        paramDto.IsCalculated = catParam.IsCalculated;
+                        paramDto.ReferenceRange = catParam.ReferenceRange;
+                    }
+                }
+            }
+
+            return dtos;
+        }
+
+        private async Task<TestDto> EnrichTestDtoAsync(TestDto dto)
+        {
+            var enriched = await EnrichTestDtosAsync(new List<TestDto> { dto });
+            return enriched[0];
         }
     }
 }

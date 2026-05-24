@@ -54,6 +54,9 @@ namespace SynOS.Models.DTOs.Processing
         public bool IsRequired { get; set; } = true;
         public string? EnumOptions { get; set; }
         public string? ExistingResultValue { get; set; }
+        public bool IsCalculated { get; set; }
+        public string? Formula { get; set; }
+        public bool HasFormula { get; set; }
     }
 
     public class SubmitAssignmentResultsRequestDto

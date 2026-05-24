@@ -12,6 +12,30 @@ namespace SynOS.Models.DTOs.Admin
         public string DataType { get; set; }
         public int SortOrder { get; set; }
         public bool IsActive { get; set; }
+        public string? Methodology { get; set; }
+        public string? Formula { get; set; }
+        public bool IsCalculated { get; set; }
+        public string? ReferenceRange { get; set; }
+
+        public bool UseMale { get; set; }
+        public decimal? MaleMin { get; set; }
+        public decimal? MaleMax { get; set; }
+
+        public bool UseFemale { get; set; }
+        public decimal? FemaleMin { get; set; }
+        public decimal? FemaleMax { get; set; }
+
+        public bool UseInfant { get; set; }
+        public decimal? InfantMin { get; set; }
+        public decimal? InfantMax { get; set; }
+
+        public bool UseChild { get; set; }
+        public decimal? ChildMin { get; set; }
+        public decimal? ChildMax { get; set; }
+
+        public bool UseAdult { get; set; }
+        public decimal? AdultMin { get; set; }
+        public decimal? AdultMax { get; set; }
     }
 
     public class CreateParameterDto

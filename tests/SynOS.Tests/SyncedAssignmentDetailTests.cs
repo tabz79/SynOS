@@ -122,6 +122,7 @@ namespace SynOS.Tests
             };
             catalogTest.Parameters.Add(new CatalogParameter { ParameterCode = "HB", ParameterName = "Hemoglobin", SortOrder = 1, DataType = "Numeric" });
             catalogTest.Parameters.Add(new CatalogParameter { ParameterCode = "WBC", ParameterName = "White Blood Cells", SortOrder = 2, DataType = "Numeric" });
+            catalogTest.Parameters.Add(new CatalogParameter { ParameterCode = "MCH", ParameterName = "Mean Cell Hemoglobin", SortOrder = 3, DataType = "Numeric", IsCalculated = true, Formula = "HB / RBC" });
             db.CatalogTests.Add(catalogTest);
 
             // 8. Seed Existing Result
@@ -137,7 +138,8 @@ namespace SynOS.Tests
 
             await db.SaveChangesAsync();
 
-            var service = new ProcessingService(db, userContextMock.Object, notifierMock.Object, loggerMock.Object);
+            var resultServiceMock = new Mock<SynOS.Services.IResultService>();
+            var service = new ProcessingService(db, userContextMock.Object, notifierMock.Object, resultServiceMock.Object, loggerMock.Object);
 
             // Act
             var detail = await service.GetAssignmentDetailAsync(assignmentId);
@@ -155,7 +157,7 @@ namespace SynOS.Tests
             Assert.Equal(order.OrderId, detail.Tests[0].OrderId);
 
             // Verify Parameters and Result Matching
-            Assert.Equal(2, detail.Tests[0].Parameters.Count);
+            Assert.Equal(3, detail.Tests[0].Parameters.Count);
             
             var hbParam = detail.Tests[0].Parameters.First(p => p.ParameterCode == "HB");
             Assert.Equal("14.5", hbParam.ExistingResultValue);
@@ -163,6 +165,11 @@ namespace SynOS.Tests
 
             var wbcParam = detail.Tests[0].Parameters.First(p => p.ParameterCode == "WBC");
             Assert.Null(wbcParam.ExistingResultValue);
+            Assert.False(wbcParam.HasFormula);
+
+            var mchParam = detail.Tests[0].Parameters.First(p => p.ParameterCode == "MCH");
+            Assert.True(mchParam.HasFormula);
+            Assert.Equal("HB / RBC", mchParam.Formula);
         }
     }
 }

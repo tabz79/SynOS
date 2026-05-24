@@ -8,6 +8,128 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { RichPatientCard } from '@/components/patient/RichPatientCard';
 import { ResultEntryGrid } from './ResultEntryGrid';
 
+const evaluateFormula = (formula, values) => {
+    try {
+        const tokens = formula.match(/\b[A-Za-z_][A-Za-z0-9_]*\b/g) || [];
+        const evalValues = {};
+        for (const token of tokens) {
+            const valStr = values[token];
+            if (valStr === undefined || valStr === null || valStr === '' || valStr === '-') {
+                return '';
+            }
+            const val = parseFloat(valStr);
+            if (isNaN(val)) {
+                return '';
+            }
+            evalValues[token] = val;
+        }
+
+        let expr = formula;
+        const sortedTokens = [...tokens].sort((a, b) => b.length - a.length);
+        for (const token of sortedTokens) {
+            const regex = new RegExp(`\\b${token}\\b`, 'g');
+            expr = expr.replace(regex, evalValues[token]);
+        }
+
+        if (!/^[0-9+\-*/().\s]+$/.test(expr)) {
+            return '';
+        }
+
+        let result = Function(`"use strict"; return (${expr})`)();
+        
+        if (result === Infinity || result === -Infinity || isNaN(result)) {
+            return '-';
+        }
+        
+        return Number(result).toFixed(2);
+    } catch (err) {
+        console.error("Formula evaluation error:", formula, err);
+        return '';
+    }
+};
+
+const runCalculations = (currentResults, parameters) => {
+    const newResults = { ...currentResults };
+    const calculatedParams = parameters.filter(p => p.isCalculated);
+    
+    if (calculatedParams.length === 0) return newResults;
+
+    let changed = true;
+    let passes = 0;
+    while (changed && passes < 3) {
+        changed = false;
+        passes++;
+        
+        for (const param of calculatedParams) {
+            const prevVal = newResults[param.parameterCode];
+            let newVal = '';
+            
+            if (param.formula) {
+                newVal = evaluateFormula(param.formula, newResults);
+            } else {
+                // Hardcoded fallback for known parameters (Legacy Fallback matching C# backend)
+                const code = param.parameterCode;
+                if (code === "GLOB" || code === "GLOBULIN") {
+                    const tpVal = newResults["TP"] ?? newResults["T_P"] ?? newResults["TOTAL_PROTEIN"];
+                    const albVal = newResults["ALB"] ?? newResults["ALBUMIN"];
+                    if (tpVal !== undefined && tpVal !== null && tpVal !== '' && tpVal !== '-' &&
+                        albVal !== undefined && albVal !== null && albVal !== '' && albVal !== '-') {
+                        const tp = parseFloat(tpVal);
+                        const alb = parseFloat(albVal);
+                        if (!isNaN(tp) && !isNaN(alb)) {
+                            newVal = (tp - alb).toFixed(2);
+                        }
+                    }
+                } else if (code === "AG_RATIO" || code === "ALB : GLOB" || code === "ALB_GLOB") {
+                    const albVal = newResults["ALB"] ?? newResults["ALBUMIN"];
+                    const tpVal = newResults["TP"] ?? newResults["T_P"] ?? newResults["TOTAL_PROTEIN"];
+                    if (tpVal !== undefined && tpVal !== null && tpVal !== '' && tpVal !== '-' &&
+                        albVal !== undefined && albVal !== null && albVal !== '' && albVal !== '-') {
+                        const tp = parseFloat(tpVal);
+                        const alb = parseFloat(albVal);
+                        if (!isNaN(tp) && !isNaN(alb)) {
+                            const glob = tp - alb;
+                            if (glob !== 0) {
+                                newVal = (alb / glob).toFixed(2);
+                            } else {
+                                newVal = "-";
+                            }
+                        }
+                    }
+                } else if (code === "BIL_I" || code === "BILIRUBIN_INDIRECT") {
+                    const totalVal = newResults["BIL_T"] ?? newResults["BILIRUBIN_TOTAL"];
+                    const directVal = newResults["BIL_D"] ?? newResults["BILIRUBIN_DIRECT"];
+                    if (totalVal !== undefined && totalVal !== null && totalVal !== '' && totalVal !== '-' &&
+                        directVal !== undefined && directVal !== null && directVal !== '' && directVal !== '-') {
+                        const total = parseFloat(totalVal);
+                        const direct = parseFloat(directVal);
+                        if (!isNaN(total) && !isNaN(direct)) {
+                            newVal = (total - direct).toFixed(2);
+                        }
+                    }
+                } else if (code === "HCT" || code === "HEMATOCRIT") {
+                    const rbcVal = newResults["RBC"];
+                    const mcvVal = newResults["MCV"];
+                    if (rbcVal !== undefined && rbcVal !== null && rbcVal !== '' && rbcVal !== '-' &&
+                        mcvVal !== undefined && mcvVal !== null && mcvVal !== '' && mcvVal !== '-') {
+                        const rbc = parseFloat(rbcVal);
+                        const mcv = parseFloat(mcvVal);
+                        if (!isNaN(rbc) && !isNaN(mcv)) {
+                            newVal = (rbc * mcv / 10).toFixed(1);
+                        }
+                    }
+                }
+            }
+            
+            if (newVal !== prevVal) {
+                newResults[param.parameterCode] = newVal;
+                changed = true;
+            }
+        }
+    }
+    return newResults;
+};
+
 export function DepartmentWorkbenchIntentPanel({ assignmentId, onClose, onDirtyUpdate, onUpdateLocalState }) {
     const { user } = useAuth();
     const [detail, setDetail] = useState(null);
@@ -36,8 +158,16 @@ export function DepartmentWorkbenchIntentPanel({ assignmentId, onClose, onDirtyU
                         if (p.existingResultValue) initial[p.parameterCode] = p.existingResultValue;
                     });
                 });
-                setResults(initial);
-                initialResultsRef.current = initial;
+                
+                const paramsList = data.tests?.flatMap(t => t.parameters?.map(p => ({
+                    parameterCode: p.parameterCode,
+                    isCalculated: p.isCalculated || p.hasFormula || !!p.formula,
+                    formula: p.formula
+                }))) || [];
+                
+                const computed = runCalculations(initial, paramsList);
+                setResults(computed);
+                initialResultsRef.current = computed;
             } catch (err) {
                 console.error("Failed to load assignment detail", err);
                 setError("Failed to load assignment detail.");
@@ -58,9 +188,7 @@ export function DepartmentWorkbenchIntentPanel({ assignmentId, onClose, onDirtyU
         setError(null);
         try {
             await ProcessingApi.claimAssignment(assignmentId);
-            // Update detail locally
             setDetail(prev => ({ ...prev, assignedResourceId: user.resourceId }));
-            // Notify parent to move tab
             onUpdateLocalState?.(assignmentId, { 
                 assignedResourceId: user.resourceId,
                 assignedTechnicianName: user.name || user.username || 'Current User'
@@ -73,10 +201,18 @@ export function DepartmentWorkbenchIntentPanel({ assignmentId, onClose, onDirtyU
     };
 
     const handleValueChange = (parameterCode, value) => {
-        setResults(prev => ({ 
-            ...prev, 
-            [parameterCode]: value 
-        }));
+        setResults(prev => {
+            const updated = {
+                ...prev,
+                [parameterCode]: value
+            };
+            const paramsList = detail?.tests?.flatMap(t => t.parameters?.map(p => ({
+                parameterCode: p.parameterCode,
+                isCalculated: p.isCalculated || p.hasFormula || !!p.formula,
+                formula: p.formula
+            }))) || [];
+            return runCalculations(updated, paramsList);
+        });
     };
 
     // Safe Side-Effect: Monitor results to update isDirty state in parent

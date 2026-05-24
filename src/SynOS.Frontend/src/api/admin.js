@@ -13,5 +13,21 @@ export const AdminApi = {
 
     getBranches: async () => {
         return apiClient.get(`${API_BASE}/users/branches`);
+    },
+
+    getTests: async () => {
+        return apiClient.get(`${API_BASE}/tests`);
+    },
+
+    createTest: async (dto) => {
+        return apiClient.post(`${API_BASE}/tests`, dto);
+    },
+
+    updateTest: async (id, dto) => {
+        return apiClient.put(`${API_BASE}/tests/${id}`, dto);
+    },
+
+    deleteTest: async (id) => {
+        return apiClient.delete(`${API_BASE}/tests/${id}`);
     }
 };

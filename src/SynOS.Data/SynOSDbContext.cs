@@ -27,6 +27,91 @@ namespace SynOS.Data
         {
         }
 
+        public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+        {
+            await EnsureParameterMastersExistAsync();
+            return await base.SaveChangesAsync(cancellationToken);
+        }
+
+        public override int SaveChanges()
+        {
+            EnsureParameterMastersExist();
+            return base.SaveChanges();
+        }
+
+        private async Task EnsureParameterMastersExistAsync()
+        {
+            var parameterEntries = ChangeTracker.Entries<Parameter>()
+                .Where(e => e.State == EntityState.Added || e.State == EntityState.Modified)
+                .ToList();
+
+            if (!parameterEntries.Any()) return;
+
+            foreach (var entry in parameterEntries)
+            {
+                var parameter = entry.Entity;
+                if (string.IsNullOrWhiteSpace(parameter.ParameterCode)) continue;
+
+                var normalizedCode = parameter.ParameterCode.Trim();
+                
+                var existsInDb = await ParameterMasters.AnyAsync(pm => pm.ParameterCode == normalizedCode);
+                var existsInLocal = ChangeTracker.Entries<ParameterMaster>()
+                    .Any(e => e.Entity.ParameterCode == normalizedCode);
+
+                if (!existsInDb && !existsInLocal)
+                {
+                    var skeleton = new ParameterMaster
+                    {
+                        ParameterCode = normalizedCode,
+                        CanonicalName = parameter.ParameterName,
+                        UnitType = parameter.Unit ?? "",
+                        DefaultUnit = parameter.Unit,
+                        DataType = parameter.DataType ?? "Numeric",
+                        CreatedAt = DateTimeOffset.UtcNow,
+                        UpdatedAt = DateTimeOffset.UtcNow
+                    };
+                    ParameterMasters.Add(skeleton);
+                }
+            }
+        }
+
+        private void EnsureParameterMastersExist()
+        {
+            var parameterEntries = ChangeTracker.Entries<Parameter>()
+                .Where(e => e.State == EntityState.Added || e.State == EntityState.Modified)
+                .ToList();
+
+            if (!parameterEntries.Any()) return;
+
+            foreach (var entry in parameterEntries)
+            {
+                var parameter = entry.Entity;
+                if (string.IsNullOrWhiteSpace(parameter.ParameterCode)) continue;
+
+                var normalizedCode = parameter.ParameterCode.Trim();
+
+                var existsInDb = ParameterMasters.Any(pm => pm.ParameterCode == normalizedCode);
+                var existsInLocal = ChangeTracker.Entries<ParameterMaster>()
+                    .Any(e => e.Entity.ParameterCode == normalizedCode);
+
+                if (!existsInDb && !existsInLocal)
+                {
+                    var skeleton = new ParameterMaster
+                    {
+                        ParameterCode = normalizedCode,
+                        CanonicalName = parameter.ParameterName,
+                        UnitType = parameter.Unit ?? "",
+                        DefaultUnit = parameter.Unit,
+                        DataType = parameter.DataType ?? "Numeric",
+                        CreatedAt = DateTimeOffset.UtcNow,
+                        UpdatedAt = DateTimeOffset.UtcNow
+                    };
+                    ParameterMasters.Add(skeleton);
+                }
+            }
+        }
+
+
         // Registry Stabilization (Phase 8)
         public DbSet<DepartmentMaster> DepartmentMasters { get; set; } = null!;
         public DbSet<TestPricing> TestPricings { get; set; } = null!;

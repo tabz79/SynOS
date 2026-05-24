@@ -60,12 +60,25 @@ const handleResponse = async (response) => {
         throw new Error("Session Expired");
     }
     
-    if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || `API Error: ${response.status}`);
+    if (response.status === 204) {
+        return null;
     }
     
-    return response.json();
+    const text = await response.text().catch(() => "");
+    let data = {};
+    if (text) {
+        try {
+            data = JSON.parse(text);
+        } catch (e) {
+            console.error("Failed to parse API response as JSON:", e);
+        }
+    }
+    
+    if (!response.ok) {
+        throw new Error(data.message || `API Error: ${response.status}`);
+    }
+    
+    return data;
 };
 
 export const apiClient = {

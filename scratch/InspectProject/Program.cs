@@ -2,31 +2,58 @@ using System;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using SynOS.Data;
-using SynOS.Models.Entities.Referral;
 
 var optionsBuilder = new DbContextOptionsBuilder<SynOSDbContext>();
 optionsBuilder.UseSqlServer("Server=(localdb)\\MSSQLLocalDB;Database=SynOSDb;Trusted_Connection=True;MultipleActiveResultSets=true");
 
 using var context = new SynOSDbContext(optionsBuilder.Options);
 
-var partnerId = Guid.Parse("745502d5-4922-4828-b853-ed8c781c36ac");
-var partner = context.ReferralPartners.Find(partnerId);
-
-if (partner == null)
-{
-    Console.WriteLine($"PARTNER_NOT_FOUND: {partnerId}");
-}
-else
-{
-    Console.WriteLine($"PARTNER_FOUND: {partner.Name}");
-}
-
-var facts = context.ReferralPayableFacts
-    .Where(f => f.ReferralPartnerId == partnerId)
+var tests = context.Tests
+    .Include(t => t.ProfileChildren)
     .ToList();
 
-Console.WriteLine($"FACTS_COUNT: {facts.Count}");
-foreach (var f in facts)
+var testCodesToVerify = new[] { "LIPID", "CBC", "EHP01" };
+
+Console.WriteLine("---------------------------------------------");
+Console.WriteLine("VERIFYING SPECIMEN CONFIGURATION VALIDATION");
+Console.WriteLine("---------------------------------------------");
+
+foreach (var code in testCodesToVerify)
 {
-    Console.WriteLine($"FACT: ID={f.ReferralPayableFactId}, SettledAt={f.SettledAt}, Status={f.Status}, Amount={f.Amount}");
+    var test = tests.FirstOrDefault(t => t.TestCode.Equals(code, StringComparison.OrdinalIgnoreCase));
+    if (test == null)
+    {
+        Console.WriteLine($"[ERROR] Test {code} not found in database.");
+        continue;
+    }
+
+    Console.WriteLine($"Found Test: {test.TestCode}");
+    Console.WriteLine($"  - Name: {test.TestName}");
+    Console.WriteLine($"  - SpecimenTypeCode: '{test.SpecimenTypeCode}'");
+    Console.WriteLine($"  - IsProfile: {test.IsProfile}");
+    Console.WriteLine($"  - ProfileChildren Count: {test.ProfileChildren?.Count ?? 0}");
+
+    // Simulate validation rule
+    bool wouldThrow = false;
+    string errorMessage = "";
+
+    if (string.IsNullOrEmpty(test.SpecimenTypeCode))
+    {
+        if (!test.IsProfile || (test.ProfileChildren != null && !test.ProfileChildren.Any()))
+        {
+            wouldThrow = true;
+            errorMessage = $"Specimen type not configured for test {test.TestCode}";
+        }
+    }
+
+    if (wouldThrow)
+    {
+        Console.WriteLine($"  - [VALIDATION FAILED] Would throw: {errorMessage}");
+    }
+    else
+    {
+        Console.WriteLine("  - [VALIDATION PASSED] Ready for reception booking without 409 conflict!");
+    }
+    Console.WriteLine();
 }
+Console.WriteLine("---------------------------------------------");

@@ -362,6 +362,7 @@ namespace SynOS.Services.Operational
                         TestName = catalogTest?.TestName ?? o.TestCode,
                         SortOrder = 0,
                         Parameters = catalogTest?.Parameters
+                            .Where(p => p.IsActive)
                             .OrderBy(p => p.SortOrder)
                             .Select(cp => new AssignmentParameterDto
                             {
@@ -373,7 +374,10 @@ namespace SynOS.Services.Operational
                                 SortOrder = cp.SortOrder,
                                 IsRequired = cp.IsRequired,
                                 EnumOptions = cp.EnumOptions,
-                                ExistingResultValue = results.FirstOrDefault(r => r.OrderId == o.OrderId && r.ParameterCode == cp.ParameterCode)?.Value
+                                ExistingResultValue = results.FirstOrDefault(r => r.OrderId == o.OrderId && r.ParameterCode == cp.ParameterCode)?.Value,
+                                IsCalculated = cp.IsCalculated,
+                                Formula = cp.Formula,
+                                HasFormula = cp.IsCalculated || !string.IsNullOrEmpty(cp.Formula)
                             }).ToList() ?? new List<AssignmentParameterDto>()
                     };
                 })

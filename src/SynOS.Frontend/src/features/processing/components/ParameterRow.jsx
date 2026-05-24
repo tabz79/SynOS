@@ -9,6 +9,7 @@ export function ParameterRow({ parameter, value, onChange, onKeyDown, isActive }
     const renderInput = () => {
         switch (parameter.dataType) {
             case 'Numeric':
+                const isDisabled = parameter.isCalculated || !!parameter.formula;
                 return (
                     <input
                         ref={inputRef}
@@ -16,13 +17,16 @@ export function ParameterRow({ parameter, value, onChange, onKeyDown, isActive }
                         value={value}
                         onChange={(e) => onChange(e.target.value)}
                         onKeyDown={onKeyDown}
+                        disabled={isDisabled}
                         className={cn(
                             "w-24 text-center font-bold font-mono text-base py-1 rounded-md border-2 transition-all outline-none",
-                            isActive 
-                                ? "dark:bg-zinc-950 bg-white border-cyan-500 shadow-[0_0_12px_rgba(6,182,212,0.2)]" 
-                                : "dark:bg-zinc-900 bg-zinc-50 dark:border-white/5 border-zinc-200"
+                            isDisabled
+                                ? "bg-zinc-100 dark:bg-zinc-800 text-zinc-500 cursor-not-allowed border-zinc-200 dark:border-zinc-700"
+                                : isActive 
+                                    ? "dark:bg-zinc-950 bg-white border-cyan-500 shadow-[0_0_12px_rgba(6,182,212,0.2)]" 
+                                    : "dark:bg-zinc-900 bg-zinc-50 dark:border-white/5 border-zinc-200"
                         )}
-                        placeholder="0.00"
+                        placeholder={isDisabled ? "Auto" : "0.00"}
                     />
                 );
 
@@ -81,6 +85,7 @@ export function ParameterRow({ parameter, value, onChange, onKeyDown, isActive }
 
             case 'Text':
             default:
+                const isTextDisabled = parameter.isCalculated || !!parameter.formula;
                 return (
                     <textarea
                         ref={inputRef}
@@ -88,13 +93,16 @@ export function ParameterRow({ parameter, value, onChange, onKeyDown, isActive }
                         onChange={(e) => onChange(e.target.value)}
                         onKeyDown={onKeyDown}
                         rows={1}
+                        disabled={isTextDisabled}
                         className={cn(
                             "w-24 text-[10px] font-medium py-1 px-2 rounded-md border-2 transition-all outline-none resize-none overflow-hidden",
-                            isActive 
-                                ? "dark:bg-zinc-950 bg-white border-cyan-500" 
-                                : "dark:bg-zinc-900 bg-zinc-50 dark:border-white/5 border-zinc-200"
+                            isTextDisabled
+                                ? "bg-zinc-100 dark:bg-zinc-800 text-zinc-500 cursor-not-allowed border-zinc-200 dark:border-zinc-700"
+                                : isActive 
+                                    ? "dark:bg-zinc-950 bg-white border-cyan-500" 
+                                    : "dark:bg-zinc-900 bg-zinc-50 dark:border-white/5 border-zinc-200"
                         )}
-                        placeholder="..."
+                        placeholder={isTextDisabled ? "Auto" : "..."}
                     />
                 );
         }

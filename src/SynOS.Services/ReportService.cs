@@ -762,7 +762,8 @@ namespace SynOS.Services
                         : "N/A",
                     ReferenceDoctor = order.Visit?.Referrer?.ProviderName ?? "Self / Walk-in",
                     BillingDateFormatted = order.Visit?.CreatedAt.ToString("dd-MMM-yyyy") ?? "N/A",
-                    PreparedBy = report.TypedByUser?.Name ?? "N/A"
+                    PreparedBy = report.TypedByUser?.Name ?? "N/A",
+                    TestCode = order.TestCode
                 },
                 Modality = domain.Department,
                 ReportTitle = $"{domain.Department} Diagnostic Report",
@@ -1063,7 +1064,8 @@ namespace SynOS.Services
                         : "N/A",
                     ReferenceDoctor = order.Visit?.Referrer?.ProviderName ?? "Self / Walk-in",
                     BillingDateFormatted = order.Visit?.CreatedAt.ToString("dd-MMM-yyyy") ?? "N/A",
-                    PreparedBy = report.TypedByUser?.Name ?? "N/A"
+                    PreparedBy = report.TypedByUser?.Name ?? "N/A",
+                    TestCode = order.TestCode
                 },
                 Modality = order.Department,
                 ReportTitle = $"{order.Department} Diagnostic Report",
