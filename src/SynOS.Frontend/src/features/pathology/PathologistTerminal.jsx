@@ -206,7 +206,8 @@ export function PathologistTerminal() {
         if (!selectedReportId || isSigning) return;
 
         // Proactive Guard: Check if signature exists
-        if (!userProfile?.signatureImageUrl) {
+        const bypassIdentityCheck = isAdmin && hasDefaultPathologistSign;
+        if (!userProfile?.signatureImageUrl && !bypassIdentityCheck) {
             setShowSignatureModal(true);
             return;
         }
@@ -277,16 +278,28 @@ export function PathologistTerminal() {
 
     const isReadOnly = reportStructure?.status === 'Signed' || reportStructure?.status === 'ManualVerified' || reportStructure?.status === 'Finalized';
 
+    const isAdmin = user?.role === 'Admin' || user?.role === 'SystemAdmin';
+
+    const hasDefaultPathologistSign = useMemo(() => {
+        return reportData?.signatures?.some(s => 
+            s.role === "Chief Pathologist / Director" || 
+            s.hash === "BASELINE_IDENTITY" || 
+            s.signatureImageBase64
+        ) || false;
+    }, [reportData]);
+
     // GPT-5: Data-driven investigative identity guard
     const isValid = (v) => v && v.trim().length > 0;
     const missingIdentityFields = [];
-    if (!isValid(userProfile?.name)) missingIdentityFields.push("Full Name");
-    if (!isValid(userProfile?.designation)) missingIdentityFields.push("Professional Designation");
-    if (!userProfile?.signatureImageUrl) missingIdentityFields.push("Digital Signature Image");
+    
+    const bypassIdentityCheck = isAdmin && hasDefaultPathologistSign;
+    if (!bypassIdentityCheck) {
+        if (!isValid(userProfile?.name)) missingIdentityFields.push("Full Name");
+        if (!isValid(userProfile?.designation)) missingIdentityFields.push("Professional Designation");
+        if (!userProfile?.signatureImageUrl) missingIdentityFields.push("Digital Signature Image");
+    }
 
     const isIdentityComplete = missingIdentityFields.length === 0;
-
-    const isAdmin = user?.role === 'Admin' || user?.role === 'SystemAdmin';
     const [activeTab, setActiveTab] = useState("available"); // available | assigned
 
     const filteredReports = reports.filter(r => {

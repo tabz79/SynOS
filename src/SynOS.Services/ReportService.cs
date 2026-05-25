@@ -179,8 +179,28 @@ namespace SynOS.Services
         public async Task<ReportSignatureResponseDto> SignReportAsync(Guid reportId, Guid signedByUserId)
         {
             // 1. Precondition checks
-            var user = await _context.Users.FindAsync(signedByUserId);
+            var user = await _context.Users
+                .Include(u => u.UserRoles)
+                    .ThenInclude(ur => ur.Role)
+                .FirstOrDefaultAsync(u => u.UserId == signedByUserId);
             if (user == null) throw new KeyNotFoundException("User not found.");
+
+            // Check if this is an Admin user
+            bool isSigningUserAdmin = user.UserRoles.Any(ur => ur.Role.Name == "Admin" || ur.Role.Name == "SystemAdmin");
+
+            if (isSigningUserAdmin)
+            {
+                var defaultPathologist = await _context.Users
+                    .FirstOrDefaultAsync(u => u.IsDefaultSignatory && u.IsActive);
+
+                if (defaultPathologist != null && !string.IsNullOrEmpty(defaultPathologist.SignatureImageUrl))
+                {
+                    // "when the admim user clicks on the sign the report then the code should check whether default pathologist user which is lab owners sign is already there,
+                    // if it is presend then the signing must be ignored, and the flow must contuinue as if the report has been signed."
+                    signedByUserId = defaultPathologist.UserId;
+                    user = defaultPathologist;
+                }
+            }
 
             // GPT-5 Rule: Zero Fallback Identity
             if (string.IsNullOrWhiteSpace(user.Name))
@@ -889,9 +909,9 @@ namespace SynOS.Services
                     ResultId = p.ResultId?.ToString() ?? p.ParameterCode,
                     TestCode = order.Test?.TestCode ?? "UNKNOWN",
                     ParameterCode = p.ParameterCode,
-                    Value = p.Value,
-                    Unit = p.Unit.ToUpperInvariant(),
-                    Range = p.ReferenceRange,
+                    Value = p.Value ?? string.Empty, // Strict Byte Truth (Forensic Lock)
+                    Unit = (p.Unit ?? string.Empty).ToUpperInvariant(),
+                    Range = (p.ReferenceRange ?? string.Empty).Trim(),
                     Flag = (p.Flag ?? string.Empty).ToUpperInvariant(),
                     Method = (p.Methodology ?? string.Empty).ToUpperInvariant()
                 })).OrderBy(r => r.ParameterCode).ThenBy(r => r.ResultId).ToList()

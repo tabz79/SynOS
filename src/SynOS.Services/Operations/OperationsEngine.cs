@@ -827,8 +827,11 @@ namespace SynOS.Services.Operations
                 throw new UnauthorizedAccessException($"Order {orderId} belongs to branch {order.Visit.BranchId}, access denied for context branch {branchId}.");
             }
 
-            // Invariant: Revenue Guard
-            if (!order.Visit.Invoices.Any(i => i.Status == "FullPaid"))
+            // Invariant: Revenue Guard (Bypassed for PartnerCollects or Admin/SystemAdmin users)
+            bool isPartnerCollect = order.Visit.PaymentCollectionModel == "PartnerCollects";
+            bool isAdmin = _userContext.CurrentRole == "Admin" || _userContext.CurrentRole == "SystemAdmin";
+            
+            if (!isPartnerCollect && !isAdmin && !order.Visit.Invoices.Any(i => i.Status == "Paid" || i.Status == "FullPaid"))
             {
                 throw new InvalidOperationException("Order must be fully paid before results can be verified.");
             }

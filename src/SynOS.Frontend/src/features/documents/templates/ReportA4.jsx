@@ -86,7 +86,7 @@ const renderTipTapJSON = (node) => {
         case 'listItem':
             return <li className="leading-tight">{children}</li>;
         case 'table':
-            return <table className="w-full border-collapse border-2 border-zinc-200 my-1">{children}</table>;
+            return <table className="w-full border-collapse border-2 border-zinc-200 my-1"><tbody>{children}</tbody></table>;
         case 'tableRow':
             return <tr className="border-b border-zinc-150">{children}</tr>;
         case 'tableHeader':
