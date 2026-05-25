@@ -15,10 +15,13 @@ import {
     Clock,
     Printer,
     ShieldCheck,
+    ShieldAlert,
     Package
 } from 'lucide-react';
 import { ReportA4 } from '../documents/templates/ReportA4';
 import { StockRequestPanel } from '../inventory/StockRequestPanel';
+import { RichMedicalEditor } from '@/components/editor/RichMedicalEditor';
+import { MedicalMacrosWorkspace } from '@/components/editor/MedicalMacrosWorkspace';
 
 const evaluateFormula = (formula, values) => {
     if (!formula) return null;
@@ -112,6 +115,8 @@ export function TypistTerminal() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isInventoryModalOpen, setIsInventoryModalOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
+    const [isQueueCollapsed, setIsQueueCollapsed] = useState(false);
+    const [isMacroManagerOpen, setIsMacroManagerOpen] = useState(false);
 
     const requestCounter = useRef(0);
 
@@ -130,10 +135,12 @@ export function TypistTerminal() {
     useEffect(() => {
         if (selectedReportId) {
             fetchReportDetail(selectedReportId);
+            setIsQueueCollapsed(true);
         } else {
             setReportStructure(null);
             setInterpretation({ interpretation: "", comments: "" });
             setLastSavedAt(null);
+            setIsQueueCollapsed(false);
         }
     }, [selectedReportId]);
 
@@ -272,8 +279,17 @@ export function TypistTerminal() {
         }
     };
 
+    const patientName = calculatedReportStructure?.patientName || calculatedReportStructure?.patient?.name;
+    const patientAgeGender = calculatedReportStructure?.patientAgeGender || (calculatedReportStructure?.patient?.age ? `${calculatedReportStructure.patient.age} / ${calculatedReportStructure.patient.gender}` : '');
+    const token = calculatedReportStructure?.token || calculatedReportStructure?.patient?.mrn || '---';
+
+    const memoizedReportPreview = useMemo(() => {
+        if (!reportData) return null;
+        return <ReportA4 reportData={reportData} />;
+    }, [reportData]);
+
     return (
-        <div className="h-screen w-screen dark:bg-synos-background bg-transparent text-foreground flex flex-col overflow-hidden font-sans selection:bg-white/20 relative">
+        <div className="h-screen w-screen dark:bg-synos-background bg-transparent text-foreground flex flex-col overflow-hidden font-sans selection:bg-indigo-500/30 relative">
             <div className="fixed inset-0 pointer-events-none overflow-hidden z-[-1] dark:hidden no-print">
                 <div className="absolute inset-0 opacity-[0.03] mix-blend-overlay" style={{ backgroundImage: `url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyBAMAAADsEZWCAAAAGFBMVEUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAt66YlAAAAB3RSTlMAo7S066u0v76zAAABJklEQVQ4jXWSwW7DIAyGvRNoV9HeIdp7B2nvHaK9d7D27lX836VpY6t0p8oHicDHP4Z99qGf96HvX+h7NfSmX8U8z9M0z6+P/m8X6fB6L78XpX4X5X4O6fc8l7e8n+T9KO87ed+m77pP33Wfvuu6T991nb7rum/ed5+87z55333yvvvkfffJ++6T990n77pP33Wfvus6fdd13rrvu67rvXXfd13ne+u+77rO99Z933Wdt67rtnWdt67rtjW999Y9ve9997mPu8997uPus9fZZ6+zz15nn73OPnudvU9f0+v0Nb1OX9Pr9DW9Tm9O9vTmaE5vjua09f7o/db7rff7f9H3v6XvP9TzL/X+U8+/1fMv9fw7fQ==")` }} />
                 <div className="absolute top-[-15%] left-[-5%] w-[50%] h-[55%] animate-pulse" style={{ background: 'radial-gradient(circle at 40% 40%, rgba(6, 182, 212, 0.07) 0%, rgba(6, 182, 212, 0.02) 45%, rgba(6, 182, 212, 0) 85%)', animationDuration: '10s' }} />
@@ -290,88 +306,102 @@ export function TypistTerminal() {
                     "flex-1 flex flex-row gap-4 transition-all duration-500 ease-out h-full",
                     isInventoryModalOpen ? "opacity-40 pointer-events-none scale-[0.99]" : "opacity-100"
                 )}>
-                <div className="w-[15%] flex flex-col gap-4 min-h-0 no-print relative">
-                    <div className="dark:bg-zinc-900 bg-white dark:border-white/5 border-black/[0.1] shadow-[0_4px_20px_rgba(0,0,0,0.05)] rounded-xl p-4 flex flex-col gap-3 shrink-0">
-                        <div className="flex items-center justify-between">
-                            <h2 className="text-lg font-bold flex items-center gap-2 dark:text-zinc-200">
-                                <ClipboardList className="w-5 h-5 text-synos-primary" />
-                                Typing Queue
-                            </h2>
-                            <span className="bg-synos-primary/10 text-synos-primary dark:text-synos-primary/80 text-xs font-bold px-2 py-0.5 rounded-full">
-                                {filteredReports.length}
-                            </span>
+                <div className={cn(
+                    "flex flex-col gap-4 min-h-0 no-print relative transition-all duration-300 ease-in-out",
+                    (isQueueCollapsed && !isMacroManagerOpen) ? "w-0 overflow-hidden opacity-0 pointer-events-none" : "w-[15%] opacity-100"
+                )}>
+                    {isMacroManagerOpen ? (
+                        <div className="dark:bg-zinc-900 bg-white dark:border-white/5 border-black/[0.1] shadow-[0_4px_20px_rgba(0,0,0,0.05)] rounded-xl p-4 flex flex-col h-full min-h-0">
+                            <MedicalMacrosWorkspace onClose={() => setIsMacroManagerOpen(false)} />
                         </div>
-                        
-                        <div className="flex items-center gap-1 dark:bg-zinc-950 bg-zinc-50 p-1 rounded-xl border dark:border-white/5 border-zinc-200">
-                            {['available', 'assigned'].map(tab => (
+                    ) : (
+                        <>
+                            <div className="dark:bg-zinc-900 bg-white dark:border-white/5 border-black/[0.1] shadow-[0_4px_20px_rgba(0,0,0,0.05)] rounded-xl p-4 flex flex-col gap-3 shrink-0">
+                                <div className="flex items-center justify-between">
+                                    <h2 className="text-lg font-bold flex items-center gap-2 dark:text-zinc-200">
+                                        <ClipboardList className="w-5 h-5 text-synos-primary" />
+                                        Typing Queue
+                                    </h2>
+                                    <span className="bg-synos-primary/10 text-synos-primary dark:text-synos-primary/80 text-xs font-bold px-2 py-0.5 rounded-full">
+                                        {filteredReports.length}
+                                    </span>
+                                </div>
+                                
+                                <div className="flex items-center gap-1 dark:bg-zinc-950 bg-zinc-50 p-1 rounded-xl border dark:border-white/5 border-zinc-200">
+                                    {['available', 'assigned'].map(tab => (
+                                        <button
+                                            key={tab}
+                                            onClick={() => setActiveTab(tab)}
+                                            className={cn(
+                                                "flex-1 text-[10px] uppercase font-black tracking-widest py-1.5 rounded-lg transition-all",
+                                                activeTab === tab 
+                                                    ? "bg-synos-primary text-white shadow-lg shadow-synos-primary/20" 
+                                                    : "text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"
+                                            )}
+                                        >
+                                            {tab}
+                                        </button>
+                                    ))}
+                                </div>
+
+                                <div className="relative">
+                                    <Search className="absolute left-3 top-2.5 w-4 h-4 text-zinc-500" />
+                                    <input 
+                                        type="text"
+                                        placeholder="Search..."
+                                        value={searchTerm}
+                                        onChange={(e) => setSearchTerm(e.target.value)}
+                                        className="w-full dark:bg-zinc-950/50 bg-zinc-50 border dark:border-white/10 border-zinc-200 rounded-xl pl-9 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-synos-primary/20 focus:border-synos-primary dark:text-zinc-200 transition-all"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="flex-1 overflow-y-auto space-y-3 pr-1 pb-24 custom-scrollbar">
+                                {isLoadingList ? (
+                                    <div className="flex flex-col items-center justify-center py-12 opacity-50">
+                                        <Loader2 className="w-8 h-8 animate-spin mb-2" />
+                                        <span className="text-sm font-medium text-zinc-500 font-mono tracking-tighter">Initializing Queue...</span>
+                                    </div>
+                                ) : filteredReports.length === 0 ? (
+                                    <div className="text-center py-12 dark:bg-zinc-900/50 bg-white/50 rounded-xl border border-dashed dark:border-white/10 border-zinc-300">
+                                        <p className="dark:text-zinc-500 text-zinc-400 text-sm italic font-mono tracking-tighter">Queue is empty</p>
+                                    </div>
+                                ) : filteredReports.map(report => (
+                                    <PathologistWorklistCard
+                                        key={report.reportId}
+                                        report={report}
+                                        isSelected={selectedReportId === report.reportId}
+                                        onClick={() => setSelectedReportId(report.reportId)}
+                                    />
+                                ))}
+                            </div>
+
+                            {/* Floating Request Stock Button (Bottom Left of Queue) */}
+                            <div className="absolute bottom-6 left-6 z-20">
                                 <button
-                                    key={tab}
-                                    onClick={() => setActiveTab(tab)}
+                                    onClick={() => setIsInventoryModalOpen(true)}
                                     className={cn(
-                                        "flex-1 text-[10px] uppercase font-black tracking-widest py-1.5 rounded-lg transition-all",
-                                        activeTab === tab 
-                                            ? "bg-synos-primary text-white shadow-lg shadow-synos-primary/20" 
-                                            : "text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"
+                                        "group p-3 rounded-2xl shadow-2xl transition-all duration-300 flex items-center gap-2 border hover:scale-105 active:scale-95",
+                                        theme === 'dark' 
+                                            ? "bg-zinc-900 border-white/10 text-zinc-400 hover:text-white" 
+                                            : "bg-white border-zinc-200 text-zinc-500 hover:text-zinc-900"
                                     )}
+                                    title="Request Stock"
                                 >
-                                    {tab}
+                                    <Package className="w-5 h-5" />
+                                    <span className="text-[10px] font-black uppercase tracking-widest overflow-hidden max-w-0 group-hover:max-w-xs transition-all duration-500">
+                                        Request Stock
+                                    </span>
                                 </button>
-                            ))}
-                        </div>
-
-                        <div className="relative">
-                            <Search className="absolute left-3 top-2.5 w-4 h-4 text-zinc-500" />
-                            <input 
-                                type="text"
-                                placeholder="Search..."
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                className="w-full dark:bg-zinc-950/50 bg-zinc-50 border dark:border-white/10 border-zinc-200 rounded-xl pl-9 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-synos-primary/20 focus:border-synos-primary dark:text-zinc-200 transition-all"
-                            />
-                        </div>
-                    </div>
-
-                    <div className="flex-1 overflow-y-auto space-y-3 pr-1 pb-24 custom-scrollbar">
-                        {isLoadingList ? (
-                            <div className="flex flex-col items-center justify-center py-12 opacity-50">
-                                <Loader2 className="w-8 h-8 animate-spin mb-2" />
-                                <span className="text-sm font-medium text-zinc-500 font-mono tracking-tighter">Initializing Queue...</span>
                             </div>
-                        ) : filteredReports.length === 0 ? (
-                            <div className="text-center py-12 dark:bg-zinc-900/50 bg-white/50 rounded-xl border border-dashed dark:border-white/10 border-zinc-300">
-                                <p className="dark:text-zinc-500 text-zinc-400 text-sm italic font-mono tracking-tighter">Queue is empty</p>
-                            </div>
-                        ) : filteredReports.map(report => (
-                            <PathologistWorklistCard
-                                key={report.reportId}
-                                report={report}
-                                isSelected={selectedReportId === report.reportId}
-                                onClick={() => setSelectedReportId(report.reportId)}
-                            />
-                        ))}
-                    </div>
-
-                    {/* Floating Request Stock Button (Bottom Left of Queue) */}
-                    <div className="absolute bottom-6 left-6 z-20">
-                        <button
-                            onClick={() => setIsInventoryModalOpen(true)}
-                            className={cn(
-                                "group p-3 rounded-2xl shadow-2xl transition-all duration-300 flex items-center gap-2 border hover:scale-105 active:scale-95",
-                                theme === 'dark' 
-                                    ? "bg-zinc-900 border-white/10 text-zinc-400 hover:text-white" 
-                                    : "bg-white border-zinc-200 text-zinc-500 hover:text-zinc-900"
-                            )}
-                            title="Request Stock"
-                        >
-                            <Package className="w-5 h-5" />
-                            <span className="text-[10px] font-black uppercase tracking-widest overflow-hidden max-w-0 group-hover:max-w-xs transition-all duration-500">
-                                Request Stock
-                            </span>
-                        </button>
-                    </div>
+                        </>
+                    )}
                 </div>
 
-                <div className="w-[35%] flex flex-col gap-4 min-h-0 no-print">
+                <div className={cn(
+                    "flex flex-col gap-4 min-h-0 no-print transition-all duration-300 ease-in-out",
+                    isQueueCollapsed ? "w-[50%]" : "w-[35%]"
+                )}>
                     <div className="dark:bg-zinc-900 bg-white dark:border-white/5 border-black/[0.1] shadow-[0_4px_20px_rgba(0,0,0,0.05)] rounded-xl p-6 flex-1 flex flex-col min-h-0">
                         {isLoadingDetail ? (
                             <div className="flex-1 flex flex-col items-center justify-center opacity-50">
@@ -405,15 +435,22 @@ export function TypistTerminal() {
                             <div className="flex flex-col h-full min-h-0">
                                 <div className="flex items-center justify-between mb-8 pb-6 border-b dark:border-white/5 border-zinc-100 shrink-0">
                                     <div className="flex items-center gap-4">
+                                        <button
+                                            onClick={() => setIsQueueCollapsed(prev => !prev)}
+                                            className="p-2 hover:bg-zinc-500/10 rounded-lg text-zinc-500 transition-all active:scale-95 shrink-0 font-black border dark:border-white/5 border-zinc-200 text-xs flex items-center justify-center w-8 h-8"
+                                            title={isQueueCollapsed ? "Show Patient Queue" : "Collapse Workspace"}
+                                        >
+                                            {isQueueCollapsed ? "→" : "←"}
+                                        </button>
                                         <div className="w-12 h-12 dark:bg-zinc-800 bg-synos-primary/5 rounded-xl flex items-center justify-center text-synos-primary">
                                             <User className="w-6 h-6" />
                                         </div>
                                         <div>
-                                            <h2 className="text-2xl font-black tracking-tight dark:text-zinc-200 uppercase">{calculatedReportStructure?.patientName}</h2>
+                                            <h2 className="text-2xl font-black tracking-tight dark:text-zinc-200 uppercase">{patientName}</h2>
                                             <div className="flex items-center gap-2 dark:text-zinc-500 text-zinc-500 text-sm font-medium">
-                                                <span>{calculatedReportStructure?.patientAgeGender}</span>
+                                                <span>{patientAgeGender}</span>
                                                 <span className="w-1 h-1 dark:bg-zinc-700 bg-zinc-300 rounded-full" />
-                                                <span className="font-mono tracking-tighter opacity-70">{calculatedReportStructure?.token}</span>
+                                                <span className="font-mono tracking-tighter opacity-70">{token}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -429,140 +466,166 @@ export function TypistTerminal() {
                                         </div>
                                     </div>
                                 </div>
-
-                                <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar -mx-2 px-2">
-                                    <table className="w-full border-separate border-spacing-y-2">
-                                        <thead>
-                                            <tr className="text-[10px] uppercase font-black tracking-widest dark:text-zinc-600 text-zinc-400 opacity-60">
-                                                <th className="text-left px-4 pb-2">Analysis</th>
-                                                <th className="text-right px-4 pb-2">Result</th>
-                                                <th className="text-left px-4 pb-2">Unit</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {calculatedReportStructure?.groups?.map((group, gIdx) => (
-                                                <React.Fragment key={gIdx}>
-                                                    {group.groupName && (
-                                                        <tr className="contents">
-                                                            <td colSpan={3} className="pt-4 pb-1">
-                                                                <span className="text-[10px] font-black text-synos-primary uppercase tracking-widest bg-synos-primary/5 px-2 py-0.5 rounded">
-                                                                    {group.groupName}
-                                                                </span>
-                                                            </td>
-                                                        </tr>
-                                                    )}
-                                                    {group.parameters.map((param, pIdx) => {
-                                                        const isAbnormal = param.flag && param.flag !== "Normal" && param.flag !== "" && param.flag !== "N";
-                                                        return (
-                                                            <tr key={pIdx} className={cn(
-                                                                "group transition-all duration-300",
-                                                                isAbnormal ? "dark:bg-amber-500/5 bg-amber-50" : "hover:dark:bg-white/[0.02] hover:bg-zinc-50"
-                                                            )}>
-                                                                <td className="px-4 py-3 text-sm font-semibold dark:text-zinc-300 text-zinc-900 first:rounded-l-xl border-y border-transparent">
-                                                                    {param.parameterName}
-                                                                </td>
-                                                                <td className="px-4 py-3 text-sm font-mono font-bold text-right dark:text-zinc-100 text-zinc-900 border-y border-transparent">
-                                                                    <span className={cn(isAbnormal && "font-black text-red-600 underline decoration-red-200 underline-offset-4")}>
-                                                                        {param.value || "-"}
+                                <div className="flex-1 flex flex-col min-h-0 gap-6">
+                                    {/* Top Half: Test Parameters (Scrollable) */}
+                                    <div className="flex-[1_1_45%] min-h-0 overflow-y-auto pr-2 custom-scrollbar -mx-2 px-2">
+                                        <table className="w-full border-separate border-spacing-y-2">
+                                            <thead>
+                                                <tr className="text-[10px] uppercase font-black tracking-widest dark:text-zinc-600 text-zinc-400">
+                                                    <th className="text-left px-4 pb-2">Parameter</th>
+                                                    <th className="text-right px-4 pb-2">Value</th>
+                                                    <th className="text-left px-4 pb-2">Unit</th>
+                                                    <th className="text-left px-4 pb-2">Reference Range</th>
+                                                    <th className="text-left px-4 pb-2">Flag</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {calculatedReportStructure?.groups?.map((group, gIdx) => (
+                                                    <React.Fragment key={gIdx}>
+                                                        {group.groupName && (
+                                                            <tr className="contents">
+                                                                <td colSpan={5} className="pt-4 pb-1">
+                                                                    <span className="text-[11px] font-bold text-indigo-500 uppercase tracking-tight bg-indigo-50 px-2 py-0.5 rounded">
+                                                                        {group.groupName}
                                                                     </span>
                                                                 </td>
-                                                                <td className="px-4 py-3 text-[11px] font-medium text-zinc-500 border-y border-transparent last:rounded-r-xl">
-                                                                    {param.unit}
-                                                                </td>
                                                             </tr>
-                                                        );
-                                                    })}
-                                                </React.Fragment>
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                </div>
-
-                                <div className="mt-8 border-t dark:border-white/5 border-zinc-100 pt-6 shrink-0 space-y-6">
-                                    <div className="space-y-4">
-                                        <div>
-                                            <label className="text-[10px] uppercase font-black dark:text-zinc-600 text-zinc-400 block mb-2 tracking-widest">
-                                                Clinical Interpretation
-                                            </label>
-                                            <textarea 
-                                                className="w-full dark:bg-zinc-950/50 bg-zinc-50 border dark:border-white/10 border-zinc-200 rounded-2xl p-4 text-sm focus:outline-none focus:ring-4 focus:ring-synos-primary/10 focus:border-synos-primary dark:text-zinc-200 transition-all min-h-[120px] disabled:opacity-60 disabled:cursor-not-allowed"
-                                                placeholder="Translate clinical data into descriptive summary..."
-                                                value={interpretation.interpretation}
-                                                onChange={(e) => setInterpretation(prev => ({ ...prev, interpretation: e.target.value }))}
-                                                disabled={isLocked || isSaving}
-                                            />
-                                        </div>
-
-                                        <div>
-                                            <label className="text-[10px] uppercase font-black dark:text-zinc-600 text-zinc-400 block mb-2 tracking-widest">
-                                                Pathologist Remarks / Comments
-                                            </label>
-                                            <textarea 
-                                                className="w-full dark:bg-zinc-950/50 bg-zinc-50 border dark:border-white/10 border-zinc-200 rounded-2xl p-4 text-sm focus:outline-none focus:ring-4 focus:ring-synos-primary/10 focus:border-synos-primary dark:text-zinc-200 transition-all min-h-[80px] disabled:opacity-60 disabled:cursor-not-allowed"
-                                                placeholder="Internal notes or additional pathologist remarks..."
-                                                value={interpretation.comments}
-                                                onChange={(e) => setInterpretation(prev => ({ ...prev, comments: e.target.value }))}
-                                                disabled={isLocked || isSaving}
-                                            />
-                                        </div>
+                                                        )}
+                                                        {group.parameters.map((param, pIdx) => {
+                                                            const isAbnormal = param.flag && param.flag !== "Normal" && param.flag !== "" && param.flag !== "N";
+                                                            return (
+                                                                <tr key={pIdx} className={cn(
+                                                                    "group transition-all duration-300",
+                                                                    isAbnormal ? "dark:bg-amber-50/5 bg-amber-50" : "hover:dark:bg-white/[0.02] hover:bg-zinc-50"
+                                                                )}>
+                                                                    <td className="px-4 py-3 text-sm font-bold first:rounded-l-xl border-y border-transparent">
+                                                                        {param.parameterName}
+                                                                    </td>
+                                                                    <td className="px-4 py-3 text-sm font-mono font-bold text-right dark:text-zinc-100 text-zinc-900 border-y border-transparent">
+                                                                        <span className={cn(isAbnormal && "font-black text-red-600 underline decoration-red-200 underline-offset-4")}>
+                                                                            {param.value || "-"}
+                                                                        </span>
+                                                                    </td>
+                                                                    <td className="px-4 py-3 text-xs font-medium text-slate-500 border-y border-transparent">
+                                                                        {param.unit}
+                                                                    </td>
+                                                                    <td className="px-4 py-3 text-xs font-medium text-slate-500 border-y border-transparent">
+                                                                        {param.referenceRange}
+                                                                    </td>
+                                                                    <td className="px-4 py-3 last:rounded-r-xl border-y border-transparent">
+                                                                        {isAbnormal && (
+                                                                            <span className={cn(
+                                                                                "text-[10px] font-black uppercase px-2 py-0.5 rounded-full",
+                                                                                param.flag?.includes("Critical") 
+                                                                                    ? "bg-red-100 text-red-700" 
+                                                                                    : "bg-amber-100 text-amber-700"
+                                                                            )}>
+                                                                                {param.flag}
+                                                                            </span>
+                                                                        )}
+                                                                    </td>
+                                                                </tr>
+                                                            );
+                                                        })}
+                                                    </React.Fragment>
+                                                ))}
+                                            </tbody>
+                                        </table>
                                     </div>
-                                    
-                                    <div className="flex items-center justify-between mt-6">
-                                        {!isLocked ? (
-                                            <div className="flex flex-col gap-3 w-full">
-                                                {lastSavedAt && (
-                                                    <div className="text-[10px] font-bold text-green-500 uppercase tracking-widest animate-pulse flex items-center gap-1.5 self-end">
-                                                        <div className="w-1.5 h-1.5 bg-green-500 rounded-full" />
-                                                        Preview Updated via Backend
-                                                    </div>
-                                                )}
-                                                <div className="grid grid-cols-2 gap-3 w-full">
-                                                    <button 
-                                                        onClick={handleSaveInterpretation}
-                                                        disabled={isSaving || (!interpretation.interpretation && !interpretation.comments)}
-                                                        className="dark:bg-zinc-800 bg-zinc-100 dark:text-zinc-300 text-zinc-600 hover:dark:bg-zinc-700 hover:bg-zinc-200 font-bold text-[10px] px-2 py-3 rounded-xl transition-all active:scale-95 disabled:opacity-40 uppercase tracking-tight"
-                                                    >
-                                                        {isSaving ? "Saving..." : "Save Draft"}
-                                                    </button>
-                                                    <button 
-                                                        onClick={() => window.print()}
-                                                        disabled={!selectedReportId}
-                                                        className="dark:bg-zinc-800 bg-zinc-100 dark:text-zinc-300 text-zinc-600 hover:dark:bg-zinc-700 hover:bg-zinc-200 font-bold text-[10px] px-2 py-3 rounded-xl transition-all active:scale-95 flex items-center justify-center gap-2 uppercase tracking-tight"
-                                                    >
-                                                        <Printer className="w-3 h-3" />
-                                                        Quick Print
-                                                    </button>
-                                                    
-                                                    <button 
-                                                        onClick={() => handleSubmit(false)}
-                                                        disabled={isSubmitting || isSaving || !interpretation.interpretation}
-                                                        className="col-span-2 bg-synos-primary text-white hover:opacity-90 px-4 py-3 rounded-xl font-black text-[10px] shadow-xl shadow-synos-primary/20 transition-all active:scale-95 flex items-center justify-center gap-1.5 disabled:bg-zinc-300 dark:disabled:bg-zinc-800 disabled:shadow-none uppercase tracking-tight"
-                                                    >
-                                                        {isSubmitting ? <Loader2 className="w-3 h-3 animate-spin" /> : <ShieldCheck className="w-3 h-3" />}
-                                                        Submit for Digital Sign
-                                                    </button>
 
-                                                    <button 
-                                                        onClick={() => {
-                                                            window.print();
-                                                            handleSubmit(true);
-                                                        }}
-                                                        disabled={isSubmitting || isSaving || !interpretation.interpretation}
-                                                        className="col-span-2 border-2 border-amber-500/50 text-amber-600 hover:bg-amber-500/5 px-4 py-3 rounded-xl font-black text-[10px] transition-all active:scale-95 flex items-center justify-center gap-1.5 disabled:opacity-40 uppercase tracking-tight"
-                                                    >
-                                                        <Printer className="w-3 h-3" />
-                                                        Print & Submit for Manual Sign
-                                                    </button>
+                                    {/* Divider */}
+                                    <div className="h-px bg-zinc-200 dark:bg-white/5 shrink-0" />
+
+                                    {/* Bottom Half: Clinical Interpretation & Comments (Scrollable) */}
+                                    <div className="flex-[1_1_55%] min-h-0 overflow-y-auto pr-2 custom-scrollbar space-y-6 pt-2">
+                                        <div className="space-y-4">
+                                            <div>
+                                                <label className="text-[10px] uppercase font-black dark:text-zinc-600 text-zinc-400 block mb-2 tracking-widest">
+                                                    Clinical Interpretation
+                                                </label>
+                                                <RichMedicalEditor 
+                                                    value={interpretation.interpretation}
+                                                    onChange={(val) => setInterpretation(prev => ({ ...prev, interpretation: val }))}
+                                                    disabled={isLocked || isSaving}
+                                                    patientContext={calculatedReportStructure}
+                                                    onSaveDraft={handleSaveInterpretation}
+                                                    onOpenMacroManager={() => setIsMacroManagerOpen(true)}
+                                                />
+                                            </div>
+
+                                            <div>
+                                                <label className="text-[10px] uppercase font-black dark:text-zinc-600 text-zinc-400 block mb-2 tracking-widest">
+                                                    Pathologist Remarks / Comments
+                                                </label>
+                                                <RichMedicalEditor 
+                                                    value={interpretation.comments}
+                                                    onChange={(val) => setInterpretation(prev => ({ ...prev, comments: val }))}
+                                                    disabled={isLocked || isSaving}
+                                                    patientContext={calculatedReportStructure}
+                                                    onSaveDraft={handleSaveInterpretation}
+                                                    placeholder="Enter internal notes or comments..."
+                                                    onOpenMacroManager={() => setIsMacroManagerOpen(true)}
+                                                />
+                                            </div>
+                                        </div>
+                                        
+                                        <div className="flex items-center justify-between mt-6 pb-4">
+                                            {!isLocked ? (
+                                                <div className="flex flex-col gap-3 w-full">
+                                                    {lastSavedAt && (
+                                                        <div className="text-[10px] font-bold text-green-500 uppercase tracking-widest animate-pulse flex items-center gap-1.5 self-end">
+                                                            <div className="w-1.5 h-1.5 bg-green-500 rounded-full" />
+                                                            Preview Updated via Backend
+                                                        </div>
+                                                    )}
+                                                    <div className="grid grid-cols-2 gap-3 w-full">
+                                                        <button 
+                                                            onClick={handleSaveInterpretation}
+                                                            disabled={isSaving || (!interpretation.interpretation && !interpretation.comments)}
+                                                            className="dark:bg-zinc-800 bg-zinc-100 dark:text-zinc-300 text-zinc-600 hover:dark:bg-zinc-700 hover:bg-zinc-200 font-bold text-[10px] px-2 py-3 rounded-xl transition-all active:scale-95 disabled:opacity-40 uppercase tracking-tight"
+                                                        >
+                                                            {isSaving ? "Saving..." : "Save Draft"}
+                                                        </button>
+                                                        <button 
+                                                            onClick={() => window.print()}
+                                                            disabled={!selectedReportId}
+                                                            className="dark:bg-zinc-800 bg-zinc-100 dark:text-zinc-300 text-zinc-600 hover:dark:bg-zinc-700 hover:bg-zinc-200 font-bold text-[10px] px-2 py-3 rounded-xl transition-all active:scale-95 flex items-center justify-center gap-2 uppercase tracking-tight"
+                                                        >
+                                                            <Printer className="w-3 h-3" />
+                                                            Quick Print
+                                                        </button>
+                                                        
+                                                        <button 
+                                                            onClick={() => handleSubmit(false)}
+                                                            disabled={isSubmitting || isSaving || !interpretation.interpretation}
+                                                            className="col-span-2 bg-synos-primary text-white hover:opacity-90 px-4 py-3 rounded-xl font-black text-[10px] shadow-xl shadow-synos-primary/20 transition-all active:scale-95 flex items-center justify-center gap-1.5 disabled:bg-zinc-300 dark:disabled:bg-zinc-800 disabled:shadow-none uppercase tracking-tight"
+                                                        >
+                                                            {isSubmitting ? <Loader2 className="w-3 h-3 animate-spin" /> : <ShieldCheck className="w-3 h-3" />}
+                                                            Submit for Digital Sign
+                                                        </button>
+
+                                                        <button 
+                                                            onClick={() => {
+                                                                window.print();
+                                                                handleSubmit(true);
+                                                            }}
+                                                            disabled={isSubmitting || isSaving || !interpretation.interpretation}
+                                                            className="col-span-2 border-2 border-amber-500/50 text-amber-600 hover:bg-amber-500/5 px-4 py-3 rounded-xl font-black text-[10px] transition-all active:scale-95 flex items-center justify-center gap-1.5 disabled:opacity-40 uppercase tracking-tight"
+                                                        >
+                                                            <Printer className="w-3 h-3" />
+                                                            Print & Submit for Manual Sign
+                                                        </button>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        ) : (
-                                            <div className="flex-1 flex items-center justify-center p-3 dark:bg-amber-500/10 bg-amber-50 rounded-2xl border border-amber-500/20 gap-3">
-                                                <Clock className="w-4 h-4 text-amber-500" />
-                                                <span className="text-[10px] font-black uppercase tracking-widest text-amber-700 dark:text-amber-500">
-                                                    Pending Pathologist
-                                                </span>
-                                            </div>
-                                        )}
+                                            ) : (
+                                                <div className="flex-1 flex items-center justify-center p-3 dark:bg-amber-500/10 bg-amber-50 rounded-2xl border border-amber-500/20 gap-3">
+                                                    <Clock className="w-4 h-4 text-amber-500" />
+                                                    <span className="text-[10px] font-black uppercase tracking-widest text-amber-700 dark:text-amber-500">
+                                                        Pending Pathologist
+                                                    </span>
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -573,7 +636,7 @@ export function TypistTerminal() {
                 {/* RIGHT PANEL: Pure Live Render (50%) */}
                 <div className="w-[50%] flex flex-col min-h-0">
                     <div className="dark:bg-zinc-900 bg-zinc-200 shadow-inner rounded-xl flex-1 flex flex-col min-h-0 overflow-hidden border dark:border-white/5 border-black/5">
-                        <div className="bg-white/80 dark:bg-zinc-950/80 backdrop-blur-md px-6 py-3 border-b dark:border-white/5 border-black/5 flex items-center justify-between z-10 no-print">
+                        <div className="dark:bg-zinc-950 bg-[linear-gradient(to_bottom,rgba(248,253,255,0.98)_0%,rgba(238,245,248,0.98)_50%,rgba(228,235,238,0.98)_100%)] px-6 py-3 border-b dark:border-white/5 border-black/5 flex items-center justify-between z-10 no-print">
                              <div className="flex items-center gap-2">
                                 <FileText className="w-4 h-4 text-synos-primary" />
                                 <span className="text-[10px] font-black uppercase tracking-widest dark:text-zinc-400 text-zinc-600">Draft Preview</span>
@@ -602,7 +665,7 @@ export function TypistTerminal() {
                             ) : (
                                 <div className="p-4 origin-top min-w-max flex justify-center print:p-0 print:block">
                                     <div className="bg-white shadow-[0_20px_50px_rgba(0,0,0,0.1)] rounded-sm overflow-hidden print:shadow-none print:rounded-none">
-                                        <ReportA4 reportData={reportData} />
+                                        {memoizedReportPreview}
                                     </div>
                                 </div>
                             )}

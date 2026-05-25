@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 210 297" width="210mm" height="297mm">
+  <!-- Professional Master Background - Histopathology Modality -->
+  
+  <!-- Sleek decorative header design -->
+  <path d="M 0 0 L 210 0 L 210 15 L 175 15 L 165 9 L 0 9 Z" fill="#78350f" opacity="0.95"/>
+  <rect x="0" y="9" width="165" height="2" fill="#d97706"/>
+  <rect x="165" y="9" width="10" height="6" fill="#fbbf24" opacity="0.8"/>
+  
+  <!-- Fine side border rule -->
+  <line x1="9" y1="30" x2="9" y2="270" stroke="#e2e8f0" stroke-width="0.3"/>
+  <rect x="7.5" y="45" width="3" height="3" fill="#78350f" opacity="0.6"/>
+  <rect x="7.5" y="245" width="3" height="3" fill="#d97706" opacity="0.6"/>
+  
+  <!-- Subtle cellular organic shapes on the side margin -->
+  <g transform="translate(198, 150)" fill="none" stroke="#d97706" stroke-width="0.25" opacity="0.3">
+    <path d="M 0,-15 C 3,-10 6,-8 6,0 C 6,8 3,10 0,15 C -3,10 -6,8 -6,0 C -6,-8 -3,-10 0,-15 Z"/>
+    <circle cx="0" cy="0" r="1.5" fill="#78350f" stroke="none"/>
+  </g>
+
+  <!-- Watermark in center - Microscopic Cell Division Motif -->
+  <g transform="translate(105, 148.5) scale(0.65)" opacity="0.035" fill="none" stroke="#78350f" stroke-width="3">
+    <!-- Big Cell -->
+    <circle cx="0" cy="0" r="40"/>
+    <circle cx="0" cy="0" r="10" fill="#78350f" fill-opacity="0.1"/>
+    <!-- Mitosis chromosomes -->
+    <path d="M -5 -5 L 5 5 M 5 -5 L -5 5" stroke-width="4"/>
+    <!-- Small surrounding cells -->
+    <circle cx="48" cy="-10" r="12"/>
+    <circle cx="48" cy="-10" r="3" fill="#78350f"/>
+    <circle cx="-35" cy="35" r="15"/>
+    <circle cx="-35" cy="35" r="3.5" fill="#78350f"/>
+  </g>
+
+  <!-- Elegant Footer Graphics -->
+  <rect x="15" y="275" width="180" height="0.5" fill="#e2e8f0"/>
+  <rect x="15" y="277" width="5" height="5" fill="#78350f" rx="1"/>
+  <rect x="23" y="277" width="5" height="5" fill="#d97706" rx="1" opacity="0.7"/>
+  <rect x="31" y="277" width="5" height="5" fill="#f59e0b" rx="1" opacity="0.4"/>
+  <text x="195" y="281" font-family="sans-serif" font-size="3.5" font-weight="bold" fill="#64748b" text-anchor="end">SYNOS HISTOLOGY LABORATORY CLINIC</text>
+</svg>

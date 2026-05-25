@@ -94,6 +94,13 @@ namespace SynOS.Services.Reporting
                     snapshotData.IsManualFlow = report.IsManualFlow;
                     snapshotData.Status = report.Status;
                     
+                    if (string.IsNullOrEmpty(snapshotData.PatientName) && snapshotData.Patient != null)
+                    {
+                        snapshotData.PatientName = snapshotData.Patient.Name;
+                        snapshotData.PatientAgeGender = $"{snapshotData.Patient.Age} / {snapshotData.Patient.Gender}";
+                        snapshotData.Token = snapshotData.Patient.MRN;
+                    }
+                    
                     return snapshotData;
                 }
                 catch (JsonException ex)
@@ -295,10 +302,13 @@ namespace SynOS.Services.Reporting
                 ReportId = report.ReportId,
                 SourceId = report.SourceId,
                 Status = report.Status,
+                PatientName = $"{visit.Patient.FirstName} {visit.Patient.LastName}",
+                PatientAgeGender = $"{CalculateAge(visit.Patient.DateOfBirth)} / {visit.Patient.Gender}",
+                Token = visit.Token,
                 Department = report.Department,
                 SignedAt = report.SignedAt,
                 SignedBy = report.SignedByUserId?.ToString(),
-                CanEditValues = false, // Default to false
+                CanEditValues = report.Status == "Draft" || report.Status == "ReadyForVerification",
                 IsPhysicallyVerified = report.IsPhysicallyVerified,
                 IsManualFlow = report.IsManualFlow,
                 Patient = new PatientHeaderDto

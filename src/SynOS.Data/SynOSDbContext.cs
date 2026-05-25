@@ -335,9 +335,18 @@ namespace SynOS.Data
         public DbSet<RangeProfile> RangeProfiles { get; set; } = null!;
         public DbSet<RangeCondition> RangeConditions { get; set; } = null!;
 
+        public DbSet<MedicalMacro> MedicalMacros { get; set; } = null!;
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
+            // Medical Macros
+            modelBuilder.Entity<MedicalMacro>(entity =>
+            {
+                entity.HasIndex(e => e.Shortcut);
+                entity.HasOne(e => e.User).WithMany().HasForeignKey(e => e.UserId).OnDelete(DeleteBehavior.Cascade);
+            });
 
             // User entities
             modelBuilder.Entity<User>(entity =>

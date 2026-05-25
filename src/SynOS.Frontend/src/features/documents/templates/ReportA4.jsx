@@ -1,5 +1,102 @@
-import { Fragment } from 'react';
+import React, { Fragment } from 'react';
 import { DEFAULT_TEMPLATES, sanitizeTemplates } from './defaultTemplates';
+
+// Dynamic Variables Resolution Helper (Supports Patient and Parameter Variables)
+const resolveVariables = (text, patient, metadata, results, calculateAge) => {
+    if (!text) return '';
+    let resolved = text;
+    
+    // Resolve patient name
+    if (patient?.name) {
+        resolved = resolved.replace(/\{\{patientName\}\}/gi, patient.name);
+    }
+    // Resolve patient age
+    if (patient?.age) {
+        resolved = resolved.replace(/\{\{age\}\}/gi, String(patient.age));
+    } else if (patient?.dateOfBirth) {
+        resolved = resolved.replace(/\{\{age\}\}/gi, String(calculateAge(patient.dateOfBirth)));
+    }
+    // Resolve gender
+    if (patient?.gender) {
+        resolved = resolved.replace(/\{\{gender\}\}/gi, patient.gender);
+    }
+    // Resolve token
+    if (metadata?.token) {
+        resolved = resolved.replace(/\{\{token\}\}/gi, metadata.token);
+    }
+    
+    // Resolve specific parameter values like {{testValue:HB}} or {{HB}}
+    if (results && results.length > 0) {
+        // e.g., {{testValue:HB}}
+        resolved = resolved.replace(/\{\{testValue:([a-zA-Z0-9_-]+)\}\}/gi, (match, code) => {
+            const found = results.find(r => r.parameterCode?.toUpperCase() === code.toUpperCase() || r.code?.toUpperCase() === code.toUpperCase());
+            return found?.value ?? '-';
+        });
+        
+        // e.g., {{HB}}
+        resolved = resolved.replace(/\{\{([a-zA-Z0-9_-]+)\}\}/gi, (match, code) => {
+            if (['patientName', 'age', 'gender', 'token'].includes(code)) return match;
+            const found = results.find(r => r.parameterCode?.toUpperCase() === code.toUpperCase() || r.code?.toUpperCase() === code.toUpperCase());
+            return found ? (found.value ?? '-') : match;
+        });
+    }
+    
+    return resolved;
+};
+
+// Recursive TipTap JSON-to-JSX renderer
+const renderTipTapJSON = (node) => {
+    if (!node) return null;
+
+    if (node.type === 'text') {
+        let element = <span>{node.text}</span>;
+        if (node.marks) {
+            for (const mark of node.marks) {
+                if (mark.type === 'bold') {
+                    element = <strong className="font-bold">{element}</strong>;
+                } else if (mark.type === 'italic') {
+                    element = <em className="italic">{element}</em>;
+                } else if (mark.type === 'underline') {
+                    element = <u className="underline">{element}</u>;
+                } else if (mark.type === 'highlight') {
+                    const color = mark.attrs?.color || '#fef08a';
+                    element = <mark style={{ backgroundColor: color }} className="px-0.5 rounded-sm">{element}</mark>;
+                }
+            }
+        }
+        return element;
+    }
+
+    const children = node.content ? node.content.map((child, idx) => (
+        <React.Fragment key={idx}>{renderTipTapJSON(child)}</React.Fragment>
+    )) : null;
+
+    switch (node.type) {
+        case 'doc':
+            return <div className="space-y-1 my-1">{children}</div>;
+        case 'paragraph':
+            return <p className="leading-normal min-h-4">{children}</p>;
+        case 'heading':
+            const Tag = `h${node.attrs?.level || 3}`;
+            return <Tag className="font-black uppercase tracking-tight my-1.5">{children}</Tag>;
+        case 'bulletList':
+            return <ul className="list-disc pl-4 space-y-0.5 my-1">{children}</ul>;
+        case 'orderedList':
+            return <ol className="list-decimal pl-4 space-y-0.5 my-1">{children}</ol>;
+        case 'listItem':
+            return <li className="leading-tight">{children}</li>;
+        case 'table':
+            return <table className="w-full border-collapse border-2 border-zinc-200 my-1">{children}</table>;
+        case 'tableRow':
+            return <tr className="border-b border-zinc-150">{children}</tr>;
+        case 'tableHeader':
+            return <th className="border border-zinc-200 p-1 bg-zinc-50 font-bold text-left text-[11px]">{children}</th>;
+        case 'tableCell':
+            return <td className="border border-zinc-200 p-1 text-[11px]">{children}</td>;
+        default:
+            return children;
+    }
+};
 
 
 /**
@@ -34,6 +131,23 @@ export const ReportA4 = ({ reportData }) => {
     const diffMs = Date.now() - dob.getTime();
     const ageDate = new Date(diffMs);
     return Math.abs(ageDate.getUTCFullYear() - 1970);
+  };
+
+  const renderRichContent = (contentStr) => {
+    if (!contentStr) return null;
+    
+    const resolvedStr = resolveVariables(contentStr, patient, metadata, results, calculateAge);
+    
+    if (resolvedStr.trim().startsWith('{"type":"doc"')) {
+      try {
+        const parsed = JSON.parse(resolvedStr);
+        return renderTipTapJSON(parsed);
+      } catch (e) {
+        console.error("TipTap JSON parse failed", e);
+      }
+    }
+    
+    return <div className="whitespace-pre-wrap">{resolvedStr}</div>;
   };
 
   // Resolve template from local storage
@@ -506,20 +620,20 @@ export const ReportA4 = ({ reportData }) => {
            {interpretation && (
              <div className="break-inside-avoid">
                 <div className="font-bold text-[10px] uppercase mb-1">Observation / Inference :</div>
-                <div className="text-[12px] font-bold whitespace-pre-wrap uppercase leading-tight">
-                  {interpretation}
+                <div className="text-[12px] leading-tight select-text">
+                  {renderRichContent(interpretation)}
                 </div>
              </div>
            )}
            
-           <div className="grid grid-cols-1 gap-2 text-[11px] font-bold uppercase">
-              {comments && (
+           {comments && (
+             <div className="grid grid-cols-1 gap-2 text-[11px] select-text break-inside-avoid mt-2">
                 <div className="flex gap-2">
-                  <span>Comments :</span>
-                  <div className="whitespace-pre-wrap">{comments}</div>
+                  <span className="font-bold uppercase">Comments :</span>
+                  <div className="flex-1 font-medium">{renderRichContent(comments)}</div>
                 </div>
-              )}
-           </div>
+             </div>
+           )}
         </div>
 
         {/* 🖋️ SIGNATURE QUAD */}

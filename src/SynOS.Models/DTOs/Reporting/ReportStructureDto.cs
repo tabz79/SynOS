@@ -10,6 +10,9 @@ namespace SynOS.Models.DTOs.Reporting
         public Guid ReportId { get; set; }
         public Guid SourceId { get; set; }
         public string Status { get; set; } = string.Empty;
+        public string PatientName { get; set; } = string.Empty;
+        public string PatientAgeGender { get; set; } = string.Empty;
+        public string Token { get; set; } = string.Empty;
         public PatientHeaderDto Patient { get; set; } = new();
         public List<ReportGroupDto> Groups { get; set; } = new();
         public List<ReportNoteDto> Notes { get; set; } = new();
@@ -30,6 +33,9 @@ namespace SynOS.Models.DTOs.Reporting
                 ReportId = state.ReportId,
                 SourceId = state.SourceId,
                 Status = state.Status,
+                PatientName = state.Patient.Name,
+                PatientAgeGender = $"{state.Patient.Age} / {state.Patient.Gender}",
+                Token = state.Patient.MRN,
                 Department = state.Department,
                 SignedAt = state.SignedAt,
                 SignedBy = state.SignedBy,
