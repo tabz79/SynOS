@@ -454,7 +454,8 @@ namespace SynOS.Services
             var reportData = await GetReportDataForPdfAsync(report.ReportId);
                 if (reportData != null)
                 {
-                    var template = await _context.ReportTemplates.FirstOrDefaultAsync(t => t.Modality == order.Department && t.IsDefault);
+                    var template = await _context.ReportTemplates.FirstOrDefaultAsync(t => t.Modality == order.Department && t.IsDefault)
+                                ?? await _context.ReportTemplates.FirstOrDefaultAsync(t => t.IsDefault);
                     if (template != null)
                     {
                         var templateModel = System.Text.Json.JsonSerializer.Deserialize<SynOS.Models.DTOs.ReportTemplateDsl.TemplateModel>(template.TemplateJson);

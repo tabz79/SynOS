@@ -286,5 +286,75 @@ namespace SynOS.Api.Controllers.Admin
                 });
             }
         }
+
+        [HttpPost("regenerate-pdf/{reportId}")]
+        [AllowAnonymous]
+        public async Task<IActionResult> RegeneratePdf(
+            Guid reportId,
+            [FromServices] SynOS.Services.IReportService reportService,
+            [FromServices] SynOS.Services.IReportPdfRenderer reportPdfRenderer,
+            [FromServices] SynOS.Services.Storage.IFileStorageService fileStorageService,
+            [FromServices] SynOSDbContext context)
+        {
+            try
+            {
+                var report = await context.Reports.FirstOrDefaultAsync(r => r.ReportId == reportId);
+                if (report == null) return NotFound("Report not found");
+
+                var order = await context.Orders.FirstOrDefaultAsync(o => o.OrderId == report.SourceId);
+                if (order == null) return NotFound("Order not found");
+
+                var reportData = await reportService.GetReportDataForPdfAsync(report.ReportId, forceLive: true);
+                if (reportData == null) return BadRequest("Report data not available");
+
+                var department = order.Department ?? "General";
+                var template = await context.ReportTemplates.FirstOrDefaultAsync(t => t.Modality == department && t.IsDefault)
+                            ?? await context.ReportTemplates.FirstOrDefaultAsync(t => t.IsDefault);
+
+                if (template == null) return BadRequest("No template found");
+
+                var templateModel = System.Text.Json.JsonSerializer.Deserialize<SynOS.Models.DTOs.ReportTemplateDsl.TemplateModel>(template.TemplateJson);
+                var pdfBytes = await reportPdfRenderer.GeneratePdfAsync(reportData, templateModel);
+                var requestedVersion = report.CurrentVersion == 0 ? 1 : report.CurrentVersion;
+                var fileName = $"{report.ReportId}_v{requestedVersion}.pdf";
+                var relativePath = await fileStorageService.SaveFileAsync(pdfBytes, fileName, "reports");
+
+                var reportVersion = await context.ReportVersions
+                    .FirstOrDefaultAsync(rv => rv.ReportId == report.ReportId && rv.VersionNumber == requestedVersion);
+
+                if (reportVersion == null)
+                {
+                    reportVersion = new ReportVersion
+                    {
+                        ReportVersionId = Guid.NewGuid(),
+                        ReportId = report.ReportId,
+                        VersionNumber = requestedVersion,
+                        CreatedAt = DateTimeOffset.UtcNow
+                    };
+                    context.ReportVersions.Add(reportVersion);
+                }
+
+                reportVersion.PdfPath = relativePath;
+                if (reportVersion.SignedByUserId == Guid.Empty || reportVersion.SignedByUserId == null)
+                {
+                    reportVersion.SignedByUserId = report.SignedByUserId ?? Guid.Empty;
+                    reportVersion.SignedAt = report.SignedAt ?? DateTimeOffset.UtcNow;
+                }
+
+                await context.SaveChangesAsync();
+
+                return Ok(new { Message = "PDF generated and updated successfully", PdfPath = relativePath });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new 
+                { 
+                    Error = ex.Message, 
+                    Type = ex.GetType().FullName, 
+                    StackTrace = ex.StackTrace,
+                    InnerException = ex.InnerException?.Message 
+                });
+            }
+        }
     }
 }

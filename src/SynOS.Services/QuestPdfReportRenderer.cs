@@ -18,6 +18,22 @@ namespace SynOS.Services
             QuestPDF.Settings.License = LicenseType.Community;
         }
 
+        private T? DeserializeConfig<T>(TemplateSection section)
+        {
+            if (section.Config.ValueKind != JsonValueKind.Undefined && section.Config.ValueKind != JsonValueKind.Null)
+            {
+                return section.Config.Deserialize<T>();
+            }
+
+            if (section.ExtensionData != null && section.ExtensionData.Any())
+            {
+                var json = JsonSerializer.Serialize(section.ExtensionData);
+                return JsonSerializer.Deserialize<T>(json);
+            }
+
+            return JsonSerializer.Deserialize<T>("{}");
+        }
+
         public Task<byte[]> GeneratePdfAsync(ReportDataModel data, TemplateModel templateModel)
         {
             var document = Document.Create(container =>
@@ -34,7 +50,7 @@ namespace SynOS.Services
                         {
                             if (section.Type == "Header")
                             {
-                                var config = section.Config.Deserialize<HeaderConfig>();
+                                var config = DeserializeConfig<HeaderConfig>(section);
                                 RenderHeader(headerCol, data, config);
                                 break;
                             }
@@ -48,25 +64,25 @@ namespace SynOS.Services
                             switch (section.Type)
                             {
                                 case "PatientInfo":
-                                    RenderPatientInfo(contentCol, data, section.Config.Deserialize<PatientInfoConfig>());
+                                    RenderPatientInfo(contentCol, data, DeserializeConfig<PatientInfoConfig>(section));
                                     break;
                                 case "ParameterTable":
-                                    RenderParameterTable(contentCol, data, section.Config.Deserialize<ParameterTableConfig>());
+                                    RenderParameterTable(contentCol, data, DeserializeConfig<ParameterTableConfig>(section));
                                     break;
                                 case "Comments":
-                                    RenderComments(contentCol, data, section.Config.Deserialize<CommentsConfig>());
+                                    RenderComments(contentCol, data, DeserializeConfig<CommentsConfig>(section));
                                     break;
                                 case "Interpretation":
-                                    RenderInterpretation(contentCol, data, section.Config.Deserialize<InterpretationConfig>());
+                                    RenderInterpretation(contentCol, data, DeserializeConfig<InterpretationConfig>(section));
                                     break;
                                 case "Recommendations":
-                                    RenderRecommendations(contentCol, data, section.Config.Deserialize<RecommendationsConfig>());
+                                    RenderRecommendations(contentCol, data, DeserializeConfig<RecommendationsConfig>(section));
                                     break;
                                 case "SignatureBlock":
-                                    RenderSignatureBlock(contentCol, data, section.Config.Deserialize<SignatureBlockConfig>());
+                                    RenderSignatureBlock(contentCol, data, DeserializeConfig<SignatureBlockConfig>(section));
                                     break;
                                 case "QRCode":
-                                    RenderQRCode(contentCol, data, section.Config.Deserialize<QRCodeConfig>());
+                                    RenderQRCode(contentCol, data, DeserializeConfig<QRCodeConfig>(section));
                                     break;
                             }
                         }
@@ -78,7 +94,7 @@ namespace SynOS.Services
                         {
                             if (section.Type == "Footer")
                             {
-                                var config = section.Config.Deserialize<FooterConfig>();
+                                var config = DeserializeConfig<FooterConfig>(section);
                                 RenderFooter(footerCol, data, config);
                                 break;
                             }

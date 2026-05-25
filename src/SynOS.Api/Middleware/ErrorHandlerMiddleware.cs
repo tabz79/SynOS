@@ -30,6 +30,10 @@ namespace SynOS.Api.Middleware
 
                 switch (error)
                 {
+                    case BadHttpRequestException e:
+                        response.StatusCode = e.StatusCode;
+                        responseModel = new { code = "BAD_REQUEST", message = e.Message, correlation_id = context.TraceIdentifier };
+                        break;
                     case Models.Exceptions.SnapshotIntegrityException e:
                         response.StatusCode = (int)HttpStatusCode.Conflict;
                         responseModel = new { code = e.Code, message = e.Message, correlation_id = context.TraceIdentifier };

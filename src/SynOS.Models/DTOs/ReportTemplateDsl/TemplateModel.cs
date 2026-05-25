@@ -38,5 +38,8 @@ namespace SynOS.Models.DTOs.ReportTemplateDsl
 
         [JsonPropertyName("config")]
         public JsonElement Config { get; set; }
+
+        [JsonExtensionData]
+        public Dictionary<string, JsonElement>? ExtensionData { get; set; }
     }
 }
