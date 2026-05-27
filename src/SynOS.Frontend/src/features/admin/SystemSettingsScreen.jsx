@@ -48,7 +48,8 @@ import {
   Trash2, 
   Edit2, 
   AlertCircle,
-  Eye
+  Eye,
+  Globe
 } from 'lucide-react';
 
 export function SystemSettingsScreen() {
@@ -57,6 +58,11 @@ export function SystemSettingsScreen() {
   const [loading, setLoading] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(null);
   const [saveError, setSaveError] = useState(null);
+
+  // Branches State
+  const [branches, setBranches] = useState([]);
+  const [editingBranch, setEditingBranch] = useState(null);
+  const [showBranchForm, setShowBranchForm] = useState(false);
 
   // Global Settings State
   const [settings, setSettings] = useState(null);
@@ -182,6 +188,71 @@ export function SystemSettingsScreen() {
     }
   };
 
+  const loadBranches = async () => {
+    setLoading(true);
+    try {
+      const response = await AdminApi.getBranches();
+      setBranches(response || []);
+    } catch (err) {
+      setSaveError(err.message || 'Failed to load branches.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSaveBranch = async (e) => {
+    e.preventDefault();
+    if (!editingBranch.code?.trim() || !editingBranch.name?.trim()) {
+      return setSaveError('Branch Code and Name cannot be empty.');
+    }
+
+    setLoading(true);
+    setSaveError(null);
+    setSaveSuccess(null);
+
+    try {
+      if (editingBranch.branchId) {
+        await AdminApi.updateBranch(editingBranch.branchId, {
+          code: editingBranch.code.trim(),
+          name: editingBranch.name.trim(),
+          isActive: editingBranch.isActive
+        });
+        setSaveSuccess('Branch details updated successfully.');
+      } else {
+        await AdminApi.createBranch({
+          code: editingBranch.code.trim(),
+          name: editingBranch.name.trim()
+        });
+        setSaveSuccess('New branch registered successfully.');
+      }
+      setShowBranchForm(false);
+      setEditingBranch(null);
+      await loadBranches();
+    } catch (err) {
+      setSaveError(err.message || 'Failed to save branch.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteBranch = async (branchId) => {
+    if (!window.confirm('Are you sure you want to delete this branch? If this branch has active staff assignments, you must deactivate it instead.')) return;
+
+    setLoading(true);
+    setSaveError(null);
+    setSaveSuccess(null);
+
+    try {
+      await AdminApi.deleteBranch(branchId);
+      setSaveSuccess('Branch deleted successfully.');
+      await loadBranches();
+    } catch (err) {
+      setSaveError(err.message || 'Failed to delete branch.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     setSaveError(null);
     setSaveSuccess(null);
@@ -189,6 +260,7 @@ export function SystemSettingsScreen() {
     if (activeTab === 'permissions') loadPermissions();
     if (activeTab === 'departments') loadDepartmentPolicies();
     if (activeTab === 'pricing') loadPricingData();
+    if (activeTab === 'branches') loadBranches();
     if (activeTab === 'audit') loadAuditLogs();
   }, [activeTab, auditOffset]);
 
@@ -365,6 +437,7 @@ export function SystemSettingsScreen() {
           { id: 'permissions', label: 'Roles Matrix', icon: ShieldAlert },
           { id: 'departments', label: 'Department Hours', icon: Clock },
           { id: 'pricing', label: 'Pricing & Discounts', icon: Tag },
+          { id: 'branches', label: 'Branches', icon: Globe },
           { id: 'audit', label: 'Audit Logs', icon: History }
         ].map(tab => (
           <button
@@ -1577,6 +1650,153 @@ export function SystemSettingsScreen() {
                       Close Inspector
                     </button>
                   </div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* BRANCHES MANAGEMENT TAB */}
+        {activeTab === 'branches' && !loading && (
+          <div className="animate-fadeIn space-y-6">
+            <div className="flex justify-between items-center">
+              <div>
+                <h3 className="text-sm font-bold text-synos-primary uppercase tracking-widest mb-1">Laboratory branches & facilities</h3>
+                <p className="text-zinc-500 text-xs font-semibold">Manage physical laboratory branches, active status, and accession codes.</p>
+              </div>
+              <button
+                onClick={() => {
+                  setEditingBranch({
+                    code: '',
+                    name: '',
+                    isActive: true
+                  });
+                  setShowBranchForm(true);
+                }}
+                className="px-4 py-2 bg-synos-primary hover:bg-synos-primary/95 text-white font-bold text-xxs uppercase tracking-wider rounded-xl shadow active:scale-95 transition-all"
+              >
+                + Add Branch
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {branches.map(b => (
+                <div 
+                  key={b.branchId} 
+                  className="border dark:border-zinc-800 border-zinc-200/10 rounded-xl p-5 bg-zinc-50/30 dark:bg-zinc-950/20 flex flex-col justify-between"
+                  style={{ backgroundColor: theme === 'dark' ? '#09090b' : '#ffffff' }}
+                >
+                  <div className="flex justify-between items-start mb-4">
+                    <div>
+                      <div className="flex items-center space-x-2">
+                        <span className="bg-synos-primary/10 text-synos-primary border border-synos-primary/20 text-xxs font-mono font-bold px-2 py-0.5 rounded-md">
+                          {b.code}
+                        </span>
+                        <span className={`w-1.5 h-1.5 rounded-full ${b.isActive ? 'bg-emerald-500' : 'bg-zinc-550'}`} title={b.isActive ? 'Active' : 'Inactive'} />
+                      </div>
+                      <h4 className="font-bold text-sm text-zinc-800 dark:text-zinc-200 mt-2">{b.name}</h4>
+                    </div>
+                    <div className="flex space-x-2 shrink-0">
+                      <button
+                        onClick={() => {
+                          setEditingBranch(b);
+                          setShowBranchForm(true);
+                        }}
+                        className="p-1.5 bg-synos-primary/10 text-synos-primary hover:bg-synos-primary/25 border border-synos-primary/20 rounded-lg transition-colors"
+                        title="Edit"
+                      >
+                        <Edit2 className="w-3.5 h-3.5" />
+                      </button>
+                      {b.code !== 'MAIN' && (
+                        <button
+                          onClick={() => handleDeleteBranch(b.branchId)}
+                          className="p-1.5 bg-red-500/10 text-red-400 hover:bg-red-500/25 border border-red-500/20 rounded-lg transition-colors"
+                          title="Delete"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                  <div className="border-t dark:border-zinc-800 border-zinc-100 pt-3 mt-2 flex justify-between items-center text-xxs text-zinc-400">
+                    <span>Status: <strong>{b.isActive ? 'Active Operational' : 'Deactivated'}</strong></span>
+                    <span className="font-mono text-[9px] opacity-60">{b.branchId}</span>
+                  </div>
+                </div>
+              ))}
+              {branches.length === 0 && (
+                <p className="text-zinc-550 text-xs py-4 md:col-span-3">No laboratory branches saved.</p>
+              )}
+            </div>
+
+            {/* Branch Form Dialog */}
+            {showBranchForm && editingBranch && (
+              <div className="fixed inset-0 bg-zinc-950/45 dark:bg-black/60 backdrop-blur-[2px] flex items-center justify-center z-50 animate-fadeIn">
+                <div 
+                  className="border border-zinc-200 dark:border-zinc-900 p-6 rounded-2xl w-full max-w-md shadow-2xl text-xs text-zinc-800 dark:text-zinc-250"
+                  style={{ backgroundColor: theme === 'dark' ? '#09090b' : '#ffffff' }}
+                >
+                  <h3 className="text-sm font-semibold mb-4 border-b border-zinc-250 dark:border-zinc-850 pb-2 text-zinc-800 dark:text-zinc-200">
+                    {editingBranch.branchId ? 'Edit Branch' : 'Register New Branch'}
+                  </h3>
+                  <form onSubmit={handleSaveBranch} className="space-y-4">
+                    <div>
+                      <label className="block text-xxs font-semibold text-zinc-400 dark:text-zinc-500 mb-1">Branch Code</label>
+                      <input
+                        type="text"
+                        maxLength={10}
+                        required
+                        value={editingBranch.code}
+                        onChange={e => setEditingBranch({ ...editingBranch, code: e.target.value.toUpperCase().replace(/\s+/g, '') })}
+                        className="w-full px-3 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs outline-none focus:border-synos-primary transition-colors text-zinc-700 dark:text-zinc-300 font-mono"
+                        placeholder="e.g. MAIN, BR2, NORTH"
+                        disabled={editingBranch.code === 'MAIN'}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xxs font-semibold text-zinc-400 dark:text-zinc-500 mb-1">Branch Name</label>
+                      <input
+                        type="text"
+                        required
+                        value={editingBranch.name}
+                        onChange={e => setEditingBranch({ ...editingBranch, name: e.target.value })}
+                        className="w-full px-3 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs outline-none focus:border-synos-primary transition-colors text-zinc-700 dark:text-zinc-300"
+                        placeholder="e.g. North Laboratory Branch"
+                      />
+                    </div>
+                    {editingBranch.branchId && editingBranch.code !== 'MAIN' && (
+                      <div className="flex items-center space-x-2 pt-2">
+                        <input
+                          type="checkbox"
+                          id="branch-active"
+                          checked={editingBranch.isActive}
+                          onChange={e => setEditingBranch({ ...editingBranch, isActive: e.target.checked })}
+                          className="rounded border-zinc-300 dark:border-zinc-700 text-synos-primary focus:ring-synos-primary w-4 h-4"
+                        />
+                        <label htmlFor="branch-active" className="text-xxs font-semibold text-zinc-400 dark:text-zinc-500 cursor-pointer">
+                          Active & Operational
+                        </label>
+                      </div>
+                    )}
+                    <div className="flex justify-end space-x-2.5 pt-4 border-t border-zinc-250 dark:border-zinc-850">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowBranchForm(false);
+                          setEditingBranch(null);
+                        }}
+                        className="px-4 py-2 border border-zinc-300 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-900 rounded-xl text-xxs uppercase tracking-wider font-bold transition-all text-zinc-650 dark:text-zinc-400"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="submit"
+                        className="px-5 py-2 bg-synos-primary hover:bg-synos-primary/95 text-white text-xxs uppercase tracking-wider rounded-xl font-bold shadow active:scale-95 transition-all"
+                      >
+                        Save Branch
+                      </button>
+                    </div>
+                  </form>
                 </div>
               </div>
             )}

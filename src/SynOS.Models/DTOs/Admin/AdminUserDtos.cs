@@ -77,4 +77,17 @@ namespace SynOS.Models.DTOs.Admin
     {
         public System.Collections.Generic.List<Guid> WorkspaceIds { get; set; } = new System.Collections.Generic.List<Guid>();
     }
+
+    public class CreateBranchRequest
+    {
+        public string Code { get; set; } = string.Empty;
+        public string Name { get; set; } = string.Empty;
+    }
+
+    public class UpdateBranchRequest
+    {
+        public string Code { get; set; } = string.Empty;
+        public string Name { get; set; } = string.Empty;
+        public bool IsActive { get; set; }
+    }
 }

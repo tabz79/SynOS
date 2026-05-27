@@ -93,6 +93,56 @@ namespace SynOS.Api.Controllers.Admin
             return Ok(branches);
         }
 
+        [HttpPost("branches")]
+        public async Task<IActionResult> CreateBranch([FromBody] CreateBranchRequest request)
+        {
+            try
+            {
+                var branch = await _adminUserService.CreateBranchAsync(request.Code, request.Name);
+                return Ok(branch);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { Message = ex.Message });
+            }
+        }
+
+        [HttpPut("branches/{id}")]
+        public async Task<IActionResult> UpdateBranch(Guid id, [FromBody] UpdateBranchRequest request)
+        {
+            try
+            {
+                var branch = await _adminUserService.UpdateBranchAsync(id, request.Code, request.Name, request.IsActive);
+                return Ok(branch);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { Message = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { Message = ex.Message });
+            }
+        }
+
+        [HttpDelete("branches/{id}")]
+        public async Task<IActionResult> DeleteBranch(Guid id)
+        {
+            try
+            {
+                await _adminUserService.DeleteBranchAsync(id);
+                return NoContent();
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { Message = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { Message = ex.Message });
+            }
+        }
+
         [HttpGet("roles")]
         public async Task<IActionResult> GetAllRoles()
         {

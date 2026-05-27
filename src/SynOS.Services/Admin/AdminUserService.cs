@@ -165,8 +165,78 @@ namespace SynOS.Services.Admin
         public async Task<IEnumerable<BranchDto>> GetAllBranchesAsync()
         {
             return await _context.Branches
-                .Select(b => new BranchDto { BranchId = b.BranchId, Name = b.Name })
+                .Select(b => new BranchDto { BranchId = b.BranchId, Code = b.Code, Name = b.Name, IsActive = b.IsActive })
                 .ToListAsync();
+        }
+
+        public async Task<Branch> CreateBranchAsync(string code, string name)
+        {
+            var upperCode = code.Trim().ToUpperInvariant();
+            if (await _context.Branches.AnyAsync(b => b.Code == upperCode))
+            {
+                throw new InvalidOperationException($"Branch with code '{upperCode}' already exists.");
+            }
+
+            var branch = new Branch
+            {
+                BranchId = Guid.NewGuid(),
+                Code = upperCode,
+                Name = name.Trim(),
+                IsActive = true
+            };
+
+            _context.Branches.Add(branch);
+            await _context.SaveChangesAsync();
+            return branch;
+        }
+
+        public async Task<Branch> UpdateBranchAsync(Guid branchId, string code, string name, bool isActive)
+        {
+            var branch = await _context.Branches.FindAsync(branchId);
+            if (branch == null)
+            {
+                throw new KeyNotFoundException("Branch not found.");
+            }
+
+            var upperCode = code.Trim().ToUpperInvariant();
+            if (branch.Code != upperCode && await _context.Branches.AnyAsync(b => b.Code == upperCode))
+            {
+                throw new InvalidOperationException($"Branch with code '{upperCode}' already exists.");
+            }
+
+            if (branch.Code == "MAIN" && !isActive)
+            {
+                throw new InvalidOperationException("Default branch (MAIN) cannot be deactivated.");
+            }
+
+            branch.Code = upperCode;
+            branch.Name = name.Trim();
+            branch.IsActive = isActive;
+
+            await _context.SaveChangesAsync();
+            return branch;
+        }
+
+        public async Task DeleteBranchAsync(Guid branchId)
+        {
+            var branch = await _context.Branches.FindAsync(branchId);
+            if (branch == null)
+            {
+                throw new KeyNotFoundException("Branch not found.");
+            }
+
+            if (branch.Code == "MAIN")
+            {
+                throw new InvalidOperationException("Default branch (MAIN) cannot be deleted.");
+            }
+
+            if (await _context.UserBranchRoles.AnyAsync(ubr => ubr.BranchId == branchId))
+            {
+                throw new InvalidOperationException("Cannot delete branch with active user assignments. Deactivate it instead.");
+            }
+
+            _context.Branches.Remove(branch);
+            await _context.SaveChangesAsync();
         }
 
         public async Task<IEnumerable<RoleDto>> GetAllRolesAsync()
