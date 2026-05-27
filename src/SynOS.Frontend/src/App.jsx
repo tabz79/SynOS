@@ -16,6 +16,7 @@ import { PendingRequestsQueue } from '@/features/admin/PendingRequestsQueue'
 import { ImsRoleMappingScreen } from '@/features/admin/ImsRoleMappingScreen'
 import { TestMasterScreen } from '@/features/admin/TestMasterScreen'
 import { ReportTemplatesScreen } from '@/features/admin/ReportTemplatesScreen'
+import { SystemSettingsScreen } from '@/features/admin/SystemSettingsScreen'
 import { InventoryTerminal } from '@/features/inventory/InventoryTerminal'
 import { FinanceLayout } from '@/features/finance/FinanceLayout'
 import { FinanceOverview } from '@/features/finance/FinanceOverview'
@@ -32,6 +33,8 @@ import { LeaveApplication } from '@/features/employee/LeaveApplication'
 import { MyAttendance, RequestStatus } from '@/features/employee/EmployeeStubs'
 import { RoleTakeoverBanner } from '@/features/admin/components/RoleTakeoverBanner'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
+import { PatientSearchScreen } from '@/features/patient/PatientSearchScreen'
+import { PatientDetailScreen } from '@/features/patient/PatientDetailScreen'
 
 function RootRedirect() {
   const { isAuthenticated, user } = useAuth();
@@ -198,6 +201,9 @@ function App() {
                 <Route path="/admin/test-master" element={<TestMasterScreen />} />
                 <Route path="/admin/report-templates" element={<ReportTemplatesScreen />} />
                 <Route path="/admin/staff" element={<IdentityProvisioningScreen />} />
+                <Route path="/admin/settings" element={<SystemSettingsScreen />} />
+                <Route path="/admin/patients" element={<PatientSearchScreen />} />
+                <Route path="/admin/patients/:id" element={<PatientDetailScreen />} />
               </Route>
             </Route>
 

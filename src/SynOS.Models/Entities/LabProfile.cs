@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace SynOS.Models.Entities
 {
@@ -31,6 +32,56 @@ namespace SynOS.Models.Entities
         public string? WatermarkUrl { get; set; }
 
         public string? FooterDisclaimer { get; set; } // e.g., "* Clinical correlation required"
+
+        // Document Branding Settings
+        public int HeaderHeightMm { get; set; } = 40;
+        public int FooterMarginMm { get; set; } = 15;
+        public bool ShowWatermark { get; set; } = true;
+        public bool ShowHeaderOnReports { get; set; } = true;
+        public bool ShowDigitalSignatures { get; set; } = true;
+
+        // Invoice Configurations
+        [StringLength(20)]
+        public string InvoicePrefix { get; set; } = "INV-";
+        public int NextInvoiceNumber { get; set; } = 1001;
+        [Column(TypeName = "decimal(5, 2)")]
+        public decimal DefaultTaxPercent { get; set; } = 0;
+        public bool EnableQrPayment { get; set; } = false;
+        [StringLength(100)]
+        public string? UpiId { get; set; }
+
+        // SMS/WhatsApp Settings
+        [StringLength(50)]
+        public string? SmsGatewayProvider { get; set; }
+        [StringLength(200)]
+        public string? SmsApiKey { get; set; }
+        [StringLength(200)]
+        public string? WhatsAppGatewayUrl { get; set; }
+        [StringLength(200)]
+        public string? WhatsAppApiKey { get; set; }
+
+        // SMTP Credentials
+        [StringLength(100)]
+        public string? SmtpHost { get; set; }
+        public int SmtpPort { get; set; } = 587;
+        [StringLength(100)]
+        public string? SmtpUsername { get; set; }
+        [StringLength(100)]
+        public string? SmtpPassword { get; set; }
+        public bool SmtpEnableSsl { get; set; } = true;
+        [StringLength(100)]
+        public string? SmtpSenderEmail { get; set; }
+        [StringLength(100)]
+        public string? SmtpSenderName { get; set; }
+
+        // Automatic Database Backup Rules
+        public bool BackupEnabled { get; set; } = false;
+        [StringLength(50)]
+        public string? BackupFrequency { get; set; } = "Daily"; // Daily, Weekly, Monthly
+        [StringLength(10)]
+        public string? BackupTime { get; set; } = "02:00"; // HH:mm
+        [StringLength(500)]
+        public string? BackupPath { get; set; }
 
         public DateTimeOffset UpdatedAt { get; set; } = DateTimeOffset.UtcNow;
     }

@@ -2,11 +2,11 @@
 // Author: Gemini
 // Date: 2025-11-13
 
-import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
-import apiClient, { setAuthTokens, clearAuthTokens, getAccessToken, getRefreshToken } from '../services/apiClient';
+import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+import apiClient, { setAuthTokens, clearAuthTokens, getAccessToken } from '../services/apiClient';
 
 interface User {
-  userId: number;
+  userId: string;
   email: string;
   name: string;
   roles: string[];

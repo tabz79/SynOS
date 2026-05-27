@@ -85,5 +85,71 @@ export const AdminApi = {
 
     setUserWorkspaces: async (id, workspaceIds) => {
         return apiClient.post(`${API_BASE}/users/${id}/workspaces`, { workspaceIds });
+    },
+
+    getSettings: async () => {
+        return apiClient.get(`${API_BASE}/settings`);
+    },
+    
+    updateSettings: async (dto) => {
+        return apiClient.put(`${API_BASE}/settings`, dto);
+    },
+
+    getPermissionsMatrix: async () => {
+        return apiClient.get(`${API_BASE}/roles/matrix`);
+    },
+
+    updateRoleCapabilities: async (dto) => {
+        return apiClient.post(`${API_BASE}/roles/matrix`, dto);
+    },
+
+    getDepartmentPolicies: async () => {
+        return apiClient.get(`${API_BASE}/roles/department-policies`);
+    },
+
+    saveDepartmentPolicy: async (dto) => {
+        return apiClient.post(`${API_BASE}/roles/department-policies`, dto);
+    },
+
+    deleteDepartmentPolicy: async (id) => {
+        return apiClient.delete(`${API_BASE}/roles/department-policies/${id}`);
+    },
+
+    getDiscounts: async (isActive, isEffective, search) => {
+        let q = '';
+        const params = [];
+        if (isActive !== undefined && isActive !== null) params.push(`isActive=${isActive}`);
+        if (isEffective !== undefined && isEffective !== null) params.push(`isEffective=${isEffective}`);
+        if (search) params.push(`search=${encodeURIComponent(search)}`);
+        if (params.length > 0) q = '?' + params.join('&');
+        return apiClient.get(`${API_BASE}/discounts${q}`);
+    },
+
+    createDiscount: async (dto) => {
+        return apiClient.post(`${API_BASE}/discounts`, dto);
+    },
+
+    updateDiscount: async (id, dto) => {
+        return apiClient.put(`${API_BASE}/discounts/${id}`, dto);
+    },
+
+    getReferralPartners: async () => {
+        return apiClient.get(`${API_BASE}/referral-partners`);
+    },
+
+    createReferralPartner: async (dto) => {
+        return apiClient.post(`${API_BASE}/referral-partners`, dto);
+    },
+
+    updateReferralPartner: async (id, dto) => {
+        return apiClient.put(`${API_BASE}/referral-partners/${id}`, dto);
+    },
+
+    deleteReferralPartner: async (id) => {
+        return apiClient.delete(`${API_BASE}/referral-partners/${id}`);
+    },
+
+    getAuditLogs: async (query) => {
+        return apiClient.get(`${API_BASE}/audit-logs${query}`);
     }
 };

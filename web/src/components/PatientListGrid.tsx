@@ -6,9 +6,8 @@ interface Patient {
   mrn: string;
   firstName: string;
   lastName: string;
-  currentPhoneNumber: string;
-  dateOfBirth: string;
-  // lastVisit: string; // This property is not in the model yet
+  currentPhoneNumber?: string;
+  dateOfBirth?: string;
 }
 
 interface PatientListGridProps {
@@ -18,7 +17,8 @@ interface PatientListGridProps {
 const PatientListGrid: React.FC<PatientListGridProps> = ({ patients }) => {
   const navigate = useNavigate();
 
-  const calculateAge = (dob: string) => {
+  const calculateAge = (dob?: string) => {
+    if (!dob) return 'N/A';
     const birthDate = new Date(dob);
     const today = new Date();
     let age = today.getFullYear() - birthDate.getFullYear();

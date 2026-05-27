@@ -3,7 +3,6 @@ import apiClient from '../services/apiClient';
 import PaymentCaptureModal from '../components/PaymentCaptureModal';
 import TokenPreview from '../components/TokenPreview';
 import { useAuth } from '../contexts/AuthContext'; // To get current user ID
-import dayjs from 'dayjs';
 
 interface Visit {
   visitId: string;

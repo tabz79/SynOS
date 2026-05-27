@@ -3,9 +3,8 @@
 // Date: 2025-11-13
 
 import axios from 'axios';
-import dayjs from 'dayjs'; // Added dayjs import
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api/v1';
+const API_BASE_URL = (import.meta as any).env.VITE_API_BASE_URL || 'http://localhost:5000/api/v1';
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,

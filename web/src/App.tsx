@@ -11,6 +11,7 @@ import PatientDetailPage from './pages/PatientDetailPage';
 import AppointmentsPage from './pages/AppointmentsPage';
 import VisitsPage from './pages/VisitsPage'; // Import the new VisitsPage
 import OutsourcedPayablesScreen from './pages/finance/OutsourcedPayablesScreen';
+import AdminDashboard from './pages/AdminDashboard';
 import './App.css'; // Assuming some basic app-wide styles
 
 // Dummy components for demonstration
@@ -21,7 +22,6 @@ const ResultsPage = () => <h2>Results Management</h2>;
 const QualityPage = () => <h2>Quality Control</h2>;
 const ReportsPage = () => <h2>Reports</h2>;
 const SignPage = () => <h2>Sign Reports</h2>;
-const AdminPage = () => <h2>Admin Panel</h2>;
 const UnauthorizedPage = () => <h2>403 - Unauthorized Access</h2>;
 
 
@@ -103,7 +103,7 @@ function App() {
           </Route>
 
           <Route element={<ProtectedRoute allowedRoles={['Admin']} />}>
-            <Route path="/admin" element={<AdminPage />} />
+            <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/finance/payables" element={<OutsourcedPayablesScreen />} />
           </Route>
 

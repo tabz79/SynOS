@@ -7,8 +7,8 @@ interface Patient {
   mrn: string;
   firstName: string;
   lastName: string;
-  currentPhoneNumber: string;
-  dateOfBirth: string;
+  currentPhoneNumber?: string;
+  dateOfBirth?: string;
 }
 
 const PatientSearchPage: React.FC = () => {

@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { cn } from "@/lib/utils"
 import { useFlipGroup } from "@/hooks/useSynOSMotion"
 import { Plus, Users, ClipboardList, Bed, Clock, Loader2, ChevronDown, Package } from 'lucide-react'
@@ -15,6 +16,7 @@ import { SignalRService } from '@/lib/signalr'
 import { useTheme } from '@/context/ThemeContext'
 
 export function ReceptionScreen() {
+    const navigate = useNavigate();
     const { theme } = useTheme();
     const [activeQueue, setActiveQueue] = useState("pending");
     const [summary, setSummary] = useState(null);
@@ -334,6 +336,16 @@ export function ReceptionScreen() {
                                     </div>
 
                                     <div className="flex items-center gap-2">
+                                        <button
+                                            onClick={() => navigate('/admin/patients')}
+                                            className={cn(
+                                                "px-4 py-2 rounded-lg text-sm font-bold shadow-lg transition-all duration-200 flex items-center gap-2 pointer-events-auto active:scale-95 border",
+                                                theme === 'dark' ? "bg-zinc-900 text-zinc-400 border-white/5 hover:text-white hover:bg-zinc-800" : "bg-white text-zinc-600 border-zinc-200 hover:text-zinc-900 hover:bg-zinc-50"
+                                            )}
+                                        >
+                                            <Users className="w-4 h-4" />
+                                            Patient Directory
+                                        </button>
                                         <button
                                             onClick={() => setIsInventoryModalOpen(true)}
                                             className={cn(

@@ -132,11 +132,9 @@ namespace SynOS.Services
         }
 
         // Enhanced search - returns DTOs directly with Last Visit info (Canonical JOIN Implementation)
-        public async Task<IEnumerable<PatientDto>> SearchPatientsAsync(string query, int limit, int offset)
+        public async Task<IEnumerable<PatientDto>> SearchPatientsAsync(string? query, int limit, int offset)
         {
             var q = query?.Trim();
-            if (string.IsNullOrWhiteSpace(q))
-                return Enumerable.Empty<PatientDto>();
 
             // 2️⃣ Base patient scope
             var patients = _context.Patients
@@ -154,23 +152,35 @@ namespace SynOS.Services
                 from a in _context.PatientAliases
                 select a;
 
-            // 5️⃣ Unified JOIN-based search query (CORE FIX)
+            if (!string.IsNullOrWhiteSpace(q))
+            {
+                patients = from p in patients
+
+                           join ph in activePhones
+                               on p.PatientId equals ph.PatientId into phoneGroup
+                           from ph in phoneGroup.DefaultIfEmpty()
+
+                           join a in aliases
+                               on p.PatientId equals a.PatientId into aliasGroup
+                           from a in aliasGroup.DefaultIfEmpty()
+
+                           where
+                               EF.Functions.Like(p.MRN, $"%{q}%")
+                               || EF.Functions.Like((p.FirstName + " " + p.LastName), $"%{q}%")
+                               || (a != null && EF.Functions.Like((a.FirstName + " " + a.LastName), $"%{q}%"))
+                               || (ph != null && EF.Functions.Like(ph.PhoneNumber, $"%{q}%"))
+
+                           select p;
+
+                patients = patients.Distinct();
+            }
+
             var results =
                 from p in patients
 
                 join ph in activePhones
                     on p.PatientId equals ph.PatientId into phoneGroup
                 from ph in phoneGroup.DefaultIfEmpty()
-
-                join a in aliases
-                    on p.PatientId equals a.PatientId into aliasGroup
-                from a in aliasGroup.DefaultIfEmpty()
-
-                where
-                    EF.Functions.Like(p.MRN, $"%{q}%")
-                    || EF.Functions.Like((p.FirstName + " " + p.LastName), $"%{q}%")
-                    || (a != null && EF.Functions.Like((a.FirstName + " " + a.LastName), $"%{q}%"))
-                    || (ph != null && EF.Functions.Like(ph.PhoneNumber, $"%{q}%"))
 
                 select new PatientDto
                 {
@@ -192,9 +202,6 @@ namespace SynOS.Services
                         .Select(v => (DateTime?)v.TokenDate)
                         .FirstOrDefault(),
 
-                    // Keep existing TestCodes logic if possible, or simplified empty list if prompt implied restricted scope
-                    // The prompt didn't strictly forbid other fields, but "LastVisitDate" was mentioned.
-                    // I will preserve LastVisitTestCodes to avoid regression in UI (Patient Card shows them).
                      LastVisitTestCodes = _context.Visits
                         .Where(v => v.PatientId == p.PatientId)
                         .OrderByDescending(v => v.TokenDate)
@@ -329,10 +336,16 @@ namespace SynOS.Services
 
             if (target == null || source == null) return false;
 
+            // Move associated visits
+            var visits = await _context.Visits.Where(v => v.PatientId == sourceId).ToListAsync();
+            foreach (var visit in visits)
+            {
+                visit.PatientId = targetId;
+            }
+
             // Move phone history entries
             foreach (var ph in source.PhoneHistory.ToList())
             {
-                // reassign PatientId or clone depending on your entity config
                 ph.PatientId = target.PatientId;
                 target.PhoneHistory.Add(ph);
             }
@@ -353,6 +366,52 @@ namespace SynOS.Services
             await _auditService.LogAsync(userId, "MergePatients", "Patient", targetId, new { Source = sourceId, Target = targetId });
 
             return true;
+        }
+
+        public async Task<PatientDto?> UpdatePatientAsync(Guid id, PatientUpdateDto dto, Guid? actorUserId = null)
+        {
+            var patient = await _context.Patients
+                .Include(p => p.PhoneHistory)
+                .SingleOrDefaultAsync(p => p.PatientId == id);
+
+            if (patient == null) return null;
+
+            var oldValues = new
+            {
+                patient.FirstName,
+                patient.LastName,
+                patient.DateOfBirth,
+                patient.Gender,
+                patient.CurrentPhoneNumber
+            };
+
+            patient.FirstName = dto.FirstName;
+            patient.LastName = dto.LastName;
+            patient.DateOfBirth = dto.DateOfBirth;
+            patient.Gender = dto.Gender;
+
+            if (dto.CurrentPhoneNumber != null && patient.CurrentPhoneNumber != dto.CurrentPhoneNumber)
+            {
+                var activePhone = patient.PhoneHistory.FirstOrDefault(h => h.EndDate == null);
+                if (activePhone != null)
+                {
+                    activePhone.EndDate = DateTime.UtcNow;
+                }
+
+                patient.PhoneHistory.Add(new PatientPhoneHistory
+                {
+                    PhoneNumber = dto.CurrentPhoneNumber,
+                    StartDate = DateTime.UtcNow
+                });
+                patient.CurrentPhoneNumber = dto.CurrentPhoneNumber;
+            }
+
+            patient.UpdatedAt = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
+
+            await _auditService.LogAsync(actorUserId, "UpdatePatient", "Patient", id, new { Old = oldValues, New = dto });
+
+            return _mapper.Map<PatientDto>(patient);
         }
 
         // small helper: MRN generator (very simple placeholder)

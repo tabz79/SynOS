@@ -42,12 +42,13 @@ export function AdminLayout() {
     ];
 
     const standaloneItems = [
+        { name: "Patient Directory", icon: Users, path: "/admin/patients" },
         { name: "Test Master", icon: Settings2, path: "/admin/test-master" },
         { name: "Report Templates", icon: Layout, path: "/admin/report-templates" },
         { name: "Inventory Setup", icon: Box, path: "/admin/inventory/setup" },
         { name: "Identity & Access", icon: Users, path: "/admin/staff" },
         { name: "Intelligence", icon: BarChart3, path: "/admin/intelligence", disabled: true },
-        { name: "System Settings", icon: Settings, path: "/admin/settings", disabled: true },
+        { name: "System Settings", icon: Settings, path: "/admin/settings" },
     ];
 
     return (

@@ -27,6 +27,7 @@ namespace SynOS.Data
             SeedEmployees(context); // Connect Identity to Workforce (Seeding)
             SeedLabProfile(context);
             SeedWorkspaces(context);
+            SeedCapabilities(context);
 
             SeedSpecimenTypes(context);
             SeedTubes(context);
@@ -522,6 +523,87 @@ namespace SynOS.Data
             });
 
             context.SaveChanges();
+        }
+
+        private static void SeedCapabilities(SynOSDbContext context)
+        {
+            if (context.Capabilities.Any()) return;
+
+            var modules = new[] { "Patients", "Tests", "Billing", "Settings", "Reports", "Workspaces" };
+            var actions = new[] { "View", "Create", "Edit", "Delete" };
+
+            var seededCapabilities = new List<SynOS.Models.Entities.Governance.Capability>();
+
+            foreach (var module in modules)
+            {
+                foreach (var action in actions)
+                {
+                    var name = $"{module}.{action}";
+                    var cap = new SynOS.Models.Entities.Governance.Capability
+                    {
+                        CapabilityId = Guid.NewGuid(),
+                        Module = module,
+                        Action = action,
+                        Name = name
+                    };
+                    context.Capabilities.Add(cap);
+                    seededCapabilities.Add(cap);
+                }
+            }
+            context.SaveChanges();
+
+            // Map all capabilities to Admin role automatically
+            var adminRole = context.Roles.FirstOrDefault(r => r.Name == "Admin");
+            if (adminRole != null)
+            {
+                foreach (var cap in seededCapabilities)
+                {
+                    context.RoleCapabilities.Add(new SynOS.Models.Entities.Governance.RoleCapability
+                    {
+                        RoleCapabilityId = Guid.NewGuid(),
+                        RoleId = adminRole.RoleId,
+                        CapabilityId = cap.CapabilityId
+                    });
+                }
+                context.SaveChanges();
+            }
+
+            // Map standard capabilities to other roles
+            var pathologistRole = context.Roles.FirstOrDefault(r => r.Name == "Pathologist");
+            if (pathologistRole != null)
+            {
+                var pathCaps = seededCapabilities.Where(c => 
+                    c.Name == "Reports.View" || c.Name == "Reports.Create" || c.Name == "Reports.Edit" || 
+                    c.Name == "Patients.View" || c.Name == "Tests.View");
+                foreach (var cap in pathCaps)
+                {
+                    context.RoleCapabilities.Add(new SynOS.Models.Entities.Governance.RoleCapability
+                    {
+                        RoleCapabilityId = Guid.NewGuid(),
+                        RoleId = pathologistRole.RoleId,
+                        CapabilityId = cap.CapabilityId
+                    });
+                }
+                context.SaveChanges();
+            }
+
+            var receptionistRole = context.Roles.FirstOrDefault(r => r.Name == "Receptionist" || r.Name == "Reception");
+            if (receptionistRole != null)
+            {
+                var recepCaps = seededCapabilities.Where(c => 
+                    c.Name.StartsWith("Patients.") || c.Name.StartsWith("Billing.") || 
+                    c.Name == "Tests.View" || c.Name == "Reports.View");
+                foreach (var cap in recepCaps)
+                {
+                    context.RoleCapabilities.Add(new SynOS.Models.Entities.Governance.RoleCapability
+                    {
+                        RoleCapabilityId = Guid.NewGuid(),
+                        RoleId = receptionistRole.RoleId,
+                        CapabilityId = cap.CapabilityId
+                    });
+                }
+                context.SaveChanges();
+            }
         }
 
         private static void SeedIMS(SynOSDbContext context)
