@@ -25,9 +25,14 @@ import {
     Trash2,
     Key,
     Fingerprint,
-    LayoutDashboard
+    LayoutDashboard,
+    Edit,
+    Check,
+    X
 } from 'lucide-react';
 import { FinanceApi } from '@/api/finance';
+import { AdminApi } from '@/api/admin';
+import { UsersApi } from '@/api/users';
 import { AddStaffModal } from './components/workforce/AddStaffModal';
 import { AdvanceRequestModal } from './components/workforce/AdvanceRequestModal';
 import { StatutoryConfigModal } from './components/workforce/StatutoryConfigModal';
@@ -422,7 +427,7 @@ export function StaffRegistryScreen() {
                                     key={s.employeeId} 
                                     name={`${s.firstName} ${s.lastName}`} 
                                     role={s.jobTitle} 
-                                    dept={s.department || 'General'} 
+                                    dept={s.department || 'GENERAL'} 
                                     type={s.salaryType === 0 ? 'Fixed' : s.salaryType === 1 ? 'Hourly' : 'Visit'} 
                                     salary={s.baseSalary.toLocaleString()} 
                                     status={s.isActive ? 'Active' : 'Inactive'} 
@@ -2105,7 +2110,7 @@ function LeaveReviewModal({ request, onClose }) {
                         onClick={() => handleReview('Approved')}
                         className="flex-[2] py-3 rounded-2xl bg-synos-primary text-white font-bold text-sm hover:scale-[1.02] transition-transform shadow-lg shadow-synos-primary/20 disabled:opacity-50"
                     >
-                        {submitting ? "Processing..." : "Approve & Log Impact"}
+                        {submitting ? "Processing..." : "Approve Request"}
                     </button>
                 </div>
             </div>
@@ -2115,23 +2120,196 @@ function LeaveReviewModal({ request, onClose }) {
 
 export function IdentityProvisioningScreen() {
     const [staff, setStaff] = useState([]);
+    const [users, setUsers] = useState([]);
+    const [branches, setBranches] = useState([]);
+    const [roles, setRoles] = useState([]);
+    const [departments, setDepartments] = useState([]);
     const [loading, setLoading] = useState(true);
     const [syncing, setSyncing] = useState(false);
-    const [selectedEmployee, setSelectedEmployee] = useState(null);
+
+    // Dynamic Department Form States
+    const [newDeptCode, setNewDeptCode] = useState('');
+    const [newDeptName, setNewDeptName] = useState('');
+    const [newDeptMacro, setNewDeptMacro] = useState('Pathology');
+    const [creatingDept, setCreatingDept] = useState(false);
+    
+    // Department Editing States
+    const [editingDeptCode, setEditingDeptCode] = useState(null);
+    const [editingDeptName, setEditingDeptName] = useState('');
+    const [editingDeptMacro, setEditingDeptMacro] = useState('Pathology');
+    const [editingDeptActive, setEditingDeptActive] = useState(true);
+
+    // Dynamic Workspace Form States
+    const [workspaces, setWorkspaces] = useState([]);
+    const [newWorkspaceName, setNewWorkspaceName] = useState('');
+    const [newWorkspaceRoute, setNewWorkspaceRoute] = useState('');
+    const [creatingWorkspace, setCreatingWorkspace] = useState(false);
+    
+    // Workspace Editing States
+    const [editingWorkspaceId, setEditingWorkspaceId] = useState(null);
+    const [editingWorkspaceName, setEditingWorkspaceName] = useState('');
+    const [editingWorkspaceRoute, setEditingWorkspaceRoute] = useState('');
+    const [editingWorkspaceActive, setEditingWorkspaceActive] = useState(true);
+    
+    // Modal states
+    const [selectedEmployee, setSelectedEmployee] = useState(null); // Link Provisioning (Flow A)
+    const [selectedUser, setSelectedUser] = useState(null);
+    const [activeModal, setActiveModal] = useState(null); // 'edit' | 'roles' | 'password' | 'add'
+    
+    const uniqueMacros = Array.from(new Set([
+        'Pathology', 
+        'Laboratory', 
+        'General', 
+        ...workspaces.map(w => w.name),
+        ...departments.map(d => d.macroDepartment)
+    ].filter(Boolean)));
+    
+    const fileInputRefs = useRef({});
 
     useEffect(() => {
-        loadStaff();
+        loadData();
     }, []);
 
-    const loadStaff = async () => {
+    const loadData = async () => {
         setLoading(true);
         try {
-            const data = await WorkforceApi.getStaff();
-            setStaff(data);
+            const [staffData, usersData, branchesData, rolesData, deptsData, workspacesData] = await Promise.all([
+                WorkforceApi.getStaff().catch(() => []),
+                AdminApi.getUsers().catch(() => []),
+                AdminApi.getBranches().catch(() => []),
+                AdminApi.getRoles().catch(() => []),
+                AdminApi.getDepartments().catch(() => []),
+                AdminApi.getWorkspaces().catch(() => [])
+            ]);
+            setStaff(staffData);
+            setUsers(usersData);
+            setBranches(branchesData);
+            setRoles(rolesData);
+            setDepartments(deptsData);
+            setWorkspaces(workspacesData);
         } catch (error) {
-            console.error(error);
+            console.error("Failed to load identity data:", error);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleStartEditWorkspace = (ws) => {
+        setEditingWorkspaceId(ws.workspaceId);
+        setEditingWorkspaceName(ws.name);
+        setEditingWorkspaceRoute(ws.routePath);
+        setEditingWorkspaceActive(ws.isActive);
+    };
+
+    const handleSaveWorkspace = async (ws) => {
+        if (!editingWorkspaceName.trim() || !editingWorkspaceRoute.trim()) {
+            return alert("Workspace Name and Route Path cannot be empty.");
+        }
+        try {
+            await AdminApi.updateWorkspace(ws.workspaceId, {
+                name: editingWorkspaceName.trim(),
+                routePath: editingWorkspaceRoute.trim(),
+                isActive: editingWorkspaceActive
+            });
+            alert(`Workspace '${ws.name}' updated successfully!`);
+            setEditingWorkspaceId(null);
+            await loadData();
+        } catch (error) {
+            alert(error.message || "Failed to update workspace.");
+        }
+    };
+
+    const handleDeleteWorkspace = async (ws) => {
+        if (!window.confirm(`Are you sure you want to delete the Workspace '${ws.name}' (${ws.routePath})? This will revoke access for all mapped users.`)) return;
+        try {
+            await AdminApi.deleteWorkspace(ws.workspaceId);
+            alert(`Workspace '${ws.name}' deleted successfully!`);
+            await loadData();
+        } catch (error) {
+            alert(error.message || "Failed to delete workspace.");
+        }
+    };
+
+    const handleCreateWorkspace = async (e) => {
+        e.preventDefault();
+        if (!newWorkspaceName || !newWorkspaceRoute) {
+            return alert("Workspace Name and Route Path are required.");
+        }
+        setCreatingWorkspace(true);
+        try {
+            await AdminApi.createWorkspace({
+                name: newWorkspaceName.trim(),
+                routePath: newWorkspaceRoute.trim()
+            });
+            alert(`Workspace '${newWorkspaceName}' registered successfully!`);
+            setNewWorkspaceName('');
+            setNewWorkspaceRoute('');
+            await loadData();
+        } catch (error) {
+            alert(error.message || "Failed to register workspace.");
+        } finally {
+            setCreatingWorkspace(false);
+        }
+    };
+
+    const handleCreateDepartment = async (e) => {
+        e.preventDefault();
+        if (!newDeptCode || !newDeptName) {
+            return alert("Department Code and Department Name are required.");
+        }
+        if (newDeptCode.toUpperCase() === 'GENERAL' || newDeptCode.toUpperCase() === 'RAD' || newDeptName.toLowerCase() === 'general' || newDeptName.toLowerCase() === 'radiology') {
+            return alert("Reserved system departments (General/Radiology) cannot be created manually.");
+        }
+        setCreatingDept(true);
+        try {
+            await AdminApi.createDepartment({
+                code: newDeptCode.toUpperCase(),
+                name: newDeptName.trim(),
+                macroDepartment: newDeptMacro
+            });
+            alert(`Operational Department '${newDeptName}' created successfully!`);
+            setNewDeptCode('');
+            setNewDeptName('');
+            setNewDeptMacro('Pathology');
+            await loadData();
+        } finally {
+            setCreatingDept(false);
+        }
+    };
+
+    const handleStartEditDept = (dept) => {
+        setEditingDeptCode(dept.code);
+        setEditingDeptName(dept.name);
+        setEditingDeptMacro(dept.macroDepartment || 'Pathology');
+        setEditingDeptActive(dept.isActive);
+    };
+
+    const handleSaveDept = async (dept) => {
+        if (!editingDeptName.trim()) {
+            return alert("Department Name cannot be empty.");
+        }
+        try {
+            await AdminApi.updateDepartment(dept.departmentId, {
+                name: editingDeptName.trim(),
+                macroDepartment: editingDeptMacro,
+                isActive: editingDeptActive
+            });
+            alert(`Operational Department '${dept.code}' updated successfully!`);
+            setEditingDeptCode(null);
+            await loadData();
+        } catch (error) {
+            alert(error.message || "Failed to update department.");
+        }
+    };
+
+    const handleDeleteDept = async (dept) => {
+        if (!window.confirm(`Are you sure you want to delete the Operational Department '${dept.name}' (${dept.code})? This will permanently remove its routing record.`)) return;
+        try {
+            await AdminApi.deleteDepartment(dept.departmentId);
+            alert(`Operational Department '${dept.name}' deleted successfully!`);
+            await loadData();
+        } catch (error) {
+            alert(error.message || "Failed to delete department.");
         }
     };
 
@@ -2140,7 +2318,7 @@ export function IdentityProvisioningScreen() {
         setSyncing(true);
         try {
             await WorkforceApi.syncSeededUsers();
-            await loadStaff();
+            await loadData();
         } catch (error) {
             alert("Migration failed: " + error.message);
         } finally {
@@ -2148,25 +2326,34 @@ export function IdentityProvisioningScreen() {
         }
     };
 
-    const toggleAccess = async (employeeId, currentStatus) => {
+    const toggleAccess = async (user) => {
         try {
-            if (currentStatus) {
-                await WorkforceApi.deactivateAccess(employeeId);
-            } else {
-                await WorkforceApi.reactivateAccess(employeeId);
-            }
-            await loadStaff();
+            await AdminApi.updateUser(user.userId, {
+                name: user.name,
+                username: user.username,
+                email: user.email,
+                designation: user.designation,
+                isActive: !user.isActive,
+                departmentCode: user.departmentCode || "GENERAL"
+            });
+            await loadData();
         } catch (error) {
-            alert(error.message);
+            alert("Failed to toggle access: " + error.message);
         }
     };
 
-    const handleQuickProvision = async (employeeId) => {
-        if (!window.confirm("Quick provision will use the employee's email as username and a default secure password. Proceed?")) return;
+    const handleQuickProvision = async (employee) => {
+        const generatedPassword = "TempPassword123!";
+        if (!window.confirm(`Quick link will create system access for ${employee.firstName} with username '${employee.displayName.replace(/\s+/g, '').toLowerCase()}' and password '${generatedPassword}'. Proceed?`)) return;
         setLoading(true);
         try {
-            await WorkforceApi.provisionSimplifiedAccess(employeeId);
-            await loadStaff();
+            await WorkforceApi.provisionAccess(employee.employeeId, {
+                username: employee.displayName.replace(/\s+/g, '').toLowerCase(),
+                email: employee.displayName.replace(/\s+/g, '').toLowerCase() + "@lab.com",
+                password: generatedPassword,
+                roles: ["Staff"]
+            });
+            await loadData();
         } catch (error) {
             alert("Quick provision failed: " + error.message);
         } finally {
@@ -2174,83 +2361,122 @@ export function IdentityProvisioningScreen() {
         }
     };
 
+    const handleSignatureUpload = async (userId, event) => {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        setLoading(true);
+        try {
+            await UsersApi.uploadSignature(userId, file);
+            alert("Signature uploaded successfully.");
+            await loadData();
+        } catch (error) {
+            alert("Signature upload failed: " + error.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const pending = staff.filter(e => !e.userId && e.isActive);
-    const managed = staff.filter(e => e.userId);
 
     return (
-        <div className="p-6 space-y-6">
-            <div className="flex justify-between items-center">
+        <div className="p-8 space-y-8 animate-in fade-in duration-300">
+            {/* Header Block */}
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
-                    <h1 className="text-2xl font-bold text-zinc-900 dark:text-white">Identity & Access</h1>
-                    <p className="text-xs text-zinc-500 mt-1 uppercase tracking-wider font-bold">Workforce Management Utility</p>
+                    <h1 className="text-xl font-medium tracking-tight text-zinc-800 dark:text-white flex items-center gap-2.5">
+                        <Key className="w-5 h-5 text-synos-primary" /> Identity & Access Center
+                    </h1>
+                    <p className="text-xs text-zinc-400 mt-1">Configure credentials, location rules, and operational laboratory routing</p>
                 </div>
-                <button 
-                    onClick={handleSync}
-                    disabled={syncing}
-                    className="flex items-center gap-2 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-600 dark:text-zinc-400 px-3 py-1.5 rounded-lg text-xs font-bold border dark:border-zinc-700 transition-colors"
-                >
-                    <History className={`w-3 h-3 ${syncing ? 'animate-spin' : ''}`} />
-                    Migration Bridge (Dev)
-                </button>
+                <div className="flex gap-2">
+                    <button 
+                        onClick={handleSync}
+                        disabled={syncing}
+                        className="flex items-center gap-2 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-600 dark:text-zinc-400 px-3.5 py-1.5 rounded-xl text-xs transition-colors border dark:border-zinc-700 shadow-sm"
+                    >
+                        <History className={`w-3.5 h-3.5 ${syncing ? 'animate-spin' : ''}`} />
+                        Migration Bridge (Dev)
+                    </button>
+                    <button 
+                        onClick={() => setActiveModal('add')}
+                        className="flex items-center gap-2 bg-synos-primary text-white hover:bg-opacity-95 px-4 py-1.5 rounded-xl text-xs font-medium transition-colors shadow-sm"
+                    >
+                        <UserPlus className="w-3.5 h-3.5" />
+                        Create System User
+                    </button>
+                </div>
             </div>
 
-            <div className="grid grid-cols-1 gap-6">
-                {/* Pending Access Queue */}
-                <div className="bg-white dark:bg-zinc-900 border dark:border-zinc-800 rounded-xl overflow-hidden shadow-sm">
-                    <div className="px-4 py-3 border-b dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 flex items-center justify-between">
+            {/* Metrics Ribbon */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="p-5 bg-white dark:bg-zinc-950 border dark:border-zinc-900/60 border-zinc-100 rounded-2xl shadow-sm flex items-center gap-4">
+                    <div className="p-3 rounded-xl bg-synos-primary/10 text-synos-primary">
+                        <Users className="w-5 h-5" />
+                    </div>
+                    <div>
+                        <h4 className="text-[11px] font-normal text-zinc-400">Total Accounts</h4>
+                        <p className="text-lg font-semibold text-zinc-800 dark:text-zinc-100 mt-0.5">{users.length}</p>
+                    </div>
+                </div>
+                <div className="p-5 bg-white dark:bg-zinc-950 border dark:border-zinc-900/60 border-zinc-100 rounded-2xl shadow-sm flex items-center gap-4">
+                    <div className="p-3 rounded-xl bg-emerald-500/10 text-emerald-500">
+                        <Fingerprint className="w-5 h-5" />
+                    </div>
+                    <div>
+                        <h4 className="text-[11px] font-normal text-zinc-400">Active Accounts</h4>
+                        <p className="text-lg font-semibold text-zinc-800 dark:text-zinc-100 mt-0.5">{users.filter(u => u.isActive).length}</p>
+                    </div>
+                </div>
+                <div className="p-5 bg-white dark:bg-zinc-950 border dark:border-zinc-900/60 border-zinc-100 rounded-2xl shadow-sm flex items-center gap-4">
+                    <div className="p-3 rounded-xl bg-amber-500/10 text-amber-500">
+                        <Key className="w-5 h-5" />
+                    </div>
+                    <div>
+                        <h4 className="text-[11px] font-normal text-zinc-400">Pending Access</h4>
+                        <p className="text-lg font-semibold text-zinc-800 dark:text-zinc-100 mt-0.5">{pending.length} hires</p>
+                    </div>
+                </div>
+            </div>
+
+            {/* Flow A: Pending Access Queue (HR Hired) */}
+            {pending.length > 0 && (
+                <div className="bg-white dark:bg-zinc-950 border dark:border-zinc-900/60 border-zinc-100 rounded-2xl overflow-hidden shadow-sm">
+                    <div className="px-6 py-4 border-b dark:border-zinc-900/60 border-zinc-100 bg-zinc-50/50 dark:bg-zinc-900/10 flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                            <Key className="w-3.5 h-3.5 text-synos-primary" />
-                            <h3 className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">Pending Access</h3>
+                            <Clock className="w-4 h-4 text-amber-500" />
+                            <h3 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">HR Hired &bull; Pending System Access</h3>
                         </div>
-                        <span className="text-[10px] font-black bg-synos-primary/10 text-synos-primary px-2 py-0.5 rounded-full">
-                            {pending.length} Awaiting Login
+                        <span className="text-[10px] font-medium bg-amber-500/10 text-amber-600 dark:text-amber-400 px-2.5 py-0.5 rounded-full">
+                            Awaiting login creation
                         </span>
                     </div>
                     <div className="overflow-x-auto">
                         <table className="w-full text-left border-collapse">
                             <thead>
-                                <tr className="text-[10px] uppercase tracking-widest font-bold text-zinc-400 border-b dark:border-zinc-800">
-                                    <th className="px-4 py-2">Staff Member</th>
-                                    <th className="px-4 py-2">Designation</th>
-                                    <th className="px-4 py-2">Department</th>
-                                    <th className="px-4 py-2">Identity Details</th>
-                                    <th className="px-4 py-2 text-right">Action</th>
+                                <tr className="text-xs font-medium text-zinc-400 border-b dark:border-zinc-900 border-zinc-100 bg-zinc-50/10 dark:bg-zinc-900/5">
+                                    <th className="px-6 py-3 font-medium">Hired Member</th>
+                                    <th className="px-6 py-3 font-medium">Designation</th>
+                                    <th className="px-6 py-3 font-medium">Hired Department</th>
+                                    <th className="px-6 py-3 text-right font-medium">Lifecycle Actions</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y dark:divide-zinc-800">
-                                {loading ? (
-                                    <tr><td colSpan="5" className="px-4 py-8 text-center text-xs text-zinc-500">Updating registry...</td></tr>
-                                ) : pending.length === 0 ? (
-                                    <tr><td colSpan="5" className="px-4 py-8 text-center text-xs text-zinc-500">No pending access requests.</td></tr>
-                                ) : pending.map(e => (
-                                    <tr key={e.employeeId} className="hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors">
-                                        <td className="px-4 py-2.5 text-sm font-bold dark:text-zinc-200">{e.firstName} {e.lastName}</td>
-                                        <td className="px-4 py-2.5 text-xs text-zinc-500">{e.jobTitle}</td>
-                                        <td className="px-4 py-2.5 text-xs text-zinc-500">{e.department || 'N/A'}</td>
-                                        <td className="px-4 py-2.5">
-                                            <div className="flex flex-col gap-0.5">
-                                                <div className="flex items-center gap-1.5 text-[10px]">
-                                                    <span className="text-zinc-500 font-medium">AADHAAR:</span>
-                                                    <span className="text-zinc-900 dark:text-zinc-300 font-bold tracking-wider">{e.aadhaarNumber || 'NOT SET'}</span>
-                                                </div>
-                                                <div className="flex items-center gap-1.5 text-[10px]">
-                                                    <span className="text-zinc-500 font-medium">PAN:</span>
-                                                    <span className="text-zinc-900 dark:text-zinc-300 font-bold tracking-wider">{e.panNumber || 'NOT SET'}</span>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td className="px-4 py-2.5 text-right flex justify-end gap-2">
+                            <tbody className="divide-y dark:divide-zinc-900 border-zinc-100">
+                                {pending.map(e => (
+                                    <tr key={e.employeeId} className="hover:bg-zinc-50 dark:hover:bg-zinc-900/20 transition-colors">
+                                        <td className="px-6 py-3.5 text-sm font-medium text-zinc-700 dark:text-zinc-200">{e.displayName}</td>
+                                        <td className="px-6 py-3.5 text-xs text-zinc-500">{e.designation}</td>
+                                        <td className="px-6 py-3.5 text-xs text-zinc-500">{e.department || 'N/A'}</td>
+                                        <td className="px-6 py-3.5 text-right flex justify-end gap-2">
                                             <button 
-                                                onClick={() => handleQuickProvision(e.employeeId)}
-                                                className="bg-emerald-500 text-white px-3 py-1 rounded-md text-[10px] font-black uppercase tracking-tighter hover:opacity-90 flex items-center gap-1"
-                                                title="One-click provisioning using system defaults"
+                                                onClick={() => handleQuickProvision(e)}
+                                                className="bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500 hover:text-white px-3 py-1.5 rounded-lg text-[10px] font-medium transition-all flex items-center gap-1"
                                             >
-                                                <Zap className="w-2.5 h-2.5" />
-                                                Quick Link
+                                                <Zap className="w-3 h-3" /> Quick Link
                                             </button>
                                             <button 
                                                 onClick={() => setSelectedEmployee(e)}
-                                                className="bg-synos-primary text-white px-3 py-1 rounded-md text-[10px] font-black uppercase tracking-tighter hover:opacity-90"
+                                                className="bg-synos-primary text-white hover:bg-opacity-95 px-3.5 py-1.5 rounded-lg text-[10px] font-medium transition-colors"
                                             >
                                                 Custom Setup
                                             </button>
@@ -2261,74 +2487,678 @@ export function IdentityProvisioningScreen() {
                         </table>
                     </div>
                 </div>
+            )}
 
-                {/* Managed Identities */}
-                <div className="bg-white dark:bg-zinc-900 border dark:border-zinc-800 rounded-xl overflow-hidden shadow-sm">
-                    <div className="px-4 py-3 border-b dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 flex items-center gap-2">
-                        <Fingerprint className="w-3.5 h-3.5 text-emerald-500" />
-                        <h3 className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">Managed System Identities</h3>
-                    </div>
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-left border-collapse">
-                            <thead>
-                                <tr className="text-[10px] uppercase tracking-widest font-bold text-zinc-400 border-b dark:border-zinc-800">
-                                    <th className="px-4 py-2">Staff Member</th>
-                                    <th className="px-4 py-2">Access Status</th>
-                                    <th className="px-4 py-2">Last Activity</th>
-                                    <th className="px-4 py-2">Identity ID</th>
-                                    <th className="px-4 py-2 text-right">Lifecycle</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y dark:divide-zinc-800">
-                                {managed.length === 0 ? (
-                                    <tr><td colSpan="4" className="px-4 py-8 text-center text-xs text-zinc-500">No provisioned identities found.</td></tr>
-                                ) : managed.map(e => (
-                                    <tr key={e.employeeId} className="hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors">
-                                        <td className="px-4 py-2.5 text-sm font-bold dark:text-zinc-200">{e.firstName} {e.lastName}</td>
-                                        <td className="px-4 py-2.5">
-                                            <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase ${e.isActive ? 'bg-emerald-500/10 text-emerald-500' : 'bg-rose-500/10 text-rose-500'}`}>
-                                                {e.isActive ? 'Active Access' : 'Deactivated'}
-                                            </span>
-                                        </td>
-                                        <td className="px-4 py-2.5 text-xs text-zinc-500">
-                                            {e.user?.lastLoginAt ? new Date(e.user.lastLoginAt).toLocaleString() : 'Never'}
-                                        </td>
-                                        <td className="px-4 py-2.5 text-[10px] font-mono text-zinc-400 uppercase">{e.userId.substring(0, 8)}...</td>
-                                        <td className="px-4 py-2.5 text-right">
+            {/* Central System Identities list */}
+            <div className="bg-white dark:bg-zinc-950 border dark:border-zinc-900/60 border-zinc-100 rounded-2xl overflow-hidden shadow-sm">
+                <div className="px-6 py-4 border-b dark:border-zinc-900/60 border-zinc-100 bg-zinc-50/50 dark:bg-zinc-900/10 flex items-center gap-2">
+                    <Fingerprint className="w-4 h-4 text-synos-primary" />
+                    <h3 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">Managed System Identities</h3>
+                </div>
+                <div className="overflow-x-auto">
+                    <table className="w-full text-left border-collapse">
+                        <thead>
+                            <tr className="text-xs font-medium text-zinc-400 border-b dark:border-zinc-900 border-zinc-100 bg-zinc-50/10 dark:bg-zinc-900/5">
+                                <th className="px-6 py-3.5 font-medium">Staff Member</th>
+                                <th className="px-6 py-3.5 font-medium">Login Account</th>
+                                <th className="px-6 py-3.5 font-medium">Location & Role Mapping</th>
+                                <th className="px-6 py-3.5 font-medium">Workspace Access</th>
+                                <th className="px-6 py-3.5 font-medium">Department</th>
+                                <th className="px-6 py-3.5 font-medium">Access Status</th>
+                                <th className="px-6 py-3.5 text-right font-medium">Operational Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y dark:divide-zinc-900 border-zinc-100">
+                            {loading ? (
+                                <tr><td colSpan="7" className="px-6 py-12 text-center text-xs text-zinc-400 animate-pulse font-normal">Syncing system identities registry...</td></tr>
+                            ) : users.length === 0 ? (
+                                <tr><td colSpan="7" className="px-6 py-12 text-center text-xs text-zinc-500">No managed identities found in DB.</td></tr>
+                            ) : users.map(user => (
+                                <tr key={user.userId} className="hover:bg-zinc-50 dark:hover:bg-zinc-900/20 transition-colors group">
+                                    <td className="px-6 py-4">
+                                        <div className="flex items-center gap-3">
+                                            <div className="relative">
+                                                <div className="w-8 h-8 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-[10px] font-medium text-zinc-500 border dark:border-zinc-700">
+                                                    {user.name.split(' ').map(n => n[0]).join('')}
+                                                </div>
+                                                {user.signatureImageUrl && (
+                                                    <div className="absolute -bottom-1 -right-1 bg-synos-primary text-white p-0.5 rounded-full border-2 border-white dark:border-zinc-900 shadow-sm" title="Signature Configured">
+                                                        <ShieldCheck className="w-2.5 h-2.5" />
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <div className="space-y-0.5">
+                                                <p className="text-sm font-medium text-zinc-800 dark:text-zinc-200">{user.name}</p>
+                                                <p className="text-[10px] text-zinc-400 font-medium">{user.designation || 'Staff'}</p>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        <div className="flex flex-col">
+                                            <span className="text-xs font-mono text-zinc-600 dark:text-zinc-400">@{user.username}</span>
+                                            <span className="text-[10px] text-zinc-400 font-medium">{user.email}</span>
+                                        </div>
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        <div className="flex flex-wrap gap-1">
+                                            {user.branchRoles.length === 0 ? (
+                                                <span className="text-[9px] font-normal text-zinc-400 italic">No access mapped</span>
+                                            ) : user.branchRoles.map((br, idx) => (
+                                                <span key={idx} className="px-2 py-0.5 bg-synos-primary/10 text-synos-primary border border-synos-primary/10 rounded-md text-[9px] font-medium uppercase tracking-normal">
+                                                    {br.branchName} - {br.roleName}
+                                                </span>
+                                            ))}
+                                        </div>
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        <div className="flex flex-wrap gap-1 max-w-[200px]">
+                                            {user.username === 'admin' || user.branchRoles?.some(br => br.roleName === 'Admin') ? (
+                                                <span className="px-2 py-0.5 bg-emerald-500/10 text-emerald-600 border border-emerald-500/10 rounded-md text-[9px] font-semibold uppercase tracking-wide flex items-center gap-1">
+                                                    <ShieldCheck className="w-2.5 h-2.5" /> All Workspaces
+                                                </span>
+                                            ) : (!user.workspaceIds || user.workspaceIds.length === 0) ? (
+                                                <span className="text-[9px] font-normal text-zinc-400 italic">No workspaces mapped</span>
+                                            ) : (
+                                                workspaces
+                                                    .filter(w => user.workspaceIds?.includes(w.workspaceId))
+                                                    .map((w, idx) => (
+                                                        <span key={idx} className="px-2 py-0.5 bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 border dark:border-zinc-700/60 rounded-md text-[9px] font-medium uppercase tracking-normal">
+                                                            {w.name}
+                                                        </span>
+                                                    ))
+                                            )}
+                                        </div>
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        <span className="px-2 py-0.5 bg-zinc-100 dark:bg-zinc-800 rounded text-[9px] font-medium text-zinc-500 uppercase tracking-normal">
+                                            {user.departmentCode || 'GENERAL'}
+                                        </span>
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        <button 
+                                            onClick={() => toggleAccess(user)}
+                                            className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-semibold uppercase border transition-colors ${
+                                                user.isActive 
+                                                    ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20 hover:bg-rose-500/10 hover:text-rose-500 hover:border-rose-500/20' 
+                                                    : 'bg-rose-500/10 text-rose-500 border-rose-500/20 hover:bg-emerald-500/10 hover:text-emerald-500 hover:border-emerald-500/20'
+                                            }`}
+                                        >
+                                            <div className={`w-1.5 h-1.5 rounded-full ${user.isActive ? 'bg-emerald-500' : 'bg-rose-500'}`} />
+                                            {user.isActive ? 'Active' : 'Disabled'}
+                                        </button>
+                                    </td>
+                                    <td className="px-6 py-4 text-right">
+                                        <div className="flex justify-end items-center gap-1.5">
                                             <button 
-                                                onClick={() => toggleAccess(e.employeeId, e.isActive)}
-                                                className={`px-3 py-1 rounded-md text-[10px] font-bold uppercase transition-colors ${
-                                                    e.isActive 
-                                                    ? 'text-rose-500 border border-rose-500/20 hover:bg-rose-500 hover:text-white' 
-                                                    : 'text-emerald-500 border border-emerald-500/20 hover:bg-emerald-500 hover:text-white'
-                                                }`}
+                                                onClick={() => {
+                                                    setSelectedUser(user);
+                                                    setActiveModal('edit');
+                                                }}
+                                                className="p-1.5 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg text-zinc-500 transition-colors"
+                                                title="Edit Profile"
                                             >
-                                                {e.isActive ? 'Deactivate Access' : 'Reactivate Access'}
+                                                <Settings className="w-3.5 h-3.5" />
                                             </button>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
+                                            <button 
+                                                onClick={() => {
+                                                    setSelectedUser(user);
+                                                    setActiveModal('roles');
+                                                }}
+                                                className="p-1.5 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg text-zinc-500 transition-colors"
+                                                title="Manage Locations & Roles"
+                                            >
+                                                <Key className="w-3.5 h-3.5" />
+                                            </button>
+                                            <button 
+                                                onClick={() => {
+                                                    setSelectedUser(user);
+                                                    setActiveModal('password');
+                                                }}
+                                                className="p-1.5 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg text-zinc-500 transition-colors"
+                                                title="Reset Password"
+                                            >
+                                                <Fingerprint className="w-3.5 h-3.5" />
+                                            </button>
+                                            <button 
+                                                onClick={() => fileInputRefs.current[user.userId]?.click()}
+                                                className="p-1.5 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg text-zinc-500 transition-colors"
+                                                title="Upload Stamp/Signature"
+                                            >
+                                                <History className="w-3.5 h-3.5" />
+                                            </button>
+                                            <input 
+                                                type="file" 
+                                                ref={el => fileInputRefs.current[user.userId] = el}
+                                                className="hidden" 
+                                                accept="image/png, image/jpeg"
+                                                onChange={(e) => handleSignatureUpload(user.userId, e)}
+                                            />
+                                        </div>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
                 </div>
             </div>
 
+            {/* Custom Link Provisioning Modal (Flow A) */}
             {selectedEmployee && (
-                <ProvisionAccessModal 
+                <LinkAccessModal 
                     employee={selectedEmployee} 
                     onClose={() => setSelectedEmployee(null)} 
                     onSuccess={() => {
                         setSelectedEmployee(null);
-                        loadStaff();
+                        loadData();
                     }}
                 />
             )}
+
+            {/* Direct Create User Modal (Flow B) */}
+            {activeModal === 'add' && (
+                <AddUserModal 
+                    onClose={() => setActiveModal(null)} 
+                    onSuccess={() => {
+                        setActiveModal(null);
+                        loadData();
+                    }}
+                />
+            )}
+
+            {/* Edit Profile & Dept Modal */}
+            {activeModal === 'edit' && selectedUser && (
+                <EditUserModal 
+                    user={selectedUser}
+                    departments={departments}
+                    workspaces={workspaces}
+                    onClose={() => {
+                        setActiveModal(null);
+                        setSelectedUser(null);
+                    }}
+                    onSuccess={() => {
+                        setActiveModal(null);
+                        setSelectedUser(null);
+                        loadData();
+                    }}
+                />
+            )}
+
+            {/* Reset Password Modal */}
+            {activeModal === 'password' && selectedUser && (
+                <ResetPasswordModal 
+                    user={selectedUser}
+                    onClose={() => {
+                        setActiveModal(null);
+                        setSelectedUser(null);
+                    }}
+                    onSuccess={() => {
+                        setActiveModal(null);
+                        setSelectedUser(null);
+                        loadData();
+                    }}
+                />
+            )}
+
+            {/* Manage Branches & Roles Modal */}
+            {activeModal === 'roles' && selectedUser && (
+                <ManageBranchRolesModal 
+                    user={selectedUser}
+                    branches={branches}
+                    roles={roles}
+                    onClose={() => {
+                        setActiveModal(null);
+                        setSelectedUser(null);
+                    }}
+                    onSuccess={() => {
+                        setActiveModal(null);
+                        setSelectedUser(null);
+                        loadData();
+                    }}
+                />
+            )}
+
+            {/* Operational Laboratory Departments Section */}
+            <div className="bg-white dark:bg-zinc-950 border dark:border-zinc-900/60 border-zinc-100 rounded-2xl overflow-hidden shadow-sm mt-8 animate-in slide-in-from-bottom duration-300">
+                <div className="px-6 py-4 border-b dark:border-zinc-900/60 border-zinc-100 bg-zinc-50/50 dark:bg-zinc-900/10 flex items-center gap-2.5">
+                    <Settings className="w-4 h-4 text-synos-primary" />
+                    <div>
+                        <h3 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">Operational Laboratory Departments</h3>
+                        <p className="text-[11px] text-zinc-400 mt-0.5">Core departments routed in the workbench & processing queues</p>
+                    </div>
+                </div>
+                
+                <div className="p-6 grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    {/* Departments list column */}
+                    <div className="lg:col-span-2 space-y-4">
+                        <label className="text-xs font-medium text-zinc-400 block">Active Laboratory Departments</label>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {/* Dynamically loaded departments */}
+                            {departments && departments.map(d => {
+                                const isEditing = editingDeptCode === d.code;
+                                return (
+                                    <div key={d.code} className="p-4 rounded-2xl border dark:border-zinc-800 border-zinc-100 bg-white dark:bg-zinc-900/40 hover:scale-[1.01] transition-all hover:shadow-md hover:shadow-zinc-100 dark:hover:shadow-none relative group/dept">
+                                        {isEditing ? (
+                                            <div className="space-y-3 w-full">
+                                                <div className="flex justify-between items-center">
+                                                    <span className="px-2 py-0.5 bg-synos-primary/10 text-synos-primary rounded text-[10px] font-medium tracking-tight">{d.code}</span>
+                                                    <label className="flex items-center gap-1.5 cursor-pointer">
+                                                        <input 
+                                                            type="checkbox" 
+                                                            checked={editingDeptActive} 
+                                                            onChange={e => setEditingDeptActive(e.target.checked)} 
+                                                            className="rounded border-zinc-300 dark:border-zinc-700 text-synos-primary focus:ring-synos-primary w-3.5 h-3.5"
+                                                        />
+                                                        <span className="text-[10px] text-zinc-400 font-medium">Active</span>
+                                                    </label>
+                                                </div>
+                                                <div className="space-y-1">
+                                                    <input 
+                                                        type="text" 
+                                                        value={editingDeptName} 
+                                                        onChange={e => setEditingDeptName(e.target.value)} 
+                                                        className="w-full px-2 py-1 border dark:border-zinc-850 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 rounded text-xs outline-none focus:border-synos-primary text-zinc-700 dark:text-zinc-300"
+                                                        placeholder="Department Name"
+                                                    />
+                                                </div>
+                                                <div className="flex justify-between items-center gap-2 pt-1.5 border-t dark:border-zinc-800/60 border-zinc-100">
+                                                    <input 
+                                                        type="text"
+                                                        list="macro-departments"
+                                                        value={editingDeptMacro} 
+                                                        onChange={e => setEditingDeptMacro(e.target.value)} 
+                                                        className="px-2 py-0.5 border dark:border-zinc-850 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 rounded text-[10px] text-zinc-500 outline-none w-28"
+                                                        placeholder="Macro Area"
+                                                    />
+                                                    <div className="flex gap-1">
+                                                        <button 
+                                                            onClick={() => handleSaveDept(d)} 
+                                                            className="p-1 hover:bg-emerald-50 dark:hover:bg-emerald-950/20 text-emerald-500 rounded transition-colors"
+                                                            title="Save Changes"
+                                                        >
+                                                            <Check className="w-3.5 h-3.5" />
+                                                        </button>
+                                                        <button 
+                                                            onClick={() => setEditingDeptCode(null)} 
+                                                            className="p-1 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-400 rounded transition-colors"
+                                                            title="Cancel"
+                                                        >
+                                                            <X className="w-3.5 h-3.5" />
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <div className="flex justify-between items-start h-full">
+                                                <div className="flex-1 min-w-0 pr-8">
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="px-2 py-0.5 bg-synos-primary/5 text-synos-primary rounded text-[10px] font-medium tracking-tight">{d.code}</span>
+                                                        <span className={`w-1.5 h-1.5 rounded-full ${d.isActive ? 'bg-emerald-500' : 'bg-rose-500'}`} title={d.isActive ? 'Active' : 'Inactive'} />
+                                                    </div>
+                                                    <h4 className="text-xs font-semibold text-zinc-700 dark:text-zinc-200 mt-2 truncate">{d.name}</h4>
+                                                    <p className="text-[10px] text-zinc-400 mt-0.5">Macro Area: {d.macroDepartment || 'Pathology'}</p>
+                                                </div>
+                                                {d.code.toUpperCase() !== 'GENERAL' && d.code.toUpperCase() !== 'RAD' && (
+                                                    <div className="absolute top-3 right-3 flex gap-1 opacity-0 group-hover/dept:opacity-100 transition-opacity">
+                                                        <button 
+                                                            onClick={() => handleStartEditDept(d)} 
+                                                            className="p-1 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 rounded transition-colors"
+                                                            title="Edit Department"
+                                                        >
+                                                            <Edit className="w-3.5 h-3.5" />
+                                                        </button>
+                                                        <button 
+                                                            onClick={() => handleDeleteDept(d)} 
+                                                            className="p-1 hover:bg-rose-50 dark:hover:bg-rose-950/20 text-rose-400 hover:text-rose-600 rounded transition-colors"
+                                                            title="Delete Department"
+                                                        >
+                                                            <Trash2 className="w-3.5 h-3.5" />
+                                                        </button>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
+                                    </div>
+                                );
+                            })}
+
+                            {/* Loading state if departments not loaded yet */}
+                            {(!departments || departments.length === 0) && (
+                                <div className="col-span-full py-8 text-center bg-zinc-50 dark:bg-zinc-900/20 border border-dashed dark:border-zinc-800 border-zinc-200 rounded-2xl">
+                                    <div className="animate-pulse space-y-2">
+                                        <div className="h-4 w-48 bg-zinc-200 dark:bg-zinc-800 mx-auto rounded"></div>
+                                        <p className="text-[10px] text-zinc-400 font-medium tracking-wide">Fetching active laboratory departments...</p>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Department Creation Form */}
+                    <div className="p-6 rounded-2xl border dark:border-zinc-800 border-zinc-100 bg-zinc-50/30 dark:bg-zinc-900/20 space-y-4 shadow-sm">
+                        <div>
+                            <h4 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">Create Laboratory Department</h4>
+                            <p className="text-[11px] text-zinc-400 mt-0.5">Introduce a new operational workflow</p>
+                        </div>
+                        
+                        <form onSubmit={handleCreateDepartment} className="space-y-4">
+                            <div className="space-y-1.5">
+                                <label className="text-xs font-medium text-zinc-400">Department Code</label>
+                                <input 
+                                    type="text" 
+                                    maxLength="10"
+                                    value={newDeptCode}
+                                    onChange={e => setNewDeptCode(e.target.value.toUpperCase().replace(/\s+/g, ''))}
+                                    placeholder="e.g. HEM, BIO, SER"
+                                    className="w-full px-3 py-2 bg-white dark:bg-zinc-950 border dark:border-zinc-850 rounded text-xs outline-none focus:border-synos-primary transition-colors tracking-tight font-medium text-zinc-700 dark:text-zinc-300"
+                                />
+                            </div>
+
+                            <div className="space-y-1.5">
+                                <label className="text-xs font-medium text-zinc-400">Department Name</label>
+                                <input 
+                                    type="text" 
+                                    value={newDeptName}
+                                    onChange={e => setNewDeptName(e.target.value)}
+                                    placeholder="e.g. Hematology"
+                                    className="w-full px-3 py-2 bg-white dark:bg-zinc-950 border dark:border-zinc-850 rounded text-xs outline-none focus:border-synos-primary transition-colors text-zinc-700 dark:text-zinc-300"
+                                />
+                            </div>
+
+                            <div className="space-y-1.5">
+                                <label className="text-xs font-medium text-zinc-400">Macro Area (Service Category)</label>
+                                <input 
+                                    type="text"
+                                    list="macro-departments"
+                                    value={newDeptMacro}
+                                    onChange={e => setNewDeptMacro(e.target.value)}
+                                    placeholder="e.g. Pathology, Radiology"
+                                    className="w-full px-3 py-2 bg-white dark:bg-zinc-950 border dark:border-zinc-850 rounded text-xs outline-none focus:border-synos-primary transition-colors text-zinc-700 dark:text-zinc-300"
+                                />
+                            </div>
+
+                            <button 
+                                type="submit"
+                                disabled={creatingDept}
+                                className="w-full py-2 bg-synos-primary text-white hover:bg-opacity-95 rounded-xl text-xs font-medium transition-colors shadow-sm disabled:opacity-50"
+                            >
+                                {creatingDept ? "Registering..." : "Create Department"}
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            {/* System Workspace Registry Section */}
+            <div className="bg-white dark:bg-zinc-950 border dark:border-zinc-900/60 border-zinc-100 rounded-2xl overflow-hidden shadow-sm mt-8 animate-in slide-in-from-bottom duration-300">
+                <div className="px-6 py-4 border-b dark:border-zinc-900/60 border-zinc-100 bg-zinc-50/50 dark:bg-zinc-900/10 flex items-center gap-2.5">
+                    <Fingerprint className="w-4 h-4 text-synos-primary" />
+                    <div>
+                        <h3 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">System Workspace Registry</h3>
+                        <p className="text-[11px] text-zinc-400 mt-0.5">Register browser screens and route paths to manage system access permissions</p>
+                    </div>
+                </div>
+                
+                <div className="p-6 grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    {/* Workspaces list column */}
+                    <div className="lg:col-span-2 space-y-4">
+                        <label className="text-xs font-medium text-zinc-400 block">Registered Workspace Screens</label>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {workspaces && workspaces.map(ws => {
+                                const isEditing = editingWorkspaceId === ws.workspaceId;
+                                return (
+                                    <div key={ws.workspaceId} className="p-4 rounded-2xl border dark:border-zinc-800 border-zinc-100 bg-white dark:bg-zinc-900/40 hover:scale-[1.01] transition-all hover:shadow-md hover:shadow-zinc-100 dark:hover:shadow-none relative group/ws">
+                                        {isEditing ? (
+                                            <div className="space-y-3 w-full">
+                                                <div className="flex justify-between items-center">
+                                                    <label className="flex items-center gap-1.5 cursor-pointer">
+                                                        <input 
+                                                            type="checkbox" 
+                                                            checked={editingWorkspaceActive} 
+                                                            onChange={e => setEditingWorkspaceActive(e.target.checked)} 
+                                                            className="rounded border-zinc-300 dark:border-zinc-700 text-synos-primary focus:ring-synos-primary w-3.5 h-3.5"
+                                                        />
+                                                        <span className="text-[10px] text-zinc-400 font-medium">Active</span>
+                                                    </label>
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <input 
+                                                        type="text" 
+                                                        value={editingWorkspaceName} 
+                                                        onChange={e => setEditingWorkspaceName(e.target.value)} 
+                                                        className="w-full px-2 py-1 border dark:border-zinc-850 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 rounded text-xs outline-none focus:border-synos-primary text-zinc-700 dark:text-zinc-300"
+                                                        placeholder="Workspace Name"
+                                                    />
+                                                    <input 
+                                                        type="text" 
+                                                        value={editingWorkspaceRoute} 
+                                                        onChange={e => setEditingWorkspaceRoute(e.target.value)} 
+                                                        className="w-full px-2 py-1 border dark:border-zinc-850 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 rounded text-xs outline-none focus:border-synos-primary text-zinc-700 dark:text-zinc-300 font-mono"
+                                                        placeholder="Route Path, e.g. /reception"
+                                                    />
+                                                </div>
+                                                <div className="flex justify-end gap-1 pt-1.5 border-t dark:border-zinc-800/60 border-zinc-100">
+                                                    <button 
+                                                        onClick={() => handleSaveWorkspace(ws)} 
+                                                        className="p-1 hover:bg-emerald-50 dark:hover:bg-emerald-950/20 text-emerald-500 rounded transition-colors"
+                                                        title="Save Changes"
+                                                    >
+                                                        <Check className="w-3.5 h-3.5" />
+                                                    </button>
+                                                    <button 
+                                                        onClick={() => setEditingWorkspaceId(null)} 
+                                                        className="p-1 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-400 rounded transition-colors"
+                                                        title="Cancel"
+                                                    >
+                                                        <X className="w-3.5 h-3.5" />
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <div className="flex justify-between items-start h-full">
+                                                <div className="flex-1 min-w-0 pr-8">
+                                                    <div className="flex items-center gap-2">
+                                                        <h4 className="text-xs font-semibold text-zinc-700 dark:text-zinc-200 truncate">{ws.name}</h4>
+                                                        <span className={`w-1.5 h-1.5 rounded-full ${ws.isActive ? 'bg-emerald-500' : 'bg-rose-500'}`} title={ws.isActive ? 'Active' : 'Inactive'} />
+                                                    </div>
+                                                    <p className="text-[10px] font-mono text-zinc-400 mt-2">{ws.routePath}</p>
+                                                </div>
+                                                <div className="absolute top-3 right-3 flex gap-1 opacity-0 group-hover/ws:opacity-100 transition-opacity">
+                                                    <button 
+                                                        onClick={() => handleStartEditWorkspace(ws)} 
+                                                        className="p-1 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 rounded transition-colors"
+                                                        title="Edit Workspace"
+                                                    >
+                                                        <Edit className="w-3.5 h-3.5" />
+                                                    </button>
+                                                    <button 
+                                                        onClick={() => handleDeleteWorkspace(ws)} 
+                                                        className="p-1 hover:bg-rose-50 dark:hover:bg-rose-950/20 text-rose-400 hover:text-rose-600 rounded transition-colors"
+                                                        title="Delete Workspace"
+                                                    >
+                                                        <Trash2 className="w-3.5 h-3.5" />
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                );
+                            })}
+
+                            {(!workspaces || workspaces.length === 0) && (
+                                <div className="col-span-full py-8 text-center bg-zinc-50 dark:bg-zinc-900/20 border border-dashed dark:border-zinc-800 border-zinc-200 rounded-2xl">
+                                    <p className="text-[10px] text-zinc-400 font-medium tracking-wide">No workspaces registered yet.</p>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Workspace Registration Form */}
+                    <div className="p-6 rounded-2xl border dark:border-zinc-800 border-zinc-100 bg-zinc-50/30 dark:bg-zinc-900/20 space-y-4 shadow-sm">
+                        <div>
+                            <h4 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">Register Workspace Screen</h4>
+                            <p className="text-[11px] text-zinc-400 mt-0.5">Add a new route to the access permissions pool</p>
+                        </div>
+                        
+                        <form onSubmit={handleCreateWorkspace} className="space-y-4">
+                            <div className="space-y-1.5">
+                                <label className="text-xs font-medium text-zinc-400">Workspace Name</label>
+                                <input 
+                                    type="text" 
+                                    value={newWorkspaceName}
+                                    onChange={e => setNewWorkspaceName(e.target.value)}
+                                    placeholder="e.g. Radiology, Reception"
+                                    className="w-full px-3 py-2 bg-white dark:bg-zinc-950 border dark:border-zinc-850 rounded text-xs outline-none focus:border-synos-primary transition-colors text-zinc-700 dark:text-zinc-300"
+                                />
+                            </div>
+
+                            <div className="space-y-1.5">
+                                <label className="text-xs font-medium text-zinc-400">Route Path</label>
+                                <input 
+                                    type="text" 
+                                    value={newWorkspaceRoute}
+                                    onChange={e => setNewWorkspaceRoute(e.target.value.toLowerCase().replace(/\s+/g, ''))}
+                                    placeholder="e.g. /radiology, /reception"
+                                    className="w-full px-3 py-2 bg-white dark:bg-zinc-950 border dark:border-zinc-850 rounded text-xs outline-none focus:border-synos-primary transition-colors font-mono text-zinc-700 dark:text-zinc-300"
+                                />
+                            </div>
+
+                            <button 
+                                type="submit"
+                                disabled={creatingWorkspace}
+                                className="w-full py-2 bg-synos-primary text-white hover:bg-opacity-95 rounded-xl text-xs font-medium transition-colors shadow-sm disabled:opacity-50"
+                            >
+                                {creatingWorkspace ? "Registering..." : "Register Workspace"}
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <datalist id="macro-departments">
+                {uniqueMacros.map(macro => (
+                    <option key={macro} value={macro} />
+                ))}
+            </datalist>
         </div>
     );
 }
 
-function ProvisionAccessModal({ employee, onClose, onSuccess }) {
+// --- SUBMODALS ---
+
+function AddUserModal({ onClose, onSuccess }) {
+    const [username, setUsername] = useState('');
+    const [email, setEmail] = useState('');
+    const [name, setName] = useState('');
+    const [password, setPassword] = useState('');
+    const [designation, setDesignation] = useState('');
+    const [submitting, setSubmitting] = useState(false);
+
+    const handleCreate = async () => {
+        if (!username || !email || !name || !password) return alert("Full Name, Username, Email and Initial Password are required.");
+        setSubmitting(true);
+        try {
+            await AdminApi.createUser({ username, email, name, password, designation });
+            alert("User created and employee record auto-linked successfully.");
+            onSuccess();
+        } catch (error) {
+            alert(error.message || "Failed to create user.");
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
+    return (
+        <div className="fixed inset-0 z-[100] overflow-y-auto bg-zinc-950/40 backdrop-blur-sm flex items-start sm:items-center justify-center p-4">
+            <div className="bg-white dark:bg-zinc-900 w-full max-w-md rounded-xl shadow-2xl border dark:border-zinc-800 my-auto animate-in fade-in zoom-in-95 duration-200">
+                <div className="px-5 py-4 border-b dark:border-zinc-800 flex justify-between items-center bg-zinc-50 dark:bg-zinc-950 rounded-t-xl">
+                    <div>
+                        <h2 className="text-sm font-semibold dark:text-white">Create System User</h2>
+                        <p className="text-[10px] text-zinc-400 font-medium">Onboard operational login and sync HR</p>
+                    </div>
+                    <button onClick={onClose} className="p-1 hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded transition-colors text-zinc-400">
+                        ✖
+                    </button>
+                </div>
+
+                <div className="p-5 space-y-4">
+                    <div className="grid grid-cols-1 gap-4">
+                        <div className="space-y-1.5">
+                            <label className="text-[11px] font-medium text-zinc-400 dark:text-zinc-500">Full Name</label>
+                            <input 
+                                type="text" 
+                                value={name}
+                                onChange={e => setName(e.target.value)}
+                                placeholder="e.g. Dr. Jane Smith"
+                                className="w-full px-3 py-2 bg-zinc-50 dark:bg-zinc-950 border dark:border-zinc-800 rounded text-xs outline-none focus:border-synos-primary transition-colors"
+                            />
+                        </div>
+
+                        <div className="space-y-1.5">
+                            <label className="text-[11px] font-medium text-zinc-400 dark:text-zinc-500">Username</label>
+                            <input 
+                                type="text" 
+                                value={username}
+                                onChange={e => setUsername(e.target.value)}
+                                placeholder="e.g. jsmith_path"
+                                className="w-full px-3 py-2 bg-zinc-50 dark:bg-zinc-950 border dark:border-zinc-800 rounded text-xs outline-none focus:border-synos-primary transition-colors"
+                            />
+                        </div>
+
+                        <div className="space-y-1.5">
+                            <label className="text-[11px] font-medium text-zinc-400 dark:text-zinc-500">Email Address</label>
+                            <input 
+                                type="email" 
+                                value={email}
+                                onChange={e => setEmail(e.target.value)}
+                                placeholder="jsmith@lab.com"
+                                className="w-full px-3 py-2 bg-zinc-50 dark:bg-zinc-950 border dark:border-zinc-800 rounded text-xs outline-none focus:border-synos-primary transition-colors"
+                            />
+                        </div>
+
+                        <div className="space-y-1.5">
+                            <label className="text-[11px] font-medium text-zinc-400 dark:text-zinc-500">Designation / Role Title</label>
+                            <input 
+                                type="text" 
+                                value={designation}
+                                onChange={e => setDesignation(e.target.value)}
+                                placeholder="e.g. Consultant Pathologist"
+                                className="w-full px-3 py-2 bg-zinc-50 dark:bg-zinc-950 border dark:border-zinc-800 rounded text-xs outline-none focus:border-synos-primary transition-colors"
+                            />
+                        </div>
+
+                        <div className="space-y-1.5">
+                            <label className="text-[11px] font-medium text-zinc-400 dark:text-zinc-500">Initial Password</label>
+                            <input 
+                                type="password" 
+                                value={password}
+                                onChange={e => setPassword(e.target.value)}
+                                placeholder="••••••••"
+                                className="w-full px-3 py-2 bg-zinc-50 dark:bg-zinc-950 border dark:border-zinc-800 rounded text-xs outline-none focus:border-synos-primary transition-colors"
+                            />
+                        </div>
+                    </div>
+                </div>
+
+                <div className="px-5 py-4 bg-zinc-50 dark:bg-zinc-950 border-t dark:border-zinc-800 flex justify-end gap-2 rounded-b-xl">
+                    <button onClick={onClose} className="px-4 py-2 text-xs font-medium text-zinc-500 hover:text-zinc-900 dark:hover:text-white">
+                        Cancel
+                    </button>
+                    <button 
+                        onClick={handleCreate}
+                        disabled={submitting}
+                        className="px-5 py-2 bg-synos-primary text-white rounded-xl text-xs font-medium hover:opacity-90 disabled:opacity-50"
+                    >
+                        {submitting ? "Creating..." : "Save & Sync HR"}
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+function LinkAccessModal({ employee, onClose, onSuccess }) {
     const [username, setUsername] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -2349,6 +3179,7 @@ function ProvisionAccessModal({ employee, onClose, onSuccess }) {
                 password,
                 roles
             });
+            alert("Login created and linked to employee record successfully.");
             onSuccess();
         } catch (error) {
             alert(error.message);
@@ -2358,22 +3189,22 @@ function ProvisionAccessModal({ employee, onClose, onSuccess }) {
     };
 
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-zinc-950/40 backdrop-blur-sm">
-            <div className="bg-white dark:bg-zinc-900 w-full max-w-md rounded-xl overflow-hidden shadow-2xl border dark:border-zinc-800">
-                <div className="px-5 py-4 border-b dark:border-zinc-800 flex justify-between items-center bg-zinc-50 dark:bg-zinc-950">
+        <div className="fixed inset-0 z-[100] overflow-y-auto bg-zinc-950/40 backdrop-blur-sm flex items-start sm:items-center justify-center p-4">
+            <div className="bg-white dark:bg-zinc-900 w-full max-w-md rounded-xl shadow-2xl border dark:border-zinc-800 my-auto animate-in fade-in zoom-in-95 duration-200">
+                <div className="px-5 py-4 border-b dark:border-zinc-800 flex justify-between items-center bg-zinc-50 dark:bg-zinc-950 rounded-t-xl">
                     <div>
-                        <h2 className="text-sm font-bold dark:text-white">Provision System Login</h2>
-                        <p className="text-[10px] text-zinc-500 uppercase font-bold">{employee.firstName} {employee.lastName}</p>
+                        <h2 className="text-sm font-semibold dark:text-white">Provision System Login</h2>
+                        <p className="text-[10px] text-zinc-400 font-medium">{employee.displayName}</p>
                     </div>
-                    <button onClick={onClose} className="p-1 hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded transition-colors">
-                        <Trash2 className="w-4 h-4 text-zinc-400 rotate-45" />
+                    <button onClick={onClose} className="p-1 hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded transition-colors text-zinc-400">
+                        ✖
                     </button>
                 </div>
 
                 <div className="p-5 space-y-4">
                     <div className="grid grid-cols-1 gap-4">
                         <div className="space-y-1.5">
-                            <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Username (Mandatory)</label>
+                            <label className="text-[11px] font-medium text-zinc-400 dark:text-zinc-500">Username (Mandatory)</label>
                             <input 
                                 type="text" 
                                 value={username}
@@ -2384,7 +3215,7 @@ function ProvisionAccessModal({ employee, onClose, onSuccess }) {
                         </div>
 
                         <div className="space-y-1.5">
-                            <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Email Address (Optional)</label>
+                            <label className="text-[11px] font-medium text-zinc-400 dark:text-zinc-500">Email Address (Optional)</label>
                             <input 
                                 type="email" 
                                 value={email}
@@ -2395,7 +3226,7 @@ function ProvisionAccessModal({ employee, onClose, onSuccess }) {
                         </div>
 
                         <div className="space-y-1.5">
-                            <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Initial Password</label>
+                            <label className="text-[11px] font-medium text-zinc-400 dark:text-zinc-500">Initial Password</label>
                             <input 
                                 type="password" 
                                 value={password}
@@ -2407,7 +3238,7 @@ function ProvisionAccessModal({ employee, onClose, onSuccess }) {
                     </div>
 
                     <div className="space-y-2">
-                        <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest block">Operational Roles (Manual Assignment)</label>
+                        <label className="text-[11px] font-medium text-zinc-400 dark:text-zinc-500 block">System Roles (Assign Login Level)</label>
                         <div className="flex flex-wrap gap-1.5">
                             {availableRoles.map(role => (
                                 <button
@@ -2420,7 +3251,7 @@ function ProvisionAccessModal({ employee, onClose, onSuccess }) {
                                             setRoles([...roles, role]);
                                         }
                                     }}
-                                    className={`px-2.5 py-1 rounded text-[9px] font-bold uppercase border transition-all ${
+                                    className={`px-2.5 py-1 rounded text-[10px] font-medium tracking-tight border transition-all ${
                                         roles.includes(role) 
                                         ? 'bg-synos-primary border-synos-primary text-white' 
                                         : 'bg-transparent border-zinc-200 dark:border-zinc-800 text-zinc-500 hover:border-zinc-400'
@@ -2430,21 +3261,392 @@ function ProvisionAccessModal({ employee, onClose, onSuccess }) {
                                 </button>
                             ))}
                         </div>
-                        <p className="text-[9px] text-zinc-500 italic mt-1">Note: Designation suggestions are ignored. Admin must confirm all roles.</p>
                     </div>
                 </div>
 
-                <div className="px-5 py-4 bg-zinc-50 dark:bg-zinc-950 border-t dark:border-zinc-800 flex justify-end gap-2">
-                    <button onClick={onClose} className="px-4 py-2 text-[10px] font-bold text-zinc-500 hover:text-zinc-900 dark:hover:text-white">
+                <div className="px-5 py-4 bg-zinc-50 dark:bg-zinc-950 border-t dark:border-zinc-800 flex justify-end gap-2 rounded-b-xl">
+                    <button onClick={onClose} className="px-4 py-2 text-xs font-medium text-zinc-500 hover:text-zinc-900 dark:hover:text-white">
                         Cancel
                     </button>
                     <button 
                         onClick={handleProvision}
                         disabled={submitting}
-                        className="px-6 py-2 bg-synos-primary text-white rounded text-[10px] font-bold uppercase tracking-wider hover:opacity-90 disabled:opacity-50"
+                        className="px-5 py-2 bg-synos-primary text-white rounded-xl text-xs font-medium hover:opacity-90 disabled:opacity-50"
                     >
                         {submitting ? "Processing..." : "Enable System Access"}
                     </button>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+function EditUserModal({ user, departments, workspaces = [], onClose, onSuccess }) {
+    const [name, setName] = useState(user.name);
+    const [username, setUsername] = useState(user.username);
+    const [email, setEmail] = useState(user.email);
+    const [designation, setDesignation] = useState(user.designation || '');
+    const [isActive, setIsActive] = useState(user.isActive);
+    const [departmentCode, setDepartmentCode] = useState(user.departmentCode || 'GENERAL');
+    const [selectedWorkspaces, setSelectedWorkspaces] = useState(user.workspaceIds || []);
+    const [submitting, setSubmitting] = useState(false);
+
+    const isAdmin = user.username === 'admin' || user.branchRoles?.some(br => br.roleName === 'Admin');
+
+    const handleUpdate = async () => {
+        if (!name || !username || !email) return alert("Name, Username and Email are required.");
+        setSubmitting(true);
+        try {
+            await AdminApi.updateUser(user.userId, { name, username, email, designation, isActive, departmentCode });
+            await AdminApi.setUserWorkspaces(user.userId, isAdmin ? workspaces.map(w => w.workspaceId) : selectedWorkspaces);
+            alert("User profile and operations registries updated.");
+            onSuccess();
+        } catch (error) {
+            alert(error.message || "Failed to update profile.");
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
+    return (
+        <div className="fixed inset-0 z-[100] overflow-y-auto bg-zinc-950/40 backdrop-blur-sm flex items-start sm:items-center justify-center p-4">
+            <div className="bg-white dark:bg-zinc-900 w-full max-w-md rounded-xl shadow-2xl border dark:border-zinc-800 my-auto animate-in fade-in zoom-in-95 duration-200">
+                <div className="px-5 py-4 border-b dark:border-zinc-800 flex justify-between items-center bg-zinc-50 dark:bg-zinc-950 rounded-t-xl">
+                    <div>
+                        <h2 className="text-sm font-semibold dark:text-white">Edit User Profile</h2>
+                        <p className="text-[10px] text-zinc-400 font-medium">Configure access and operations</p>
+                    </div>
+                    <button onClick={onClose} className="p-1 hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded transition-colors text-zinc-400">
+                        ✖
+                    </button>
+                </div>
+
+                <div className="p-5 space-y-4">
+                    <div className="grid grid-cols-1 gap-4">
+                        <div className="space-y-1.5">
+                            <label className="text-[11px] font-medium text-zinc-400 dark:text-zinc-500">Name</label>
+                            <input 
+                                type="text" 
+                                value={name}
+                                onChange={e => setName(e.target.value)}
+                                className="w-full px-3 py-2 bg-zinc-50 dark:bg-zinc-950 border dark:border-zinc-800 rounded text-xs outline-none focus:border-synos-primary transition-colors"
+                            />
+                        </div>
+
+                        <div className="space-y-1.5">
+                            <label className="text-[11px] font-medium text-zinc-400 dark:text-zinc-500">Username</label>
+                            <input 
+                                type="text" 
+                                value={username}
+                                onChange={e => setUsername(e.target.value)}
+                                className="w-full px-3 py-2 bg-zinc-50 dark:bg-zinc-950 border dark:border-zinc-800 rounded text-xs outline-none focus:border-synos-primary transition-colors"
+                            />
+                        </div>
+
+                        <div className="space-y-1.5">
+                            <label className="text-[11px] font-medium text-zinc-400 dark:text-zinc-500">Email Address</label>
+                            <input 
+                                type="email" 
+                                value={email}
+                                onChange={e => setEmail(e.target.value)}
+                                className="w-full px-3 py-2 bg-zinc-50 dark:bg-zinc-950 border dark:border-zinc-800 rounded text-xs outline-none focus:border-synos-primary transition-colors"
+                            />
+                        </div>
+
+                        <div className="space-y-1.5">
+                            <label className="text-[11px] font-medium text-zinc-400 dark:text-zinc-500">Designation</label>
+                            <input 
+                                type="text" 
+                                value={designation}
+                                onChange={e => setDesignation(e.target.value)}
+                                className="w-full px-3 py-2 bg-zinc-50 dark:bg-zinc-950 border dark:border-zinc-800 rounded text-xs outline-none focus:border-synos-primary transition-colors"
+                            />
+                        </div>
+
+                        <div className="space-y-1.5">
+                            <label className="text-[11px] font-medium text-zinc-400 dark:text-zinc-500">Operational Department</label>
+                            <select 
+                                value={departmentCode}
+                                onChange={e => setDepartmentCode(e.target.value)}
+                                className="w-full px-3 py-2 bg-zinc-50 dark:bg-zinc-950 border dark:border-zinc-800 rounded text-xs outline-none focus:border-synos-primary transition-colors text-zinc-600 dark:text-zinc-300"
+                            >
+                                {departments && departments.length > 0 ? (
+                                    departments.map(d => (
+                                        <option key={d.code} value={d.code}>{d.name}</option>
+                                    ))
+                                ) : (
+                                    <option disabled>Loading departments...</option>
+                                )}
+                            </select>
+                        </div>
+
+                        <div className="space-y-1.5">
+                            <label className="text-[11px] font-medium text-zinc-400 dark:text-zinc-500 block">Workspace Access Mappings</label>
+                            {isAdmin ? (
+                                <div className="p-3 bg-zinc-50 dark:bg-zinc-950/20 border border-dashed dark:border-zinc-800 rounded-xl space-y-2">
+                                    <div className="flex items-center gap-2 text-xs text-synos-primary font-medium">
+                                        <ShieldCheck className="w-4 h-4" /> Admin Bypass Enabled
+                                    </div>
+                                    <p className="text-[10px] text-zinc-400">Administrators retain full system override access. Workspace restrictions do not apply.</p>
+                                    <div className="grid grid-cols-2 gap-2 pt-2">
+                                        {workspaces.map(ws => (
+                                            <label key={ws.workspaceId} className="flex items-center gap-2 opacity-60 cursor-not-allowed">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={true}
+                                                    disabled={true}
+                                                    className="rounded border-zinc-300 dark:border-zinc-700 text-synos-primary w-3.5 h-3.5"
+                                                />
+                                                <span className="text-xs text-zinc-500">{ws.name}</span>
+                                            </label>
+                                        ))}
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="p-3 bg-white dark:bg-zinc-950/20 border dark:border-zinc-800 rounded-xl max-h-48 overflow-y-auto space-y-2">
+                                    {workspaces && workspaces.length > 0 ? (
+                                        <div className="grid grid-cols-2 gap-2">
+                                            {workspaces.map(ws => (
+                                                <label key={ws.workspaceId} className="flex items-center gap-2 cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-900/40 p-1.5 rounded transition-colors">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={selectedWorkspaces.includes(ws.workspaceId)}
+                                                        onChange={e => {
+                                                            if (e.target.checked) {
+                                                                setSelectedWorkspaces([...selectedWorkspaces, ws.workspaceId]);
+                                                            } else {
+                                                                setSelectedWorkspaces(selectedWorkspaces.filter(id => id !== ws.workspaceId));
+                                                            }
+                                                        }}
+                                                        className="rounded border-zinc-300 dark:border-zinc-700 text-synos-primary focus:ring-synos-primary w-3.5 h-3.5"
+                                                    />
+                                                    <span className="text-xs text-zinc-750 dark:text-zinc-300">{ws.name}</span>
+                                                </label>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <span className="text-[10px] text-zinc-400 italic">No workspaces registered in database</span>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="flex items-center justify-between p-3 rounded-xl border dark:border-zinc-800 border-zinc-100 bg-zinc-50/50 dark:bg-zinc-950/20">
+                            <div>
+                                <span className="text-[11px] font-medium text-zinc-400 dark:text-zinc-500">Account Status</span>
+                                <p className="text-[10px] text-zinc-400 mt-0.5">Toggle active system login access</p>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => setIsActive(!isActive)}
+                                className={`px-3 py-1 rounded-lg text-[10px] font-medium transition-colors ${
+                                    isActive ? 'bg-emerald-500 text-white' : 'bg-rose-500 text-white'
+                                }`}
+                            >
+                                {isActive ? 'Active' : 'Disabled'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="px-5 py-4 bg-zinc-50 dark:bg-zinc-950 border-t dark:border-zinc-800 flex justify-end gap-2 rounded-b-xl">
+                    <button onClick={onClose} className="px-4 py-2 text-xs font-medium text-zinc-500 hover:text-zinc-900 dark:hover:text-white">
+                        Cancel
+                    </button>
+                    <button 
+                        onClick={handleUpdate}
+                        disabled={submitting}
+                        className="px-5 py-2 bg-synos-primary text-white rounded-xl text-xs font-medium hover:opacity-90 disabled:opacity-50"
+                    >
+                        {submitting ? "Saving..." : "Save Changes"}
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+function ResetPasswordModal({ user, onClose, onSuccess }) {
+    const [password, setPassword] = useState('');
+    const [submitting, setSubmitting] = useState(false);
+
+    const handleReset = async () => {
+        if (!password) return alert("Please type a new password.");
+        setSubmitting(true);
+        try {
+            await AdminApi.resetPassword(user.userId, password);
+            alert(`Password for @${user.username} was reset successfully.`);
+            onSuccess();
+        } catch (error) {
+            alert(error.message || "Failed to reset password.");
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
+    return (
+        <div className="fixed inset-0 z-[100] overflow-y-auto bg-zinc-950/40 backdrop-blur-sm flex items-start sm:items-center justify-center p-4">
+            <div className="bg-white dark:bg-zinc-900 w-full max-w-md rounded-xl shadow-2xl border dark:border-zinc-800 my-auto animate-in fade-in zoom-in-95 duration-200">
+                <div className="px-5 py-4 border-b dark:border-zinc-800 flex justify-between items-center bg-zinc-50 dark:bg-zinc-950 rounded-t-xl">
+                    <div>
+                        <h2 className="text-sm font-semibold dark:text-white">Reset Password</h2>
+                        <p className="text-[10px] text-zinc-400 font-medium">Account: @{user.username}</p>
+                    </div>
+                    <button onClick={onClose} className="p-1 hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded transition-colors text-zinc-400">
+                        ✖
+                    </button>
+                </div>
+
+                <div className="p-5 space-y-4">
+                    <div className="space-y-1.5">
+                        <label className="text-[11px] font-medium text-zinc-400 dark:text-zinc-500">New Secure Password</label>
+                        <input 
+                            type="password" 
+                            value={password}
+                            onChange={e => setPassword(e.target.value)}
+                            placeholder="••••••••"
+                            className="w-full px-3 py-2 bg-zinc-50 dark:bg-zinc-950 border dark:border-zinc-800 rounded text-xs outline-none focus:border-synos-primary transition-colors"
+                        />
+                    </div>
+                </div>
+
+                <div className="px-5 py-4 bg-zinc-50 dark:bg-zinc-950 border-t dark:border-zinc-800 flex justify-end gap-2 rounded-b-xl">
+                    <button onClick={onClose} className="px-4 py-2 text-xs font-medium text-zinc-500 hover:text-zinc-900 dark:hover:text-white">
+                        Cancel
+                    </button>
+                    <button 
+                        onClick={handleReset}
+                        disabled={submitting}
+                        className="px-5 py-2 bg-synos-primary text-white rounded-xl text-xs font-medium hover:opacity-90 disabled:opacity-50"
+                    >
+                        {submitting ? "Resetting..." : "Confirm Reset"}
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+function ManageBranchRolesModal({ user, branches, roles, onClose, onSuccess }) {
+    const [selectedBranch, setSelectedBranch] = useState('');
+    const [selectedRole, setSelectedRole] = useState('');
+    const [submitting, setSubmitting] = useState(false);
+
+    const handleAssign = async () => {
+        if (!selectedBranch || !selectedRole) return alert("Select both a branch and a role.");
+        
+        const branchObj = branches.find(b => b.branchId === selectedBranch);
+        const roleObj = roles.find(r => r.roleId === selectedRole);
+
+        setSubmitting(true);
+        try {
+            await AdminApi.assignBranchRole(user.userId, selectedBranch, selectedRole, roleObj.name);
+            alert("Branch role mapping added.");
+            setSelectedBranch('');
+            setSelectedRole('');
+            onSuccess();
+        } catch (error) {
+            alert(error.message || "Failed to assign role.");
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
+    const handleRemove = async (branchId, roleId) => {
+        if (!window.confirm("Are you sure you want to remove this branch role mapping?")) return;
+        setSubmitting(true);
+        try {
+            await AdminApi.removeBranchRole(user.userId, branchId, roleId);
+            alert("Branch role mapping removed.");
+            onSuccess();
+        } catch (error) {
+            alert(error.message || "Failed to remove role.");
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
+    return (
+        <div className="fixed inset-0 z-[100] overflow-y-auto bg-zinc-950/40 backdrop-blur-sm flex items-start sm:items-center justify-center p-4">
+            <div className="bg-white dark:bg-zinc-900 w-full max-w-lg rounded-xl shadow-2xl border dark:border-zinc-800 my-auto animate-in fade-in zoom-in-95 duration-200">
+                <div className="px-5 py-4 border-b dark:border-zinc-800 flex justify-between items-center bg-zinc-50 dark:bg-zinc-950 rounded-t-xl">
+                    <div>
+                        <h2 className="text-sm font-semibold dark:text-white">Locations & Roles Access</h2>
+                        <p className="text-[10px] text-zinc-400 font-medium">{user.name} • @{user.username}</p>
+                    </div>
+                    <button onClick={onClose} className="p-1 hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded transition-colors text-zinc-400">
+                        ✖
+                    </button>
+                </div>
+
+                <div className="p-6 space-y-6 rounded-b-xl">
+                    {/* Assigned mappings */}
+                    <div className="space-y-2">
+                        <label className="text-[11px] font-medium text-zinc-400 block">Current Mapped Access</label>
+                        <div className="border dark:border-zinc-800 rounded-xl divide-y dark:divide-zinc-800 overflow-hidden">
+                            {user.branchRoles.length === 0 ? (
+                                <div className="p-4 text-center text-xs text-zinc-400 italic bg-zinc-50/50 dark:bg-zinc-900/10">
+                                    No branch role locations mapped yet.
+                                </div>
+                            ) : user.branchRoles.map((br, idx) => (
+                                <div key={idx} className="px-4 py-3 flex justify-between items-center bg-white dark:bg-zinc-950/20 hover:bg-zinc-50 dark:hover:bg-zinc-900/20 transition-colors">
+                                    <div>
+                                        <p className="text-xs font-semibold dark:text-zinc-200">{br.branchName}</p>
+                                        <p className="text-[10px] text-zinc-500">{br.roleName}</p>
+                                    </div>
+                                    <button 
+                                        onClick={() => handleRemove(br.branchId, br.roleId)}
+                                        disabled={submitting}
+                                        className="text-[10px] font-medium text-rose-500 hover:bg-rose-500/10 border border-rose-500/10 px-2.5 py-1 rounded-lg transition-colors disabled:opacity-50"
+                                    >
+                                        Revoke Access
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Form to add */}
+                    <div className="p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-900/50 border dark:border-zinc-800 border-zinc-100 space-y-4">
+                        <span className="text-xs font-medium text-synos-primary block">Map New Location & Role</span>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-1.5">
+                                <label className="text-[11px] font-medium text-zinc-400">Select Branch</label>
+                                <select 
+                                    value={selectedBranch}
+                                    onChange={e => setSelectedBranch(e.target.value)}
+                                    className="w-full px-2.5 py-2 bg-white dark:bg-zinc-950 border dark:border-zinc-800 rounded text-xs outline-none focus:border-synos-primary transition-colors text-zinc-600 dark:text-zinc-300"
+                                >
+                                    <option value="">-- Choose Branch --</option>
+                                    {branches.map(b => (
+                                        <option key={b.branchId} value={b.branchId}>{b.name}</option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div className="space-y-1.5">
+                                <label className="text-[11px] font-medium text-zinc-400">Select System Role</label>
+                                <select 
+                                    value={selectedRole}
+                                    onChange={e => setSelectedRole(e.target.value)}
+                                    className="w-full px-2.5 py-2 bg-white dark:bg-zinc-950 border dark:border-zinc-800 rounded text-xs outline-none focus:border-synos-primary transition-colors text-zinc-600 dark:text-zinc-300"
+                                >
+                                    <option value="">-- Choose Role --</option>
+                                    {roles.map(r => (
+                                        <option key={r.roleId} value={r.roleId}>{r.name}</option>
+                                    ))}
+                                </select>
+                            </div>
+                        </div>
+                        <div className="flex justify-end pt-1">
+                            <button 
+                                onClick={handleAssign}
+                                disabled={submitting || !selectedBranch || !selectedRole}
+                                className="px-5 py-2 bg-synos-primary text-white rounded-xl text-xs font-medium hover:opacity-90 disabled:opacity-50 transition-opacity"
+                            >
+                                {submitting ? "Mapping..." : "Add Access Rules"}
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

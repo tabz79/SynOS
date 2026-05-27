@@ -8,7 +8,7 @@ namespace SynOS.Services.Admin
 {
     public interface IAdminUserService
     {
-        Task<User> CreateUserAsync(string email, string name, string password);
+        Task<User> CreateUserAsync(string username, string email, string name, string password, string? designation = null);
         Task SetUserStatusAsync(Guid userId, bool isActive);
         Task AssignBranchRoleAsync(Guid userId, Guid branchId, Guid? roleId, string? roleName = null);
         Task RemoveBranchRoleAsync(Guid userId, Guid branchId, Guid roleId);
@@ -18,6 +18,17 @@ namespace SynOS.Services.Admin
         Task<IEnumerable<OperationalResourceDto>> GetOperationalResourcesAsync();
         Task UpdateOperationalResourceAsync(Guid resourceId, string departmentCode);
         Task SyncOperationalResourcesAsync();
+        Task UpdateUserAsync(Guid userId, string name, string username, string email, string? designation, bool isActive, string departmentCode);
+        Task ResetPasswordAsync(Guid userId, string newPassword);
+        Task<IEnumerable<DepartmentMaster>> GetAllDepartmentsAsync();
+        Task<DepartmentMaster> CreateDepartmentAsync(string code, string name, string? macroDepartment = null);
+        Task<DepartmentMaster> UpdateDepartmentAsync(Guid departmentId, string name, string? macroDepartment, bool isActive);
+        Task DeleteDepartmentAsync(Guid departmentId);
+        Task<IEnumerable<Workspace>> GetWorkspacesAsync();
+        Task<Workspace> CreateWorkspaceAsync(string name, string routePath);
+        Task<Workspace> UpdateWorkspaceAsync(Guid workspaceId, string name, string routePath, bool isActive);
+        Task DeleteWorkspaceAsync(Guid workspaceId);
+        Task SetUserWorkspaceAccessesAsync(Guid userId, IEnumerable<Guid> workspaceIds);
     }
 
     public class OperationalResourceDto
@@ -44,10 +55,15 @@ namespace SynOS.Services.Admin
     public class UserAdminDto
     {
         public Guid UserId { get; set; }
+        public string Username { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
         public string Name { get; set; } = string.Empty;
+        public string? Designation { get; set; }
+        public string? SignatureImageUrl { get; set; }
+        public string? DepartmentCode { get; set; }
         public bool IsActive { get; set; }
         public List<BranchRoleDto> BranchRoles { get; set; } = new List<BranchRoleDto>();
+        public List<Guid> WorkspaceIds { get; set; } = new List<Guid>();
     }
 
     public class BranchRoleDto

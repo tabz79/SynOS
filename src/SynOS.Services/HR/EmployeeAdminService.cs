@@ -168,7 +168,7 @@ namespace SynOS.Services.HR
                         FirstName = firstName,
                         LastName = lastName,
                         JobTitle = user.Designation ?? "System Staff",
-                        Department = "General",
+                        Department = "GENERAL",
                         JoinDate = DateTimeOffset.UtcNow,
                         IsActive = user.IsActive,
                         BaseSalary = 0, // Manual setup required

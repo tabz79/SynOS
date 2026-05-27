@@ -197,5 +197,108 @@ namespace SynOS.Data
 
             return true;
         }
+
+        public static async Task SeedDepartmentMastersAsync(SynOSDbContext context)
+        {
+            // 1. Clean up duplicate or unnormalized legacy records in DepartmentMasters
+            var allDepts = await context.DepartmentMasters.ToListAsync();
+            
+            // Consolidate GENERAL / General
+            var generalDepts = allDepts.Where(d => d.Code.Equals("GENERAL", StringComparison.OrdinalIgnoreCase) || d.Name.Equals("General", StringComparison.OrdinalIgnoreCase) || d.Name.Contains("General")).ToList();
+            if (generalDepts.Count > 1)
+            {
+                var keep = generalDepts.OrderBy(d => d.Code == "GENERAL" ? 0 : 1).First();
+                keep.Code = "GENERAL";
+                keep.Name = "General Laboratory Operations";
+                keep.MacroDepartment = "General";
+                
+                foreach (var dup in generalDepts.Where(d => d.DepartmentId != keep.DepartmentId))
+                {
+                    var tests = await context.Tests.Where(t => t.DepartmentId == dup.DepartmentId).ToListAsync();
+                    foreach (var t in tests) t.DepartmentId = keep.DepartmentId;
+                    
+                    context.DepartmentMasters.Remove(dup);
+                }
+                await context.SaveChangesAsync();
+                allDepts = await context.DepartmentMasters.ToListAsync(); // Refresh cache
+            }
+
+            // Consolidate PATHOLOGY / Pathology / PAT
+            var pathDepts = allDepts.Where(d => d.Code.Equals("PATHOLOGY", StringComparison.OrdinalIgnoreCase) || d.Code.Equals("PAT", StringComparison.OrdinalIgnoreCase) || d.Name.Equals("Pathology", StringComparison.OrdinalIgnoreCase) || d.Name.Equals("PATHOLOGY", StringComparison.OrdinalIgnoreCase)).ToList();
+            if (pathDepts.Count > 1)
+            {
+                var keep = pathDepts.OrderBy(d => d.Code == "PATHOLOGY" ? 0 : 1).First();
+                keep.Code = "PATHOLOGY";
+                keep.Name = "Pathology";
+                keep.MacroDepartment = "Pathology";
+                
+                foreach (var dup in pathDepts.Where(d => d.DepartmentId != keep.DepartmentId))
+                {
+                    var tests = await context.Tests.Where(t => t.DepartmentId == dup.DepartmentId).ToListAsync();
+                    foreach (var t in tests) t.DepartmentId = keep.DepartmentId;
+                    
+                    context.DepartmentMasters.Remove(dup);
+                }
+                await context.SaveChangesAsync();
+                allDepts = await context.DepartmentMasters.ToListAsync(); // Refresh cache
+            }
+
+            // Consolidate BIO / Biochemistry
+            var bioDepts = allDepts.Where(d => d.Code.Equals("BIO", StringComparison.OrdinalIgnoreCase) || d.Name.Equals("Biochemistry", StringComparison.OrdinalIgnoreCase)).ToList();
+            if (bioDepts.Count > 1)
+            {
+                var keep = bioDepts.OrderBy(d => d.Code == "BIO" ? 0 : 1).First();
+                keep.Code = "BIO";
+                keep.Name = "Biochemistry";
+                keep.MacroDepartment = "Pathology";
+                
+                foreach (var dup in bioDepts.Where(d => d.DepartmentId != keep.DepartmentId))
+                {
+                    var tests = await context.Tests.Where(t => t.DepartmentId == dup.DepartmentId).ToListAsync();
+                    foreach (var t in tests) t.DepartmentId = keep.DepartmentId;
+                    
+                    context.DepartmentMasters.Remove(dup);
+                }
+                await context.SaveChangesAsync();
+                allDepts = await context.DepartmentMasters.ToListAsync(); // Refresh cache
+            }
+
+            // 2. Seed standard lab departments
+            var standardDepts = new[]
+            {
+                new { Code = "GENERAL", Name = "General Laboratory Operations", Macro = "General" },
+                new { Code = "RAD", Name = "Radiology", Macro = "Radiology" },
+                new { Code = "BIO", Name = "Biochemistry", Macro = "Pathology" },
+                new { Code = "HEM", Name = "Hematology", Macro = "Pathology" },
+                new { Code = "SER", Name = "Serology", Macro = "Pathology" },
+                new { Code = "MIC", Name = "Microbiology", Macro = "Pathology" },
+                new { Code = "CPA", Name = "Clinical Pathology", Macro = "Pathology" },
+                new { Code = "CPS", Name = "Clinical Pathology Stool", Macro = "Pathology" }
+            };
+
+            foreach (var sd in standardDepts)
+            {
+                var existing = allDepts.FirstOrDefault(d => d.Code.Equals(sd.Code, StringComparison.OrdinalIgnoreCase));
+                if (existing == null)
+                {
+                    context.DepartmentMasters.Add(new DepartmentMaster
+                    {
+                        DepartmentId = Guid.NewGuid(),
+                        Code = sd.Code,
+                        Name = sd.Name,
+                        MacroDepartment = sd.Macro,
+                        IsActive = true,
+                        CreatedAt = DateTimeOffset.UtcNow
+                    });
+                }
+                else
+                {
+                    existing.Code = sd.Code;
+                    existing.Name = sd.Name;
+                    existing.MacroDepartment = sd.Macro;
+                }
+            }
+            await context.SaveChangesAsync();
+        }
     }
 }

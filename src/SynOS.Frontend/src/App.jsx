@@ -25,7 +25,7 @@ import { VendorMasterScreen } from '@/features/finance/VendorMasterScreen'
 import { OverheadExpensesScreen } from '@/features/finance/OverheadScreens'
 import { IntelligenceDashboard } from '@/features/finance/IntelligenceScreens'
 import { ReferralTerminal } from '@/features/finance/ReferralTerminal'
-import { WorkforceTerminal } from '@/features/finance/WorkforceScreens'
+import { WorkforceTerminal, IdentityProvisioningScreen } from '@/features/finance/WorkforceScreens'
 import { StaffLayout } from '@/features/employee/StaffLayout'
 import { MyHRDashboard } from '@/features/employee/MyHRDashboard'
 import { LeaveApplication } from '@/features/employee/LeaveApplication'
@@ -197,6 +197,7 @@ function App() {
                 <Route path="/admin/inventory/setup" element={<ImsRoleMappingScreen />} />
                 <Route path="/admin/test-master" element={<TestMasterScreen />} />
                 <Route path="/admin/report-templates" element={<ReportTemplatesScreen />} />
+                <Route path="/admin/staff" element={<IdentityProvisioningScreen />} />
               </Route>
             </Route>
 

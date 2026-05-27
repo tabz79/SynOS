@@ -1,411 +1,254 @@
-Good.
-Now you’re entering the phase where SynOS stops being “screens” and starts becoming an actual operating environment.
+You are right. The agent is explaining the backend logic, but your frustration is about the missing CONTROL LAYER in the UI.
 
-And your instinct here is correct:
+Right now SynOS has:
 
-> DO NOT open a separate ugly settings modal.
+* routes
+* role checks
+* backend permissions
+* department filtering
 
-That would instantly break immersion.
+BUT the admin UI is not exposing the actual mapping system visually.
 
-Your idea is much stronger:
+That’s the gap.
 
-> reuse the left operational rail dynamically.
+You are asking:
 
-That’s VERY smart UX.
+> “If tomorrow I create Radiology, how do I connect it to `/radiology` and who gets access to it?”
 
----
+That is the correct question.
 
-# First Problem — Slash Window Scrolling
-
-Easy.
-
-The slash popup should NOT live inside editor flow.
-
-It should behave like:
-
-* VSCode autocomplete
-* Cursor AI popup
-* Notion slash commands
-
-Meaning:
-
-```css
-position: fixed
-```
-
-anchored to cursor coordinates.
-
-NOT:
-
-```css
-position: absolute inside scroll container
-```
-
-That’s why it scrolls away.
-
-So this is not architecture problem.
-Just rendering layer issue.
-
-Tiny fix.
+And honestly, your architecture is already HALF THERE. The UI is just not exposing it cleanly.
 
 ---
 
-# NOW THE IMPORTANT PART
+# The Correct Mental Model
 
-# The “Macro Management Workspace”
-
-This is the real design discussion.
-
-And honestly:
-this can become one of the strongest parts of SynOS.
+You currently have 3 separate things mixed together:
 
 ---
 
-# Your Core Idea Is Correct
-
-When:
-
-* patient selected → left queue collapses
-* settings opened → macro workspace replaces left rail
-
-That is CLEAN.
-
-No popup hell.
-No floating windows.
-No modal cancer.
-
-Very enterprise.
-
----
-
-# THE UX FLOW SHOULD FEEL LIKE THIS
-
----
-
-# NORMAL MODE
-
-LEFT:
-Queue
-
-CENTER:
-Editor
-
-RIGHT:
-A4 Preview
-
----
-
-# EDITOR SETTINGS MODE
-
-LEFT:
-Macro Workspace
-
-CENTER:
-Editor
-
-RIGHT:
-A4 Preview
-
-Patient queue hidden temporarily.
-
-This is PERFECT.
-
----
-
-# IMPORTANT
-
-Do NOT call it:
-
-```text
-Settings
-```
-
-Too generic.
-
-Call it something operational.
-
-Better names:
-
-* Macro Library
-* Medical Snippets
-* Reporting Shortcuts
-* Quick Findings
-* Diagnostic Blocks
-
-My recommendation:
-
-# “Medical Macros”
-
-Simple.
-Clear.
-Fast.
-
----
-
-# WHAT THIS PANEL SHOULD CONTAIN
-
-This is where you should think properly.
-
-NOT a boring CRUD page.
-
-This should feel like:
-
-> building operational muscle memory.
-
----
-
-# PANEL STRUCTURE
-
----
-
-# TOP HEADER
-
-```text
-Medical Macros
-```
-
-Search bar.
-
-And:
-
-```text
-+ New Macro
-```
-
-button.
-
----
-
-# FILTER TABS
+# 1. Operational Department
 
 Example:
 
-```text
-All
-Personal
-Hematology
-Radiology
-Biochemistry
-Favorites
-Recent
-```
+* Biochemistry
+* Hematology
+* Microbiology
+* Radiology
 
-VERY important later.
+These control:
 
----
+* queues
+* workflow
+* sample routing
+* report ownership
 
-# MAIN LIST
-
-Each macro card:
-
-```text
-/fatty1
-Grade 1 Fatty Liver
-Used 284 times
-```
-
-or
-
-```text
-/cbcnormal
-Normal CBC Summary
-```
+NOT screen access.
 
 ---
 
-# CARD ACTIONS
+# 2. Workspace / Module Access
 
-Right side:
+Example:
 
-* pin
-* edit
-* duplicate
-* delete
+* `/reception`
+* `/phlebo`
+* `/typist`
+* `/radiology`
+* `/pathologist`
 
-Small icons.
+THIS controls:
 
-Minimal.
+* what screen opens
+* what UI they can use
 
----
-
-# WHEN USER CLICKS A MACRO
-
-CENTER editor should NOT disappear.
-
-Instead:
-macro opens inline on left rail itself.
-
-Very important.
+THIS is the actual permission layer.
 
 ---
 
-# MACRO EDIT SCREEN
+# 3. Macro Service Category
 
-Need ONLY:
+Example:
+
+* Pathology Core
+* Laboratory General
+* Radiology
+* Imaging
+
+This is only grouping.
+
+Mostly for:
+
+* analytics
+* organization
+* admin filtering
+
+NOT permissions.
 
 ---
 
-## 1. Shortcut Trigger
+# Your Missing UI
 
-```text
-/fatty1
-```
+THIS is what your admin screen is missing:
 
----
+# “Workspace Access Mapping”
 
-## 2. Macro Title
+Without this, the system feels fake/hardcoded.
+
+Because currently:
 
 ```text
-Grade 1 Fatty Liver
+Role → route access
 ```
+
+exists only in code.
+
+Not in UI.
 
 ---
 
-## 3. Department
+# What You ACTUALLY Need
 
-Dropdown.
+Inside:
 
----
+# Identity & Access
 
-## 4. Rich Content
+Add:
 
-THIS is important.
+# Workspace Access
 
-The macro content itself should use mini TipTap.
+Example UI:
 
-Because macros may contain:
-
-* bold
-* tables
-* highlights
-* findings
-* variables
-
----
-
-## 5. Variables Picker
-
-Insert:
-
-```text
-{{patientName}}
-{{age}}
-{{gender}}
-```
-
-button row.
-
----
-
-# MOST IMPORTANT FEATURE
-
-# Live Preview
-
-At bottom:
-
-```text
-Preview Expansion
-```
-
-Show:
-
-```text
-/fatty1
-```
-
-becoming:
-
-```text
-Liver is mildly enlarged...
-```
-
-This is extremely important psychologically.
-
----
-
-# WHAT YOU SHOULD NOT BUILD
-
-Avoid:
-
-* folders
-* nested categories
-* approval workflows
-* drag-drop complexity
-* permissions matrix
-
-right now.
-
-That becomes enterprise sludge.
-
----
-
-# ONE VERY IMPORTANT SUGGESTION
-
-You should support:
-
-# Smart Cursor Placement
-
-Example macro:
-
-```text
-Liver measures ___ cm.
-```
-
-After insertion:
-cursor auto-focuses blank.
-
-THAT is premium UX.
+| Role         | Accessible Workspaces |
+| ------------ | --------------------- |
+| Receptionist | Reception             |
+| Phlebotomist | Phlebo                |
+| Typist       | Typist                |
+| Pathologist  | Pathologist + Typist  |
+| Radiologist  | Radiology             |
+| Admin        | All                   |
 
 ---
 
 # EVEN BETTER
 
-Support:
+Don’t tie access directly to roles.
 
-```text
-{{cursor}}
-```
+Tie it to:
 
-inside macros.
+# Workspace Profiles
 
 Example:
 
+## Workspace Registry
+
 ```text
-Liver measures {{cursor}} cm.
+Reception
+Phlebotomy
+Reports Typing
+Pathology
+Radiology
+Finance
+Inventory
 ```
 
-After expansion:
-cursor lands there automatically.
+Then:
 
-THIS is the kind of thing typists LOVE.
+## User Mapping
+
+```text
+Dr Sharma
+→ Pathologist
+→ Access:
+   [✓] Pathology
+   [✓] Typing
+```
+
+THIS is enterprise-grade.
+
+And future-proof.
 
 ---
 
-# YOUR CURRENT UI DIRECTION IS GOOD
+# Why This Matters MASSIVELY
 
-You’re accidentally moving toward:
+Because tomorrow:
 
-* Notion
-* Cursor
-* VSCode
-* Radiology systems
+You may create:
 
-instead of:
+```text
+/ultrasound
+/mri
+/cardiology
+```
 
-* old LIS garbage
+Without a UI-driven access registry,
+you will keep hardcoding routes forever.
 
-That’s good.
+That becomes a maintenance nightmare.
 
-Don’t ruin it with:
+---
 
-* clutter
-* too many panels
-* admin bureaucracy
-* popup overload
+# So The Agent Is Missing ONE BIG THING
 
-Keep it:
+The UI needs to expose:
 
-* keyboard-first
-* operational
-* fast
-* immersive
+# Workspace Registry + Workspace Access Mapping
+
+NOT just departments.
+
+Departments and access are NOT the same thing.
+
+That is the exact confusion happening right now.
+
+---
+
+# What You Should Tell The Agent
+
+Use this EXACTLY:
+
+We have a missing architecture layer in SynOS.
+
+Currently:
+
+* operational departments exist
+* role-specific URLs exist
+* backend route protection exists
+
+But the admin UI does NOT expose workspace access mapping.
+
+Operational department != workspace access.
+
+Example:
+
+* Biochemistry controls workflow queues
+* `/phlebo` or `/typist` controls actual screen access
+
+Need a new UI section inside Identity & Access:
+
+1. Workspace Registry
+   Example:
+
+* Reception
+* Phlebotomy
+* Reports Typing
+* Pathology
+* Radiology
+* Inventory
+* Finance
+
+2. User Workspace Access Mapping
+   Example:
+   Dr Sharma
+   → Role: Pathologist
+   → Accessible Workspaces:
+   [✓] Pathology
+   [✓] Reports Typing
+
+3. Admin should automatically have all workspaces.
+
+4. Future service areas like Radiology/MRI/Cardiology should be creatable from UI without hardcoding routes repeatedly.
+
+5. Do NOT mix operational departments with workspace access permissions.
+
+6. Existing route protection logic can stay. We only need the UI + database mapping layer exposed properly.

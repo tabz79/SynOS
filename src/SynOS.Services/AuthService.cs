@@ -121,7 +121,7 @@ namespace SynOS.Services
             }
 
             var newSessionId = Guid.NewGuid();
-            var departmentCode = "General";
+            var departmentCode = "GENERAL";
             
             // Sync Operational Resource (Internal safeguard)
             var resource = await _context.OperationalResources.FirstOrDefaultAsync(r => r.UserId == user.UserId);
@@ -131,7 +131,7 @@ namespace SynOS.Services
                 resource.LastSessionIssuedAt = DateTime.UtcNow;
                 if (selectedBranchId.HasValue) resource.BranchId = selectedBranchId.Value;
                 
-                if (!string.IsNullOrEmpty(resource.DepartmentCode) && resource.DepartmentCode != "General")
+                if (!string.IsNullOrEmpty(resource.DepartmentCode) && resource.DepartmentCode != "GENERAL")
                 {
                     departmentCode = resource.DepartmentCode;
                 }
@@ -145,14 +145,20 @@ namespace SynOS.Services
                     LastSessionIssuedAt = DateTime.UtcNow,
                     BranchId = selectedBranchId.Value,
                     Role = selectedRoleName,
-                    DepartmentCode = "General",
+                    DepartmentCode = "GENERAL",
                     IsOnline = false,
                     IsActive = true
                 };
                 _context.OperationalResources.Add(resource);
             }
 
-            var jwtToken = GenerateJwtToken(user, selectedMode, selectedBranchId, selectedBranchName, selectedRoleName, selectedRoleId, newSessionId, departmentCode);
+            var workspaceRoutes = await _context.UserWorkspaceAccesses
+                .AsNoTracking()
+                .Where(uwa => uwa.UserId == user.UserId && uwa.Workspace.IsActive)
+                .Select(uwa => uwa.Workspace.RoutePath)
+                .ToListAsync();
+
+            var jwtToken = GenerateJwtToken(user, selectedMode, selectedBranchId, selectedBranchName, selectedRoleName, selectedRoleId, newSessionId, departmentCode, workspaceRoutes);
             var refreshToken = GenerateRefreshToken(ipAddress);
             refreshToken.SessionMode = selectedMode;
 
@@ -240,7 +246,7 @@ namespace SynOS.Services
             }
 
             var newSessionId = Guid.NewGuid();
-            var departmentCode = "General";
+            var departmentCode = "GENERAL";
             
             var resource = await _context.OperationalResources.FirstOrDefaultAsync(r => r.UserId == user.UserId);
             if (resource != null)
@@ -250,7 +256,13 @@ namespace SynOS.Services
                 if (!string.IsNullOrEmpty(resource.DepartmentCode)) departmentCode = resource.DepartmentCode;
             }
 
-            var jwtToken = GenerateJwtToken(user, selectedMode, selectedBranchId, selectedBranchName, selectedRoleName, selectedRoleId, newSessionId, departmentCode);
+            var workspaceRoutes = await _context.UserWorkspaceAccesses
+                .AsNoTracking()
+                .Where(uwa => uwa.UserId == user.UserId && uwa.Workspace.IsActive)
+                .Select(uwa => uwa.Workspace.RoutePath)
+                .ToListAsync();
+
+            var jwtToken = GenerateJwtToken(user, selectedMode, selectedBranchId, selectedBranchName, selectedRoleName, selectedRoleId, newSessionId, departmentCode, workspaceRoutes);
             await _auditService.LogAsync(user.UserId, "RefreshToken", "User", user.UserId, new { IpAddress = ipAddress });
             await _context.SaveChangesAsync();
 
@@ -281,7 +293,7 @@ namespace SynOS.Services
             return true;
         }
 
-        private string GenerateJwtToken(User user, string sessionMode, Guid? branchId, string? branchName, string roleName, Guid roleId, Guid sessionId, string departmentCode)
+        private string GenerateJwtToken(User user, string sessionMode, Guid? branchId, string? branchName, string roleName, Guid roleId, Guid sessionId, string departmentCode, IEnumerable<string> workspaceRoutes)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
             var jwtSecret = _configuration["Jwt:Secret"] ?? throw new InvalidOperationException("Jwt:Secret not configured");
@@ -292,6 +304,7 @@ namespace SynOS.Services
                 new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
                 new Claim(ClaimTypes.Name, user.Name),
                 new Claim("username", user.Username),
+                new Claim("workspaces", string.Join(",", workspaceRoutes)),
             };
 
             if (!string.IsNullOrEmpty(user.Email))

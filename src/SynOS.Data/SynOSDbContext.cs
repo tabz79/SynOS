@@ -131,6 +131,8 @@ namespace SynOS.Data
         public DbSet<UserRole> UserRoles { get; set; } = null!;
         public DbSet<UserBranchRole> UserBranchRoles { get; set; } = null!; // ADDED: Multi-branch Auth
         public DbSet<RefreshToken> RefreshTokens { get; set; } = null!;
+        public DbSet<Workspace> Workspaces { get; set; } = null!;
+        public DbSet<UserWorkspaceAccess> UserWorkspaceAccesses { get; set; } = null!;
         public DbSet<AuditLog> AuditLogs { get; set; } = null!;
         public DbSet<Branch> Branches { get; set; } = null!; // New Branch entity
 
@@ -356,13 +358,21 @@ namespace SynOS.Data
             });
             modelBuilder.Entity<UserRole>(entity => entity.HasKey(ur => new { ur.UserId, ur.RoleId }));
 
-            // Multi-branch Auth
+             // Multi-branch Auth
             modelBuilder.Entity<UserBranchRole>(entity =>
             {
                 entity.HasIndex(e => new { e.UserId, e.BranchId, e.RoleId }).IsUnique();
                 entity.HasOne(e => e.User).WithMany().HasForeignKey(e => e.UserId).OnDelete(DeleteBehavior.Cascade);
                 entity.HasOne(e => e.Branch).WithMany().HasForeignKey(e => e.BranchId).OnDelete(DeleteBehavior.Restrict);
                 entity.HasOne(e => e.Role).WithMany().HasForeignKey(e => e.RoleId).OnDelete(DeleteBehavior.Restrict);
+            });
+
+            // Workspace access mapping
+            modelBuilder.Entity<UserWorkspaceAccess>(entity =>
+            {
+                entity.HasIndex(e => new { e.UserId, e.WorkspaceId }).IsUnique();
+                entity.HasOne(e => e.User).WithMany().HasForeignKey(e => e.UserId).OnDelete(DeleteBehavior.Cascade);
+                entity.HasOne(e => e.Workspace).WithMany().HasForeignKey(e => e.WorkspaceId).OnDelete(DeleteBehavior.Cascade);
             });
             
             // Financial Facts (Precision Fixes)

@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Collections.Generic;
+using Microsoft.EntityFrameworkCore;
 using SynOS.Models.Entities;
 using SynOS.Models.Entities.Operations;
 using SynOS.Models.Entities.IMS;
@@ -25,6 +26,7 @@ namespace SynOS.Data
             SeedRolesAndUsers(context);
             SeedEmployees(context); // Connect Identity to Workforce (Seeding)
             SeedLabProfile(context);
+            SeedWorkspaces(context);
 
             SeedSpecimenTypes(context);
             SeedTubes(context);
@@ -45,6 +47,7 @@ namespace SynOS.Data
             CatalogSeedService.SeedProcessingDepartmentsAsync(context).GetAwaiter().GetResult();
             CatalogSeedService.SeedSpecimenTypesAsync(context).GetAwaiter().GetResult();
             CatalogSeedService.SeedTubeTypesAsync(context).GetAwaiter().GetResult();
+            CatalogSeedService.SeedDepartmentMastersAsync(context).GetAwaiter().GetResult();
 
             SeedIMS(context);
             SeedWorkforcePolicies(context);
@@ -604,7 +607,7 @@ namespace SynOS.Data
                         FirstName = firstName,
                         LastName = lastName,
                         JobTitle = user.Designation ?? "Lab Staff",
-                        Department = "General",
+                        Department = "GENERAL",
                         JoinDate = DateTimeOffset.UtcNow.AddMonths(-6), // Simulation: existed for 6 months
                         IsActive = user.IsActive,
                         BaseSalary = 50000, // Assigned for testing
@@ -635,6 +638,119 @@ namespace SynOS.Data
                 context.SaveChanges();
                 Console.WriteLine("[DbInitializer] SEEDED GLOBAL LEAVE POLICY");
             }
+        }
+
+        private static void SeedWorkspaces(SynOSDbContext context)
+        {
+            var defaultWorkspaces = new[]
+            {
+                new { Name = "Reception", RoutePath = "/reception" },
+                new { Name = "Phlebotomy", RoutePath = "/phlebotomist" },
+                new { Name = "Reports Typing", RoutePath = "/typist" },
+                new { Name = "Pathology", RoutePath = "/pathologist" },
+                new { Name = "Lab Workbench", RoutePath = "/workbench" },
+                new { Name = "Radiology", RoutePath = "/radiology" },
+                new { Name = "Inventory", RoutePath = "/inventory" },
+                new { Name = "Finance", RoutePath = "/finance" }
+            };
+
+            var existingWorkspaces = context.Workspaces.ToDictionary(w => w.RoutePath, w => w, StringComparer.OrdinalIgnoreCase);
+
+            foreach (var ws in defaultWorkspaces)
+            {
+                if (!existingWorkspaces.ContainsKey(ws.RoutePath))
+                {
+                    var newWorkspace = new Workspace
+                    {
+                        WorkspaceId = Guid.NewGuid(),
+                        Name = ws.Name,
+                        RoutePath = ws.RoutePath,
+                        IsActive = true,
+                        CreatedAt = DateTimeOffset.UtcNow
+                    };
+                    context.Workspaces.Add(newWorkspace);
+                    existingWorkspaces.Add(ws.RoutePath, newWorkspace);
+                    Console.WriteLine($"[DbInitializer] SEEDED WORKSPACE: {ws.Name} ({ws.RoutePath})");
+                }
+            }
+            context.SaveChanges();
+
+            var allUsers = context.Users.ToList();
+            var workspacesDb = context.Workspaces.ToList();
+
+            foreach (var user in allUsers)
+            {
+                var roleName = context.UserBranchRoles
+                    .Include(ubr => ubr.Role)
+                    .Where(ubr => ubr.UserId == user.UserId)
+                    .Select(ubr => ubr.Role.Name)
+                    .FirstOrDefault();
+
+                if (string.IsNullOrEmpty(roleName) && user.Username == "admin")
+                {
+                    roleName = "Admin";
+                }
+
+                if (string.IsNullOrEmpty(roleName)) continue;
+
+                List<string> routesToAssign = new List<string>();
+                if (roleName == "Admin")
+                {
+                    routesToAssign.AddRange(workspacesDb.Select(w => w.RoutePath));
+                }
+                else if (roleName == "Receptionist")
+                {
+                    routesToAssign.Add("/reception");
+                    routesToAssign.Add("/phlebotomist");
+                }
+                else if (roleName == "Phlebotomist")
+                {
+                    routesToAssign.Add("/phlebotomist");
+                }
+                else if (roleName == "Pathologist")
+                {
+                    routesToAssign.Add("/pathologist");
+                    routesToAssign.Add("/typist");
+                }
+                else if (roleName == "Typist")
+                {
+                    routesToAssign.Add("/typist");
+                }
+                else if (roleName == "InventoryManager")
+                {
+                    routesToAssign.Add("/inventory");
+                }
+                else if (roleName == "Finance")
+                {
+                    routesToAssign.Add("/finance");
+                }
+                else if (roleName == "LabTech" || roleName == "Technician")
+                {
+                    routesToAssign.Add("/workbench");
+                }
+
+                foreach (var route in routesToAssign)
+                {
+                    var ws = workspacesDb.FirstOrDefault(w => w.RoutePath.Equals(route, StringComparison.OrdinalIgnoreCase));
+                    if (ws != null)
+                    {
+                        var exists = context.UserWorkspaceAccesses.Any(uwa => uwa.UserId == user.UserId && uwa.WorkspaceId == ws.WorkspaceId);
+                        if (!exists)
+                        {
+                            var access = new UserWorkspaceAccess
+                            {
+                                UserWorkspaceAccessId = Guid.NewGuid(),
+                                UserId = user.UserId,
+                                WorkspaceId = ws.WorkspaceId,
+                                AssignedAt = DateTimeOffset.UtcNow
+                            };
+                            context.UserWorkspaceAccesses.Add(access);
+                            Console.WriteLine($"[DbInitializer] SEEDED USER ACCESS: {user.Username} -> {ws.Name}");
+                        }
+                    }
+                }
+            }
+            context.SaveChanges();
         }
     }
 }

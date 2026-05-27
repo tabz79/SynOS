@@ -45,7 +45,7 @@ export function AdminLayout() {
         { name: "Test Master", icon: Settings2, path: "/admin/test-master" },
         { name: "Report Templates", icon: Layout, path: "/admin/report-templates" },
         { name: "Inventory Setup", icon: Box, path: "/admin/inventory/setup" },
-        { name: "Staff Master", icon: Users, path: "/admin/staff", disabled: true },
+        { name: "Identity & Access", icon: Users, path: "/admin/staff" },
         { name: "Intelligence", icon: BarChart3, path: "/admin/intelligence", disabled: true },
         { name: "System Settings", icon: Settings, path: "/admin/settings", disabled: true },
     ];

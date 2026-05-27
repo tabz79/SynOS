@@ -22,8 +22,40 @@ namespace SynOS.Api.Controllers.Admin
         [HttpPost]
         public async Task<IActionResult> CreateUser([FromBody] CreateUserRequest request)
         {
-            var user = await _adminUserService.CreateUserAsync(request.Email, request.Name, request.Password);
-            return Ok(new { user.UserId, user.Email, user.Name });
+            var user = await _adminUserService.CreateUserAsync(request.Username, request.Email, request.Name, request.Password, request.Designation);
+            return Ok(new { user.UserId, user.Username, user.Email, user.Name, user.Designation });
+        }
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateUser(Guid id, [FromBody] UpdateUserRequest request)
+        {
+            try
+            {
+                await _adminUserService.UpdateUserAsync(id, request.Name, request.Username, request.Email, request.Designation, request.IsActive, request.DepartmentCode);
+                return NoContent();
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { Message = ex.Message });
+            }
+        }
+
+        [HttpPost("{id}/reset-password")]
+        public async Task<IActionResult> ResetPassword(Guid id, [FromBody] ResetPasswordRequest request)
+        {
+            try
+            {
+                await _adminUserService.ResetPasswordAsync(id, request.Password);
+                return Ok(new { Message = "Password reset successfully." });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
         }
 
         [HttpPut("{id}/status")]
@@ -66,6 +98,122 @@ namespace SynOS.Api.Controllers.Admin
         {
             var roles = await _adminUserService.GetAllRolesAsync();
             return Ok(roles);
+        }
+
+        [HttpGet("/api/v1/admin/departments")]
+        public async Task<IActionResult> GetAllDepartments()
+        {
+            var depts = await _adminUserService.GetAllDepartmentsAsync();
+            return Ok(depts);
+        }
+
+        [HttpPost("/api/v1/admin/departments")]
+        public async Task<IActionResult> CreateDepartment([FromBody] CreateDepartmentRequest request)
+        {
+            try
+            {
+                var dept = await _adminUserService.CreateDepartmentAsync(request.Code, request.Name, request.MacroDepartment);
+                return Ok(dept);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { Message = ex.Message });
+            }
+        }
+
+        [HttpPut("/api/v1/admin/departments/{id}")]
+        public async Task<IActionResult> UpdateDepartment(Guid id, [FromBody] UpdateDepartmentRequest request)
+        {
+            try
+            {
+                var dept = await _adminUserService.UpdateDepartmentAsync(id, request.Name, request.MacroDepartment, request.IsActive);
+                return Ok(dept);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { Message = ex.Message });
+            }
+        }
+
+        [HttpDelete("/api/v1/admin/departments/{id}")]
+        public async Task<IActionResult> DeleteDepartment(Guid id)
+        {
+            try
+            {
+                await _adminUserService.DeleteDepartmentAsync(id);
+                return NoContent();
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { Message = ex.Message });
+            }
+        }
+
+        [HttpGet("workspaces")]
+        public async Task<IActionResult> GetWorkspaces()
+        {
+            var workspaces = await _adminUserService.GetWorkspacesAsync();
+            return Ok(workspaces);
+        }
+
+        [HttpPost("workspaces")]
+        public async Task<IActionResult> CreateWorkspace([FromBody] CreateWorkspaceRequest request)
+        {
+            try
+            {
+                var ws = await _adminUserService.CreateWorkspaceAsync(request.Name, request.RoutePath);
+                return Ok(ws);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { Message = ex.Message });
+            }
+        }
+
+        [HttpPut("workspaces/{id}")]
+        public async Task<IActionResult> UpdateWorkspace(Guid id, [FromBody] UpdateWorkspaceRequest request)
+        {
+            try
+            {
+                var ws = await _adminUserService.UpdateWorkspaceAsync(id, request.Name, request.RoutePath, request.IsActive);
+                return Ok(ws);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { Message = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { Message = ex.Message });
+            }
+        }
+
+        [HttpDelete("workspaces/{id}")]
+        public async Task<IActionResult> DeleteWorkspace(Guid id)
+        {
+            try
+            {
+                await _adminUserService.DeleteWorkspaceAsync(id);
+                return NoContent();
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { Message = ex.Message });
+            }
+        }
+
+        [HttpPost("{id}/workspaces")]
+        public async Task<IActionResult> SetUserWorkspaces(Guid id, [FromBody] SetUserWorkspacesRequest request)
+        {
+            try
+            {
+                await _adminUserService.SetUserWorkspaceAccessesAsync(id, request.WorkspaceIds);
+                return Ok(new { Message = "User workspace accesses updated successfully." });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { Message = ex.Message });
+            }
         }
     }
 }

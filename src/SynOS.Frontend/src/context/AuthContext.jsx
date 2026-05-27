@@ -30,10 +30,11 @@ export function AuthProvider({ children }) {
                         role: decoded.role || decoded["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"],
                         branchId: decoded.branch_id || decoded.branchId,
                         branchName: decoded.branch_name || "Unknown Branch",
-                        departmentCode: decoded.department_code || "General",
+                        departmentCode: decoded.department_code || "GENERAL",
                         resourceId: decoded.resource_id || decoded.resourceId,
                         roleId: decoded.roleId || decoded.RoleId,
                         name: decoded.unique_name || decoded.sub,
+                        workspaces: decoded.workspaces ? decoded.workspaces.split(',') : []
                     });
 
                     // Set auto-logout timer
@@ -91,10 +92,11 @@ export function AuthProvider({ children }) {
                 role: decoded.role || decoded["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"],
                 branchId: decoded.branch_id || decoded.branchId,
                 branchName: decoded.branch_name || "Unknown Branch",
-                departmentCode: decoded.department_code || "General",
+                departmentCode: decoded.department_code || "GENERAL",
                 resourceId: decoded.resource_id || decoded.resourceId,
                 roleId: decoded.roleId || decoded.RoleId,
                 name: decoded.unique_name || decoded.sub,
+                workspaces: decoded.workspaces ? decoded.workspaces.split(',') : []
             };
             setUser(userObj);
             setToken(tokenValue);

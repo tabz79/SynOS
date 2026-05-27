@@ -44,22 +44,30 @@ namespace SynOS.Services.Operational
 
             // 2. Get Resource (Branch-aware)
             var resource = await _db.OperationalResources.FirstOrDefaultAsync(r => r.UserId == _userContext.CurrentUserId && r.BranchId == _userContext.CurrentBranchId);
-            if (resource == null) return Enumerable.Empty<ProcessingQueueItemDto>();
+            var isAdmin = _userContext.CurrentRole == "Admin" || _userContext.CurrentRole == "SystemAdmin";
+            if (resource == null && !isAdmin) return Enumerable.Empty<ProcessingQueueItemDto>();
 
             // 3. Query Queue (V1 Rules)
             var today = DateTimeOffset.UtcNow.Date;
             var window24h = DateTimeOffset.UtcNow.AddHours(-24);
 
-            var items = await _db.ProcessingAssignments
+            var query = _db.ProcessingAssignments
                 .Include(a => a.Specimen)
                     .ThenInclude(s => s.Visit)
                         .ThenInclude(v => v.Patient)
                 .Include(a => a.AssignedResource)
                     .ThenInclude(r => r.User)
-                .Where(a => a.BranchId == resource.BranchId && a.DepartmentCode == resource.DepartmentCode)
+                .Where(a => a.BranchId == _userContext.CurrentBranchId);
+
+            if (!isAdmin)
+            {
+                query = query.Where(a => a.DepartmentCode == resource!.DepartmentCode);
+            }
+
+            var items = await query
                 .Where(a => 
                     (a.Status == ProcessingAssignmentStatus.Pending && a.CreatedAt >= today) || 
-                    (a.AssignedResourceId == resource.OperationalResourceId && 
+                    (resource != null && a.AssignedResourceId == resource.OperationalResourceId && 
                         (a.Status == ProcessingAssignmentStatus.Claimed || 
                         (a.Status == ProcessingAssignmentStatus.Completed && a.CompletedAt >= window24h)))
                 )
@@ -106,17 +114,24 @@ namespace SynOS.Services.Operational
 
             // 4. Strict Isolation Validation
             if (snapshot.BranchId != resource.BranchId) return ProcessingResult.InvalidBranch;
-            if (snapshot.DepartmentCode != resource.DepartmentCode) return ProcessingResult.InvalidDepartment;
+            var isAdmin = _userContext.CurrentRole == "Admin" || _userContext.CurrentRole == "SystemAdmin";
+            if (snapshot.DepartmentCode != resource.DepartmentCode && !isAdmin) return ProcessingResult.InvalidDepartment;
             if (snapshot.Status != ProcessingAssignmentStatus.Pending) return ProcessingResult.Conflict;
 
             // 5. ATOMIC CONDITIONAL UPDATE
             var utcNow = DateTimeOffset.UtcNow;
             
-            var affectedRows = await _db.ProcessingAssignments
+            var updateQuery = _db.ProcessingAssignments
                 .Where(a => a.ProcessingAssignmentId == processingAssignmentId 
                          && a.Status == ProcessingAssignmentStatus.Pending 
-                         && a.BranchId == resource.BranchId
-                         && a.DepartmentCode == resource.DepartmentCode)
+                         && a.BranchId == resource.BranchId);
+
+            if (!isAdmin)
+            {
+                updateQuery = updateQuery.Where(a => a.DepartmentCode == resource.DepartmentCode);
+            }
+
+            var affectedRows = await updateQuery
                 .ExecuteUpdateAsync(setters => setters
                     .SetProperty(a => a.Status, ProcessingAssignmentStatus.Claimed)
                     .SetProperty(a => a.AssignedResourceId, resource.OperationalResourceId)
@@ -162,19 +177,26 @@ namespace SynOS.Services.Operational
 
             // 4. Validation
             if (snapshot.BranchId != resource.BranchId) return ProcessingResult.InvalidBranch;
-            if (snapshot.DepartmentCode != resource.DepartmentCode) return ProcessingResult.InvalidDepartment;
+            var isAdmin = _userContext.CurrentRole == "Admin" || _userContext.CurrentRole == "SystemAdmin";
+            if (snapshot.DepartmentCode != resource.DepartmentCode && !isAdmin) return ProcessingResult.InvalidDepartment;
             if (snapshot.Status != ProcessingAssignmentStatus.Claimed) return ProcessingResult.Conflict;
             if (snapshot.AssignedResourceId != resource.OperationalResourceId) return ProcessingResult.Unauthorized;
 
             // 5. ATOMIC CONDITIONAL UPDATE
             var utcNow = DateTimeOffset.UtcNow;
             
-            var affectedRows = await _db.ProcessingAssignments
+            var updateQuery = _db.ProcessingAssignments
                 .Where(a => a.ProcessingAssignmentId == processingAssignmentId 
                          && a.Status == ProcessingAssignmentStatus.Claimed 
                          && a.AssignedResourceId == resource.OperationalResourceId
-                         && a.BranchId == resource.BranchId
-                         && a.DepartmentCode == resource.DepartmentCode)
+                         && a.BranchId == resource.BranchId);
+
+            if (!isAdmin)
+            {
+                updateQuery = updateQuery.Where(a => a.DepartmentCode == resource.DepartmentCode);
+            }
+
+            var affectedRows = await updateQuery
                 .ExecuteUpdateAsync(setters => setters
                     .SetProperty(a => a.Status, ProcessingAssignmentStatus.Completed)
                     .SetProperty(a => a.CompletedAt, utcNow));
@@ -237,7 +259,8 @@ namespace SynOS.Services.Operational
 
             // 4. Validation
             if (snapshot.BranchId != resource.BranchId) return ProcessingResult.InvalidBranch;
-            if (snapshot.DepartmentCode != resource.DepartmentCode) return ProcessingResult.InvalidDepartment;
+            var isAdmin = _userContext.CurrentRole == "Admin" || _userContext.CurrentRole == "SystemAdmin";
+            if (snapshot.DepartmentCode != resource.DepartmentCode && !isAdmin) return ProcessingResult.InvalidDepartment;
             if (snapshot.Status != ProcessingAssignmentStatus.Completed) return ProcessingResult.InvalidState;
 
             // 5. ATOMIC UPDATE
@@ -299,7 +322,8 @@ namespace SynOS.Services.Operational
             if (snapshot == null) return null;
 
             // 2. SECURITY HARDENING: Strict Branch + Department Isolation
-            if (snapshot.BranchId != _userContext.CurrentBranchId || snapshot.DepartmentCode != _userContext.DepartmentCode)
+            var isAdmin = _userContext.CurrentRole == "Admin" || _userContext.CurrentRole == "SystemAdmin";
+            if (snapshot.BranchId != _userContext.CurrentBranchId || (snapshot.DepartmentCode != _userContext.DepartmentCode && !isAdmin))
             {
                 _logger.LogWarning("Access Denied for Assignment {AssignmentId}. Branch:{SnapshotBranch} vs {UserBranch}, Dept:{SnapshotDept} vs {UserDept}", 
                     assignmentId, snapshot.BranchId, _userContext.CurrentBranchId, snapshot.DepartmentCode, _userContext.DepartmentCode);
@@ -433,7 +457,8 @@ namespace SynOS.Services.Operational
                         assignmentId, assignment.BranchId, resource.BranchId);
                     return ProcessingResult.InvalidBranch;
                 }
-                if (assignment.DepartmentCode != resource.DepartmentCode) 
+                var isAdmin = _userContext.CurrentRole == "Admin" || _userContext.CurrentRole == "SystemAdmin";
+                if (assignment.DepartmentCode != resource.DepartmentCode && !isAdmin) 
                 {
                     _logger.LogWarning("RETURNING InvalidDepartment for assignment {AssignmentId}. SnapshotDept:{SnapshotDept} vs ResourceDept:{ResourceDept}", 
                         assignmentId, assignment.DepartmentCode, resource.DepartmentCode);
