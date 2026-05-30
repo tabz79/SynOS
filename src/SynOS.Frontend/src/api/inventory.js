@@ -73,8 +73,12 @@ export const InventoryApi = {
         return apiClient.post(`${API_BASE}/requests/${requestId}/ignore`);
     },
 
-    getStockLedger: async () => {
-        return apiClient.get(`${API_BASE}/stock`);
+    getStockLedger: async (branchId, isConsolidated) => {
+        const q = [];
+        if (branchId) q.push(`branchId=${branchId}`);
+        if (isConsolidated) q.push(`isConsolidated=true`);
+        const qs = q.length ? '?' + q.join('&') : '';
+        return apiClient.get(`${API_BASE}/stock${qs}`);
     },
 
     getItemLots: async (itemId, branchId) => {
@@ -97,8 +101,12 @@ export const InventoryApi = {
         return apiClient.get(`${API_BASE}/history`);
     },
 
-    getDashboardMetrics: async () => {
-        return apiClient.get(`${API_BASE}/dashboard`);
+    getDashboardMetrics: async (branchId, isConsolidated) => {
+        const q = [];
+        if (branchId) q.push(`branchId=${branchId}`);
+        if (isConsolidated) q.push(`isConsolidated=true`);
+        const qs = q.length ? '?' + q.join('&') : '';
+        return apiClient.get(`${API_BASE}/dashboard${qs}`);
     },
 
     // New Opening Stock Methods

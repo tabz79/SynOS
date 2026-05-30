@@ -14,7 +14,7 @@ namespace SynOS.Services.Referral
         Task<ReferralPartnerReadDto> GetReferralPartnerByIdAsync(Guid id);
         Task<ReferralPartnerReadDto> UpdateReferralPartnerAsync(Guid id, ReferralPartnerUpdateDto updateDto, Guid userId);
         Task DeleteReferralPartnerAsync(Guid id, Guid userId); // Soft delete with audit
-        Task<ReferralSummaryDto> GetReferralSummaryAsync();
+        Task<ReferralSummaryDto> GetReferralSummaryAsync(Guid? branchId = null);
 
         // Commission Rules
         Task<IEnumerable<ReferralCommissionRuleReadDto>> GetAllCommissionRulesAsync();

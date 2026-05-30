@@ -12,10 +12,12 @@ namespace SynOS.Api.Controllers
     public class EconomicsController : ControllerBase
     {
         private readonly IEconomicsIntelligenceService _economicsService;
+        private readonly SynOS.Services.Security.IUserContext _userContext;
 
-        public EconomicsController(IEconomicsIntelligenceService economicsService)
+        public EconomicsController(IEconomicsIntelligenceService economicsService, SynOS.Services.Security.IUserContext userContext)
         {
             _economicsService = economicsService;
+            _userContext = userContext;
         }
 
         [HttpGet("cost/{eventId}")]
@@ -36,12 +38,18 @@ namespace SynOS.Api.Controllers
         }
 
         [HttpGet("profitability")]
-        public async Task<IActionResult> GetProfitability([FromQuery] DateTime start, [FromQuery] DateTime end)
+        public async Task<IActionResult> GetProfitability([FromQuery] DateTime start, [FromQuery] DateTime end, [FromQuery] Guid? branchId, [FromQuery] bool isConsolidated = false)
         {
             if (start == default) start = DateTime.UtcNow.AddDays(-30);
             if (end == default) end = DateTime.UtcNow;
 
-            var result = await _economicsService.GetLabProfitabilitySummaryAsync(start, end);
+            Guid? effectiveBranchId = branchId ?? _userContext.CurrentBranchId;
+            if (isConsolidated && (_userContext.CurrentRole == "Admin" || _userContext.CurrentRole == "SystemAdmin"))
+            {
+                effectiveBranchId = null;
+            }
+
+            var result = await _economicsService.GetLabProfitabilitySummaryAsync(start, end, effectiveBranchId);
             return Ok(result);
         }
 

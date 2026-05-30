@@ -23,6 +23,8 @@ import { InventoryApi } from '@/api/inventory'
 import { OpeningStockOnboarding } from './OpeningStockOnboarding'
 import { ProcurementTerminal } from './ProcurementTerminal'
 import { ShoppingCart } from 'lucide-react'
+import { useAuth } from '@/context/AuthContext'
+import { AdminApi } from '@/api/admin'
 
 const QuickItemModal = ({ isOpen, onClose, onCreated }) => {
     const [formData, setFormData] = useState({
@@ -125,13 +127,16 @@ const QuickItemModal = ({ isOpen, onClose, onCreated }) => {
 };
 
 // Placeholder Tab Components
-const InventoryDashboard = () => {
+const InventoryDashboard = ({ isConsolidated, setIsConsolidated, selectedBranchId, setSelectedBranchId, branches, isAdmin }) => {
     const [metrics, setMetrics] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
 
     const load = async () => {
         try {
-            const data = await InventoryApi.getDashboardMetrics();
+            setIsLoading(true);
+            const bId = isConsolidated && isAdmin ? null : selectedBranchId;
+            const isCons = isConsolidated && isAdmin;
+            const data = await InventoryApi.getDashboardMetrics(bId, isCons);
             setMetrics(data);
         } catch (e) {
             console.error(e);
@@ -142,7 +147,7 @@ const InventoryDashboard = () => {
 
     useEffect(() => {
         load();
-    }, []);
+    }, [isConsolidated, selectedBranchId, isAdmin]);
 
     if (isLoading) return (
         <div className="flex-1 flex items-center justify-center">
@@ -155,7 +160,36 @@ const InventoryDashboard = () => {
             <div className="shrink-0">
                 <div className="flex items-center justify-between mb-4 px-2">
                     <h2 className="type-display !text-2xl">System Overview</h2>
-                    <button onClick={load} className="type-section-header text-synos-primary hover:underline cursor-pointer">Refresh Pulse</button>
+                    
+                    <div className="flex items-center gap-4">
+                        {isAdmin && (
+                            <div className="flex items-center gap-3 bg-zinc-100 dark:bg-zinc-900/50 p-1.5 rounded-2xl border border-black/5 dark:border-white/5 w-fit">
+                                <button
+                                    onClick={() => setIsConsolidated(true)}
+                                    className={cn(
+                                        "px-4 py-2 rounded-xl text-xs font-bold transition-all",
+                                        isConsolidated 
+                                            ? "bg-white dark:bg-zinc-800 text-synos-primary shadow-sm"
+                                            : "text-zinc-500 hover:text-zinc-900 dark:hover:text-white"
+                                    )}
+                                >
+                                    Consolidated View
+                                </button>
+                                <button
+                                    onClick={() => setIsConsolidated(false)}
+                                    className={cn(
+                                        "px-4 py-2 rounded-xl text-xs font-bold transition-all",
+                                        !isConsolidated 
+                                            ? "bg-white dark:bg-zinc-800 text-synos-primary shadow-sm"
+                                            : "text-zinc-500 hover:text-zinc-900 dark:hover:text-white"
+                                    )}
+                                >
+                                    Branch View
+                                </button>
+                            </div>
+                        )}
+                        <button onClick={load} className="type-section-header text-synos-primary hover:underline cursor-pointer">Refresh Pulse</button>
+                    </div>
                 </div>
                 <RealitySummary 
                     tiles={[
@@ -240,28 +274,31 @@ const InventoryDashboard = () => {
     );
 };
 
-const StockLedger = ({ onReceive }) => {
+const StockLedger = ({ onReceive, isConsolidated, setIsConsolidated, selectedBranchId, setSelectedBranchId, branches, isAdmin }) => {
     const [stock, setStock] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [search, setSearch] = useState("");
-    const [branchFilter, setBranchFilter] = useState("All");
     const [selectedItem, setSelectedItem] = useState(null);
     const [lots, setLots] = useState([]);
     const [isLotsLoading, setIsLotsLoading] = useState(false);
 
+    const load = async () => {
+        try {
+            setIsLoading(true);
+            const bId = isConsolidated && isAdmin ? null : selectedBranchId;
+            const isCons = isConsolidated && isAdmin;
+            const data = await InventoryApi.getStockLedger(bId, isCons);
+            setStock(data || []);
+        } catch (e) {
+            console.error("Failed to load stock", e);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     useEffect(() => {
-        const load = async () => {
-            try {
-                const data = await InventoryApi.getStockLedger();
-                setStock(data);
-            } catch (e) {
-                console.error("Failed to load stock", e);
-            } finally {
-                setIsLoading(false);
-            }
-        };
         load();
-    }, []);
+    }, [isConsolidated, selectedBranchId, isAdmin]);
 
     const loadLots = async (item) => {
         if (selectedItem?.itemId === item.itemId && selectedItem?.branchId === item.branchId) {
@@ -280,13 +317,9 @@ const StockLedger = ({ onReceive }) => {
         }
     };
 
-    const branches = ["All", ...new Set(stock.map(s => s.branchName))];
-
     const filteredStock = stock.filter(s => {
-        const matchesSearch = s.itemName.toLowerCase().includes(search.toLowerCase()) || 
-                             s.itemCode.toLowerCase().includes(search.toLowerCase());
-        const matchesBranch = branchFilter === "All" || s.branchName === branchFilter;
-        return matchesSearch && matchesBranch;
+        return s.itemName.toLowerCase().includes(search.toLowerCase()) || 
+               s.itemCode.toLowerCase().includes(search.toLowerCase());
     });
 
     return (
@@ -294,7 +327,33 @@ const StockLedger = ({ onReceive }) => {
             <div className="flex-1 flex flex-col min-h-0 p-6 overflow-hidden">
                 <div className="flex items-center justify-between mb-6 shrink-0">
                     <h2 className="text-xl font-bold dark:text-white">Stock Ledger</h2>
-                    <div className="flex gap-2">
+                    <div className="flex items-center gap-4">
+                        {isAdmin && (
+                            <div className="flex items-center gap-3 bg-zinc-100 dark:bg-zinc-900/50 p-1.5 rounded-2xl border border-black/5 dark:border-white/5 w-fit">
+                                <button
+                                    onClick={() => setIsConsolidated(true)}
+                                    className={cn(
+                                        "px-4 py-2 rounded-xl text-xs font-bold transition-all",
+                                        isConsolidated 
+                                            ? "bg-white dark:bg-zinc-800 text-synos-primary shadow-sm"
+                                            : "text-zinc-500 hover:text-zinc-900 dark:hover:text-white"
+                                    )}
+                                >
+                                    Consolidated View
+                                </button>
+                                <button
+                                    onClick={() => setIsConsolidated(false)}
+                                    className={cn(
+                                        "px-4 py-2 rounded-xl text-xs font-bold transition-all",
+                                        !isConsolidated 
+                                            ? "bg-white dark:bg-zinc-800 text-synos-primary shadow-sm"
+                                            : "text-zinc-500 hover:text-zinc-900 dark:hover:text-white"
+                                    )}
+                                >
+                                    Branch View
+                                </button>
+                            </div>
+                        )}
                         <input 
                             type="text" 
                             placeholder="Search items..." 
@@ -302,13 +361,6 @@ const StockLedger = ({ onReceive }) => {
                             onChange={(e) => setSearch(e.target.value)}
                             className="bg-zinc-100 dark:bg-zinc-800 border-none rounded-lg px-4 py-2 text-sm focus:ring-1 ring-synos-primary w-64 outline-none"
                         />
-                        <select 
-                            value={branchFilter}
-                            onChange={(e) => setBranchFilter(e.target.value)}
-                            className="bg-zinc-100 dark:bg-zinc-800 border-none rounded-lg px-4 py-2 text-sm focus:ring-1 ring-synos-primary outline-none"
-                        >
-                            {branches.map(b => <option key={b} value={b}>{b}</option>)}
-                        </select>
                     </div>
                 </div>
 
@@ -931,6 +983,27 @@ export function InventoryTerminal() {
     const [serverTime, setServerTime] = useState(new Date().toISOString());
     const [connectionStatus, setConnectionStatus] = useState("Not Synced");
 
+    // Strategy A Switcher State
+    const { user, activeOversightBranchId } = useAuth();
+    const isAdmin = user?.role === 'Admin' || user?.role === 'SystemAdmin';
+    const [isConsolidated, setIsConsolidated] = useState(true);
+    const [branches, setBranches] = useState([]);
+
+    useEffect(() => {
+        if (isAdmin) {
+            loadBranches();
+        }
+    }, [isAdmin]);
+
+    const loadBranches = async () => {
+        try {
+            const data = await AdminApi.getBranches();
+            setBranches(data || []);
+        } catch (e) {
+            console.error("Failed to load branches for Inventory", e);
+        }
+    };
+
     useEffect(() => {
         const connect = async () => {
             SignalRService.onReceiveServerTime((time) => setServerTime(time));
@@ -1025,8 +1098,25 @@ export function InventoryTerminal() {
                 {/* Main Content */}
                 <main className="flex-1 flex flex-col h-full overflow-hidden relative">
                     <div className="flex-1 overflow-y-auto p-8 relative z-10">
-                        {activeTab === 'dashboard' && <InventoryDashboard />}
-                        {activeTab === 'ledger' && <StockLedger onReceive={handleQuickReceive} />}
+                        {activeTab === 'dashboard' && (
+                            <InventoryDashboard 
+                                isConsolidated={isConsolidated} 
+                                setIsConsolidated={setIsConsolidated} 
+                                selectedBranchId={activeOversightBranchId || user?.branchId} 
+                                branches={branches} 
+                                isAdmin={isAdmin} 
+                            />
+                        )}
+                        {activeTab === 'ledger' && (
+                            <StockLedger 
+                                onReceive={handleQuickReceive} 
+                                isConsolidated={isConsolidated} 
+                                setIsConsolidated={setIsConsolidated} 
+                                selectedBranchId={activeOversightBranchId || user?.branchId} 
+                                branches={branches} 
+                                isAdmin={isAdmin} 
+                            />
+                        )}
                         {activeTab === 'receive' && <ReceiveStock prefilledItem={prefilledItem} />}
                         { activeTab === 'requests' && <RequestsQueue /> }
                         { activeTab === 'procurement' && <ProcurementTerminal /> }

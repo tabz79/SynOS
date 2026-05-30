@@ -19,7 +19,7 @@ namespace SynOS.Services.Dashboard
             _context = context;
         }
 
-        public async Task<ControlTowerSummaryDto> GetFullDashboardAsync(Guid branchId)
+        public async Task<ControlTowerSummaryDto> GetFullDashboardAsync(Guid? branchId)
         {
             var summary = new ControlTowerSummaryDto();
 
@@ -50,15 +50,20 @@ namespace SynOS.Services.Dashboard
             }
         }
 
-        private async Task<ControlTowerCardDto> GetReceptionCardAsync(Guid branchId)
+        private async Task<ControlTowerCardDto> GetReceptionCardAsync(Guid? branchId)
         {
             var today = DateTime.Today;
             var tomorrow = today.AddDays(1);
 
             var query = _context.Visits
                 .AsNoTracking()
-                .Where(v => v.BranchId == branchId && v.TokenDate >= today && v.TokenDate < tomorrow)
+                .Where(v => v.TokenDate >= today && v.TokenDate < tomorrow)
                 .Where(v => v.Status == VisitStatus.Draft || v.Status == VisitStatus.PendingPayment);
+
+            if (branchId.HasValue)
+            {
+                query = query.Where(v => v.BranchId == branchId.Value);
+            }
 
             var count = await query.CountAsync();
             var rawItems = await query
@@ -89,11 +94,16 @@ namespace SynOS.Services.Dashboard
             };
         }
 
-        private async Task<ControlTowerCardDto> GetPhlebotomyCardAsync(Guid branchId)
+        private async Task<ControlTowerCardDto> GetPhlebotomyCardAsync(Guid? branchId)
         {
             var query = _context.Specimens
                 .AsNoTracking()
-                .Where(s => s.Visit != null && s.Visit.BranchId == branchId && s.Status == SpecimenStatus.Pending);
+                .Where(s => s.Status == SpecimenStatus.Pending);
+
+            if (branchId.HasValue)
+            {
+                query = query.Where(s => s.Visit != null && s.Visit.BranchId == branchId.Value);
+            }
 
             var count = await query.CountAsync();
             var rawItems = await query
@@ -123,11 +133,16 @@ namespace SynOS.Services.Dashboard
             };
         }
 
-        private async Task<ControlTowerCardDto> GetWorkbenchCardAsync(Guid branchId)
+        private async Task<ControlTowerCardDto> GetWorkbenchCardAsync(Guid? branchId)
         {
             var query = _context.Results
                 .AsNoTracking()
-                .Where(r => r.Order != null && r.Order.Visit != null && r.Order.Visit.BranchId == branchId && r.Status == "Processing");
+                .Where(r => r.Status == "Processing");
+
+            if (branchId.HasValue)
+            {
+                query = query.Where(r => r.Order != null && r.Order.Visit != null && r.Order.Visit.BranchId == branchId.Value);
+            }
 
             var count = await query.CountAsync();
             var items = await query
@@ -152,11 +167,16 @@ namespace SynOS.Services.Dashboard
             };
         }
 
-        private async Task<ControlTowerCardDto> GetTypistCardAsync(Guid branchId)
+        private async Task<ControlTowerCardDto> GetTypistCardAsync(Guid? branchId)
         {
             var query = _context.Reports
                 .AsNoTracking()
-                .Where(r => r.Visit != null && r.Visit.BranchId == branchId && r.Status == "Draft");
+                .Where(r => r.Status == "Draft");
+
+            if (branchId.HasValue)
+            {
+                query = query.Where(r => r.Visit != null && r.Visit.BranchId == branchId.Value);
+            }
 
             var count = await query.CountAsync();
             var rawItems = await query
@@ -186,11 +206,16 @@ namespace SynOS.Services.Dashboard
             };
         }
 
-        private async Task<ControlTowerCardDto> GetPathologistCardAsync(Guid branchId)
+        private async Task<ControlTowerCardDto> GetPathologistCardAsync(Guid? branchId)
         {
             var query = _context.Reports
                 .AsNoTracking()
-                .Where(r => r.Visit != null && r.Visit.BranchId == branchId && r.Status == "ReadyForVerification");
+                .Where(r => r.Status == "ReadyForVerification");
+
+            if (branchId.HasValue)
+            {
+                query = query.Where(r => r.Visit != null && r.Visit.BranchId == branchId.Value);
+            }
 
             var count = await query.CountAsync();
             var rawItems = await query
@@ -220,12 +245,17 @@ namespace SynOS.Services.Dashboard
             };
         }
 
-        private async Task<ControlTowerCardDto> GetDeliveryCardAsync(Guid branchId)
+        private async Task<ControlTowerCardDto> GetDeliveryCardAsync(Guid? branchId)
         {
             var query = _context.Reports
                 .AsNoTracking()
-                .Where(r => r.Visit != null && r.Visit.BranchId == branchId && (r.Status == "Signed" || r.Status == "ManualVerified"))
+                .Where(r => (r.Status == "Signed" || r.Status == "ManualVerified"))
                 .Where(r => r.Delivered == false);
+
+            if (branchId.HasValue)
+            {
+                query = query.Where(r => r.Visit != null && r.Visit.BranchId == branchId.Value);
+            }
 
             var count = await query.CountAsync();
             var rawItems = await query
@@ -254,15 +284,22 @@ namespace SynOS.Services.Dashboard
             };
         }
 
-        private async Task<FinancialStripDto> GetFinancialsAsync(Guid branchId)
+        private async Task<FinancialStripDto> GetFinancialsAsync(Guid? branchId)
         {
             var today = DateTime.UtcNow.Date;
             var start = new DateTimeOffset(today, TimeSpan.Zero);
             var end = start.AddDays(1);
 
-            var payments = await _context.Payments
+            var paymentsQuery = _context.Payments
                 .AsNoTracking()
-                .Where(p => p.Invoice != null && p.Invoice.Visit != null && p.Invoice.Visit.BranchId == branchId && p.ReceivedAt >= start && p.ReceivedAt < end)
+                .Where(p => p.ReceivedAt >= start && p.ReceivedAt < end);
+
+            if (branchId.HasValue)
+            {
+                paymentsQuery = paymentsQuery.Where(p => p.Invoice != null && p.Invoice.Visit != null && p.Invoice.Visit.BranchId == branchId.Value);
+            }
+
+            var payments = await paymentsQuery
                 .Select(p => new { p.Amount, p.Method })
                 .ToListAsync();
 
@@ -270,10 +307,16 @@ namespace SynOS.Services.Dashboard
             var cashReceived = payments.Where(p => p.Method == "Cash").Sum(p => p.Amount);
             var onlineReceived = payments.Where(p => p.Method == "Online" || p.Method == "UPI").Sum(p => p.Amount);
 
-            var totalTests = await _context.Results
+            var testsQuery = _context.Results
                 .AsNoTracking()
-                .Where(r => r.Order != null && r.Order.Visit != null && r.Order.Visit.BranchId == branchId && r.EnteredAt >= start && r.EnteredAt < end)
-                .CountAsync();
+                .Where(r => r.EnteredAt >= start && r.EnteredAt < end);
+
+            if (branchId.HasValue)
+            {
+                testsQuery = testsQuery.Where(r => r.Order != null && r.Order.Visit != null && r.Order.Visit.BranchId == branchId.Value);
+            }
+
+            var totalTests = await testsQuery.CountAsync();
 
             decimal referralPayouts = 0; 
 

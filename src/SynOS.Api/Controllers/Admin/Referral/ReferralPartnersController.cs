@@ -125,9 +125,15 @@ namespace SynOS.Api.Controllers.Admin.Referral
         }
         [HttpGet("summary")]
         [Authorize(Roles = "Admin,Receptionist")]
-        public async Task<IActionResult> GetSummary()
+        public async Task<IActionResult> GetSummary([FromQuery] Guid? branchId, [FromQuery] bool isConsolidated = false)
         {
-            var summary = await _referralPartnerService.GetReferralSummaryAsync();
+            Guid? effectiveBranchId = branchId ?? _userContext.CurrentBranchId;
+            if (isConsolidated && (_userContext.CurrentRole == "Admin" || _userContext.CurrentRole == "SystemAdmin"))
+            {
+                effectiveBranchId = null;
+            }
+
+            var summary = await _referralPartnerService.GetReferralSummaryAsync(effectiveBranchId);
             return Ok(summary);
         }
 

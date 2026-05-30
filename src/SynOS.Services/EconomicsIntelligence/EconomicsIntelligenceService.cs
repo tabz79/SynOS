@@ -251,7 +251,7 @@ namespace SynOS.Services.EconomicsIntelligence
             };
         }
 
-        public async Task<LabProfitabilitySummaryDto> GetLabProfitabilitySummaryAsync(DateTime start, DateTime end)
+        public async Task<LabProfitabilitySummaryDto> GetLabProfitabilitySummaryAsync(DateTime start, DateTime end, Guid? branchId = null)
         {
             var summary = new LabProfitabilitySummaryDto
             {
@@ -260,8 +260,16 @@ namespace SynOS.Services.EconomicsIntelligence
             };
 
             // --- CASH BASIS (Movement Facts) ---
-            var revenueFacts = await _context.RevenueFacts
-                .AsNoTracking()
+            var revenueFactsQuery = _context.RevenueFacts.AsNoTracking();
+            if (branchId.HasValue)
+            {
+                revenueFactsQuery = from f in revenueFactsQuery
+                                    join v in _context.Visits on f.SourceReferenceId equals v.VisitId.ToString()
+                                    where v.BranchId == branchId.Value
+                                    select f;
+            }
+
+            var revenueFacts = await revenueFactsQuery
                 .Where(f => f.OccurredAt >= start && f.OccurredAt <= end && f.Direction == RevenueDirection.Inflow)
                 .ToListAsync();
 
@@ -271,44 +279,94 @@ namespace SynOS.Services.EconomicsIntelligence
             summary.CashCollected = revenueFacts.Where(f => f.PaymentMode == PaymentMode.Cash).Sum(f => f.Amount);
             summary.OnlineCollected = revenueFacts.Where(f => f.PaymentMode != PaymentMode.Cash).Sum(f => f.Amount);
 
-            summary.ConsumableCashOutflow = await _context.CostAttribution_UsageFacts
+            var consumableFactsQuery = _context.CostAttribution_UsageFacts.AsNoTracking();
+            if (branchId.HasValue)
+            {
+                consumableFactsQuery = consumableFactsQuery.Where(f => f.BranchId == branchId.Value);
+            }
+
+            summary.ConsumableCashOutflow = await consumableFactsQuery
                 .Where(f => f.OccurredAt >= start && f.OccurredAt <= end)
                 .SumAsync(f => f.TotalCost ?? 0);
 
-            summary.OutsourcedTestCashOutflow = await _context.SpendFacts
+            var spendFactsQuery = _context.SpendFacts.AsNoTracking();
+            if (branchId.HasValue)
+            {
+                spendFactsQuery = spendFactsQuery.Where(f => f.BranchId == branchId.Value);
+            }
+
+            summary.OutsourcedTestCashOutflow = await spendFactsQuery
                 .Where(f => f.OccurredAt >= start && f.OccurredAt <= end && f.Category == "OutsourcedTest")
                 .SumAsync(f => f.Amount);
 
-            summary.ReferralCashOutflow = await _context.SpendFacts
+            summary.ReferralCashOutflow = await spendFactsQuery
                 .Where(f => f.OccurredAt >= start && f.OccurredAt <= end && f.Category == "Referral")
                 .SumAsync(f => f.Amount);
 
-            summary.PayrollCashOutflow = await _context.SpendFacts
+            summary.PayrollCashOutflow = await spendFactsQuery
                 .Where(f => f.OccurredAt >= start && f.OccurredAt <= end && f.Category == "Payroll")
                 .SumAsync(f => f.Amount);
 
-            summary.OverheadCashOutflow = await _context.SpendFacts
+            summary.OverheadCashOutflow = await spendFactsQuery
                 .Where(f => f.OccurredAt >= start && f.OccurredAt <= end && f.Category == "Overhead")
                 .SumAsync(f => f.Amount);
 
             // --- ACCRUAL BASIS (Obligations) ---
-            summary.TotalRevenueAccrual = await _context.Invoices
+            var invoicesQuery = _context.Invoices.AsNoTracking();
+            if (branchId.HasValue)
+            {
+                invoicesQuery = invoicesQuery.Where(i => i.Visit != null && i.Visit.BranchId == branchId.Value);
+            }
+
+            summary.TotalRevenueAccrual = await invoicesQuery
                 .Where(i => i.CreatedAt >= start && i.CreatedAt <= end)
                 .SumAsync(i => i.Total);
 
-            var vendorAccrual = await _context.VendorPayables
+            var vendorPayablesQuery = _context.VendorPayables.AsNoTracking();
+            if (branchId.HasValue)
+            {
+                vendorPayablesQuery = from p in vendorPayablesQuery
+                                      join lot in _context.ImsInventoryLots on p.ReferenceId equals lot.LotId
+                                      where lot.BranchId == branchId.Value
+                                      select p;
+            }
+
+            var vendorAccrual = await vendorPayablesQuery
                 .Where(p => p.CreatedAt >= start && p.CreatedAt <= end)
                 .SumAsync(p => p.Amount);
 
-            var overheadAccrual = await _context.OverheadPayableFacts
+            // Overheads are global/non-branch specific. Set to 0 if remote branch is specified.
+            decimal overheadAccrual = 0;
+            if (!branchId.HasValue)
+            {
+                overheadAccrual = await _context.OverheadPayableFacts
+                    .Where(p => p.CreatedAt >= start && p.CreatedAt <= end)
+                    .SumAsync(p => p.AmountDue);
+            }
+
+            var refLabPayablesQuery = _context.ReferenceLabPayables.AsNoTracking();
+            if (branchId.HasValue)
+            {
+                refLabPayablesQuery = from p in refLabPayablesQuery
+                                      join v in _context.Visits on p.PatientId equals v.VisitId
+                                      where v.BranchId == branchId.Value
+                                      select p;
+            }
+
+            var outsourcedAccrual = await refLabPayablesQuery
                 .Where(p => p.CreatedAt >= start && p.CreatedAt <= end)
                 .SumAsync(p => p.AmountDue);
 
-            var outsourcedAccrual = await _context.ReferenceLabPayables
-                .Where(p => p.CreatedAt >= start && p.CreatedAt <= end)
-                .SumAsync(p => p.AmountDue);
+            var referralPayablesQuery = _context.ReferralPayableFacts.AsNoTracking();
+            if (branchId.HasValue)
+            {
+                referralPayablesQuery = from f in referralPayablesQuery
+                                        join v in _context.Visits on f.SourceVisitId equals v.VisitId
+                                        where v.BranchId == branchId.Value
+                                        select f;
+            }
 
-            var referralAccrual = await _context.ReferralPayableFacts
+            var referralAccrual = await referralPayablesQuery
                 .Where(f => f.RecordedAt >= start && f.RecordedAt <= end)
                 .SumAsync(f => f.Amount);
 

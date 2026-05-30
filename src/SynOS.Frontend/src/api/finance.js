@@ -20,9 +20,18 @@ export const FinanceApi = {
     /**
      * Fetches profitability summary from the Economics Intelligence Service.
      */
-    getProfitabilitySummary: async (start, end) => {
-        const url = `/api/v1/economics/profitability${start && end ? `?start=${start}&end=${end}` : ''}`;
-        const response = await fetch(FinanceApi.withBranchId(url), {
+    getProfitabilitySummary: async (start, end, branchId, isConsolidated) => {
+        const q = [];
+        if (start) q.push(`start=${start}`);
+        if (end) q.push(`end=${end}`);
+        if (branchId) q.push(`branchId=${branchId}`);
+        if (isConsolidated) q.push(`isConsolidated=true`);
+        const qs = q.length ? '?' + q.join('&') : '';
+        let url = `/api/v1/economics/profitability${qs}`;
+        if (!branchId && !isConsolidated) {
+            url = FinanceApi.withBranchId(url);
+        }
+        const response = await fetch(url, {
             headers: FinanceApi.getHeaders()
         });
         if (!response.ok) throw new Error("Failed to load profitability summary");
@@ -352,8 +361,16 @@ export const FinanceApi = {
         return response.json();
     },
 
-    getReferralSummary: async () => {
-        const response = await fetch(FinanceApi.withBranchId('/api/v1/admin/referral-partners/summary'), {
+    getReferralSummary: async (branchId, isConsolidated) => {
+        const q = [];
+        if (branchId) q.push(`branchId=${branchId}`);
+        if (isConsolidated) q.push(`isConsolidated=true`);
+        const qs = q.length ? '?' + q.join('&') : '';
+        let url = `/api/v1/admin/referral-partners/summary${qs}`;
+        if (!branchId && !isConsolidated) {
+            url = FinanceApi.withBranchId(url);
+        }
+        const response = await fetch(url, {
             headers: FinanceApi.getHeaders()
         });
         if (!response.ok) throw new Error("Failed to load referral summary");

@@ -20,11 +20,20 @@ import {
     ChevronRight
 } from 'lucide-react';
 import { FinanceApi } from '@/api/finance';
+import { useAuth } from '@/context/AuthContext';
+import { AdminApi } from '@/api/admin';
+import { cn } from '@/lib/utils';
 
 export const FinanceOverview = () => {
     const navigate = useNavigate();
     const [loading, setLoading] = useState(true);
+    const { user, activeOversightBranchId } = useAuth();
+    const isAdmin = user?.role === 'Admin' || user?.role === 'SystemAdmin';
     
+    // Strategy A Switcher State
+    const [isConsolidated, setIsConsolidated] = useState(true);
+    const [branches, setBranches] = useState([]);
+
     // Live aggregated states
     const [profitability, setProfitability] = useState(null);
     const [vendors, setVendors] = useState([]);
@@ -38,8 +47,23 @@ export const FinanceOverview = () => {
     const [payrollRuns, setPayrollRuns] = useState([]);
 
     useEffect(() => {
+        if (isAdmin) {
+            loadBranches();
+        }
+    }, [isAdmin]);
+
+    const loadBranches = async () => {
+        try {
+            const data = await AdminApi.getBranches();
+            setBranches(data || []);
+        } catch (e) {
+            console.error("Failed to load branches for Finance Overview", e);
+        }
+    };
+
+    useEffect(() => {
         loadDashboardData();
-    }, []);
+    }, [isConsolidated, activeOversightBranchId]);
 
     const loadDashboardData = async () => {
         try {
@@ -47,6 +71,9 @@ export const FinanceOverview = () => {
             const start = new Date();
             start.setDate(start.getDate() - 30);
             
+            const bId = isConsolidated && isAdmin ? null : (activeOversightBranchId || user?.branchId);
+            const isCons = isConsolidated && isAdmin;
+
             const [
                 profitRes,
                 vendorsRes,
@@ -59,12 +86,12 @@ export const FinanceOverview = () => {
                 staffRes,
                 runsRes
             ] = await Promise.allSettled([
-                FinanceApi.getProfitabilitySummary(start.toISOString(), new Date().toISOString()),
+                FinanceApi.getProfitabilitySummary(start.toISOString(), new Date().toISOString(), bId, isCons),
                 FinanceApi.getVendors(),
                 FinanceApi.getVendorPayables(),
                 FinanceApi.getOverheadExpenses(),
                 FinanceApi.getReceivables(),
-                FinanceApi.getReferralSummary(),
+                FinanceApi.getReferralSummary(bId, isCons),
                 FinanceApi.getOutsourcedPayables(),
                 FinanceApi.getReferenceLabs(),
                 FinanceApi.WorkforceApi.getStaff(),
@@ -123,10 +150,39 @@ export const FinanceOverview = () => {
 
     return (
         <div className="p-8 max-w-7xl mx-auto space-y-8 animate-in fade-in duration-500">
-            {/* MINIMALIST HEADER */}
-            <div>
-                <h1 className="text-2xl font-black dark:text-white text-zinc-900 tracking-tight">Finance Hub</h1>
-                <p className="text-xs text-zinc-500 font-medium mt-1">A simple, real-time overview of laboratory revenue, expenses, and workforce liabilities.</p>
+            {/* HEADER WITH SWITCHER */}
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div>
+                    <h1 className="text-2xl font-black dark:text-white text-zinc-900 tracking-tight">Finance Hub</h1>
+                    <p className="text-xs text-zinc-500 font-medium mt-1">A simple, real-time overview of laboratory revenue, expenses, and workforce liabilities.</p>
+                </div>
+
+                {isAdmin && (
+                    <div className="flex items-center gap-3 bg-zinc-100 dark:bg-zinc-900/50 p-1.5 rounded-2xl border border-black/5 dark:border-white/5 w-fit">
+                        <button
+                            onClick={() => setIsConsolidated(true)}
+                            className={cn(
+                                "px-4 py-2 rounded-xl text-xs font-bold transition-all",
+                                isConsolidated 
+                                    ? "bg-white dark:bg-zinc-800 text-synos-primary shadow-sm"
+                                    : "text-zinc-500 hover:text-zinc-900 dark:hover:text-white"
+                            )}
+                        >
+                            Consolidated View
+                        </button>
+                        <button
+                            onClick={() => setIsConsolidated(false)}
+                            className={cn(
+                                "px-4 py-2 rounded-xl text-xs font-bold transition-all",
+                                !isConsolidated 
+                                    ? "bg-white dark:bg-zinc-800 text-synos-primary shadow-sm"
+                                    : "text-zinc-500 hover:text-zinc-900 dark:hover:text-white"
+                            )}
+                        >
+                            Branch View
+                        </button>
+                    </div>
+                )}
             </div>
 
             {/* KEY METRICS GRID */}

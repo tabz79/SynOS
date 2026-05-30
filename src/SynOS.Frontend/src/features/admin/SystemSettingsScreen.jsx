@@ -49,7 +49,8 @@ import {
   Edit2, 
   AlertCircle,
   Eye,
-  Globe
+  Globe,
+  Printer
 } from 'lucide-react';
 
 export function SystemSettingsScreen() {
@@ -98,6 +99,209 @@ export function SystemSettingsScreen() {
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [selectedLogPayload, setSelectedLogPayload] = useState(null);
+
+  // Printing & Hardware State
+  const [printers, setPrinters] = useState([]);
+  const [terminals, setTerminals] = useState([]);
+  const [editingPrinter, setEditingPrinter] = useState(null);
+  const [showPrinterForm, setShowPrinterForm] = useState(false);
+  const [editingTerminal, setEditingTerminal] = useState(null);
+  const [showTerminalForm, setShowTerminalForm] = useState(false);
+  const [thermalSettings, setThermalSettings] = useState({
+    paperWidth: '80mm',
+    textSize: 'standard',
+    fontFamily: 'sans-serif',
+    showHeader: true,
+    showAgeGender: true,
+    showVisitId: true,
+    showTokenBox: true,
+    showDoctorName: true,
+    showItemDiscounts: true,
+    showUpiQr: false,
+    upiId: '',
+    headerSubtext: '',
+    footerDisclaimer: '* Clinical correlation required'
+  });
+  const [isOverrideActive, setIsOverrideActive] = useState(false);
+
+  const loadPrintingData = async () => {
+    setLoading(true);
+    try {
+      const [printersRes, terminalsRes, branchesRes, globalSettings] = await Promise.all([
+        AdminApi.getBranchPrinters(),
+        AdminApi.getTerminalPrinterConfigs(),
+        AdminApi.getBranches(),
+        AdminApi.getGlobalThermalSettings()
+      ]);
+      setPrinters(printersRes || []);
+      setTerminals(terminalsRes || []);
+      setBranches(branchesRes || []);
+
+      const local = localStorage.getItem('synos_thermal_layout_settings');
+      if (local) {
+        try {
+          const parsed = JSON.parse(local);
+          setThermalSettings(parsed);
+          setIsOverrideActive(true);
+        } catch {
+          setThermalSettings(globalSettings || {});
+          setIsOverrideActive(false);
+        }
+      } else {
+        setThermalSettings(globalSettings || {});
+        setIsOverrideActive(false);
+      }
+    } catch (err) {
+      setSaveError(err.message || 'Failed to load printing hardware configurations.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSavePrinter = async (e) => {
+    e.preventDefault();
+    if (!editingPrinter.printerName?.trim()) {
+      return setSaveError('Printer Name cannot be empty.');
+    }
+    if (!editingPrinter.branchId) {
+      return setSaveError('Please select a branch.');
+    }
+
+    setLoading(true);
+    setSaveError(null);
+    setSaveSuccess(null);
+
+    try {
+      if (editingPrinter.printerId) {
+        await AdminApi.updateBranchPrinter(editingPrinter.printerId, {
+          printerName: editingPrinter.printerName.trim(),
+          printerType: editingPrinter.printerType || 'Thermal80mm',
+          isActive: editingPrinter.isActive,
+          branchId: editingPrinter.branchId
+        });
+        setSaveSuccess('Printer details updated successfully.');
+      } else {
+        await AdminApi.createBranchPrinter({
+          printerName: editingPrinter.printerName.trim(),
+          printerType: editingPrinter.printerType || 'Thermal80mm',
+          isActive: editingPrinter.isActive ?? true,
+          branchId: editingPrinter.branchId
+        });
+        setSaveSuccess('New branch printer registered successfully.');
+      }
+      setShowPrinterForm(false);
+      setEditingPrinter(null);
+      await loadPrintingData();
+    } catch (err) {
+      setSaveError(err.message || 'Failed to save printer.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeletePrinter = async (printerId) => {
+    if (!window.confirm('Are you sure you want to delete this branch printer?')) return;
+
+    setLoading(true);
+    setSaveError(null);
+    setSaveSuccess(null);
+
+    try {
+      await AdminApi.deleteBranchPrinter(printerId);
+      setSaveSuccess('Printer deleted successfully.');
+      await loadPrintingData();
+    } catch (err) {
+      setSaveError(err.message || 'Failed to delete printer.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSaveTerminalConfig = async (e) => {
+    e.preventDefault();
+    if (!editingTerminal.terminalIdentifier?.trim()) {
+      return setSaveError('Terminal Identifier cannot be empty.');
+    }
+    if (!editingTerminal.branchId) {
+      return setSaveError('Please select a branch.');
+    }
+
+    setLoading(true);
+    setSaveError(null);
+    setSaveSuccess(null);
+
+    try {
+      const payload = {
+        terminalIdentifier: editingTerminal.terminalIdentifier.trim(),
+        branchId: editingTerminal.branchId,
+        isLeadPrintTerminal: editingTerminal.isLeadPrintTerminal ?? false,
+        specificReceiptPrinterId: editingTerminal.specificReceiptPrinterId || null
+      };
+
+      const isExisting = terminals.some(t => t.terminalIdentifier === editingTerminal.terminalIdentifier);
+
+      if (isExisting) {
+        await AdminApi.updateTerminalPrinterConfig(editingTerminal.terminalIdentifier, payload);
+        setSaveSuccess('Terminal printer configuration updated successfully.');
+      } else {
+        await AdminApi.createTerminalPrinterConfig(payload);
+        setSaveSuccess('Terminal printer configuration registered successfully.');
+      }
+      setShowTerminalForm(false);
+      setEditingTerminal(null);
+      await loadPrintingData();
+    } catch (err) {
+      setSaveError(err.message || 'Failed to save terminal configuration.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteTerminalConfig = async (terminalIdentifier) => {
+    if (!window.confirm('Are you sure you want to remove this terminal authorization?')) return;
+
+    setLoading(true);
+    setSaveError(null);
+    setSaveSuccess(null);
+
+    try {
+      await AdminApi.deleteTerminalPrinterConfig(terminalIdentifier);
+      setSaveSuccess('Terminal authorization removed successfully.');
+      await loadPrintingData();
+    } catch (err) {
+      setSaveError(err.message || 'Failed to delete terminal configuration.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSaveGlobalThermalSettings = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setSaveError(null);
+    setSaveSuccess(null);
+    try {
+      await AdminApi.saveGlobalThermalSettings(thermalSettings);
+      setSaveSuccess('Global thermal layout settings successfully updated and saved on server.');
+    } catch (err) {
+      setSaveError(err.message || 'Failed to save global settings.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSaveLocalOverride = () => {
+    localStorage.setItem('synos_thermal_layout_settings', JSON.stringify(thermalSettings));
+    setIsOverrideActive(true);
+    setSaveSuccess('Workstation-specific print layout override applied locally.');
+  };
+
+  const handleClearLocalOverride = async () => {
+    localStorage.removeItem('synos_thermal_layout_settings');
+    setIsOverrideActive(false);
+    setSaveSuccess('Workstation-specific override cleared. Reverted to global server fallback.');
+    await loadPrintingData();
+  };
 
   // Load Settings Tab
   const loadSettings = async () => {
@@ -215,13 +419,19 @@ export function SystemSettingsScreen() {
         await AdminApi.updateBranch(editingBranch.branchId, {
           code: editingBranch.code.trim(),
           name: editingBranch.name.trim(),
-          isActive: editingBranch.isActive
+          isActive: editingBranch.isActive,
+          address: editingBranch.address?.trim() || null,
+          phone: editingBranch.phone?.trim() || null,
+          email: editingBranch.email?.trim() || null
         });
         setSaveSuccess('Branch details updated successfully.');
       } else {
         await AdminApi.createBranch({
           code: editingBranch.code.trim(),
-          name: editingBranch.name.trim()
+          name: editingBranch.name.trim(),
+          address: editingBranch.address?.trim() || null,
+          phone: editingBranch.phone?.trim() || null,
+          email: editingBranch.email?.trim() || null
         });
         setSaveSuccess('New branch registered successfully.');
       }
@@ -261,6 +471,7 @@ export function SystemSettingsScreen() {
     if (activeTab === 'departments') loadDepartmentPolicies();
     if (activeTab === 'pricing') loadPricingData();
     if (activeTab === 'branches') loadBranches();
+    if (activeTab === 'printing') loadPrintingData();
     if (activeTab === 'audit') loadAuditLogs();
   }, [activeTab, auditOffset]);
 
@@ -438,6 +649,7 @@ export function SystemSettingsScreen() {
           { id: 'departments', label: 'Department Hours', icon: Clock },
           { id: 'pricing', label: 'Pricing & Discounts', icon: Tag },
           { id: 'branches', label: 'Branches', icon: Globe },
+          { id: 'printing', label: 'Printing Setup', icon: Printer },
           { id: 'audit', label: 'Audit Logs', icon: History }
         ].map(tab => (
           <button
@@ -1669,7 +1881,10 @@ export function SystemSettingsScreen() {
                   setEditingBranch({
                     code: '',
                     name: '',
-                    isActive: true
+                    isActive: true,
+                    address: '',
+                    phone: '',
+                    email: ''
                   });
                   setShowBranchForm(true);
                 }}
@@ -1764,6 +1979,38 @@ export function SystemSettingsScreen() {
                         placeholder="e.g. North Laboratory Branch"
                       />
                     </div>
+                    <div>
+                      <label className="block text-xxs font-semibold text-zinc-400 dark:text-zinc-500 mb-1">Physical Address</label>
+                      <textarea
+                        rows={2}
+                        value={editingBranch.address || ''}
+                        onChange={e => setEditingBranch({ ...editingBranch, address: e.target.value })}
+                        className="w-full px-3 py-2 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs outline-none focus:border-synos-primary transition-colors text-zinc-700 dark:text-zinc-300 resize-none"
+                        placeholder="e.g. 123 Health Street, North Zone"
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-xxs font-semibold text-zinc-400 dark:text-zinc-500 mb-1">Contact Phone</label>
+                        <input
+                          type="text"
+                          value={editingBranch.phone || ''}
+                          onChange={e => setEditingBranch({ ...editingBranch, phone: e.target.value })}
+                          className="w-full px-3 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs outline-none focus:border-synos-primary transition-colors text-zinc-700 dark:text-zinc-300"
+                          placeholder="e.g. +91 98765 43210"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xxs font-semibold text-zinc-400 dark:text-zinc-500 mb-1">Contact Email</label>
+                        <input
+                          type="email"
+                          value={editingBranch.email || ''}
+                          onChange={e => setEditingBranch({ ...editingBranch, email: e.target.value })}
+                          className="w-full px-3 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs outline-none focus:border-synos-primary transition-colors text-zinc-700 dark:text-zinc-300"
+                          placeholder="e.g. branch@apex.com"
+                        />
+                      </div>
+                    </div>
                     {editingBranch.branchId && editingBranch.code !== 'MAIN' && (
                       <div className="flex items-center space-x-2 pt-2">
                         <input
@@ -1794,6 +2041,602 @@ export function SystemSettingsScreen() {
                         className="px-5 py-2 bg-synos-primary hover:bg-synos-primary/95 text-white text-xxs uppercase tracking-wider rounded-xl font-bold shadow active:scale-95 transition-all"
                       >
                         Save Branch
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* PRINTING SETUP TAB */}
+        {activeTab === 'printing' && !loading && (
+          <div className="animate-fadeIn space-y-8 text-xs">
+            {/* Helper Info Box displaying current workstation Terminal ID */}
+            <div className="p-6 rounded-2xl bg-synos-primary/10 border border-synos-primary/20 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+              <div>
+                <h4 className="font-bold text-sm text-synos-primary uppercase tracking-wider">Your Workstation Terminal</h4>
+                <p className="text-zinc-500 text-xs font-semibold mt-1">
+                  Active Web Terminal ID: <strong className="font-mono text-zinc-800 dark:text-zinc-200 bg-zinc-150 dark:bg-zinc-900 px-2 py-0.5 rounded border dark:border-white/5">{localStorage.getItem('synos_terminal_id') || 'Not Generated'}</strong>
+                </p>
+              </div>
+              <button
+                onClick={() => {
+                  const currentId = localStorage.getItem('synos_terminal_id') || `web-${Math.random().toString(36).substr(2, 9)}`;
+                  if (!localStorage.getItem('synos_terminal_id')) {
+                    localStorage.setItem('synos_terminal_id', currentId);
+                  }
+                  setEditingTerminal({
+                    terminalIdentifier: currentId,
+                    branchId: branches[0]?.branchId || '',
+                    isLeadPrintTerminal: true,
+                    specificReceiptPrinterId: ''
+                  });
+                  setShowTerminalForm(true);
+                }}
+                className="px-4 py-2 bg-synos-primary hover:bg-synos-primary/95 text-white font-bold text-xxs uppercase tracking-wider rounded-xl shadow active:scale-95 transition-all shrink-0"
+              >
+                Authorize This Workstation
+              </button>
+            </div>
+
+            {/* Section 1: Branch Printers */}
+            <div className="space-y-4">
+              <div className="flex justify-between items-center">
+                <div>
+                  <h3 className="text-sm font-bold text-synos-primary uppercase tracking-widest">1. Branch Printers Registry</h3>
+                  <p className="text-zinc-500 text-xs font-semibold">Expose physical thermal or barcode printer hardware available in your branch nodes.</p>
+                </div>
+                <button
+                  onClick={() => {
+                    setEditingPrinter({
+                      printerName: '',
+                      printerType: 'Thermal80mm',
+                      isActive: true,
+                      branchId: branches[0]?.branchId || ''
+                    });
+                    setShowPrinterForm(true);
+                  }}
+                  className="px-4 py-2 bg-synos-primary hover:bg-synos-primary/95 text-white font-bold text-xxs uppercase tracking-wider rounded-xl shadow active:scale-95 transition-all"
+                >
+                  + Register Printer
+                </button>
+              </div>
+
+              <div className="overflow-x-auto border dark:border-zinc-850 border-zinc-200/10 rounded-xl bg-zinc-50/10 dark:bg-zinc-950/20">
+                <table className="min-w-full text-left border-collapse">
+                  <thead>
+                    <tr className="bg-zinc-50/60 dark:bg-zinc-950/60 border-b dark:border-zinc-800 border-zinc-200">
+                      <th className="p-4 text-xxs font-bold uppercase tracking-wider text-zinc-400">Printer Name (OS Config)</th>
+                      <th className="p-4 text-xxs font-bold uppercase tracking-wider text-zinc-400">Branch</th>
+                      <th className="p-4 text-xxs font-bold uppercase tracking-wider text-zinc-400">Printer Type / Standard</th>
+                      <th className="p-4 text-xxs font-bold uppercase tracking-wider text-zinc-400">Status</th>
+                      <th className="p-4 text-xxs font-bold uppercase tracking-wider text-right text-zinc-400">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y dark:divide-zinc-800 divide-zinc-200">
+                    {printers.map(printer => (
+                      <tr key={printer.printerId} className="hover:bg-zinc-50/50 dark:hover:bg-zinc-900/30 transition-colors">
+                        <td className="p-4 font-bold text-zinc-800 dark:text-zinc-200">{printer.printerName}</td>
+                        <td className="p-4 text-zinc-500 font-semibold">{printer.branch?.name || 'Unknown Branch'}</td>
+                        <td className="p-4 font-mono font-bold text-synos-primary">{printer.printerType || 'Thermal80mm'}</td>
+                        <td className="p-4">
+                          <span className={`inline-flex items-center gap-1 text-[10px] font-bold uppercase ${printer.isActive ? 'text-emerald-500' : 'text-zinc-500'}`}>
+                            <span className={`w-1.5 h-1.5 rounded-full ${printer.isActive ? 'bg-emerald-500' : 'bg-zinc-550'}`} />
+                            {printer.isActive ? 'Active' : 'Inactive'}
+                          </span>
+                        </td>
+                        <td className="p-4 text-right">
+                          <div className="flex justify-end space-x-2">
+                            <button
+                              onClick={() => {
+                                setEditingPrinter(printer);
+                                setShowPrinterForm(true);
+                              }}
+                              className="p-1.5 bg-synos-primary/10 text-synos-primary hover:bg-synos-primary/25 border border-synos-primary/20 rounded-lg transition-colors"
+                              title="Edit"
+                            >
+                              <Edit2 className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              onClick={() => handleDeletePrinter(printer.printerId)}
+                              className="p-1.5 bg-red-500/10 text-red-400 hover:bg-red-500/25 border border-red-500/20 rounded-lg transition-colors"
+                              title="Delete"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                    {printers.length === 0 && (
+                      <tr>
+                        <td colSpan={5} className="p-8 text-center text-zinc-500 font-semibold uppercase tracking-wider">
+                          No branch printers registered yet.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Section 2: Terminal Configurations */}
+            <div className="space-y-4 pt-6 border-t dark:border-zinc-900 border-zinc-200">
+              <div className="flex justify-between items-center">
+                <div>
+                  <h3 className="text-sm font-bold text-synos-primary uppercase tracking-widest">2. Workstation Terminals Authorization</h3>
+                  <p className="text-zinc-500 text-xs font-semibold">Authorize workstation endpoints, toggle Lead Print capability, and map dedicated receipt hardware.</p>
+                </div>
+                <button
+                  onClick={() => {
+                    setEditingTerminal({
+                      terminalIdentifier: '',
+                      branchId: branches[0]?.branchId || '',
+                      isLeadPrintTerminal: false,
+                      specificReceiptPrinterId: ''
+                    });
+                    setShowTerminalForm(true);
+                  }}
+                  className="px-4 py-2 bg-synos-primary hover:bg-synos-primary/95 text-white font-bold text-xxs uppercase tracking-wider rounded-xl shadow active:scale-95 transition-all"
+                >
+                  + Authorize Terminal
+                </button>
+              </div>
+
+              <div className="overflow-x-auto border dark:border-zinc-850 border-zinc-200/10 rounded-xl bg-zinc-50/10 dark:bg-zinc-950/20">
+                <table className="min-w-full text-left border-collapse">
+                  <thead>
+                    <tr className="bg-zinc-50/60 dark:bg-zinc-950/60 border-b dark:border-zinc-800 border-zinc-200">
+                      <th className="p-4 text-xxs font-bold uppercase tracking-wider text-zinc-400">Terminal Identifier (Machine cookie/footprint)</th>
+                      <th className="p-4 text-xxs font-bold uppercase tracking-wider text-zinc-400">Branch Assignment</th>
+                      <th className="p-4 text-xxs font-bold uppercase tracking-wider text-zinc-400">Printer Routing</th>
+                      <th className="p-4 text-xxs font-bold uppercase tracking-wider text-zinc-400">Lead Print Terminal</th>
+                      <th className="p-4 text-xxs font-bold uppercase tracking-wider text-right text-zinc-400">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y dark:divide-zinc-800 divide-zinc-200">
+                    {terminals.map(config => {
+                      const isCurrent = config.terminalIdentifier === localStorage.getItem('synos_terminal_id');
+                      return (
+                        <tr key={config.terminalIdentifier} className={`hover:bg-zinc-50/50 dark:hover:bg-zinc-900/30 transition-colors ${isCurrent ? 'bg-synos-primary/[0.03]' : ''}`}>
+                          <td className="p-4 font-mono font-bold text-zinc-850 dark:text-zinc-200">
+                            {config.terminalIdentifier}
+                            {isCurrent && (
+                              <span className="ml-2 bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 text-[9px] font-sans font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
+                                Current Node
+                              </span>
+                            )}
+                          </td>
+                          <td className="p-4 text-zinc-550 font-semibold">{config.branch?.name || 'Unknown Branch'}</td>
+                          <td className="p-4 font-semibold text-zinc-700 dark:text-zinc-300">
+                            {config.specificReceiptPrinter?.printerName ? (
+                              <span className="flex items-center gap-1.5">
+                                <Printer className="w-3.5 h-3.5 text-synos-primary" />
+                                {config.specificReceiptPrinter.printerName}
+                              </span>
+                            ) : (
+                              <span className="text-zinc-400 italic">OS Default / None Assigned</span>
+                            )}
+                          </td>
+                          <td className="p-4">
+                            <span className={`inline-flex items-center gap-1 text-[10px] font-bold uppercase ${config.isLeadPrintTerminal ? 'text-synos-primary' : 'text-zinc-500'}`}>
+                              <span className={`w-1.5 h-1.5 rounded-full ${config.isLeadPrintTerminal ? 'bg-synos-primary' : 'bg-zinc-550'}`} />
+                              {config.isLeadPrintTerminal ? 'AUTHORIZED LEAD' : 'Standard Web'}
+                            </span>
+                          </td>
+                          <td className="p-4 text-right">
+                            <div className="flex justify-end space-x-2">
+                              <button
+                                onClick={() => {
+                                  setEditingTerminal(config);
+                                  setShowTerminalForm(true);
+                                }}
+                                className="p-1.5 bg-synos-primary/10 text-synos-primary hover:bg-synos-primary/25 border border-synos-primary/20 rounded-lg transition-colors"
+                                title="Edit"
+                              >
+                                <Edit2 className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                onClick={() => handleDeleteTerminalConfig(config.terminalIdentifier)}
+                                className="p-1.5 bg-red-500/10 text-red-400 hover:bg-red-500/25 border border-red-500/20 rounded-lg transition-colors"
+                                title="Delete"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                    {terminals.length === 0 && (
+                      <tr>
+                        <td colSpan={5} className="p-8 text-center text-zinc-500 font-semibold uppercase tracking-wider">
+                          No workstation terminals authorized yet.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Section 3: Thermal Receipt Layout Customizer */}
+            <div className="space-y-6 pt-6 border-t dark:border-zinc-900 border-zinc-200">
+              <div className="flex justify-between items-center">
+                <div>
+                  <h3 className="text-sm font-bold text-synos-primary uppercase tracking-widest">3. Thermal Receipt Layout Customizer</h3>
+                  <p className="text-zinc-500 text-xs font-semibold">Customize thermal receipt dimensions, spacing, typography, and transaction UPI QR codes.</p>
+                </div>
+                {isOverrideActive && (
+                  <button
+                    onClick={handleClearLocalOverride}
+                    className="px-4 py-2 border border-red-500/20 bg-red-500/10 hover:bg-red-500/20 text-red-550 font-bold text-xxs uppercase tracking-wider rounded-xl transition-all"
+                  >
+                    Clear Workstation Override
+                  </button>
+                )}
+              </div>
+
+              <form onSubmit={handleSaveGlobalThermalSettings} className="space-y-6 bg-zinc-50/5 dark:bg-zinc-950/20 p-6 rounded-2xl border dark:border-zinc-900 border-zinc-100/10">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {/* Paper Dimensions & Font Setup */}
+                  <div>
+                    <h4 className="font-bold text-xs text-zinc-700 dark:text-zinc-300 mb-3 border-b dark:border-zinc-850 pb-1.5 uppercase tracking-wider">Dimensions & Font</h4>
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-xxs font-bold text-zinc-400 mb-1.5 uppercase tracking-wide">Paper Width Size</label>
+                        <select
+                          value={thermalSettings.paperWidth || '80mm'}
+                          onChange={e => setThermalSettings({ ...thermalSettings, paperWidth: e.target.value })}
+                          className="w-full px-3 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs outline-none focus:border-synos-primary transition-colors text-zinc-700 dark:text-zinc-300 shadow-sm"
+                        >
+                          <option value="80mm">Standard Thermal roll (80mm width / 3-inch)</option>
+                          <option value="58mm">Compact Thermal roll (58mm width / 2-inch)</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-xxs font-bold text-zinc-400 mb-1.5 uppercase tracking-wide">Typography & Font Family</label>
+                        <select
+                          value={thermalSettings.fontFamily || 'sans-serif'}
+                          onChange={e => setThermalSettings({ ...thermalSettings, fontFamily: e.target.value })}
+                          className="w-full px-3 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-855 rounded-xl text-xs outline-none focus:border-synos-primary transition-colors text-zinc-700 dark:text-zinc-300 shadow-sm"
+                        >
+                          <option value="sans-serif">Standard sans-serif (Clean & Modern)</option>
+                          <option value="mono">Monospace typewriter (Fixed Width Alignment)</option>
+                          <option value="outfit">Elegant Outfit Sans (Premium Look)</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-xxs font-bold text-zinc-400 mb-1.5 uppercase tracking-wide">Text Size & Line Spacing</label>
+                        <select
+                          value={thermalSettings.textSize || 'standard'}
+                          onChange={e => setThermalSettings({ ...thermalSettings, textSize: e.target.value })}
+                          className="w-full px-3 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-855 rounded-xl text-xs outline-none focus:border-synos-primary transition-colors text-zinc-700 dark:text-zinc-300 shadow-sm"
+                        >
+                          <option value="standard">Standard Size (Comfortable legibility)</option>
+                          <option value="compact">Compact / Ultra-Save (Saves paper roll, tight padding)</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Content Toggles */}
+                  <div>
+                    <h4 className="font-bold text-xs text-zinc-700 dark:text-zinc-300 mb-3 border-b dark:border-zinc-855 pb-1.5 uppercase tracking-wider">Content Toggles</h4>
+                    <div className="space-y-3 pt-1">
+                      <label className="flex items-center space-x-3 cursor-pointer select-none">
+                        <input
+                          type="checkbox"
+                          checked={thermalSettings.showHeader ?? true}
+                          onChange={e => setThermalSettings({ ...thermalSettings, showHeader: e.target.checked })}
+                          className="form-checkbox h-4.5 w-4.5 text-synos-primary rounded bg-white dark:bg-zinc-950 border-zinc-300 dark:border-zinc-800 focus:ring-0 cursor-pointer"
+                        />
+                        <span className="font-semibold text-zinc-350">Show Branding Header / Title</span>
+                      </label>
+
+                      <label className="flex items-center space-x-3 cursor-pointer select-none">
+                        <input
+                          type="checkbox"
+                          checked={thermalSettings.showAgeGender ?? true}
+                          onChange={e => setThermalSettings({ ...thermalSettings, showAgeGender: e.target.checked })}
+                          className="form-checkbox h-4.5 w-4.5 text-synos-primary rounded bg-white dark:bg-zinc-950 border-zinc-300 dark:border-zinc-800 focus:ring-0 cursor-pointer"
+                        />
+                        <span className="font-semibold text-zinc-350">Show Patient Sex & Age</span>
+                      </label>
+
+                      <label className="flex items-center space-x-3 cursor-pointer select-none">
+                        <input
+                          type="checkbox"
+                          checked={thermalSettings.showVisitId ?? true}
+                          onChange={e => setThermalSettings({ ...thermalSettings, showVisitId: e.target.checked })}
+                          className="form-checkbox h-4.5 w-4.5 text-synos-primary rounded bg-white dark:bg-zinc-950 border-zinc-300 dark:border-zinc-800 focus:ring-0 cursor-pointer"
+                        />
+                        <span className="font-semibold text-zinc-350">Show Visit ID / Accession Code</span>
+                      </label>
+
+                      <label className="flex items-center space-x-3 cursor-pointer select-none">
+                        <input
+                          type="checkbox"
+                          checked={thermalSettings.showTokenBox ?? true}
+                          onChange={e => setThermalSettings({ ...thermalSettings, showTokenBox: e.target.checked })}
+                          className="form-checkbox h-4.5 w-4.5 text-synos-primary rounded bg-white dark:bg-zinc-950 border-zinc-300 dark:border-zinc-800 focus:ring-0 cursor-pointer"
+                        />
+                        <span className="font-semibold text-zinc-350">Show Large Token Callout Box</span>
+                      </label>
+
+                      <label className="flex items-center space-x-3 cursor-pointer select-none">
+                        <input
+                          type="checkbox"
+                          checked={thermalSettings.showDoctorName ?? true}
+                          onChange={e => setThermalSettings({ ...thermalSettings, showDoctorName: e.target.checked })}
+                          className="form-checkbox h-4.5 w-4.5 text-synos-primary rounded bg-white dark:bg-zinc-950 border-zinc-300 dark:border-zinc-800 focus:ring-0 cursor-pointer"
+                        />
+                        <span className="font-semibold text-zinc-350">Show Referring Doctor Name</span>
+                      </label>
+
+                      <label className="flex items-center space-x-3 cursor-pointer select-none">
+                        <input
+                          type="checkbox"
+                          checked={thermalSettings.showItemDiscounts ?? true}
+                          onChange={e => setThermalSettings({ ...thermalSettings, showItemDiscounts: e.target.checked })}
+                          className="form-checkbox h-4.5 w-4.5 text-synos-primary rounded bg-white dark:bg-zinc-950 border-zinc-300 dark:border-zinc-800 focus:ring-0 cursor-pointer"
+                        />
+                        <span className="font-semibold text-zinc-350">Show Itemized Discount Column</span>
+                      </label>
+                    </div>
+                  </div>
+
+                  {/* Payment UPI QR Code Setup */}
+                  <div>
+                    <h4 className="font-bold text-xs text-zinc-700 dark:text-zinc-300 mb-3 border-b dark:border-zinc-855 pb-1.5 uppercase tracking-wider">Transaction UPI QR</h4>
+                    <div className="space-y-4">
+                      <label className="flex items-center space-x-3 cursor-pointer select-none pt-1">
+                        <input
+                          type="checkbox"
+                          checked={thermalSettings.showUpiQr ?? false}
+                          onChange={e => setThermalSettings({ ...thermalSettings, showUpiQr: e.target.checked })}
+                          className="form-checkbox h-4.5 w-4.5 text-synos-primary rounded bg-white dark:bg-zinc-950 border-zinc-300 dark:border-zinc-800 focus:ring-0 cursor-pointer"
+                        />
+                        <span className="font-semibold text-zinc-350">Print Dynamic UPI Payment QR Code</span>
+                      </label>
+
+                      {thermalSettings.showUpiQr && (
+                        <div className="animate-fadeIn">
+                          <label className="block text-xxs font-bold text-zinc-400 mb-1.5 uppercase tracking-wide">Lab Merchant UPI ID</label>
+                          <input
+                            type="text"
+                            required
+                            placeholder="e.g. labmerchant@okaxis"
+                            value={thermalSettings.upiId || ''}
+                            onChange={e => setThermalSettings({ ...thermalSettings, upiId: e.target.value.trim() })}
+                            className="w-full px-3 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs outline-none focus:border-synos-primary transition-colors text-zinc-700 dark:text-zinc-300 font-mono shadow-sm"
+                          />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Headers & Footers Texts */}
+                  <div className="md:col-span-3 grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+                    <div>
+                      <label className="block text-xxs font-bold text-zinc-400 mb-1.5 uppercase tracking-wide">Receipt Sub-Header Greeting Text</label>
+                      <input
+                        type="text"
+                        placeholder="e.g. Welcome to Khammam Branch. Diagnostics Excellence."
+                        value={thermalSettings.headerSubtext || ''}
+                        onChange={e => setThermalSettings({ ...thermalSettings, headerSubtext: e.target.value })}
+                        className="w-full px-3 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs outline-none focus:border-synos-primary transition-colors text-zinc-700 dark:text-zinc-300 shadow-sm"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xxs font-bold text-zinc-400 mb-1.5 uppercase tracking-wide">Receipt Footer Disclaimer / Instructions</label>
+                      <input
+                        type="text"
+                        placeholder="e.g. * Clinical correlation required. Bring this slip for reports."
+                        value={thermalSettings.footerDisclaimer || ''}
+                        onChange={e => setThermalSettings({ ...thermalSettings, footerDisclaimer: e.target.value })}
+                        className="w-full px-3 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs outline-none focus:border-synos-primary transition-colors text-zinc-700 dark:text-zinc-300 shadow-sm"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Save Buttons */}
+                <div className="pt-4 border-t dark:border-zinc-900 border-zinc-250/20 flex flex-col md:flex-row justify-between items-center gap-4">
+                  <div className="text-xxs font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">
+                    Active Setup: {isOverrideActive ? (
+                      <span className="text-amber-500 font-bold bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/10">Workstation Local Override Active</span>
+                    ) : (
+                      <span className="text-emerald-500 font-bold bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/10">Global Server Defaults Applied</span>
+                    )}
+                  </div>
+                  <div className="flex flex-wrap gap-3 w-full md:w-auto">
+                    <button
+                      type="button"
+                      onClick={handleSaveLocalOverride}
+                      className="flex-1 md:flex-initial px-5 py-2.5 border dark:border-zinc-850 border-zinc-200 hover:bg-zinc-150 dark:hover:bg-zinc-900 text-zinc-700 dark:text-zinc-300 font-bold text-xxs uppercase tracking-wider rounded-xl transition-all shadow-sm"
+                    >
+                      Apply for This Workstation Only
+                    </button>
+                    <button
+                      type="submit"
+                      className="flex-1 md:flex-initial px-6 py-2.5 bg-synos-primary hover:bg-synos-primary/95 text-white font-bold text-xxs uppercase tracking-wider rounded-xl shadow active:scale-95 transition-all"
+                    >
+                      Save Globally as Default
+                    </button>
+                  </div>
+                </div>
+              </form>
+            </div>
+
+            {/* Printer Form Dialog */}
+            {showPrinterForm && editingPrinter && (
+              <div className="fixed inset-0 bg-zinc-950/45 dark:bg-black/60 backdrop-blur-[2px] flex items-center justify-center z-50 animate-fadeIn">
+                <div 
+                  className="border border-zinc-200 dark:border-zinc-900 p-6 rounded-2xl w-full max-w-md shadow-2xl text-xs text-zinc-800 dark:text-zinc-250 bg-white dark:bg-zinc-950"
+                  style={{ backgroundColor: theme === 'dark' ? '#09090b' : '#ffffff' }}
+                >
+                  <h3 className="text-sm font-semibold mb-4 border-b border-zinc-250 dark:border-zinc-850 pb-2 text-zinc-800 dark:text-zinc-200">
+                    {editingPrinter.printerId ? 'Edit Branch Printer' : 'Register New Branch Printer'}
+                  </h3>
+                  <form onSubmit={handleSavePrinter} className="space-y-4">
+                    <div>
+                      <label className="block text-xxs font-semibold text-zinc-400 dark:text-zinc-500 mb-1">Printer Display Name</label>
+                      <input
+                        type="text"
+                        required
+                        value={editingPrinter.printerName}
+                        onChange={e => setEditingPrinter({ ...editingPrinter, printerName: e.target.value })}
+                        className="w-full px-3 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs outline-none focus:border-synos-primary transition-colors text-zinc-700 dark:text-zinc-300"
+                        placeholder="e.g. EPSON TM-T82III Billing Desk 1"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xxs font-semibold text-zinc-400 dark:text-zinc-500 mb-1">Branch Location</label>
+                      <select
+                        required
+                        value={editingPrinter.branchId}
+                        onChange={e => setEditingPrinter({ ...editingPrinter, branchId: e.target.value })}
+                        className="w-full px-3 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs outline-none focus:border-synos-primary transition-colors text-zinc-700 dark:text-zinc-300 shadow-sm"
+                      >
+                        <option value="">Select branch...</option>
+                        {branches.map(b => (
+                          <option key={b.branchId} value={b.branchId}>{b.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-xxs font-semibold text-zinc-400 dark:text-zinc-500 mb-1">Printer Type</label>
+                      <select
+                        required
+                        value={editingPrinter.printerType || 'Thermal80mm'}
+                        onChange={e => setEditingPrinter({ ...editingPrinter, printerType: e.target.value })}
+                        className="w-full px-3 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs outline-none focus:border-synos-primary transition-colors text-zinc-700 dark:text-zinc-300 shadow-sm"
+                      >
+                        <option value="Thermal80mm">Thermal Receipt 80mm (ESC/POS)</option>
+                        <option value="BarcodeZebra">Barcode Label (ZPL/EPL)</option>
+                      </select>
+                    </div>
+                    <div className="flex items-center space-x-2 pt-2">
+                      <input
+                        type="checkbox"
+                        id="printer-active"
+                        checked={editingPrinter.isActive ?? true}
+                        onChange={e => setEditingPrinter({ ...editingPrinter, isActive: e.target.checked })}
+                        className="rounded border-zinc-300 dark:border-zinc-700 text-synos-primary focus:ring-synos-primary w-4 h-4"
+                      />
+                      <label htmlFor="printer-active" className="text-xxs font-semibold text-zinc-400 dark:text-zinc-500 cursor-pointer">
+                        Active & Available for Spooling
+                      </label>
+                    </div>
+                    <div className="flex justify-end space-x-2.5 pt-4 border-t border-zinc-250 dark:border-zinc-850">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowPrinterForm(false);
+                          setEditingPrinter(null);
+                        }}
+                        className="px-4 py-2 border border-zinc-300 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-900 rounded-xl text-xxs uppercase tracking-wider font-bold transition-all text-zinc-650 dark:text-zinc-400"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="submit"
+                        className="px-5 py-2 bg-synos-primary hover:bg-synos-primary/95 text-white text-xxs uppercase tracking-wider rounded-xl font-bold shadow active:scale-95 transition-all"
+                      >
+                        Save Printer
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            )}
+
+            {/* Terminal Form Dialog */}
+            {showTerminalForm && editingTerminal && (
+              <div className="fixed inset-0 bg-zinc-950/45 dark:bg-black/60 backdrop-blur-[2px] flex items-center justify-center z-50 animate-fadeIn">
+                <div 
+                  className="border border-zinc-200 dark:border-zinc-900 p-6 rounded-2xl w-full max-w-md shadow-2xl text-xs text-zinc-800 dark:text-zinc-250 bg-white dark:bg-zinc-950"
+                  style={{ backgroundColor: theme === 'dark' ? '#09090b' : '#ffffff' }}
+                >
+                  <h3 className="text-sm font-semibold mb-4 border-b border-zinc-250 dark:border-zinc-850 pb-2 text-zinc-800 dark:text-zinc-200">
+                    {terminals.some(t => t.terminalIdentifier === editingTerminal.terminalIdentifier) ? 'Edit Terminal Authorization' : 'Authorize Workstation Terminal'}
+                  </h3>
+                  <form onSubmit={handleSaveTerminalConfig} className="space-y-4">
+                    <div>
+                      <label className="block text-xxs font-semibold text-zinc-400 dark:text-zinc-500 mb-1">Terminal Identifier footprint</label>
+                      <input
+                        type="text"
+                        required
+                        value={editingTerminal.terminalIdentifier}
+                        onChange={e => setEditingTerminal({ ...editingTerminal, terminalIdentifier: e.target.value })}
+                        className="w-full px-3 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs outline-none focus:border-synos-primary transition-colors text-zinc-700 dark:text-zinc-300 font-mono"
+                        placeholder="e.g. web-a1b2c3d4e"
+                        disabled={terminals.some(t => t.terminalIdentifier === editingTerminal.terminalIdentifier)}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xxs font-semibold text-zinc-400 dark:text-zinc-500 mb-1">Branch Assignment</label>
+                      <select
+                        required
+                        value={editingTerminal.branchId}
+                        onChange={e => setEditingTerminal({ ...editingTerminal, branchId: e.target.value, specificReceiptPrinterId: '' })}
+                        className="w-full px-3 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs outline-none focus:border-synos-primary transition-colors text-zinc-700 dark:text-zinc-300 shadow-sm"
+                      >
+                        <option value="">Select branch...</option>
+                        {branches.map(b => (
+                          <option key={b.branchId} value={b.branchId}>{b.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-xxs font-semibold text-zinc-400 dark:text-zinc-500 mb-1">Dedicated Thermal Printer (Optional)</label>
+                      <select
+                        value={editingTerminal.specificReceiptPrinterId || ''}
+                        onChange={e => setEditingTerminal({ ...editingTerminal, specificReceiptPrinterId: e.target.value })}
+                        className="w-full px-3 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs outline-none focus:border-synos-primary transition-colors text-zinc-700 dark:text-zinc-300 shadow-sm"
+                      >
+                        <option value="">None (Use Operating System Default)</option>
+                        {printers
+                          .filter(p => p.branchId === editingTerminal.branchId && p.isActive)
+                          .map(p => (
+                            <option key={p.printerId} value={p.printerId}>{p.printerName} ({p.printerType})</option>
+                          ))}
+                      </select>
+                    </div>
+                    <div className="flex items-center space-x-2 pt-2">
+                      <input
+                        type="checkbox"
+                        id="terminal-lead"
+                        checked={editingTerminal.isLeadPrintTerminal ?? false}
+                        onChange={e => setEditingTerminal({ ...editingTerminal, isLeadPrintTerminal: e.target.checked })}
+                        className="rounded border-zinc-300 dark:border-zinc-700 text-synos-primary focus:ring-synos-primary w-4 h-4"
+                      />
+                      <label htmlFor="terminal-lead" className="text-xxs font-semibold text-zinc-400 dark:text-zinc-500 cursor-pointer">
+                        Designate as Lead Print Terminal (SignalR Listener)
+                      </label>
+                    </div>
+                    <div className="flex justify-end space-x-2.5 pt-4 border-t border-zinc-250 dark:border-zinc-850">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowTerminalForm(false);
+                          setEditingTerminal(null);
+                        }}
+                        className="px-4 py-2 border border-zinc-300 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-900 rounded-xl text-xxs uppercase tracking-wider font-bold transition-all text-zinc-650 dark:text-zinc-400"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="submit"
+                        className="px-5 py-2 bg-synos-primary hover:bg-synos-primary/95 text-white text-xxs uppercase tracking-wider rounded-xl font-bold shadow active:scale-95 transition-all"
+                      >
+                        Authorize Workstation
                       </button>
                     </div>
                   </form>

@@ -25,6 +25,13 @@ namespace SynOS.Models.Events.Reception
 
         public string Token { get; set; } = string.Empty;
 
+        public string LabName { get; set; } = "Laboratory";
+        public string? LabAddress { get; set; }
+        public string? LabPhone { get; set; }
+        public string? LabEmail { get; set; }
+        public string? LabWebsite { get; set; }
+        public BranchPrintDetailsDto Branch { get; set; } = new();
+
         // Pre-calculated Read-Only Financial Projections
         public PatientSummaryDto Patient { get; set; } = new PatientSummaryDto();
         public InvoiceSummaryDto Billing { get; set; } = new InvoiceSummaryDto();

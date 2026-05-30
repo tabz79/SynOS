@@ -819,6 +819,7 @@ namespace SynOS.Services
                 {
                     // Fetch full projection needed for the printer
                     var printSnapshot = await GetVisitSummaryAsync(visit.VisitId);
+                    var labProfile = await _context.LabProfiles.AsNoTracking().FirstOrDefaultAsync();
 
                     var printEvent = new SynOS.Models.Events.Reception.PrintThermalReceiptEvent
                     {
@@ -828,7 +829,13 @@ namespace SynOS.Services
                         Token = printSnapshot.Token,
                         Patient = printSnapshot.Patient,
                         Billing = printSnapshot.Invoice,
-                        Orders = printSnapshot.Orders
+                        Orders = printSnapshot.Orders,
+                        LabName = labProfile?.Name ?? "Laboratory",
+                        LabAddress = labProfile?.Address,
+                        LabPhone = labProfile?.Phone,
+                        LabEmail = labProfile?.Email,
+                        LabWebsite = labProfile?.Website,
+                        Branch = printSnapshot.Branch
                     };
 
                     await _eventPublishingService.PublishVisitFinalizedAsync(printEvent);
@@ -890,6 +897,21 @@ namespace SynOS.Services
             // Fetch Draft manually since _visitService might not include it
             var draft = await _context.ReferralDrafts.AsNoTracking().FirstOrDefaultAsync(d => d.VisitId == visitId);
 
+            var branchDetails = new BranchPrintDetailsDto();
+            if (visit.BranchId.HasValue)
+            {
+                var dbBranch = await _context.Branches.AsNoTracking().FirstOrDefaultAsync(b => b.BranchId == visit.BranchId.Value);
+                if (dbBranch != null)
+                {
+                    branchDetails.BranchId = dbBranch.BranchId;
+                    branchDetails.Code = dbBranch.Code;
+                    branchDetails.Name = dbBranch.Name;
+                    branchDetails.Address = dbBranch.Address;
+                    branchDetails.Phone = dbBranch.Phone;
+                    branchDetails.Email = dbBranch.Email;
+                }
+            }
+
             return new ReceptionVisitSummaryResponse
             {
                 VisitId = visit.VisitId,
@@ -899,10 +921,10 @@ namespace SynOS.Services
                 VisitStatus = visit.Status.ToString(),
                 ReferralDraft = draft == null ? null : new ReferralDraftDto
                 {
-                   ReferralDraftId = draft.ReferralDraftId,
-                   ProviderName = draft.ProviderName,
-                   ClinicName = draft.ClinicName,
-                   Location = draft.Location
+                    ReferralDraftId = draft.ReferralDraftId,
+                    ProviderName = draft.ProviderName,
+                    ClinicName = draft.ClinicName,
+                    Location = draft.Location
                 },
                 Patient = new PatientSummaryDto
                 {
@@ -950,7 +972,8 @@ namespace SynOS.Services
                     CanPrintToken = visit.Status != VisitStatus.Cancelled,
                     CanCollectSamples = visit.Department == "Pathology" && invoice.Status == "Paid",
                     CanPerformScan = visit.Department == "Radiology" && invoice.Status == "Paid"
-                }
+                },
+                Branch = branchDetails
             };
         }
 

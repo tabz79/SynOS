@@ -199,26 +199,48 @@ namespace SynOS.Services.Referral
             await _auditService.LogAsync(userId, "SuspendReferralPartner", "ReferralPartner", id, new { Active = false });
         }
 
-        public async Task<ReferralSummaryDto> GetReferralSummaryAsync()
+        public async Task<ReferralSummaryDto> GetReferralSummaryAsync(Guid? branchId = null)
         {
             var today = DateTimeOffset.UtcNow.Date;
             
-            var totalPendingPayouts = await _context.ReferralPayableFacts
+            var pendingPayoutsQuery = _context.ReferralPayableFacts.AsNoTracking();
+            var pendingReceivablesQuery = _context.ReceivableFacts.AsNoTracking();
+            var visitsQuery = _context.Visits.AsNoTracking();
+            var invoicesQuery = _context.Invoices.AsNoTracking();
+            
+            if (branchId.HasValue)
+            {
+                pendingPayoutsQuery = from f in pendingPayoutsQuery
+                                      join v in _context.Visits on f.SourceVisitId equals v.VisitId
+                                      where v.BranchId == branchId.Value
+                                      select f;
+                                      
+                pendingReceivablesQuery = from f in pendingReceivablesQuery
+                                          join v in _context.Visits on f.SourceVisitId equals v.VisitId
+                                          where v.BranchId == branchId.Value
+                                          select f;
+                                          
+                visitsQuery = visitsQuery.Where(v => v.BranchId == branchId.Value);
+                
+                invoicesQuery = invoicesQuery.Where(i => i.Visit != null && i.Visit.BranchId == branchId.Value);
+            }
+            
+            var totalPendingPayouts = await pendingPayoutsQuery
                 .Where(f => f.SettledAt == null)
                 .SumAsync(f => (decimal?)(f.Amount - f.AmountPaid)) ?? 0m;
 
             var totalActivePartners = await _context.ReferralPartners
                 .CountAsync(p => p.Status == PartnerStatus.Active);
 
-            var totalPendingReceivables = await _context.ReceivableFacts
+            var totalPendingReceivables = await pendingReceivablesQuery
                 .Where(f => f.SettledAt == null)
                 .SumAsync(f => (decimal?)(f.Amount - f.AmountReceived)) ?? 0m;
 
-            var referralsToday = await _context.Visits
+            var referralsToday = await visitsQuery
                 .Where(v => v.IsReferred && v.CreatedAt >= today)
                 .CountAsync();
 
-            var revenueToday = await _context.Invoices
+            var revenueToday = await invoicesQuery
                 .Where(i => i.Visit != null && i.Visit.IsReferred && i.CreatedAt >= today)
                 .SumAsync(i => (decimal?)i.Total) ?? 0m;
 

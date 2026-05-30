@@ -8,16 +8,22 @@ using SynOS.Models.Entities;
 using SynOS.Models.Entities.Operations;
 using SynOS.Models.Entities.HR;
 using BCrypt.Net;
+using SynOS.Services;
+using SynOS.Services.Security;
 
 namespace SynOS.Services.Admin
 {
     public class AdminUserService : IAdminUserService
     {
         private readonly SynOSDbContext _context;
+        private readonly IAuditService _auditService;
+        private readonly IUserContext _userContext;
 
-        public AdminUserService(SynOSDbContext context)
+        public AdminUserService(SynOSDbContext context, IAuditService auditService, IUserContext userContext)
         {
             _context = context;
+            _auditService = auditService;
+            _userContext = userContext;
         }
 
         public async Task<User> CreateUserAsync(string username, string email, string name, string password, string? designation = null)
@@ -165,11 +171,20 @@ namespace SynOS.Services.Admin
         public async Task<IEnumerable<BranchDto>> GetAllBranchesAsync()
         {
             return await _context.Branches
-                .Select(b => new BranchDto { BranchId = b.BranchId, Code = b.Code, Name = b.Name, IsActive = b.IsActive })
+                .Select(b => new BranchDto 
+                { 
+                    BranchId = b.BranchId, 
+                    Code = b.Code, 
+                    Name = b.Name, 
+                    IsActive = b.IsActive,
+                    Address = b.Address,
+                    Phone = b.Phone,
+                    Email = b.Email
+                })
                 .ToListAsync();
         }
 
-        public async Task<Branch> CreateBranchAsync(string code, string name)
+        public async Task<Branch> CreateBranchAsync(string code, string name, string? address = null, string? phone = null, string? email = null)
         {
             var upperCode = code.Trim().ToUpperInvariant();
             if (await _context.Branches.AnyAsync(b => b.Code == upperCode))
@@ -182,15 +197,28 @@ namespace SynOS.Services.Admin
                 BranchId = Guid.NewGuid(),
                 Code = upperCode,
                 Name = name.Trim(),
-                IsActive = true
+                IsActive = true,
+                Address = address?.Trim(),
+                Phone = phone?.Trim(),
+                Email = email?.Trim()
             };
 
             _context.Branches.Add(branch);
             await _context.SaveChangesAsync();
+
+            // Log create event
+            await _auditService.LogAsync(
+                _userContext.CurrentUserId,
+                "CreateBranch",
+                "Branch",
+                branch.BranchId,
+                new { Code = branch.Code, Name = branch.Name, Address = branch.Address, Phone = branch.Phone, Email = branch.Email }
+            );
+
             return branch;
         }
 
-        public async Task<Branch> UpdateBranchAsync(Guid branchId, string code, string name, bool isActive)
+        public async Task<Branch> UpdateBranchAsync(Guid branchId, string code, string name, bool isActive, string? address = null, string? phone = null, string? email = null)
         {
             var branch = await _context.Branches.FindAsync(branchId);
             if (branch == null)
@@ -209,11 +237,26 @@ namespace SynOS.Services.Admin
                 throw new InvalidOperationException("Default branch (MAIN) cannot be deactivated.");
             }
 
+            var oldDetails = new { branch.Code, branch.Name, branch.IsActive, branch.Address, branch.Phone, branch.Email };
+
             branch.Code = upperCode;
             branch.Name = name.Trim();
             branch.IsActive = isActive;
+            branch.Address = address?.Trim();
+            branch.Phone = phone?.Trim();
+            branch.Email = email?.Trim();
 
             await _context.SaveChangesAsync();
+
+            // Log update event
+            await _auditService.LogAsync(
+                _userContext.CurrentUserId,
+                "UpdateBranch",
+                "Branch",
+                branch.BranchId,
+                new { Old = oldDetails, New = new { branch.Code, branch.Name, branch.IsActive, branch.Address, branch.Phone, branch.Email } }
+            );
+
             return branch;
         }
 

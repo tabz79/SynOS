@@ -16,6 +16,7 @@ namespace SynOS.Models.DTOs
         public List<LastPaymentDto> Payments { get; set; } = new();
         public ReadinessFlagsDto Flags { get; set; } = new();
         public ReferralDraftDto? ReferralDraft { get; set; }
+        public BranchPrintDetailsDto Branch { get; set; } = new();
     }
 
     public class ReadinessFlagsDto

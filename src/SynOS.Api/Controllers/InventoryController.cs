@@ -15,17 +15,24 @@ namespace SynOS.Api.Controllers
     public class InventoryController : ControllerBase
     {
         private readonly IInventoryService _inventoryService;
+        private readonly SynOS.Services.Security.IUserContext _userContext;
 
-        public InventoryController(IInventoryService inventoryService)
+        public InventoryController(IInventoryService inventoryService, SynOS.Services.Security.IUserContext userContext)
         {
             _inventoryService = inventoryService;
+            _userContext = userContext;
         }
 
         [HttpGet("stock")]
         [Authorize(Roles = "Admin,InventoryManager")]
-        public async Task<ActionResult<IEnumerable<InventoryStockDto>>> GetStockLedger()
+        public async Task<ActionResult<IEnumerable<InventoryStockDto>>> GetStockLedger([FromQuery] Guid? branchId, [FromQuery] bool isConsolidated = false)
         {
-            var stock = await _inventoryService.GetStockLedgerAsync();
+            Guid? effectiveBranchId = branchId ?? _userContext.CurrentBranchId;
+            if (isConsolidated && (_userContext.CurrentRole == "Admin" || _userContext.CurrentRole == "SystemAdmin"))
+            {
+                effectiveBranchId = null;
+            }
+            var stock = await _inventoryService.GetStockLedgerAsync(effectiveBranchId);
             return Ok(stock);
         }
 
@@ -67,9 +74,14 @@ namespace SynOS.Api.Controllers
 
         [HttpGet("dashboard")]
         [Authorize(Roles = "Admin,InventoryManager")]
-        public async Task<ActionResult<InventoryDashboardDto>> GetDashboard()
+        public async Task<ActionResult<InventoryDashboardDto>> GetDashboard([FromQuery] Guid? branchId, [FromQuery] bool isConsolidated = false)
         {
-            var metrics = await _inventoryService.GetDashboardMetricsAsync();
+            Guid? effectiveBranchId = branchId ?? _userContext.CurrentBranchId;
+            if (isConsolidated && (_userContext.CurrentRole == "Admin" || _userContext.CurrentRole == "SystemAdmin"))
+            {
+                effectiveBranchId = null;
+            }
+            var metrics = await _inventoryService.GetDashboardMetricsAsync(effectiveBranchId);
             return Ok(metrics);
         }
 

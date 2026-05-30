@@ -17,5 +17,14 @@ namespace SynOS.Models.Entities
         public string Name { get; set; }
 
         public bool IsActive { get; set; } = true;
+
+        [StringLength(250)]
+        public string? Address { get; set; }
+
+        [StringLength(50)]
+        public string? Phone { get; set; }
+
+        [StringLength(100)]
+        public string? Email { get; set; }
     }
 }

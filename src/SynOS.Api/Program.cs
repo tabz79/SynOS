@@ -49,6 +49,32 @@ using SynOS.Services.Time; // ADDED
 
 var builder = WebApplication.CreateBuilder(args);
 
+if (args.Contains("--check-db"))
+{
+    var connStr = builder.Configuration.GetConnectionString("DefaultConnection");
+    Console.WriteLine($"DefaultConnection: {connStr}");
+    using (var conn = new Microsoft.Data.SqlClient.SqlConnection(connStr))
+    {
+        conn.Open();
+        Console.WriteLine("Connection opened successfully.");
+
+        using (var cmd = new Microsoft.Data.SqlClient.SqlCommand(@"
+            SELECT TABLE_SCHEMA, TABLE_NAME, COLUMN_NAME, DATA_TYPE, CHARACTER_MAXIMUM_LENGTH, IS_NULLABLE
+            FROM INFORMATION_SCHEMA.COLUMNS
+            ORDER BY TABLE_NAME, COLUMN_NAME", conn))
+        using (var reader = cmd.ExecuteReader())
+        {
+            Console.WriteLine("\n--- DATABASE SCHEMA DUMP ---");
+            while (reader.Read())
+            {
+                Console.WriteLine($"{reader["TABLE_SCHEMA"]}.{reader["TABLE_NAME"]} | {reader["COLUMN_NAME"]} | {reader["DATA_TYPE"]}({reader["CHARACTER_MAXIMUM_LENGTH"]}) | Nullable: {reader["IS_NULLABLE"]}");
+            }
+            Console.WriteLine("--- SCHEMA DUMP COMPLETE ---");
+        }
+    }
+    return;
+}
+
 // Configure Serilog
 Log.Logger = new LoggerConfiguration()
     .ReadFrom.Configuration(builder.Configuration)
@@ -101,7 +127,9 @@ builder.Services.AddSwaggerGen(option =>
 
 // Configure DbContext
 builder.Services.AddDbContext<SynOSDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
+           .EnableSensitiveDataLogging()
+           .EnableDetailedErrors());
 
 // Configure JWT Authentication
 var jwtSettings = builder.Configuration.GetSection("Jwt");

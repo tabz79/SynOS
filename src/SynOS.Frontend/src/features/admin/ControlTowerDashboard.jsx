@@ -18,27 +18,62 @@ import {
     CheckCircle2,
     Loader2
 } from 'lucide-react';
-import { cn } from "@/lib/utils";
 import { useTheme } from "@/context/ThemeContext";
+import { cn } from "@/lib/utils";
 import { ReceptionApi } from "@/api/reception";
+import { useAuth } from '@/context/AuthContext';
+import { AdminApi } from '@/api/admin';
 
 export function ControlTowerDashboard() {
     const { theme } = useTheme();
     const isDark = theme === 'dark';
+    const { user, activeOversightBranchId } = useAuth();
+    const isAdmin = user?.role === 'Admin' || user?.role === 'SystemAdmin';
+
     const [summary, setSummary] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const navigate = useNavigate();
+
+    // Strategy A Switcher State
+    const [isConsolidated, setIsConsolidated] = useState(true);
+    const [branches, setBranches] = useState([]);
+
+    useEffect(() => {
+        if (isAdmin) {
+            loadBranches();
+        }
+    }, [isAdmin]);
+
+    const loadBranches = async () => {
+        try {
+            const data = await AdminApi.getBranches();
+            setBranches(data || []);
+        } catch (e) {
+            console.error("Failed to load branches for Control Tower", e);
+        }
+    };
 
     useEffect(() => {
         fetchSummary();
         const interval = setInterval(fetchSummary, 30000); // Refresh every 30s
         return () => clearInterval(interval);
-    }, []);
+    }, [isConsolidated, activeOversightBranchId]);
 
     const fetchSummary = async () => {
         try {
             const token = localStorage.getItem('synos_jwt');
-            const url = ReceptionApi.withBranchId('/api/v1/dashboard/control-tower/summary');
+            
+            const q = [];
+            if (isConsolidated && isAdmin) {
+                q.push('isConsolidated=true');
+            } else if (activeOversightBranchId) {
+                q.push(`branchId=${activeOversightBranchId}`);
+            } else if (user?.branchId) {
+                q.push(`branchId=${user.branchId}`);
+            }
+            const qs = q.length ? '?' + q.join('&') : '';
+            const url = `/api/v1/dashboard/control-tower/summary${qs}`;
+
             const response = await fetch(url, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
@@ -78,8 +113,47 @@ export function ControlTowerDashboard() {
         { title: "Delivery Desk", subtitle: "Report Dispatch", icon: Truck, data: summary?.delivery, path: "/delivery", btnText: "Open Delivery" },
     ];
 
+    const activeBranchName = isConsolidated 
+        ? "All Branches" 
+        : (branches.find(b => (b.branchId || b.id) === activeOversightBranchId)?.name || user?.branchName || "Selected Branch");
+
     return (
         <div className="p-8 space-y-8 pb-16 relative z-10">
+            {/* HEADER WITH SWITCHER */}
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div>
+                    <h1 className="text-2xl font-black dark:text-white text-zinc-900 tracking-tight">Control Tower</h1>
+                    <p className="text-xs text-zinc-500 font-medium mt-1">Real-time oversight of operations, phlebotomy collections, test flows, and financials.</p>
+                </div>
+
+                {isAdmin && (
+                    <div className="flex items-center gap-3 bg-zinc-100 dark:bg-zinc-900/50 p-1.5 rounded-2xl border border-black/5 dark:border-white/5 w-fit">
+                        <button
+                            onClick={() => setIsConsolidated(true)}
+                            className={cn(
+                                "px-4 py-2 rounded-xl text-xs font-bold transition-all",
+                                isConsolidated 
+                                    ? "bg-white dark:bg-zinc-800 text-synos-primary shadow-sm"
+                                    : "text-zinc-500 hover:text-zinc-900 dark:hover:text-white"
+                            )}
+                        >
+                            Consolidated View
+                        </button>
+                        <button
+                            onClick={() => setIsConsolidated(false)}
+                            className={cn(
+                                "px-4 py-2 rounded-xl text-xs font-bold transition-all",
+                                !isConsolidated 
+                                    ? "bg-white dark:bg-zinc-800 text-synos-primary shadow-sm"
+                                    : "text-zinc-500 hover:text-zinc-900 dark:hover:text-white"
+                            )}
+                        >
+                            Branch View
+                        </button>
+                    </div>
+                )}
+            </div>
+
             {/* Hero Banner */}
             <div 
                 style={cardStyle}
@@ -90,7 +164,7 @@ export function ControlTowerDashboard() {
                         <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
                         <h2 className="type-display !text-2xl">Reality Pulse: All Systems Green</h2>
                     </div>
-                    <p className="type-body opacity-80 pl-4">Synthesized intelligence confirms 100% operational throughput across all sectors.</p>
+                    <p className="type-body opacity-80 pl-4">Synthesized intelligence confirms 100% operational throughput for {activeBranchName}.</p>
                 </div>
                 
                 <div className="relative flex items-center gap-8 opacity-10">

@@ -98,7 +98,7 @@ namespace SynOS.Api.Controllers.Admin
         {
             try
             {
-                var branch = await _adminUserService.CreateBranchAsync(request.Code, request.Name);
+                var branch = await _adminUserService.CreateBranchAsync(request.Code, request.Name, request.Address, request.Phone, request.Email);
                 return Ok(branch);
             }
             catch (InvalidOperationException ex)
@@ -112,7 +112,7 @@ namespace SynOS.Api.Controllers.Admin
         {
             try
             {
-                var branch = await _adminUserService.UpdateBranchAsync(id, request.Code, request.Name, request.IsActive);
+                var branch = await _adminUserService.UpdateBranchAsync(id, request.Code, request.Name, request.IsActive, request.Address, request.Phone, request.Email);
                 return Ok(branch);
             }
             catch (KeyNotFoundException ex)

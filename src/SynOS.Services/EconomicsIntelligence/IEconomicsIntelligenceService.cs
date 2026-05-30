@@ -40,7 +40,7 @@ namespace SynOS.Services.EconomicsIntelligence
         /// Retrieves the net operational position for the lab over a specific time period.
         /// Factors in Revenue, Consumables, Outsourced Tests, Referrals, Payroll, and Overhead.
         /// </summary>
-        Task<LabProfitabilitySummaryDto> GetLabProfitabilitySummaryAsync(DateTime start, DateTime end);
+        Task<LabProfitabilitySummaryDto> GetLabProfitabilitySummaryAsync(DateTime start, DateTime end, Guid? branchId = null);
 
         /// <summary>
         /// Retrieves a list of revenue facts for a given time period.

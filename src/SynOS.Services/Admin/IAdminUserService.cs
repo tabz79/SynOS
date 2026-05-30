@@ -29,8 +29,8 @@ namespace SynOS.Services.Admin
         Task<Workspace> UpdateWorkspaceAsync(Guid workspaceId, string name, string routePath, bool isActive);
         Task DeleteWorkspaceAsync(Guid workspaceId);
         Task SetUserWorkspaceAccessesAsync(Guid userId, IEnumerable<Guid> workspaceIds);
-        Task<Branch> CreateBranchAsync(string code, string name);
-        Task<Branch> UpdateBranchAsync(Guid branchId, string code, string name, bool isActive);
+        Task<Branch> CreateBranchAsync(string code, string name, string? address = null, string? phone = null, string? email = null);
+        Task<Branch> UpdateBranchAsync(Guid branchId, string code, string name, bool isActive, string? address = null, string? phone = null, string? email = null);
         Task DeleteBranchAsync(Guid branchId);
     }
 
@@ -49,6 +49,9 @@ namespace SynOS.Services.Admin
         public string Code { get; set; } = string.Empty;
         public string Name { get; set; } = string.Empty;
         public bool IsActive { get; set; }
+        public string? Address { get; set; }
+        public string? Phone { get; set; }
+        public string? Email { get; set; }
     }
 
     public class RoleDto

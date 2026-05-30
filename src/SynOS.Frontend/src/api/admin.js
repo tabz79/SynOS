@@ -161,6 +161,46 @@ export const AdminApi = {
         return apiClient.delete(`${API_BASE}/referral-partners/${id}`);
     },
 
+    getBranchPrinters: async () => {
+        return apiClient.get(`${API_BASE}/printing/printers`);
+    },
+
+    createBranchPrinter: async (dto) => {
+        return apiClient.post(`${API_BASE}/printing/printers`, dto);
+    },
+
+    updateBranchPrinter: async (id, dto) => {
+        return apiClient.put(`${API_BASE}/printing/printers/${id}`, dto);
+    },
+
+    deleteBranchPrinter: async (id) => {
+        return apiClient.delete(`${API_BASE}/printing/printers/${id}`);
+    },
+
+    getTerminalPrinterConfigs: async () => {
+        return apiClient.get(`${API_BASE}/printing/terminals`);
+    },
+
+    createTerminalPrinterConfig: async (dto) => {
+        return apiClient.post(`${API_BASE}/printing/terminals`, dto);
+    },
+
+    updateTerminalPrinterConfig: async (id, dto) => {
+        return apiClient.put(`${API_BASE}/printing/terminals/${id}`, dto);
+    },
+
+    deleteTerminalPrinterConfig: async (id) => {
+        return apiClient.delete(`${API_BASE}/printing/terminals/${id}`);
+    },
+
+    getGlobalThermalSettings: async () => {
+        return apiClient.get(`${API_BASE}/printing/settings`);
+    },
+
+    saveGlobalThermalSettings: async (dto) => {
+        return apiClient.post(`${API_BASE}/printing/settings`, dto);
+    },
+
     getAuditLogs: async (query) => {
         return apiClient.get(`${API_BASE}/audit-logs${query}`);
     }

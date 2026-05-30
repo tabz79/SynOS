@@ -6,6 +6,6 @@ namespace SynOS.Services.Dashboard
 {
     public interface IControlTowerService
     {
-        Task<ControlTowerSummaryDto> GetFullDashboardAsync(Guid branchId);
+        Task<ControlTowerSummaryDto> GetFullDashboardAsync(Guid? branchId);
     }
 }

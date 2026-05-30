@@ -22,18 +22,22 @@ namespace SynOS.Api.Controllers
         }
 
         [HttpGet("summary")]
-        public async Task<IActionResult> GetSummary([FromQuery] Guid? branchId)
+        public async Task<IActionResult> GetSummary([FromQuery] Guid? branchId, [FromQuery] bool isConsolidated = false)
         {
-            var effectiveBranchId = branchId ?? _userContext.CurrentBranchId;
+            Guid? serviceBranchId = branchId ?? _userContext.CurrentBranchId;
             
-            if (effectiveBranchId == Guid.Empty)
+            if (isConsolidated && (_userContext.CurrentRole == "Admin" || _userContext.CurrentRole == "SystemAdmin"))
+            {
+                serviceBranchId = null;
+            }
+            else if (serviceBranchId == Guid.Empty || serviceBranchId == null)
             {
                 return BadRequest("Branch context missing. Please provide a branchId or ensure you have an active branch session.");
             }
 
             try 
             {
-                var summary = await _controlTowerService.GetFullDashboardAsync(effectiveBranchId);
+                var summary = await _controlTowerService.GetFullDashboardAsync(serviceBranchId);
                 return Ok(summary);
             }
             catch (Exception ex)

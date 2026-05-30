@@ -21,41 +21,75 @@ namespace SynOS.Services.Inventory
             _context = context;
         }
 
-        public async Task<IEnumerable<InventoryStockDto>> GetStockLedgerAsync()
+        public async Task<IEnumerable<InventoryStockDto>> GetStockLedgerAsync(Guid? branchId = null)
         {
-            var query = from lot in _context.ImsInventoryLots
-                        join item in _context.ImsInventoryItems on lot.ItemId equals item.ItemId
-                        join branch in _context.Branches on lot.BranchId equals branch.BranchId
-                        join consumable in _context.ImsConsumables on item.ItemCode equals consumable.Code into metaJoin
-                        from meta in metaJoin.DefaultIfEmpty()
-                        where lot.IsActive
-                        group lot by new 
-                        { 
-                            item.ItemId, 
-                            item.ItemCode, 
-                            ItemName = item.Name, 
-                            branch.BranchId, 
-                            BranchName = branch.Name, 
-                            meta.UnitOfMeasure, 
-                            meta.LowStockThreshold 
-                        } into g
-                        select new InventoryStockDto
-                        {
-                            ItemId = g.Key.ItemId,
-                            ItemName = g.Key.ItemName,
-                            ItemCode = g.Key.ItemCode,
-                            TotalQuantity = g.Sum(l => l.CurrentQuantity),
-                            Unit = g.Key.UnitOfMeasure ?? "units",
-                            BranchName = g.Key.BranchName,
-                            BranchId = g.Key.BranchId,
-                            Status = g.Sum(l => l.CurrentQuantity) <= 0 ? "Critical" :
-                                     g.Sum(l => l.CurrentQuantity) <= g.Key.LowStockThreshold ? "Low" : "Healthy"
-                        };
+            if (branchId.HasValue)
+            {
+                var query = from lot in _context.ImsInventoryLots
+                            join item in _context.ImsInventoryItems on lot.ItemId equals item.ItemId
+                            join branch in _context.Branches on lot.BranchId equals branch.BranchId
+                            join consumable in _context.ImsConsumables on item.ItemCode equals consumable.Code into metaJoin
+                            from meta in metaJoin.DefaultIfEmpty()
+                            where lot.IsActive && lot.BranchId == branchId.Value
+                            group lot by new 
+                            { 
+                                item.ItemId, 
+                                item.ItemCode, 
+                                ItemName = item.Name, 
+                                branch.BranchId, 
+                                BranchName = branch.Name, 
+                                meta.UnitOfMeasure, 
+                                meta.LowStockThreshold 
+                            } into g
+                            select new InventoryStockDto
+                            {
+                                ItemId = g.Key.ItemId,
+                                ItemName = g.Key.ItemName,
+                                ItemCode = g.Key.ItemCode,
+                                TotalQuantity = g.Sum(l => l.CurrentQuantity),
+                                Unit = g.Key.UnitOfMeasure ?? "units",
+                                BranchName = g.Key.BranchName,
+                                BranchId = g.Key.BranchId,
+                                Status = g.Sum(l => l.CurrentQuantity) <= 0 ? "Critical" :
+                                         g.Sum(l => l.CurrentQuantity) <= g.Key.LowStockThreshold ? "Low" : "Healthy"
+                            };
 
-            return await query
-                .OrderBy(d => d.ItemName)
-                .ThenBy(d => d.BranchName)
-                .ToListAsync();
+                return await query
+                    .OrderBy(d => d.ItemName)
+                    .ToListAsync();
+            }
+            else
+            {
+                var query = from lot in _context.ImsInventoryLots
+                            join item in _context.ImsInventoryItems on lot.ItemId equals item.ItemId
+                            join consumable in _context.ImsConsumables on item.ItemCode equals consumable.Code into metaJoin
+                            from meta in metaJoin.DefaultIfEmpty()
+                            where lot.IsActive
+                            group lot by new 
+                            { 
+                                item.ItemId, 
+                                item.ItemCode, 
+                                ItemName = item.Name, 
+                                meta.UnitOfMeasure, 
+                                meta.LowStockThreshold 
+                            } into g
+                            select new InventoryStockDto
+                            {
+                                ItemId = g.Key.ItemId,
+                                ItemName = g.Key.ItemName,
+                                ItemCode = g.Key.ItemCode,
+                                TotalQuantity = g.Sum(l => l.CurrentQuantity),
+                                Unit = g.Key.UnitOfMeasure ?? "units",
+                                BranchName = "All Branches",
+                                BranchId = Guid.Empty,
+                                Status = g.Sum(l => l.CurrentQuantity) <= 0 ? "Critical" :
+                                         g.Sum(l => l.CurrentQuantity) <= g.Key.LowStockThreshold ? "Low" : "Healthy"
+                            };
+
+                return await query
+                    .OrderBy(d => d.ItemName)
+                    .ToListAsync();
+            }
         }
 
         public async Task<IEnumerable<InventoryLotDto>> GetItemLotsAsync(Guid itemId, Guid branchId)
@@ -174,17 +208,23 @@ namespace SynOS.Services.Inventory
                 .ToListAsync();
         }
 
-        public async Task<InventoryDashboardDto> GetDashboardMetricsAsync()
+        public async Task<InventoryDashboardDto> GetDashboardMetricsAsync(Guid? branchId = null)
         {
             var today = DateTimeOffset.UtcNow.Date;
 
-            var pendingRequests = await _context.ImsStockRequests
-                .CountAsync(r => r.Status == ImsRequestStatus.Pending);
+            var pendingRequestsQuery = _context.ImsStockRequests.AsNoTracking().Where(r => r.Status == ImsRequestStatus.Pending);
+            var fulfilledTodayQuery = _context.ImsStockRequests.AsNoTracking().Where(r => r.Status == ImsRequestStatus.Fulfilled && r.FulfilledAt >= today);
 
-            var fulfilledToday = await _context.ImsStockRequests
-                .CountAsync(r => r.Status == ImsRequestStatus.Fulfilled && r.FulfilledAt >= today);
+            if (branchId.HasValue)
+            {
+                pendingRequestsQuery = pendingRequestsQuery.Where(r => r.BranchId == branchId.Value);
+                fulfilledTodayQuery = fulfilledTodayQuery.Where(r => r.BranchId == branchId.Value);
+            }
 
-            var ledger = await GetStockLedgerAsync();
+            var pendingRequests = await pendingRequestsQuery.CountAsync();
+            var fulfilledToday = await fulfilledTodayQuery.CountAsync();
+
+            var ledger = await GetStockLedgerAsync(branchId);
             var totalItems = ledger.Count();
             var criticalCount = ledger.Count(s => s.Status == "Critical");
             var lowCount = ledger.Count(s => s.Status == "Low");

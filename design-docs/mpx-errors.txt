@@ -1,42 +1,161 @@
-react-dom_client.js?v=6ac04b05:20103 Download the React DevTools for a better development experience: https://react.dev/link/react-devtools
-signalr.js:243 SignalR(Branch): Subscriber added (Total: 1)
-signalr.js:211 [2026-05-25T12:56:32.639Z] Information: Normalizing '/branchOperationsHub' to 'http://localhost:5173/branchOperationsHub'.
-signalr.js:264 SignalR(Branch): Starting connection...
-signalr.js:310 SignalR(Branch): Subscriber removed (Total: 0)
-signalr.js:243 SignalR(Branch): Subscriber added (Total: 1)
-signalr.js:248 SignalR(Branch): Aborted scheduled disconnect
-@microsoft_signalr.js?v=6ac04b05:301 [2026-05-25T12:56:32.681Z] Information: WebSocket connected to ws://localhost:5173/branchOperationsHub?access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiI3MjE5ODVjNy1iYmFlLTQzNjgtYTk1OC04YjcyNDA4MmY1MzIiLCJ1bmlxdWVfbmFtZSI6IlN5c3RlbSBBZG1pbiIsInVzZXJuYW1lIjoiYWRtaW4iLCJlbWFpbCI6ImFkbWluQHN5bm9zLmNvbSIsInNlc3Npb25fbW9kZSI6Im9wZXJhdGlvbmFsIiwic2Vzc2lvbl9pZCI6ImE5MGRkZDY3LTQ3YzItNDRjOC1iMmZjLTQxOWQyMzhjZjQxNiIsImRlcGFydG1lbnRfY29kZSI6IkdlbmVyYWwiLCJyb2xlIjoiQWRtaW4iLCJSb2xlSWQiOiJjOGNlMjUyZS00MjNmLTQ3OGEtYTFlMy04MDY3NWNhZWVlMDgiLCJicmFuY2hfaWQiOiJhMDAwMDAwMC0wMDAwLTAwMDAtMDAwMC0wMDAwMDAwMDAwMDEiLCJyZXNvdXJjZV9pZCI6ImY3NjA4Nzk5LTQ2MzctNDczNC1hNjY1LTNjNWM5M2VjMzhiMCIsImJyYW5jaF9uYW1lIjoiTWFpbiBMYWJvcmF0b3J5IiwibmJmIjoxNzc5NzEzNzkyLCJleHAiOjE3Nzk4MDAxOTIsImlhdCI6MTc3OTcxMzc5MiwiaXNzIjoiU3luT1MuQXBpIiwiYXVkIjoiU3luT1MuQXBwIn0.Nk8rcU5qBjzt3GLT_I3nfrle1v2BI-YBAYQPstATwjM.
-@microsoft_signalr.js?v=6ac04b05:301 [2026-05-25T12:56:32.683Z] Information: Using HubProtocol 'json'.
-App.jsx:41 [RootRedirect] Evaluating redirect: {isAuthenticated: true, role: 'Admin', isAdmin: true}
-App.jsx:41 [RootRedirect] Evaluating redirect: {isAuthenticated: true, role: 'Admin', isAdmin: true}
-signalr.js:267 SignalR(Branch): Connected to /branchOperationsHub
-signalr.js:216 SignalR(Branch): Capability 'Thermal80mm' registration result: AUTHORIZED
-App.jsx:41 [RootRedirect] Evaluating redirect: {isAuthenticated: true, role: 'Admin', isAdmin: true}
-App.jsx:41 [RootRedirect] Evaluating redirect: {isAuthenticated: true, role: 'Admin', isAdmin: true}
-App.jsx:41 [RootRedirect] Evaluating redirect: {isAuthenticated: true, role: 'Admin', isAdmin: true}
-App.jsx:41 [RootRedirect] Evaluating redirect: {isAuthenticated: true, role: 'Admin', isAdmin: true}
-reports.js:112  POST http://localhost:5173/api/v1/reports/4c7bfcad-c069-4911-94f7-374f74fbf4a9/results 400 (Bad Request)
-(anonymous) @ reports.js:112
-$RefreshSig$ @ PathologistTerminal.jsx:167
-await in $RefreshSig$
-executeDispatch @ react-dom_client.js?v=6ac04b05:13622
-runWithFiberInDEV @ react-dom_client.js?v=6ac04b05:997
-processDispatchQueue @ react-dom_client.js?v=6ac04b05:13658
-(anonymous) @ react-dom_client.js?v=6ac04b05:14071
-batchedUpdates$1 @ react-dom_client.js?v=6ac04b05:2626
-dispatchEventForPluginEventSystem @ react-dom_client.js?v=6ac04b05:13763
-dispatchEvent @ react-dom_client.js?v=6ac04b05:16784
-dispatchDiscreteEvent @ react-dom_client.js?v=6ac04b05:16765
-PathologistTerminal.jsx:185 Save failed: Error: Order must be fully paid before results can be verified.
-    at Object.saveResults (reports.js:122:19)
-    at async handleSaveInterpretation (PathologistTerminal.jsx:167:17)
-$RefreshSig$ @ PathologistTerminal.jsx:185
-await in $RefreshSig$
-executeDispatch @ react-dom_client.js?v=6ac04b05:13622
-runWithFiberInDEV @ react-dom_client.js?v=6ac04b05:997
-processDispatchQueue @ react-dom_client.js?v=6ac04b05:13658
-(anonymous) @ react-dom_client.js?v=6ac04b05:14071
-batchedUpdates$1 @ react-dom_client.js?v=6ac04b05:2626
-dispatchEventForPluginEventSystem @ react-dom_client.js?v=6ac04b05:13763
-dispatchEvent @ react-dom_client.js?v=6ac04b05:16784
-dispatchDiscreteEvent @ react-dom_client.js?v=6ac04b05:16765
+BIGGEST ISSUE:
+YOU ARE STILL THINKING IN “PRINTERS”
+
+But the architecture is already evolving into:
+
+TERMINAL + DEVICE ORCHESTRATION
+
+That’s a much bigger layer.
+
+Today:
+
+thermal printers
+barcode printers
+
+Tomorrow:
+
+barcode scanners
+signature pads
+weighing scales
+token displays
+analyzers
+
+will enter the same infrastructure ecosystem.
+
+So if your entities become:
+
+BranchPrinter
+
+everywhere…
+
+you’ll regret it later.
+
+WHAT I WOULD DO
+
+Internally design it like this:
+
+BranchDevice
+
+with:
+
+DeviceCategory
+
+Examples:
+
+THERMAL_PRINTER
+LABEL_PRINTER
+SCANNER
+ANALYZER
+TOKEN_DISPLAY
+
+BUT…
+
+keep the UI wording:
+
+Printing Setup
+
+for now.
+
+That’s the right compromise.
+
+SECOND BIG ISSUE:
+PRINT INTENTS ARE MISSING
+
+This is the most important missing abstraction.
+
+Right now the plan does:
+
+SpecificReceiptPrinter
+
+This will become unmaintainable.
+
+Because eventually you’ll need:
+
+receipt printing
+barcode printing
+report A4 printing
+sample labels
+worklists
+queue slips
+
+If you hardcode:
+
+ReceiptPrinterId
+BarcodePrinterId
+A4PrinterId
+
+the system becomes ugly fast.
+
+BETTER MODEL
+
+Use:
+
+PrintIntent
+
+Example:
+
+RECEIPT
+BARCODE
+SAMPLE_LABEL
+REPORT_A4
+TOKEN
+WORKLIST
+
+Then:
+
+Terminal
+  -> routes intent
+  -> to assigned printer
+
+Example:
+
+BARCODE -> Zebra GX430
+RECEIPT -> Epson TM-T82
+REPORT_A4 -> HP LaserJet
+
+THIS is scalable.
+
+This is enterprise-grade infrastructure design.
+
+THIRD BIG ISSUE:
+BROWSER PRINTING WILL HURT YOU LATER
+
+This is important.
+
+Right now:
+
+Browser -> Printer
+
+works.
+
+But eventually:
+
+silent printing
+Zebra precision
+thermal alignment
+Windows spooler behavior
+Chrome print dialogs
+
+will become operational pain.
+
+So your architecture should ANTICIPATE:
+
+SynOS Local Print Agent
+
+Meaning:
+a tiny local daemon/service later.
+
+NOT now.
+
+But:
+your schema should leave room for:
+
+ConnectionMode
+
+Example:
+
+Browser
+BridgeAgent
+RemoteSpooler
+
+That future-proofs the system.
