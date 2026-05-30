@@ -568,6 +568,16 @@ export default function AdminDashboard() {
                     />
                   </div>
                 </div>
+                <div className="md:col-span-3">
+                  <label className="block text-xs font-bold text-textSecondary mb-2">GLOBAL REPORT DISCLAIMER (PDF FOOTER)</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. * Clinical correlation required. Please consult a pathologist."
+                    value={settings.footerDisclaimer || ''}
+                    onChange={e => setSettings({ ...settings, footerDisclaimer: e.target.value })}
+                    className="w-full bg-inputBackground border border-border rounded-lg p-3 text-textPrimary focus:ring-1 focus:ring-focusRing outline-none"
+                  />
+                </div>
                 <div className="md:col-span-3 flex flex-wrap gap-6 bg-elevated/40 p-4 rounded-xl border border-border">
                   <label className="flex items-center space-x-3 cursor-pointer">
                     <input

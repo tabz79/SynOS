@@ -774,6 +774,26 @@ export function SystemSettingsScreen() {
                     className="w-full px-3 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs outline-none focus:border-synos-primary transition-colors text-zinc-700 dark:text-zinc-300 shadow-sm"
                   />
                 </div>
+                <div>
+                  <label className="block text-xxs font-bold text-zinc-400 mb-2 uppercase tracking-wide">Watermark Image URL</label>
+                  <input
+                    type="text"
+                    value={settings.watermarkUrl || ''}
+                    onChange={e => setSettings({ ...settings, watermarkUrl: e.target.value })}
+                    className="w-full px-3 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs outline-none focus:border-synos-primary transition-colors text-zinc-700 dark:text-zinc-300 shadow-sm"
+                    placeholder="e.g. /images/watermark.png"
+                  />
+                </div>
+                <div className="md:col-span-3">
+                  <label className="block text-xxs font-bold text-zinc-400 mb-2 uppercase tracking-wide">Global Report Disclaimer (PDF Footer)</label>
+                  <input
+                    type="text"
+                    value={settings.footerDisclaimer || ''}
+                    onChange={e => setSettings({ ...settings, footerDisclaimer: e.target.value })}
+                    className="w-full px-3 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs outline-none focus:border-synos-primary transition-colors text-zinc-700 dark:text-zinc-300 shadow-sm"
+                    placeholder="e.g. * Clinical correlation required. Please consult a pathologist."
+                  />
+                </div>
                 <div className="md:col-span-3 flex flex-wrap gap-6 bg-zinc-50/50 dark:bg-zinc-950/40 p-4 rounded-xl border dark:border-zinc-850 border-zinc-200/60 shadow-sm">
                   <label className="flex items-center space-x-3 cursor-pointer select-none">
                     <input
@@ -893,6 +913,28 @@ export function SystemSettingsScreen() {
                     onChange={e => setSettings({ ...settings, smsApiKey: e.target.value })}
                     className="w-full px-3 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs outline-none focus:border-synos-primary transition-colors text-zinc-700 dark:text-zinc-300 shadow-sm"
                   />
+                </div>
+                <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t dark:border-zinc-900 border-zinc-200/50">
+                  <div>
+                    <label className="block text-xxs font-bold text-zinc-400 mb-2 uppercase tracking-wide">WhatsApp Gateway URL</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. https://api.whatsapp.com/v1/messages"
+                      value={settings.whatsAppGatewayUrl || ''}
+                      onChange={e => setSettings({ ...settings, whatsAppGatewayUrl: e.target.value })}
+                      className="w-full px-3 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs outline-none focus:border-synos-primary transition-colors text-zinc-700 dark:text-zinc-300 shadow-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xxs font-bold text-zinc-400 mb-2 uppercase tracking-wide">WhatsApp API Key / Secret</label>
+                    <input
+                      type="password"
+                      placeholder="WhatsApp Gateway authentication key"
+                      value={settings.whatsAppApiKey || ''}
+                      onChange={e => setSettings({ ...settings, whatsAppApiKey: e.target.value })}
+                      className="w-full px-3 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs outline-none focus:border-synos-primary transition-colors text-zinc-700 dark:text-zinc-300 shadow-sm"
+                    />
+                  </div>
                 </div>
               </div>
             </div>
