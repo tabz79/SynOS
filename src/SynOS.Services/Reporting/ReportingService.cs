@@ -162,7 +162,20 @@ namespace SynOS.Services.Reporting
 
             try
             {
-                var order = await _context.Orders.FirstOrDefaultAsync(o => o.OrderId == version.Report.SourceId);
+                Order order = null;
+                if (version.Report.SourceType == "RadiologyStudy")
+                {
+                    var study = await _context.RadiologyStudies
+                        .FirstOrDefaultAsync(rs => rs.RadiologyStudyId == version.Report.SourceId);
+                    if (study != null)
+                    {
+                        order = await _context.Orders.FirstOrDefaultAsync(o => o.OrderId == study.VisitTestId);
+                    }
+                }
+                else
+                {
+                    order = await _context.Orders.FirstOrDefaultAsync(o => o.OrderId == version.Report.SourceId);
+                }
                 var modality = order?.Department ?? "General";
                 var template = await _context.ReportTemplates
                     .AsNoTracking()
@@ -246,8 +259,22 @@ namespace SynOS.Services.Reporting
         private async Task<ReportStructureDto> BuildDynamicStructureAsync(Report report, Visit visit)
         {
             // 1. Fetch Order
-            var order = await _context.Orders.FirstOrDefaultAsync(o => o.OrderId == report.SourceId);
-            if (order == null) throw new KeyNotFoundException($"Order {report.SourceId} for report {report.ReportId} not found.");
+            Order order = null;
+            if (report.SourceType == "RadiologyStudy")
+            {
+                var study = await _context.RadiologyStudies
+                    .FirstOrDefaultAsync(rs => rs.RadiologyStudyId == report.SourceId);
+                if (study != null)
+                {
+                    order = await _context.Orders.FirstOrDefaultAsync(o => o.OrderId == study.VisitTestId);
+                }
+            }
+            else
+            {
+                order = await _context.Orders.FirstOrDefaultAsync(o => o.OrderId == report.SourceId);
+            }
+
+            if (order == null) throw new KeyNotFoundException($"Order for report {report.ReportId} not found.");
 
             // 2. Discover ALL TestCodes in this report context
             // Fix: Instead of only looking at the triggering Order, use all active TestCodes in the Visit.

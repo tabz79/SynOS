@@ -3,6 +3,7 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using SynOS.Models.DTOs;
 using SynOS.Models.DTOs.Reporting;
 using SynOS.Services;
@@ -276,6 +277,29 @@ namespace SynOS.Api.Controllers
         {
             var users = await _userService.GetPathologistsAsync();
             return Ok(users.Select(u => new { u.UserId, u.Name }));
+        }
+
+        [HttpGet("source/{sourceType}/{sourceId}")]
+        [Authorize(Policy = "ReportingPolicy")]
+        public async Task<IActionResult> GetReportBySource(string sourceType, Guid sourceId, [FromServices] SynOS.Data.SynOSDbContext context)
+        {
+            try
+            {
+                var report = await context.Reports
+                    .FirstOrDefaultAsync(r => r.SourceType == sourceType && r.SourceId == sourceId);
+
+                if (report == null)
+                {
+                    return NotFound(new { message = "Report not found for the specified source." });
+                }
+
+                return Ok(new { reportId = report.ReportId });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to get report by source {SourceType}/{SourceId}", sourceType, sourceId);
+                return BadRequest(new { message = ex.Message });
+            }
         }
 
         [HttpPost("{reportId}/claim")]

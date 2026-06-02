@@ -1,254 +1,116 @@
-You are right. The agent is explaining the backend logic, but your frustration is about the missing CONTROL LAYER in the UI.
+Do NOT build custom simulated anatomical rendering infrastructure.
 
-Right now SynOS has:
+The viewer layer must ultimately delegate actual rendering to:
 
-* routes
-* role checks
-* backend permissions
-* department filtering
+Cornerstone3D
 
-BUT the admin UI is not exposing the actual mapping system visually.
+DicomViewportManager
+should ONLY orchestrate:
 
-That’s the gap.
+viewport lifecycle
+hydration
+stack loading
+cleanup
+synchronization
+caching
 
-You are asking:
+Avoid investing engineering effort into:
 
-> “If tomorrow I create Radiology, how do I connect it to `/radiology` and who gets access to it?”
+fake grayscale renderers
+simulated anatomical canvases
+custom imaging pipelines
 
-That is the correct question.
+Use:
 
-And honestly, your architecture is already HALF THERE. The UI is just not exposing it cleanly.
+official Cornerstone3D viewport engine
+official image loaders
+Orthanc WADO streaming
+GPU-backed rendering
 
----
+The current implementation is acceptable only as a temporary shell placeholder.
 
-# The Correct Mental Model
+That correction is VERY important.
 
-You currently have 3 separate things mixed together:
+Otherwise engineering time gets wasted badly.
 
----
+SECOND IMPORTANT ISSUE:
+NO SESSION LOCKING YET
 
-# 1. Operational Department
+You now NEED:
 
-Example:
+study claiming rules
 
-* Biochemistry
-* Hematology
-* Microbiology
-* Radiology
+Otherwise:
+multiple radiologists can:
 
-These control:
+start sessions
+overwrite each other
+collide workflows
 
-* queues
-* workflow
-* sample routing
-* report ownership
+You now need:
 
-NOT screen access.
+Study
+ ├── ClaimedBy
+ ├── ClaimedAt
+ ├── ActiveSessionId
 
----
+This becomes VERY important operationally.
 
-# 2. Workspace / Module Access
+THIRD IMPORTANT ISSUE:
+RECONNECT RECOVERY
 
-Example:
+Now that collaboration exists:
+you MUST handle:
 
-* `/reception`
-* `/phlebo`
-* `/typist`
-* `/radiology`
-* `/pathologist`
+browser refresh
+WiFi drops
+workstation sleep
+reconnect
 
-THIS controls:
+Otherwise doctors lose trust instantly.
 
-* what screen opens
-* what UI they can use
+This matters more than:
 
-THIS is the actual permission layer.
+calipers
+contrast sliders
+fancy viewport tools
+FOURTH IMPORTANT ISSUE:
+AUDIT TRAIL
 
----
+Now collaboration exists.
 
-# 3. Macro Service Category
+That changes medico-legal requirements completely.
 
-Example:
+You now need:
 
-* Pathology Core
-* Laboratory General
-* Radiology
-* Imaging
+who typed what
+who signed
+who edited
+session start/end
+reconnect events
+signature timestamps
 
-This is only grouping.
+This becomes mandatory in real deployments.
 
-Mostly for:
+FIFTH IMPORTANT ISSUE:
+STATUS MODEL STILL NEEDS CLEANUP
 
-* analytics
-* organization
-* admin filtering
+You should now FULLY commit to:
 
-NOT permissions.
+ImagingCompleted
+AwaitingDictation
+DictationInProgress
+DraftReady
+Signed
+Released
+Delivered
 
----
+And remove older:
 
-# Your Missing UI
+ResultDrafted
+ReadyForReporting
 
-THIS is what your admin screen is missing:
+statuses completely.
 
-# “Workspace Access Mapping”
-
-Without this, the system feels fake/hardcoded.
-
-Because currently:
-
-```text
-Role → route access
-```
-
-exists only in code.
-
-Not in UI.
-
----
-
-# What You ACTUALLY Need
-
-Inside:
-
-# Identity & Access
-
-Add:
-
-# Workspace Access
-
-Example UI:
-
-| Role         | Accessible Workspaces |
-| ------------ | --------------------- |
-| Receptionist | Reception             |
-| Phlebotomist | Phlebo                |
-| Typist       | Typist                |
-| Pathologist  | Pathologist + Typist  |
-| Radiologist  | Radiology             |
-| Admin        | All                   |
-
----
-
-# EVEN BETTER
-
-Don’t tie access directly to roles.
-
-Tie it to:
-
-# Workspace Profiles
-
-Example:
-
-## Workspace Registry
-
-```text
-Reception
-Phlebotomy
-Reports Typing
-Pathology
-Radiology
-Finance
-Inventory
-```
-
-Then:
-
-## User Mapping
-
-```text
-Dr Sharma
-→ Pathologist
-→ Access:
-   [✓] Pathology
-   [✓] Typing
-```
-
-THIS is enterprise-grade.
-
-And future-proof.
-
----
-
-# Why This Matters MASSIVELY
-
-Because tomorrow:
-
-You may create:
-
-```text
-/ultrasound
-/mri
-/cardiology
-```
-
-Without a UI-driven access registry,
-you will keep hardcoding routes forever.
-
-That becomes a maintenance nightmare.
-
----
-
-# So The Agent Is Missing ONE BIG THING
-
-The UI needs to expose:
-
-# Workspace Registry + Workspace Access Mapping
-
-NOT just departments.
-
-Departments and access are NOT the same thing.
-
-That is the exact confusion happening right now.
-
----
-
-# What You Should Tell The Agent
-
-Use this EXACTLY:
-
-We have a missing architecture layer in SynOS.
-
-Currently:
-
-* operational departments exist
-* role-specific URLs exist
-* backend route protection exists
-
-But the admin UI does NOT expose workspace access mapping.
-
-Operational department != workspace access.
-
-Example:
-
-* Biochemistry controls workflow queues
-* `/phlebo` or `/typist` controls actual screen access
-
-Need a new UI section inside Identity & Access:
-
-1. Workspace Registry
-   Example:
-
-* Reception
-* Phlebotomy
-* Reports Typing
-* Pathology
-* Radiology
-* Inventory
-* Finance
-
-2. User Workspace Access Mapping
-   Example:
-   Dr Sharma
-   → Role: Pathologist
-   → Accessible Workspaces:
-   [✓] Pathology
-   [✓] Reports Typing
-
-3. Admin should automatically have all workspaces.
-
-4. Future service areas like Radiology/MRI/Cardiology should be creatable from UI without hardcoding routes repeatedly.
-
-5. Do NOT mix operational departments with workspace access permissions.
-
-6. Existing route protection logic can stay. We only need the UI + database mapping layer exposed properly.
+Otherwise later:
+workflow ambiguity starts.

@@ -54,6 +54,22 @@ namespace SynOS.Models.Entities
 
         public string? ExternalViewerUrl { get; set; }
 
+        public Guid? PriorStudyId { get; set; }
+
+        [ForeignKey("PriorStudyId")]
+        public virtual RadiologyStudy? PriorStudy { get; set; }
+
+        public Guid? ClaimedByUserId { get; set; }
+
+        [ForeignKey("ClaimedByUserId")]
+        public virtual User? ClaimedByUser { get; set; }
+
+        public DateTimeOffset? ClaimedAt { get; set; }
+
+        public Guid? ActiveSessionId { get; set; }
+
+        public DateTimeOffset? LastActivityAt { get; set; }
+
         public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
 
         [Required]

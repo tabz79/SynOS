@@ -35,5 +35,11 @@ namespace SynOS.Models.DTOs
         // Raw Images metadata (from RadiologyImages)
         public List<RadiologyImageDto> Images { get; set; } = new List<RadiologyImageDto>();
 
+        // Claim Info
+        public Guid? ClaimedByUserId { get; set; }
+        public string? ClaimedByUserName { get; set; }
+        public DateTimeOffset? ClaimedAt { get; set; }
+        public DateTimeOffset? LastActivityAt { get; set; }
+        public Guid? ActiveSessionId { get; set; }
     }
 }

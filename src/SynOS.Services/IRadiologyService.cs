@@ -16,7 +16,7 @@ namespace SynOS.Services
 
         // Radiologist Flow
         Task<IEnumerable<RadiologyStudyWorklistDto>> GetRadiologistWorklistAsync();
-        Task<RadiologyStudyDetailDto> GetStudyDetailsAsync(Guid studyId);
+        Task<RadiologyStudyDetailDto> GetStudyDetailsAsync(Guid studyId, Guid? userId = null);
         Task<RadiologyReportDto> DraftReportAsync(RadiologyReportDraftDto dto, Guid userId);
         Task<RadiologyReportDto> SignReportAsync(Guid studyId, Guid userId);
         

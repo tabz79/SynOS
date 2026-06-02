@@ -90,6 +90,25 @@ interface AuditLog {
   createdAt: string;
 }
 
+interface Workspace {
+  workspaceId: string;
+  name: string;
+  routePath: string;
+  isActive: boolean;
+  createdAt: string;
+}
+
+interface User {
+  userId: string;
+  username: string;
+  email: string;
+  name: string;
+  designation?: string;
+  isActive: boolean;
+  departmentCode?: string;
+  workspaceIds: string[];
+}
+
 interface Discount {
   discountDefinitionId: string;
   code: string;
@@ -115,7 +134,7 @@ interface ReferralPartner {
 }
 
 export default function AdminDashboard() {
-  const [activeTab, setActiveTab] = useState<'settings' | 'permissions' | 'departments' | 'pricing' | 'audit'>('settings');
+  const [activeTab, setActiveTab] = useState<'settings' | 'permissions' | 'departments' | 'pricing' | 'workspaces' | 'audit'>('settings');
   const [loading, setLoading] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState<string | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
@@ -133,6 +152,17 @@ export default function AdminDashboard() {
   const [departments, setDepartments] = useState<Department[]>([]);
   const [editingPolicy, setEditingPolicy] = useState<Partial<Policy> | null>(null);
   const [showPolicyForm, setShowPolicyForm] = useState(false);
+
+  // Workspaces State
+  const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
+  const [editingWorkspace, setEditingWorkspace] = useState<Partial<Workspace> | null>(null);
+  const [showWorkspaceForm, setShowWorkspaceForm] = useState(false);
+
+  // User workspace mappings state
+  const [adminUsers, setAdminUsers] = useState<User[]>([]);
+  const [selectedMappingUserId, setSelectedMappingUserId] = useState<string>('');
+  const [selectedUserWorkspaces, setSelectedUserWorkspaces] = useState<string[]>([]);
+  const [savingUserWorkspaces, setSavingUserWorkspaces] = useState(false);
 
   // Pricing & Discounts State
   const [discounts, setDiscounts] = useState<Discount[]>([]);
@@ -244,6 +274,126 @@ export default function AdminDashboard() {
     }
   };
 
+  // Load Workspaces
+  const loadWorkspaces = async () => {
+    setLoading(true);
+    try {
+      const response = await apiClient.get('/admin/users/workspaces');
+      setWorkspaces(response.data);
+    } catch (err: any) {
+      setSaveError(err.response?.data?.message || 'Failed to load workspaces.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Load Workspace Users
+  const loadWorkspaceUsers = async () => {
+    try {
+      const usersRes = await apiClient.get('/admin/users');
+      setAdminUsers(usersRes.data);
+      setUsers(usersRes.data); // also sync users list for audit actor select
+    } catch (err) {
+      console.error("Failed to load users for workspace mapping:", err);
+    }
+  };
+
+  const handleSaveWorkspace = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingWorkspace || !editingWorkspace.name?.trim() || !editingWorkspace.routePath?.trim()) {
+      return setSaveError('Workspace Name and Route Path cannot be empty.');
+    }
+
+    setLoading(true);
+    setSaveError(null);
+    setSaveSuccess(null);
+
+    try {
+      if (editingWorkspace.workspaceId) {
+        await apiClient.put(`/admin/users/workspaces/${editingWorkspace.workspaceId}`, {
+          name: editingWorkspace.name.trim(),
+          routePath: editingWorkspace.routePath.trim(),
+          isActive: editingWorkspace.isActive
+        });
+        setSaveSuccess('Workspace details updated successfully.');
+      } else {
+        await apiClient.post('/admin/users/workspaces', {
+          name: editingWorkspace.name.trim(),
+          routePath: editingWorkspace.routePath.trim()
+        });
+        setSaveSuccess('New workspace registered successfully.');
+      }
+      setShowWorkspaceForm(false);
+      setEditingWorkspace(null);
+      await loadWorkspaces();
+    } catch (err: any) {
+      setSaveError(err.response?.data?.message || 'Failed to save workspace.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteWorkspace = async (workspaceId: string) => {
+    if (!window.confirm('Are you sure you want to delete this workspace? This will remove all staff access permissions bound to this route.')) return;
+
+    setLoading(true);
+    setSaveError(null);
+    setSaveSuccess(null);
+
+    try {
+      await apiClient.delete(`/admin/users/workspaces/${workspaceId}`);
+      setSaveSuccess('Workspace deleted successfully.');
+      await loadWorkspaces();
+    } catch (err: any) {
+      setSaveError(err.response?.data?.message || 'Failed to delete workspace.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleUserSelect = (userId: string) => {
+    setSelectedMappingUserId(userId);
+    const selectedUser = adminUsers.find(u => u.userId === userId);
+    if (selectedUser) {
+      setSelectedUserWorkspaces(selectedUser.workspaceIds || []);
+    } else {
+      setSelectedUserWorkspaces([]);
+    }
+  };
+
+  const handleToggleWorkspaceAccess = (workspaceId: string) => {
+    setSelectedUserWorkspaces(prev => {
+      if (prev.includes(workspaceId)) {
+        return prev.filter(id => id !== workspaceId);
+      } else {
+        return [...prev, workspaceId];
+      }
+    });
+  };
+
+  const handleSaveUserWorkspaces = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedMappingUserId) {
+      return setSaveError('Please select a user first.');
+    }
+
+    setSavingUserWorkspaces(true);
+    setSaveError(null);
+    setSaveSuccess(null);
+
+    try {
+      await apiClient.post(`/admin/users/${selectedMappingUserId}/workspaces`, {
+        workspaceIds: selectedUserWorkspaces
+      });
+      setSaveSuccess('User workspace access mappings saved successfully.');
+      await loadWorkspaceUsers();
+    } catch (err: any) {
+      setSaveError(err.response?.data?.message || 'Failed to update user workspace access.');
+    } finally {
+      setSavingUserWorkspaces(false);
+    }
+  };
+
   useEffect(() => {
     setSaveError(null);
     setSaveSuccess(null);
@@ -251,6 +401,10 @@ export default function AdminDashboard() {
     if (activeTab === 'permissions') loadPermissions();
     if (activeTab === 'departments') loadDepartmentPolicies();
     if (activeTab === 'pricing') loadPricingData();
+    if (activeTab === 'workspaces') {
+      loadWorkspaces();
+      loadWorkspaceUsers();
+    }
     if (activeTab === 'audit') loadAuditLogs();
   }, [activeTab, auditOffset]);
 
@@ -433,6 +587,7 @@ export default function AdminDashboard() {
             { id: 'permissions', label: 'Roles Matrix' },
             { id: 'departments', label: 'Department Hours' },
             { id: 'pricing', label: 'Pricing & Discounts' },
+            { id: 'workspaces', label: 'Workspace Registry' },
             { id: 'audit', label: 'Audit Logs' }
           ] as const
         ).map(tab => (
@@ -1441,6 +1596,205 @@ export default function AdminDashboard() {
                 </div>
               </div>
             )}
+          </div>
+        )}
+
+        {/* WORKSPACE REGISTRY & ACCESS MAPPING TAB */}
+        {activeTab === 'workspaces' && !loading && (
+          <div className="animate-fadeIn grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Left Column: Workspace Registry */}
+            <div className="lg:col-span-2 space-y-6">
+              <div className="flex justify-between items-center border-b border-border pb-3">
+                <div>
+                  <h3 className="text-lg font-semibold text-blue-400">Workspace Registry</h3>
+                  <p className="text-textSecondary text-xs">Expose dynamic routes and layout permission boundaries.</p>
+                </div>
+                <button
+                  onClick={() => {
+                    setEditingWorkspace({
+                      name: '',
+                      routePath: '',
+                      isActive: true
+                    });
+                    setShowWorkspaceForm(true);
+                  }}
+                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg text-xs shadow-lg hover:shadow-indigo-500/20 transform hover:-translate-y-0.5 transition-all"
+                >
+                  + Register New Screen
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {workspaces.map(ws => (
+                  <div key={ws.workspaceId} className="border border-border rounded-xl p-5 bg-elevated/10 flex flex-col justify-between">
+                    <div>
+                      <div className="flex items-center space-x-2.5 mb-2">
+                        <span className="font-mono text-xs font-bold text-indigo-400 bg-indigo-500/10 px-2.5 py-0.5 rounded border border-indigo-500/20">
+                          {ws.routePath}
+                        </span>
+                        <span className={`h-2 w-2 rounded-full ${ws.isActive ? 'bg-success' : 'bg-textSecondary'}`} />
+                      </div>
+                      <h4 className="font-bold text-sm text-textPrimary mt-1">{ws.name}</h4>
+                      <p className="text-xxs text-textSecondary mt-1">Registered: {dayjs(ws.createdAt).format('MMM D, YYYY')}</p>
+                    </div>
+                    <div className="flex space-x-2 mt-4 pt-4 border-t border-border/40">
+                      <button
+                        onClick={() => {
+                          setEditingWorkspace(ws);
+                          setShowWorkspaceForm(true);
+                        }}
+                        className="flex-1 py-1.5 text-center text-xs border border-border hover:bg-elevated/50 rounded font-semibold text-indigo-400"
+                      >
+                        Modify
+                      </button>
+                      <button
+                        onClick={() => handleDeleteWorkspace(ws.workspaceId)}
+                        className="px-3 py-1.5 text-xs bg-red-500/10 text-red-400 hover:bg-red-500/20 border border-red-500/30 rounded font-semibold"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                ))}
+                {workspaces.length === 0 && (
+                  <p className="text-textSecondary text-sm py-4 md:col-span-2">No custom dynamic workspaces registered yet.</p>
+                )}
+              </div>
+
+              {/* Workspace Form Modal */}
+              {showWorkspaceForm && editingWorkspace && (
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 animate-fadeIn">
+                  <div className="bg-card border border-border p-6 rounded-2xl w-full max-w-md shadow-2xl">
+                    <h3 className="text-lg font-bold mb-4 border-b border-border pb-2 text-indigo-400">
+                      {editingWorkspace.workspaceId ? 'Modify Workspace Specifications' : 'Register New Screen Module'}
+                    </h3>
+                    <form onSubmit={handleSaveWorkspace} className="space-y-4">
+                      <div>
+                        <label className="block text-xs font-bold text-textSecondary mb-2">SCREEN / WORKSPACE NAME</label>
+                        <input
+                          type="text"
+                          required
+                          value={editingWorkspace.name || ''}
+                          onChange={e => setEditingWorkspace({ ...editingWorkspace, name: e.target.value })}
+                          className="w-full bg-inputBackground border border-border rounded-lg p-3 text-textPrimary focus:ring-1 focus:ring-focusRing outline-none"
+                          placeholder="e.g. Radiology Diagnostics"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-textSecondary mb-2">RELATIVE ROUTE PATH</label>
+                        <input
+                          type="text"
+                          required
+                          value={editingWorkspace.routePath || ''}
+                          onChange={e => setEditingWorkspace({ ...editingWorkspace, routePath: e.target.value })}
+                          className="w-full bg-inputBackground border border-border rounded-lg p-3 text-textPrimary focus:ring-1 focus:ring-focusRing outline-none"
+                          placeholder="e.g. /radiology"
+                        />
+                      </div>
+                      {editingWorkspace.workspaceId && (
+                        <div className="flex items-center space-x-3 bg-elevated/45 p-4 rounded-xl border border-border">
+                          <input
+                            type="checkbox"
+                            id="ws-active"
+                            checked={editingWorkspace.isActive || false}
+                            onChange={e => setEditingWorkspace({ ...editingWorkspace, isActive: e.target.checked })}
+                            className="form-checkbox h-5 w-5 text-indigo-500 rounded bg-inputBackground border-border focus:ring-0"
+                          />
+                          <label htmlFor="ws-active" className="text-sm font-semibold text-textPrimary cursor-pointer">
+                            Active & Authorizable
+                          </label>
+                        </div>
+                      )}
+                      <div className="flex justify-end space-x-3 pt-4 border-t border-border">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setShowWorkspaceForm(false);
+                            setEditingWorkspace(null);
+                          }}
+                          className="px-4 py-2 border border-border hover:bg-elevated/40 text-textSecondary text-sm rounded-lg"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          type="submit"
+                          className="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm rounded-lg"
+                        >
+                          Save Screen
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Right Column: User Workspace Access Mappings */}
+            <div className="space-y-6">
+              <div className="border-b border-border pb-3">
+                <h3 className="text-lg font-semibold text-blue-400">Staff Workspace Mapping</h3>
+                <p className="text-textSecondary text-xs">Assign direct dynamic access permissions per user.</p>
+              </div>
+
+              <div className="bg-elevated/10 border border-border rounded-2xl p-6 space-y-6">
+                <form onSubmit={handleSaveUserWorkspaces} className="space-y-6">
+                  <div>
+                    <label className="block text-xs font-bold text-textSecondary mb-2">SELECT STAFF MEMBER</label>
+                    <select
+                      value={selectedMappingUserId}
+                      onChange={e => handleUserSelect(e.target.value)}
+                      className="w-full bg-inputBackground border border-border rounded-lg p-3 text-sm text-textPrimary focus:ring-1 focus:ring-focusRing outline-none"
+                    >
+                      <option value="">-- Choose User --</option>
+                      {adminUsers.map(u => (
+                        <option key={u.userId} value={u.userId}>
+                          {u.name} (@{u.username})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {selectedMappingUserId ? (
+                    <div className="space-y-4">
+                      <label className="block text-xs font-bold text-textSecondary">ACCESSIBLE WORKSPACES</label>
+                      <div className="space-y-2 border border-border bg-inputBackground p-4 rounded-xl max-h-60 overflow-y-auto">
+                        {workspaces.map(ws => (
+                          <label key={ws.workspaceId} className="flex items-center space-x-3 cursor-pointer p-2 hover:bg-elevated/20 rounded transition-colors select-none">
+                            <input
+                              type="checkbox"
+                              checked={selectedUserWorkspaces.includes(ws.workspaceId)}
+                              onChange={() => handleToggleWorkspaceAccess(ws.workspaceId)}
+                              className="form-checkbox h-4 w-4 text-indigo-500 rounded bg-inputBackground border-border focus:ring-0"
+                            />
+                            <div>
+                              <span className="text-sm font-semibold text-textPrimary block">{ws.name}</span>
+                              <span className="text-xxs text-textSecondary font-mono">{ws.routePath}</span>
+                            </div>
+                          </label>
+                        ))}
+                        {workspaces.length === 0 && (
+                          <p className="text-textSecondary text-xs">No workspaces registered in system configuration.</p>
+                        )}
+                      </div>
+
+                      <div className="pt-4 border-t border-border flex justify-end">
+                        <button
+                          type="submit"
+                          disabled={savingUserWorkspaces}
+                          className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow-lg hover:shadow-indigo-500/20 transform hover:-translate-y-0.5 transition-all text-sm disabled:opacity-40 disabled:cursor-not-allowed"
+                        >
+                          {savingUserWorkspaces ? 'Saving Mappings...' : 'Update Workspace Mappings'}
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-center py-10 border border-dashed border-border rounded-xl">
+                      <p className="text-textSecondary text-xs font-medium">Select a staff member from the dropdown list to configure user-specific workspace authorizations.</p>
+                    </div>
+                  )}
+                </form>
+              </div>
+            </div>
           </div>
         )}
 

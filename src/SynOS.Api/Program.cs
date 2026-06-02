@@ -165,7 +165,8 @@ builder.Services.AddAuthentication(options =>
             if (!string.IsNullOrEmpty(accessToken) &&
                 (path.StartsWithSegments("/dashboardHub") || 
                  path.StartsWithSegments("/sampleHub") ||
-                 path.StartsWithSegments("/branchOperationsHub")))
+                 path.StartsWithSegments("/branchOperationsHub") ||
+                 path.StartsWithSegments("/radiologyCollaborationHub")))
             {
                 context.Token = accessToken;
             }
@@ -320,8 +321,12 @@ builder.Services.AddScoped<IRadiologyService, RadiologyService>(provider =>
         provider.GetRequiredService<IReportTemplateService>(),
         provider.GetRequiredService<IUserService>(),
         provider.GetRequiredService<IFileStorageService>(),
-        provider.GetRequiredService<IOperationalEventWriter>() // ADDED
+        provider.GetRequiredService<IOperationalEventWriter>(), // ADDED
+        provider.GetRequiredService<IConfiguration>(),
+        provider.GetRequiredService<IRadiologyImageSourceService>()
     ));
+builder.Services.AddScoped<IRadiologyImageSourceService, RadiologyImageSourceService>();
+builder.Services.AddScoped<IDictationSessionService, DictationSessionService>();
 builder.Services.AddScoped<IPacsService, PacsService>();
 builder.Services.AddScoped<IRadiologyAccessGuard, RadiologyAccessGuard>();
 builder.Services.AddScoped<IUserService, UserService>();
@@ -465,12 +470,25 @@ app.UseHttpsRedirection();
 
 // Configure static files
 var fileStorageBasePath = app.Configuration["FileStorage:BasePath"];
-if (!string.IsNullOrEmpty(fileStorageBasePath) && Directory.Exists(fileStorageBasePath))
+if (!string.IsNullOrEmpty(fileStorageBasePath))
 {
+    if (!Directory.Exists(fileStorageBasePath))
+    {
+        Directory.CreateDirectory(fileStorageBasePath);
+    }
+    var provider = new Microsoft.AspNetCore.StaticFiles.FileExtensionContentTypeProvider();
+    provider.Mappings[".dcm"] = "application/dicom";
     app.UseStaticFiles(new StaticFileOptions
     {
         FileProvider = new Microsoft.Extensions.FileProviders.PhysicalFileProvider(fileStorageBasePath),
-        RequestPath = "/files"
+        RequestPath = "/files",
+        ContentTypeProvider = provider,
+        OnPrepareResponse = ctx =>
+        {
+            ctx.Context.Response.Headers.Append("Access-Control-Allow-Origin", "*");
+            ctx.Context.Response.Headers.Append("Access-Control-Allow-Headers", "*");
+            ctx.Context.Response.Headers.Append("Access-Control-Allow-Methods", "*");
+        }
     });
 }
 
@@ -486,6 +504,7 @@ app.MapControllers();
 // app.MapHub<SynOS.Api.Hubs.SampleHub>("/sampleHub"); // DISABLED TEMPORARILY
 app.MapHub<SynOS.Api.Hubs.DashboardHub>("/dashboardHub"); // RESTORED
 app.MapHub<SynOS.Api.Hubs.BranchOperationsHub>("/branchOperationsHub");
+app.MapHub<SynOS.Api.Hubs.RadiologyCollaborationHub>("/radiologyCollaborationHub");
 
 // Validate Branch Configuration
 using (var scope = app.Services.CreateScope())

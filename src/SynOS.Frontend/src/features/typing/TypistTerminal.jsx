@@ -22,6 +22,7 @@ import { ReportA4 } from '../documents/templates/ReportA4';
 import { StockRequestPanel } from '../inventory/StockRequestPanel';
 import { RichMedicalEditor } from '@/components/editor/RichMedicalEditor';
 import { MedicalMacrosWorkspace } from '@/components/editor/MedicalMacrosWorkspace';
+import { RadiologyTypistTerminal } from '../radiology/RadiologyTypistTerminal';
 
 const evaluateFormula = (formula, values) => {
     if (!formula) return null;
@@ -103,6 +104,7 @@ export function TypistTerminal() {
     const isDark = theme === 'dark';
     
     // State
+    const [activeTerminalMode, setActiveTerminalMode] = useState('pathology'); // 'pathology' or 'radiology'
     const [reports, setReports] = useState([]);
     const [selectedReportId, setSelectedReportId] = useState(null);
     const [reportStructure, setReportStructure] = useState(null);
@@ -300,7 +302,35 @@ export function TypistTerminal() {
                 <SystemBar serverTime={null} syncStatus="Synced" />
             </div>
 
-            <div className="flex-1 flex flex-row gap-4 p-4 overflow-hidden relative">
+            <div className="px-4 py-2 border-b dark:border-white/5 border-zinc-200 bg-zinc-900/10 flex items-center gap-2 select-none no-print">
+                <button
+                    onClick={() => setActiveTerminalMode('pathology')}
+                    className={cn(
+                        "px-4 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all",
+                        activeTerminalMode === 'pathology' 
+                            ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/25"
+                            : "text-zinc-500 hover:text-zinc-300 hover:bg-zinc-850/40"
+                    )}
+                >
+                    Pathology Reports
+                </button>
+                <button
+                    onClick={() => setActiveTerminalMode('radiology')}
+                    className={cn(
+                        "px-4 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all",
+                        activeTerminalMode === 'radiology'
+                            ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/25"
+                            : "text-zinc-500 hover:text-zinc-300 hover:bg-zinc-850/40"
+                    )}
+                >
+                    Radiology Live Dictation
+                </button>
+            </div>
+
+            {activeTerminalMode === 'radiology' ? (
+                <RadiologyTypistTerminal />
+            ) : (
+                <div className="flex-1 flex flex-row gap-4 p-4 overflow-hidden relative">
                 {/* Main Content Container for Scaling Effect */}
                 <div className={cn(
                     "flex-1 flex flex-row gap-4 transition-all duration-500 ease-out h-full",
@@ -670,10 +700,11 @@ export function TypistTerminal() {
                                 </div>
                             )}
                         </div>
-                    </div>
                 </div>
             </div>
-        </div>
+            </div>
+            </div>
+            )}
 
             {/* Inventory Drawer Overlay */}
             <div className={cn(

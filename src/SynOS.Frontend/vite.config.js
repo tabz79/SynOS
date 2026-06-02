@@ -42,6 +42,17 @@ export default defineConfig({
             console.log('proxy error', err);
           });
         }
+      },
+      '/radiologyCollaborationHub': {
+        target: 'ws://127.0.0.1:59999',
+        ws: true,
+        changeOrigin: true,
+        secure: false,
+        configure: (proxy, _options) => {
+          proxy.on('error', (err, _req, _res) => {
+            console.log('proxy error', err);
+          });
+        }
       }
     }
   }

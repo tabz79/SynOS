@@ -685,13 +685,32 @@ namespace SynOS.Services
                         var studyExists = await _context.RadiologyStudies.AnyAsync(rs => rs.VisitTestId == order.OrderId);
                         if (!studyExists)
                         {
+                            string modality = "X-Ray"; // default fallback
+                            if (!string.IsNullOrEmpty(test.Category))
+                            {
+                                var catUpper = test.Category.ToUpperInvariant();
+                                if (catUpper.Contains("MRI")) modality = "MRI";
+                                else if (catUpper.Contains("CT")) modality = "CT Scan";
+                                else if (catUpper.Contains("US") || catUpper.Contains("ULTRASOUND") || catUpper.Contains("SONO")) modality = "Ultrasound";
+                                else if (catUpper.Contains("XRAY") || catUpper.Contains("XR") || catUpper.Contains("X-RAY")) modality = "X-Ray";
+                            }
+                            else
+                            {
+                                var nameUpper = test.TestName?.ToUpperInvariant() ?? "";
+                                var codeUpper = test.TestCode?.ToUpperInvariant() ?? "";
+                                if (nameUpper.Contains("MRI") || codeUpper.Contains("MRI")) modality = "MRI";
+                                else if (nameUpper.Contains("CT") || codeUpper.Contains("CT")) modality = "CT Scan";
+                                else if (nameUpper.Contains("ULTRASOUND") || nameUpper.Contains("US ") || nameUpper.Contains("SONO") || codeUpper.Contains("US") || codeUpper.Contains("SONO")) modality = "Ultrasound";
+                                else if (nameUpper.Contains("XRAY") || nameUpper.Contains("X-RAY") || nameUpper.Contains("XR") || codeUpper.Contains("XR") || codeUpper.Contains("XRAY")) modality = "X-Ray";
+                            }
+
                             var newStudy = new RadiologyStudy
                             {
                                 RadiologyStudyId = Guid.NewGuid(),
                                 VisitId = visit.VisitId,
                                 PatientId = visit.PatientId,
                                 VisitTestId = order.OrderId,
-                                Modality = deptName, // Use resolved dept
+                                Modality = modality, // Use resolved modality
                                 AccessionNumber = await _accessionService.GenerateRadiologyAccessionNumberAsync(visit.BranchId ?? throw new InvalidOperationException("Visit BranchId is required for Accession")),
                                 Status = "PendingImaging",
                                 CreatedBy = userId,
@@ -1138,6 +1157,14 @@ namespace SynOS.Services
                     .FirstOrDefaultAsync(v => v.VisitId == visitId);
 
                 if (visit == null) throw new KeyNotFoundException($"Visit {visitId} not found");
+
+                // 2.5. RADIOLOGY DEPT BYPASS: Completely bypass phlebotomy/specimen queue for radiology
+                if (string.Equals(visit.Department, "Radiology", StringComparison.OrdinalIgnoreCase) || string.Equals(visit.Department, "RAD", StringComparison.OrdinalIgnoreCase))
+                {
+                    _logger.LogInformation("TransitionToSpecimenPlanned: Visit {VisitId} is for Radiology. Bypassing specimen planning and phlebotomy assignments.", visitId);
+                    await transaction.CommitAsync();
+                    return;
+                }
                 
                 // 3. WHITELISTED STATUS GUARD: Only allow Draft, Paid, or FullPaid
                 if (visit.Status != VisitStatus.Draft && visit.Status != VisitStatus.Paid && visit.Status != VisitStatus.FullPaid)

@@ -12,7 +12,7 @@ namespace SynOS.Api.Controllers
 {
     [ApiController]
     [Route("api/v1/radiology/reports")]
-    [Authorize(Roles = "Radiologist,Admin")]
+    [Authorize(Roles = "Radiologist,Admin,Typist")]
     public class RadiologyReportsController : ControllerBase
     {
         private readonly IRadiologyService _radiologyService;
@@ -36,7 +36,10 @@ namespace SynOS.Api.Controllers
         [HttpGet("{studyId}")]
         public async Task<IActionResult> GetStudyDetails(Guid studyId)
         {
-            var details = await _radiologyService.GetStudyDetailsAsync(studyId);
+            var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            Guid? userId = Guid.TryParse(userIdString, out var parsedId) ? parsedId : null;
+
+            var details = await _radiologyService.GetStudyDetailsAsync(studyId, userId);
             return Ok(details);
         }
 
@@ -50,6 +53,7 @@ namespace SynOS.Api.Controllers
         }
 
         [HttpPost("sign")]
+        [Authorize(Roles = "Radiologist,Admin")]
         public async Task<IActionResult> SignReport([FromBody] SignRadiologyReportRequestDto request)
         {
             var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);

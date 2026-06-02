@@ -24,11 +24,13 @@ namespace SynOS.Services
         {
             var plan = new List<SpecimenWrapper>();
 
-            // 1. Filter out cancelled orders, orders without tests, AND EXCLUDE PROFILE PARENTS
+            // 1. Filter out cancelled orders, orders without tests, EXCLUDE PROFILE PARENTS, AND EXCLUDE RADIOLOGY
             var validOrders = orders.Where(o => 
                 o.Status != Models.Enums.OrderStatus.Cancelled && 
                 o.Test != null && 
-                (o.ParentOrderId != null || !o.Test.IsProfile)
+                (o.ParentOrderId != null || !o.Test.IsProfile) &&
+                !string.Equals(o.Department, "RAD", StringComparison.OrdinalIgnoreCase) &&
+                !string.Equals(o.Department, "Radiology", StringComparison.OrdinalIgnoreCase)
             ).ToList();
 
             if (!validOrders.Any()) return plan;

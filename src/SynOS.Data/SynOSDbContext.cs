@@ -190,6 +190,7 @@ namespace SynOS.Data
         public DbSet<RadiologyStudy> RadiologyStudies { get; set; } = null!;
         public DbSet<RadiologyImage> RadiologyImages { get; set; } = null!;
         public DbSet<RadiologyReport> RadiologyReports { get; set; } = null!;
+        public DbSet<RadiologyDictationSession> RadiologyDictationSessions { get; set; } = null!;
         public DbSet<PathologyReport> PathologyReports { get; set; } = null!;
         public DbSet<ReportAttachment> ReportAttachments { get; set; } = null!;
 
@@ -368,12 +369,50 @@ namespace SynOS.Data
                 entity.HasOne(e => e.Role).WithMany().HasForeignKey(e => e.RoleId).OnDelete(DeleteBehavior.Restrict);
             });
 
-            // Workspace access mapping
             modelBuilder.Entity<UserWorkspaceAccess>(entity =>
             {
                 entity.HasIndex(e => new { e.UserId, e.WorkspaceId }).IsUnique();
                 entity.HasOne(e => e.User).WithMany().HasForeignKey(e => e.UserId).OnDelete(DeleteBehavior.Cascade);
                 entity.HasOne(e => e.Workspace).WithMany().HasForeignKey(e => e.WorkspaceId).OnDelete(DeleteBehavior.Cascade);
+            });
+
+            modelBuilder.Entity<Workspace>(entity =>
+            {
+                entity.HasIndex(e => e.RoutePath).IsUnique();
+            });
+
+            // Collaborative live session relationships
+            modelBuilder.Entity<RadiologyDictationSession>(entity =>
+            {
+                entity.HasKey(rds => rds.SessionId);
+                entity.HasOne(rds => rds.RadiologyStudy)
+                    .WithMany()
+                    .HasForeignKey(rds => rds.StudyId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(rds => rds.Typist)
+                    .WithMany()
+                    .HasForeignKey(rds => rds.TypistUserId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(rds => rds.Radiologist)
+                    .WithMany()
+                    .HasForeignKey(rds => rds.RadiologistUserId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            // Prior Study Comparison & Claiming Relationships
+            modelBuilder.Entity<RadiologyStudy>(entity =>
+            {
+                entity.HasOne(rs => rs.PriorStudy)
+                    .WithMany()
+                    .HasForeignKey(rs => rs.PriorStudyId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(rs => rs.ClaimedByUser)
+                    .WithMany()
+                    .HasForeignKey(rs => rs.ClaimedByUserId)
+                    .OnDelete(DeleteBehavior.Restrict);
             });
             
             // Financial Facts (Precision Fixes)

@@ -215,7 +215,7 @@ namespace SynOS.Data
             var requiredRoles = new[]
             {
                 "Admin", "Receptionist", "Phlebotomist", "Pathologist", "Technician",
-                "XRayTech", "MriTech", "Radiologist", "DeliveryDesk", "Typist", "LabTech",
+                "XRayTech", "MriTech", "CTTech", "USTech", "Radiologist", "DeliveryDesk", "Typist", "LabTech",
                 "InventoryManager", "Finance"
             };
             var existingRoles = context.Roles.ToDictionary(r => r.Name, r => r);
@@ -466,7 +466,8 @@ namespace SynOS.Data
                 new SpecimenType { Code = "URINE", Name = "Urine", ContainerCategory = "Urine", IsActive = true, CreatedAt = DateTimeOffset.UtcNow },
                 new SpecimenType { Code = "CSF", Name = "Cerebrospinal Fluid", ContainerCategory = "Other", IsActive = true, CreatedAt = DateTimeOffset.UtcNow },
                 new SpecimenType { Code = "SST", Name = "Serum Separator Tube", ContainerCategory = "Blood", IsActive = true, CreatedAt = DateTimeOffset.UtcNow },
-                new SpecimenType { Code = "SWAB", Name = "Swab", ContainerCategory = "Other", IsActive = true, CreatedAt = DateTimeOffset.UtcNow }
+                new SpecimenType { Code = "SWAB", Name = "Swab", ContainerCategory = "Other", IsActive = true, CreatedAt = DateTimeOffset.UtcNow },
+                new SpecimenType { Code = "NO_SPECIMEN", Name = "No Specimen Required", ContainerCategory = "None", IsActive = true, CreatedAt = DateTimeOffset.UtcNow }
             };
             foreach (var type in types)
             {
@@ -733,7 +734,12 @@ namespace SynOS.Data
                 new { Name = "Lab Workbench", RoutePath = "/workbench" },
                 new { Name = "Radiology", RoutePath = "/radiology" },
                 new { Name = "Inventory", RoutePath = "/inventory" },
-                new { Name = "Finance", RoutePath = "/finance" }
+                new { Name = "Finance", RoutePath = "/finance" },
+                new { Name = "X-Ray Technician", RoutePath = "/xraytech" },
+                new { Name = "MRI Technician", RoutePath = "/mritech" },
+                new { Name = "CT Technician", RoutePath = "/cttech" },
+                new { Name = "Ultrasound Technician", RoutePath = "/ustech" },
+                new { Name = "Radiologist Console", RoutePath = "/radiologist" }
             };
 
             var existingWorkspaces = context.Workspaces.ToDictionary(w => w.RoutePath, w => w, StringComparer.OrdinalIgnoreCase);
@@ -797,6 +803,26 @@ namespace SynOS.Data
                 else if (roleName == "Typist")
                 {
                     routesToAssign.Add("/typist");
+                }
+                else if (roleName == "XRayTech")
+                {
+                    routesToAssign.Add("/xraytech");
+                }
+                else if (roleName == "MriTech")
+                {
+                    routesToAssign.Add("/mritech");
+                }
+                else if (roleName == "CTTech")
+                {
+                    routesToAssign.Add("/cttech");
+                }
+                else if (roleName == "USTech")
+                {
+                    routesToAssign.Add("/ustech");
+                }
+                else if (roleName == "Radiologist")
+                {
+                    routesToAssign.Add("/radiologist");
                 }
                 else if (roleName == "InventoryManager")
                 {

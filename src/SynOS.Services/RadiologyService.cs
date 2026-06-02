@@ -1,3 +1,7 @@
+using System.IO;
+using System.IO.Compression;
+using Microsoft.Extensions.Configuration;
+using SynOS.Services.Storage;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using SynOS.Data;
@@ -7,7 +11,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using SynOS.Services.Storage;
 using SynOS.Models.DTOs.ReportTemplateDsl; // Added for TemplateModel
 using SynOS.Services.Operational; // ADDED
 using SynOS.Models.Enums; // ADDED
@@ -23,6 +26,8 @@ namespace SynOS.Services
         private readonly IUserService _userService;
         private readonly IFileStorageService _fileStorageService;
         private readonly IOperationalEventWriter _eventWriter; // ADDED
+        private readonly IConfiguration _configuration;
+        private readonly IRadiologyImageSourceService _imageSourceService;
 
         public RadiologyService(
             SynOSDbContext context,
@@ -31,7 +36,9 @@ namespace SynOS.Services
             IReportTemplateService templateService,
             IUserService userService,
             IFileStorageService fileStorageService,
-            IOperationalEventWriter eventWriter) // ADDED
+            IOperationalEventWriter eventWriter, // ADDED
+            IConfiguration configuration,
+            IRadiologyImageSourceService imageSourceService)
         {
             _context = context;
             _mapper = mapper;
@@ -40,6 +47,8 @@ namespace SynOS.Services
             _userService = userService;
             _fileStorageService = fileStorageService;
             _eventWriter = eventWriter;
+            _configuration = configuration;
+            _imageSourceService = imageSourceService;
         }
 
         public async Task<ReportAttachmentDto> AddAttachmentToStudyAsync(
@@ -98,6 +107,84 @@ namespace SynOS.Services
 
             report.Attachments.Add(newAttachment);
             _context.ReportAttachments.Add(newAttachment);
+
+            if (attachmentType == "ImageZip")
+            {
+                try
+                {
+                    var basePath = _configuration["FileStorage:BasePath"] ?? "C:\\SynOS_Files";
+                    var absoluteZipPath = Path.Combine(basePath, fileUrl);
+
+                    var slicesDir = Path.Combine(basePath, "radiology-attachments", "slices");
+                    if (!Directory.Exists(slicesDir))
+                    {
+                        Directory.CreateDirectory(slicesDir);
+                    }
+
+                    using (var archive = ZipFile.OpenRead(absoluteZipPath))
+                    {
+                        int seqNumber = 1;
+                        foreach (var entry in archive.Entries)
+                        {
+                            if (entry.FullName.EndsWith(".dcm", StringComparison.OrdinalIgnoreCase))
+                            {
+                                var sliceGuid = Guid.NewGuid();
+                                var sliceFileName = $"{sliceGuid}.dcm";
+                                var absoluteSlicePath = Path.Combine(slicesDir, sliceFileName);
+
+                                // Extract raw DICOM file directly to disk
+                                entry.ExtractToFile(absoluteSlicePath, true);
+
+                                // Save relative path in database relative to BasePath
+                                var relativeSliceUrl = Path.Combine("radiology-attachments", "slices", sliceFileName).Replace('\\', '/');
+
+                                // Parse UIDs using FellowOakDicom
+                                string studyInstanceUid = null;
+                                string seriesInstanceUid = null;
+                                string sopInstanceUid = null;
+
+                                try
+                                {
+                                    using (var fs = new FileStream(absoluteSlicePath, FileMode.Open, FileAccess.Read))
+                                    {
+                                        var dicomFile = FellowOakDicom.DicomFile.Open(fs);
+                                        studyInstanceUid = dicomFile.Dataset.GetSingleValueOrDefault(FellowOakDicom.DicomTag.StudyInstanceUID, (string)null);
+                                        seriesInstanceUid = dicomFile.Dataset.GetSingleValueOrDefault(FellowOakDicom.DicomTag.SeriesInstanceUID, (string)null);
+                                        sopInstanceUid = dicomFile.Dataset.GetSingleValueOrDefault(FellowOakDicom.DicomTag.SOPInstanceUID, (string)null);
+                                    }
+                                }
+                                catch (Exception)
+                                {
+                                    // Fallback silently if parsing fails, ensuring raw registration completes
+                                }
+
+                                var radiologyImage = new RadiologyImage
+                                {
+                                    ImageId = sliceGuid,
+                                    RadiologyStudyId = study.RadiologyStudyId,
+                                    FileName = entry.Name,
+                                    FileUrl = relativeSliceUrl,
+                                    ViewLabel = $"Slice {seqNumber}",
+                                    SeriesNumber = 1,
+                                    SequenceNumber = seqNumber,
+                                    StudyInstanceUid = studyInstanceUid,
+                                    SeriesInstanceUid = seriesInstanceUid,
+                                    SopInstanceUid = sopInstanceUid,
+                                    UploadedAt = DateTimeOffset.UtcNow,
+                                    UploadedBy = userId
+                                };
+
+                                _context.RadiologyImages.Add(radiologyImage);
+                                seqNumber++;
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    throw new InvalidOperationException($"Failed to extract and register DICOM study slices: {ex.Message}", ex);
+                }
+            }
 
             // If this is the first image attachment, update the study status
             bool hadImageBefore =
@@ -217,6 +304,35 @@ namespace SynOS.Services
                 throw new KeyNotFoundException($"Radiology study with ID '{dto.StudyId}' not found.");
             }
 
+            var now = DateTimeOffset.UtcNow;
+            if (study.ClaimedByUserId != userId)
+            {
+                // Check if the user is the assigned typist for the active session of this study
+                bool isAssignedTypist = false;
+                if (study.ActiveSessionId.HasValue)
+                {
+                    var session = await _context.RadiologyDictationSessions.FindAsync(study.ActiveSessionId.Value);
+                    if (session != null && session.SessionStatus == "Active" && session.TypistUserId == userId)
+                    {
+                        isAssignedTypist = true;
+                    }
+                }
+                
+                if (!isAssignedTypist)
+                {
+                    throw new UnauthorizedAccessException("You do not have permission to draft this report. The study must be claimed by you, or you must be the assigned typist in the active dictation session.");
+                }
+            }
+            else
+            {
+                // Check lease expiration (30-minute lease)
+                bool isExpired = study.ClaimedAt.HasValue && (now - study.ClaimedAt.Value).TotalMinutes > 30;
+                if (isExpired)
+                {
+                    throw new UnauthorizedAccessException("Your claim lease has expired. Please reclaim the study.");
+                }
+            }
+
             var report = await _context.Reports
                 .Include(r => r.RadiologyReport)
                 .FirstOrDefaultAsync(r => r.SourceId == study.RadiologyStudyId && r.SourceType == "RadiologyStudy");
@@ -233,7 +349,25 @@ namespace SynOS.Services
             report.RadiologyReport.AdditionalNotes = dto.AdditionalNotes;
             
             report.Status = "Draft";
-            study.Status = "ResultDrafted";
+            study.Status = "DraftReady";
+
+            // Log granular clinical event report draft updated
+            await _context.Entry(study).Reference(s => s.Visit).LoadAsync();
+            if (study.Visit != null && study.Visit.BranchId.HasValue)
+            {
+                await _eventWriter.WriteEventAsync(
+                    BranchEventType.VISIT_UPDATED,
+                    study.Visit.BranchId.Value.ToString(),
+                    study.Visit.VisitId.ToString(),
+                    study.RadiologyStudyId.ToString(),
+                    $"Radiology report draft updated for study ID '{study.RadiologyStudyId}'",
+                    "User",
+                    userId.ToString(),
+                    false,
+                    report.ReportId,
+                    "Report"
+                );
+            }
 
             await _context.SaveChangesAsync();
             
@@ -247,7 +381,7 @@ namespace SynOS.Services
         {
             var worklistQuery = 
                 from study in _context.RadiologyStudies
-                where study.Status == "ReadyForReporting" && !study.IsSoftDeleted
+                where (study.Status == "AwaitingDictation" || study.Status == "DictationSessionStarted" || study.Status == "DraftReady") && !study.IsSoftDeleted
                 join visit in _context.Visits on study.VisitId equals visit.VisitId
                 join patient in _context.Patients on study.PatientId equals patient.PatientId
                 join order in _context.Orders on study.VisitTestId equals order.OrderId
@@ -297,7 +431,12 @@ namespace SynOS.Services
                         HasAttachments = false, // This needs to be calculated properly if attachments are on the RadiologyReport
                         ExternalSystemName = x.Study.ExternalSystemName,
                         ExternalAccessionNumber = x.Study.ExternalAccessionNumber,
-                        ExternalViewerUrl = x.Study.ExternalViewerUrl
+                        ExternalViewerUrl = x.Study.ExternalViewerUrl,
+                        ClaimedByUserId = x.Study.ClaimedByUserId,
+                        ClaimedByUserName = x.Study.ClaimedByUser != null ? x.Study.ClaimedByUser.Name : null,
+                        ClaimedAt = x.Study.ClaimedAt,
+                        LastActivityAt = x.Study.LastActivityAt,
+                        ActiveSessionId = x.Study.ActiveSessionId
                     }).ToList()
                 };
                 worklist.Add(worklistItem);
@@ -306,7 +445,7 @@ namespace SynOS.Services
             return worklist;
         }
 
-        public async Task<RadiologyStudyDetailDto> GetStudyDetailsAsync(Guid studyId)
+        public async Task<RadiologyStudyDetailDto> GetStudyDetailsAsync(Guid studyId, Guid? userId = null)
         {
             var query = 
                 from study in _context.RadiologyStudies
@@ -326,6 +465,23 @@ namespace SynOS.Services
                 throw new KeyNotFoundException($"Radiology study with ID '{studyId}' not found.");
             }
 
+            // Log granular clinical event VIEWPORT_OPENED
+            if (userId.HasValue && result.visit.BranchId.HasValue)
+            {
+                await _eventWriter.WriteEventAsync(
+                    BranchEventType.VISIT_UPDATED,
+                    result.visit.BranchId.Value.ToString(),
+                    result.visit.VisitId.ToString(),
+                    studyId.ToString(),
+                    $"Radiology study viewport opened for study ID '{studyId}'",
+                    "User",
+                    userId.Value.ToString(),
+                    true, // Save immediately
+                    studyId,
+                    "RadiologyStudy"
+                );
+            }
+
             var images = await _context.RadiologyImages.Where(i => i.RadiologyStudyId == studyId).ToListAsync();
             var report = await _context.Reports
                 .Include(r => r.RadiologyReport)
@@ -336,6 +492,12 @@ namespace SynOS.Services
                     r.SourceType == "RadiologyStudy" &&
                     r.SourceId == studyId);
             
+            var imagesDto = _mapper.Map<List<RadiologyImageDto>>(images);
+            foreach (var img in imagesDto)
+            {
+                img.FileUrl = _imageSourceService.GetImageWadoUrl(img.ImageId);
+            }
+
             var dto = new RadiologyStudyDetailDto
             {
                 StudyId = result.study.RadiologyStudyId,
@@ -356,7 +518,13 @@ namespace SynOS.Services
                 PatientGender = result.patient.Gender,
                 TokenNumber = result.visit.Token,
 
-                Images = _mapper.Map<List<RadiologyImageDto>>(images),
+                ClaimedByUserId = result.study.ClaimedByUserId,
+                ClaimedByUserName = result.study.ClaimedByUser != null ? result.study.ClaimedByUser.Name : null,
+                ClaimedAt = result.study.ClaimedAt,
+                LastActivityAt = result.study.LastActivityAt,
+                ActiveSessionId = result.study.ActiveSessionId,
+
+                Images = imagesDto,
                 Attachments = report != null
                     ? _mapper.Map<List<ReportAttachmentDto>>(report.Attachments)
                     : new List<ReportAttachmentDto>()
@@ -399,7 +567,12 @@ namespace SynOS.Services
                     TestName = t.TestName, // Corrected to t.TestName
                     Modality = rs.Modality,
                     Status = rs.Status,
-                    AssignedToTechnicianName = tech != null ? tech.Name : null
+                    AssignedToTechnicianName = tech != null ? tech.Name : null,
+                    ClaimedByUserId = rs.ClaimedByUserId,
+                    ClaimedByUserName = rs.ClaimedByUser != null ? rs.ClaimedByUser.Name : null,
+                    ClaimedAt = rs.ClaimedAt,
+                    LastActivityAt = rs.LastActivityAt,
+                    ActiveSessionId = rs.ActiveSessionId
                 }
             ).ToListAsync();
 
@@ -434,7 +607,7 @@ namespace SynOS.Services
                 throw new InvalidOperationException($"Cannot mark imaging completed for study in status '{study.Status}'. Expected 'Assigned'.");
             }
 
-            study.Status = "ReadyForReporting";
+            study.Status = "AwaitingDictation";
             await _context.SaveChangesAsync();
         }
 
@@ -456,6 +629,19 @@ namespace SynOS.Services
                 throw new KeyNotFoundException($"Radiology study with ID '{studyId}' not found.");
             }
             var studyEntity = result.study;
+
+            // Enforce claim check and lease validation (30-minute lease)
+            var now = DateTimeOffset.UtcNow;
+            if (studyEntity.ClaimedByUserId != userId)
+            {
+                throw new UnauthorizedAccessException("You do not have permission to sign this report. You must claim the study first.");
+            }
+            bool isExpired = studyEntity.ClaimedAt.HasValue && (now - studyEntity.ClaimedAt.Value).TotalMinutes > 30;
+            if (isExpired)
+            {
+                throw new UnauthorizedAccessException("Your claim lease has expired. Please reclaim the study.");
+            }
+
             studyEntity.Visit = result.visit;
             studyEntity.Patient = result.patient;
             studyEntity.Order = result.order;
@@ -577,6 +763,10 @@ namespace SynOS.Services
             report.SignedByUserId = userId;
             report.SignedAt = DateTimeOffset.UtcNow;
             studyEntity.Status = "Signed"; 
+            studyEntity.ClaimedByUserId = null;
+            studyEntity.ClaimedAt = null;
+            studyEntity.LastActivityAt = null;
+            studyEntity.ActiveSessionId = null; 
 
             var pdfAttachment = new ReportAttachment
             {

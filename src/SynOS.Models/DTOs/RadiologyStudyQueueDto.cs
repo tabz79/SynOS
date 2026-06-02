@@ -14,5 +14,10 @@ namespace SynOS.Models.DTOs
         public string Modality { get; set; }
         public string Status { get; set; }
         public string AssignedToTechnicianName { get; set; }
+        public Guid? ClaimedByUserId { get; set; }
+        public string? ClaimedByUserName { get; set; }
+        public DateTimeOffset? ClaimedAt { get; set; }
+        public DateTimeOffset? LastActivityAt { get; set; }
+        public Guid? ActiveSessionId { get; set; }
     }
 }

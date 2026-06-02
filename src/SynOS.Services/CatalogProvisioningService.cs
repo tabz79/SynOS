@@ -327,15 +327,18 @@ namespace SynOS.Services
                     continue;
                 }
 
-                if (string.IsNullOrWhiteSpace(catalog.TubeCode) || string.IsNullOrWhiteSpace(catalog.SpecimenCode))
+                var dept = depts.FirstOrDefault(d => d.Code == catalog.DepartmentCode || d.Name == catalog.DepartmentCode);
+                bool isRadiology = (dept != null && (string.Equals(dept.MacroDepartment, "Radiology", StringComparison.OrdinalIgnoreCase) || string.Equals(dept.Code, "RAD", StringComparison.OrdinalIgnoreCase)))
+                                   || string.Equals(catalog.DepartmentCode, "RAD", StringComparison.OrdinalIgnoreCase)
+                                   || string.Equals(catalog.DepartmentCode, "Radiology", StringComparison.OrdinalIgnoreCase);
+
+                if (!isRadiology && (string.IsNullOrWhiteSpace(catalog.TubeCode) || string.IsNullOrWhiteSpace(catalog.SpecimenCode)))
                 {
                     _logger.LogError("Catalog Validation Failed: Test {TestCode} is missing TubeCode or SpecimenCode. Import rejected.", 
                         catalog.TestCode);
                     throw new InvalidOperationException($"Catalog Validation Failed: Test '{catalog.TestCode}' must have both a TubeCode and SpecimenCode mapped.");
                 }
                 // -----------------------------------------------------------
-
-                var dept = depts.FirstOrDefault(d => d.Code == catalog.DepartmentCode || d.Name == catalog.DepartmentCode);
                 
                 if (test == null)
                 {
@@ -345,7 +348,7 @@ namespace SynOS.Services
                         TestCode = catalog.TestCode,
                         TestName = catalog.TestName,
                         DepartmentId = dept?.DepartmentId,
-                        SpecimenTypeCode = catalog.SpecimenCode,
+                        SpecimenTypeCode = isRadiology && string.IsNullOrWhiteSpace(catalog.SpecimenCode) ? "NO_SPECIMEN" : catalog.SpecimenCode,
                         IsProfile = catalog.IsPanel,
                         IsActive = true,
                         CreatedAt = DateTimeOffset.UtcNow
@@ -356,7 +359,7 @@ namespace SynOS.Services
                 {
                     test.TestName = catalog.TestName;
                     test.DepartmentId = dept?.DepartmentId;
-                    test.SpecimenTypeCode = catalog.SpecimenCode;
+                    test.SpecimenTypeCode = isRadiology && string.IsNullOrWhiteSpace(catalog.SpecimenCode) ? "NO_SPECIMEN" : catalog.SpecimenCode;
                     test.IsProfile = catalog.IsPanel;
                     test.IsActive = true;
                     test.UpdatedAt = DateTimeOffset.UtcNow;

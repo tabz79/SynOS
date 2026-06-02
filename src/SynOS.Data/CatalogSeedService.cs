@@ -98,7 +98,7 @@ namespace SynOS.Data
 
         public static async Task SeedSpecimenTypesAsync(SynOSDbContext context)
         {
-            var codesToSeed = new[] { "BLOOD", "SERUM", "PLASMA", "URINE", "STOOL", "SWAB" };
+            var codesToSeed = new[] { "BLOOD", "SERUM", "PLASMA", "URINE", "STOOL", "SWAB", "NO_SPECIMEN" };
             
             var normalizedCodes = codesToSeed
                 .Select(c => c.Trim().ToUpperInvariant())

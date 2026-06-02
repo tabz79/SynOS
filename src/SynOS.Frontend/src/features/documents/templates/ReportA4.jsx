@@ -551,6 +551,7 @@ export const ReportA4 = ({ reportData }) => {
           flex: 1
         }}
       >
+        {results && results.length > 0 && (
         <table className="w-full border-collapse">
           <thead>
             <tr className="border-t border-b border-black text-[11px] font-bold uppercase">
@@ -614,6 +615,7 @@ export const ReportA4 = ({ reportData }) => {
             ))}
           </tbody>
         </table>
+        )}
 
         {/* 🧠 CLINICAL INTERPRETATION / COMMENTS */}
         <div className="mt-6 space-y-4">

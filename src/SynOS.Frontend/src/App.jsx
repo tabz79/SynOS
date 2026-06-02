@@ -32,9 +32,14 @@ import { MyHRDashboard } from '@/features/employee/MyHRDashboard'
 import { LeaveApplication } from '@/features/employee/LeaveApplication'
 import { MyAttendance, RequestStatus } from '@/features/employee/EmployeeStubs'
 import { RoleTakeoverBanner } from '@/features/admin/components/RoleTakeoverBanner'
-import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { PatientSearchScreen } from '@/features/patient/PatientSearchScreen'
 import { PatientDetailScreen } from '@/features/patient/PatientDetailScreen'
+import { XRayTechTerminal } from '@/features/radiology/XRayTechTerminal'
+import { MriTechTerminal } from '@/features/radiology/MriTechTerminal'
+import { CTTechTerminal } from '@/features/radiology/CTTechTerminal'
+import { USTechTerminal } from '@/features/radiology/USTechTerminal'
+import { RadiologistTerminal } from '@/features/radiology/RadiologistTerminal'
+import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 
 function RootRedirect() {
   const { isAuthenticated, user } = useAuth();
@@ -58,6 +63,11 @@ function RootRedirect() {
   if (role === 'DeliveryDesk') return <Navigate to="/delivery" replace />;
   if (role === 'InventoryManager') return <Navigate to="/inventory" replace />;
   if (role === 'Finance') return <Navigate to="/finance" replace />;
+  if (role === 'XRayTech') return <Navigate to="/xraytech" replace />;
+  if (role === 'MriTech') return <Navigate to="/mritech" replace />;
+  if (role === 'CTTech') return <Navigate to="/cttech" replace />;
+  if (role === 'USTech') return <Navigate to="/ustech" replace />;
+  if (role === 'Radiologist') return <Navigate to="/radiologist" replace />;
   
   return (
     <div className="h-screen w-screen bg-synos-background flex items-center justify-center p-4">
@@ -143,6 +153,47 @@ function App() {
               <Route path="/typist" element={
                 <AdminProtectedWrapper roleName="Reports Typing">
                   <TypistTerminal />
+                </AdminProtectedWrapper>
+              } />
+            </Route>
+
+            {/* Radiology Acquisition & Radiologist Workstations */}
+            <Route element={<ProtectedRoute allowedRoles={['XRayTech', 'Admin']} />}>
+              <Route path="/xraytech" element={
+                <AdminProtectedWrapper roleName="X-Ray Tech">
+                  <XRayTechTerminal />
+                </AdminProtectedWrapper>
+              } />
+            </Route>
+
+            <Route element={<ProtectedRoute allowedRoles={['MriTech', 'Admin']} />}>
+              <Route path="/mritech" element={
+                <AdminProtectedWrapper roleName="MRI Tech">
+                  <MriTechTerminal />
+                </AdminProtectedWrapper>
+              } />
+            </Route>
+
+            <Route element={<ProtectedRoute allowedRoles={['CTTech', 'Admin']} />}>
+              <Route path="/cttech" element={
+                <AdminProtectedWrapper roleName="CT Tech">
+                  <CTTechTerminal />
+                </AdminProtectedWrapper>
+              } />
+            </Route>
+
+            <Route element={<ProtectedRoute allowedRoles={['USTech', 'Admin']} />}>
+              <Route path="/ustech" element={
+                <AdminProtectedWrapper roleName="Ultrasound Tech">
+                  <USTechTerminal />
+                </AdminProtectedWrapper>
+              } />
+            </Route>
+
+            <Route element={<ProtectedRoute allowedRoles={['Radiologist', 'Admin']} />}>
+              <Route path="/radiologist" element={
+                <AdminProtectedWrapper roleName="Radiologist Console">
+                  <RadiologistTerminal />
                 </AdminProtectedWrapper>
               } />
             </Route>

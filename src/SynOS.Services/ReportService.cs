@@ -642,17 +642,35 @@ namespace SynOS.Services
         {
             var report = await _context.Reports
                 .Include(r => r.PathologyReport)
+                .Include(r => r.RadiologyReport)
                 .Include(r => r.TypedByUser)
                 .Include(r => r.VerifiedByUser)
                 .FirstOrDefaultAsync(r => r.ReportId == reportId);
 
             if (report == null) return null;
 
-            var order = await _context.Orders
-                .Include(o => o.Test)
-                .Include(o => o.Visit).ThenInclude(v => v.Patient)
-                .Include(o => o.Visit).ThenInclude(v => v.Referrer)
-                .FirstOrDefaultAsync(o => o.OrderId == report.SourceId);
+            Order order = null;
+            if (report.SourceType == "RadiologyStudy")
+            {
+                var study = await _context.RadiologyStudies
+                    .FirstOrDefaultAsync(rs => rs.RadiologyStudyId == report.SourceId);
+                if (study != null)
+                {
+                    order = await _context.Orders
+                        .Include(o => o.Test)
+                        .Include(o => o.Visit).ThenInclude(v => v.Patient)
+                        .Include(o => o.Visit).ThenInclude(v => v.Referrer)
+                        .FirstOrDefaultAsync(o => o.OrderId == study.VisitTestId);
+                }
+            }
+            else
+            {
+                order = await _context.Orders
+                    .Include(o => o.Test)
+                    .Include(o => o.Visit).ThenInclude(v => v.Patient)
+                    .Include(o => o.Visit).ThenInclude(v => v.Referrer)
+                    .FirstOrDefaultAsync(o => o.OrderId == report.SourceId);
+            }
 
             if (order == null) return null;
 
@@ -871,6 +889,132 @@ namespace SynOS.Services
         private async Task<ReportDataModel> BuildReportDataModelV2Async(Report report, Order order, bool forceLive = false)
         {
             var patient = order.Visit!.Patient;
+
+            if (report.SourceType == "RadiologyStudy")
+            {
+                var radLabProfile = await _context.LabProfiles.AsNoTracking().FirstOrDefaultAsync() ?? new LabProfile 
+                { 
+                    Name = "SynOS Laboratory", 
+                    Address = "Default Address",
+                    FooterDisclaimer = "* Clinical correlation required."
+                };
+
+                var radNow = DateTimeOffset.UtcNow;
+                var radiologyReport = report.RadiologyReport;
+
+                // Build a narrative document for findings and impressions
+                var narrativeBuilder = new System.Text.StringBuilder();
+                if (radiologyReport != null)
+                {
+                    if (!string.IsNullOrWhiteSpace(radiologyReport.Findings))
+                    {
+                        narrativeBuilder.AppendLine("<h3>EXAMINATION & FINDINGS</h3>");
+                        narrativeBuilder.AppendLine($"<p>{radiologyReport.Findings}</p>");
+                    }
+                    if (!string.IsNullOrWhiteSpace(radiologyReport.Impression))
+                    {
+                        narrativeBuilder.AppendLine("<h3>IMPRESSION</h3>");
+                        narrativeBuilder.AppendLine($"<p><strong>{radiologyReport.Impression}</strong></p>");
+                    }
+                    if (!string.IsNullOrWhiteSpace(radiologyReport.AdditionalNotes))
+                    {
+                        narrativeBuilder.AppendLine("<h3>ADDITIONAL NOTES</h3>");
+                        narrativeBuilder.AppendLine($"<p>{radiologyReport.AdditionalNotes}</p>");
+                    }
+                }
+                var narrativeText = narrativeBuilder.ToString();
+
+                var radModel = new ReportDataModel
+                {
+                    Lab = new LabDetails
+                    {
+                        Name = radLabProfile.Name,
+                        Subtitle = radLabProfile.Tagline ?? "Enterprise Lab Intelligence System",
+                        Address = radLabProfile.Address,
+                        Email = radLabProfile.Email,
+                        Website = radLabProfile.Website,
+                        Phone = radLabProfile.Phone,
+                        Accreditation = radLabProfile.Accreditation ?? string.Empty,
+                        FooterDisclaimer = radLabProfile.FooterDisclaimer,
+                        LogoUrl = radLabProfile.HeaderLogoUrl
+                    },
+                    Metadata = new ReportMetadata
+                    {
+                        ContractVersion = 2,
+                        GeneratedFrom = "live",
+                        IsDraft = report.Status != "Signed",
+                        GeneratedAt = radNow,
+                        GeneratedAtFormatted = radNow.ToString("dd MMM yyyy, hh:mm tt"),
+                        SampleCollectedAt = null,
+                        SampleCollectedAtFormatted = "N/A",
+                        SampleReceivedAt = null,
+                        SampleReceivedAtFormatted = "N/A",
+                        ReferenceDoctor = order.Visit?.Referrer?.ProviderName ?? "Self / Walk-in",
+                        BillingDateFormatted = order.Visit?.CreatedAt.ToString("dd-MMM-yyyy") ?? "N/A",
+                        PreparedBy = report.TypedByUser?.Name ?? "N/A",
+                        TestCode = order.Test?.TestCode ?? "RAD"
+                    },
+                    Modality = "Radiology",
+                    ReportTitle = $"{order.Test?.TestName ?? "Radiology"} Diagnostic Report",
+                    Patient = new PatientInfo
+                    {
+                        Name = $"{patient.FirstName} {patient.LastName}",
+                        PatientId = patient.MRN,
+                        DateOfBirth = patient.DateOfBirth.ToString("yyyy-MM-dd"),
+                        Gender = patient.Gender,
+                        ContactInfo = patient.CurrentPhoneNumber ?? "N/A"
+                    },
+                    Results = new List<ResultGroup>(), // Narrative-first: no parameter grid
+                    Comments = string.Empty,
+                    Interpretation = narrativeText, // Store narrative here to render on ReportA4
+                    Recommendations = string.Empty,
+                    Signatures = new List<ReportSignatureDetails>(),
+                    Verification = new VerificationInfo
+                    {
+                        QrCodeContent = $"https://synos.com/verify/{report.ReportId}",
+                        ReportVersion = report.CurrentVersion,
+                        VersionHash = "RAD-SIGN",
+                        Status = report.Status == "Signed" ? "SIGNED" : "PENDING"
+                    }
+                };
+
+                // Add default lab director signature if exists
+                var directorUser = await _context.Users
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(u => u.IsDefaultSignatory && u.IsActive);
+                if (directorUser != null)
+                {
+                    var directorSig = new ReportSignatureDetails
+                    {
+                        DoctorName = directorUser.Name,
+                        Credentials = directorUser.Designation ?? "Consultant Radiologist",
+                        Role = "Consultant Radiologist",
+                        SignedAt = report.SignedAt,
+                        Hash = "RAD-BASELINE",
+                        Version = report.CurrentVersion
+                    };
+                    if (!string.IsNullOrEmpty(directorUser.SignatureImageUrl))
+                    {
+                        try
+                        {
+                            using var stream = await _fileStorageService.GetFileStreamAsync(directorUser.SignatureImageUrl);
+                            using var ms = new MemoryStream();
+                            await stream.CopyToAsync(ms);
+                            var bytes = ms.ToArray();
+                            directorSig.SignatureImage = bytes;
+                            directorSig.SignatureImageBase64 = Convert.ToBase64String(bytes);
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogWarning(ex, "Failed to load director signature: {Path}", directorUser.SignatureImageUrl);
+                        }
+                    }
+                    radModel.Signatures.Add(directorSig);
+                }
+
+                return radModel;
+            }
+
             var structure = await _reportingService.GetReportStructureAsync(report.ReportId, forceLive);
             
             // SINGLE TRUTH: Human input comes exclusively from ReportInterpretations

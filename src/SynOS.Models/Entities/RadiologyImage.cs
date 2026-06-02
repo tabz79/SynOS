@@ -27,6 +27,15 @@ namespace SynOS.Models.Entities
         public int? SeriesNumber { get; set; }
 
         public int? SequenceNumber { get; set; }
+        
+        [StringLength(200)]
+        public string? StudyInstanceUid { get; set; }
+
+        [StringLength(200)]
+        public string? SeriesInstanceUid { get; set; }
+
+        [StringLength(200)]
+        public string? SopInstanceUid { get; set; }
 
         public DateTimeOffset UploadedAt { get; set; } = DateTimeOffset.UtcNow;
 

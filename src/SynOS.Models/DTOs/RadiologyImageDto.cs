@@ -12,6 +12,9 @@ namespace SynOS.Models.DTOs
         public string ViewLabel { get; set; }
         public int? SeriesNumber { get; set; }
         public int? SequenceNumber { get; set; }
+        public string? StudyInstanceUid { get; set; }
+        public string? SeriesInstanceUid { get; set; }
+        public string? SopInstanceUid { get; set; }
         public DateTimeOffset UploadedAt { get; set; }
         public string UploaderName { get; set; }
     }

@@ -24,7 +24,7 @@ namespace SynOS.Api.Controllers
         }
 
         [HttpPost("studies/create-for-visit")]
-        [Authorize(Roles = "Admin,Technician,XRayTech,Receptionist")]
+        [Authorize(Roles = "Admin,Technician,XRayTech,MriTech,CTTech,USTech,Receptionist")]
         
         public async Task<IActionResult> CreateStudiesForVisit([FromBody] CreateRadiologyStudiesRequestDto request)
         {
@@ -36,7 +36,7 @@ namespace SynOS.Api.Controllers
         }
 
         [HttpGet("studies/queue")]
-        [Authorize(Roles = "Admin,Technician,XRayTech")]
+        [Authorize(Roles = "Admin,Technician,XRayTech,MriTech,CTTech,USTech,Radiologist,Typist")]
         public async Task<IActionResult> GetTechnicianQueue([FromQuery] string[] status)
         {
             var queue = await _radiologyService.GetTechnicianQueueAsync(status);
@@ -44,7 +44,7 @@ namespace SynOS.Api.Controllers
         }
 
         [HttpPost("studies/assign")]
-        [Authorize(Roles = "Admin,Technician,XRayTech")]
+        [Authorize(Roles = "Admin,Technician,XRayTech,MriTech,CTTech,USTech")]
         
         public async Task<IActionResult> AssignStudy([FromBody] AssignStudyRequestDto request)
         {
@@ -56,7 +56,7 @@ namespace SynOS.Api.Controllers
         }
 
         [HttpPost("studies/{studyId}/attachments")]
-        [Authorize(Roles = "Admin,Technician,XRayTech")]
+        [Authorize(Roles = "Admin,Technician,XRayTech,MriTech,CTTech,USTech")]
         
         public async Task<IActionResult> UploadAttachment(Guid studyId, IFormFile file)
         {
@@ -94,7 +94,7 @@ namespace SynOS.Api.Controllers
         }
 
         [HttpPost("studies/set-external-mapping")]
-        [Authorize(Roles = "Admin,Technician,XRayTech")]
+        [Authorize(Roles = "Admin,Technician,XRayTech,MriTech,CTTech,USTech")]
         
         public async Task<IActionResult> SetExternalMapping([FromBody] RadiologyStudyExternalMappingDto request)
         {
@@ -106,7 +106,7 @@ namespace SynOS.Api.Controllers
         }
 
         [HttpPost("studies/mark-imaging-completed")]
-        [Authorize(Roles = "Admin,Technician,XRayTech")]
+        [Authorize(Roles = "Admin,Technician,XRayTech,MriTech,CTTech,USTech")]
         
         public async Task<IActionResult> MarkImagingCompleted([FromBody] AssignStudyRequestDto request)
         {

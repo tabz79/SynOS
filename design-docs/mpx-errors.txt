@@ -1,161 +1,189 @@
-BIGGEST ISSUE:
-YOU ARE STILL THINKING IN “PRINTERS”
+console logs:
+[21:37:40 INF] Executed DbCommand (6ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+SELECT [b].[BranchId], [b].[Code], [b].[Name], [b].[IsActive], [b].[Address], [b].[Phone], [b].[Email]
+FROM [Branches] AS [b]
+[21:37:40 INF] Terminal web-1zy6xxtky authorized and added to Thermal80mm group for Branch a0000000-0000-0000-0000-000000000001.
+[21:37:41 ERR] Failed executing DbCommand (18ms) [Parameters=[@__statuses_0='["AwaitingDictation","DictationSessionStarted","DraftReady"]' (Size = 4000)], CommandType='Text', CommandTimeout='30']
+SELECT [r].[RadiologyStudyId], [r].[VisitId], [v].[Token], [p].[FirstName], [p].[LastName], CONVERT(date, GETDATE()), [p].[DateOfBirth], [p].[Gender], [t].[TestName], [r].[Modality], [r].[Status], [u].[Name], [r].[ClaimedByUserId], [u0].[Name], [r].[ClaimedAt], [r].[LastActivityAt], [r].[ActiveSessionId]
+FROM [RadiologyStudies] AS [r]
+INNER JOIN [Visits] AS [v] ON [r].[VisitId] = [v].[VisitId]
+INNER JOIN [Patients] AS [p] ON [r].[PatientId] = [p].[PatientId]
+INNER JOIN [Orders] AS [o] ON [r].[VisitTestId] = [o].[OrderId]
+INNER JOIN [Tests] AS [t] ON [o].[TestId] = [t].[TestId]
+LEFT JOIN [Users] AS [u] ON [r].[AssignedTo] = [u].[UserId]
+LEFT JOIN [Users] AS [u0] ON [r].[ClaimedByUserId] = [u0].[UserId]
+WHERE [r].[Status] IN (
+    SELECT [s].[value]
+    FROM OPENJSON(@__statuses_0) WITH ([value] nvarchar(50) '$') AS [s]
+)
+ORDER BY [r].[CreatedAt]
+[21:37:41 ERR] An exception occurred while iterating over the results of a query for context type 'SynOS.Data.SynOSDbContext'.
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'ClaimedByUserId'.
+Invalid column name 'ClaimedByUserId'.
+Invalid column name 'ClaimedAt'.
+Invalid column name 'LastActivityAt'.
+Invalid column name 'ActiveSessionId'.
+   at Microsoft.Data.SqlClient.SqlCommand.<>c.<ExecuteDbDataReaderAsync>b__209_0(Task`1 result)
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:70f59b4e-9357-4718-984d-5ddfbf8a6edc
+Error Number:207,State:1,Class:16
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'ClaimedByUserId'.
+Invalid column name 'ClaimedByUserId'.
+Invalid column name 'ClaimedAt'.
+Invalid column name 'LastActivityAt'.
+Invalid column name 'ActiveSessionId'.
+   at Microsoft.Data.SqlClient.SqlCommand.<>c.<ExecuteDbDataReaderAsync>b__209_0(Task`1 result)
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:70f59b4e-9357-4718-984d-5ddfbf8a6edc
+Error Number:207,State:1,Class:16
+[21:37:41 ERR] Failed executing DbCommand (4ms) [Parameters=[@__statuses_0='["AwaitingDictation","DictationSessionStarted","DraftReady"]' (Size = 4000)], CommandType='Text', CommandTimeout='30']
+SELECT [r].[RadiologyStudyId], [r].[VisitId], [v].[Token], [p].[FirstName], [p].[LastName], CONVERT(date, GETDATE()), [p].[DateOfBirth], [p].[Gender], [t].[TestName], [r].[Modality], [r].[Status], [u].[Name], [r].[ClaimedByUserId], [u0].[Name], [r].[ClaimedAt], [r].[LastActivityAt], [r].[ActiveSessionId]
+FROM [RadiologyStudies] AS [r]
+INNER JOIN [Visits] AS [v] ON [r].[VisitId] = [v].[VisitId]
+INNER JOIN [Patients] AS [p] ON [r].[PatientId] = [p].[PatientId]
+INNER JOIN [Orders] AS [o] ON [r].[VisitTestId] = [o].[OrderId]
+INNER JOIN [Tests] AS [t] ON [o].[TestId] = [t].[TestId]
+LEFT JOIN [Users] AS [u] ON [r].[AssignedTo] = [u].[UserId]
+LEFT JOIN [Users] AS [u0] ON [r].[ClaimedByUserId] = [u0].[UserId]
+WHERE [r].[Status] IN (
+    SELECT [s].[value]
+    FROM OPENJSON(@__statuses_0) WITH ([value] nvarchar(50) '$') AS [s]
+)
+ORDER BY [r].[CreatedAt]
+[21:37:41 ERR] An exception occurred while iterating over the results of a query for context type 'SynOS.Data.SynOSDbContext'.
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'ClaimedByUserId'.
+Invalid column name 'ClaimedByUserId'.
+Invalid column name 'ClaimedAt'.
+Invalid column name 'LastActivityAt'.
+Invalid column name 'ActiveSessionId'.
+   at Microsoft.Data.SqlClient.SqlCommand.<>c.<ExecuteDbDataReaderAsync>b__209_0(Task`1 result)
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:70f59b4e-9357-4718-984d-5ddfbf8a6edc
+Error Number:207,State:1,Class:16
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'ClaimedByUserId'.
+Invalid column name 'ClaimedByUserId'.
+Invalid column name 'ClaimedAt'.
+Invalid column name 'LastActivityAt'.
+Invalid column name 'ActiveSessionId'.
+   at Microsoft.Data.SqlClient.SqlCommand.<>c.<ExecuteDbDataReaderAsync>b__209_0(Task`1 result)
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:70f59b4e-9357-4718-984d-5ddfbf8a6edc
+Error Number:207,State:1,Class:16
 
-But the architecture is already evolving into:
 
-TERMINAL + DEVICE ORCHESTRATION
-
-That’s a much bigger layer.
-
-Today:
-
-thermal printers
-barcode printers
-
-Tomorrow:
-
-barcode scanners
-signature pads
-weighing scales
-token displays
-analyzers
-
-will enter the same infrastructure ecosystem.
-
-So if your entities become:
-
-BranchPrinter
-
-everywhere…
-
-you’ll regret it later.
-
-WHAT I WOULD DO
-
-Internally design it like this:
-
-BranchDevice
-
-with:
-
-DeviceCategory
-
-Examples:
-
-THERMAL_PRINTER
-LABEL_PRINTER
-SCANNER
-ANALYZER
-TOKEN_DISPLAY
-
-BUT…
-
-keep the UI wording:
-
-Printing Setup
-
-for now.
-
-That’s the right compromise.
-
-SECOND BIG ISSUE:
-PRINT INTENTS ARE MISSING
-
-This is the most important missing abstraction.
-
-Right now the plan does:
-
-SpecificReceiptPrinter
-
-This will become unmaintainable.
-
-Because eventually you’ll need:
-
-receipt printing
-barcode printing
-report A4 printing
-sample labels
-worklists
-queue slips
-
-If you hardcode:
-
-ReceiptPrinterId
-BarcodePrinterId
-A4PrinterId
-
-the system becomes ugly fast.
-
-BETTER MODEL
-
-Use:
-
-PrintIntent
-
-Example:
-
-RECEIPT
-BARCODE
-SAMPLE_LABEL
-REPORT_A4
-TOKEN
-WORKLIST
-
-Then:
-
-Terminal
-  -> routes intent
-  -> to assigned printer
-
-Example:
-
-BARCODE -> Zebra GX430
-RECEIPT -> Epson TM-T82
-REPORT_A4 -> HP LaserJet
-
-THIS is scalable.
-
-This is enterprise-grade infrastructure design.
-
-THIRD BIG ISSUE:
-BROWSER PRINTING WILL HURT YOU LATER
-
-This is important.
-
-Right now:
-
-Browser -> Printer
-
-works.
-
-But eventually:
-
-silent printing
-Zebra precision
-thermal alignment
-Windows spooler behavior
-Chrome print dialogs
-
-will become operational pain.
-
-So your architecture should ANTICIPATE:
-
-SynOS Local Print Agent
-
-Meaning:
-a tiny local daemon/service later.
-
-NOT now.
-
-But:
-your schema should leave room for:
-
-ConnectionMode
-
-Example:
-
-Browser
-BridgeAgent
-RemoteSpooler
-
-That future-proofs the system.
+RadiologistTerminal.jsx:57  GET http://localhost:5173/api/v1/radiology/studies/queue?status=AwaitingDictation&status=DictationSessionStarted&status=DraftReady 500 (Internal Server Error)
+$RefreshSig$ @ RadiologistTerminal.jsx:57
+$RefreshSig$ @ RadiologistTerminal.jsx:72
+react_stack_bottom_frame @ react-dom_client.js?v=6ac04b05:18567
+runWithFiberInDEV @ react-dom_client.js?v=6ac04b05:997
+commitHookEffectListMount @ react-dom_client.js?v=6ac04b05:9411
+commitHookPassiveMountEffects @ react-dom_client.js?v=6ac04b05:9465
+commitPassiveMountOnFiber @ react-dom_client.js?v=6ac04b05:11040
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=6ac04b05:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=6ac04b05:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=6ac04b05:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=6ac04b05:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=6ac04b05:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=6ac04b05:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=6ac04b05:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=6ac04b05:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=6ac04b05:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=6ac04b05:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=6ac04b05:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=6ac04b05:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=6ac04b05:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=6ac04b05:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=6ac04b05:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=6ac04b05:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=6ac04b05:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=6ac04b05:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=6ac04b05:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=6ac04b05:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=6ac04b05:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=6ac04b05:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=6ac04b05:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=6ac04b05:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=6ac04b05:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=6ac04b05:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=6ac04b05:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=6ac04b05:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=6ac04b05:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=6ac04b05:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=6ac04b05:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=6ac04b05:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=6ac04b05:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=6ac04b05:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=6ac04b05:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=6ac04b05:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=6ac04b05:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=6ac04b05:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=6ac04b05:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=6ac04b05:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=6ac04b05:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=6ac04b05:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=6ac04b05:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=6ac04b05:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=6ac04b05:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=6ac04b05:11066
+flushPassiveEffects @ react-dom_client.js?v=6ac04b05:13150
+(anonymous) @ react-dom_client.js?v=6ac04b05:12776
+performWorkUntilDeadline @ react-dom_client.js?v=6ac04b05:36
+<RadiologistTerminal>
+exports.jsxDEV @ react_jsx-dev-runtime.js?v=6ac04b05:247
+App @ App.jsx:196
+react_stack_bottom_frame @ react-dom_client.js?v=6ac04b05:18509
+renderWithHooksAgain @ react-dom_client.js?v=6ac04b05:5729
+renderWithHooks @ react-dom_client.js?v=6ac04b05:5665
+updateFunctionComponent @ react-dom_client.js?v=6ac04b05:7475
+beginWork @ react-dom_client.js?v=6ac04b05:8525
+runWithFiberInDEV @ react-dom_client.js?v=6ac04b05:997
+performUnitOfWork @ react-dom_client.js?v=6ac04b05:12561
+workLoopSync @ react-dom_client.js?v=6ac04b05:12424
+renderRootSync @ react-dom_client.js?v=6ac04b05:12408
+performWorkOnRoot @ react-dom_client.js?v=6ac04b05:11766
+performWorkOnRootViaSchedulerTask @ react-dom_client.js?v=6ac04b05:13505
+performWorkUntilDeadline @ react-dom_client.js?v=6ac04b05:36
+<App>
+exports.jsxDEV @ react_jsx-dev-runtime.js?v=6ac04b05:247
+(anonymous) @ main.jsx:10Understand this error
+RadiologistTerminal.jsx:57  GET http://localhost:5173/api/v1/radiology/studies/queue?status=AwaitingDictation&status=DictationSessionStarted&status=DraftReady 500 (Internal Server Error)

@@ -65,6 +65,11 @@ export function SystemSettingsScreen() {
   const [editingBranch, setEditingBranch] = useState(null);
   const [showBranchForm, setShowBranchForm] = useState(false);
 
+  // Workspaces State
+  const [workspaces, setWorkspaces] = useState([]);
+  const [editingWorkspace, setEditingWorkspace] = useState(null);
+  const [showWorkspaceForm, setShowWorkspaceForm] = useState(false);
+
   // Global Settings State
   const [settings, setSettings] = useState(null);
 
@@ -76,6 +81,8 @@ export function SystemSettingsScreen() {
   // Department Policies State
   const [policies, setPolicies] = useState([]);
   const [departments, setDepartments] = useState([]);
+  const [editingDepartment, setEditingDepartment] = useState(null);
+  const [showDepartmentForm, setShowDepartmentForm] = useState(false);
   const [editingPolicy, setEditingPolicy] = useState(null);
   const [showPolicyForm, setShowPolicyForm] = useState(false);
 
@@ -463,6 +470,71 @@ export function SystemSettingsScreen() {
     }
   };
 
+  const loadWorkspaces = async () => {
+    setLoading(true);
+    try {
+      const response = await AdminApi.getWorkspaces();
+      setWorkspaces(response || []);
+    } catch (err) {
+      setSaveError(err.message || 'Failed to load workspaces.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSaveWorkspace = async (e) => {
+    e.preventDefault();
+    if (!editingWorkspace.name?.trim() || !editingWorkspace.routePath?.trim()) {
+      return setSaveError('Workspace Name and Route Path cannot be empty.');
+    }
+
+    setLoading(true);
+    setSaveError(null);
+    setSaveSuccess(null);
+
+    try {
+      if (editingWorkspace.workspaceId) {
+        await AdminApi.updateWorkspace(editingWorkspace.workspaceId, {
+          name: editingWorkspace.name.trim(),
+          routePath: editingWorkspace.routePath.trim(),
+          isActive: editingWorkspace.isActive
+        });
+        setSaveSuccess('Workspace details updated successfully.');
+      } else {
+        await AdminApi.createWorkspace({
+          name: editingWorkspace.name.trim(),
+          routePath: editingWorkspace.routePath.trim()
+        });
+        setSaveSuccess('New workspace registered successfully.');
+      }
+      setShowWorkspaceForm(false);
+      setEditingWorkspace(null);
+      await loadWorkspaces();
+    } catch (err) {
+      setSaveError(err.message || 'Failed to save workspace.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteWorkspace = async (workspaceId) => {
+    if (!window.confirm('Are you sure you want to delete this workspace? This will remove all staff access permissions bound to this route.')) return;
+
+    setLoading(true);
+    setSaveError(null);
+    setSaveSuccess(null);
+
+    try {
+      await AdminApi.deleteWorkspace(workspaceId);
+      setSaveSuccess('Workspace deleted successfully.');
+      await loadWorkspaces();
+    } catch (err) {
+      setSaveError(err.message || 'Failed to delete workspace.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     setSaveError(null);
     setSaveSuccess(null);
@@ -471,6 +543,7 @@ export function SystemSettingsScreen() {
     if (activeTab === 'departments') loadDepartmentPolicies();
     if (activeTab === 'pricing') loadPricingData();
     if (activeTab === 'branches') loadBranches();
+    if (activeTab === 'workspaces') loadWorkspaces();
     if (activeTab === 'printing') loadPrintingData();
     if (activeTab === 'audit') loadAuditLogs();
   }, [activeTab, auditOffset]);
@@ -552,6 +625,60 @@ export function SystemSettingsScreen() {
       loadDepartmentPolicies();
     } catch (err) {
       setSaveError('Error deleting mapping.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSaveDepartment = async (e) => {
+    e.preventDefault();
+    if (!editingDepartment.code?.trim() || !editingDepartment.name?.trim()) {
+      return setSaveError('Department Code and Name cannot be empty.');
+    }
+
+    setLoading(true);
+    setSaveError(null);
+    setSaveSuccess(null);
+
+    try {
+      if (editingDepartment.departmentId) {
+        await AdminApi.updateDepartment(editingDepartment.departmentId, {
+          name: editingDepartment.name.trim(),
+          macroDepartment: editingDepartment.macroDepartment?.trim() || 'Pathology',
+          isActive: editingDepartment.isActive
+        });
+        setSaveSuccess('Department details updated successfully.');
+      } else {
+        await AdminApi.createDepartment({
+          code: editingDepartment.code.trim().toUpperCase(),
+          name: editingDepartment.name.trim(),
+          macroDepartment: editingDepartment.macroDepartment?.trim() || 'Pathology'
+        });
+        setSaveSuccess('New department registered successfully.');
+      }
+      setShowDepartmentForm(false);
+      setEditingDepartment(null);
+      await loadDepartmentPolicies();
+    } catch (err) {
+      setSaveError(err.message || 'Failed to save department.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteDepartment = async (departmentId) => {
+    if (!window.confirm('Are you sure you want to delete this department? This will remove all operational policies and test master mapping associations.')) return;
+
+    setLoading(true);
+    setSaveError(null);
+    setSaveSuccess(null);
+
+    try {
+      await AdminApi.deleteDepartment(departmentId);
+      setSaveSuccess('Department deleted successfully.');
+      await loadDepartmentPolicies();
+    } catch (err) {
+      setSaveError(err.message || 'Failed to delete department.');
     } finally {
       setLoading(false);
     }
@@ -649,6 +776,7 @@ export function SystemSettingsScreen() {
           { id: 'departments', label: 'Department Hours', icon: Clock },
           { id: 'pricing', label: 'Pricing & Discounts', icon: Tag },
           { id: 'branches', label: 'Branches', icon: Globe },
+          { id: 'workspaces', label: 'Workspace Registry', icon: ShieldAlert },
           { id: 'printing', label: 'Printing Setup', icon: Printer },
           { id: 'audit', label: 'Audit Logs', icon: History }
         ].map(tab => (
@@ -1137,71 +1265,229 @@ export function SystemSettingsScreen() {
 
         {/* DEPARTMENT POLICIES TAB */}
         {activeTab === 'departments' && !loading && (
-          <div className="animate-fadeIn space-y-6">
-            <div className="flex justify-between items-center">
-              <div>
-                <h3 className="text-sm font-bold text-synos-primary uppercase tracking-widest mb-1">Department operating hour bounds</h3>
-                <p className="text-zinc-500 text-xs font-semibold">Define custom operating times, turnaround deadlines, and search access guidelines per role.</p>
+          <div className="animate-fadeIn space-y-12">
+            {/* Departments Registry Section */}
+            <div className="border-b dark:border-zinc-850 border-zinc-200 pb-8 space-y-6">
+              <div className="flex justify-between items-center">
+                <div>
+                  <h3 className="text-sm font-bold text-synos-primary uppercase tracking-widest mb-1">Departments Registry</h3>
+                  <p className="text-zinc-500 text-xs font-semibold">Register diagnostic processing departments, assign codes, and set macro categories.</p>
+                </div>
+                <button
+                  onClick={() => {
+                    setEditingDepartment({
+                      code: '',
+                      name: '',
+                      macroDepartment: 'Pathology',
+                      isActive: true
+                    });
+                    setShowDepartmentForm(true);
+                  }}
+                  className="px-4 py-2 bg-synos-primary hover:bg-synos-primary/95 text-white font-bold text-xxs uppercase tracking-wider rounded-xl shadow active:scale-95 transition-all"
+                >
+                  + Register Department
+                </button>
               </div>
-              <button
-                onClick={() => {
-                  setEditingPolicy({
-                    roleName: 'Reception',
-                    departmentId: departments[0]?.departmentId || '',
-                    operatingHoursStart: '08:00',
-                    operatingHoursEnd: '20:00',
-                    defaultTATHours: 24,
-                    canSearchAll: false
-                  });
-                  setShowPolicyForm(true);
-                }}
-                className="px-4 py-2 bg-synos-primary hover:bg-synos-primary/95 text-white font-bold text-xxs uppercase tracking-wider rounded-xl shadow active:scale-95 transition-all"
-              >
-                + Add Operating Policy
-              </button>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {departments.map(d => {
+                  const isReserved = d.code === "GENERAL" || d.code === "RAD" || d.name.toLowerCase() === "radiology" || d.name.toLowerCase() === "general laboratory operations";
+                  return (
+                    <div key={d.departmentId} className="border dark:border-zinc-800 border-zinc-200/10 rounded-xl p-5 bg-zinc-50/30 dark:bg-zinc-950/20 flex flex-col justify-between">
+                      <div>
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="bg-zinc-100 dark:bg-zinc-900 border dark:border-zinc-850 border-zinc-200 text-zinc-700 dark:text-zinc-300 text-xxs font-mono font-bold uppercase px-2.5 py-0.5 rounded-full">
+                            {d.code}
+                          </span>
+                          <span className={`text-xxs font-bold px-2 py-0.5 rounded-full ${d.isActive ? 'bg-emerald-500/15 text-emerald-450 border border-emerald-500/20' : 'bg-zinc-500/15 text-zinc-400 border border-zinc-500/20'}`}>
+                            {d.isActive ? 'Active' : 'Inactive'}
+                          </span>
+                        </div>
+                        <h4 className="font-bold text-sm text-zinc-800 dark:text-zinc-100 mt-2">{d.name}</h4>
+                        <div className="text-xs text-zinc-450 dark:text-zinc-500 space-y-1 mt-3">
+                          <p>📂 Macro-Dept: <strong>{d.macroDepartment || 'Pathology'}</strong></p>
+                          {isReserved && <p className="text-xxs text-amber-500/80 italic font-semibold mt-1">⚠️ Reserved System Department</p>}
+                        </div>
+                      </div>
+                      <div className="flex justify-end space-x-2 mt-4 pt-3 border-t dark:border-zinc-900 border-zinc-100">
+                        <button
+                          disabled={isReserved}
+                          onClick={() => {
+                            setEditingDepartment(d);
+                            setShowDepartmentForm(true);
+                          }}
+                          className="p-1.5 bg-synos-primary/10 text-synos-primary hover:bg-synos-primary/25 border border-synos-primary/20 rounded-lg transition-colors disabled:opacity-40 disabled:pointer-events-none"
+                          title="Edit"
+                        >
+                          <Edit2 className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          disabled={isReserved}
+                          onClick={() => handleDeleteDepartment(d.departmentId)}
+                          className="p-1.5 bg-red-500/10 text-red-400 hover:bg-red-500/25 border border-red-500/20 rounded-lg transition-colors disabled:opacity-40 disabled:pointer-events-none"
+                          title="Delete"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {policies.map(p => (
-                <div key={p.configId} className="border dark:border-zinc-800 border-zinc-200/10 rounded-xl p-5 bg-zinc-50/30 dark:bg-zinc-950/20 flex justify-between items-start">
-                  <div>
-                    <div className="flex items-center space-x-3.5 mb-2">
-                      <span className="bg-synos-primary/10 text-synos-primary border border-synos-primary/20 text-xxs font-mono font-bold uppercase px-2.5 py-0.5 rounded-full">
-                        {p.roleName}
-                      </span>
-                      <h4 className="font-bold text-sm text-zinc-100">{p.departmentName} ({p.departmentCode})</h4>
-                    </div>
-                    <div className="text-xs text-zinc-400 space-y-1 mt-3">
-                      <p>⌚ Operating Hours: <strong>{p.operatingHoursStart} - {p.operatingHoursEnd}</strong></p>
-                      <p>⏱️ Default Turnaround: <strong>{p.defaultTATHours} Hours</strong></p>
-                      <p>🔍 Scope: <strong>{p.canSearchAll ? 'Global (All Branches)' : 'Isolated Branch'}</strong></p>
-                    </div>
-                  </div>
-                  <div className="flex space-x-2 shrink-0">
-                    <button
-                      onClick={() => {
-                        setEditingPolicy(p);
-                        setShowPolicyForm(true);
-                      }}
-                      className="p-1.5 bg-synos-primary/10 text-synos-primary hover:bg-synos-primary/25 border border-synos-primary/20 rounded-lg transition-colors"
-                      title="Edit"
-                    >
-                      <Edit2 className="w-3.5 h-3.5" />
-                    </button>
-                    <button
-                      onClick={() => handleDeletePolicy(p.configId)}
-                      className="p-1.5 bg-red-500/10 text-red-400 hover:bg-red-500/25 border border-red-500/20 rounded-lg transition-colors"
-                      title="Delete"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
+            {/* Department Hours / Operating Policies Section */}
+            <div className="space-y-6">
+              <div className="flex justify-between items-center">
+                <div>
+                  <h3 className="text-sm font-bold text-synos-primary uppercase tracking-widest mb-1">Department operating hour bounds</h3>
+                  <p className="text-zinc-500 text-xs font-semibold">Define custom operating times, turnaround deadlines, and search access guidelines per role.</p>
                 </div>
-              ))}
-              {policies.length === 0 && (
-                <p className="text-zinc-550 text-xs py-4 md:col-span-2">No custom operational policies saved.</p>
-              )}
+                <button
+                  onClick={() => {
+                    setEditingPolicy({
+                      roleName: 'Reception',
+                      departmentId: departments[0]?.departmentId || '',
+                      operatingHoursStart: '08:00',
+                      operatingHoursEnd: '20:00',
+                      defaultTATHours: 24,
+                      canSearchAll: false
+                    });
+                    setShowPolicyForm(true);
+                  }}
+                  className="px-4 py-2 bg-synos-primary hover:bg-synos-primary/95 text-white font-bold text-xxs uppercase tracking-wider rounded-xl shadow active:scale-95 transition-all"
+                >
+                  + Add Operating Policy
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {policies.map(p => (
+                  <div key={p.configId} className="border dark:border-zinc-800 border-zinc-200/10 rounded-xl p-5 bg-zinc-50/30 dark:bg-zinc-950/20 flex justify-between items-start">
+                    <div>
+                      <div className="flex items-center space-x-3.5 mb-2">
+                        <span className="bg-synos-primary/10 text-synos-primary border border-synos-primary/20 text-xxs font-mono font-bold uppercase px-2.5 py-0.5 rounded-full">
+                          {p.roleName}
+                        </span>
+                        <h4 className="font-bold text-sm text-zinc-100">{p.departmentName} ({p.departmentCode})</h4>
+                      </div>
+                      <div className="text-xs text-zinc-400 space-y-1 mt-3">
+                        <p>⌚ Operating Hours: <strong>{p.operatingHoursStart} - {p.operatingHoursEnd}</strong></p>
+                        <p>⏱️ Default Turnaround: <strong>{p.defaultTATHours} Hours</strong></p>
+                        <p>🔍 Scope: <strong>{p.canSearchAll ? 'Global (All Branches)' : 'Isolated Branch'}</strong></p>
+                      </div>
+                    </div>
+                    <div className="flex space-x-2 shrink-0">
+                      <button
+                        onClick={() => {
+                          setEditingPolicy(p);
+                          setShowPolicyForm(true);
+                        }}
+                        className="p-1.5 bg-synos-primary/10 text-synos-primary hover:bg-synos-primary/25 border border-synos-primary/20 rounded-lg transition-colors"
+                        title="Edit"
+                      >
+                        <Edit2 className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        onClick={() => handleDeletePolicy(p.configId)}
+                        className="p-1.5 bg-red-500/10 text-red-400 hover:bg-red-500/25 border border-red-500/20 rounded-lg transition-colors"
+                        title="Delete"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+                {policies.length === 0 && (
+                  <p className="text-zinc-550 text-xs py-4 md:col-span-2">No custom operational policies saved.</p>
+                )}
+              </div>
             </div>
+
+            {/* Department Dialog */}
+            {showDepartmentForm && editingDepartment && (
+              <div className="fixed inset-0 bg-zinc-950/45 dark:bg-black/60 backdrop-blur-[2px] flex items-center justify-center z-50 animate-fadeIn">
+                <div 
+                  className="border border-zinc-200 dark:border-zinc-900 p-6 rounded-2xl w-full max-w-md shadow-2xl text-xs text-zinc-800 dark:text-zinc-250"
+                  style={{ backgroundColor: theme === 'dark' ? '#09090b' : '#ffffff' }}
+                >
+                  <h3 className="text-sm font-semibold mb-4 border-b border-zinc-250 dark:border-zinc-850 pb-2 text-zinc-800 dark:text-zinc-200">
+                    {editingDepartment.departmentId ? 'Update Department Settings' : 'Register New Department'}
+                  </h3>
+                  <form onSubmit={handleSaveDepartment} className="space-y-4">
+                    <div>
+                      <label className="block text-xxs font-semibold text-zinc-400 dark:text-zinc-500 mb-1 uppercase tracking-wider">Department Code</label>
+                      <input
+                        type="text"
+                        required
+                        disabled={!!editingDepartment.departmentId}
+                        placeholder="e.g. HEM, BIO, RAD"
+                        value={editingDepartment.code || ''}
+                        onChange={e => setEditingDepartment({ ...editingDepartment, code: e.target.value.toUpperCase() })}
+                        className="w-full px-3 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-855 rounded-xl text-xs outline-none focus:border-synos-primary transition-colors text-zinc-700 dark:text-zinc-300 shadow-sm disabled:opacity-55"
+                        style={{ backgroundColor: theme === 'dark' ? '#09090b' : '#ffffff' }}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xxs font-semibold text-zinc-400 dark:text-zinc-500 mb-1 uppercase tracking-wider">Department Name</label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="e.g. Hematology"
+                        value={editingDepartment.name || ''}
+                        onChange={e => setEditingDepartment({ ...editingDepartment, name: e.target.value })}
+                        className="w-full px-3 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-855 rounded-xl text-xs outline-none focus:border-synos-primary transition-colors text-zinc-700 dark:text-zinc-300 shadow-sm"
+                        style={{ backgroundColor: theme === 'dark' ? '#09090b' : '#ffffff' }}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xxs font-semibold text-zinc-400 dark:text-zinc-500 mb-1 uppercase tracking-wider">Macro-Department Division</label>
+                      <select
+                        value={editingDepartment.macroDepartment || 'Pathology'}
+                        onChange={e => setEditingDepartment({ ...editingDepartment, macroDepartment: e.target.value })}
+                        className="w-full px-3 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-855 rounded-xl text-xs outline-none focus:border-synos-primary transition-colors text-zinc-700 dark:text-zinc-300 shadow-sm"
+                        style={{ backgroundColor: theme === 'dark' ? '#09090b' : '#ffffff', colorScheme: theme === 'dark' ? 'dark' : 'light' }}
+                      >
+                        <option value="Pathology">Pathology Division</option>
+                        <option value="Radiology">Radiology Division</option>
+                        <option value="Operations">Operations / Core</option>
+                      </select>
+                    </div>
+                    {editingDepartment.departmentId && (
+                      <div className="flex items-center space-x-3 py-1">
+                        <label className="flex items-center space-x-3 cursor-pointer select-none">
+                          <input
+                            type="checkbox"
+                            checked={editingDepartment.isActive || false}
+                            onChange={e => setEditingDepartment({ ...editingDepartment, isActive: e.target.checked })}
+                            className="form-checkbox h-4.5 w-4.5 text-synos-primary rounded bg-white dark:bg-zinc-900 border-zinc-300 dark:border-zinc-800 focus:ring-0 cursor-pointer"
+                          />
+                          <span className="font-semibold text-zinc-650 dark:text-zinc-350">Department Operational Active Status</span>
+                        </label>
+                      </div>
+                    )}
+                    <div className="pt-4 border-t border-zinc-200 dark:border-zinc-850 flex justify-end space-x-3">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowDepartmentForm(false);
+                          setEditingDepartment(null);
+                        }}
+                        className="px-4 py-2 border border-zinc-250 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-650 dark:text-zinc-400 rounded-xl"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="submit"
+                        className="px-5 py-2 bg-synos-primary hover:bg-synos-primary/95 text-white font-bold rounded-xl active:scale-95 transition-all"
+                      >
+                        Save Department
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            )}
 
             {/* Policy Dialog */}
             {showPolicyForm && editingPolicy && (
@@ -1252,7 +1538,7 @@ export function SystemSettingsScreen() {
                           placeholder="e.g. 08:00"
                           value={editingPolicy.operatingHoursStart}
                           onChange={e => setEditingPolicy({ ...editingPolicy, operatingHoursStart: e.target.value })}
-                          className="w-full px-3 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs outline-none focus:border-synos-primary transition-colors text-zinc-700 dark:text-zinc-300 shadow-sm"
+                          className="w-full px-3 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-855 rounded-xl text-xs outline-none focus:border-synos-primary transition-colors text-zinc-700 dark:text-zinc-300 shadow-sm"
                           style={{ backgroundColor: theme === 'dark' ? '#09090b' : '#ffffff' }}
                         />
                       </div>
@@ -1264,7 +1550,7 @@ export function SystemSettingsScreen() {
                           placeholder="e.g. 20:00"
                           value={editingPolicy.operatingHoursEnd}
                           onChange={e => setEditingPolicy({ ...editingPolicy, operatingHoursEnd: e.target.value })}
-                          className="w-full px-3 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs outline-none focus:border-synos-primary transition-colors text-zinc-700 dark:text-zinc-300 shadow-sm"
+                          className="w-full px-3 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-855 rounded-xl text-xs outline-none focus:border-synos-primary transition-colors text-zinc-700 dark:text-zinc-300 shadow-sm"
                           style={{ backgroundColor: theme === 'dark' ? '#09090b' : '#ffffff' }}
                         />
                       </div>
@@ -2083,6 +2369,148 @@ export function SystemSettingsScreen() {
                         className="px-5 py-2 bg-synos-primary hover:bg-synos-primary/95 text-white text-xxs uppercase tracking-wider rounded-xl font-bold shadow active:scale-95 transition-all"
                       >
                         Save Branch
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* WORKSPACE REGISTRY TAB */}
+        {activeTab === 'workspaces' && !loading && (
+          <div className="animate-fadeIn space-y-6">
+            <div className="flex justify-between items-center">
+              <div>
+                <h3 className="text-sm font-bold text-synos-primary uppercase tracking-widest mb-1">System Workspace Registry</h3>
+                <p className="text-zinc-550 text-xs font-semibold">Register and manage operational dashboard routes and screen accesses dynamically.</p>
+              </div>
+              <button
+                onClick={() => {
+                  setEditingWorkspace({
+                    name: '',
+                    routePath: '',
+                    isActive: true
+                  });
+                  setShowWorkspaceForm(true);
+                }}
+                className="px-4 py-2 bg-synos-primary hover:bg-synos-primary/95 text-white font-bold text-xxs uppercase tracking-wider rounded-xl shadow active:scale-95 transition-all"
+              >
+                + Register New Screen
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {workspaces.map(ws => (
+                <div 
+                  key={ws.workspaceId} 
+                  className="border dark:border-zinc-800 border-zinc-200/10 rounded-xl p-5 bg-zinc-50/30 dark:bg-zinc-950/20 flex flex-col justify-between"
+                  style={{ backgroundColor: theme === 'dark' ? '#09090b' : '#ffffff' }}
+                >
+                  <div className="flex justify-between items-start mb-4">
+                    <div>
+                      <div className="flex items-center space-x-2">
+                        <span className="bg-synos-primary/10 text-synos-primary border border-synos-primary/20 text-xxs font-mono font-bold px-2 py-0.5 rounded-md">
+                          {ws.routePath}
+                        </span>
+                        <span className={`w-1.5 h-1.5 rounded-full ${ws.isActive ? 'bg-emerald-500' : 'bg-zinc-550'}`} title={ws.isActive ? 'Active' : 'Inactive'} />
+                      </div>
+                      <h4 className="font-bold text-sm text-zinc-800 dark:text-zinc-200 mt-2">{ws.name}</h4>
+                      <p className="text-[10px] text-zinc-400 mt-1">Registered: {formatDate(ws.createdAt)}</p>
+                    </div>
+                    <div className="flex space-x-2 shrink-0">
+                      <button
+                        onClick={() => {
+                          setEditingWorkspace(ws);
+                          setShowWorkspaceForm(true);
+                        }}
+                        className="p-1.5 bg-synos-primary/10 text-synos-primary hover:bg-synos-primary/25 border border-synos-primary/20 rounded-lg transition-colors"
+                        title="Edit Screen"
+                      >
+                        <Edit2 className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteWorkspace(ws.workspaceId)}
+                        className="p-1.5 bg-red-500/10 text-red-400 hover:bg-red-500/25 border border-red-500/20 rounded-lg transition-colors"
+                        title="Delete Screen"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+              {workspaces.length === 0 && (
+                <p className="text-zinc-550 text-xs py-4 md:col-span-3">No custom dynamic workspaces registered yet.</p>
+              )}
+            </div>
+
+            {/* Workspace Registry Dialog Modal */}
+            {showWorkspaceForm && editingWorkspace && (
+              <div className="fixed inset-0 bg-zinc-950/45 dark:bg-black/60 backdrop-blur-[2px] flex items-center justify-center z-50 animate-fadeIn">
+                <div 
+                  className="border border-zinc-200 dark:border-zinc-900 p-6 rounded-2xl w-full max-w-md shadow-2xl text-xs text-zinc-800 dark:text-zinc-250"
+                  style={{ backgroundColor: theme === 'dark' ? '#09090b' : '#ffffff' }}
+                >
+                  <h3 className="text-sm font-semibold mb-4 border-b border-zinc-250 dark:border-zinc-850 pb-2 text-zinc-800 dark:text-zinc-200">
+                    {editingWorkspace.workspaceId ? 'Modify Workspace Specifications' : 'Register New Screen Module'}
+                  </h3>
+                  <form onSubmit={handleSaveWorkspace} className="space-y-4">
+                    <div>
+                      <label className="block text-xxs font-bold text-zinc-400 mb-2 uppercase tracking-wide">Screen / Workspace Name</label>
+                      <input
+                        type="text"
+                        required
+                        value={editingWorkspace.name}
+                        onChange={e => setEditingWorkspace({ ...editingWorkspace, name: e.target.value })}
+                        className="w-full px-3 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-855 rounded-xl text-xs outline-none focus:border-synos-primary transition-colors text-zinc-700 dark:text-zinc-300 shadow-sm"
+                        style={{ backgroundColor: theme === 'dark' ? '#09090b' : '#ffffff' }}
+                        placeholder="e.g. Radiology Diagnostics"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xxs font-bold text-zinc-400 mb-2 uppercase tracking-wide">Relative Route Path</label>
+                      <input
+                        type="text"
+                        required
+                        value={editingWorkspace.routePath}
+                        onChange={e => setEditingWorkspace({ ...editingWorkspace, routePath: e.target.value })}
+                        className="w-full px-3 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-855 rounded-xl text-xs outline-none focus:border-synos-primary transition-colors text-zinc-700 dark:text-zinc-300 shadow-sm"
+                        style={{ backgroundColor: theme === 'dark' ? '#09090b' : '#ffffff' }}
+                        placeholder="e.g. /radiology"
+                      />
+                    </div>
+                    {editingWorkspace.workspaceId && (
+                      <div className="flex items-center space-x-3.5 select-none bg-zinc-50/50 dark:bg-zinc-950/40 p-4 rounded-xl border border-zinc-200/50 dark:border-zinc-850 shadow-sm">
+                        <input
+                          type="checkbox"
+                          id="ws-active"
+                          checked={editingWorkspace.isActive}
+                          onChange={e => setEditingWorkspace({ ...editingWorkspace, isActive: e.target.checked })}
+                          className="rounded border-zinc-300 dark:border-zinc-700 text-synos-primary focus:ring-synos-primary w-4 h-4"
+                        />
+                        <label htmlFor="ws-active" className="text-xxs font-semibold text-zinc-400 dark:text-zinc-500 cursor-pointer">
+                          Active & Authorizable
+                        </label>
+                      </div>
+                    )}
+                    <div className="flex justify-end space-x-2.5 pt-4 border-t border-zinc-250 dark:border-zinc-855">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowWorkspaceForm(false);
+                          setEditingWorkspace(null);
+                        }}
+                        className="px-4 py-2 border border-zinc-300 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-900 rounded-xl text-xxs uppercase tracking-wider font-bold transition-all text-zinc-650 dark:text-zinc-400"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="submit"
+                        className="px-5 py-2 bg-synos-primary hover:bg-synos-primary/95 text-white text-xxs uppercase tracking-wider rounded-xl font-bold shadow active:scale-95 transition-all"
+                      >
+                        Save Screen
                       </button>
                     </div>
                   </form>

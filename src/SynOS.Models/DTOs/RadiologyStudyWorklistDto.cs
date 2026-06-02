@@ -28,5 +28,10 @@ namespace SynOS.Models.DTOs
         public string? ExternalSystemName { get; set; } // Uncommented
         public string? ExternalAccessionNumber { get; set; } // Uncommented
         public string? ExternalViewerUrl { get; set; } // Uncommented
+        public Guid? ClaimedByUserId { get; set; }
+        public string? ClaimedByUserName { get; set; }
+        public DateTimeOffset? ClaimedAt { get; set; }
+        public DateTimeOffset? LastActivityAt { get; set; }
+        public Guid? ActiveSessionId { get; set; }
     }
 }

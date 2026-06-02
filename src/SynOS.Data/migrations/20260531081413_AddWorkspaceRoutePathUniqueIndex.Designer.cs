@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SynOS.Data;
 
@@ -11,9 +12,11 @@ using SynOS.Data;
 namespace SynOS.Data.Migrations
 {
     [DbContext(typeof(SynOSDbContext))]
-    partial class SynOSDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260531081413_AddWorkspaceRoutePathUniqueIndex")]
+    partial class AddWorkspaceRoutePathUniqueIndex
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -3338,12 +3341,6 @@ namespace SynOS.Data.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
-                    b.Property<bool>("IsKeyImage")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("KeyImageNotes")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<Guid?>("OrgId")
                         .HasColumnType("uniqueidentifier");
 
@@ -4483,57 +4480,6 @@ namespace SynOS.Data.Migrations
                     b.ToTable("ProfileMaps");
                 });
 
-            modelBuilder.Entity("SynOS.Models.Entities.RadiologyDictationSession", b =>
-                {
-                    b.Property<Guid>("SessionId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("AudioChannelState")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<DateTimeOffset?>("EndedAt")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<string>("LiveDraftFindings")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("LiveDraftImpression")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("LiveDraftNotes")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<Guid?>("RadiologistUserId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("SessionStatus")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<DateTimeOffset>("StartedAt")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<Guid>("StudyId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid?>("TypistUserId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("SessionId");
-
-                    b.HasIndex("RadiologistUserId");
-
-                    b.HasIndex("StudyId");
-
-                    b.HasIndex("TypistUserId");
-
-                    b.ToTable("RadiologyDictationSessions");
-                });
-
             modelBuilder.Entity("SynOS.Models.Entities.RadiologyImage", b =>
                 {
                     b.Property<Guid>("ImageId")
@@ -4612,16 +4558,7 @@ namespace SynOS.Data.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<Guid?>("ActiveSessionId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<Guid?>("AssignedTo")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTimeOffset?>("ClaimedAt")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<Guid?>("ClaimedByUserId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTimeOffset>("CreatedAt")
@@ -4648,18 +4585,12 @@ namespace SynOS.Data.Migrations
                     b.Property<bool>("IsSoftDeleted")
                         .HasColumnType("bit");
 
-                    b.Property<DateTimeOffset?>("LastActivityAt")
-                        .HasColumnType("datetimeoffset");
-
                     b.Property<string>("Modality")
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
                     b.Property<Guid>("PatientId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid?>("PriorStudyId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Status")
@@ -4677,13 +4608,9 @@ namespace SynOS.Data.Migrations
 
                     b.HasIndex("AssignedTo");
 
-                    b.HasIndex("ClaimedByUserId");
-
                     b.HasIndex("CreatedBy");
 
                     b.HasIndex("PatientId");
-
-                    b.HasIndex("PriorStudyId");
 
                     b.HasIndex("VisitId");
 
@@ -8067,31 +7994,6 @@ namespace SynOS.Data.Migrations
                     b.Navigation("ParentTest");
                 });
 
-            modelBuilder.Entity("SynOS.Models.Entities.RadiologyDictationSession", b =>
-                {
-                    b.HasOne("SynOS.Models.Entities.User", "Radiologist")
-                        .WithMany()
-                        .HasForeignKey("RadiologistUserId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.HasOne("SynOS.Models.Entities.RadiologyStudy", "RadiologyStudy")
-                        .WithMany()
-                        .HasForeignKey("StudyId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("SynOS.Models.Entities.User", "Typist")
-                        .WithMany()
-                        .HasForeignKey("TypistUserId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.Navigation("Radiologist");
-
-                    b.Navigation("RadiologyStudy");
-
-                    b.Navigation("Typist");
-                });
-
             modelBuilder.Entity("SynOS.Models.Entities.RadiologyImage", b =>
                 {
                     b.HasOne("SynOS.Models.Entities.RadiologyStudy", "RadiologyStudy")
@@ -8137,11 +8039,6 @@ namespace SynOS.Data.Migrations
                         .HasForeignKey("AssignedTo")
                         .OnDelete(DeleteBehavior.SetNull);
 
-                    b.HasOne("SynOS.Models.Entities.User", "ClaimedByUser")
-                        .WithMany()
-                        .HasForeignKey("ClaimedByUserId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
                     b.HasOne("SynOS.Models.Entities.User", "Creator")
                         .WithMany()
                         .HasForeignKey("CreatedBy")
@@ -8153,11 +8050,6 @@ namespace SynOS.Data.Migrations
                         .HasForeignKey("PatientId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
-
-                    b.HasOne("SynOS.Models.Entities.RadiologyStudy", "PriorStudy")
-                        .WithMany()
-                        .HasForeignKey("PriorStudyId")
-                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("SynOS.Models.Entities.Visit", "Visit")
                         .WithMany()
@@ -8171,15 +8063,11 @@ namespace SynOS.Data.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("ClaimedByUser");
-
                     b.Navigation("Creator");
 
                     b.Navigation("Order");
 
                     b.Navigation("Patient");
-
-                    b.Navigation("PriorStudy");
 
                     b.Navigation("Technician");
 

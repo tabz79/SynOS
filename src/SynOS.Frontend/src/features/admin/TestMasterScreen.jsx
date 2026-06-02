@@ -605,7 +605,7 @@ const SIGNATURE_SLOT_PRESETS = [
   "Radiologist"
 ];
 
-const DEPARTMENTS = ["All", "Hematology", "Biochemistry", "Health Panels", "Microbiology", "Serology"];
+const DEPARTMENTS = ["All", "Hematology", "Biochemistry", "Health Panels", "Microbiology", "Serology", "Radiology"];
 
 const SPECIMEN_TYPES = [
   { code: "SERUM", name: "Serum (Red Cap)" },
@@ -850,7 +850,7 @@ const mergeCatalog = (dbTestsList, localCatalog) => {
         isOutsourced: dbTest.isOutsourced,
         isActive: dbTest.isActive,
         category: dbTest.category,
-        specimenTypeCode: dbTest.specimenTypeCode || "SERUM"
+        specimenTypeCode: dbTest.specimenTypeCode || ((dbTest.department === "Radiology" || dbTest.department === "RAD") ? "NO_SPECIMEN" : "SERUM")
       });
     }
   });
@@ -913,6 +913,7 @@ export function TestMasterScreen() {
   const [isLoadingTests, setIsLoadingTests] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedDept, setSelectedDept] = useState("All");
+  const [departments, setDepartments] = useState(["All", "Hematology", "Biochemistry", "Health Panels", "Microbiology", "Serology", "Radiology"]);
 
   const [scale, setScale] = useState(1);
   const containerRef = useRef(null);
@@ -978,6 +979,16 @@ export function TestMasterScreen() {
       try {
         const dbTests = await AdminApi.getTests();
         setOriginalDbTests(dbTests || []);
+        
+        try {
+          const dbDepts = await AdminApi.getDepartments();
+          if (dbDepts && dbDepts.length > 0) {
+            const mappedDepts = ["All", ...dbDepts.map(d => d.name)];
+            setDepartments(mappedDepts);
+          }
+        } catch (deptErr) {
+          console.error("Failed to fetch database departments on mount:", deptErr);
+        }
         
         const savedCatalog = localStorage.getItem("synos_test_catalog");
         let localCatalogList = INITIAL_TEST_CATALOG;
@@ -1075,6 +1086,7 @@ export function TestMasterScreen() {
   const [metaDept, setMetaDept] = useState(selectedTest?.department || "");
   const [metaIsProfile, setMetaIsProfile] = useState(selectedTest?.isProfile || false);
   const [metaSpecimenTypeCode, setMetaSpecimenTypeCode] = useState(selectedTest?.specimenTypeCode || "SERUM");
+  const [metaCategory, setMetaCategory] = useState(selectedTest?.category || "General");
 
   // Right Drawer Contextual States
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -1111,6 +1123,7 @@ export function TestMasterScreen() {
     setMetaDept(test.department);
     setMetaIsProfile(test.isProfile);
     setMetaSpecimenTypeCode(test.specimenTypeCode || "SERUM");
+    setMetaCategory(test.category || "General");
     setIsEditingMetadata(false);
     setDrawerOpen(false);
 
@@ -1123,13 +1136,36 @@ export function TestMasterScreen() {
   const handleSaveMetadata = () => {
     const updated = catalog.map(t => {
       if (t.id === selectedTest.id) {
+        const isRadiology = metaDept === "Radiology" || metaDept === "RAD";
+        let cleanedParams = t.parameters || [];
+        if (isRadiology) {
+          const existingFindings = cleanedParams.find(p => p.code === "FINDINGS") || cleanedParams[0];
+          cleanedParams = [
+            {
+              code: existingFindings?.code === "FINDINGS" ? "FINDINGS" : (existingFindings?.code || "FINDINGS"),
+              name: existingFindings?.name || "Findings & Impressions",
+              unit: "",
+              minRange: "",
+              maxRange: "",
+              method: existingFindings?.method || "Dictation",
+              hasFormula: false,
+              formula: "",
+              analyzerModel: "",
+              analyzerChannel: "",
+              narrativeTemplate: existingFindings?.narrativeTemplate || t.interpretationComment || "FINDINGS:\n\nIMPRESSION:",
+              genderRanges: {}
+            }
+          ];
+        }
         return {
           ...t,
           name: metaName,
           code: metaCode.toUpperCase(),
           department: metaDept,
           isProfile: metaIsProfile,
-          specimenTypeCode: metaSpecimenTypeCode
+          specimenTypeCode: isRadiology ? "NO_SPECIMEN" : metaSpecimenTypeCode,
+          category: isRadiology ? metaCategory : "General",
+          parameters: cleanedParams
         };
       }
       return t;
@@ -1148,6 +1184,7 @@ export function TestMasterScreen() {
 
   const handleAddTest = () => {
     const newId = `test-${Date.now()}`;
+    const isRadiology = selectedDept === "Radiology" || selectedDept === "RAD";
     const newTest = {
       id: newId,
       name: "New Diagnostics Test",
@@ -1156,7 +1193,8 @@ export function TestMasterScreen() {
       basePrice: 500,
       isProfile: false,
       includedTestIds: [],
-      specimenTypeCode: "SERUM",
+      specimenTypeCode: isRadiology ? "NO_SPECIMEN" : "SERUM",
+      category: isRadiology ? "X-Ray" : "General",
       parameters: [
         { 
           code: "PARAM1", 
@@ -1190,7 +1228,8 @@ export function TestMasterScreen() {
     setMetaCode(newTest.code);
     setMetaDept(newTest.department);
     setMetaIsProfile(newTest.isProfile);
-    setMetaSpecimenTypeCode("SERUM");
+    setMetaSpecimenTypeCode(isRadiology ? "NO_SPECIMEN" : "SERUM");
+    setMetaCategory(isRadiology ? "X-Ray" : "General");
     setIsEditingMetadata(true);
     setDrawerOpen(false);
   };
@@ -1538,11 +1577,11 @@ export function TestMasterScreen() {
           TestCode: item.code,
           TestName: item.name,
           Department: item.department || "Biochemistry",
-          Category: item.category || "General",
+          Category: (item.department === "Radiology" || item.department === "RAD") ? (item.category || "X-Ray") : (item.category || "General"),
           BasePrice: Number(item.basePrice) || 0,
           TAT_Hours: Number(item.tatHours || item.TAT_Hours) || 24,
           IsOutsourced: !!(item.isOutsourced || (item.outsource && item.outsource.enabled)),
-          SpecimenTypeCode: item.specimenTypeCode || "SERUM",
+          SpecimenTypeCode: (item.department === "Radiology" || item.department === "RAD") ? "NO_SPECIMEN" : (item.specimenTypeCode || "SERUM"),
           IsProfile: !!item.isProfile,
           Parameters: (item.parameters || []).map((p, idx) => ({
             ParameterCode: p.code,
@@ -1743,7 +1782,7 @@ export function TestMasterScreen() {
 
           {/* Department Quick Filter Badges */}
           <div className="flex flex-wrap gap-1.5 pb-1 shrink-0">
-            {DEPARTMENTS.map(dept => (
+            {departments.map(dept => (
               <button
                 key={dept}
                 onClick={() => setSelectedDept(dept)}
@@ -1837,23 +1876,39 @@ export function TestMasterScreen() {
                       value={metaDept}
                       onChange={(e) => setMetaDept(e.target.value)}
                     >
-                      {DEPARTMENTS.filter(d => d !== "All").map(d => (
+                      {departments.filter(d => d !== "All").map(d => (
                         <option key={d} value={d}>{d}</option>
                       ))}
                     </select>
                   </div>
-                  <div>
-                    <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 block mb-1">Specimen Type</label>
-                    <select
-                      className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 dark:border-zinc-800 rounded-xl px-2.5 py-2 text-sm w-full text-zinc-900 dark:text-zinc-100 outline-none focus:ring-1 focus:ring-synos-primary"
-                      value={metaSpecimenTypeCode}
-                      onChange={(e) => setMetaSpecimenTypeCode(e.target.value)}
-                    >
-                      {SPECIMEN_TYPES.map(spec => (
-                        <option key={spec.code} value={spec.code}>{spec.name}</option>
-                      ))}
-                    </select>
-                  </div>
+                  {(metaDept === "Radiology" || metaDept === "RAD") ? (
+                    <div>
+                      <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 block mb-1">Imaging Modality</label>
+                      <select
+                        className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl px-2.5 py-2 text-sm w-full text-zinc-900 dark:text-zinc-100 outline-none focus:ring-1 focus:ring-synos-primary"
+                        value={metaCategory}
+                        onChange={(e) => setMetaCategory(e.target.value)}
+                      >
+                        <option value="X-Ray">X-Ray</option>
+                        <option value="MRI">MRI</option>
+                        <option value="CT Scan">CT Scan</option>
+                        <option value="Ultrasound">Ultrasound</option>
+                      </select>
+                    </div>
+                  ) : (
+                    <div>
+                      <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 block mb-1">Specimen Type</label>
+                      <select
+                        className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl px-2.5 py-2 text-sm w-full text-zinc-900 dark:text-zinc-100 outline-none focus:ring-1 focus:ring-synos-primary"
+                        value={metaSpecimenTypeCode}
+                        onChange={(e) => setMetaSpecimenTypeCode(e.target.value)}
+                      >
+                        {SPECIMEN_TYPES.map(spec => (
+                          <option key={spec.code} value={spec.code}>{spec.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
                   <div className="md:col-span-1 flex items-center gap-6 py-2">
                     <label className="flex items-center gap-2 cursor-pointer select-none">
                       <input 
@@ -1915,7 +1970,12 @@ export function TestMasterScreen() {
                     )}
                   </div>
                   <p className="text-xs text-zinc-500 dark:text-zinc-400 font-medium uppercase tracking-wider mt-1.5">
-                    Department: {selectedTest.department} &bull; Base Price: ₹{selectedTest.basePrice} &bull; Specimen: {selectedTest.specimenTypeCode || "SERUM"}
+                    Department: {selectedTest.department} &bull; Base Price: ₹{selectedTest.basePrice} 
+                    {(selectedTest.department === "Radiology" || selectedTest.department === "RAD") ? (
+                      <> &bull; Modality: {selectedTest.category || "X-Ray"}</>
+                    ) : (
+                      <> &bull; Specimen: {selectedTest.specimenTypeCode || "SERUM"}</>
+                    )}
                   </p>
                 </div>
               )}
@@ -2001,6 +2061,143 @@ export function TestMasterScreen() {
           <div className="flex-1 min-h-0 overflow-hidden">
                       {/* Tab: Parameters (Excel spreadsheet structure) */}
             {activeTab === "parameters" && (() => {
+              const isRadiology = metaDept === "Radiology" || metaDept === "RAD";
+              
+              if (isRadiology) {
+                const currentParams = selectedTest.parameters || [];
+                let dictationParam = currentParams[0];
+                if (!dictationParam) {
+                  dictationParam = {
+                    code: "FINDINGS",
+                    name: "Findings & Impressions",
+                    unit: "",
+                    minRange: "",
+                    maxRange: "",
+                    method: "Dictation",
+                    hasFormula: false,
+                    formula: "",
+                    analyzerModel: "",
+                    analyzerChannel: "",
+                    narrativeTemplate: selectedTest.interpretationComment || "",
+                    genderRanges: {}
+                  };
+                }
+
+                const handleRadiologyParamChange = (field, val) => {
+                  const updatedParams = [...currentParams];
+                  if (updatedParams.length === 0) {
+                    updatedParams.push({
+                      code: "FINDINGS",
+                      name: "Findings & Impressions",
+                      unit: "",
+                      minRange: "",
+                      maxRange: "",
+                      method: "Dictation",
+                      hasFormula: false,
+                      formula: "",
+                      analyzerModel: "",
+                      analyzerChannel: "",
+                      narrativeTemplate: "",
+                      genderRanges: {}
+                    });
+                  }
+                  
+                  let finalVal = val;
+                  if (field === 'code') {
+                    finalVal = val.toUpperCase();
+                  }
+
+                  updatedParams[0] = {
+                    ...updatedParams[0],
+                    [field]: finalVal
+                  };
+
+                  const updatedTest = {
+                    ...selectedTest,
+                    parameters: updatedParams
+                  };
+                  const updatedCatalog = catalog.map(t => t.id === selectedTest.id ? updatedTest : t);
+                  setCatalog(updatedCatalog);
+                  setSelectedTest(updatedTest);
+                };
+
+                return (
+                  <div className="bg-white dark:bg-zinc-900/40 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 shadow-sm space-y-6 lg:h-full lg:overflow-y-auto custom-scrollbar">
+                    <div className="flex items-start gap-4 p-4 rounded-xl bg-indigo-50 dark:bg-indigo-950/20 border border-indigo-100 dark:border-indigo-900/30">
+                      <Cpu className="w-5 h-5 text-indigo-600 dark:text-indigo-400 mt-0.5 shrink-0" />
+                      <div>
+                        <h4 className="text-sm font-black text-indigo-950 dark:text-indigo-200 tracking-tight">Radiology Dictation & Narrative Mode</h4>
+                        <p className="text-xs text-zinc-600 dark:text-zinc-400 mt-1 leading-relaxed">
+                          Radiology examinations are narrative-based and do not contain individual numerical parameters, units, or reference ranges. 
+                          The editor below configures the **default findings template** loaded on the radiologist's terminal during dictation.
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                          <label className="text-xs font-bold text-zinc-700 dark:text-zinc-300 block mb-1">Parameter Code</label>
+                          <input
+                            type="text"
+                            className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl px-3.5 py-2 text-sm w-full text-zinc-900 dark:text-zinc-100 outline-none focus:ring-1 focus:ring-synos-primary uppercase font-bold"
+                            value={dictationParam.code}
+                            onChange={(e) => handleRadiologyParamChange("code", e.target.value)}
+                          />
+                        </div>
+                        <div>
+                          <label className="text-xs font-bold text-zinc-700 dark:text-zinc-300 block mb-1">Parameter Name</label>
+                          <input
+                            type="text"
+                            className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl px-3.5 py-2 text-sm w-full text-zinc-900 dark:text-zinc-100 outline-none focus:ring-1 focus:ring-synos-primary"
+                            value={dictationParam.name}
+                            onChange={(e) => handleRadiologyParamChange("name", e.target.value)}
+                          />
+                        </div>
+                        <div>
+                          <label className="text-xs font-bold text-zinc-700 dark:text-zinc-300 block mb-1">Methodology</label>
+                          <input
+                            type="text"
+                            className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl px-3.5 py-2 text-sm w-full text-zinc-900 dark:text-zinc-100 outline-none focus:ring-1 focus:ring-synos-primary"
+                            value={dictationParam.method || "Dictation"}
+                            onChange={(e) => handleRadiologyParamChange("method", e.target.value)}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <div className="flex items-center justify-between">
+                          <label className="text-xs font-bold text-zinc-700 dark:text-zinc-300 ml-1">Default Findings & Impression Template</label>
+                          <button
+                            onClick={() => {
+                              const templateText = "NORMAL STUDY:\n\nFINDINGS:\n- Lungs and airways are clear.\n- Heart size is normal.\n- Pleural spaces are free.\n\nIMPRESSION:\nNormal chest study.";
+                              handleRadiologyParamChange("narrativeTemplate", templateText);
+                              handleReportSetupFieldChange("interpretationComment", templateText);
+                            }}
+                            className="text-[10px] text-synos-primary font-bold hover:underline flex items-center gap-1"
+                          >
+                            <Sparkles className="w-3 h-3" /> Pre-fill Normal Template
+                          </button>
+                        </div>
+                        <textarea
+                          rows="12"
+                          className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-3 text-sm w-full text-zinc-900 dark:text-zinc-100 outline-none focus:ring-1 focus:ring-synos-primary font-mono leading-relaxed"
+                          placeholder="Type normal study findings template here..."
+                          value={dictationParam.narrativeTemplate || ""}
+                          onChange={(e) => {
+                            handleRadiologyParamChange("narrativeTemplate", e.target.value);
+                            handleReportSetupFieldChange("interpretationComment", e.target.value);
+                          }}
+                        />
+                        <p className="text-[10px] text-zinc-500 dark:text-zinc-400 font-medium ml-1">
+                          This template serves as the initial layout when the radiologist begins a new dictation session for this study.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                );
+              }
+
               const childParams = getCompiledProfileParameters(selectedTest, catalog);
               const childCodes = new Set(childParams.map(cp => cp.code));
               const nativeParams = (selectedTest.parameters || []).filter(np => !childCodes.has(np.code));

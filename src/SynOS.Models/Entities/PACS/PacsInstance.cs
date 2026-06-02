@@ -64,5 +64,8 @@ namespace SynOS.Models.Entities.PACS
         public bool IsDeleted { get; set; } = false;
         public DateTimeOffset? DeletedAt { get; set; }
         public Guid? DeletedBy { get; set; }
+
+        public bool IsKeyImage { get; set; } = false;
+        public string? KeyImageNotes { get; set; }
     }
 }

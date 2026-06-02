@@ -11,7 +11,7 @@ namespace SynOS.Api.Controllers.Radiology
 {
     [ApiController]
     [Route("api/v1/radiology/pacs")]
-    [Authorize(Roles = "Admin,Radiologist,XRayTech")]
+    [Authorize(Roles = "Admin,Radiologist,XRayTech,MriTech,CTTech,USTech")]
     public class PacsController : ControllerBase
     {
         private readonly IPacsService _pacsService;
@@ -65,7 +65,7 @@ namespace SynOS.Api.Controllers.Radiology
         }
 
         [HttpGet("studies/{radiologyStudyId:guid}/series-tree")]
-        [Authorize(Roles = "Admin,Radiologist,XRayTech")]
+        [Authorize(Roles = "Admin,Radiologist,XRayTech,MriTech,CTTech,USTech")]
         public async Task<IActionResult> GetSeriesTree(Guid radiologyStudyId)
         {
             var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);

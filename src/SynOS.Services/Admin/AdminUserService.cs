@@ -508,6 +508,15 @@ namespace SynOS.Services.Admin
 
             _context.Workspaces.Add(ws);
             await _context.SaveChangesAsync();
+
+            await _auditService.LogAsync(
+                _userContext.CurrentUserId,
+                "CreateWorkspace",
+                "Workspace",
+                ws.WorkspaceId,
+                new { Name = ws.Name, RoutePath = ws.RoutePath }
+            );
+
             return ws;
         }
 
@@ -522,11 +531,22 @@ namespace SynOS.Services.Admin
                 throw new InvalidOperationException($"Workspace with route '{routePath}' already exists.");
             }
 
+            var oldValues = new { ws.Name, ws.RoutePath, ws.IsActive };
+
             ws.Name = name.Trim();
             ws.RoutePath = routePath.Trim();
             ws.IsActive = isActive;
 
             await _context.SaveChangesAsync();
+
+            await _auditService.LogAsync(
+                _userContext.CurrentUserId,
+                "UpdateWorkspace",
+                "Workspace",
+                ws.WorkspaceId,
+                new { Old = oldValues, New = new { ws.Name, ws.RoutePath, ws.IsActive } }
+            );
+
             return ws;
         }
 
@@ -535,8 +555,18 @@ namespace SynOS.Services.Admin
             var ws = await _context.Workspaces.FindAsync(workspaceId);
             if (ws == null) throw new KeyNotFoundException("Workspace not found.");
 
+            var wsData = new { ws.Name, ws.RoutePath };
+
             _context.Workspaces.Remove(ws);
             await _context.SaveChangesAsync();
+
+            await _auditService.LogAsync(
+                _userContext.CurrentUserId,
+                "DeleteWorkspace",
+                "Workspace",
+                workspaceId,
+                wsData
+            );
         }
 
         public async Task SetUserWorkspaceAccessesAsync(Guid userId, IEnumerable<Guid> workspaceIds)
@@ -551,9 +581,12 @@ namespace SynOS.Services.Admin
                 .Where(uwa => uwa.UserId == userId)
                 .ToListAsync();
 
+            var oldAccesses = existingAccesses.Select(ea => ea.WorkspaceId).ToList();
+
             _context.UserWorkspaceAccesses.RemoveRange(existingAccesses);
 
             // Add new workspace accesses
+            var newAccesses = new List<Guid>();
             foreach (var wsId in workspaceIds)
             {
                 if (await _context.Workspaces.AnyAsync(w => w.WorkspaceId == wsId))
@@ -566,10 +599,19 @@ namespace SynOS.Services.Admin
                         AssignedAt = DateTimeOffset.UtcNow
                     };
                     _context.UserWorkspaceAccesses.Add(uwa);
+                    newAccesses.Add(wsId);
                 }
             }
 
             await _context.SaveChangesAsync();
+
+            await _auditService.LogAsync(
+                _userContext.CurrentUserId,
+                "SetUserWorkspaces",
+                "User",
+                userId,
+                new { OldWorkspaceIds = oldAccesses, NewWorkspaceIds = newAccesses }
+            );
         }
     }
 }
