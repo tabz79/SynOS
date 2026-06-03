@@ -24,6 +24,7 @@ import {
     Lock
 } from 'lucide-react';
 import * as signalR from '@microsoft/signalr';
+import { RadiologyCallOverlay } from './RadiologyCallOverlay';
 
 export function RadiologistTerminal() {
     const { user } = useAuth();
@@ -51,6 +52,7 @@ export function RadiologistTerminal() {
     const [liveTypistConnected, setLiveTypistConnected] = useState(false);
     const [connectionStatus, setConnectionStatus] = useState('Disconnected');
     const hubConnection = useRef(null);
+    const currentJoinedStudyIdRef = useRef(null);
 
     // Canvas references
     const canvasRef = useRef(null);
@@ -172,26 +174,49 @@ export function RadiologistTerminal() {
         }
     };
 
-    // Initialize Dicom Viewport when active study changes
+    // Connect SignalR on component mount to support presence and floating audio calls
+    useEffect(() => {
+        connectSignalR();
+        return () => {
+            if (hubConnection.current) {
+                hubConnection.current.stop();
+                hubConnection.current = null;
+            }
+        };
+    }, []);
+
+    // Initialize Dicom Viewport and sync collaborative session when active study changes
     useEffect(() => {
         if (selectedStudy) {
             setIsQueueCollapsed(true);
             const isClaimedByMe = selectedStudy.claimedByUserId === user?.id;
             const studyId = selectedStudy.studyId || selectedStudy.radiologyStudyId;
             
-            if (isClaimedByMe && studyId && canvasRef.current) {
-                viewportManager.current = new DicomViewportManager(canvasRef.current, selectedStudy.modality);
-                
-                // Load raw DICOM slices if study contains any extracted slices
-                if (selectedStudy.images && selectedStudy.images.length > 0) {
-                    const urls = selectedStudy.images.map(img => img.fileUrl);
-                    viewportManager.current.setImages(urls).then(() => {
-                        setActiveSliceIndex(0);
-                    });
+            if (isClaimedByMe && studyId) {
+                if (canvasRef.current) {
+                    viewportManager.current = new DicomViewportManager(canvasRef.current, selectedStudy.modality);
+                    
+                    // Load raw DICOM slices if study contains any extracted slices
+                    if (selectedStudy.images && selectedStudy.images.length > 0) {
+                        const urls = selectedStudy.images.map(img => img.fileUrl);
+                        viewportManager.current.setImages(urls).then(() => {
+                            setActiveSliceIndex(0);
+                        });
+                    }
                 }
                 
-                // Connect SignalR for live character typing sync
-                connectSignalR(studyId);
+                // Switch session groups dynamically
+                const studyIdStr = studyId.toString();
+                if (currentJoinedStudyIdRef.current && currentJoinedStudyIdRef.current !== studyIdStr) {
+                    if (hubConnection.current && hubConnection.current.state === 'Connected') {
+                        hubConnection.current.invoke('LeaveSession', currentJoinedStudyIdRef.current).catch(err => console.error(err));
+                    }
+                }
+                
+                currentJoinedStudyIdRef.current = studyIdStr;
+                if (hubConnection.current && hubConnection.current.state === 'Connected') {
+                    hubConnection.current.invoke('JoinSession', studyIdStr).catch(err => console.error(err));
+                }
 
                 // Fetch current report structure/draft if exists
                 fetchReportDraft(studyId);
@@ -202,9 +227,6 @@ export function RadiologistTerminal() {
             if (viewportManager.current) {
                 viewportManager.current.destroy();
                 viewportManager.current = null;
-            }
-            if (hubConnection.current) {
-                hubConnection.current.stop();
             }
         };
     }, [selectedStudy?.radiologyStudyId || selectedStudy?.studyId, selectedStudy?.claimedByUserId]);
@@ -250,37 +272,41 @@ export function RadiologistTerminal() {
         }
     };
 
-    const connectSignalR = async (studyId) => {
-        if (hubConnection.current) {
-            await hubConnection.current.stop();
-        }
+    const connectSignalR = async () => {
+        if (hubConnection.current) return;
 
         setConnectionStatus('Connecting');
 
-        hubConnection.current = new signalR.HubConnectionBuilder()
+        const connection = new signalR.HubConnectionBuilder()
             .withUrl('/radiologyCollaborationHub', {
                 accessTokenFactory: () => localStorage.getItem('synos_jwt')
             })
             .withAutomaticReconnect([0, 2000, 5000, 10000]) // sliding reconnect
             .build();
 
-        hubConnection.current.onreconnecting((error) => {
+        hubConnection.current = connection;
+
+        connection.onreconnecting((error) => {
             setConnectionStatus('Reconnecting');
             console.warn("SignalR connection lost, attempting reconnect...", error);
         });
 
-        hubConnection.current.onreconnected((connectionId) => {
+        connection.onreconnected((connectionId) => {
             setConnectionStatus('Connected');
-            console.info("SignalR reconnected. Hydrating state...", connectionId);
-            fetchReportDraft(studyId);
+            console.info("SignalR reconnected.", connectionId);
+            connection.invoke('RegisterPresence', 'Radiologist').catch(err => console.error(err));
+            if (currentJoinedStudyIdRef.current) {
+                connection.invoke('JoinSession', currentJoinedStudyIdRef.current).catch(err => console.error(err));
+                fetchReportDraft(currentJoinedStudyIdRef.current);
+            }
         });
 
-        hubConnection.current.onclose((error) => {
+        connection.onclose((error) => {
             setConnectionStatus('Disconnected');
             console.error("SignalR connection closed.", error);
         });
 
-        hubConnection.current.on('ReceiveDraftUpdate', (draftContent) => {
+        connection.on('ReceiveDraftUpdate', (draftContent) => {
             try {
                 const parsed = JSON.parse(draftContent);
                 if (parsed.findings !== undefined) setDraftFindings(parsed.findings);
@@ -291,14 +317,17 @@ export function RadiologistTerminal() {
             }
         });
 
-        hubConnection.current.on('UserJoined', (connectionId) => {
+        connection.on('UserJoined', (connectionId) => {
             setLiveTypistConnected(true);
         });
 
         try {
-            await hubConnection.current.start();
+            await connection.start();
             setConnectionStatus('Connected');
-            await hubConnection.current.invoke('JoinSession', studyId);
+            await connection.invoke('RegisterPresence', 'Radiologist');
+            if (currentJoinedStudyIdRef.current) {
+                await connection.invoke('JoinSession', currentJoinedStudyIdRef.current);
+            }
         } catch (e) {
             setConnectionStatus('Disconnected');
             console.error("Failed to connect to SignalR hub:", e);
@@ -779,6 +808,12 @@ export function RadiologistTerminal() {
                     )}
                 </div>
             </div>
+            <RadiologyCallOverlay 
+                hubConnection={hubConnection.current} 
+                selectedStudy={selectedStudy} 
+                onSelectStudy={(studyId) => handleSelectStudy({ radiologyStudyId: studyId })} 
+                role="Radiologist"
+            />
         </div>
     );
 }

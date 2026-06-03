@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { SystemBar } from '@/components/layout/SystemBar';
 import { useAuth } from '@/context/AuthContext';
+import { RadiologyCallOverlay } from './RadiologyCallOverlay';
 import { RadiologyApi } from '@/api/radiology';
 import { 
     Activity, 
@@ -34,6 +35,7 @@ export function RadiologyTypistTerminal() {
     const [liveRadiologistConnected, setLiveRadiologistConnected] = useState(false);
     const [connectionStatus, setConnectionStatus] = useState('Disconnected');
     const hubConnection = useRef(null);
+    const currentJoinedStudyIdRef = useRef(null);
 
     const fetchQueue = async () => {
         setLoading(true);
@@ -56,17 +58,58 @@ export function RadiologyTypistTerminal() {
         fetchQueue();
     }, []);
 
+    // Connect SignalR on component mount to support presence and floating audio calls
     useEffect(() => {
-        if (selectedStudy) {
-            connectSignalR(selectedStudy.radiologyStudyId);
-            fetchReportDraft(selectedStudy.radiologyStudyId);
-        }
-
+        connectSignalR();
         return () => {
             if (hubConnection.current) {
                 hubConnection.current.stop();
+                hubConnection.current = null;
             }
         };
+    }, []);
+
+    // Sync collaborative session when active study changes
+    useEffect(() => {
+        if (selectedStudy) {
+            const studyId = selectedStudy.radiologyStudyId;
+            const studyIdStr = studyId.toString();
+            
+            // Switch session groups dynamically
+            if (currentJoinedStudyIdRef.current && currentJoinedStudyIdRef.current !== studyIdStr) {
+                if (hubConnection.current && hubConnection.current.state === 'Connected') {
+                    hubConnection.current.invoke('LeaveSession', currentJoinedStudyIdRef.current).catch(err => console.error(err));
+                }
+            }
+            
+            currentJoinedStudyIdRef.current = studyIdStr;
+
+            const joinAndConnect = async () => {
+                if (selectedStudy.activeSessionId) {
+                    try {
+                        const joinResponse = await fetch(`/api/v1/radiology/session/${selectedStudy.activeSessionId}/join`, {
+                            method: 'POST',
+                            headers: { 
+                                'Authorization': `Bearer ${localStorage.getItem('synos_jwt')}`,
+                                'Content-Type': 'application/json'
+                            }
+                        });
+                        if (!joinResponse.ok) {
+                            console.error("Failed to join collaborative session on backend:", await joinResponse.text());
+                        }
+                    } catch (e) {
+                        console.error("Error joining collaborative session on backend:", e);
+                    }
+                }
+                
+                if (hubConnection.current && hubConnection.current.state === 'Connected') {
+                    hubConnection.current.invoke('JoinSession', studyIdStr).catch(err => console.error(err));
+                }
+            };
+
+            joinAndConnect();
+            fetchReportDraft(studyId);
+        }
     }, [selectedStudy]);
 
     const fetchReportDraft = async (studyId) => {
@@ -105,64 +148,74 @@ export function RadiologyTypistTerminal() {
         }
     };
 
-    const connectSignalR = async (studyId) => {
-        if (hubConnection.current) {
-            await hubConnection.current.stop();
-        }
+    const connectSignalR = async () => {
+        if (hubConnection.current) return;
 
         setConnectionStatus('Connecting');
 
-        hubConnection.current = new signalR.HubConnectionBuilder()
+        const connection = new signalR.HubConnectionBuilder()
             .withUrl('/radiologyCollaborationHub', {
                 accessTokenFactory: () => localStorage.getItem('synos_jwt')
             })
             .withAutomaticReconnect([0, 2000, 5000, 10000]) // sliding reconnect
             .build();
 
-        hubConnection.current.onreconnecting((error) => {
+        hubConnection.current = connection;
+
+        connection.onreconnecting((error) => {
             setConnectionStatus('Reconnecting');
             console.warn("SignalR connection lost, attempting reconnect...", error);
         });
 
-        hubConnection.current.onreconnected((connectionId) => {
+        connection.onreconnected((connectionId) => {
             setConnectionStatus('Connected');
-            console.info("SignalR reconnected. Hydrating state...", connectionId);
-            fetchReportDraft(studyId);
+            console.info("SignalR reconnected.", connectionId);
+            connection.invoke('RegisterPresence', 'Typist').catch(err => console.error(err));
+            if (currentJoinedStudyIdRef.current) {
+                connection.invoke('JoinSession', currentJoinedStudyIdRef.current).catch(err => console.error(err));
+                fetchReportDraft(currentJoinedStudyIdRef.current);
+            }
         });
 
-        hubConnection.current.onclose((error) => {
+        connection.onclose((error) => {
             setConnectionStatus('Disconnected');
             console.error("SignalR connection closed.", error);
         });
 
-        hubConnection.current.on('ReceiveDraftUpdate', (draftContent) => {
+        connection.on('ReceiveDraftUpdate', (draftContent) => {
             try {
                 const parsed = JSON.parse(draftContent);
+                const activeStudyId = currentJoinedStudyIdRef.current;
+                if (!activeStudyId) return;
+
                 if (parsed.findings !== undefined) {
                     setDraftFindings(parsed.findings);
-                    localStorage.setItem(`draft_findings_${studyId}`, parsed.findings);
+                    localStorage.setItem(`draft_findings_${activeStudyId}`, parsed.findings);
                 }
                 if (parsed.impression !== undefined) {
                     setDraftImpression(parsed.impression);
-                    localStorage.setItem(`draft_impression_${studyId}`, parsed.impression);
+                    localStorage.setItem(`draft_impression_${activeStudyId}`, parsed.impression);
                 }
                 if (parsed.additionalNotes !== undefined) {
                     setDraftNotes(parsed.additionalNotes);
-                    localStorage.setItem(`draft_notes_${studyId}`, parsed.additionalNotes);
+                    localStorage.setItem(`draft_notes_${activeStudyId}`, parsed.additionalNotes);
                 }
             } catch (e) {
                 console.error("Failed to parse live draft packet:", e);
             }
         });
 
-        hubConnection.current.on('UserJoined', (connectionId) => {
+        connection.on('UserJoined', (connectionId) => {
             setLiveRadiologistConnected(true);
         });
 
         try {
-            await hubConnection.current.start();
+            await connection.start();
             setConnectionStatus('Connected');
-            await hubConnection.current.invoke('JoinSession', studyId);
+            await connection.invoke('RegisterPresence', 'Typist');
+            if (currentJoinedStudyIdRef.current) {
+                await connection.invoke('JoinSession', currentJoinedStudyIdRef.current);
+            }
         } catch (e) {
             setConnectionStatus('Disconnected');
             console.error("Failed to connect to SignalR hub:", e);
@@ -378,6 +431,24 @@ export function RadiologyTypistTerminal() {
                     )}
                 </div>
             </div>
+            <RadiologyCallOverlay 
+                hubConnection={hubConnection.current} 
+                selectedStudy={selectedStudy} 
+                onSelectStudy={async (studyId) => {
+                    try {
+                        const response = await fetch(`/api/v1/radiology/studies/${studyId}`, {
+                            headers: { 'Authorization': `Bearer ${localStorage.getItem('synos_jwt')}` }
+                        });
+                        if (response.ok) {
+                            const details = await response.json();
+                            setSelectedStudy(details);
+                        }
+                    } catch (error) {
+                        console.error("Failed to load study details on call accept:", error);
+                    }
+                }} 
+                role="Typist"
+            />
         </div>
     );
 }
