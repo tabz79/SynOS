@@ -16,7 +16,9 @@ import {
     Settings2, 
     BarChart3, 
     Settings,
-    ChevronDown
+    ChevronDown,
+    Eye,
+    Activity
 } from 'lucide-react';
 import { SystemBar } from '@/components/layout/SystemBar';
 
@@ -34,6 +36,11 @@ export function AdminLayout() {
                 { name: "Lab Workbench", icon: Beaker, path: "/workbench" },
                 { name: "Reports Typing", icon: Keyboard, path: "/typist" },
                 { name: "Pathologist", icon: UserCheck, path: "/pathologist" },
+                { name: "Radiologist", icon: Eye, path: "/radiologist" },
+                { name: "X-Ray Technician", icon: Activity, path: "/xraytech" },
+                { name: "Ultrasound Technician", icon: Activity, path: "/ustech" },
+                { name: "CT Technician", icon: Activity, path: "/cttech" },
+                { name: "MRI Technician", icon: Activity, path: "/mritech" },
                 { name: "Delivery Desk", icon: Truck, path: "/delivery" },
                 { name: "Inventory (Ops)", icon: Box, path: "/inventory" },
                 { name: "Finance (Ops)", icon: IndianRupee, path: "/finance" },

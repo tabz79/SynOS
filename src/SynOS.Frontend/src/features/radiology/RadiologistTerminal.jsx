@@ -44,6 +44,9 @@ export function RadiologistTerminal() {
     const [draftNotes, setDraftNotes] = useState('');
     const [reportId, setReportId] = useState(null);
 
+    // Collapsed Queue State
+    const [isQueueCollapsed, setIsQueueCollapsed] = useState(false);
+
     // SignalR Connection
     const [liveTypistConnected, setLiveTypistConnected] = useState(false);
     const [connectionStatus, setConnectionStatus] = useState('Disconnected');
@@ -172,6 +175,7 @@ export function RadiologistTerminal() {
     // Initialize Dicom Viewport when active study changes
     useEffect(() => {
         if (selectedStudy) {
+            setIsQueueCollapsed(true);
             const isClaimedByMe = selectedStudy.claimedByUserId === user?.id;
             const studyId = selectedStudy.studyId || selectedStudy.radiologyStudyId;
             
@@ -203,7 +207,21 @@ export function RadiologistTerminal() {
                 hubConnection.current.stop();
             }
         };
-    }, [selectedStudy?.studyId, selectedStudy?.claimedByUserId]);
+    }, [selectedStudy?.radiologyStudyId || selectedStudy?.studyId, selectedStudy?.claimedByUserId]);
+
+    // Centering & Resizing layout adapter for CSS transitions
+    useEffect(() => {
+        if (viewportManager.current) {
+            const timer = setTimeout(() => {
+                try {
+                    viewportManager.current.resize();
+                } catch (e) {
+                    console.error("Layout transition resize failed:", e);
+                }
+            }, 350); // wait for CSS transitions (300ms) to settle
+            return () => clearTimeout(timer);
+        }
+    }, [isQueueCollapsed]);
 
     const fetchReportDraft = async (studyId) => {
         try {
@@ -424,17 +442,19 @@ export function RadiologistTerminal() {
     const canForceRelease = isClaimExpired || isInactiveTimeout || isAdmin;
 
     return (
-        <div className="h-screen w-screen bg-zinc-950 text-zinc-150 flex flex-col font-sans select-none overflow-hidden">
+        <div className="h-screen w-screen dark:bg-synos-background bg-zinc-50 dark:text-zinc-100 text-zinc-800 flex flex-col font-sans select-none overflow-hidden">
             {/* System Header */}
             <SystemBar title="Radiologist Diagnostic Workstation" status="Live" />
 
             {/* Core Workstation Workspace */}
             <div className="flex-1 grid grid-cols-12 overflow-hidden">
                 {/* 1. Modality Worklist Queue */}
-                <div className="col-span-3 border-r border-zinc-850 flex flex-col h-full bg-zinc-900/35">
-                    <div className="p-4 border-b border-zinc-850 bg-zinc-900/50 flex justify-between items-center">
-                        <span className="font-black text-xs uppercase tracking-wider text-zinc-400">Interpretations Worklist</span>
-                        <span className="text-[10px] bg-zinc-800 text-zinc-400 px-2 py-0.5 rounded-full font-bold">
+                <div className={`border-r dark:border-synos-border border-zinc-200 flex flex-col h-full dark:bg-synos-background/35 bg-zinc-50/50 transition-all duration-300 ease-synos ${
+                    isQueueCollapsed ? "hidden" : "col-span-3 flex"
+                }`}>
+                    <div className="p-4 border-b dark:border-synos-border border-zinc-200 dark:bg-synos-surface bg-white flex justify-between items-center">
+                        <span className="font-black text-xs uppercase tracking-wider dark:text-zinc-400 text-zinc-500">Interpretations Worklist</span>
+                        <span className="text-[10px] dark:bg-zinc-800 bg-zinc-100 dark:text-zinc-400 text-zinc-600 px-2 py-0.5 rounded-full font-bold">
                             {studies.length} active
                         </span>
                     </div>
@@ -446,10 +466,10 @@ export function RadiologistTerminal() {
                                 <span className="text-[11px] text-zinc-500">Retrieving diagnostic queue...</span>
                             </div>
                         ) : studies.length === 0 ? (
-                            <div className="h-full flex items-center justify-center flex-col text-center p-6 text-zinc-600">
-                                <Activity className="h-8 w-8 mb-2 text-zinc-700 animate-pulse" />
+                            <div className="h-full flex items-center justify-center flex-col text-center p-6 text-zinc-655">
+                                <Activity className="h-8 w-8 mb-2 dark:text-zinc-700 text-zinc-300 animate-pulse" />
                                 <span className="text-xs font-semibold uppercase">Queue Empty</span>
-                                <span className="text-[10px] text-zinc-600 mt-1">No studies awaiting reporting.</span>
+                                <span className="text-[10px] dark:text-zinc-600 text-zinc-500 mt-1">No studies awaiting reporting.</span>
                             </div>
                         ) : (
                             studies.map((study) => {
@@ -460,34 +480,34 @@ export function RadiologistTerminal() {
                                     <div 
                                         key={study.radiologyStudyId}
                                         onClick={() => handleSelectStudy(study)}
-                                        className={`p-3 rounded-lg border transition-all cursor-pointer ${
+                                        className={`p-3 rounded-lg border transition-all duration-260 ease-synos cursor-pointer ${
                                             isSelected 
-                                                ? 'bg-indigo-950/20 border-indigo-500/50 shadow-[0_0_15px_rgba(99,102,241,0.05)]' 
-                                                : 'bg-zinc-900/40 border-zinc-850 hover:border-zinc-700'
+                                                ? 'bg-synos-primary/10 dark:text-white text-synos-primary dark:border-synos-primary/20 border-synos-primary/30 shadow-sm' 
+                                                : 'dark:bg-synos-surface bg-white dark:border-synos-border border-zinc-200 dark:hover:border-zinc-500 hover:border-zinc-400 hover:shadow-sm'
                                         }`}
                                     >
                                         <div className="flex justify-between items-center mb-1">
-                                            <span className="text-[9px] font-bold bg-zinc-800 text-zinc-300 px-2 py-0.5 rounded">
+                                            <span className="text-[9px] font-bold dark:bg-zinc-800 bg-zinc-100 dark:text-zinc-300 text-zinc-600 px-2 py-0.5 rounded">
                                                 Token #{study.tokenNumber}
                                             </span>
-                                            <span className="text-[10px] font-black uppercase text-indigo-400">
+                                            <span className="text-[10px] font-black uppercase text-synos-primary">
                                                 {study.modality}
                                             </span>
                                         </div>
-                                        <h4 className="font-bold text-sm text-zinc-200">{study.patientName}</h4>
-                                        <p className="text-[11px] text-zinc-400 truncate mt-1">{study.testName}</p>
+                                        <h4 className="font-bold text-sm dark:text-zinc-200 text-zinc-800">{study.patientName}</h4>
+                                        <p className="text-[11px] dark:text-zinc-400 text-zinc-550 truncate mt-1">{study.testName}</p>
                                         <div className="mt-2 flex items-center justify-between text-[10px]">
-                                            <span className={`px-1.5 py-0.5 rounded font-medium ${
+                                            <span className={`px-1.5 py-0.5 rounded border text-[9px] font-bold uppercase tracking-tight ${
                                                 isClaimedByMe 
-                                                    ? 'bg-emerald-500/15 text-emerald-400' 
+                                                    ? 'dark:bg-emerald-500/10 bg-emerald-50 text-emerald-600 dark:text-emerald-400 dark:border-emerald-500/20 border-emerald-200' 
                                                     : isClaimedByOthers 
-                                                        ? 'bg-amber-500/15 text-amber-400' 
-                                                        : 'bg-zinc-800 text-zinc-400'
+                                                        ? 'dark:bg-amber-500/10 bg-amber-50 text-amber-600 dark:text-amber-400 dark:border-amber-500/20 border-amber-200' 
+                                                        : 'dark:bg-zinc-800 bg-zinc-100 dark:text-zinc-400 text-zinc-500 dark:border-zinc-700 border-zinc-200'
                                             }`}>
                                                 {isClaimedByMe ? 'Claimed by Me' : isClaimedByOthers ? `Locked (${study.claimedByUserName || 'Other'})` : 'Unclaimed'}
                                             </span>
                                             {study.status && (
-                                                <span className="text-zinc-500 font-mono text-[9px]">{study.status}</span>
+                                                <span className="dark:text-zinc-500 text-zinc-400 font-mono text-[9px]">{study.status}</span>
                                             )}
                                         </div>
                                     </div>
@@ -498,71 +518,92 @@ export function RadiologistTerminal() {
                 </div>
 
                 {/* 2. WebGL Resizable Viewport */}
-                <div className="col-span-5 h-full flex flex-col overflow-hidden border-r border-zinc-850 bg-black">
+                <div className={`h-full flex flex-col overflow-hidden border-r dark:border-synos-border border-zinc-200 dark:bg-black bg-zinc-950 transition-all duration-300 ease-synos ${
+                    isQueueCollapsed ? "col-span-7" : "col-span-5"
+                }`}>
                     {selectedStudy ? (
                         <div className="flex-1 flex flex-col overflow-hidden">
                             {/* Viewport Control Strip */}
-                            <div className="p-3 border-b border-zinc-900 bg-zinc-950 flex items-center justify-between text-xs gap-3">
+                            <div className="p-3 border-b dark:border-synos-border border-zinc-200 dark:bg-synos-surface bg-white flex items-center justify-between text-xs gap-3">
                                 <div className="flex items-center gap-3">
+                                    <button
+                                        onClick={() => setIsQueueCollapsed(prev => !prev)}
+                                        className="p-1 hover:bg-zinc-500/10 dark:hover:bg-zinc-800 rounded-lg text-zinc-500 transition-all active:scale-95 shrink-0 font-black border dark:border-synos-border border-zinc-200 text-xs flex items-center justify-center w-6 h-6 animate-in fade-in zoom-in duration-300"
+                                        title={isQueueCollapsed ? "Show Patient Queue" : "Collapse Workspace"}
+                                    >
+                                        {isQueueCollapsed ? "→" : "←"}
+                                    </button>
                                     <div className="flex items-center gap-1">
-                                        <Sun className="h-3.5 w-3.5 text-zinc-500" />
+                                        <Sun className="h-3.5 w-3.5 dark:text-zinc-400 text-zinc-550" />
                                         <input 
                                             type="range" 
                                             min="30" 
                                             max="200" 
                                             value={brightness} 
                                             onChange={(e) => updateFilters(Number(e.target.value), contrast)}
-                                            className="w-16 accent-indigo-500"
+                                            className="w-16 accent-synos-primary cursor-pointer"
                                         />
                                     </div>
                                     <div className="flex items-center gap-1">
-                                        <Contrast className="h-3.5 w-3.5 text-zinc-500" />
+                                        <Contrast className="h-3.5 w-3.5 dark:text-zinc-400 text-zinc-550" />
                                         <input 
                                             type="range" 
                                             min="30" 
                                             max="200" 
                                             value={contrast} 
                                             onChange={(e) => updateFilters(brightness, Number(e.target.value))}
-                                            className="w-16 accent-indigo-500"
+                                            className="w-16 accent-synos-primary cursor-pointer"
                                         />
                                     </div>
                                 </div>
 
                                 {/* Active Tool Toggles */}
-                                <div className="flex bg-zinc-900 p-0.5 rounded border border-zinc-800">
+                                <div className="flex dark:bg-zinc-900 bg-zinc-100 p-0.5 rounded border dark:border-zinc-850 border-zinc-200">
                                     <button
                                         onClick={() => handleToggleTool('Wwwc')}
-                                        className={`px-2.5 py-1 rounded text-[10px] font-bold uppercase transition-all ${activeTool === 'Wwwc' ? 'bg-indigo-650 text-white shadow-sm' : 'text-zinc-400 hover:text-zinc-200'}`}
+                                        className={`px-2.5 py-1 rounded text-[10px] font-bold uppercase transition-all ${activeTool === 'Wwwc' ? 'bg-synos-primary text-white shadow-sm' : 'dark:text-zinc-400 text-zinc-650 hover:dark:text-zinc-200 hover:text-zinc-900'}`}
                                     >
                                         Windowing
                                     </button>
                                     <button
                                         onClick={() => handleToggleTool('Length')}
-                                        className={`px-2.5 py-1 rounded text-[10px] font-bold uppercase transition-all ${activeTool === 'Length' ? 'bg-indigo-650 text-white shadow-sm' : 'text-zinc-400 hover:text-zinc-200'}`}
+                                        className={`px-2.5 py-1 rounded text-[10px] font-bold uppercase transition-all ${activeTool === 'Length' ? 'bg-synos-primary text-white shadow-sm' : 'dark:text-zinc-400 text-zinc-650 hover:dark:text-zinc-200 hover:text-zinc-900'}`}
                                     >
-                                        Caliper Tool
+                                        Caliper
+                                    </button>
+                                    <button
+                                        onClick={() => handleToggleTool('Pan')}
+                                        className={`px-2.5 py-1 rounded text-[10px] font-bold uppercase transition-all ${activeTool === 'Pan' ? 'bg-synos-primary text-white shadow-sm' : 'dark:text-zinc-400 text-zinc-650 hover:dark:text-zinc-200 hover:text-zinc-900'}`}
+                                    >
+                                        Pan
+                                    </button>
+                                    <button
+                                        onClick={() => handleToggleTool('Zoom')}
+                                        className={`px-2.5 py-1 rounded text-[10px] font-bold uppercase transition-all ${activeTool === 'Zoom' ? 'bg-synos-primary text-white shadow-sm' : 'dark:text-zinc-400 text-zinc-650 hover:dark:text-zinc-200 hover:text-zinc-900'}`}
+                                    >
+                                        Zoom
                                     </button>
                                 </div>
 
                                 {/* Slice Scrolling & Actions */}
                                 <div className="flex items-center gap-3">
                                     {selectedStudy?.images && selectedStudy.images.length > 1 && (
-                                        <div className="flex items-center gap-2 border-r border-zinc-850 pr-3">
-                                            <span className="text-[10px] font-mono text-zinc-400">Slice: {activeSliceIndex + 1} / {selectedStudy.images.length}</span>
+                                        <div className="flex items-center gap-2 border-r dark:border-synos-border border-zinc-200 pr-3">
+                                            <span className="text-[10px] font-mono dark:text-zinc-400 text-zinc-550">Slice: {activeSliceIndex + 1} / {selectedStudy.images.length}</span>
                                             <input
                                                 type="range"
                                                 min="0"
                                                 max={selectedStudy.images.length - 1}
                                                 value={activeSliceIndex}
                                                 onChange={(e) => handleSliceChange(Number(e.target.value))}
-                                                className="w-20 accent-indigo-500"
+                                                className="w-20 accent-synos-primary cursor-pointer"
                                             />
                                         </div>
                                     )}
 
                                     <button
                                         onClick={handleClearCalipers}
-                                        className="px-2.5 py-1 bg-zinc-900 border border-zinc-800 hover:bg-zinc-850 hover:border-zinc-700 text-zinc-350 rounded font-bold uppercase tracking-wider text-[10px] flex items-center gap-1.5 transition-all"
+                                        className="px-2.5 py-1 dark:bg-zinc-900 bg-zinc-100 border dark:border-zinc-800 border-zinc-200 hover:dark:bg-zinc-800 hover:bg-zinc-200/50 dark:text-zinc-300 text-zinc-700 rounded font-bold uppercase tracking-wider text-[10px] flex items-center gap-1.5 transition-all"
                                     >
                                         <Trash2 className="h-3 w-3" />
                                         Clear Calipers
@@ -571,18 +612,20 @@ export function RadiologistTerminal() {
                             </div>
 
                             {/* Canvas Area */}
-                            <div className="flex-1 relative overflow-hidden flex items-center justify-center p-2 bg-zinc-950">
+                            <div className="flex-1 relative overflow-hidden flex items-center justify-center p-2 dark:bg-synos-background bg-zinc-50">
                                 <div 
+                                    key={selectedStudy.studyId || selectedStudy.radiologyStudyId}
                                     ref={canvasRef}
-                                    className="w-full h-full border border-zinc-900 bg-zinc-950/60 rounded-lg shadow-2xl relative overflow-hidden"
+                                    onContextMenu={(e) => e.preventDefault()}
+                                    className="w-full h-full border dark:border-synos-border border-zinc-200 dark:bg-black bg-zinc-900 rounded-lg shadow-2xl relative overflow-hidden"
                                 />
                             </div>
                         </div>
                     ) : (
-                        <div className="h-full flex flex-col items-center justify-center p-8 text-center text-zinc-500">
-                            <Monitor className="h-10 w-10 mb-2 text-zinc-750" />
-                            <h3 className="font-bold text-sm uppercase tracking-wider text-zinc-400">Diagnostic Viewport</h3>
-                            <p className="text-[11px] text-zinc-500 mt-1 max-w-xs leading-relaxed">
+                        <div className="h-full flex flex-col items-center justify-center p-8 text-center dark:text-zinc-500 text-zinc-400">
+                            <Monitor className="h-10 w-10 mb-2 dark:text-zinc-700 text-zinc-300" />
+                            <h3 className="font-bold text-sm uppercase tracking-wider dark:text-zinc-300 text-zinc-700">Diagnostic Viewport</h3>
+                            <p className="text-[11px] dark:text-zinc-500 text-zinc-550 mt-1 max-w-xs leading-relaxed">
                                 Select a modality study to initialize the Cornerstone3D WebGL anatomical frameset.
                             </p>
                         </div>
@@ -590,26 +633,28 @@ export function RadiologistTerminal() {
                 </div>
 
                 {/* 3. Dictation Panel */}
-                <div className="col-span-4 h-full flex flex-col overflow-hidden bg-zinc-900/25">
+                <div className={`h-full flex flex-col overflow-hidden dark:bg-synos-surface bg-white transition-all duration-300 ease-synos ${
+                    isQueueCollapsed ? "col-span-5" : "col-span-4"
+                }`}>
                     {selectedStudy ? (
                         !isClaimedByMe ? (
                             /* CLAIM DASHBOARD VIEW */
-                            <div className="flex-1 flex flex-col items-center justify-center p-8 text-center bg-zinc-950/80 border-l border-zinc-850">
-                                <Lock className="h-12 w-12 mb-6 text-zinc-500 animate-pulse" />
-                                <h3 className="text-lg font-black uppercase tracking-wider text-zinc-200">
+                            <div className="flex-1 flex flex-col items-center justify-center p-8 text-center dark:bg-synos-background bg-zinc-50 border-l dark:border-synos-border border-zinc-200">
+                                <Lock className="h-12 w-12 mb-6 dark:text-zinc-500 text-zinc-400 animate-pulse" />
+                                <h3 className="text-lg font-black uppercase tracking-wider dark:text-zinc-200 text-zinc-800">
                                     {isClaimedByOthers ? 'Study Locked' : 'Study Claim Required'}
                                 </h3>
-                                <p className="text-xs text-zinc-400 max-w-xs mt-3 leading-relaxed">
+                                <p className="text-xs dark:text-zinc-400 text-zinc-600 max-w-xs mt-3 leading-relaxed">
                                     {isClaimedByOthers 
                                         ? `This study is currently claimed by another radiologist (${selectedStudy.claimedByUserName || 'ID: ' + selectedStudy.claimedByUserId}).`
                                         : 'Before you can start drafting reports or using cooperative dictation sync, you must claim this study.'}
                                 </p>
 
                                 {isClaimedByOthers && (
-                                    <div className="mt-4 p-3 bg-zinc-900/60 rounded-lg border border-zinc-850 text-left w-full space-y-2 font-mono text-[11px] text-zinc-400">
+                                    <div className="mt-4 p-3 dark:bg-zinc-900/60 bg-zinc-100 rounded-lg border dark:border-synos-border border-zinc-200 text-left w-full space-y-2 font-mono text-[11px] dark:text-zinc-400 text-zinc-650">
                                         <div>Claimed: {new Date(selectedStudy.claimedAt).toLocaleTimeString()}</div>
                                         <div>Last Activity: {selectedStudy.lastActivityAt ? new Date(selectedStudy.lastActivityAt).toLocaleTimeString() : 'None'}</div>
-                                        <div>Status: <span className={isInactiveTimeout ? 'text-amber-400 font-bold' : 'text-emerald-400 font-bold'}>{isInactiveTimeout ? 'Inactive (Timed Out)' : 'Active'}</span></div>
+                                        <div>Status: <span className={isInactiveTimeout ? 'text-amber-500 font-bold' : 'text-emerald-500 font-bold'}>{isInactiveTimeout ? 'Inactive (Timed Out)' : 'Active'}</span></div>
                                     </div>
                                 )}
 
@@ -618,7 +663,7 @@ export function RadiologistTerminal() {
                                         <button
                                             onClick={handleClaimStudy}
                                             disabled={actionLoading}
-                                            className="w-full py-3.5 bg-indigo-650 hover:bg-indigo-650 disabled:opacity-40 text-white font-black text-xs uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-indigo-950/20 active:scale-95 flex items-center justify-center gap-2"
+                                            className="w-full py-3.5 bg-synos-primary hover:opacity-90 disabled:opacity-40 text-white font-black text-xs uppercase tracking-widest rounded-xl transition-all duration-260 ease-synos active:scale-[0.98] flex items-center justify-center gap-2 shadow-sm"
                                         >
                                             {actionLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
                                             Claim Study & Start Session
@@ -627,7 +672,7 @@ export function RadiologistTerminal() {
                                         <button
                                             onClick={handleForceReleaseStudy}
                                             disabled={actionLoading}
-                                            className="w-full py-3.5 bg-red-650 hover:bg-red-600 disabled:opacity-40 text-white font-black text-xs uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-red-950/20 active:scale-95 flex items-center justify-center gap-2"
+                                            className="w-full py-3.5 bg-synos-red hover:opacity-90 disabled:opacity-40 text-white font-black text-xs uppercase tracking-widest rounded-xl transition-all duration-260 ease-synos active:scale-[0.98] flex items-center justify-center gap-2 shadow-sm"
                                         >
                                             {actionLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Lock className="h-4 w-4" />}
                                             Force Release & Claim Study
@@ -635,7 +680,7 @@ export function RadiologistTerminal() {
                                     ) : (
                                         <button
                                             disabled
-                                            className="w-full py-3.5 bg-zinc-850 text-zinc-500 font-black text-xs uppercase tracking-widest rounded-xl flex items-center justify-center gap-2 cursor-not-allowed"
+                                            className="w-full py-3.5 dark:bg-zinc-850 bg-zinc-200 dark:text-zinc-500 text-zinc-400 font-black text-xs uppercase tracking-widest rounded-xl flex items-center justify-center gap-2 cursor-not-allowed"
                                         >
                                             <Lock className="h-4 w-4" />
                                             Study Locked
@@ -647,22 +692,22 @@ export function RadiologistTerminal() {
                             /* EDIT MODE PANEL */
                             <div className="flex-1 flex flex-col overflow-hidden">
                                 {/* Connection Ribbon */}
-                                <div className="p-4 border-b border-zinc-850 bg-zinc-900/50 flex justify-between items-center">
+                                <div className="p-4 border-b dark:border-synos-border border-zinc-200 dark:bg-synos-surface bg-white flex justify-between items-center">
                                     <div>
                                         <div className="flex items-center gap-2">
-                                            <h3 className="font-bold text-sm text-zinc-200">Collaborative Transcription</h3>
-                                            <span className={`px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-wider ${
-                                                connectionStatus === 'Connected' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
-                                                connectionStatus === 'Reconnecting' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20 animate-pulse' :
-                                                connectionStatus === 'Connecting' ? 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 animate-pulse' :
-                                                'bg-red-500/10 text-red-400 border border-red-500/20'
+                                            <h3 className="font-bold text-sm dark:text-zinc-200 text-zinc-800">Collaborative Transcription</h3>
+                                            <span className={`px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-wider border ${
+                                                connectionStatus === 'Connected' ? 'dark:bg-emerald-500/10 bg-emerald-50 text-emerald-600 dark:text-emerald-400 dark:border-emerald-500/20 border-emerald-200' :
+                                                connectionStatus === 'Reconnecting' ? 'dark:bg-amber-500/10 bg-amber-50 text-amber-600 dark:text-amber-400 dark:border-amber-500/20 border-amber-200 animate-pulse' :
+                                                connectionStatus === 'Connecting' ? 'bg-synos-primary/10 text-synos-primary border-synos-primary/20 animate-pulse' :
+                                                'dark:bg-red-500/10 bg-red-50 text-red-650 dark:text-red-400 dark:border-red-500/20 border-red-200'
                                             }`}>
                                                 {connectionStatus}
                                             </span>
                                         </div>
                                         <div className="flex items-center gap-1.5 mt-1">
-                                            <span className={`h-1.5 w-1.5 rounded-full ${liveTypistConnected ? 'bg-emerald-500 animate-pulse' : 'bg-zinc-600'}`} />
-                                            <span className="text-[10px] text-zinc-400">
+                                            <span className={`h-1.5 w-1.5 rounded-full ${liveTypistConnected ? 'bg-emerald-500 animate-pulse' : 'bg-zinc-400'}`} />
+                                            <span className="text-[10px] dark:text-zinc-400 text-zinc-550">
                                                 {liveTypistConnected ? 'Typist joined session (Live Sync)' : 'Waiting for Typist...'}
                                             </span>
                                         </div>
@@ -670,7 +715,7 @@ export function RadiologistTerminal() {
                                     <div className="flex items-center gap-2">
                                         <button
                                             onClick={handleSaveDraft}
-                                            className="px-2.5 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 rounded font-bold text-[10px] uppercase transition-colors"
+                                            className="px-2.5 py-1.5 dark:bg-zinc-800 bg-zinc-100 hover:dark:bg-zinc-700 hover:bg-zinc-200/60 dark:text-zinc-200 text-zinc-750 rounded font-bold border dark:border-zinc-700 border-zinc-200 text-[10px] uppercase transition-colors"
                                         >
                                             Save Draft
                                         </button>
@@ -680,42 +725,42 @@ export function RadiologistTerminal() {
                                 {/* Report Textareas */}
                                 <div className="flex-1 overflow-y-auto p-4 space-y-4">
                                     <div className="space-y-1.5">
-                                        <label className="text-[10px] font-black uppercase text-zinc-400 tracking-wider">Findings & Observation</label>
+                                        <label className="text-[10px] font-black uppercase dark:text-zinc-400 text-zinc-550 tracking-wider">Findings & Observation</label>
                                         <textarea
                                             value={draftFindings}
                                             onChange={(e) => setDraftFindings(e.target.value)}
-                                            className="w-full h-44 bg-zinc-950 border border-zinc-850 rounded p-3 text-xs text-zinc-200 focus:outline-none focus:border-indigo-500 transition-colors font-mono resize-none leading-relaxed"
+                                            className="w-full h-44 dark:bg-synos-background bg-zinc-50 border dark:border-synos-border border-zinc-250 rounded p-3 text-xs dark:text-zinc-200 text-zinc-800 focus:outline-none focus:border-synos-primary transition-all duration-260 ease-synos font-mono resize-none leading-relaxed"
                                             placeholder="Dynamic visual findings here..."
                                         />
                                     </div>
 
                                     <div className="space-y-1.5">
-                                        <label className="text-[10px] font-black uppercase text-zinc-400 tracking-wider">Diagnostic Impression</label>
+                                        <label className="text-[10px] font-black uppercase dark:text-zinc-400 text-zinc-550 tracking-wider">Diagnostic Impression</label>
                                         <textarea
                                             value={draftImpression}
                                             onChange={(e) => setDraftImpression(e.target.value)}
-                                            className="w-full h-24 bg-zinc-950 border border-zinc-850 rounded p-3 text-xs text-zinc-200 focus:outline-none focus:border-indigo-500 transition-colors font-mono resize-none leading-relaxed font-bold"
+                                            className="w-full h-24 dark:bg-synos-background bg-zinc-50 border dark:border-synos-border border-zinc-250 rounded p-3 text-xs dark:text-zinc-200 text-zinc-800 focus:outline-none focus:border-synos-primary transition-all duration-260 ease-synos font-mono resize-none leading-relaxed font-bold"
                                             placeholder="Clinical impression..."
                                         />
                                     </div>
 
                                     <div className="space-y-1.5">
-                                        <label className="text-[10px] font-black uppercase text-zinc-400 tracking-wider">Additional Recommendations / Notes</label>
+                                        <label className="text-[10px] font-black uppercase dark:text-zinc-400 text-zinc-550 tracking-wider">Additional Recommendations / Notes</label>
                                         <textarea
                                             value={draftNotes}
                                             onChange={(e) => setDraftNotes(e.target.value)}
-                                            className="w-full h-20 bg-zinc-950 border border-zinc-850 rounded p-3 text-xs text-zinc-200 focus:outline-none focus:border-indigo-500 transition-colors font-mono resize-none leading-relaxed"
+                                            className="w-full h-20 dark:bg-synos-background bg-zinc-50 border dark:border-synos-border border-zinc-250 rounded p-3 text-xs dark:text-zinc-200 text-zinc-800 focus:outline-none focus:border-synos-primary transition-all duration-260 ease-synos font-mono resize-none leading-relaxed"
                                             placeholder="Recommendations..."
                                         />
                                     </div>
                                 </div>
 
                                 {/* Sign-off Dispatcher */}
-                                <div className="p-4 border-t border-zinc-850 bg-zinc-900/50">
+                                <div className="p-4 border-t dark:border-synos-border border-zinc-200 dark:bg-synos-surface bg-white">
                                     <button
                                         onClick={handleSignReport}
                                         disabled={actionLoading || !draftFindings || !draftImpression}
-                                        className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-40 disabled:pointer-events-none text-white font-bold text-xs uppercase tracking-wider rounded transition-colors flex items-center justify-center gap-1.5 shadow-lg shadow-emerald-950/20 animate-pulse"
+                                        className="w-full py-2.5 bg-synos-emerald hover:opacity-90 disabled:opacity-40 disabled:pointer-events-none text-white font-bold text-xs uppercase tracking-wider rounded transition-all duration-260 ease-synos flex items-center justify-center gap-1.5 shadow-sm"
                                     >
                                         {actionLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Lock className="h-3.5 w-3.5" />}
                                         Digitally Sign & Release Report
@@ -724,10 +769,10 @@ export function RadiologistTerminal() {
                             </div>
                         )
                     ) : (
-                        <div className="h-full flex flex-col items-center justify-center p-8 text-center text-zinc-500">
-                            <FileText className="h-10 w-10 mb-2 text-zinc-750" />
-                            <h3 className="font-bold text-sm uppercase tracking-wider text-zinc-400">Clinical Narrative</h3>
-                            <p className="text-[11px] text-zinc-500 mt-1 max-w-xs leading-relaxed">
+                        <div className="h-full flex flex-col items-center justify-center p-8 text-center dark:text-zinc-500 text-zinc-400">
+                            <FileText className="h-10 w-10 mb-2 dark:text-zinc-700 text-zinc-300" />
+                            <h3 className="font-bold text-sm uppercase tracking-wider dark:text-zinc-300 text-zinc-700">Clinical Narrative</h3>
+                            <p className="text-[11px] dark:text-zinc-500 text-zinc-550 mt-1 max-w-xs leading-relaxed">
                                 Once a modality study is active, clinical narrative drafting and digital signature operations will unlock.
                             </p>
                         </div>

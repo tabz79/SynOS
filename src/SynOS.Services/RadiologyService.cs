@@ -113,6 +113,29 @@ namespace SynOS.Services
                 try
                 {
                     var basePath = _configuration["FileStorage:BasePath"] ?? "C:\\SynOS_Files";
+
+                    // Remove any existing slices for this study to prevent image accumulation/bleeding on re-upload
+                    var existingImages = await _context.RadiologyImages
+                        .Where(ri => ri.RadiologyStudyId == study.RadiologyStudyId)
+                        .ToListAsync();
+
+                    if (existingImages.Any())
+                    {
+                        _context.RadiologyImages.RemoveRange(existingImages);
+                        foreach (var img in existingImages)
+                        {
+                            try
+                            {
+                                var oldFilePath = Path.Combine(basePath, img.FileUrl);
+                                if (System.IO.File.Exists(oldFilePath))
+                                {
+                                    System.IO.File.Delete(oldFilePath);
+                                }
+                            }
+                            catch (Exception) { /* Fail silently */ }
+                        }
+                    }
+
                     var absoluteZipPath = Path.Combine(basePath, fileUrl);
 
                     var slicesDir = Path.Combine(basePath, "radiology-attachments", "slices");

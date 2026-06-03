@@ -35,13 +35,13 @@ export class DicomViewportManager {
         cornerstoneTools.addToolForElement(element, cornerstoneTools.LengthTool);
         cornerstoneTools.addToolForElement(element, cornerstoneTools.PanTool);
         cornerstoneTools.addToolForElement(element, cornerstoneTools.ZoomTool);
-        cornerstoneTools.addToolForElement(element, cornerstoneTools.StackScrollMouseWheelTool);
+        cornerstoneTools.addToolForElement(element, cornerstoneTools.ZoomMouseWheelTool);
 
         // Set default active tools
         cornerstoneTools.setToolActiveForElement(element, 'Wwwc', { mouseButtonMask: 1 }); // Left click drag adjusts window/level (contrast/brightness)
         cornerstoneTools.setToolActiveForElement(element, 'Pan', { mouseButtonMask: 2 });  // Right click drag pans
         cornerstoneTools.setToolActiveForElement(element, 'Zoom', { mouseButtonMask: 4 }); // Middle click drag zooms
-        cornerstoneTools.setToolActiveForElement(element, 'StackScrollMouseWheel', {});    // Scroll wheel flips stack slices
+        cornerstoneTools.setToolActiveForElement(element, 'ZoomMouseWheel', {});            // Scroll wheel zooms in/out
     }
 
     setToolActive(toolName) {
@@ -93,6 +93,9 @@ export class DicomViewportManager {
             // Display the DICOM image inside the real viewport canvas
             cornerstone.displayImage(element, image);
 
+            // Re-center and fit the image to the current viewport dimensions
+            cornerstone.resize(element, true);
+
             // Capture defaults if not captured yet
             this.defaultWindowCenter = image.windowCenter;
             this.defaultWindowWidth = image.windowWidth;
@@ -104,6 +107,14 @@ export class DicomViewportManager {
             }
         } catch (error) {
             console.error(`Failed to load DICOM slice index ${index} (${imageId}):`, error);
+        }
+    }
+
+    resize() {
+        try {
+            cornerstone.resize(this.element, true);
+        } catch (error) {
+            console.error("Failed to resize Cornerstone viewport element:", error);
         }
     }
 
@@ -145,7 +156,7 @@ export class DicomViewportManager {
             });
 
             // 2. Unbind all active tools from this viewport element
-            const loadedTools = ['Wwwc', 'Length', 'Pan', 'Zoom', 'StackScrollMouseWheel'];
+            const loadedTools = ['Wwwc', 'Length', 'Pan', 'Zoom', 'ZoomMouseWheel'];
             loadedTools.forEach(tool => {
                 try {
                     cornerstoneTools.removeToolForElement(element, tool);
