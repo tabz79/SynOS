@@ -25,6 +25,9 @@ import {
 } from 'lucide-react';
 import * as signalR from '@microsoft/signalr';
 import { RadiologyCallOverlay } from './RadiologyCallOverlay';
+import { RichMedicalEditor } from '@/components/editor/RichMedicalEditor';
+import { MedicalMacrosWorkspace } from '@/components/editor/MedicalMacrosWorkspace';
+
 
 export function RadiologistTerminal() {
     const { user } = useAuth();
@@ -47,6 +50,7 @@ export function RadiologistTerminal() {
 
     // Collapsed Queue State
     const [isQueueCollapsed, setIsQueueCollapsed] = useState(false);
+    const [isMacroManagerOpen, setIsMacroManagerOpen] = useState(false);
 
     // SignalR Connection
     const [liveTypistConnected, setLiveTypistConnected] = useState(false);
@@ -370,6 +374,32 @@ export function RadiologistTerminal() {
         }
     };
 
+    // Live keystroke sync & LocalStorage buffering for Radiologist
+    const handleFieldChange = async (field, val) => {
+        let update = {};
+        const studyId = selectedStudy.radiologyStudyId || selectedStudy.studyId;
+
+        if (field === 'findings') {
+            setDraftFindings(val);
+            update = { findings: val, impression: draftImpression, additionalNotes: draftNotes };
+        } else if (field === 'impression') {
+            setDraftImpression(val);
+            update = { findings: draftFindings, impression: val, additionalNotes: draftNotes };
+        } else if (field === 'notes') {
+            setDraftNotes(val);
+            update = { findings: draftFindings, impression: draftImpression, additionalNotes: val };
+        }
+
+        // Live broadcast over hub connection
+        if (hubConnection.current && selectedStudy) {
+            try {
+                await hubConnection.current.invoke('SendDraftUpdate', studyId, JSON.stringify(update));
+            } catch (err) {
+                console.error("SignalR broadcast failed:", err);
+            }
+        }
+    };
+
     // Save Draft Content
     const handleSaveDraft = async () => {
         if (!selectedStudy) return;
@@ -470,6 +500,13 @@ export function RadiologistTerminal() {
     const isAdmin = user?.role?.toLowerCase() === 'admin' || user?.role?.toLowerCase() === 'systemadmin';
     const canForceRelease = isClaimExpired || isInactiveTimeout || isAdmin;
 
+    const patientContext = selectedStudy ? {
+        patientName: selectedStudy.patientName || selectedStudy.patient?.name || '',
+        age: selectedStudy.patientAge || selectedStudy.age || selectedStudy.patient?.age || '',
+        gender: selectedStudy.patientGender || selectedStudy.gender || selectedStudy.sex || selectedStudy.patient?.gender || '',
+        token: selectedStudy.tokenNumber || selectedStudy.token || selectedStudy.patient?.mrn || ''
+    } : null;
+
     return (
         <div className="h-screen w-screen dark:bg-synos-background bg-zinc-50 dark:text-zinc-100 text-zinc-800 flex flex-col font-sans select-none overflow-hidden">
             {/* System Header */}
@@ -479,71 +516,79 @@ export function RadiologistTerminal() {
             <div className="flex-1 grid grid-cols-12 overflow-hidden">
                 {/* 1. Modality Worklist Queue */}
                 <div className={`border-r dark:border-synos-border border-zinc-200 flex flex-col h-full dark:bg-synos-background/35 bg-zinc-50/50 transition-all duration-300 ease-synos ${
-                    isQueueCollapsed ? "hidden" : "col-span-3 flex"
+                    isQueueCollapsed && !isMacroManagerOpen ? "hidden" : "col-span-3 flex"
                 }`}>
-                    <div className="p-4 border-b dark:border-synos-border border-zinc-200 dark:bg-synos-surface bg-white flex justify-between items-center">
-                        <span className="font-black text-xs uppercase tracking-wider dark:text-zinc-400 text-zinc-500">Interpretations Worklist</span>
-                        <span className="text-[10px] dark:bg-zinc-800 bg-zinc-100 dark:text-zinc-400 text-zinc-600 px-2 py-0.5 rounded-full font-bold">
-                            {studies.length} active
-                        </span>
-                    </div>
+                    {isMacroManagerOpen ? (
+                        <div className="dark:bg-zinc-900 bg-white dark:border-white/5 border-black/[0.1] shadow-[0_4px_20px_rgba(0,0,0,0.05)] rounded-xl p-4 flex flex-col h-full min-h-0">
+                            <MedicalMacrosWorkspace onClose={() => setIsMacroManagerOpen(false)} />
+                        </div>
+                    ) : (
+                        <>
+                            <div className="p-4 border-b dark:border-synos-border border-zinc-200 dark:bg-synos-surface bg-white flex justify-between items-center">
+                                <span className="font-black text-xs uppercase tracking-wider dark:text-zinc-400 text-zinc-550">Interpretations Worklist</span>
+                                <span className="text-[10px] dark:bg-zinc-800 bg-zinc-100 dark:text-zinc-400 text-zinc-600 px-2 py-0.5 rounded-full font-bold">
+                                    {studies.length} active
+                                </span>
+                            </div>
 
-                    <div className="flex-1 overflow-y-auto p-3 space-y-2">
-                        {loading ? (
-                            <div className="h-full flex items-center justify-center flex-col gap-2">
-                                <Loader2 className="h-6 w-6 animate-spin text-zinc-500" />
-                                <span className="text-[11px] text-zinc-500">Retrieving diagnostic queue...</span>
-                            </div>
-                        ) : studies.length === 0 ? (
-                            <div className="h-full flex items-center justify-center flex-col text-center p-6 text-zinc-655">
-                                <Activity className="h-8 w-8 mb-2 dark:text-zinc-700 text-zinc-300 animate-pulse" />
-                                <span className="text-xs font-semibold uppercase">Queue Empty</span>
-                                <span className="text-[10px] dark:text-zinc-600 text-zinc-500 mt-1">No studies awaiting reporting.</span>
-                            </div>
-                        ) : (
-                            studies.map((study) => {
-                                const isSelected = selectedStudy?.studyId === study.radiologyStudyId || selectedStudy?.radiologyStudyId === study.radiologyStudyId;
-                                const isClaimedByMe = study.claimedByUserId === user?.id;
-                                const isClaimedByOthers = study.claimedByUserId && study.claimedByUserId !== user?.id;
-                                return (
-                                    <div 
-                                        key={study.radiologyStudyId}
-                                        onClick={() => handleSelectStudy(study)}
-                                        className={`p-3 rounded-lg border transition-all duration-260 ease-synos cursor-pointer ${
-                                            isSelected 
-                                                ? 'bg-synos-primary/10 dark:text-white text-synos-primary dark:border-synos-primary/20 border-synos-primary/30 shadow-sm' 
-                                                : 'dark:bg-synos-surface bg-white dark:border-synos-border border-zinc-200 dark:hover:border-zinc-500 hover:border-zinc-400 hover:shadow-sm'
-                                        }`}
-                                    >
-                                        <div className="flex justify-between items-center mb-1">
-                                            <span className="text-[9px] font-bold dark:bg-zinc-800 bg-zinc-100 dark:text-zinc-300 text-zinc-600 px-2 py-0.5 rounded">
-                                                Token #{study.tokenNumber}
-                                            </span>
-                                            <span className="text-[10px] font-black uppercase text-synos-primary">
-                                                {study.modality}
-                                            </span>
-                                        </div>
-                                        <h4 className="font-bold text-sm dark:text-zinc-200 text-zinc-800">{study.patientName}</h4>
-                                        <p className="text-[11px] dark:text-zinc-400 text-zinc-550 truncate mt-1">{study.testName}</p>
-                                        <div className="mt-2 flex items-center justify-between text-[10px]">
-                                            <span className={`px-1.5 py-0.5 rounded border text-[9px] font-bold uppercase tracking-tight ${
-                                                isClaimedByMe 
-                                                    ? 'dark:bg-emerald-500/10 bg-emerald-50 text-emerald-600 dark:text-emerald-400 dark:border-emerald-500/20 border-emerald-200' 
-                                                    : isClaimedByOthers 
-                                                        ? 'dark:bg-amber-500/10 bg-amber-50 text-amber-600 dark:text-amber-400 dark:border-amber-500/20 border-amber-200' 
-                                                        : 'dark:bg-zinc-800 bg-zinc-100 dark:text-zinc-400 text-zinc-500 dark:border-zinc-700 border-zinc-200'
-                                            }`}>
-                                                {isClaimedByMe ? 'Claimed by Me' : isClaimedByOthers ? `Locked (${study.claimedByUserName || 'Other'})` : 'Unclaimed'}
-                                            </span>
-                                            {study.status && (
-                                                <span className="dark:text-zinc-500 text-zinc-400 font-mono text-[9px]">{study.status}</span>
-                                            )}
-                                        </div>
+                            <div className="flex-1 overflow-y-auto p-3 space-y-2">
+                                {loading ? (
+                                    <div className="h-full flex items-center justify-center flex-col gap-2">
+                                        <Loader2 className="h-6 w-6 animate-spin text-zinc-500" />
+                                        <span className="text-[11px] text-zinc-500">Retrieving diagnostic queue...</span>
                                     </div>
-                                );
-                            })
-                        )}
-                    </div>
+                                ) : studies.length === 0 ? (
+                                    <div className="h-full flex items-center justify-center flex-col text-center p-6 text-zinc-655">
+                                        <Activity className="h-8 w-8 mb-2 dark:text-zinc-700 text-zinc-300 animate-pulse" />
+                                        <span className="text-xs font-semibold uppercase">Queue Empty</span>
+                                        <span className="text-[10px] dark:text-zinc-600 text-zinc-500 mt-1">No studies awaiting reporting.</span>
+                                    </div>
+                                ) : (
+                                    studies.map((study) => {
+                                        const isSelected = selectedStudy?.studyId === study.radiologyStudyId || selectedStudy?.radiologyStudyId === study.radiologyStudyId;
+                                        const isClaimedByMe = study.claimedByUserId === user?.id;
+                                        const isClaimedByOthers = study.claimedByUserId && study.claimedByUserId !== user?.id;
+                                        return (
+                                            <div 
+                                                key={study.radiologyStudyId}
+                                                onClick={() => handleSelectStudy(study)}
+                                                className={`p-3 rounded-lg border transition-all duration-260 ease-synos cursor-pointer ${
+                                                    isSelected 
+                                                        ? 'bg-synos-primary/10 dark:text-white text-synos-primary dark:border-synos-primary/20 border-synos-primary/30 shadow-sm' 
+                                                        : 'dark:bg-synos-surface bg-white dark:border-synos-border border-zinc-200 dark:hover:border-zinc-500 hover:border-zinc-400 hover:shadow-sm'
+                                                }`}
+                                            >
+                                                <div className="flex justify-between items-center mb-1">
+                                                    <span className="text-[9px] font-bold dark:bg-zinc-800 bg-zinc-100 dark:text-zinc-300 text-zinc-650 px-2 py-0.5 rounded">
+                                                        Token #{study.tokenNumber}
+                                                    </span>
+                                                    <span className="text-[10px] font-black uppercase text-synos-primary">
+                                                        {study.modality}
+                                                    </span>
+                                                </div>
+                                                <h4 className="font-bold text-sm dark:text-zinc-200 text-zinc-800">{study.patientName}</h4>
+                                                <p className="text-[11px] dark:text-zinc-400 text-zinc-550 truncate mt-1">{study.testName}</p>
+                                                <div className="mt-2 flex items-center justify-between text-[10px]">
+                                                    <span className={`px-1.5 py-0.5 rounded border text-[9px] font-bold uppercase tracking-tight ${
+                                                        isClaimedByMe 
+                                                            ? 'dark:bg-emerald-500/10 bg-emerald-50 text-emerald-600 dark:text-emerald-400 dark:border-emerald-500/20 border-emerald-200' 
+                                                            : isClaimedByOthers 
+                                                                ? 'dark:bg-amber-500/10 bg-amber-50 text-amber-600 dark:text-amber-400 dark:border-amber-500/20 border-emerald-200' 
+                                                                : 'dark:bg-zinc-800 bg-zinc-100 dark:text-zinc-400 text-zinc-500 dark:border-zinc-700 border-zinc-200'
+                                                    }`}>
+                                                        {isClaimedByMe ? 'Claimed by Me' : isClaimedByOthers ? `Locked (${study.claimedByUserName || 'Other'})` : 'Unclaimed'}
+                                                    </span>
+                                                    {study.status && (
+                                                        <span className="dark:text-zinc-500 text-zinc-400 font-mono text-[9px]">{study.status}</span>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        );
+                                    })
+                                )}
+                            </div>
+                        </>
+                    )}
                 </div>
 
                 {/* 2. WebGL Resizable Viewport */}
@@ -755,31 +800,40 @@ export function RadiologistTerminal() {
                                 <div className="flex-1 overflow-y-auto p-4 space-y-4">
                                     <div className="space-y-1.5">
                                         <label className="text-[10px] font-black uppercase dark:text-zinc-400 text-zinc-550 tracking-wider">Findings & Observation</label>
-                                        <textarea
+                                        <RichMedicalEditor
                                             value={draftFindings}
-                                            onChange={(e) => setDraftFindings(e.target.value)}
-                                            className="w-full h-44 dark:bg-synos-background bg-zinc-50 border dark:border-synos-border border-zinc-250 rounded p-3 text-xs dark:text-zinc-200 text-zinc-800 focus:outline-none focus:border-synos-primary transition-all duration-260 ease-synos font-mono resize-none leading-relaxed"
+                                            onChange={(val) => handleFieldChange('findings', val)}
+                                            disabled={actionLoading || !isClaimedByMe}
+                                            patientContext={patientContext}
+                                            onSaveDraft={handleSaveDraft}
                                             placeholder="Dynamic visual findings here..."
+                                            onOpenMacroManager={() => setIsMacroManagerOpen(true)}
                                         />
                                     </div>
 
                                     <div className="space-y-1.5">
                                         <label className="text-[10px] font-black uppercase dark:text-zinc-400 text-zinc-550 tracking-wider">Diagnostic Impression</label>
-                                        <textarea
+                                        <RichMedicalEditor
                                             value={draftImpression}
-                                            onChange={(e) => setDraftImpression(e.target.value)}
-                                            className="w-full h-24 dark:bg-synos-background bg-zinc-50 border dark:border-synos-border border-zinc-250 rounded p-3 text-xs dark:text-zinc-200 text-zinc-800 focus:outline-none focus:border-synos-primary transition-all duration-260 ease-synos font-mono resize-none leading-relaxed font-bold"
+                                            onChange={(val) => handleFieldChange('impression', val)}
+                                            disabled={actionLoading || !isClaimedByMe}
+                                            patientContext={patientContext}
+                                            onSaveDraft={handleSaveDraft}
                                             placeholder="Clinical impression..."
+                                            onOpenMacroManager={() => setIsMacroManagerOpen(true)}
                                         />
                                     </div>
 
                                     <div className="space-y-1.5">
                                         <label className="text-[10px] font-black uppercase dark:text-zinc-400 text-zinc-550 tracking-wider">Additional Recommendations / Notes</label>
-                                        <textarea
+                                        <RichMedicalEditor
                                             value={draftNotes}
-                                            onChange={(e) => setDraftNotes(e.target.value)}
-                                            className="w-full h-20 dark:bg-synos-background bg-zinc-50 border dark:border-synos-border border-zinc-250 rounded p-3 text-xs dark:text-zinc-200 text-zinc-800 focus:outline-none focus:border-synos-primary transition-all duration-260 ease-synos font-mono resize-none leading-relaxed"
+                                            onChange={(val) => handleFieldChange('notes', val)}
+                                            disabled={actionLoading || !isClaimedByMe}
+                                            patientContext={patientContext}
+                                            onSaveDraft={handleSaveDraft}
                                             placeholder="Recommendations..."
+                                            onOpenMacroManager={() => setIsMacroManagerOpen(true)}
                                         />
                                     </div>
                                 </div>

@@ -17,6 +17,9 @@ import {
     UserCheck
 } from 'lucide-react';
 import * as signalR from '@microsoft/signalr';
+import { RichMedicalEditor } from '@/components/editor/RichMedicalEditor';
+import { MedicalMacrosWorkspace } from '@/components/editor/MedicalMacrosWorkspace';
+
 
 export function RadiologyTypistTerminal() {
     const { user } = useAuth();
@@ -30,6 +33,7 @@ export function RadiologyTypistTerminal() {
     const [draftImpression, setDraftImpression] = useState('');
     const [draftNotes, setDraftNotes] = useState('');
     const [reportId, setReportId] = useState(null);
+    const [isMacroManagerOpen, setIsMacroManagerOpen] = useState(false);
 
     // SignalR Connection
     const [liveRadiologistConnected, setLiveRadiologistConnected] = useState(false);
@@ -284,61 +288,76 @@ export function RadiologyTypistTerminal() {
         }
     };
 
+    const patientContext = selectedStudy ? {
+        patientName: selectedStudy.patientName || selectedStudy.patient?.name || '',
+        age: selectedStudy.patientAge || selectedStudy.age || selectedStudy.patient?.age || '',
+        gender: selectedStudy.patientGender || selectedStudy.gender || selectedStudy.sex || selectedStudy.patient?.gender || '',
+        token: selectedStudy.tokenNumber || selectedStudy.token || selectedStudy.patient?.mrn || ''
+    } : null;
+
     return (
         <div className="h-full flex-1 flex flex-col overflow-hidden dark:bg-synos-background bg-zinc-50 dark:text-zinc-100 text-zinc-800">
             <div className="flex-1 grid grid-cols-12 overflow-hidden">
                 {/* 1. Dictation worklist queue */}
                 <div className="col-span-4 border-r dark:border-synos-border border-zinc-200 flex flex-col h-full dark:bg-synos-background/35 bg-zinc-50/50">
-                    <div className="p-4 border-b dark:border-synos-border border-zinc-200 dark:bg-synos-surface bg-white flex justify-between items-center">
-                        <span className="font-black text-xs uppercase tracking-wider dark:text-zinc-400 text-zinc-500">Collaborative Queue</span>
-                        <button 
-                            onClick={fetchQueue}
-                            className="p-1.5 dark:hover:bg-zinc-800 hover:bg-zinc-200/60 rounded transition-colors dark:text-zinc-400 text-zinc-600 hover:dark:text-zinc-200 hover:text-zinc-900"
-                        >
-                            <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} />
-                        </button>
-                    </div>
+                    {isMacroManagerOpen ? (
+                        <div className="dark:bg-zinc-900 bg-white dark:border-white/5 border-black/[0.1] shadow-[0_4px_20px_rgba(0,0,0,0.05)] rounded-xl p-4 flex flex-col h-full min-h-0">
+                            <MedicalMacrosWorkspace onClose={() => setIsMacroManagerOpen(false)} />
+                        </div>
+                    ) : (
+                        <>
+                            <div className="p-4 border-b dark:border-synos-border border-zinc-200 dark:bg-synos-surface bg-white flex justify-between items-center">
+                                <span className="font-black text-xs uppercase tracking-wider dark:text-zinc-400 text-zinc-550">Collaborative Queue</span>
+                                <button 
+                                    onClick={fetchQueue}
+                                    className="p-1.5 dark:hover:bg-zinc-800 hover:bg-zinc-200/60 rounded transition-colors dark:text-zinc-400 text-zinc-650 hover:dark:text-zinc-200 hover:text-zinc-900"
+                                >
+                                    <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} />
+                                </button>
+                            </div>
 
-                    <div className="flex-1 overflow-y-auto p-3 space-y-2">
-                        {loading ? (
-                            <div className="h-full flex items-center justify-center flex-col gap-2">
-                                <Loader2 className="h-6 w-6 animate-spin text-zinc-500" />
-                                <span className="text-[11px] text-zinc-500">Loading dictation worklist...</span>
-                            </div>
-                        ) : studies.length === 0 ? (
-                            <div className="h-full flex items-center justify-center flex-col text-center p-6 dark:text-zinc-550 text-zinc-400">
-                                <Database className="h-8 w-8 mb-2 dark:text-zinc-750 text-zinc-300" />
-                                <span className="text-xs font-semibold uppercase">Queue Cleared</span>
-                                <span className="text-[10px] dark:text-zinc-600 text-zinc-500 mt-1">No studies waiting for transcription.</span>
-                            </div>
-                        ) : (
-                            studies.map((study) => {
-                                const isSelected = selectedStudy?.radiologyStudyId === study.radiologyStudyId;
-                                return (
-                                    <div 
-                                        key={study.radiologyStudyId}
-                                        onClick={() => setSelectedStudy(study)}
-                                        className={`p-3 rounded-lg border transition-all duration-260 ease-synos cursor-pointer ${
-                                            isSelected 
-                                                ? 'bg-synos-primary/10 dark:text-white text-synos-primary dark:border-synos-primary/20 border-synos-primary/30 shadow-sm' 
-                                                : 'dark:bg-synos-surface bg-white dark:border-synos-border border-zinc-200 dark:hover:border-zinc-500 hover:border-zinc-400 hover:shadow-sm'
-                                        }`}
-                                    >
-                                        <div className="flex justify-between items-center mb-1">
-                                            <span className="text-[9px] font-bold dark:bg-zinc-800 bg-zinc-100 dark:text-zinc-300 text-zinc-650 px-2 py-0.5 rounded">
-                                                Token #{study.tokenNumber}
-                                            </span>
-                                            <span className="text-[10px] font-black uppercase text-synos-primary">
-                                                {study.modality}
-                                            </span>
-                                        </div>
-                                        <h4 className="font-bold text-sm dark:text-zinc-200 text-zinc-800">{study.patientName}</h4>
-                                        <p className="text-[11px] dark:text-zinc-400 text-zinc-550 truncate mt-1">{study.testName}</p>
+                            <div className="flex-1 overflow-y-auto p-3 space-y-2">
+                                {loading ? (
+                                    <div className="h-full flex items-center justify-center flex-col gap-2">
+                                        <Loader2 className="h-6 w-6 animate-spin text-zinc-500" />
+                                        <span className="text-[11px] text-zinc-550">Loading dictation worklist...</span>
                                     </div>
-                                );
-                            })
-                        )}
-                    </div>
+                                ) : studies.length === 0 ? (
+                                    <div className="h-full flex items-center justify-center flex-col text-center p-6 dark:text-zinc-555 text-zinc-400">
+                                        <Database className="h-8 w-8 mb-2 dark:text-zinc-750 text-zinc-300" />
+                                        <span className="text-xs font-semibold uppercase">Queue Cleared</span>
+                                        <span className="text-[10px] dark:text-zinc-650 text-zinc-550 mt-1">No studies waiting for transcription.</span>
+                                    </div>
+                                ) : (
+                                    studies.map((study) => {
+                                        const isSelected = selectedStudy?.radiologyStudyId === study.radiologyStudyId;
+                                        return (
+                                            <div 
+                                                key={study.radiologyStudyId}
+                                                onClick={() => setSelectedStudy(study)}
+                                                className={`p-3 rounded-lg border transition-all duration-260 ease-synos cursor-pointer ${
+                                                    isSelected 
+                                                        ? 'bg-synos-primary/10 dark:text-white text-synos-primary dark:border-synos-primary/20 border-synos-primary/30 shadow-sm' 
+                                                        : 'dark:bg-synos-surface bg-white dark:border-synos-border border-zinc-200 dark:hover:border-zinc-500 hover:border-zinc-400 hover:shadow-sm'
+                                                }`}
+                                            >
+                                                <div className="flex justify-between items-center mb-1">
+                                                    <span className="text-[9px] font-bold dark:bg-zinc-800 bg-zinc-100 dark:text-zinc-300 text-zinc-650 px-2 py-0.5 rounded">
+                                                        Token #{study.tokenNumber}
+                                                    </span>
+                                                    <span className="text-[10px] font-black uppercase text-synos-primary">
+                                                        {study.modality}
+                                                    </span>
+                                                </div>
+                                                <h4 className="font-bold text-sm dark:text-zinc-200 text-zinc-800">{study.patientName}</h4>
+                                                <p className="text-[11px] dark:text-zinc-400 text-zinc-550 truncate mt-1">{study.testName}</p>
+                                            </div>
+                                        );
+                                    })
+                                )}
+                            </div>
+                        </>
+                    )}
                 </div>
 
                 {/* 2. Collaborative Transcription Editor */}
@@ -385,11 +404,14 @@ export function RadiologyTypistTerminal() {
                                         <FileText className="h-3.5 w-3.5 animate-pulse" />
                                         Findings & Observation
                                     </label>
-                                    <textarea
+                                    <RichMedicalEditor
                                         value={draftFindings}
-                                        onChange={(e) => handleFieldChange('findings', e.target.value)}
-                                        className="w-full h-44 dark:bg-synos-background bg-zinc-50 border dark:border-synos-border border-zinc-250 focus:border-synos-primary rounded p-3.5 text-xs dark:text-zinc-200 text-zinc-850 focus:outline-none transition-all duration-260 ease-synos font-mono resize-none leading-relaxed"
+                                        onChange={(val) => handleFieldChange('findings', val)}
+                                        disabled={actionLoading}
+                                        patientContext={patientContext}
+                                        onSaveDraft={handleSaveDraft}
                                         placeholder="Type findings as the Radiologist dictates..."
+                                        onOpenMacroManager={() => setIsMacroManagerOpen(true)}
                                     />
                                 </div>
 
@@ -398,11 +420,14 @@ export function RadiologyTypistTerminal() {
                                         <Cpu className="h-3.5 w-3.5" />
                                         Diagnostic Impression
                                     </label>
-                                    <textarea
+                                    <RichMedicalEditor
                                         value={draftImpression}
-                                        onChange={(e) => handleFieldChange('impression', e.target.value)}
-                                        className="w-full h-24 dark:bg-synos-background bg-zinc-50 border dark:border-synos-border border-zinc-250 focus:border-synos-primary rounded p-3.5 text-xs dark:text-zinc-200 text-zinc-850 focus:outline-none transition-all duration-260 ease-synos font-mono resize-none leading-relaxed font-bold"
+                                        onChange={(val) => handleFieldChange('impression', val)}
+                                        disabled={actionLoading}
+                                        patientContext={patientContext}
+                                        onSaveDraft={handleSaveDraft}
                                         placeholder="Clinical impressions..."
+                                        onOpenMacroManager={() => setIsMacroManagerOpen(true)}
                                     />
                                 </div>
 
@@ -411,11 +436,14 @@ export function RadiologyTypistTerminal() {
                                         <MessageSquare className="h-3.5 w-3.5" />
                                         Additional Notes / Recommendations
                                     </label>
-                                    <textarea
+                                    <RichMedicalEditor
                                         value={draftNotes}
-                                        onChange={(e) => handleFieldChange('notes', e.target.value)}
-                                        className="w-full h-20 dark:bg-synos-background bg-zinc-50 border dark:border-synos-border border-zinc-250 focus:border-synos-primary rounded p-3.5 text-xs dark:text-zinc-200 text-zinc-850 focus:outline-none transition-all duration-260 ease-synos font-mono resize-none leading-relaxed"
+                                        onChange={(val) => handleFieldChange('notes', val)}
+                                        disabled={actionLoading}
+                                        patientContext={patientContext}
+                                        onSaveDraft={handleSaveDraft}
                                         placeholder="Add notes..."
+                                        onOpenMacroManager={() => setIsMacroManagerOpen(true)}
                                     />
                                 </div>
                             </div>
