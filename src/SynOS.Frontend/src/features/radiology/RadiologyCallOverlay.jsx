@@ -11,7 +11,9 @@ import {
     Loader2,
     Check,
     X,
-    AlertCircle
+    AlertCircle,
+    Minimize2,
+    Maximize2
 } from 'lucide-react';
 
 export function RadiologyCallOverlay({ hubConnection, selectedStudy, onSelectStudy, role }) {
@@ -26,6 +28,7 @@ export function RadiologyCallOverlay({ hubConnection, selectedStudy, onSelectStu
     const [isVolumeMuted, setIsVolumeMuted] = useState(false);
     const [callDuration, setCallDuration] = useState(0);
     const [showCallPanel, setShowCallPanel] = useState(false);
+    const [isCallMinimised, setIsCallMinimised] = useState(false);
     
     const callStateRef = useRef(callState);
     const isMutedRef = useRef(isMuted);
@@ -176,6 +179,7 @@ export function RadiologyCallOverlay({ hubConnection, selectedStudy, onSelectStu
             durationIntervalRef.current = null;
         }
         setCallDuration(0);
+        setIsCallMinimised(false);
 
         cleanupWebRtcResources();
     };
@@ -636,70 +640,105 @@ export function RadiologyCallOverlay({ hubConnection, selectedStudy, onSelectStu
 
             {/* 5. In Call Controls Overlay */}
             {callState === 'connected' && (
-                <div className="animate-in zoom-in-95 duration-200 border dark:border-zinc-800 border-zinc-200 dark:bg-zinc-900 bg-white shadow-2xl rounded-2xl p-5 w-80 flex flex-col gap-4 border-t-4 border-t-emerald-500">
-                    <div className="flex justify-between items-start">
-                        <div>
-                            <span className="text-[9px] uppercase font-black text-emerald-500 tracking-wider flex items-center gap-1.5">
-                                <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
-                                Call Connected
-                            </span>
-                            <h4 className="font-bold text-sm dark:text-zinc-100 text-zinc-800 mt-1">{callDetails.peerName}</h4>
-                            <p className="text-[10px] text-zinc-500 dark:text-zinc-400 uppercase mt-0.5">{callDetails.peerRole}</p>
+                isCallMinimised ? (
+                    <div className="animate-in zoom-in-95 duration-200 border dark:border-zinc-800 border-zinc-200 dark:bg-zinc-900 bg-white shadow-2xl rounded-full px-4 py-2 flex items-center gap-3 border-l-4 border-l-emerald-500">
+                        <div className="flex items-center gap-1.5 shrink-0">
+                            <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
+                            <span className="text-xs font-bold dark:text-zinc-200 text-zinc-800 truncate max-w-[100px]">{callDetails.peerName}</span>
                         </div>
-                        <span className="font-mono text-xs dark:bg-zinc-950 bg-zinc-150 px-2 py-1 rounded dark:text-zinc-400 text-zinc-600 font-semibold shadow-sm">
+                        <span className="font-mono text-xs dark:bg-zinc-950 bg-zinc-150 px-2 py-0.5 rounded dark:text-zinc-400 text-zinc-600 font-semibold shadow-sm">
                             {formatDuration(callDuration)}
                         </span>
-                    </div>
-
-                    <div className="dark:bg-zinc-950/50 bg-zinc-50 rounded-xl p-3 border dark:border-zinc-850 border-zinc-200 text-xs">
-                        <div className="text-[9px] uppercase font-bold text-zinc-500">Active Discussion</div>
-                        <div className="font-semibold dark:text-zinc-300 text-zinc-700 truncate mt-0.5">{callDetails.patientName}</div>
-                    </div>
-
-                    {/* Controls Row */}
-                    <div className="flex items-center justify-between border-t dark:border-zinc-800 border-zinc-100 pt-3">
-                        {/* Mic Control */}
                         <button 
-                            onClick={handleToggleMute}
-                            className={`p-2.5 rounded-xl transition-all active:scale-95 border ${
-                                isMuted 
-                                    ? 'bg-red-500/10 border-red-500/20 text-red-500 hover:bg-red-500/15' 
-                                    : 'dark:bg-zinc-800 bg-zinc-100 dark:border-zinc-700 border-zinc-200 hover:dark:bg-zinc-700 hover:bg-zinc-200 text-zinc-600 dark:text-zinc-300'
-                            }`}
-                            title={isMuted ? "Unmute Mic" : "Mute Mic"}
+                            onClick={() => setIsCallMinimised(false)}
+                            className="p-1 hover:bg-zinc-500/10 dark:hover:bg-zinc-800 rounded text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 transition-colors"
+                            title="Maximize Call Controls"
                         >
-                            {isMuted ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+                            <Maximize2 className="w-3.5 h-3.5" />
                         </button>
-
-                        {/* Speaker/Volume Controls */}
-                        <div className="flex items-center gap-2 flex-1 max-w-[130px] ml-3">
-                            <button 
-                                onClick={handleToggleVolumeMute}
-                                className="text-zinc-400 hover:text-zinc-200 transition-colors"
-                            >
-                                {isVolumeMuted || volume === 0 ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
-                            </button>
-                            <input 
-                                type="range" 
-                                min="0" 
-                                max="1" 
-                                step="0.05"
-                                value={isVolumeMuted ? 0 : volume} 
-                                onChange={handleVolumeChange}
-                                className="w-full accent-synos-primary h-1 bg-zinc-200 dark:bg-zinc-800 rounded-lg appearance-none cursor-pointer"
-                            />
-                        </div>
-
-                        {/* End Call Button */}
                         <button 
                             onClick={handleEndCall}
-                            className="p-2.5 rounded-xl bg-red-500 hover:bg-red-650 text-white transition-all active:scale-95 shadow-md shadow-red-500/10"
+                            className="p-1.5 rounded-full bg-red-500 hover:bg-red-650 text-white transition-all active:scale-95 shadow-sm"
                             title="End Call"
                         >
-                            <PhoneOff className="w-4 h-4" />
+                            <PhoneOff className="w-3.5 h-3.5" />
                         </button>
                     </div>
-                </div>
+                ) : (
+                    <div className="animate-in zoom-in-95 duration-200 border dark:border-zinc-800 border-zinc-200 dark:bg-zinc-900 bg-white shadow-2xl rounded-2xl p-5 w-80 flex flex-col gap-4 border-t-4 border-t-emerald-500">
+                        <div className="flex justify-between items-start">
+                            <div>
+                                <span className="text-[9px] uppercase font-black text-emerald-500 tracking-wider flex items-center gap-1.5">
+                                    <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
+                                    Call Connected
+                                </span>
+                                <h4 className="font-bold text-sm dark:text-zinc-100 text-zinc-800 mt-1">{callDetails.peerName}</h4>
+                                <p className="text-[10px] text-zinc-500 dark:text-zinc-400 uppercase mt-0.5">{callDetails.peerRole}</p>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <button
+                                    onClick={() => setIsCallMinimised(true)}
+                                    className="p-1 hover:bg-zinc-500/10 dark:hover:bg-zinc-800 rounded text-zinc-400 hover:text-zinc-650 dark:hover:text-zinc-200 transition-colors"
+                                    title="Minimize Call Controls"
+                                >
+                                    <Minimize2 className="w-3.5 h-3.5" />
+                                </button>
+                                <span className="font-mono text-xs dark:bg-zinc-950 bg-zinc-150 px-2 py-1 rounded dark:text-zinc-400 text-zinc-600 font-semibold shadow-sm">
+                                    {formatDuration(callDuration)}
+                                </span>
+                            </div>
+                        </div>
+
+                        <div className="dark:bg-zinc-950/50 bg-zinc-50 rounded-xl p-3 border dark:border-zinc-850 border-zinc-200 text-xs">
+                            <div className="text-[9px] uppercase font-bold text-zinc-500">Active Discussion</div>
+                            <div className="font-semibold dark:text-zinc-300 text-zinc-700 truncate mt-0.5">{callDetails.patientName}</div>
+                        </div>
+
+                        {/* Controls Row */}
+                        <div className="flex items-center justify-between border-t dark:border-zinc-800 border-zinc-100 pt-3">
+                            {/* Mic Control */}
+                            <button 
+                                onClick={handleToggleMute}
+                                className={`p-2.5 rounded-xl transition-all active:scale-95 border ${
+                                    isMuted 
+                                        ? 'bg-red-500/10 border-red-500/20 text-red-500 hover:bg-red-500/15' 
+                                        : 'dark:bg-zinc-800 bg-zinc-100 dark:border-zinc-700 border-zinc-200 hover:dark:bg-zinc-700 hover:bg-zinc-200 text-zinc-600 dark:text-zinc-300'
+                                }`}
+                                title={isMuted ? "Unmute Mic" : "Mute Mic"}
+                            >
+                                {isMuted ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+                            </button>
+
+                            {/* Speaker/Volume Controls */}
+                            <div className="flex items-center gap-2 flex-1 max-w-[130px] ml-3">
+                                <button 
+                                    onClick={handleToggleVolumeMute}
+                                    className="text-zinc-400 hover:text-zinc-200 transition-colors"
+                                >
+                                    {isVolumeMuted || volume === 0 ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+                                </button>
+                                <input 
+                                    type="range" 
+                                    min="0" 
+                                    max="1" 
+                                    step="0.05"
+                                    value={isVolumeMuted ? 0 : volume} 
+                                    onChange={handleVolumeChange}
+                                    className="w-full accent-synos-primary h-1 bg-zinc-200 dark:bg-zinc-800 rounded-lg appearance-none cursor-pointer"
+                                />
+                            </div>
+
+                            {/* End Call Button */}
+                            <button 
+                                onClick={handleEndCall}
+                                className="p-2.5 rounded-xl bg-red-500 hover:bg-red-655 text-white transition-all active:scale-95 shadow-md shadow-red-500/10"
+                                title="End Call"
+                            >
+                                <PhoneOff className="w-4 h-4" />
+                            </button>
+                        </div>
+                    </div>
+                )
             )}
 
             {/* 6. Floating Action Button & Dropdown Picker (Idle state) */}

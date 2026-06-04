@@ -190,9 +190,17 @@ export function RichMedicalEditor({
                     const coords = editor.view.coordsAtPos(from);
                     if (containerRef.current) {
                         const rect = containerRef.current.getBoundingClientRect();
+                        const menuWidth = 288; // w-72 is 288px
+                        let computedLeft = coords.left - rect.left;
+                        
+                        // Prevent bleeding on the right side of the screen / container
+                        if (computedLeft + menuWidth > rect.width) {
+                            computedLeft = Math.max(8, rect.width - menuWidth - 8);
+                        }
+
                         setSlashCoords({ 
                             top: coords.bottom - rect.top + 8, 
-                            left: coords.left - rect.left 
+                            left: computedLeft 
                         });
                     }
                 } catch (e) {
@@ -310,10 +318,24 @@ export function RichMedicalEditor({
     const handleContextMenu = (e) => {
         if (disabled) return;
         e.preventDefault();
-        setContextMenu({
-            x: e.clientX,
-            y: e.clientY
-        });
+        
+        const menuWidth = 256; // w-64 is 256px
+        const menuHeight = 220; // approximate height
+        
+        let x = e.clientX;
+        let y = e.clientY;
+        
+        // Prevent bleeding on the right side of the screen
+        if (x + menuWidth > window.innerWidth) {
+            x = window.innerWidth - menuWidth - 8;
+        }
+        
+        // Prevent bleeding on the bottom of the screen
+        if (y + menuHeight > window.innerHeight) {
+            y = window.innerHeight - menuHeight - 8;
+        }
+
+        setContextMenu({ x, y });
     };
 
     const handleQuickInsert = (text) => {
