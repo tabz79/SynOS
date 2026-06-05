@@ -29,6 +29,10 @@ import { RichMedicalEditor } from '@/components/editor/RichMedicalEditor';
 import { MedicalMacrosWorkspace } from '@/components/editor/MedicalMacrosWorkspace';
 
 
+let sharedConnection = null;
+let stopTimer = null;
+let subscriberCount = 0;
+
 export function RadiologistTerminal() {
     const { user } = useAuth();
     const [studies, setStudies] = useState([]);
@@ -180,11 +184,41 @@ export function RadiologistTerminal() {
 
     // Connect SignalR on component mount to support presence and floating audio calls
     useEffect(() => {
-        connectSignalR();
+        isUnmountedRef.current = false;
+        subscriberCount++;
+
+        if (stopTimer) {
+            clearTimeout(stopTimer);
+            stopTimer = null;
+            if (sharedConnection) {
+                hubConnection.current = sharedConnection;
+                if (sharedConnection.state === signalR.HubConnectionState.Connected) {
+                    setConnectionStatus('Connected');
+                } else if (sharedConnection.state === signalR.HubConnectionState.Connecting) {
+                    setConnectionStatus('Connecting');
+                } else if (sharedConnection.state === signalR.HubConnectionState.Reconnecting) {
+                    setConnectionStatus('Reconnecting');
+                } else {
+                    setConnectionStatus('Disconnected');
+                }
+            }
+        } else {
+            connectSignalR();
+        }
+
         return () => {
-            if (hubConnection.current) {
-                hubConnection.current.stop();
-                hubConnection.current = null;
+            isUnmountedRef.current = true;
+            subscriberCount--;
+            if (subscriberCount <= 0) {
+                subscriberCount = 0;
+                if (stopTimer) clearTimeout(stopTimer);
+                stopTimer = setTimeout(() => {
+                    if (sharedConnection) {
+                        sharedConnection.stop().catch(err => console.error("Error stopping connection on cleanup:", err));
+                        sharedConnection = null;
+                    }
+                    stopTimer = null;
+                }, 2000);
             }
         };
     }, []);
@@ -276,26 +310,42 @@ export function RadiologistTerminal() {
         }
     };
 
+    const isUnmountedRef = useRef(false);
+
     const connectSignalR = async () => {
-        if (hubConnection.current) return;
+        if (sharedConnection && sharedConnection.state === signalR.HubConnectionState.Connected) {
+            hubConnection.current = sharedConnection;
+            setConnectionStatus('Connected');
+            return;
+        }
+        if (sharedConnection && sharedConnection.state === signalR.HubConnectionState.Connecting) {
+            hubConnection.current = sharedConnection;
+            setConnectionStatus('Connecting');
+            return;
+        }
 
         setConnectionStatus('Connecting');
 
         const connection = new signalR.HubConnectionBuilder()
             .withUrl('/radiologyCollaborationHub', {
-                accessTokenFactory: () => localStorage.getItem('synos_jwt')
+                accessTokenFactory: () => localStorage.getItem('synos_jwt'),
+                skipNegotiation: true,
+                transport: signalR.HttpTransportType.WebSockets
             })
             .withAutomaticReconnect([0, 2000, 5000, 10000]) // sliding reconnect
             .build();
 
+        sharedConnection = connection;
         hubConnection.current = connection;
 
         connection.onreconnecting((error) => {
+            if (hubConnection.current !== connection) return;
             setConnectionStatus('Reconnecting');
             console.warn("SignalR connection lost, attempting reconnect...", error);
         });
 
         connection.onreconnected((connectionId) => {
+            if (hubConnection.current !== connection) return;
             setConnectionStatus('Connected');
             console.info("SignalR reconnected.", connectionId);
             connection.invoke('RegisterPresence', 'Radiologist').catch(err => console.error(err));
@@ -306,11 +356,13 @@ export function RadiologistTerminal() {
         });
 
         connection.onclose((error) => {
+            if (hubConnection.current !== connection) return;
             setConnectionStatus('Disconnected');
             console.error("SignalR connection closed.", error);
         });
 
         connection.on('ReceiveDraftUpdate', (draftContent) => {
+            if (hubConnection.current !== connection) return;
             try {
                 const parsed = JSON.parse(draftContent);
                 if (parsed.findings !== undefined) setDraftFindings(parsed.findings);
@@ -322,20 +374,38 @@ export function RadiologistTerminal() {
         });
 
         connection.on('UserJoined', (connectionId) => {
+            if (hubConnection.current !== connection) return;
             setLiveTypistConnected(true);
         });
 
-        try {
-            await connection.start();
-            setConnectionStatus('Connected');
-            await connection.invoke('RegisterPresence', 'Radiologist');
-            if (currentJoinedStudyIdRef.current) {
-                await connection.invoke('JoinSession', currentJoinedStudyIdRef.current);
-            }
-        } catch (e) {
-            setConnectionStatus('Disconnected');
-            console.error("Failed to connect to SignalR hub:", e);
-        }
+        connection.start()
+            .then(async () => {
+                if (hubConnection.current !== connection) return;
+                if (isUnmountedRef.current) {
+                    connection.stop().catch(err => console.error("Error stopping connection on cleanup:", err));
+                    if (sharedConnection === connection) sharedConnection = null;
+                    hubConnection.current = null;
+                    return;
+                }
+                setConnectionStatus('Connected');
+                await connection.invoke('RegisterPresence', 'Radiologist');
+                if (currentJoinedStudyIdRef.current) {
+                    await connection.invoke('JoinSession', currentJoinedStudyIdRef.current);
+                }
+            })
+            .catch(e => {
+                if (hubConnection.current !== connection) return;
+                if (isUnmountedRef.current) {
+                    if (sharedConnection === connection) sharedConnection = null;
+                    hubConnection.current = null;
+                    return;
+                }
+                if (e && e.name === 'AbortError') {
+                    return;
+                }
+                setConnectionStatus('Disconnected');
+                console.error("Failed to connect to SignalR hub:", e);
+            });
     };
 
     // Canvas Events for mouse caliper drawings
@@ -510,7 +580,7 @@ export function RadiologistTerminal() {
     return (
         <div className="h-screen w-screen dark:bg-synos-background bg-zinc-50 dark:text-zinc-100 text-zinc-800 flex flex-col font-sans select-none overflow-hidden">
             {/* System Header */}
-            <SystemBar title="Radiologist Diagnostic Workstation" status="Live" />
+            <SystemBar syncStatus={connectionStatus === 'Connected' ? 'Synced' : 'Not Synced'} />
 
             {/* Core Workstation Workspace */}
             <div className="flex-1 grid grid-cols-12 overflow-hidden">

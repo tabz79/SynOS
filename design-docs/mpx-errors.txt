@@ -1,465 +1,214 @@
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence> dotnet run --project src\SynOS.Api\SynOS.Api.csproj --urls "http://127.0.0.1:59999"
-[12:16:14 WRN] Sensitive data logging is enabled. Log entries and exception messages may include sensitive application data; this mode should only be enabled during development.
-[12:16:20 INF] Executed DbCommand (81ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
-SELECT TOP(1) [b].[BranchId], [b].[Address], [b].[Code], [b].[Email], [b].[IsActive], [b].[Name], [b].[Phone]
-FROM [Branches] AS [b]
-WHERE [b].[BranchId] = 'a0000000-0000-0000-0000-000000000001'
-[12:16:20 INF] Executed DbCommand (10ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
-SELECT [r].[RoleId], [r].[Name]
-FROM [Roles] AS [r]
-[12:16:20 INF] Executed DbCommand (33ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
-SELECT [u].[UserId], [u].[CanUseOperationalMode], [u].[CanUseOversightMode], [u].[CreatedAt], [u].[DefaultBranchId], [u].[Designation], [u].[Email], [u].[FailedLoginAttempts], [u].[IsActive], [u].[IsDefaultSignatory], [u].[LastLoginAt], [u].[LockoutEnd], [u].[Name], [u].[PasswordHash], [u].[RowVersion], [u].[SignatureImageUrl], [u].[SignatureUpdatedAt], [u].[UpdatedAt], [u].[Username]
-FROM [Users] AS [u]
-[12:16:27 INF] Executed DbCommand (107ms) [Parameters=[@p1='0de27270-67cd-45ad-87c4-283e85e56602', @p0='$2a$11$PzREZEMQBrH1HAx8jClogOq2/gBuKVCOfl3SYrotKxBZJ9RYbppC.' (Nullable = false) (Size = 4000), @p2='0x00000000001FE411' (Size = 8), @p4='218a357c-3a70-4c64-af35-279d580261a8', @p3='$2a$11$vbfQ0tkLUU6w3zvOJ1NXlerz9Anh5tVm58tJPIivt4TinQNYKDq5m' (Nullable = false) (Size = 4000), @p5='0x00000000001FE412' (Size = 8), @p7='399e0d9d-3ec5-446f-b763-c2ec329daf20', @p6='$2a$11$Q728BY3lzRMpk1knunRfFuulIjPwLmJqNcAs/quiwgUiaok7TOcr2' (Nullable = false) (Size = 4000), @p8='0x00000000001FE413' (Size = 8), @p10='3bb4eb0e-7b7b-4471-90ba-360ee274a13e', @p9='$2a$11$kCz13wSmtP8u3wthGhFa5u320eBd0gGJswmtMAtIUlug.vCfqxZ3e' (Nullable = false) (Size = 4000), @p11='0x00000000001FE414' (Size = 8), @p13='40651ff0-6790-4006-a5b5-9cf9d18c62e7', @p12='$2a$11$JytaFx/fA4D8RrMmpIik2O7jWnz4EHhWi4TfRz1UoMkor5bu0ahV6' (Nullable = false) (Size = 4000), @p14='0x00000000001FE415' (Size = 8), @p16='47d02204-d1e7-4e09-bb3f-1e54b41cbf11', @p15='$2a$11$e7NfFfc0Do5SUUmWiekh7ODZRrbv5QKqrtwpBucpGlFIUPpoqvwc.' (Nullable = false) (Size = 4000), @p17='0x00000000001FE416' (Size = 8), @p19='721985c7-bbae-4368-a958-8b724082f532', @p18='$2a$11$zpF9KWSixvocqigHzWAZU.rLL/fRyb/dmfJlQm3zRl1N5f3U2xsxy' (Nullable = false) (Size = 4000), @p20='0x00000000001FE417' (Size = 8), @p22='a30f52d6-60e5-4834-9bf1-8c4e56ab3956', @p21='$2a$11$OtXrg3B3nMo4mJ3fxO1sgugQFlESEGPA4o3wjfmgeMU7LnHKAH1CS' (Nullable = false) (Size = 4000), @p23='0x00000000001FE418' (Size = 8), @p25='a7fcf93c-8988-4ad8-be83-b922da155f42', @p24='$2a$11$XsBI5Sg2SUv7W1zI/Br1xuZ3pByaoe73UyZgUJAZ/wj5ijCh3OS/O' (Nullable = false) (Size = 4000), @p26='0x00000000001FE419' (Size = 8), @p28='ae9c40e9-3d31-4c9c-96ea-6d2fb4a2a7d5', @p27='$2a$11$IbHfvxKsKjuCJqsvuQCQxOwM7PXI47tyRi01KnaoeNgrSyPLBrMw.' (Nullable = false) (Size = 4000), @p29='0x00000000001FE41A' (Size = 8), @p31='bcf01eba-6679-4041-84cd-a7418188106a', @p30='$2a$11$YhS29x95ECCNV4LNLhRbYeQkS9CAtGSPmJzllOEnAxpWZRpvQHsB.' (Nullable = false) (Size = 4000), @p32='0x00000000001FE41B' (Size = 8), @p34='c28d36b4-d613-4b8e-b7d8-c1e0ca6ea91e', @p33='$2a$11$/mDrM.rvDqvnsyt2tn6gUeUl5eTmPLrmQBXdAMEl9Esn.MkZ3eXAu' (Nullable = false) (Size = 4000), @p35='0x00000000001FE41C' (Size = 8), @p37='cd38e1e9-76fb-4241-a5ac-9fce1e8b16f6', @p36='$2a$11$cXJ7ZJhQAbiNj/Al.t74C.VaO4wowq10Ty6TlhBNT31tt1EnYYgtW' (Nullable = false) (Size = 4000), @p38='0x00000000001FE424' (Size = 8), @p40='e566f25d-754f-438b-924b-d2bd540ddc30', @p39='$2a$11$SbUfyMRHdmLkIAj5Tw2ik.IXVVkH64SL95xwe2k.ZDxjCHB893QRG' (Nullable = false) (Size = 4000), @p41='0x00000000001FE41E' (Size = 8)], CommandType='Text', CommandTimeout='30']
-SET NOCOUNT ON;
-UPDATE [Users] SET [PasswordHash] = @p0
-OUTPUT INSERTED.[RowVersion]
-WHERE [UserId] = @p1 AND [RowVersion] = @p2;
-UPDATE [Users] SET [PasswordHash] = @p3
-OUTPUT INSERTED.[RowVersion]
-WHERE [UserId] = @p4 AND [RowVersion] = @p5;
-UPDATE [Users] SET [PasswordHash] = @p6
-OUTPUT INSERTED.[RowVersion]
-WHERE [UserId] = @p7 AND [RowVersion] = @p8;
-UPDATE [Users] SET [PasswordHash] = @p9
-OUTPUT INSERTED.[RowVersion]
-WHERE [UserId] = @p10 AND [RowVersion] = @p11;
-UPDATE [Users] SET [PasswordHash] = @p12
-OUTPUT INSERTED.[RowVersion]
-WHERE [UserId] = @p13 AND [RowVersion] = @p14;
-UPDATE [Users] SET [PasswordHash] = @p15
-OUTPUT INSERTED.[RowVersion]
-WHERE [UserId] = @p16 AND [RowVersion] = @p17;
-UPDATE [Users] SET [PasswordHash] = @p18
-OUTPUT INSERTED.[RowVersion]
-WHERE [UserId] = @p19 AND [RowVersion] = @p20;
-UPDATE [Users] SET [PasswordHash] = @p21
-OUTPUT INSERTED.[RowVersion]
-WHERE [UserId] = @p22 AND [RowVersion] = @p23;
-UPDATE [Users] SET [PasswordHash] = @p24
-OUTPUT INSERTED.[RowVersion]
-WHERE [UserId] = @p25 AND [RowVersion] = @p26;
-UPDATE [Users] SET [PasswordHash] = @p27
-OUTPUT INSERTED.[RowVersion]
-WHERE [UserId] = @p28 AND [RowVersion] = @p29;
-UPDATE [Users] SET [PasswordHash] = @p30
-OUTPUT INSERTED.[RowVersion]
-WHERE [UserId] = @p31 AND [RowVersion] = @p32;
-UPDATE [Users] SET [PasswordHash] = @p33
-OUTPUT INSERTED.[RowVersion]
-WHERE [UserId] = @p34 AND [RowVersion] = @p35;
-UPDATE [Users] SET [PasswordHash] = @p36
-OUTPUT INSERTED.[RowVersion]
-WHERE [UserId] = @p37 AND [RowVersion] = @p38;
-UPDATE [Users] SET [PasswordHash] = @p39
-OUTPUT INSERTED.[RowVersion]
-WHERE [UserId] = @p40 AND [RowVersion] = @p41;
-[12:16:27 INF] Executed DbCommand (4ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
-SELECT [u].[UserId], [u].[RoleId]
-FROM [UserRoles] AS [u]
-[12:16:27 INF] Executed DbCommand (3ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
-SELECT [u].[UserId], [u].[BranchId], [u].[RoleId]
-FROM [UserBranchRoles] AS [u]
-[12:16:27 INF] Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
-SELECT [u].[UserId], [u].[CanUseOperationalMode], [u].[CanUseOversightMode], [u].[CreatedAt], [u].[DefaultBranchId], [u].[Designation], [u].[Email], [u].[FailedLoginAttempts], [u].[IsActive], [u].[IsDefaultSignatory], [u].[LastLoginAt], [u].[LockoutEnd], [u].[Name], [u].[PasswordHash], [u].[RowVersion], [u].[SignatureImageUrl], [u].[SignatureUpdatedAt], [u].[UpdatedAt], [u].[Username]
-FROM [Users] AS [u]
-[12:16:27 INF] Executed DbCommand (8ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
-SELECT [e].[EmployeeId], [e].[AadhaarNumber], [e].[AccountNumber], [e].[BankName], [e].[BaseSalary], [e].[CreatedAt], [e].[Department], [e].[DepartmentId], [e].[ESIEnabled], [e].[ESIPercentage], [e].[Email], [e].[EmergencyContact], [e].[EmploymentType], [e].[FirstName], [e].[IFSC], [e].[IsActive], [e].[JobTitle], [e].[JoinDate], [e].[LastName], [e].[MonthlyPaidLeaveQuota], [e].[PFEnabled], [e].[PFPercentage], [e].[PanNumber], [e].[Phone], [e].[PreferredOffDay], [e].[SalaryType], [e].[TDSEnabled], [e].[TDSMode], [e].[TDSValue], [e].[UpdatedAt], [e].[UserId]
-FROM [Employees] AS [e]
-[12:16:28 INF] Executed DbCommand (10ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
-SELECT CASE
-    WHEN EXISTS (
-        SELECT 1
-        FROM [LabProfiles] AS [l]) THEN CAST(1 AS bit)
-    ELSE CAST(0 AS bit)
-END
-[12:16:28 INF] Executed DbCommand (5ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
-SELECT [w].[WorkspaceId], [w].[CreatedAt], [w].[IsActive], [w].[Name], [w].[RoutePath]
-FROM [Workspaces] AS [w]
-[12:16:28 INF] Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
-SELECT [u].[UserId], [u].[CanUseOperationalMode], [u].[CanUseOversightMode], [u].[CreatedAt], [u].[DefaultBranchId], [u].[Designation], [u].[Email], [u].[FailedLoginAttempts], [u].[IsActive], [u].[IsDefaultSignatory], [u].[LastLoginAt], [u].[LockoutEnd], [u].[Name], [u].[PasswordHash], [u].[RowVersion], [u].[SignatureImageUrl], [u].[SignatureUpdatedAt], [u].[UpdatedAt], [u].[Username]
-FROM [Users] AS [u]
-[12:16:28 INF] Executed DbCommand (3ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
-SELECT [w].[WorkspaceId], [w].[CreatedAt], [w].[IsActive], [w].[Name], [w].[RoutePath]
-FROM [Workspaces] AS [w]
-[12:16:28 INF] Executed DbCommand (12ms) [Parameters=[@__user_UserId_0='849f4c45-d960-48b3-9b02-0fa350467ce5'], CommandType='Text', CommandTimeout='30']
-SELECT TOP(1) [r].[Name]
-FROM [UserBranchRoles] AS [u]
-INNER JOIN [Roles] AS [r] ON [u].[RoleId] = [r].[RoleId]
-WHERE [u].[UserId] = @__user_UserId_0
-[12:16:28 INF] Executed DbCommand (6ms) [Parameters=[@__8__locals1_user_UserId_0='849f4c45-d960-48b3-9b02-0fa350467ce5', @__ws_WorkspaceId_1='a0227d86-016b-4724-8da6-4f277fcc71b8'], CommandType='Text', CommandTimeout='30']
-SELECT CASE
-    WHEN EXISTS (
-        SELECT 1
-        FROM [UserWorkspaceAccesses] AS [u]
-        WHERE [u].[UserId] = @__8__locals1_user_UserId_0 AND [u].[WorkspaceId] = @__ws_WorkspaceId_1) THEN CAST(1 AS bit)
-    ELSE CAST(0 AS bit)
-END
-[12:16:28 INF] Executed DbCommand (1ms) [Parameters=[@__user_UserId_0='1ab0e951-5592-42d4-a163-19d80ca57b01'], CommandType='Text', CommandTimeout='30']
-SELECT TOP(1) [r].[Name]
-FROM [UserBranchRoles] AS [u]
-INNER JOIN [Roles] AS [r] ON [u].[RoleId] = [r].[RoleId]
-WHERE [u].[UserId] = @__user_UserId_0
-[12:16:28 INF] Executed DbCommand (1ms) [Parameters=[@__8__locals1_user_UserId_0='1ab0e951-5592-42d4-a163-19d80ca57b01', @__ws_WorkspaceId_1='a0227d86-016b-4724-8da6-4f277fcc71b8'], CommandType='Text', CommandTimeout='30']
-SELECT CASE
-    WHEN EXISTS (
-        SELECT 1
-        FROM [UserWorkspaceAccesses] AS [u]
-        WHERE [u].[UserId] = @__8__locals1_user_UserId_0 AND [u].[WorkspaceId] = @__ws_WorkspaceId_1) THEN CAST(1 AS bit)
-    ELSE CAST(0 AS bit)
-END
-[12:16:28 INF] Executed DbCommand (1ms) [Parameters=[@__user_UserId_0='47d02204-d1e7-4e09-bb3f-1e54b41cbf11'], CommandType='Text', CommandTimeout='30']
-SELECT TOP(1) [r].[Name]
-FROM [UserBranchRoles] AS [u]
-INNER JOIN [Roles] AS [r] ON [u].[RoleId] = [r].[RoleId]
-WHERE [u].[UserId] = @__user_UserId_0
-[12:16:28 INF] Executed DbCommand (1ms) [Parameters=[@__8__locals1_user_UserId_0='47d02204-d1e7-4e09-bb3f-1e54b41cbf11', @__ws_WorkspaceId_1='f2c9b36f-aac8-4d44-8b32-247a5d145774'], CommandType='Text', CommandTimeout='30']
-SELECT CASE
-    WHEN EXISTS (
-        SELECT 1
-        FROM [UserWorkspaceAccesses] AS [u]
-        WHERE [u].[UserId] = @__8__locals1_user_UserId_0 AND [u].[WorkspaceId] = @__ws_WorkspaceId_1) THEN CAST(1 AS bit)
-    ELSE CAST(0 AS bit)
-END
-[12:16:28 INF] Executed DbCommand (1ms) [Parameters=[@__user_UserId_0='218a357c-3a70-4c64-af35-279d580261a8'], CommandType='Text', CommandTimeout='30']
-SELECT TOP(1) [r].[Name]
-FROM [UserBranchRoles] AS [u]
-INNER JOIN [Roles] AS [r] ON [u].[RoleId] = [r].[RoleId]
-WHERE [u].[UserId] = @__user_UserId_0
-[12:16:28 INF] Executed DbCommand (1ms) [Parameters=[@__8__locals1_user_UserId_0='218a357c-3a70-4c64-af35-279d580261a8', @__ws_WorkspaceId_1='f0329d10-771e-4eff-b9dc-203f97935bef'], CommandType='Text', CommandTimeout='30']
-SELECT CASE
-    WHEN EXISTS (
-        SELECT 1
-        FROM [UserWorkspaceAccesses] AS [u]
-        WHERE [u].[UserId] = @__8__locals1_user_UserId_0 AND [u].[WorkspaceId] = @__ws_WorkspaceId_1) THEN CAST(1 AS bit)
-    ELSE CAST(0 AS bit)
-END
-[12:16:28 INF] Executed DbCommand (1ms) [Parameters=[@__user_UserId_0='0de27270-67cd-45ad-87c4-283e85e56602'], CommandType='Text', CommandTimeout='30']
-SELECT TOP(1) [r].[Name]
-FROM [UserBranchRoles] AS [u]
-INNER JOIN [Roles] AS [r] ON [u].[RoleId] = [r].[RoleId]
-WHERE [u].[UserId] = @__user_UserId_0
-[12:16:28 INF] Executed DbCommand (1ms) [Parameters=[@__8__locals1_user_UserId_0='0de27270-67cd-45ad-87c4-283e85e56602', @__ws_WorkspaceId_1='dfd92d07-fa76-49cf-b8ba-981aaad7d890'], CommandType='Text', CommandTimeout='30']
-SELECT CASE
-    WHEN EXISTS (
-        SELECT 1
-        FROM [UserWorkspaceAccesses] AS [u]
-        WHERE [u].[UserId] = @__8__locals1_user_UserId_0 AND [u].[WorkspaceId] = @__ws_WorkspaceId_1) THEN CAST(1 AS bit)
-    ELSE CAST(0 AS bit)
-END
-[12:16:28 INF] Executed DbCommand (3ms) [Parameters=[@__user_UserId_0='69a886fe-8954-400a-b097-310cb4e9298e'], CommandType='Text', CommandTimeout='30']
-SELECT TOP(1) [r].[Name]
-FROM [UserBranchRoles] AS [u]
-INNER JOIN [Roles] AS [r] ON [u].[RoleId] = [r].[RoleId]
-WHERE [u].[UserId] = @__user_UserId_0
-[12:16:28 INF] Executed DbCommand (1ms) [Parameters=[@__8__locals1_user_UserId_0='69a886fe-8954-400a-b097-310cb4e9298e', @__ws_WorkspaceId_1='a0227d86-016b-4724-8da6-4f277fcc71b8'], CommandType='Text', CommandTimeout='30']
-SELECT CASE
-    WHEN EXISTS (
-        SELECT 1
-        FROM [UserWorkspaceAccesses] AS [u]
-        WHERE [u].[UserId] = @__8__locals1_user_UserId_0 AND [u].[WorkspaceId] = @__ws_WorkspaceId_1) THEN CAST(1 AS bit)
-    ELSE CAST(0 AS bit)
-END
-[12:16:28 INF] Executed DbCommand (1ms) [Parameters=[@__user_UserId_0='3bb4eb0e-7b7b-4471-90ba-360ee274a13e'], CommandType='Text', CommandTimeout='30']
-SELECT TOP(1) [r].[Name]
-FROM [UserBranchRoles] AS [u]
-INNER JOIN [Roles] AS [r] ON [u].[RoleId] = [r].[RoleId]
-WHERE [u].[UserId] = @__user_UserId_0
-[12:16:28 INF] Executed DbCommand (1ms) [Parameters=[@__user_UserId_0='0a5ed756-5ff4-48de-a2e3-428502567c3a'], CommandType='Text', CommandTimeout='30']
-SELECT TOP(1) [r].[Name]
-FROM [UserBranchRoles] AS [u]
-INNER JOIN [Roles] AS [r] ON [u].[RoleId] = [r].[RoleId]
-WHERE [u].[UserId] = @__user_UserId_0
-[12:16:28 INF] Executed DbCommand (1ms) [Parameters=[@__user_UserId_0='ae9c40e9-3d31-4c9c-96ea-6d2fb4a2a7d5'], CommandType='Text', CommandTimeout='30']
-SELECT TOP(1) [r].[Name]
-FROM [UserBranchRoles] AS [u]
-INNER JOIN [Roles] AS [r] ON [u].[RoleId] = [r].[RoleId]
-WHERE [u].[UserId] = @__user_UserId_0
-[12:16:28 INF] Executed DbCommand (2ms) [Parameters=[@__8__locals1_user_UserId_0='ae9c40e9-3d31-4c9c-96ea-6d2fb4a2a7d5', @__ws_WorkspaceId_1='a0227d86-016b-4724-8da6-4f277fcc71b8'], CommandType='Text', CommandTimeout='30']
-SELECT CASE
-    WHEN EXISTS (
-        SELECT 1
-        FROM [UserWorkspaceAccesses] AS [u]
-        WHERE [u].[UserId] = @__8__locals1_user_UserId_0 AND [u].[WorkspaceId] = @__ws_WorkspaceId_1) THEN CAST(1 AS bit)
-    ELSE CAST(0 AS bit)
-END
-[12:16:28 INF] Executed DbCommand (5ms) [Parameters=[@__user_UserId_0='fb5dbbf6-e8a0-4db8-8d4d-7f73d0f918e0'], CommandType='Text', CommandTimeout='30']
-SELECT TOP(1) [r].[Name]
-FROM [UserBranchRoles] AS [u]
-INNER JOIN [Roles] AS [r] ON [u].[RoleId] = [r].[RoleId]
-WHERE [u].[UserId] = @__user_UserId_0
-[12:16:28 INF] Executed DbCommand (1ms) [Parameters=[@__8__locals1_user_UserId_0='fb5dbbf6-e8a0-4db8-8d4d-7f73d0f918e0', @__ws_WorkspaceId_1='83529d85-d9e7-42a6-9cf3-1f21f1cf3ebb'], CommandType='Text', CommandTimeout='30']
-SELECT CASE
-    WHEN EXISTS (
-        SELECT 1
-        FROM [UserWorkspaceAccesses] AS [u]
-        WHERE [u].[UserId] = @__8__locals1_user_UserId_0 AND [u].[WorkspaceId] = @__ws_WorkspaceId_1) THEN CAST(1 AS bit)
-    ELSE CAST(0 AS bit)
-END
-[12:16:28 INF] Executed DbCommand (1ms) [Parameters=[@__8__locals1_user_UserId_0='fb5dbbf6-e8a0-4db8-8d4d-7f73d0f918e0', @__ws_WorkspaceId_1='f0329d10-771e-4eff-b9dc-203f97935bef'], CommandType='Text', CommandTimeout='30']
-SELECT CASE
-    WHEN EXISTS (
-        SELECT 1
-        FROM [UserWorkspaceAccesses] AS [u]
-        WHERE [u].[UserId] = @__8__locals1_user_UserId_0 AND [u].[WorkspaceId] = @__ws_WorkspaceId_1) THEN CAST(1 AS bit)
-    ELSE CAST(0 AS bit)
-END
-[12:16:28 INF] Executed DbCommand (1ms) [Parameters=[@__8__locals1_user_UserId_0='fb5dbbf6-e8a0-4db8-8d4d-7f73d0f918e0', @__ws_WorkspaceId_1='8deef9e0-50d0-4fe9-811f-226c08b4d59a'], CommandType='Text', CommandTimeout='30']
-SELECT CASE
-    WHEN EXISTS (
-        SELECT 1
-        FROM [UserWorkspaceAccesses] AS [u]
-        WHERE [u].[UserId] = @__8__locals1_user_UserId_0 AND [u].[WorkspaceId] = @__ws_WorkspaceId_1) THEN CAST(1 AS bit)
-    ELSE CAST(0 AS bit)
-END
-[12:16:28 INF] Executed DbCommand (1ms) [Parameters=[@__8__locals1_user_UserId_0='fb5dbbf6-e8a0-4db8-8d4d-7f73d0f918e0', @__ws_WorkspaceId_1='f2c9b36f-aac8-4d44-8b32-247a5d145774'], CommandType='Text', CommandTimeout='30']
-SELECT CASE
-    WHEN EXISTS (
-        SELECT 1
-        FROM [UserWorkspaceAccesses] AS [u]
-        WHERE [u].[UserId] = @__8__locals1_user_UserId_0 AND [u].[WorkspaceId] = @__ws_WorkspaceId_1) THEN CAST(1 AS bit)
-    ELSE CAST(0 AS bit)
-END
-[12:16:28 INF] Executed DbCommand (1ms) [Parameters=[@__8__locals1_user_UserId_0='fb5dbbf6-e8a0-4db8-8d4d-7f73d0f918e0', @__ws_WorkspaceId_1='a0227d86-016b-4724-8da6-4f277fcc71b8'], CommandType='Text', CommandTimeout='30']
-SELECT CASE
-    WHEN EXISTS (
-        SELECT 1
-        FROM [UserWorkspaceAccesses] AS [u]
-        WHERE [u].[UserId] = @__8__locals1_user_UserId_0 AND [u].[WorkspaceId] = @__ws_WorkspaceId_1) THEN CAST(1 AS bit)
-    ELSE CAST(0 AS bit)
-END
-[12:16:28 INF] Executed DbCommand (1ms) [Parameters=[@__8__locals1_user_UserId_0='fb5dbbf6-e8a0-4db8-8d4d-7f73d0f918e0', @__ws_WorkspaceId_1='30457a3c-0e23-4155-a44f-7425ba5ac8aa'], CommandType='Text', CommandTimeout='30']
-SELECT CASE
-    WHEN EXISTS (
-        SELECT 1
-        FROM [UserWorkspaceAccesses] AS [u]
-        WHERE [u].[UserId] = @__8__locals1_user_UserId_0 AND [u].[WorkspaceId] = @__ws_WorkspaceId_1) THEN CAST(1 AS bit)
-    ELSE CAST(0 AS bit)
-END
-[12:16:28 INF] Executed DbCommand (3ms) [Parameters=[@__8__locals1_user_UserId_0='fb5dbbf6-e8a0-4db8-8d4d-7f73d0f918e0', @__ws_WorkspaceId_1='23579626-4d74-415e-94a0-7976a40b6d3b'], CommandType='Text', CommandTimeout='30']
-SELECT CASE
-    WHEN EXISTS (
-        SELECT 1
-        FROM [UserWorkspaceAccesses] AS [u]
-        WHERE [u].[UserId] = @__8__locals1_user_UserId_0 AND [u].[WorkspaceId] = @__ws_WorkspaceId_1) THEN CAST(1 AS bit)
-    ELSE CAST(0 AS bit)
-END
-[12:16:28 INF] Executed DbCommand (1ms) [Parameters=[@__8__locals1_user_UserId_0='fb5dbbf6-e8a0-4db8-8d4d-7f73d0f918e0', @__ws_WorkspaceId_1='eb195026-e049-44c2-aa8e-7a0e81e7445c'], CommandType='Text', CommandTimeout='30']
-SELECT CASE
-    WHEN EXISTS (
-        SELECT 1
-        FROM [UserWorkspaceAccesses] AS [u]
-        WHERE [u].[UserId] = @__8__locals1_user_UserId_0 AND [u].[WorkspaceId] = @__ws_WorkspaceId_1) THEN CAST(1 AS bit)
-    ELSE CAST(0 AS bit)
-END
-[12:16:28 INF] Executed DbCommand (2ms) [Parameters=[@__8__locals1_user_UserId_0='fb5dbbf6-e8a0-4db8-8d4d-7f73d0f918e0', @__ws_WorkspaceId_1='12916c91-76e6-44a2-8432-8d87a374fd13'], CommandType='Text', CommandTimeout='30']
-SELECT CASE
-    WHEN EXISTS (
-        SELECT 1
-        FROM [UserWorkspaceAccesses] AS [u]
-        WHERE [u].[UserId] = @__8__locals1_user_UserId_0 AND [u].[WorkspaceId] = @__ws_WorkspaceId_1) THEN CAST(1 AS bit)
-    ELSE CAST(0 AS bit)
-END
-[12:16:28 INF] Executed DbCommand (1ms) [Parameters=[@__8__locals1_user_UserId_0='fb5dbbf6-e8a0-4db8-8d4d-7f73d0f918e0', @__ws_WorkspaceId_1='dfd92d07-fa76-49cf-b8ba-981aaad7d890'], CommandType='Text', CommandTimeout='30']
-SELECT CASE
-    WHEN EXISTS (
-        SELECT 1
-        FROM [UserWorkspaceAccesses] AS [u]
-        WHERE [u].[UserId] = @__8__locals1_user_UserId_0 AND [u].[WorkspaceId] = @__ws_WorkspaceId_1) THEN CAST(1 AS bit)
-    ELSE CAST(0 AS bit)
-END
-[12:16:28 INF] Executed DbCommand (1ms) [Parameters=[@__8__locals1_user_UserId_0='fb5dbbf6-e8a0-4db8-8d4d-7f73d0f918e0', @__ws_WorkspaceId_1='7e105b38-786d-44e3-9eaa-a107edf3f93c'], CommandType='Text', CommandTimeout='30']
-SELECT CASE
-    WHEN EXISTS (
-        SELECT 1
-        FROM [UserWorkspaceAccesses] AS [u]
-        WHERE [u].[UserId] = @__8__locals1_user_UserId_0 AND [u].[WorkspaceId] = @__ws_WorkspaceId_1) THEN CAST(1 AS bit)
-    ELSE CAST(0 AS bit)
-END
-[12:16:28 INF] Executed DbCommand (1ms) [Parameters=[@__8__locals1_user_UserId_0='fb5dbbf6-e8a0-4db8-8d4d-7f73d0f918e0', @__ws_WorkspaceId_1='3835faeb-df61-4d03-bdd7-cc3dfce3ffc6'], CommandType='Text', CommandTimeout='30']
-SELECT CASE
-    WHEN EXISTS (
-        SELECT 1
-        FROM [UserWorkspaceAccesses] AS [u]
-        WHERE [u].[UserId] = @__8__locals1_user_UserId_0 AND [u].[WorkspaceId] = @__ws_WorkspaceId_1) THEN CAST(1 AS bit)
-    ELSE CAST(0 AS bit)
-END
-[12:16:28 INF] Executed DbCommand (1ms) [Parameters=[@__8__locals1_user_UserId_0='fb5dbbf6-e8a0-4db8-8d4d-7f73d0f918e0', @__ws_WorkspaceId_1='3f14ddfd-50b7-4d7f-a2c1-d8a8db8ddf5f'], CommandType='Text', CommandTimeout='30']
-SELECT CASE
-    WHEN EXISTS (
-        SELECT 1
-        FROM [UserWorkspaceAccesses] AS [u]
-        WHERE [u].[UserId] = @__8__locals1_user_UserId_0 AND [u].[WorkspaceId] = @__ws_WorkspaceId_1) THEN CAST(1 AS bit)
-    ELSE CAST(0 AS bit)
-END
-[12:16:28 INF] Executed DbCommand (1ms) [Parameters=[@__8__locals1_user_UserId_0='fb5dbbf6-e8a0-4db8-8d4d-7f73d0f918e0', @__ws_WorkspaceId_1='d06098ca-2b9c-4eb2-8df2-fe7fe2530024'], CommandType='Text', CommandTimeout='30']
-SELECT CASE
-    WHEN EXISTS (
-        SELECT 1
-        FROM [UserWorkspaceAccesses] AS [u]
-        WHERE [u].[UserId] = @__8__locals1_user_UserId_0 AND [u].[WorkspaceId] = @__ws_WorkspaceId_1) THEN CAST(1 AS bit)
-    ELSE CAST(0 AS bit)
-END
-[12:16:28 INF] Executed DbCommand (1ms) [Parameters=[@__user_UserId_0='721985c7-bbae-4368-a958-8b724082f532'], CommandType='Text', CommandTimeout='30']
-SELECT TOP(1) [r].[Name]
-FROM [UserBranchRoles] AS [u]
-INNER JOIN [Roles] AS [r] ON [u].[RoleId] = [r].[RoleId]
-WHERE [u].[UserId] = @__user_UserId_0
-[12:16:28 INF] Executed DbCommand (5ms) [Parameters=[@__8__locals1_user_UserId_0='721985c7-bbae-4368-a958-8b724082f532', @__ws_WorkspaceId_1='83529d85-d9e7-42a6-9cf3-1f21f1cf3ebb'], CommandType='Text', CommandTimeout='30']
-SELECT CASE
-    WHEN EXISTS (
-        SELECT 1
-        FROM [UserWorkspaceAccesses] AS [u]
-        WHERE [u].[UserId] = @__8__locals1_user_UserId_0 AND [u].[WorkspaceId] = @__ws_WorkspaceId_1) THEN CAST(1 AS bit)
-    ELSE CAST(0 AS bit)
-END
-[12:16:28 INF] Executed DbCommand (1ms) [Parameters=[@__8__locals1_user_UserId_0='721985c7-bbae-4368-a958-8b724082f532', @__ws_WorkspaceId_1='f0329d10-771e-4eff-b9dc-203f97935bef'], CommandType='Text', CommandTimeout='30']
-SELECT CASE
-    WHEN EXISTS (
-        SELECT 1
-        FROM [UserWorkspaceAccesses] AS [u]
-        WHERE [u].[UserId] = @__8__locals1_user_UserId_0 AND [u].[WorkspaceId] = @__ws_WorkspaceId_1) THEN CAST(1 AS bit)
-    ELSE CAST(0 AS bit)
-END
-[12:16:28 INF] Executed DbCommand (1ms) [Parameters=[@__8__locals1_user_UserId_0='721985c7-bbae-4368-a958-8b724082f532', @__ws_WorkspaceId_1='8deef9e0-50d0-4fe9-811f-226c08b4d59a'], CommandType='Text', CommandTimeout='30']
-SELECT CASE
-    WHEN EXISTS (
-        SELECT 1
-        FROM [UserWorkspaceAccesses] AS [u]
-        WHERE [u].[UserId] = @__8__locals1_user_UserId_0 AND [u].[WorkspaceId] = @__ws_WorkspaceId_1) THEN CAST(1 AS bit)
-    ELSE CAST(0 AS bit)
-END
-[12:16:28 INF] Executed DbCommand (1ms) [Parameters=[@__8__locals1_user_UserId_0='721985c7-bbae-4368-a958-8b724082f532', @__ws_WorkspaceId_1='f2c9b36f-aac8-4d44-8b32-247a5d145774'], CommandType='Text', CommandTimeout='30']
-SELECT CASE
-    WHEN EXISTS (
-        SELECT 1
-        FROM [UserWorkspaceAccesses] AS [u]
-        WHERE [u].[UserId] = @__8__locals1_user_UserId_0 AND [u].[WorkspaceId] = @__ws_WorkspaceId_1) THEN CAST(1 AS bit)
-    ELSE CAST(0 AS bit)
-END
-[12:16:29 INF] Executed DbCommand (1ms) [Parameters=[@__8__locals1_user_UserId_0='721985c7-bbae-4368-a958-8b724082f532', @__ws_WorkspaceId_1='a0227d86-016b-4724-8da6-4f277fcc71b8'], CommandType='Text', CommandTimeout='30']
-SELECT CASE
-    WHEN EXISTS (
-        SELECT 1
-        FROM [UserWorkspaceAccesses] AS [u]
-        WHERE [u].[UserId] = @__8__locals1_user_UserId_0 AND [u].[WorkspaceId] = @__ws_WorkspaceId_1) THEN CAST(1 AS bit)
-    ELSE CAST(0 AS bit)
-END
-[12:16:29 INF] Executed DbCommand (1ms) [Parameters=[@__8__locals1_user_UserId_0='721985c7-bbae-4368-a958-8b724082f532', @__ws_WorkspaceId_1='30457a3c-0e23-4155-a44f-7425ba5ac8aa'], CommandType='Text', CommandTimeout='30']
-SELECT CASE
-    WHEN EXISTS (
-        SELECT 1
-        FROM [UserWorkspaceAccesses] AS [u]
-        WHERE [u].[UserId] = @__8__locals1_user_UserId_0 AND [u].[WorkspaceId] = @__ws_WorkspaceId_1) THEN CAST(1 AS bit)
-    ELSE CAST(0 AS bit)
-END
-[12:16:29 INF] Executed DbCommand (1ms) [Parameters=[@__8__locals1_user_UserId_0='721985c7-bbae-4368-a958-8b724082f532', @__ws_WorkspaceId_1='23579626-4d74-415e-94a0-7976a40b6d3b'], CommandType='Text', CommandTimeout='30']
-SELECT CASE
-    WHEN EXISTS (
-        SELECT 1
-        FROM [UserWorkspaceAccesses] AS [u]
-        WHERE [u].[UserId] = @__8__locals1_user_UserId_0 AND [u].[WorkspaceId] = @__ws_WorkspaceId_1) THEN CAST(1 AS bit)
-    ELSE CAST(0 AS bit)
-END
-[12:16:29 INF] Executed DbCommand (11ms) [Parameters=[@__8__locals1_user_UserId_0='721985c7-bbae-4368-a958-8b724082f532', @__ws_WorkspaceId_1='eb195026-e049-44c2-aa8e-7a0e81e7445c'], CommandType='Text', CommandTimeout='30']
-SELECT CASE
-    WHEN EXISTS (
-        SELECT 1
-        FROM [UserWorkspaceAccesses] AS [u]
-        WHERE [u].[UserId] = @__8__locals1_user_UserId_0 AND [u].[WorkspaceId] = @__ws_WorkspaceId_1) THEN CAST(1 AS bit)
-    ELSE CAST(0 AS bit)
-END
-[12:16:29 INF] Executed DbCommand (2ms) [Parameters=[@__8__locals1_user_UserId_0='721985c7-bbae-4368-a958-8b724082f532', @__ws_WorkspaceId_1='12916c91-76e6-44a2-8432-8d87a374fd13'], CommandType='Text', CommandTimeout='30']
-SELECT CASE
-    WHEN EXISTS (
-        SELECT 1
-        FROM [UserWorkspaceAccesses] AS [u]
-        WHERE [u].[UserId] = @__8__locals1_user_UserId_0 AND [u].[WorkspaceId] = @__ws_WorkspaceId_1) THEN CAST(1 AS bit)
-    ELSE CAST(0 AS bit)
-END
-[12:16:29 INF] Executed DbCommand (1ms) [Parameters=[@__8__locals1_user_UserId_0='721985c7-bbae-4368-a958-8b724082f532', @__ws_WorkspaceId_1='dfd92d07-fa76-49cf-b8ba-981aaad7d890'], CommandType='Text', CommandTimeout='30']
-SELECT CASE
-    WHEN EXISTS (
-        SELECT 1
-        FROM [UserWorkspaceAccesses] AS [u]
-        WHERE [u].[UserId] = @__8__locals1_user_UserId_0 AND [u].[WorkspaceId] = @__ws_WorkspaceId_1) THEN CAST(1 AS bit)
-    ELSE CAST(0 AS bit)
-END
-[12:16:29 INF] Executed DbCommand (1ms) [Parameters=[@__8__locals1_user_UserId_0='721985c7-bbae-4368-a958-8b724082f532', @__ws_WorkspaceId_1='7e105b38-786d-44e3-9eaa-a107edf3f93c'], CommandType='Text', CommandTimeout='30']
-SELECT CASE
-    WHEN EXISTS (
-        SELECT 1
-        FROM [UserWorkspaceAccesses] AS [u]
-        WHERE [u].[UserId] = @__8__locals1_user_UserId_0 AND [u].[WorkspaceId] = @__ws_WorkspaceId_1) THEN CAST(1 AS bit)
-    ELSE CAST(0 AS bit)
-END
-[12:16:29 INF] Executed DbCommand (3ms) [Parameters=[@__8__locals1_user_UserId_0='721985c7-bbae-4368-a958-8b724082f532', @__ws_WorkspaceId_1='3835faeb-df61-4d03-bdd7-cc3dfce3ffc6'], CommandType='Text', CommandTimeout='30']
-SELECT CASE
-    WHEN EXISTS (
-        SELECT 1
-        FROM [UserWorkspaceAccesses] AS [u]
-        WHERE [u].[UserId] = @__8__locals1_user_UserId_0 AND [u].[WorkspaceId] = @__ws_WorkspaceId_1) THEN CAST(1 AS bit)
-    ELSE CAST(0 AS bit)
-END
-[12:16:29 INF] Executed DbCommand (1ms) [Parameters=[@__8__locals1_user_UserId_0='721985c7-bbae-4368-a958-8b724082f532', @__ws_WorkspaceId_1='3f14ddfd-50b7-4d7f-a2c1-d8a8db8ddf5f'], CommandType='Text', CommandTimeout='30']
-SELECT CASE
-    WHEN EXISTS (
-        SELECT 1
-        FROM [UserWorkspaceAccesses] AS [u]
-        WHERE [u].[UserId] = @__8__locals1_user_UserId_0 AND [u].[WorkspaceId] = @__ws_WorkspaceId_1) THEN CAST(1 AS bit)
-    ELSE CAST(0 AS bit)
-END
-[12:16:29 INF] Executed DbCommand (1ms) [Parameters=[@__8__locals1_user_UserId_0='721985c7-bbae-4368-a958-8b724082f532', @__ws_WorkspaceId_1='d06098ca-2b9c-4eb2-8df2-fe7fe2530024'], CommandType='Text', CommandTimeout='30']
-SELECT CASE
-    WHEN EXISTS (
-        SELECT 1
-        FROM [UserWorkspaceAccesses] AS [u]
-        WHERE [u].[UserId] = @__8__locals1_user_UserId_0 AND [u].[WorkspaceId] = @__ws_WorkspaceId_1) THEN CAST(1 AS bit)
-    ELSE CAST(0 AS bit)
-END
-[12:16:29 INF] Executed DbCommand (1ms) [Parameters=[@__user_UserId_0='9d0d9a32-f899-4a0f-b488-8b73fb369f6d'], CommandType='Text', CommandTimeout='30']
-SELECT TOP(1) [r].[Name]
-FROM [UserBranchRoles] AS [u]
-INNER JOIN [Roles] AS [r] ON [u].[RoleId] = [r].[RoleId]
-WHERE [u].[UserId] = @__user_UserId_0
-[12:16:29 INF] Executed DbCommand (1ms) [Parameters=[@__8__locals1_user_UserId_0='9d0d9a32-f899-4a0f-b488-8b73fb369f6d', @__ws_WorkspaceId_1='7e105b38-786d-44e3-9eaa-a107edf3f93c'], CommandType='Text', CommandTimeout='30']
-SELECT CASE
-    WHEN EXISTS (
-        SELECT 1
-        FROM [UserWorkspaceAccesses] AS [u]
-        WHERE [u].[UserId] = @__8__locals1_user_UserId_0 AND [u].[WorkspaceId] = @__ws_WorkspaceId_1) THEN CAST(1 AS bit)
-    ELSE CAST(0 AS bit)
-END
-[12:16:29 INF] Executed DbCommand (1ms) [Parameters=[@__8__locals1_user_UserId_0='9d0d9a32-f899-4a0f-b488-8b73fb369f6d', @__ws_WorkspaceId_1='f0329d10-771e-4eff-b9dc-203f97935bef'], CommandType='Text', CommandTimeout='30']
-SELECT CASE
-    WHEN EXISTS (
-        SELECT 1
-        FROM [UserWorkspaceAccesses] AS [u]
-        WHERE [u].[UserId] = @__8__locals1_user_UserId_0 AND [u].[WorkspaceId] = @__ws_WorkspaceId_1) THEN CAST(1 AS bit)
-    ELSE CAST(0 AS bit)
-END
-[12:16:29 INF] Executed DbCommand (1ms) [Parameters=[@__user_UserId_0='a30f52d6-60e5-4834-9bf1-8c4e56ab3956'], CommandType='Text', CommandTimeout='30']
-SELECT TOP(1) [r].[Name]
-FROM [UserBranchRoles] AS [u]
-INNER JOIN [Roles] AS [r] ON [u].[RoleId] = [r].[RoleId]
-WHERE [u].[UserId] = @__user_UserId_0
-[12:16:29 INF] Executed DbCommand (1ms) [Parameters=[@__8__locals1_user_UserId_0='a30f52d6-60e5-4834-9bf1-8c4e56ab3956', @__ws_WorkspaceId_1='12916c91-76e6-44a2-8432-8d87a374fd13'], CommandType='Text', CommandTimeout='30']
-SELECT CASE
-    WHEN EXISTS (
-        SELECT 1
-        FROM [UserWorkspaceAccesses] AS [u]
-        WHERE [u].[UserId] = @__8__locals1_user_UserId_0 AND [u].[WorkspaceId] = @__ws_WorkspaceId_1) THEN CAST(1 AS bit)
-    ELSE CAST(0 AS bit)
-END
-[12:16:29 INF] Executed DbCommand (1ms) [Parameters=[@__8__locals1_user_UserId_0='a30f52d6-60e5-4834-9bf1-8c4e56ab3956', @__ws_WorkspaceId_1='83529d85-d9e7-42a6-9cf3-1f21f1cf3ebb'], CommandType='Text', CommandTimeout='30']
-SELECT CASE
-    WHEN EXISTS (
-        SELECT 1
-        FROM [UserWorkspaceAccesses] AS [u]
-        WHERE [u].[UserId] = @__8__locals1_user_UserId_0 AND [u].[WorkspaceId] = @__ws_WorkspaceId_1) THEN CAST(1 AS bit)
-    ELSE CAST(0 AS bit)
-END
-[12:16:29 INF] Executed DbCommand (1ms) [Parameters=[@__user_UserId_0='40651ff0-6790-4006-a5b5-9cf9d18c62e7'], CommandType='Text', CommandTimeout='30']
-SELECT TOP(1) [r].[Name]
-FROM [UserBranchRoles] AS [u]
+console logs:
+react-dom_client.js?v=cef3d5d4:20103 Download the React DevTools for a better development experience: https://react.dev/link/react-devtools
+cornerstone-tools.js?v=cef3d5d4:29685 Cornerstone Tools
+cornerstone-tools.js?v=cef3d5d4:29686 run localStorage.setItem("debug", "cornerstoneTools") to see console output
+cornerstoneSetup.js:19 The provided colorLUT only provides 0 labels, whereas segmentsPerLabelmap is set to 65535. Autogenerating the rest.
+_checkColorLUTLength @ cornerstone-tools.js?v=cef3d5d4:10693
+setColorLUT @ cornerstone-tools.js?v=cef3d5d4:10664
+onRegisterCallback @ cornerstone-tools.js?v=cef3d5d4:11692
+(anonymous) @ cornerstone-tools.js?v=cef3d5d4:6567
+_initModules @ cornerstone-tools.js?v=cef3d5d4:6565
+(anonymous) @ cornerstone-tools.js?v=cef3d5d4:6531
+(anonymous) @ cornerstoneSetup.js:19
+RadiologistTerminal.jsx:298 [2026-06-04T08:23:01.274Z] Information: Normalizing '/radiologyCollaborationHub' to 'http://localhost:5173/radiologyCollaborationHub'.
+signalr.js:243 SignalR(Branch): Subscriber added (Total: 1)
+signalr.js:211 [2026-06-04T08:23:01.280Z] Information: Normalizing '/branchOperationsHub' to 'http://localhost:5173/branchOperationsHub'.
+signalr.js:264 SignalR(Branch): Starting connection...
+signalr.js:310 SignalR(Branch): Subscriber removed (Total: 0)
+signalr.js:243 SignalR(Branch): Subscriber added (Total: 1)
+signalr.js:248 SignalR(Branch): Aborted scheduled disconnect
+@microsoft_signalr.js?v=cef3d5d4:301 [2026-06-04T08:23:01.559Z] Information: WebSocket connected to ws://localhost:5173/radiologyCollaborationHub?access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiJmYjVkYmJmNi1lOGEwLTRkYjgtOGQ0ZC03ZjczZDBmOTE4ZTAiLCJ1bmlxdWVfbmFtZSI6IlRhYnJleiBTaGFpayIsInVzZXJuYW1lIjoidGFieiIsIndvcmtzcGFjZXMiOiIvdHlwaXN0LC9waGxlYm90b21pc3QsL2N0dGVjaCwvcmFkaW9sb2dpc3QsL3dvcmtiZW5jaCwvZGVsaXZlcnksL3VzdGVjaCwvcmFkaW9sb2d5LC9wYXRob2xvZ2lzdCwveHJheXRlY2gsL3JlY2VwdGlvbiwvbXJpdGVjaCwvaW52ZW50b3J5LC9maW5hbmNlIiwiZW1haWwiOiJ0YWJyZXouYXRhaGVyQGdtYWlsLmNvbSIsInNlc3Npb25fbW9kZSI6Im9wZXJhdGlvbmFsIiwic2Vzc2lvbl9pZCI6ImYxZWJiOTUyLTY5NjItNDVmMS04ZmI0LTE5Yzk5YmE1MDE3NiIsImRlcGFydG1lbnRfY29kZSI6IkdlbmVyYWwiLCJyb2xlIjoiQWRtaW4iLCJSb2xlSWQiOiJjOGNlMjUyZS00MjNmLTQ3OGEtYTFlMy04MDY3NWNhZWVlMDgiLCJicmFuY2hfaWQiOiJhMDAwMDAwMC0wMDAwLTAwMDAtMDAwMC0wMDAwMDAwMDAwMDEiLCJyZXNvdXJjZV9pZCI6IjkyNTg0NjhkLWY5YTItNDkwMS04MTc4LTA4ZGViYWY5ODE3MSIsImJyYW5jaF9uYW1lIjoiTWFpbiBMYWIiLCJuYmYiOjE3ODA0OTg0ODMsImV4cCI6MTc4MDU4NDg4MywiaWF0IjoxNzgwNDk4NDgzLCJpc3MiOiJTeW5PUy5BcGkiLCJhdWQiOiJTeW5PUy5BcHAifQ._R7d98_SMrlcWMlXz9Ag5qKvBnmpH_jMzG_TYitkpc4.
+RadiologistTerminal.jsx:342 [2026-06-04T08:23:01.562Z] Error: Failed to start the HttpConnection before stop() was called.
+log @ @microsoft_signalr.js?v=cef3d5d4:295
+start @ @microsoft_signalr.js?v=cef3d5d4:2214
+await in start
+_startInternal @ @microsoft_signalr.js?v=cef3d5d4:990
+_startWithStateTransitions @ @microsoft_signalr.js?v=cef3d5d4:970
+start @ @microsoft_signalr.js?v=cef3d5d4:960
+$RefreshSig$ @ RadiologistTerminal.jsx:342
+$RefreshSig$ @ RadiologistTerminal.jsx:184
+react_stack_bottom_frame @ react-dom_client.js?v=cef3d5d4:18567
+runWithFiberInDEV @ react-dom_client.js?v=cef3d5d4:997
+commitHookEffectListMount @ react-dom_client.js?v=cef3d5d4:9411
+commitHookPassiveMountEffects @ react-dom_client.js?v=cef3d5d4:9465
+commitPassiveMountOnFiber @ react-dom_client.js?v=cef3d5d4:11040
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=cef3d5d4:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=cef3d5d4:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=cef3d5d4:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=cef3d5d4:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=cef3d5d4:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=cef3d5d4:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=cef3d5d4:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=cef3d5d4:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=cef3d5d4:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=cef3d5d4:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=cef3d5d4:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=cef3d5d4:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=cef3d5d4:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=cef3d5d4:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=cef3d5d4:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=cef3d5d4:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=cef3d5d4:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=cef3d5d4:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=cef3d5d4:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=cef3d5d4:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=cef3d5d4:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=cef3d5d4:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=cef3d5d4:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=cef3d5d4:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=cef3d5d4:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=cef3d5d4:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=cef3d5d4:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=cef3d5d4:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=cef3d5d4:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=cef3d5d4:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=cef3d5d4:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=cef3d5d4:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=cef3d5d4:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=cef3d5d4:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=cef3d5d4:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=cef3d5d4:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=cef3d5d4:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=cef3d5d4:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=cef3d5d4:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=cef3d5d4:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=cef3d5d4:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=cef3d5d4:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=cef3d5d4:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=cef3d5d4:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=cef3d5d4:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=cef3d5d4:11066
+flushPassiveEffects @ react-dom_client.js?v=cef3d5d4:13150
+(anonymous) @ react-dom_client.js?v=cef3d5d4:12776
+performWorkUntilDeadline @ react-dom_client.js?v=cef3d5d4:36
+<RadiologistTerminal>
+exports.jsxDEV @ react_jsx-dev-runtime.js?v=cef3d5d4:247
+App @ App.jsx:196
+react_stack_bottom_frame @ react-dom_client.js?v=cef3d5d4:18509
+renderWithHooksAgain @ react-dom_client.js?v=cef3d5d4:5729
+renderWithHooks @ react-dom_client.js?v=cef3d5d4:5665
+updateFunctionComponent @ react-dom_client.js?v=cef3d5d4:7475
+beginWork @ react-dom_client.js?v=cef3d5d4:8525
+runWithFiberInDEV @ react-dom_client.js?v=cef3d5d4:997
+performUnitOfWork @ react-dom_client.js?v=cef3d5d4:12561
+workLoopSync @ react-dom_client.js?v=cef3d5d4:12424
+renderRootSync @ react-dom_client.js?v=cef3d5d4:12408
+performWorkOnRoot @ react-dom_client.js?v=cef3d5d4:11766
+performWorkOnRootViaSchedulerTask @ react-dom_client.js?v=cef3d5d4:13505
+performWorkUntilDeadline @ react-dom_client.js?v=cef3d5d4:36
+<App>
+exports.jsxDEV @ react_jsx-dev-runtime.js?v=cef3d5d4:247
+(anonymous) @ main.jsx:10
+@microsoft_signalr.js?v=cef3d5d4:301 [2026-06-04T08:23:01.564Z] Information: Connection disconnected.
+RadiologistTerminal.jsx:363 Failed to connect to SignalR hub: AbortError: Failed to start the HttpConnection before stop() was called.
+    at HttpConnection.start (@microsoft_signalr.js?v=cef3d5d4:2216:29)
+    at async _HubConnection._startInternal (@microsoft_signalr.js?v=cef3d5d4:990:5)
+    at async _HubConnection._startWithStateTransitions (@microsoft_signalr.js?v=cef3d5d4:970:7)
+$RefreshSig$ @ RadiologistTerminal.jsx:363
+Promise.catch
+$RefreshSig$ @ RadiologistTerminal.jsx:356
+$RefreshSig$ @ RadiologistTerminal.jsx:184
+react_stack_bottom_frame @ react-dom_client.js?v=cef3d5d4:18567
+runWithFiberInDEV @ react-dom_client.js?v=cef3d5d4:997
+commitHookEffectListMount @ react-dom_client.js?v=cef3d5d4:9411
+commitHookPassiveMountEffects @ react-dom_client.js?v=cef3d5d4:9465
+commitPassiveMountOnFiber @ react-dom_client.js?v=cef3d5d4:11040
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=cef3d5d4:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=cef3d5d4:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=cef3d5d4:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=cef3d5d4:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=cef3d5d4:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=cef3d5d4:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=cef3d5d4:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=cef3d5d4:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=cef3d5d4:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=cef3d5d4:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=cef3d5d4:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=cef3d5d4:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=cef3d5d4:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=cef3d5d4:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=cef3d5d4:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=cef3d5d4:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=cef3d5d4:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=cef3d5d4:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=cef3d5d4:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=cef3d5d4:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=cef3d5d4:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=cef3d5d4:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=cef3d5d4:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=cef3d5d4:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=cef3d5d4:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=cef3d5d4:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=cef3d5d4:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=cef3d5d4:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=cef3d5d4:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=cef3d5d4:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=cef3d5d4:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=cef3d5d4:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=cef3d5d4:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=cef3d5d4:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=cef3d5d4:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=cef3d5d4:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=cef3d5d4:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=cef3d5d4:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=cef3d5d4:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=cef3d5d4:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=cef3d5d4:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=cef3d5d4:11033
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=cef3d5d4:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=cef3d5d4:11201
+recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=cef3d5d4:11010
+commitPassiveMountOnFiber @ react-dom_client.js?v=cef3d5d4:11066
+flushPassiveEffects @ react-dom_client.js?v=cef3d5d4:13150
+(anonymous) @ react-dom_client.js?v=cef3d5d4:12776
+performWorkUntilDeadline @ react-dom_client.js?v=cef3d5d4:36
+<RadiologistTerminal>
+exports.jsxDEV @ react_jsx-dev-runtime.js?v=cef3d5d4:247
+App @ App.jsx:196
+react_stack_bottom_frame @ react-dom_client.js?v=cef3d5d4:18509
+renderWithHooksAgain @ react-dom_client.js?v=cef3d5d4:5729
+renderWithHooks @ react-dom_client.js?v=cef3d5d4:5665
+updateFunctionComponent @ react-dom_client.js?v=cef3d5d4:7475
+beginWork @ react-dom_client.js?v=cef3d5d4:8525
+runWithFiberInDEV @ react-dom_client.js?v=cef3d5d4:997
+performUnitOfWork @ react-dom_client.js?v=cef3d5d4:12561
+workLoopSync @ react-dom_client.js?v=cef3d5d4:12424
+renderRootSync @ react-dom_client.js?v=cef3d5d4:12408
+performWorkOnRoot @ react-dom_client.js?v=cef3d5d4:11766
+performWorkOnRootViaSchedulerTask @ react-dom_client.js?v=cef3d5d4:13505
+performWorkUntilDeadline @ react-dom_client.js?v=cef3d5d4:36
+<App>
+exports.jsxDEV @ react_jsx-dev-runtime.js?v=cef3d5d4:247
+(anonymous) @ main.jsx:10
+@microsoft_signalr.js?v=cef3d5d4:301 [2026-06-04T08:23:01.949Z] Information: WebSocket connected to ws://localhost:5173/branchOperationsHub?access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiJmYjVkYmJmNi1lOGEwLTRkYjgtOGQ0ZC03ZjczZDBmOTE4ZTAiLCJ1bmlxdWVfbmFtZSI6IlRhYnJleiBTaGFpayIsInVzZXJuYW1lIjoidGFieiIsIndvcmtzcGFjZXMiOiIvdHlwaXN0LC9waGxlYm90b21pc3QsL2N0dGVjaCwvcmFkaW9sb2dpc3QsL3dvcmtiZW5jaCwvZGVsaXZlcnksL3VzdGVjaCwvcmFkaW9sb2d5LC9wYXRob2xvZ2lzdCwveHJheXRlY2gsL3JlY2VwdGlvbiwvbXJpdGVjaCwvaW52ZW50b3J5LC9maW5hbmNlIiwiZW1haWwiOiJ0YWJyZXouYXRhaGVyQGdtYWlsLmNvbSIsInNlc3Npb25fbW9kZSI6Im9wZXJhdGlvbmFsIiwic2Vzc2lvbl9pZCI6ImYxZWJiOTUyLTY5NjItNDVmMS04ZmI0LTE5Yzk5YmE1MDE3NiIsImRlcGFydG1lbnRfY29kZSI6IkdlbmVyYWwiLCJyb2xlIjoiQWRtaW4iLCJSb2xlSWQiOiJjOGNlMjUyZS00MjNmLTQ3OGEtYTFlMy04MDY3NWNhZWVlMDgiLCJicmFuY2hfaWQiOiJhMDAwMDAwMC0wMDAwLTAwMDAtMDAwMC0wMDAwMDAwMDAwMDEiLCJyZXNvdXJjZV9pZCI6IjkyNTg0NjhkLWY5YTItNDkwMS04MTc4LTA4ZGViYWY5ODE3MSIsImJyYW5jaF9uYW1lIjoiTWFpbiBMYWIiLCJuYmYiOjE3ODA0OTg0ODMsImV4cCI6MTc4MDU4NDg4MywiaWF0IjoxNzgwNDk4NDgzLCJpc3MiOiJTeW5PUy5BcGkiLCJhdWQiOiJTeW5PUy5BcHAifQ._R7d98_SMrlcWMlXz9Ag5qKvBnmpH_jMzG_TYitkpc4.
+@microsoft_signalr.js?v=cef3d5d4:301 [2026-06-04T08:23:01.951Z] Information: Using HubProtocol 'json'.
+signalr.js:267 SignalR(Branch): Connected to /branchOperationsHub
+signalr.js:216 SignalR(Branch): Capability 'Thermal80mm' registration result: AUTHORIZED
 
+terminal logs: 
+PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Frontend> npm run dev
+
+> synos-frontend@0.0.0 dev
+> vite
+
+
+  VITE v7.3.1  ready in 851 ms
+
+  ➜  Local:   http://localhost:5173/
+  ➜  Network: use --host to expose
+  ➜  press h + enter to show help
+proxy error Error: read ECONNRESET
+    at TCP.onStreamRead (node:internal/stream_base_commons:216:20) {
+  errno: -4077,
+  code: 'ECONNRESET',
+  syscall: 'read'
+}
+1:52:45 pm [vite] ws proxy error:
+Error: read ECONNRESET
+    at TCP.onStreamRead (node:internal/stream_base_commons:216:20)
+1:52:45 pm [vite] ws proxy socket error:
+Error: read ECONNRESET
+    at TCP.onStreamRead (node:internal/stream_base_commons:216:20)
+Browserslist: browsers data (caniuse-lite) is 6 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
