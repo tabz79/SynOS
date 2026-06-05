@@ -19,6 +19,8 @@ namespace SynOS.Services
         Task<RadiologyStudyDetailDto> GetStudyDetailsAsync(Guid studyId, Guid? userId = null);
         Task<RadiologyReportDto> DraftReportAsync(RadiologyReportDraftDto dto, Guid userId);
         Task<RadiologyReportDto> SignReportAsync(Guid studyId, Guid userId);
+        Task ResumeDictationAsync(Guid studyId, Guid userId);
+        Task RequestSignatureAsync(Guid studyId, Guid userId);
         
         // Auto-creation from Reception
         Task<IEnumerable<RadiologyStudyDto>> CreateRadiologyStudiesForVisitAsync(Guid visitId, Guid userId);

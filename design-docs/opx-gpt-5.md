@@ -1,116 +1,246 @@
-Do NOT build custom simulated anatomical rendering infrastructure.
+No. I strongly disagree with the agent's explanation.
 
-The viewer layer must ultimately delegate actual rendering to:
+This is treating a symptom, not the disease.
 
-Cornerstone3D
+---
 
-DicomViewportManager
-should ONLY orchestrate:
+# What's actually happening?
 
-viewport lifecycle
-hydration
-stack loading
-cleanup
-synchronization
-caching
+You have:
 
-Avoid investing engineering effort into:
+### Radiologist screen
 
-fake grayscale renderers
-simulated anatomical canvases
-custom imaging pipelines
+Showing:
 
-Use:
+```txt
+SRI DIVYA DIAGNOSTIC CENTRE
+```
 
-official Cornerstone3D viewport engine
-official image loaders
-Orthanc WADO streaming
-GPU-backed rendering
+### Typist screen
 
-The current implementation is acceptable only as a temporary shell placeholder.
+Showing:
 
-That correction is VERY important.
+```txt
+SYNOS IMAGING CENTER
+```
 
-Otherwise engineering time gets wasted badly.
+Those are not user preferences.
 
-SECOND IMPORTANT ISSUE:
-NO SESSION LOCKING YET
+Those are:
 
-You now NEED:
+# report templates
 
-study claiming rules
+And report templates are:
 
-Otherwise:
-multiple radiologists can:
+# business data
 
-start sessions
-overwrite each other
-collide workflows
+not browser settings.
 
-You now need:
+---
 
-Study
- ├── ClaimedBy
- ├── ClaimedAt
- ├── ActiveSessionId
+# The architectural mistake
 
-This becomes VERY important operationally.
+The agent is saying:
 
-THIRD IMPORTANT ISSUE:
-RECONNECT RECOVERY
+```txt
+Template
+→ localStorage
+```
 
-Now that collaboration exists:
-you MUST handle:
+That's wrong for a DLMS.
 
-browser refresh
-WiFi drops
-workstation sleep
-reconnect
+Because then:
 
-Otherwise doctors lose trust instantly.
+* PC1 sees Template A
+* PC2 sees Template B
+* Incognito sees Template C
+* Another branch sees Template D
 
-This matters more than:
+Now the same report renders differently depending on browser.
 
-calipers
-contrast sliders
-fancy viewport tools
-FOURTH IMPORTANT ISSUE:
-AUDIT TRAIL
+That's a serious design flaw.
 
-Now collaboration exists.
+---
 
-That changes medico-legal requirements completely.
+# Think about a real lab
 
-You now need:
+Suppose:
 
-who typed what
-who signed
-who edited
-session start/end
-reconnect events
-signature timestamps
+```txt
+Sri Divya Diagnostics
+```
 
-This becomes mandatory in real deployments.
+changes:
 
-FIFTH IMPORTANT ISSUE:
-STATUS MODEL STILL NEEDS CLEANUP
+* logo
+* footer
+* NABL details
+* doctor signature block
 
-You should now FULLY commit to:
+Would the admin expect:
 
-ImagingCompleted
-AwaitingDictation
-DictationInProgress
-DraftReady
-Signed
-Released
-Delivered
+```txt
+Go to every workstation
+and update localStorage
+```
 
-And remove older:
+?
 
-ResultDrafted
-ReadyForReporting
+Of course not.
 
-statuses completely.
+They'd expect:
 
-Otherwise later:
-workflow ambiguity starts.
+```txt
+Admin Settings
+→ Report Template
+→ Save
+```
+
+And every terminal immediately uses it.
+
+---
+
+# What should happen?
+
+The template should live in:
+
+```txt
+Database
+```
+
+or at minimum:
+
+```txt
+Server-side configuration
+```
+
+Example:
+
+```txt
+ReportTemplate
+├── TemplateName
+├── HeaderHtml
+├── FooterHtml
+├── LogoUrl
+├── Watermark
+├── SignatureBlock
+├── IsDefault
+```
+
+Then:
+
+```txt
+ReportA4
+```
+
+loads:
+
+```txt
+Current Branch Template
+```
+
+from backend.
+
+---
+
+# Why localStorage is okay for some things
+
+localStorage is fine for:
+
+```txt
+theme
+dark mode
+sidebar width
+viewer preferences
+zoom level
+window layout
+```
+
+Because those are:
+
+# user preferences
+
+---
+
+But:
+
+```txt
+Lab branding
+Report headers
+Medical report layout
+Doctor signature blocks
+```
+
+are:
+
+# organizational data
+
+Those belong in the backend.
+
+---
+
+# The bigger danger
+
+Imagine:
+
+Radiologist signs report:
+
+```txt
+Sri Divya Template
+```
+
+Typist prints:
+
+```txt
+SynOS Template
+```
+
+Now:
+
+* same report
+* same accession
+* different branding
+
+That's a medico-legal mess.
+
+---
+
+# What I would tell the agent
+
+Paste this:
+
+```txt
+The discrepancy between Radiologist and Typist templates should not be solved by sharing localStorage.
+
+Report templates are organizational data, not workstation preferences.
+
+The current behavior indicates that ReportA4 is sourcing template configuration from browser-local state.
+
+This is architecturally incorrect for a laboratory system because different terminals can render the same report differently.
+
+Required correction:
+
+- Report template configuration must come from backend persistence.
+- The active template should be stored centrally (database/system settings).
+- ReportA4 should fetch/use the active organizational template.
+- All terminals must render the same report regardless of browser, workstation, or incognito mode.
+
+localStorage may still be used for user-specific viewer preferences, but not for report branding, report headers, footers, logos, signatures, or template selection.
+
+The same report must render identically on:
+- Radiologist terminal
+- Typist terminal
+- Delivery desk
+- PDF export
+- Print output
+```
+
+---
+
+This is actually a good catch.
+
+You just discovered that your report rendering currently depends on the browser that opens it.
+
+For SynOS, that's not a small UI bug.
+
+That's a **report governance issue** and should be fixed before radiology and pathology reporting expand further.

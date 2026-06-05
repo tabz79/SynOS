@@ -445,6 +445,30 @@ namespace SynOS.Api.Hubs
             await Groups.RemoveFromGroupAsync(Context.ConnectionId, $"Session-{studyId}");
             await Clients.Group($"Session-{studyId}").SendAsync("UserLeft", userIdString);
         }
+
+        public async Task SendDraftSaved(string studyId)
+        {
+            if (Guid.TryParse(studyId, out var parsedStudyId))
+            {
+                await Clients.Group($"Session-{studyId}").SendAsync("ReceiveDraftSaved");
+            }
+        }
+
+        public async Task SendDraftResumed(string studyId)
+        {
+            if (Guid.TryParse(studyId, out var parsedStudyId))
+            {
+                await Clients.Group($"Session-{studyId}").SendAsync("ReceiveDraftResumed");
+            }
+        }
+
+        public async Task SendSignRequest(string studyId)
+        {
+            if (Guid.TryParse(studyId, out var parsedStudyId))
+            {
+                await Clients.Group($"Session-{studyId}").SendAsync("ReceiveSignRequest");
+            }
+        }
     }
 }
 

@@ -27,6 +27,7 @@ import * as signalR from '@microsoft/signalr';
 import { RadiologyCallOverlay } from './RadiologyCallOverlay';
 import { RichMedicalEditor } from '@/components/editor/RichMedicalEditor';
 import { MedicalMacrosWorkspace } from '@/components/editor/MedicalMacrosWorkspace';
+import { ReportA4 } from '../documents/templates/ReportA4';
 
 
 let sharedConnection = null;
@@ -51,6 +52,14 @@ export function RadiologistTerminal() {
     const [draftImpression, setDraftImpression] = useState('');
     const [draftNotes, setDraftNotes] = useState('');
     const [reportId, setReportId] = useState(null);
+    const [reportData, setReportData] = useState(null);
+    const [previewLoading, setPreviewLoading] = useState(false);
+
+    const isPreviewMode = selectedStudy && (
+        selectedStudy.studyStatus === 'DraftReady' || 
+        selectedStudy.studyStatus === 'AwaitingSignature' || 
+        selectedStudy.studyStatus === 'Signed'
+    );
 
     // Collapsed Queue State
     const [isQueueCollapsed, setIsQueueCollapsed] = useState(false);
@@ -70,7 +79,7 @@ export function RadiologistTerminal() {
         setLoading(true);
         try {
             // Fetch studies awaiting reporting
-            const response = await fetch('/api/v1/radiology/studies/queue?status=AwaitingDictation&status=DictationSessionStarted&status=DraftReady', {
+            const response = await fetch('/api/v1/radiology/studies/queue?status=AwaitingDictation&status=DictationSessionStarted&status=DraftReady&status=AwaitingSignature', {
                 headers: { 'Authorization': `Bearer ${localStorage.getItem('synos_jwt')}` }
             });
             if (response.ok) {
@@ -310,6 +319,30 @@ export function RadiologistTerminal() {
         }
     };
 
+    useEffect(() => {
+        if (selectedStudy && isPreviewMode && reportId) {
+            const fetchPreview = async () => {
+                setPreviewLoading(true);
+                try {
+                    const response = await fetch(`/api/v1/reports/${reportId}/data?forceLive=true`, {
+                        headers: { 'Authorization': `Bearer ${localStorage.getItem('synos_jwt')}` }
+                    });
+                    if (response.ok) {
+                        const data = await response.json();
+                        setReportData(data);
+                    }
+                } catch (error) {
+                    console.error("Failed to load report data for preview:", error);
+                } finally {
+                    setPreviewLoading(false);
+                }
+            };
+            fetchPreview();
+        } else {
+            setReportData(null);
+        }
+    }, [selectedStudy?.studyStatus, reportId]);
+
     const isUnmountedRef = useRef(false);
 
     const connectSignalR = async () => {
@@ -376,6 +409,32 @@ export function RadiologistTerminal() {
         connection.on('UserJoined', (connectionId) => {
             if (hubConnection.current !== connection) return;
             setLiveTypistConnected(true);
+        });
+
+        connection.on('UserLeft', (connectionId) => {
+            if (hubConnection.current !== connection) return;
+            setLiveTypistConnected(false);
+        });
+
+        connection.on('ReceiveDraftSaved', () => {
+            if (hubConnection.current !== connection) return;
+            if (currentJoinedStudyIdRef.current) {
+                handleSelectStudy({ radiologyStudyId: currentJoinedStudyIdRef.current });
+            }
+        });
+
+        connection.on('ReceiveDraftResumed', () => {
+            if (hubConnection.current !== connection) return;
+            if (currentJoinedStudyIdRef.current) {
+                handleSelectStudy({ radiologyStudyId: currentJoinedStudyIdRef.current });
+            }
+        });
+
+        connection.on('ReceiveSignRequest', () => {
+            if (hubConnection.current !== connection) return;
+            if (currentJoinedStudyIdRef.current) {
+                handleSelectStudy({ radiologyStudyId: currentJoinedStudyIdRef.current });
+            }
         });
 
         connection.start()
@@ -474,14 +533,15 @@ export function RadiologistTerminal() {
     const handleSaveDraft = async () => {
         if (!selectedStudy) return;
         setActionLoading(true);
+        const studyId = selectedStudy.radiologyStudyId || selectedStudy.studyId;
         try {
             const body = {
-                studyId: selectedStudy.radiologyStudyId,
+                studyId: studyId,
                 findings: draftFindings,
                 impression: draftImpression,
                 additionalNotes: draftNotes
             };
-            const response = await fetch('/api/v1/radiology-reports/draft', {
+            const response = await fetch('/api/v1/radiology/reports/draft', {
                 method: 'POST',
                 headers: { 
                     'Authorization': `Bearer ${localStorage.getItem('synos_jwt')}`,
@@ -490,13 +550,11 @@ export function RadiologistTerminal() {
                 body: JSON.stringify(body)
             });
             if (response.ok) {
+                await handleSelectStudy({ radiologyStudyId: studyId });
+                
                 // Broadcast to live typist if connected
                 if (hubConnection.current) {
-                    await hubConnection.current.invoke('SendDraftUpdate', selectedStudy.radiologyStudyId, JSON.stringify({
-                        findings: draftFindings,
-                        impression: draftImpression,
-                        additionalNotes: draftNotes
-                    }));
+                    await hubConnection.current.invoke('SendDraftSaved', studyId.toString());
                 }
                 alert("Draft Saved Successfully");
             }
@@ -509,20 +567,18 @@ export function RadiologistTerminal() {
 
     // Digitally Sign the Report
     const handleSignReport = async () => {
-        if (!selectedStudy || !reportId) return;
+        if (!selectedStudy) return;
         setActionLoading(true);
+        const studyId = selectedStudy.radiologyStudyId || selectedStudy.studyId;
         try {
-            // First submit for verification (Draft -> ReadyForVerification)
-            const submitResponse = await fetch(`/api/v1/radiology-reports/${reportId}/submit`, {
+            // Then Digitally Sign (Direct sign for Radiology)
+            const signResponse = await fetch('/api/v1/radiology/reports/sign', {
                 method: 'POST',
-                headers: { 'Authorization': `Bearer ${localStorage.getItem('synos_jwt')}` }
-            });
-            if (!submitResponse.ok) throw new Error("Failed to submit report for verification");
-
-            // Then Digitally Sign (ReadyForVerification -> Signed)
-            const signResponse = await fetch(`/api/v1/radiology-reports/${reportId}/sign`, {
-                method: 'POST',
-                headers: { 'Authorization': `Bearer ${localStorage.getItem('synos_jwt')}` }
+                headers: { 
+                    'Authorization': `Bearer ${localStorage.getItem('synos_jwt')}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ studyId: studyId })
             });
             if (!signResponse.ok) {
                 const err = await signResponse.json();
@@ -530,12 +586,34 @@ export function RadiologistTerminal() {
             }
 
             alert("Clinical Report Digitally Signed and Released successfully");
-            setSelectedStudy(null);
-            setReportId(null);
-            setDraftFindings('');
-            setDraftImpression('');
-            setDraftNotes('');
+            await handleSelectStudy({ radiologyStudyId: studyId });
             fetchWorklist();
+        } catch (error) {
+            alert(error.message);
+        } finally {
+            setActionLoading(false);
+        }
+    };
+
+    const handleResumeDictation = async () => {
+        if (!selectedStudy) return;
+        setActionLoading(true);
+        const studyId = selectedStudy.radiologyStudyId || selectedStudy.studyId;
+        try {
+            const response = await fetch(`/api/v1/radiology/reports/${studyId}/resume`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${localStorage.getItem('synos_jwt')}` }
+            });
+            if (response.ok) {
+                await handleSelectStudy({ radiologyStudyId: studyId });
+                
+                // Broadcast to live typist if connected
+                if (hubConnection.current) {
+                    await hubConnection.current.invoke('SendDraftResumed', studyId.toString());
+                }
+            } else {
+                throw new Error("Failed to resume dictation session on backend");
+            }
         } catch (error) {
             alert(error.message);
         } finally {
@@ -833,92 +911,168 @@ export function RadiologistTerminal() {
                                 </div>
                             </div>
                         ) : (
-                            /* EDIT MODE PANEL */
+                            /* EDIT MODE PANEL / PREVIEW MODE PANEL */
                             <div className="flex-1 flex flex-col overflow-hidden">
-                                {/* Connection Ribbon */}
-                                <div className="p-4 border-b dark:border-synos-border border-zinc-200 dark:bg-synos-surface bg-white flex justify-between items-center">
-                                    <div>
-                                        <div className="flex items-center gap-2">
-                                            <h3 className="font-bold text-sm dark:text-zinc-200 text-zinc-800">Collaborative Transcription</h3>
-                                            <span className={`px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-wider border ${
-                                                connectionStatus === 'Connected' ? 'dark:bg-emerald-500/10 bg-emerald-50 text-emerald-600 dark:text-emerald-400 dark:border-emerald-500/20 border-emerald-200' :
-                                                connectionStatus === 'Reconnecting' ? 'dark:bg-amber-500/10 bg-amber-50 text-amber-600 dark:text-amber-400 dark:border-amber-500/20 border-amber-200 animate-pulse' :
-                                                connectionStatus === 'Connecting' ? 'bg-synos-primary/10 text-synos-primary border-synos-primary/20 animate-pulse' :
-                                                'dark:bg-red-500/10 bg-red-50 text-red-650 dark:text-red-400 dark:border-red-500/20 border-red-200'
-                                            }`}>
-                                                {connectionStatus}
-                                            </span>
+                                {isPreviewMode ? (
+                                    /* PREVIEW MODE PANEL */
+                                    <div className="flex-1 flex flex-col overflow-hidden">
+                                        <div className="p-4 border-b dark:border-synos-border border-zinc-200 dark:bg-synos-surface bg-white flex justify-between items-center shrink-0">
+                                            <div>
+                                                <h3 className="font-bold text-sm dark:text-zinc-200 text-zinc-800">
+                                                    Report Preview
+                                                </h3>
+                                                <div className="flex items-center gap-1.5 mt-1">
+                                                    <span className={`h-1.5 w-1.5 rounded-full ${selectedStudy.studyStatus === 'Signed' ? 'bg-emerald-500' : 'bg-amber-500 animate-pulse'}`} />
+                                                    <span className="text-[10px] dark:text-zinc-400 text-zinc-550">
+                                                        {selectedStudy.studyStatus === 'Signed' ? 'Finalized & Signed' : 'Draft Review'}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                {selectedStudy.studyStatus !== 'Signed' && (
+                                                    <>
+                                                        <button
+                                                            onClick={handleResumeDictation}
+                                                            disabled={actionLoading}
+                                                            className="px-3 py-1.5 dark:bg-zinc-800 bg-zinc-100 hover:dark:bg-zinc-700 hover:bg-zinc-200/60 dark:text-zinc-200 text-zinc-750 rounded font-bold border dark:border-zinc-700 border-zinc-200 text-[10px] uppercase transition-colors"
+                                                        >
+                                                            Edit Draft
+                                                        </button>
+                                                        <button
+                                                            onClick={handleSignReport}
+                                                            disabled={actionLoading}
+                                                            className={`px-4 py-1.5 text-white font-bold rounded text-[10px] uppercase transition-all flex items-center gap-1.5 ${
+                                                                selectedStudy.studyStatus === 'AwaitingSignature' 
+                                                                    ? 'bg-emerald-550 hover:bg-emerald-600 animate-pulse shadow-emerald-500/20 shadow-lg' 
+                                                                    : 'bg-synos-emerald hover:opacity-90'
+                                                            }`}
+                                                        >
+                                                            {actionLoading ? <Loader2 className="h-3 w-3 animate-spin" /> : <Lock className="h-3 w-3" />}
+                                                            Digital Sign
+                                                        </button>
+                                                    </>
+                                                )}
+                                            </div>
                                         </div>
-                                        <div className="flex items-center gap-1.5 mt-1">
-                                            <span className={`h-1.5 w-1.5 rounded-full ${liveTypistConnected ? 'bg-emerald-500 animate-pulse' : 'bg-zinc-400'}`} />
-                                            <span className="text-[10px] dark:text-zinc-400 text-zinc-550">
-                                                {liveTypistConnected ? 'Typist joined session (Live Sync)' : 'Waiting for Typist...'}
-                                            </span>
+
+                                        {selectedStudy.studyStatus === 'AwaitingSignature' && (
+                                            <div className="bg-emerald-500/10 border-b border-emerald-500/20 px-4 py-2 text-[11px] text-emerald-600 dark:text-emerald-400 font-bold uppercase tracking-wider flex items-center gap-2 animate-in fade-in slide-in-from-top-2 duration-300">
+                                                <Users className="h-3.5 w-3.5 animate-pulse text-emerald-500" />
+                                                Typist has requested digital signature review
+                                            </div>
+                                        )}
+
+                                        <div className="flex-1 overflow-auto bg-zinc-300/50 dark:bg-zinc-900/50 p-4 custom-scrollbar">
+                                            {previewLoading ? (
+                                                <div className="h-full flex flex-col items-center justify-center opacity-30">
+                                                    <Loader2 className="w-6 h-6 animate-spin mb-4" />
+                                                    <span className="text-[8px] font-black uppercase tracking-[0.2em]">Generating A4 Render...</span>
+                                                </div>
+                                            ) : reportData ? (
+                                                <div className="p-4 origin-top min-w-max flex justify-center">
+                                                    <div className="bg-white shadow-[0_20px_50px_rgba(0,0,0,0.1)] rounded-sm overflow-hidden">
+                                                        <ReportA4 reportData={reportData} />
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                <div className="h-full flex flex-col items-center justify-center text-center opacity-20 p-8">
+                                                    <Loader2 className="w-6 h-6 animate-spin mb-4" />
+                                                    <p className="text-[9px] font-black uppercase tracking-widest">
+                                                        Loading Draft Structure...
+                                                    </p>
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
-                                    <div className="flex items-center gap-2">
-                                        <button
-                                            onClick={handleSaveDraft}
-                                            className="px-2.5 py-1.5 dark:bg-zinc-800 bg-zinc-100 hover:dark:bg-zinc-700 hover:bg-zinc-200/60 dark:text-zinc-200 text-zinc-750 rounded font-bold border dark:border-zinc-700 border-zinc-200 text-[10px] uppercase transition-colors"
-                                        >
-                                            Save Draft
-                                        </button>
-                                    </div>
-                                </div>
+                                ) : (
+                                    /* EDIT MODE PANEL */
+                                    <div className="flex-1 flex flex-col overflow-hidden">
+                                        {/* Connection Ribbon */}
+                                        <div className="p-4 border-b dark:border-synos-border border-zinc-200 dark:bg-synos-surface bg-white flex justify-between items-center">
+                                            <div>
+                                                <div className="flex items-center gap-2">
+                                                    <h3 className="font-bold text-sm dark:text-zinc-200 text-zinc-800">Collaborative Transcription</h3>
+                                                    <span className={`px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-wider border ${
+                                                        connectionStatus === 'Connected' ? 'dark:bg-emerald-500/10 bg-emerald-50 text-emerald-600 dark:text-emerald-400 dark:border-emerald-500/20 border-emerald-200' :
+                                                        connectionStatus === 'Reconnecting' ? 'dark:bg-amber-500/10 bg-amber-50 text-amber-600 dark:text-amber-400 dark:border-amber-500/20 border-amber-200 animate-pulse' :
+                                                        connectionStatus === 'Connecting' ? 'bg-synos-primary/10 text-synos-primary border-synos-primary/20 animate-pulse' :
+                                                        'dark:bg-red-500/10 bg-red-50 text-red-650 dark:text-red-400 dark:border-red-500/20 border-red-200'
+                                                    }`}>
+                                                        {connectionStatus}
+                                                    </span>
+                                                </div>
+                                                <div className="flex items-center gap-1.5 mt-1">
+                                                    <span className={`h-1.5 w-1.5 rounded-full ${liveTypistConnected ? 'bg-emerald-500 animate-pulse' : 'bg-zinc-400'}`} />
+                                                    <span className="text-[10px] dark:text-zinc-400 text-zinc-550">
+                                                        {liveTypistConnected ? 'Typist joined session (Live Sync)' : 'Waiting for Typist...'}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                <button
+                                                    onClick={handleSaveDraft}
+                                                    className="px-2.5 py-1.5 dark:bg-zinc-800 bg-zinc-100 hover:dark:bg-zinc-700 hover:bg-zinc-200/60 dark:text-zinc-200 text-zinc-750 rounded font-bold border dark:border-zinc-700 border-zinc-200 text-[10px] uppercase transition-colors"
+                                                >
+                                                    Save Draft
+                                                </button>
+                                            </div>
+                                        </div>
 
-                                {/* Report Textareas */}
-                                <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                                    <div className="space-y-1.5">
-                                        <label className="text-[10px] font-black uppercase dark:text-zinc-400 text-zinc-550 tracking-wider">Findings & Observation</label>
-                                        <RichMedicalEditor
-                                            value={draftFindings}
-                                            onChange={(val) => handleFieldChange('findings', val)}
-                                            disabled={actionLoading || !isClaimedByMe}
-                                            patientContext={patientContext}
-                                            onSaveDraft={handleSaveDraft}
-                                            placeholder="Dynamic visual findings here..."
-                                            onOpenMacroManager={() => setIsMacroManagerOpen(true)}
-                                        />
-                                    </div>
+                                        {/* Report Textareas */}
+                                        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                                            <div className="space-y-1.5">
+                                                <label className="text-[10px] font-black uppercase dark:text-zinc-400 text-zinc-550 tracking-wider">Findings & Observation</label>
+                                                <RichMedicalEditor
+                                                    value={draftFindings}
+                                                    onChange={(val) => handleFieldChange('findings', val)}
+                                                    disabled={actionLoading || !isClaimedByMe}
+                                                    patientContext={patientContext}
+                                                    onSaveDraft={handleSaveDraft}
+                                                    placeholder="Dynamic visual findings here..."
+                                                    onOpenMacroManager={() => setIsMacroManagerOpen(true)}
+                                                />
+                                            </div>
 
-                                    <div className="space-y-1.5">
-                                        <label className="text-[10px] font-black uppercase dark:text-zinc-400 text-zinc-550 tracking-wider">Diagnostic Impression</label>
-                                        <RichMedicalEditor
-                                            value={draftImpression}
-                                            onChange={(val) => handleFieldChange('impression', val)}
-                                            disabled={actionLoading || !isClaimedByMe}
-                                            patientContext={patientContext}
-                                            onSaveDraft={handleSaveDraft}
-                                            placeholder="Clinical impression..."
-                                            onOpenMacroManager={() => setIsMacroManagerOpen(true)}
-                                        />
-                                    </div>
+                                            <div className="space-y-1.5">
+                                                <label className="text-[10px] font-black uppercase dark:text-zinc-400 text-zinc-550 tracking-wider">Diagnostic Impression</label>
+                                                <RichMedicalEditor
+                                                    value={draftImpression}
+                                                    onChange={(val) => handleFieldChange('impression', val)}
+                                                    disabled={actionLoading || !isClaimedByMe}
+                                                    patientContext={patientContext}
+                                                    onSaveDraft={handleSaveDraft}
+                                                    placeholder="Clinical impression..."
+                                                    onOpenMacroManager={() => setIsMacroManagerOpen(true)}
+                                                />
+                                            </div>
 
-                                    <div className="space-y-1.5">
-                                        <label className="text-[10px] font-black uppercase dark:text-zinc-400 text-zinc-550 tracking-wider">Additional Recommendations / Notes</label>
-                                        <RichMedicalEditor
-                                            value={draftNotes}
-                                            onChange={(val) => handleFieldChange('notes', val)}
-                                            disabled={actionLoading || !isClaimedByMe}
-                                            patientContext={patientContext}
-                                            onSaveDraft={handleSaveDraft}
-                                            placeholder="Recommendations..."
-                                            onOpenMacroManager={() => setIsMacroManagerOpen(true)}
-                                        />
-                                    </div>
-                                </div>
+                                            <div className="space-y-1.5">
+                                                <label className="text-[10px] font-black uppercase dark:text-zinc-400 text-zinc-550 tracking-wider">Additional Recommendations / Notes</label>
+                                                <RichMedicalEditor
+                                                    value={draftNotes}
+                                                    onChange={(val) => handleFieldChange('notes', val)}
+                                                    disabled={actionLoading || !isClaimedByMe}
+                                                    patientContext={patientContext}
+                                                    onSaveDraft={handleSaveDraft}
+                                                    placeholder="Recommendations..."
+                                                    onOpenMacroManager={() => setIsMacroManagerOpen(true)}
+                                                />
+                                            </div>
+                                        </div>
 
-                                {/* Sign-off Dispatcher */}
-                                <div className="p-4 border-t dark:border-synos-border border-zinc-200 dark:bg-synos-surface bg-white">
-                                    <button
-                                        onClick={handleSignReport}
-                                        disabled={actionLoading || !draftFindings || !draftImpression}
-                                        className="w-full py-2.5 bg-synos-emerald hover:opacity-90 disabled:opacity-40 disabled:pointer-events-none text-white font-bold text-xs uppercase tracking-wider rounded transition-all duration-260 ease-synos flex items-center justify-center gap-1.5 shadow-sm"
-                                    >
-                                        {actionLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Lock className="h-3.5 w-3.5" />}
-                                        Digitally Sign & Release Report
-                                    </button>
-                                </div>
+                                        {/* Sign-off Dispatcher */}
+                                        <div className="p-4 border-t dark:border-synos-border border-zinc-200 dark:bg-synos-surface bg-white">
+                                            <button
+                                                onClick={handleSignReport}
+                                                disabled={actionLoading || !draftFindings || !draftImpression}
+                                                className="w-full py-2.5 bg-synos-emerald hover:opacity-90 disabled:opacity-40 disabled:pointer-events-none text-white font-bold text-xs uppercase tracking-wider rounded transition-all duration-260 ease-synos flex items-center justify-center gap-1.5 shadow-sm"
+                                            >
+                                                {actionLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Lock className="h-3.5 w-3.5" />}
+                                                Digitally Sign & Release Report
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         )
                     ) : (

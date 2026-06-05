@@ -65,5 +65,39 @@ namespace SynOS.Api.Controllers
 
             return Ok(reportDto);
         }
+
+        [HttpPost("{studyId}/resume")]
+        public async Task<IActionResult> ResumeDictation(Guid studyId)
+        {
+            var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!Guid.TryParse(userIdString, out var userId)) return Unauthorized();
+
+            try
+            {
+                await _radiologyService.ResumeDictationAsync(studyId, userId);
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        [HttpPost("{studyId}/request-signature")]
+        public async Task<IActionResult> RequestSignature(Guid studyId)
+        {
+            var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!Guid.TryParse(userIdString, out var userId)) return Unauthorized();
+
+            try
+            {
+                await _radiologyService.RequestSignatureAsync(studyId, userId);
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
     }
 }

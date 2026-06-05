@@ -138,13 +138,20 @@ export const ReportA4 = ({ reportData }) => {
     
     const resolvedStr = resolveVariables(contentStr, patient, metadata, results, calculateAge);
     
-    if (resolvedStr.trim().startsWith('{"type":"doc"')) {
+    const trimmed = resolvedStr.trim();
+    if (trimmed.startsWith('{')) {
       try {
-        const parsed = JSON.parse(resolvedStr);
-        return renderTipTapJSON(parsed);
+        const parsed = JSON.parse(trimmed);
+        if (parsed && parsed.type === 'doc') {
+          return renderTipTapJSON(parsed);
+        }
       } catch (e) {
         console.error("TipTap JSON parse failed", e);
       }
+    }
+    
+    if (resolvedStr.trim().startsWith('<') || resolvedStr.includes('<h3') || resolvedStr.includes('<p')) {
+      return <div dangerouslySetInnerHTML={{ __html: resolvedStr }} />;
     }
     
     return <div className="whitespace-pre-wrap">{resolvedStr}</div>;

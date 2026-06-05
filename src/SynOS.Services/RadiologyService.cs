@@ -404,7 +404,7 @@ namespace SynOS.Services
         {
             var worklistQuery = 
                 from study in _context.RadiologyStudies
-                where (study.Status == "AwaitingDictation" || study.Status == "DictationSessionStarted" || study.Status == "DraftReady") && !study.IsSoftDeleted
+                where (study.Status == "AwaitingDictation" || study.Status == "DictationSessionStarted" || study.Status == "DraftReady" || study.Status == "AwaitingSignature") && !study.IsSoftDeleted
                 join visit in _context.Visits on study.VisitId equals visit.VisitId
                 join patient in _context.Patients on study.PatientId equals patient.PatientId
                 join order in _context.Orders on study.VisitTestId equals order.OrderId
@@ -825,6 +825,40 @@ namespace SynOS.Services
             await _context.Entry(report).Collection(r => r.Attachments).LoadAsync();
 
             return _mapper.Map<RadiologyReportDto>(report);
+        }
+
+        public async Task ResumeDictationAsync(Guid studyId, Guid userId)
+        {
+            var study = await _context.RadiologyStudies.FindAsync(studyId);
+            if (study == null)
+            {
+                throw new KeyNotFoundException($"Radiology study with ID '{studyId}' not found.");
+            }
+
+            if (study.Status != "DraftReady" && study.Status != "AwaitingSignature")
+            {
+                throw new InvalidOperationException($"Cannot resume dictation unless status is DraftReady or AwaitingSignature. Current status: '{study.Status}'");
+            }
+
+            study.Status = "DictationSessionStarted";
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task RequestSignatureAsync(Guid studyId, Guid userId)
+        {
+            var study = await _context.RadiologyStudies.FindAsync(studyId);
+            if (study == null)
+            {
+                throw new KeyNotFoundException($"Radiology study with ID '{studyId}' not found.");
+            }
+
+            if (study.Status != "DraftReady")
+            {
+                throw new InvalidOperationException($"Cannot request signature unless status is DraftReady. Current status: '{study.Status}'");
+            }
+
+            study.Status = "AwaitingSignature";
+            await _context.SaveChangesAsync();
         }
     }
 }
