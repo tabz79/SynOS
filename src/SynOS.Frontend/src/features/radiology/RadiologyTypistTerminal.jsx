@@ -20,6 +20,8 @@ import * as signalR from '@microsoft/signalr';
 import { RichMedicalEditor } from '@/components/editor/RichMedicalEditor';
 import { MedicalMacrosWorkspace } from '@/components/editor/MedicalMacrosWorkspace';
 import { ReportA4 } from '../documents/templates/ReportA4';
+import { useTemplateForReport } from '../documents/templates/hooks/useReportTemplates';
+
 
 
 let sharedConnection = null;
@@ -41,7 +43,9 @@ export function RadiologyTypistTerminal() {
     const [isMacroManagerOpen, setIsMacroManagerOpen] = useState(false);
 
     const [reportData, setReportData] = useState(null);
+    const { template, loading: templateLoading } = useTemplateForReport(reportData);
     const [previewLoading, setPreviewLoading] = useState(false);
+
     const [signRequestSent, setSignRequestSent] = useState(false);
 
     const isPreviewMode = selectedStudy && (
@@ -634,15 +638,15 @@ export function RadiologyTypistTerminal() {
                                 </div>
 
                                 <div className="flex-1 overflow-auto bg-zinc-300/50 dark:bg-zinc-900/50 p-4 custom-scrollbar">
-                                    {previewLoading ? (
+                                    {(previewLoading || templateLoading) ? (
                                         <div className="h-full flex flex-col items-center justify-center opacity-30">
                                             <Loader2 className="w-6 h-6 animate-spin mb-4" />
                                             <span className="text-[8px] font-black uppercase tracking-[0.2em]">Generating A4 Render...</span>
                                         </div>
-                                    ) : reportData ? (
+                                    ) : (reportData && template) ? (
                                         <div className="p-4 origin-top min-w-max flex justify-center">
                                             <div className="bg-white shadow-[0_20px_50px_rgba(0,0,0,0.1)] rounded-sm overflow-hidden">
-                                                <ReportA4 reportData={reportData} />
+                                                <ReportA4 reportData={reportData} template={template} />
                                             </div>
                                         </div>
                                     ) : (

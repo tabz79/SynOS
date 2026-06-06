@@ -17,5 +17,15 @@ namespace SynOS.Services
         Task<ReportDataModel?> GetReportDataForPdfAsync(Guid reportId, bool forceLive = false);
         Task<IEnumerable<ReportListItemDto>> GetReportsByStatusAsync(string status, bool excludeManualFlow = false);
         Task ClaimReportAsync(Guid reportId, Guid userId); // NEW: Supports Pool Pattern
+
+        Task<SynOS.Models.DTOs.PaginatedResult<ReportListItemDto>> SearchReportsAsync(
+            int pageNumber,
+            int pageSize,
+            string? searchTerm = null,
+            Guid? branchId = null,
+            string? department = null,
+            System.Collections.Generic.List<string>? statuses = null,
+            DateTimeOffset? startDate = null,
+            DateTimeOffset? endDate = null);
     }
 }

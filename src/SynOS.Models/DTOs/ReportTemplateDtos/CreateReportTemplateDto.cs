@@ -21,5 +21,7 @@ namespace SynOS.Models.DTOs.ReportTemplateDtos
 
         [Required]
         public Guid CreatedBy { get; set; }
+
+        public Guid? BranchId { get; set; }
     }
 }

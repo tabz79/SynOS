@@ -28,6 +28,7 @@ import {
     Package
 } from 'lucide-react';
 import { ReportA4 } from '../documents/templates/ReportA4';
+import { useTemplateForReport } from '../documents/templates/hooks/useReportTemplates';
 import { StockRequestPanel } from '../inventory/StockRequestPanel';
 import { RichMedicalEditor } from '@/components/editor/RichMedicalEditor';
 import { MedicalMacrosWorkspace } from '@/components/editor/MedicalMacrosWorkspace';
@@ -58,6 +59,8 @@ export function PathologistTerminal() {
     const [tempProfile, setTempProfile] = useState({ name: "", designation: "" });
     const [isQueueCollapsed, setIsQueueCollapsed] = useState(false);
     const [isMacroManagerOpen, setIsMacroManagerOpen] = useState(false);
+
+    const { template, loading: templateLoading } = useTemplateForReport(reportData);
 
     const requestCounter = useRef(0);
 
@@ -335,9 +338,9 @@ export function PathologistTerminal() {
     const token = reportStructure?.token || reportStructure?.patient?.mrn || '---';
 
     const memoizedReportPreview = useMemo(() => {
-        if (!reportData) return null;
-        return <ReportA4 reportData={reportData} />;
-    }, [reportData]);
+        if (!reportData || !template) return null;
+        return <ReportA4 reportData={reportData} template={template} />;
+    }, [reportData, template]);
 
     return (
         <div className="h-screen w-screen dark:bg-synos-background bg-transparent text-foreground flex flex-col overflow-hidden font-sans selection:bg-indigo-500/30 relative">
@@ -764,12 +767,12 @@ export function PathologistTerminal() {
                         </div>
                         
                         <div className="flex-1 overflow-auto bg-zinc-300/50 dark:bg-zinc-900/50 p-4 custom-scrollbar">
-                            {isLoadingDetail ? (
+                            {(isLoadingDetail || templateLoading) ? (
                                 <div className="h-full flex flex-col items-center justify-center opacity-30">
                                     <Loader2 className="w-6 h-6 animate-spin mb-4" />
                                     <span className="text-[8px] font-black uppercase tracking-[0.2em]">Assembling Preview...</span>
                                 </div>
-                            ) : !reportData ? (
+                            ) : (!reportData || !template) ? (
                                 <div className="h-full flex flex-col items-center justify-center text-center opacity-20 p-8">
                                     <Printer className="w-12 h-12 mb-4" />
                                     <p className="text-[9px] font-black uppercase tracking-widest leading-relaxed">

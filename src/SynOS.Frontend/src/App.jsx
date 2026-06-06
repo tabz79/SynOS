@@ -32,6 +32,7 @@ import { MyHRDashboard } from '@/features/employee/MyHRDashboard'
 import { LeaveApplication } from '@/features/employee/LeaveApplication'
 import { MyAttendance, RequestStatus } from '@/features/employee/EmployeeStubs'
 import { RoleTakeoverBanner } from '@/features/admin/components/RoleTakeoverBanner'
+import { ReportArchiveScreen } from '@/features/admin/ReportArchiveScreen'
 import { PatientSearchScreen } from '@/features/patient/PatientSearchScreen'
 import { PatientDetailScreen } from '@/features/patient/PatientDetailScreen'
 import { XRayTechTerminal } from '@/features/radiology/XRayTechTerminal'
@@ -255,6 +256,7 @@ function App() {
                 <Route path="/admin/settings" element={<SystemSettingsScreen />} />
                 <Route path="/admin/patients" element={<PatientSearchScreen />} />
                 <Route path="/admin/patients/:id" element={<PatientDetailScreen />} />
+                <Route path="/admin/report-archive" element={<ReportArchiveScreen />} />
               </Route>
             </Route>
 

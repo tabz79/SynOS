@@ -1,4 +1,3 @@
-console logs:
 react-dom_client.js?v=cef3d5d4:20103 Download the React DevTools for a better development experience: https://react.dev/link/react-devtools
 cornerstone-tools.js?v=cef3d5d4:29685 Cornerstone Tools
 cornerstone-tools.js?v=cef3d5d4:29686 run localStorage.setItem("debug", "cornerstoneTools") to see console output
@@ -10,205 +9,157 @@ onRegisterCallback @ cornerstone-tools.js?v=cef3d5d4:11692
 _initModules @ cornerstone-tools.js?v=cef3d5d4:6565
 (anonymous) @ cornerstone-tools.js?v=cef3d5d4:6531
 (anonymous) @ cornerstoneSetup.js:19
-RadiologistTerminal.jsx:298 [2026-06-04T08:23:01.274Z] Information: Normalizing '/radiologyCollaborationHub' to 'http://localhost:5173/radiologyCollaborationHub'.
 signalr.js:243 SignalR(Branch): Subscriber added (Total: 1)
-signalr.js:211 [2026-06-04T08:23:01.280Z] Information: Normalizing '/branchOperationsHub' to 'http://localhost:5173/branchOperationsHub'.
+signalr.js:211 [2026-06-06T07:22:21.886Z] Information: Normalizing '/branchOperationsHub' to 'http://localhost:5173/branchOperationsHub'.
 signalr.js:264 SignalR(Branch): Starting connection...
 signalr.js:310 SignalR(Branch): Subscriber removed (Total: 0)
 signalr.js:243 SignalR(Branch): Subscriber added (Total: 1)
 signalr.js:248 SignalR(Branch): Aborted scheduled disconnect
-@microsoft_signalr.js?v=cef3d5d4:301 [2026-06-04T08:23:01.559Z] Information: WebSocket connected to ws://localhost:5173/radiologyCollaborationHub?access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiJmYjVkYmJmNi1lOGEwLTRkYjgtOGQ0ZC03ZjczZDBmOTE4ZTAiLCJ1bmlxdWVfbmFtZSI6IlRhYnJleiBTaGFpayIsInVzZXJuYW1lIjoidGFieiIsIndvcmtzcGFjZXMiOiIvdHlwaXN0LC9waGxlYm90b21pc3QsL2N0dGVjaCwvcmFkaW9sb2dpc3QsL3dvcmtiZW5jaCwvZGVsaXZlcnksL3VzdGVjaCwvcmFkaW9sb2d5LC9wYXRob2xvZ2lzdCwveHJheXRlY2gsL3JlY2VwdGlvbiwvbXJpdGVjaCwvaW52ZW50b3J5LC9maW5hbmNlIiwiZW1haWwiOiJ0YWJyZXouYXRhaGVyQGdtYWlsLmNvbSIsInNlc3Npb25fbW9kZSI6Im9wZXJhdGlvbmFsIiwic2Vzc2lvbl9pZCI6ImYxZWJiOTUyLTY5NjItNDVmMS04ZmI0LTE5Yzk5YmE1MDE3NiIsImRlcGFydG1lbnRfY29kZSI6IkdlbmVyYWwiLCJyb2xlIjoiQWRtaW4iLCJSb2xlSWQiOiJjOGNlMjUyZS00MjNmLTQ3OGEtYTFlMy04MDY3NWNhZWVlMDgiLCJicmFuY2hfaWQiOiJhMDAwMDAwMC0wMDAwLTAwMDAtMDAwMC0wMDAwMDAwMDAwMDEiLCJyZXNvdXJjZV9pZCI6IjkyNTg0NjhkLWY5YTItNDkwMS04MTc4LTA4ZGViYWY5ODE3MSIsImJyYW5jaF9uYW1lIjoiTWFpbiBMYWIiLCJuYmYiOjE3ODA0OTg0ODMsImV4cCI6MTc4MDU4NDg4MywiaWF0IjoxNzgwNDk4NDgzLCJpc3MiOiJTeW5PUy5BcGkiLCJhdWQiOiJTeW5PUy5BcHAifQ._R7d98_SMrlcWMlXz9Ag5qKvBnmpH_jMzG_TYitkpc4.
-RadiologistTerminal.jsx:342 [2026-06-04T08:23:01.562Z] Error: Failed to start the HttpConnection before stop() was called.
-log @ @microsoft_signalr.js?v=cef3d5d4:295
-start @ @microsoft_signalr.js?v=cef3d5d4:2214
-await in start
-_startInternal @ @microsoft_signalr.js?v=cef3d5d4:990
-_startWithStateTransitions @ @microsoft_signalr.js?v=cef3d5d4:970
-start @ @microsoft_signalr.js?v=cef3d5d4:960
-$RefreshSig$ @ RadiologistTerminal.jsx:342
-$RefreshSig$ @ RadiologistTerminal.jsx:184
-react_stack_bottom_frame @ react-dom_client.js?v=cef3d5d4:18567
-runWithFiberInDEV @ react-dom_client.js?v=cef3d5d4:997
-commitHookEffectListMount @ react-dom_client.js?v=cef3d5d4:9411
-commitHookPassiveMountEffects @ react-dom_client.js?v=cef3d5d4:9465
-commitPassiveMountOnFiber @ react-dom_client.js?v=cef3d5d4:11040
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=cef3d5d4:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=cef3d5d4:11201
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=cef3d5d4:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=cef3d5d4:11033
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=cef3d5d4:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=cef3d5d4:11201
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=cef3d5d4:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=cef3d5d4:11033
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=cef3d5d4:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=cef3d5d4:11201
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=cef3d5d4:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=cef3d5d4:11033
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=cef3d5d4:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=cef3d5d4:11033
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=cef3d5d4:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=cef3d5d4:11201
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=cef3d5d4:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=cef3d5d4:11033
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=cef3d5d4:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=cef3d5d4:11033
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=cef3d5d4:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=cef3d5d4:11201
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=cef3d5d4:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=cef3d5d4:11201
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=cef3d5d4:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=cef3d5d4:11033
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=cef3d5d4:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=cef3d5d4:11033
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=cef3d5d4:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=cef3d5d4:11201
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=cef3d5d4:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=cef3d5d4:11033
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=cef3d5d4:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=cef3d5d4:11201
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=cef3d5d4:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=cef3d5d4:11033
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=cef3d5d4:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=cef3d5d4:11033
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=cef3d5d4:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=cef3d5d4:11201
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=cef3d5d4:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=cef3d5d4:11033
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=cef3d5d4:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=cef3d5d4:11201
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=cef3d5d4:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=cef3d5d4:11066
-flushPassiveEffects @ react-dom_client.js?v=cef3d5d4:13150
-(anonymous) @ react-dom_client.js?v=cef3d5d4:12776
-performWorkUntilDeadline @ react-dom_client.js?v=cef3d5d4:36
-<RadiologistTerminal>
-exports.jsxDEV @ react_jsx-dev-runtime.js?v=cef3d5d4:247
-App @ App.jsx:196
-react_stack_bottom_frame @ react-dom_client.js?v=cef3d5d4:18509
-renderWithHooksAgain @ react-dom_client.js?v=cef3d5d4:5729
-renderWithHooks @ react-dom_client.js?v=cef3d5d4:5665
-updateFunctionComponent @ react-dom_client.js?v=cef3d5d4:7475
-beginWork @ react-dom_client.js?v=cef3d5d4:8525
-runWithFiberInDEV @ react-dom_client.js?v=cef3d5d4:997
-performUnitOfWork @ react-dom_client.js?v=cef3d5d4:12561
-workLoopSync @ react-dom_client.js?v=cef3d5d4:12424
-renderRootSync @ react-dom_client.js?v=cef3d5d4:12408
-performWorkOnRoot @ react-dom_client.js?v=cef3d5d4:11766
-performWorkOnRootViaSchedulerTask @ react-dom_client.js?v=cef3d5d4:13505
-performWorkUntilDeadline @ react-dom_client.js?v=cef3d5d4:36
-<App>
-exports.jsxDEV @ react_jsx-dev-runtime.js?v=cef3d5d4:247
-(anonymous) @ main.jsx:10
-@microsoft_signalr.js?v=cef3d5d4:301 [2026-06-04T08:23:01.564Z] Information: Connection disconnected.
-RadiologistTerminal.jsx:363 Failed to connect to SignalR hub: AbortError: Failed to start the HttpConnection before stop() was called.
-    at HttpConnection.start (@microsoft_signalr.js?v=cef3d5d4:2216:29)
-    at async _HubConnection._startInternal (@microsoft_signalr.js?v=cef3d5d4:990:5)
-    at async _HubConnection._startWithStateTransitions (@microsoft_signalr.js?v=cef3d5d4:970:7)
-$RefreshSig$ @ RadiologistTerminal.jsx:363
-Promise.catch
-$RefreshSig$ @ RadiologistTerminal.jsx:356
-$RefreshSig$ @ RadiologistTerminal.jsx:184
-react_stack_bottom_frame @ react-dom_client.js?v=cef3d5d4:18567
-runWithFiberInDEV @ react-dom_client.js?v=cef3d5d4:997
-commitHookEffectListMount @ react-dom_client.js?v=cef3d5d4:9411
-commitHookPassiveMountEffects @ react-dom_client.js?v=cef3d5d4:9465
-commitPassiveMountOnFiber @ react-dom_client.js?v=cef3d5d4:11040
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=cef3d5d4:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=cef3d5d4:11201
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=cef3d5d4:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=cef3d5d4:11033
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=cef3d5d4:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=cef3d5d4:11201
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=cef3d5d4:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=cef3d5d4:11033
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=cef3d5d4:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=cef3d5d4:11201
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=cef3d5d4:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=cef3d5d4:11033
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=cef3d5d4:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=cef3d5d4:11033
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=cef3d5d4:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=cef3d5d4:11201
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=cef3d5d4:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=cef3d5d4:11033
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=cef3d5d4:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=cef3d5d4:11033
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=cef3d5d4:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=cef3d5d4:11201
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=cef3d5d4:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=cef3d5d4:11201
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=cef3d5d4:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=cef3d5d4:11033
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=cef3d5d4:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=cef3d5d4:11033
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=cef3d5d4:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=cef3d5d4:11201
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=cef3d5d4:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=cef3d5d4:11033
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=cef3d5d4:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=cef3d5d4:11201
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=cef3d5d4:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=cef3d5d4:11033
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=cef3d5d4:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=cef3d5d4:11033
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=cef3d5d4:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=cef3d5d4:11201
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=cef3d5d4:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=cef3d5d4:11033
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=cef3d5d4:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=cef3d5d4:11201
-recursivelyTraversePassiveMountEffects @ react-dom_client.js?v=cef3d5d4:11010
-commitPassiveMountOnFiber @ react-dom_client.js?v=cef3d5d4:11066
-flushPassiveEffects @ react-dom_client.js?v=cef3d5d4:13150
-(anonymous) @ react-dom_client.js?v=cef3d5d4:12776
-performWorkUntilDeadline @ react-dom_client.js?v=cef3d5d4:36
-<RadiologistTerminal>
-exports.jsxDEV @ react_jsx-dev-runtime.js?v=cef3d5d4:247
-App @ App.jsx:196
-react_stack_bottom_frame @ react-dom_client.js?v=cef3d5d4:18509
-renderWithHooksAgain @ react-dom_client.js?v=cef3d5d4:5729
-renderWithHooks @ react-dom_client.js?v=cef3d5d4:5665
-updateFunctionComponent @ react-dom_client.js?v=cef3d5d4:7475
-beginWork @ react-dom_client.js?v=cef3d5d4:8525
-runWithFiberInDEV @ react-dom_client.js?v=cef3d5d4:997
-performUnitOfWork @ react-dom_client.js?v=cef3d5d4:12561
-workLoopSync @ react-dom_client.js?v=cef3d5d4:12424
-renderRootSync @ react-dom_client.js?v=cef3d5d4:12408
-performWorkOnRoot @ react-dom_client.js?v=cef3d5d4:11766
-performWorkOnRootViaSchedulerTask @ react-dom_client.js?v=cef3d5d4:13505
-performWorkUntilDeadline @ react-dom_client.js?v=cef3d5d4:36
-<App>
-exports.jsxDEV @ react_jsx-dev-runtime.js?v=cef3d5d4:247
-(anonymous) @ main.jsx:10
-@microsoft_signalr.js?v=cef3d5d4:301 [2026-06-04T08:23:01.949Z] Information: WebSocket connected to ws://localhost:5173/branchOperationsHub?access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiJmYjVkYmJmNi1lOGEwLTRkYjgtOGQ0ZC03ZjczZDBmOTE4ZTAiLCJ1bmlxdWVfbmFtZSI6IlRhYnJleiBTaGFpayIsInVzZXJuYW1lIjoidGFieiIsIndvcmtzcGFjZXMiOiIvdHlwaXN0LC9waGxlYm90b21pc3QsL2N0dGVjaCwvcmFkaW9sb2dpc3QsL3dvcmtiZW5jaCwvZGVsaXZlcnksL3VzdGVjaCwvcmFkaW9sb2d5LC9wYXRob2xvZ2lzdCwveHJheXRlY2gsL3JlY2VwdGlvbiwvbXJpdGVjaCwvaW52ZW50b3J5LC9maW5hbmNlIiwiZW1haWwiOiJ0YWJyZXouYXRhaGVyQGdtYWlsLmNvbSIsInNlc3Npb25fbW9kZSI6Im9wZXJhdGlvbmFsIiwic2Vzc2lvbl9pZCI6ImYxZWJiOTUyLTY5NjItNDVmMS04ZmI0LTE5Yzk5YmE1MDE3NiIsImRlcGFydG1lbnRfY29kZSI6IkdlbmVyYWwiLCJyb2xlIjoiQWRtaW4iLCJSb2xlSWQiOiJjOGNlMjUyZS00MjNmLTQ3OGEtYTFlMy04MDY3NWNhZWVlMDgiLCJicmFuY2hfaWQiOiJhMDAwMDAwMC0wMDAwLTAwMDAtMDAwMC0wMDAwMDAwMDAwMDEiLCJyZXNvdXJjZV9pZCI6IjkyNTg0NjhkLWY5YTItNDkwMS04MTc4LTA4ZGViYWY5ODE3MSIsImJyYW5jaF9uYW1lIjoiTWFpbiBMYWIiLCJuYmYiOjE3ODA0OTg0ODMsImV4cCI6MTc4MDU4NDg4MywiaWF0IjoxNzgwNDk4NDgzLCJpc3MiOiJTeW5PUy5BcGkiLCJhdWQiOiJTeW5PUy5BcHAifQ._R7d98_SMrlcWMlXz9Ag5qKvBnmpH_jMzG_TYitkpc4.
-@microsoft_signalr.js?v=cef3d5d4:301 [2026-06-04T08:23:01.951Z] Information: Using HubProtocol 'json'.
+@microsoft_signalr.js?v=cef3d5d4:301 [2026-06-06T07:22:23.212Z] Information: WebSocket connected to ws://localhost:5173/branchOperationsHub?access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiJmYjVkYmJmNi1lOGEwLTRkYjgtOGQ0ZC03ZjczZDBmOTE4ZTAiLCJ1bmlxdWVfbmFtZSI6IlRhYnJleiBTaGFpayIsInVzZXJuYW1lIjoidGFieiIsIndvcmtzcGFjZXMiOiIvdHlwaXN0LC9waGxlYm90b21pc3QsL2N0dGVjaCwvcmFkaW9sb2dpc3QsL3dvcmtiZW5jaCwvZGVsaXZlcnksL3VzdGVjaCwvcmFkaW9sb2d5LC9wYXRob2xvZ2lzdCwveHJheXRlY2gsL3JlY2VwdGlvbiwvbXJpdGVjaCwvaW52ZW50b3J5LC9maW5hbmNlIiwiZW1haWwiOiJ0YWJyZXouYXRhaGVyQGdtYWlsLmNvbSIsInNlc3Npb25fbW9kZSI6Im9wZXJhdGlvbmFsIiwic2Vzc2lvbl9pZCI6IjY1YzNhZWYxLWU1ZTItNGE3ZC1hNDMzLTQ0ZDUwOWE0ZTNjZSIsImRlcGFydG1lbnRfY29kZSI6IkdlbmVyYWwiLCJyb2xlIjoiQWRtaW4iLCJSb2xlSWQiOiJjOGNlMjUyZS00MjNmLTQ3OGEtYTFlMy04MDY3NWNhZWVlMDgiLCJicmFuY2hfaWQiOiJhMDAwMDAwMC0wMDAwLTAwMDAtMDAwMC0wMDAwMDAwMDAwMDEiLCJyZXNvdXJjZV9pZCI6IjkyNTg0NjhkLWY5YTItNDkwMS04MTc4LTA4ZGViYWY5ODE3MSIsImJyYW5jaF9uYW1lIjoiTWFpbiBMYWIiLCJuYmYiOjE3ODA2NDUzNjcsImV4cCI6MTc4MDczMTc2NywiaWF0IjoxNzgwNjQ1MzY3LCJpc3MiOiJTeW5PUy5BcGkiLCJhdWQiOiJTeW5PUy5BcHAifQ.jbBEo3FroYOgGGvZxpdhRx2-KtHnFOFoutjrKMSFWec.
+@microsoft_signalr.js?v=cef3d5d4:301 [2026-06-06T07:22:23.214Z] Information: Using HubProtocol 'json'.
 signalr.js:267 SignalR(Branch): Connected to /branchOperationsHub
 signalr.js:216 SignalR(Branch): Capability 'Thermal80mm' registration result: AUTHORIZED
-
-terminal logs: 
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Frontend> npm run dev
-
-> synos-frontend@0.0.0 dev
-> vite
-
-
-  VITE v7.3.1  ready in 851 ms
-
-  ➜  Local:   http://localhost:5173/
-  ➜  Network: use --host to expose
-  ➜  press h + enter to show help
-proxy error Error: read ECONNRESET
-    at TCP.onStreamRead (node:internal/stream_base_commons:216:20) {
-  errno: -4077,
-  code: 'ECONNRESET',
-  syscall: 'read'
-}
-1:52:45 pm [vite] ws proxy error:
-Error: read ECONNRESET
-    at TCP.onStreamRead (node:internal/stream_base_commons:216:20)
-1:52:45 pm [vite] ws proxy socket error:
-Error: read ECONNRESET
-    at TCP.onStreamRead (node:internal/stream_base_commons:216:20)
-Browserslist: browsers data (caniuse-lite) is 6 months old. Please run:
-  npx update-browserslist-db@latest
-  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+RadiologistTerminal.jsx:373 [2026-06-06T07:23:44.499Z] Information: Normalizing '/radiologyCollaborationHub' to 'http://localhost:5173/radiologyCollaborationHub'.
+@microsoft_signalr.js?v=cef3d5d4:301 [2026-06-06T07:23:44.645Z] Information: WebSocket connected to ws://localhost:5173/radiologyCollaborationHub?access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiJmYjVkYmJmNi1lOGEwLTRkYjgtOGQ0ZC03ZjczZDBmOTE4ZTAiLCJ1bmlxdWVfbmFtZSI6IlRhYnJleiBTaGFpayIsInVzZXJuYW1lIjoidGFieiIsIndvcmtzcGFjZXMiOiIvdHlwaXN0LC9waGxlYm90b21pc3QsL2N0dGVjaCwvcmFkaW9sb2dpc3QsL3dvcmtiZW5jaCwvZGVsaXZlcnksL3VzdGVjaCwvcmFkaW9sb2d5LC9wYXRob2xvZ2lzdCwveHJheXRlY2gsL3JlY2VwdGlvbiwvbXJpdGVjaCwvaW52ZW50b3J5LC9maW5hbmNlIiwiZW1haWwiOiJ0YWJyZXouYXRhaGVyQGdtYWlsLmNvbSIsInNlc3Npb25fbW9kZSI6Im9wZXJhdGlvbmFsIiwic2Vzc2lvbl9pZCI6IjY1YzNhZWYxLWU1ZTItNGE3ZC1hNDMzLTQ0ZDUwOWE0ZTNjZSIsImRlcGFydG1lbnRfY29kZSI6IkdlbmVyYWwiLCJyb2xlIjoiQWRtaW4iLCJSb2xlSWQiOiJjOGNlMjUyZS00MjNmLTQ3OGEtYTFlMy04MDY3NWNhZWVlMDgiLCJicmFuY2hfaWQiOiJhMDAwMDAwMC0wMDAwLTAwMDAtMDAwMC0wMDAwMDAwMDAwMDEiLCJyZXNvdXJjZV9pZCI6IjkyNTg0NjhkLWY5YTItNDkwMS04MTc4LTA4ZGViYWY5ODE3MSIsImJyYW5jaF9uYW1lIjoiTWFpbiBMYWIiLCJuYmYiOjE3ODA2NDUzNjcsImV4cCI6MTc4MDczMTc2NywiaWF0IjoxNzgwNjQ1MzY3LCJpc3MiOiJTeW5PUy5BcGkiLCJhdWQiOiJTeW5PUy5BcHAifQ.jbBEo3FroYOgGGvZxpdhRx2-KtHnFOFoutjrKMSFWec.
+@microsoft_signalr.js?v=cef3d5d4:301 [2026-06-06T07:33:26.450Z] Information: Connection disconnected.
+RadiologistTerminal.jsx:398 SignalR connection closed. undefined
+$RefreshSig$ @ RadiologistTerminal.jsx:398
+(anonymous) @ @microsoft_signalr.js?v=cef3d5d4:1447
+_completeClose @ @microsoft_signalr.js?v=cef3d5d4:1447
+_connectionClosed @ @microsoft_signalr.js?v=cef3d5d4:1428
+connection.onclose @ @microsoft_signalr.js?v=cef3d5d4:915
+_stopConnection @ @microsoft_signalr.js?v=cef3d5d4:2524
+transport.onclose @ @microsoft_signalr.js?v=cef3d5d4:2453
+_close @ @microsoft_signalr.js?v=cef3d5d4:2146
+stop @ @microsoft_signalr.js?v=cef3d5d4:2124
+_stopInternal @ @microsoft_signalr.js?v=cef3d5d4:2257
+await in _stopInternal
+stop @ @microsoft_signalr.js?v=cef3d5d4:2246
+_stopInternal @ @microsoft_signalr.js?v=cef3d5d4:1070
+stop @ @microsoft_signalr.js?v=cef3d5d4:1038
+$RefreshSig$ @ RadiologistTerminal.jsx:230
+setTimeout
+$RefreshSig$ @ RadiologistTerminal.jsx:228
+react_stack_bottom_frame @ react-dom_client.js?v=cef3d5d4:18573
+runWithFiberInDEV @ react-dom_client.js?v=cef3d5d4:997
+commitHookEffectListUnmount @ react-dom_client.js?v=cef3d5d4:9449
+commitHookPassiveUnmountEffects @ react-dom_client.js?v=cef3d5d4:9468
+commitPassiveUnmountEffectsInsideOfDeletedTree_begin @ react-dom_client.js?v=cef3d5d4:11593
+recursivelyTraversePassiveUnmountEffects @ react-dom_client.js?v=cef3d5d4:11465
+commitPassiveUnmountOnFiber @ react-dom_client.js?v=cef3d5d4:11516
+recursivelyTraversePassiveUnmountEffects @ react-dom_client.js?v=cef3d5d4:11481
+commitPassiveUnmountOnFiber @ react-dom_client.js?v=cef3d5d4:11489
+recursivelyTraversePassiveUnmountEffects @ react-dom_client.js?v=cef3d5d4:11481
+commitPassiveUnmountOnFiber @ react-dom_client.js?v=cef3d5d4:11516
+recursivelyTraversePassiveUnmountEffects @ react-dom_client.js?v=cef3d5d4:11481
+commitPassiveUnmountOnFiber @ react-dom_client.js?v=cef3d5d4:11489
+recursivelyTraversePassiveUnmountEffects @ react-dom_client.js?v=cef3d5d4:11481
+commitPassiveUnmountOnFiber @ react-dom_client.js?v=cef3d5d4:11489
+recursivelyTraversePassiveUnmountEffects @ react-dom_client.js?v=cef3d5d4:11481
+commitPassiveUnmountOnFiber @ react-dom_client.js?v=cef3d5d4:11516
+recursivelyTraversePassiveUnmountEffects @ react-dom_client.js?v=cef3d5d4:11481
+commitPassiveUnmountOnFiber @ react-dom_client.js?v=cef3d5d4:11489
+recursivelyTraversePassiveUnmountEffects @ react-dom_client.js?v=cef3d5d4:11481
+commitPassiveUnmountOnFiber @ react-dom_client.js?v=cef3d5d4:11489
+recursivelyTraversePassiveUnmountEffects @ react-dom_client.js?v=cef3d5d4:11481
+commitPassiveUnmountOnFiber @ react-dom_client.js?v=cef3d5d4:11516
+recursivelyTraversePassiveUnmountEffects @ react-dom_client.js?v=cef3d5d4:11481
+commitPassiveUnmountOnFiber @ react-dom_client.js?v=cef3d5d4:11516
+recursivelyTraversePassiveUnmountEffects @ react-dom_client.js?v=cef3d5d4:11481
+commitPassiveUnmountOnFiber @ react-dom_client.js?v=cef3d5d4:11489
+recursivelyTraversePassiveUnmountEffects @ react-dom_client.js?v=cef3d5d4:11481
+commitPassiveUnmountOnFiber @ react-dom_client.js?v=cef3d5d4:11489
+recursivelyTraversePassiveUnmountEffects @ react-dom_client.js?v=cef3d5d4:11481
+commitPassiveUnmountOnFiber @ react-dom_client.js?v=cef3d5d4:11516
+recursivelyTraversePassiveUnmountEffects @ react-dom_client.js?v=cef3d5d4:11481
+commitPassiveUnmountOnFiber @ react-dom_client.js?v=cef3d5d4:11489
+recursivelyTraversePassiveUnmountEffects @ react-dom_client.js?v=cef3d5d4:11481
+commitPassiveUnmountOnFiber @ react-dom_client.js?v=cef3d5d4:11516
+recursivelyTraversePassiveUnmountEffects @ react-dom_client.js?v=cef3d5d4:11481
+commitPassiveUnmountOnFiber @ react-dom_client.js?v=cef3d5d4:11489
+recursivelyTraversePassiveUnmountEffects @ react-dom_client.js?v=cef3d5d4:11481
+commitPassiveUnmountOnFiber @ react-dom_client.js?v=cef3d5d4:11489
+recursivelyTraversePassiveUnmountEffects @ react-dom_client.js?v=cef3d5d4:11481
+commitPassiveUnmountOnFiber @ react-dom_client.js?v=cef3d5d4:11516
+recursivelyTraversePassiveUnmountEffects @ react-dom_client.js?v=cef3d5d4:11481
+commitPassiveUnmountOnFiber @ react-dom_client.js?v=cef3d5d4:11489
+recursivelyTraversePassiveUnmountEffects @ react-dom_client.js?v=cef3d5d4:11481
+commitPassiveUnmountOnFiber @ react-dom_client.js?v=cef3d5d4:11516
+recursivelyTraversePassiveUnmountEffects @ react-dom_client.js?v=cef3d5d4:11481
+commitPassiveUnmountOnFiber @ react-dom_client.js?v=cef3d5d4:11498
+flushPassiveEffects @ react-dom_client.js?v=cef3d5d4:13146
+(anonymous) @ react-dom_client.js?v=cef3d5d4:12776
+performWorkUntilDeadline @ react-dom_client.js?v=cef3d5d4:36
+RadiologistTerminal.jsx:373 [2026-06-06T07:35:21.439Z] Information: Normalizing '/radiologyCollaborationHub' to 'http://localhost:5173/radiologyCollaborationHub'.
+@microsoft_signalr.js?v=cef3d5d4:301 [2026-06-06T07:35:21.538Z] Information: WebSocket connected to ws://localhost:5173/radiologyCollaborationHub?access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiJmYjVkYmJmNi1lOGEwLTRkYjgtOGQ0ZC03ZjczZDBmOTE4ZTAiLCJ1bmlxdWVfbmFtZSI6IlRhYnJleiBTaGFpayIsInVzZXJuYW1lIjoidGFieiIsIndvcmtzcGFjZXMiOiIvdHlwaXN0LC9waGxlYm90b21pc3QsL2N0dGVjaCwvcmFkaW9sb2dpc3QsL3dvcmtiZW5jaCwvZGVsaXZlcnksL3VzdGVjaCwvcmFkaW9sb2d5LC9wYXRob2xvZ2lzdCwveHJheXRlY2gsL3JlY2VwdGlvbiwvbXJpdGVjaCwvaW52ZW50b3J5LC9maW5hbmNlIiwiZW1haWwiOiJ0YWJyZXouYXRhaGVyQGdtYWlsLmNvbSIsInNlc3Npb25fbW9kZSI6Im9wZXJhdGlvbmFsIiwic2Vzc2lvbl9pZCI6IjY1YzNhZWYxLWU1ZTItNGE3ZC1hNDMzLTQ0ZDUwOWE0ZTNjZSIsImRlcGFydG1lbnRfY29kZSI6IkdlbmVyYWwiLCJyb2xlIjoiQWRtaW4iLCJSb2xlSWQiOiJjOGNlMjUyZS00MjNmLTQ3OGEtYTFlMy04MDY3NWNhZWVlMDgiLCJicmFuY2hfaWQiOiJhMDAwMDAwMC0wMDAwLTAwMDAtMDAwMC0wMDAwMDAwMDAwMDEiLCJyZXNvdXJjZV9pZCI6IjkyNTg0NjhkLWY5YTItNDkwMS04MTc4LTA4ZGViYWY5ODE3MSIsImJyYW5jaF9uYW1lIjoiTWFpbiBMYWIiLCJuYmYiOjE3ODA2NDUzNjcsImV4cCI6MTc4MDczMTc2NywiaWF0IjoxNzgwNjQ1MzY3LCJpc3MiOiJTeW5PUy5BcGkiLCJhdWQiOiJTeW5PUy5BcHAifQ.jbBEo3FroYOgGGvZxpdhRx2-KtHnFOFoutjrKMSFWec.
+@microsoft_signalr.js?v=cef3d5d4:301 [2026-06-06T07:36:49.654Z] Information: Connection disconnected.
+RadiologistTerminal.jsx:398 SignalR connection closed. undefined
+$RefreshSig$ @ RadiologistTerminal.jsx:398
+(anonymous) @ @microsoft_signalr.js?v=cef3d5d4:1447
+_completeClose @ @microsoft_signalr.js?v=cef3d5d4:1447
+_connectionClosed @ @microsoft_signalr.js?v=cef3d5d4:1428
+connection.onclose @ @microsoft_signalr.js?v=cef3d5d4:915
+_stopConnection @ @microsoft_signalr.js?v=cef3d5d4:2524
+transport.onclose @ @microsoft_signalr.js?v=cef3d5d4:2453
+_close @ @microsoft_signalr.js?v=cef3d5d4:2146
+stop @ @microsoft_signalr.js?v=cef3d5d4:2124
+_stopInternal @ @microsoft_signalr.js?v=cef3d5d4:2257
+await in _stopInternal
+stop @ @microsoft_signalr.js?v=cef3d5d4:2246
+_stopInternal @ @microsoft_signalr.js?v=cef3d5d4:1070
+stop @ @microsoft_signalr.js?v=cef3d5d4:1038
+$RefreshSig$ @ RadiologistTerminal.jsx:230
+setTimeout
+$RefreshSig$ @ RadiologistTerminal.jsx:228
+react_stack_bottom_frame @ react-dom_client.js?v=cef3d5d4:18573
+runWithFiberInDEV @ react-dom_client.js?v=cef3d5d4:997
+commitHookEffectListUnmount @ react-dom_client.js?v=cef3d5d4:9449
+commitHookPassiveUnmountEffects @ react-dom_client.js?v=cef3d5d4:9468
+commitPassiveUnmountEffectsInsideOfDeletedTree_begin @ react-dom_client.js?v=cef3d5d4:11593
+recursivelyTraversePassiveUnmountEffects @ react-dom_client.js?v=cef3d5d4:11465
+commitPassiveUnmountOnFiber @ react-dom_client.js?v=cef3d5d4:11516
+recursivelyTraversePassiveUnmountEffects @ react-dom_client.js?v=cef3d5d4:11481
+commitPassiveUnmountOnFiber @ react-dom_client.js?v=cef3d5d4:11489
+recursivelyTraversePassiveUnmountEffects @ react-dom_client.js?v=cef3d5d4:11481
+commitPassiveUnmountOnFiber @ react-dom_client.js?v=cef3d5d4:11516
+recursivelyTraversePassiveUnmountEffects @ react-dom_client.js?v=cef3d5d4:11481
+commitPassiveUnmountOnFiber @ react-dom_client.js?v=cef3d5d4:11489
+recursivelyTraversePassiveUnmountEffects @ react-dom_client.js?v=cef3d5d4:11481
+commitPassiveUnmountOnFiber @ react-dom_client.js?v=cef3d5d4:11489
+recursivelyTraversePassiveUnmountEffects @ react-dom_client.js?v=cef3d5d4:11481
+commitPassiveUnmountOnFiber @ react-dom_client.js?v=cef3d5d4:11516
+recursivelyTraversePassiveUnmountEffects @ react-dom_client.js?v=cef3d5d4:11481
+commitPassiveUnmountOnFiber @ react-dom_client.js?v=cef3d5d4:11489
+recursivelyTraversePassiveUnmountEffects @ react-dom_client.js?v=cef3d5d4:11481
+commitPassiveUnmountOnFiber @ react-dom_client.js?v=cef3d5d4:11489
+recursivelyTraversePassiveUnmountEffects @ react-dom_client.js?v=cef3d5d4:11481
+commitPassiveUnmountOnFiber @ react-dom_client.js?v=cef3d5d4:11516
+recursivelyTraversePassiveUnmountEffects @ react-dom_client.js?v=cef3d5d4:11481
+commitPassiveUnmountOnFiber @ react-dom_client.js?v=cef3d5d4:11516
+recursivelyTraversePassiveUnmountEffects @ react-dom_client.js?v=cef3d5d4:11481
+commitPassiveUnmountOnFiber @ react-dom_client.js?v=cef3d5d4:11489
+recursivelyTraversePassiveUnmountEffects @ react-dom_client.js?v=cef3d5d4:11481
+commitPassiveUnmountOnFiber @ react-dom_client.js?v=cef3d5d4:11489
+recursivelyTraversePassiveUnmountEffects @ react-dom_client.js?v=cef3d5d4:11481
+commitPassiveUnmountOnFiber @ react-dom_client.js?v=cef3d5d4:11516
+recursivelyTraversePassiveUnmountEffects @ react-dom_client.js?v=cef3d5d4:11481
+commitPassiveUnmountOnFiber @ react-dom_client.js?v=cef3d5d4:11489
+recursivelyTraversePassiveUnmountEffects @ react-dom_client.js?v=cef3d5d4:11481
+commitPassiveUnmountOnFiber @ react-dom_client.js?v=cef3d5d4:11516
+recursivelyTraversePassiveUnmountEffects @ react-dom_client.js?v=cef3d5d4:11481
+commitPassiveUnmountOnFiber @ react-dom_client.js?v=cef3d5d4:11489
+recursivelyTraversePassiveUnmountEffects @ react-dom_client.js?v=cef3d5d4:11481
+commitPassiveUnmountOnFiber @ react-dom_client.js?v=cef3d5d4:11489
+recursivelyTraversePassiveUnmountEffects @ react-dom_client.js?v=cef3d5d4:11481
+commitPassiveUnmountOnFiber @ react-dom_client.js?v=cef3d5d4:11516
+recursivelyTraversePassiveUnmountEffects @ react-dom_client.js?v=cef3d5d4:11481
+commitPassiveUnmountOnFiber @ react-dom_client.js?v=cef3d5d4:11489
+recursivelyTraversePassiveUnmountEffects @ react-dom_client.js?v=cef3d5d4:11481
+commitPassiveUnmountOnFiber @ react-dom_client.js?v=cef3d5d4:11516
+recursivelyTraversePassiveUnmountEffects @ react-dom_client.js?v=cef3d5d4:11481
+commitPassiveUnmountOnFiber @ react-dom_client.js?v=cef3d5d4:11498
+flushPassiveEffects @ react-dom_client.js?v=cef3d5d4:13146
+(anonymous) @ react-dom_client.js?v=cef3d5d4:12776
+performWorkUntilDeadline @ react-dom_client.js?v=cef3d5d4:36
+RadiologistTerminal.jsx:373 [2026-06-06T07:39:58.205Z] Information: Normalizing '/radiologyCollaborationHub' to 'http://localhost:5173/radiologyCollaborationHub'.
+@microsoft_signalr.js?v=cef3d5d4:301 [2026-06-06T07:39:58.337Z] Information: WebSocket connected to ws://localhost:5173/radiologyCollaborationHub?access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiJmYjVkYmJmNi1lOGEwLTRkYjgtOGQ0ZC03ZjczZDBmOTE4ZTAiLCJ1bmlxdWVfbmFtZSI6IlRhYnJleiBTaGFpayIsInVzZXJuYW1lIjoidGFieiIsIndvcmtzcGFjZXMiOiIvdHlwaXN0LC9waGxlYm90b21pc3QsL2N0dGVjaCwvcmFkaW9sb2dpc3QsL3dvcmtiZW5jaCwvZGVsaXZlcnksL3VzdGVjaCwvcmFkaW9sb2d5LC9wYXRob2xvZ2lzdCwveHJheXRlY2gsL3JlY2VwdGlvbiwvbXJpdGVjaCwvaW52ZW50b3J5LC9maW5hbmNlIiwiZW1haWwiOiJ0YWJyZXouYXRhaGVyQGdtYWlsLmNvbSIsInNlc3Npb25fbW9kZSI6Im9wZXJhdGlvbmFsIiwic2Vzc2lvbl9pZCI6IjY1YzNhZWYxLWU1ZTItNGE3ZC1hNDMzLTQ0ZDUwOWE0ZTNjZSIsImRlcGFydG1lbnRfY29kZSI6IkdlbmVyYWwiLCJyb2xlIjoiQWRtaW4iLCJSb2xlSWQiOiJjOGNlMjUyZS00MjNmLTQ3OGEtYTFlMy04MDY3NWNhZWVlMDgiLCJicmFuY2hfaWQiOiJhMDAwMDAwMC0wMDAwLTAwMDAtMDAwMC0wMDAwMDAwMDAwMDEiLCJyZXNvdXJjZV9pZCI6IjkyNTg0NjhkLWY5YTItNDkwMS04MTc4LTA4ZGViYWY5ODE3MSIsImJyYW5jaF9uYW1lIjoiTWFpbiBMYWIiLCJuYmYiOjE3ODA2NDUzNjcsImV4cCI6MTc4MDczMTc2NywiaWF0IjoxNzgwNjQ1MzY3LCJpc3MiOiJTeW5PUy5BcGkiLCJhdWQiOiJTeW5PUy5BcHAifQ.jbBEo3FroYOgGGvZxpdhRx2-KtHnFOFoutjrKMSFWec.

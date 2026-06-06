@@ -41,6 +41,11 @@ namespace SynOS.Models.Entities
         [ForeignKey("CreatedBy")]
         public virtual User User { get; set; }
 
+        public Guid? BranchId { get; set; }
+
+        [ForeignKey("BranchId")]
+        public virtual Branch? Branch { get; set; }
+
         [Required]
         public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
 

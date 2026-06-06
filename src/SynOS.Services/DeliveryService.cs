@@ -194,6 +194,10 @@ public class DeliveryService : IDeliveryService
             {
                 pdfUrl = _fileStorageService.GetFileUrl(latestReportVersion.PdfPath);
             }
+            else if (!string.IsNullOrEmpty(report.PdfUrl))
+            {
+                pdfUrl = _fileStorageService.GetFileUrl(report.PdfUrl);
+            }
             else
             {
                 _logger.LogWarning("No PDF path found for ReportId: {ReportId}", report.ReportId);
@@ -234,14 +238,21 @@ public class DeliveryService : IDeliveryService
             throw new BadHttpRequestException("Report not found.", 404);
         }
 
+        string pdfUrl = "";
         var latestReportVersion = report.ReportVersions.OrderByDescending(rv => rv.VersionNumber).FirstOrDefault();
-        if (latestReportVersion == null || string.IsNullOrEmpty(latestReportVersion.PdfPath))
+        if (latestReportVersion != null && !string.IsNullOrEmpty(latestReportVersion.PdfPath))
+        {
+            pdfUrl = _fileStorageService.GetFileUrl(latestReportVersion.PdfPath);
+        }
+        else if (!string.IsNullOrEmpty(report.PdfUrl))
+        {
+            pdfUrl = _fileStorageService.GetFileUrl(report.PdfUrl);
+        }
+        else
         {
             _logger.LogError("PDF path missing for report {ReportId}", reportId);
             throw new BadHttpRequestException("Report PDF not available for printing.", 400);
         }
-
-        string pdfUrl = _fileStorageService.GetFileUrl(latestReportVersion.PdfPath);
 
         // Queue print
         await _printService.QueuePrintAsync(reportId, pdfUrl);
@@ -651,15 +662,25 @@ public class DeliveryService : IDeliveryService
         }
 
         // Fetch the report’s PDF as a Stream
+        string? pdfPath = null;
         var latestReportVersion = downloadLink.Report.ReportVersions.OrderByDescending(rv => rv.VersionNumber).FirstOrDefault();
-        if (latestReportVersion == null || string.IsNullOrEmpty(latestReportVersion.PdfPath))
+        if (latestReportVersion != null && !string.IsNullOrEmpty(latestReportVersion.PdfPath))
+        {
+            pdfPath = latestReportVersion.PdfPath;
+        }
+        else if (!string.IsNullOrEmpty(downloadLink.Report.PdfUrl))
+        {
+            pdfPath = downloadLink.Report.PdfUrl;
+        }
+
+        if (string.IsNullOrEmpty(pdfPath))
         {
             _logger.LogError("PDF path missing for report {ReportId} associated with token {Token}", downloadLink.ReportId, token);
             throw new BadHttpRequestException("Report PDF not available for download.", 404);
         }
 
         // Assuming _fileStorageService can provide a Stream for a given path
-        return await _fileStorageService.GetFileStreamAsync(latestReportVersion.PdfPath);
+        return await _fileStorageService.GetFileStreamAsync(pdfPath);
     }
 
     public async Task<DeliveryResultDto> MarkHandedOverAsync(Guid reportId, Guid userId)

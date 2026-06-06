@@ -348,12 +348,9 @@ namespace SynOS.Services
             }
             else
             {
-                // Check lease expiration (30-minute lease)
-                bool isExpired = study.ClaimedAt.HasValue && (now - study.ClaimedAt.Value).TotalMinutes > 30;
-                if (isExpired)
-                {
-                    throw new UnauthorizedAccessException("Your claim lease has expired. Please reclaim the study.");
-                }
+                // Automatically renew/extend sliding lease on active drafting
+                study.ClaimedAt = now;
+                study.LastActivityAt = now;
             }
 
             var report = await _context.Reports
@@ -653,16 +650,11 @@ namespace SynOS.Services
             }
             var studyEntity = result.study;
 
-            // Enforce claim check and lease validation (30-minute lease)
+            // Enforce claim check (lease expiration check not required for signing since signature releases the study)
             var now = DateTimeOffset.UtcNow;
             if (studyEntity.ClaimedByUserId != userId)
             {
                 throw new UnauthorizedAccessException("You do not have permission to sign this report. You must claim the study first.");
-            }
-            bool isExpired = studyEntity.ClaimedAt.HasValue && (now - studyEntity.ClaimedAt.Value).TotalMinutes > 30;
-            if (isExpired)
-            {
-                throw new UnauthorizedAccessException("Your claim lease has expired. Please reclaim the study.");
             }
 
             studyEntity.Visit = result.visit;

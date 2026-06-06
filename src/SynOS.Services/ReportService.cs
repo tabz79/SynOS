@@ -802,7 +802,8 @@ namespace SynOS.Services
                     ReferenceDoctor = order.Visit?.Referrer?.ProviderName ?? "Self / Walk-in",
                     BillingDateFormatted = order.Visit?.CreatedAt.ToString("dd-MMM-yyyy") ?? "N/A",
                     PreparedBy = report.TypedByUser?.Name ?? "N/A",
-                    TestCode = order.TestCode
+                    TestCode = order.TestCode,
+                    Token = order.Visit?.Token ?? "N/A"
                 },
                 Modality = domain.Department,
                 ReportTitle = $"{domain.Department} Diagnostic Report",
@@ -952,7 +953,8 @@ namespace SynOS.Services
                         ReferenceDoctor = order.Visit?.Referrer?.ProviderName ?? "Self / Walk-in",
                         BillingDateFormatted = order.Visit?.CreatedAt.ToString("dd-MMM-yyyy") ?? "N/A",
                         PreparedBy = report.TypedByUser?.Name ?? "N/A",
-                        TestCode = order.Test?.TestCode ?? "RAD"
+                        TestCode = order.Test?.TestCode ?? "RAD",
+                        Token = order.Visit?.Token ?? "N/A"
                     },
                     Modality = "Radiology",
                     ReportTitle = $"{order.Test?.TestName ?? "Radiology"} Diagnostic Report",
@@ -1010,6 +1012,49 @@ namespace SynOS.Services
                         }
                     }
                     radModel.Signatures.Add(directorSig);
+                }
+
+                // Add active or claiming radiologist signature
+                var study = await _context.RadiologyStudies
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(s => s.RadiologyStudyId == report.SourceId);
+                var radiologistUserId = report.SignedByUserId ?? study?.ClaimedByUserId;
+                if (radiologistUserId.HasValue)
+                {
+                    var radiologistUser = await _context.Users
+                        .AsNoTracking()
+                        .FirstOrDefaultAsync(u => u.UserId == radiologistUserId.Value);
+                    if (radiologistUser != null)
+                    {
+                        var radioSig = new ReportSignatureDetails
+                        {
+                            DoctorName = radiologistUser.Name,
+                            Credentials = radiologistUser.Designation ?? "Consultant Radiologist",
+                            Role = "Consultant Radiologist",
+                            SignedAt = report.SignedAt,
+                            Hash = report.SignedByUserId.HasValue ? "RAD-SIGNATURE" : "RAD-CLAIM",
+                            Version = report.CurrentVersion
+                        };
+
+                        if (report.SignedByUserId.HasValue && !string.IsNullOrEmpty(radiologistUser.SignatureImageUrl))
+                        {
+                            try
+                            {
+                                using var stream = await _fileStorageService.GetFileStreamAsync(radiologistUser.SignatureImageUrl);
+                                using var ms = new MemoryStream();
+                                await stream.CopyToAsync(ms);
+                                var bytes = ms.ToArray();
+                                radioSig.SignatureImage = bytes;
+                                radioSig.SignatureImageBase64 = Convert.ToBase64String(bytes);
+                            }
+                            catch (Exception ex)
+                            {
+                                _logger.LogWarning(ex, "Failed to load radiologist signature: {Path}", radiologistUser.SignatureImageUrl);
+                            }
+                        }
+
+                        radModel.Signatures.Add(radioSig);
+                    }
                 }
 
                 return radModel;
@@ -1230,7 +1275,8 @@ namespace SynOS.Services
                     ReferenceDoctor = order.Visit?.Referrer?.ProviderName ?? "Self / Walk-in",
                     BillingDateFormatted = order.Visit?.CreatedAt.ToString("dd-MMM-yyyy") ?? "N/A",
                     PreparedBy = report.TypedByUser?.Name ?? "N/A",
-                    TestCode = order.TestCode
+                    TestCode = order.TestCode,
+                    Token = order.Visit?.Token ?? "N/A"
                 },
                 Modality = order.Department,
                 ReportTitle = $"{order.Department} Diagnostic Report",
@@ -1412,7 +1458,7 @@ namespace SynOS.Services
             var reportsQuery = _context.Reports
                 .Include(r => r.TypedByUser)
                 .Include(r => r.VerifiedByUser)
-                .Where(r => statusList.Contains(r.Status) && r.SourceType == "Order");
+                .Where(r => statusList.Contains(r.Status) && (r.SourceType == "Order" || r.SourceType == "RadiologyStudy"));
 
             if (excludeManualFlow)
             {
@@ -1426,7 +1472,29 @@ namespace SynOS.Services
 
             if (!reports.Any()) return new System.Collections.Generic.List<ReportListItemDto>();
 
-            var orderIds = reports.Select(r => r.SourceId).ToList();
+            var radStudyIds = reports
+                .Where(r => r.SourceType == "RadiologyStudy")
+                .Select(r => r.SourceId)
+                .ToList();
+
+            var radStudyToOrderMap = await _context.RadiologyStudies
+                .Where(rs => radStudyIds.Contains(rs.RadiologyStudyId))
+                .Select(rs => new { rs.RadiologyStudyId, rs.VisitTestId })
+                .AsNoTracking()
+                .ToDictionaryAsync(x => x.RadiologyStudyId, x => x.VisitTestId);
+
+            Func<Report, Guid> getOrderId = r => {
+                if (r.SourceType == "Order") return r.SourceId;
+                if (r.SourceType == "RadiologyStudy" && radStudyToOrderMap.TryGetValue(r.SourceId, out var orderId)) return orderId;
+                return Guid.Empty;
+            };
+
+            var orderIds = reports
+                .Select(getOrderId)
+                .Where(id => id != Guid.Empty)
+                .Distinct()
+                .ToList();
+
             var reportIds = reports.Select(r => r.ReportId).ToList();
 
             // 1. Fetch Orders with Patient details
@@ -1462,8 +1530,9 @@ namespace SynOS.Services
                 .ToDictionary(g => g.Key, g => g.Count());
 
             return reports.Select(r => {
-                orders.TryGetValue(r.SourceId, out var order);
-                abnormalCounts.TryGetValue(r.SourceId, out var abnormalCount);
+                var orderId = getOrderId(r);
+                orders.TryGetValue(orderId, out var order);
+                abnormalCounts.TryGetValue(orderId, out var abnormalCount);
                 signatureCounts.TryGetValue(r.ReportId, out var sigCount);
                 
                 var patient = order?.Visit?.Patient;
@@ -1512,6 +1581,202 @@ namespace SynOS.Services
 
             report.UpdatedAt = DateTimeOffset.UtcNow;
             await _context.SaveChangesAsync();
+        }
+
+        public async Task<SynOS.Models.DTOs.PaginatedResult<ReportListItemDto>> SearchReportsAsync(
+            int pageNumber,
+            int pageSize,
+            string? searchTerm = null,
+            Guid? branchId = null,
+            string? department = null,
+            System.Collections.Generic.List<string>? statuses = null,
+            DateTimeOffset? startDate = null,
+            DateTimeOffset? endDate = null)
+        {
+            var query = _context.Reports
+                .Include(r => r.Visit).ThenInclude(v => v.Patient)
+                .Include(r => r.Visit).ThenInclude(v => v.Branch)
+                .Include(r => r.Visit).ThenInclude(v => v.Referrer)
+                .Include(r => r.TypedByUser)
+                .Include(r => r.VerifiedByUser)
+                .AsQueryable();
+
+            // 1. Search term filter (searches Patient demographics, Visit token, Report ID, and accession numbers)
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+            {
+                var term = searchTerm.Trim().ToLower();
+
+                query = query.Where(r => 
+                    r.Visit.Patient.FirstName.ToLower().Contains(term) ||
+                    r.Visit.Patient.LastName.ToLower().Contains(term) ||
+                    r.Visit.Patient.MRN.ToLower().Contains(term) ||
+                    r.Visit.Patient.CurrentPhoneNumber.Contains(term) ||
+                    r.Visit.Token.ToLower().Contains(term) ||
+                    r.ReportId.ToString().ToLower().Contains(term) ||
+                    r.Visit.Specimens.Any(s => s.AccessionNumber.ToLower().Contains(term)) ||
+                    (r.SourceType == "RadiologyStudy" && _context.RadiologyStudies.Any(rs => rs.RadiologyStudyId == r.SourceId && rs.AccessionNumber.ToLower().Contains(term)))
+                );
+            }
+
+            // 2. Branch filter
+            if (branchId.HasValue && branchId.Value != Guid.Empty)
+            {
+                query = query.Where(r => r.Visit.BranchId == branchId.Value);
+            }
+
+            // 3. Department filter
+            if (!string.IsNullOrWhiteSpace(department) && department != "All")
+            {
+                query = query.Where(r => r.Department == department);
+            }
+
+            // 4. Statuses filter
+            if (statuses != null && statuses.Any())
+            {
+                query = query.Where(r => statuses.Contains(r.Status));
+            }
+
+            // 5. Date filter
+            if (startDate.HasValue)
+            {
+                query = query.Where(r => r.CreatedAt >= startDate.Value);
+            }
+            if (endDate.HasValue)
+            {
+                query = query.Where(r => r.CreatedAt <= endDate.Value);
+            }
+
+            // 6. Pagination & Sorting
+            var totalCount = await query.CountAsync();
+            var itemsQuery = query
+                .OrderByDescending(r => r.CreatedAt)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .AsNoTracking();
+
+            var reports = await itemsQuery.ToListAsync();
+
+            if (!reports.Any())
+            {
+                return new SynOS.Models.DTOs.PaginatedResult<ReportListItemDto>
+                {
+                    Items = new System.Collections.Generic.List<ReportListItemDto>(),
+                    TotalCount = totalCount,
+                    PageNumber = pageNumber,
+                    PageSize = pageSize
+                };
+            }
+
+            // For mapping test name & abnormal result counts in-memory to prevent N+1 queries
+            var reportIds = reports.Select(r => r.ReportId).ToList();
+
+            var radStudyIds = reports
+                .Where(r => r.SourceType == "RadiologyStudy")
+                .Select(r => r.SourceId)
+                .ToList();
+
+            var radStudyToOrderMap = await _context.RadiologyStudies
+                .Where(rs => radStudyIds.Contains(rs.RadiologyStudyId))
+                .Select(rs => new { rs.RadiologyStudyId, rs.VisitTestId })
+                .AsNoTracking()
+                .ToDictionaryAsync(x => x.RadiologyStudyId, x => x.VisitTestId);
+
+            Func<Report, Guid> getOrderId = r => {
+                if (r.SourceType == "Order") return r.SourceId;
+                if (r.SourceType == "RadiologyStudy" && radStudyToOrderMap.TryGetValue(r.SourceId, out var orderId)) return orderId;
+                return Guid.Empty;
+            };
+
+            var orderIds = reports
+                .Select(getOrderId)
+                .Where(id => id != Guid.Empty)
+                .Distinct()
+                .ToList();
+
+            // Fetch orders with test definitions
+            var orders = await _context.Orders
+                .Include(o => o.Test)
+                .Where(o => orderIds.Contains(o.OrderId))
+                .AsNoTracking()
+                .ToDictionaryAsync(o => o.OrderId);
+
+            // Fetch result flags to count abnormals
+            var resultFlags = await _context.Results
+                .Where(res => orderIds.Contains(res.OrderId))
+                .Select(res => new { res.OrderId, res.Flag })
+                .AsNoTracking()
+                .ToListAsync();
+
+            var abnormalCounts = resultFlags
+                .GroupBy(f => f.OrderId)
+                .ToDictionary(
+                    g => g.Key,
+                    g => g.Count(f => !string.IsNullOrEmpty(f.Flag) && f.Flag != "Normal" && f.Flag != "N")
+                );
+
+            // Fetch signature counts
+            var sigData = await _context.ReportSignatures
+                .Where(s => reportIds.Contains(s.ReportId))
+                .Select(s => s.ReportId)
+                .ToListAsync();
+
+            var signatureCounts = sigData
+                .GroupBy(id => id)
+                .ToDictionary(g => g.Key, g => g.Count());
+
+            var mappedList = reports.Select(r => {
+                var orderId = getOrderId(r);
+                orders.TryGetValue(orderId, out var order);
+                abnormalCounts.TryGetValue(orderId, out var abnormalCount);
+                signatureCounts.TryGetValue(r.ReportId, out var sigCount);
+                
+                var patient = r.Visit?.Patient;
+                var age = 0;
+                if (patient?.DateOfBirth != null && patient.DateOfBirth != default)
+                {
+                    age = (int)((DateTime.Today - patient.DateOfBirth).TotalDays / 365.25);
+                }
+
+                string pdfUrl = "";
+                if (!string.IsNullOrEmpty(r.PdfUrl))
+                {
+                    pdfUrl = _fileStorageService.GetFileUrl(r.PdfUrl);
+                }
+
+                return new ReportListItemDto
+                {
+                    ReportId = r.ReportId,
+                    PatientName = patient != null ? $"{patient.FirstName} {patient.LastName}" : "Unknown",
+                    PatientAgeGender = patient != null ? $"{age} / {patient.Gender}" : "N/A",
+                    TestName = order?.Test?.TestName ?? order?.TestCode ?? "Unknown",
+                    Department = r.Department,
+                    CreatedAt = r.CreatedAt,
+                    Status = r.Status,
+                    IsStat = false,
+                    AbnormalCount = abnormalCount,
+                    Token = r.Visit?.Token ?? "---",
+                    TypedByUserName = r.TypedByUser?.Name,
+                    VerifiedByUserName = r.VerifiedByUser?.Name,
+                    IsPhysicallyVerified = r.IsPhysicallyVerified,
+                    SignaturesCount = sigCount,
+                    Delivered = r.Delivered,
+                    IsManualFlow = r.IsManualFlow,
+                    PdfUrl = pdfUrl,
+                    Mrn = patient?.MRN,
+                    PatientPhone = patient?.CurrentPhoneNumber,
+                    ReferrerName = r.Visit?.Referrer?.ProviderName ?? r.Visit?.ReferrerText ?? "Self",
+                    BranchId = r.Visit?.BranchId,
+                    BranchName = r.Visit?.Branch?.Name ?? "Main Branch"
+                };
+            }).ToList();
+
+            return new SynOS.Models.DTOs.PaginatedResult<ReportListItemDto>
+            {
+                Items = mappedList,
+                TotalCount = totalCount,
+                PageNumber = pageNumber,
+                PageSize = pageSize
+            };
         }
     }
 }

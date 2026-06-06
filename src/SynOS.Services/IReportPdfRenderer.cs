@@ -40,6 +40,7 @@ namespace SynOS.Services
         public string? BillingDateFormatted { get; set; }
         public string? PreparedBy { get; set; } // Typist Initial
         public string? TestCode { get; set; }
+        public string? Token { get; set; }
     }
 
     public class LabDetails

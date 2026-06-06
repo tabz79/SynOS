@@ -319,5 +319,29 @@ namespace SynOS.Api.Controllers
                 return BadRequest(new { message = ex.Message });
             }
         }
+
+        [HttpGet("archive")]
+        [Authorize(Policy = "AdminPolicy")]
+        public async Task<IActionResult> SearchArchive(
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 20,
+            [FromQuery] string? searchTerm = null,
+            [FromQuery] Guid? branchId = null,
+            [FromQuery] string? department = null,
+            [FromQuery] System.Collections.Generic.List<string>? statuses = null,
+            [FromQuery] DateTimeOffset? startDate = null,
+            [FromQuery] DateTimeOffset? endDate = null)
+        {
+            try
+            {
+                var result = await _reportService.SearchReportsAsync(
+                    pageNumber, pageSize, searchTerm, branchId, department, statuses, startDate, endDate);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
     }
 }

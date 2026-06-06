@@ -1,5 +1,4 @@
 import React, { Fragment } from 'react';
-import { DEFAULT_TEMPLATES, sanitizeTemplates } from './defaultTemplates';
 
 // Dynamic Variables Resolution Helper (Supports Patient and Parameter Variables)
 const resolveVariables = (text, patient, metadata, results, calculateAge) => {
@@ -103,8 +102,8 @@ const renderTipTapJSON = (node) => {
  * ReportA4 - DYNAMIC TEMPLATE RENDERER
  * Supports pre-printed letterhead overlays or full digital layouts.
  */
-export const ReportA4 = ({ reportData }) => {
-  if (!reportData) return null;
+export const ReportA4 = ({ reportData, template }) => {
+  if (!reportData || !template) return null;
 
   const { 
     metadata = {}, 
@@ -150,72 +149,98 @@ export const ReportA4 = ({ reportData }) => {
       }
     }
     
-    if (resolvedStr.trim().startsWith('<') || resolvedStr.includes('<h3') || resolvedStr.includes('<p')) {
-      return <div dangerouslySetInnerHTML={{ __html: resolvedStr }} />;
-    }
+    // Parse mixed content containing both HTML tags and TipTap JSON blocks
+    const parts = [];
+    let currentIndex = 0;
+    let htmlStr = resolvedStr;
     
-    return <div className="whitespace-pre-wrap">{resolvedStr}</div>;
-  };
-
-  // Resolve template from local storage
-  const getTemplate = () => {
-    let savedTemplates = localStorage.getItem("synos_report_templates");
-    let templates = [];
-    if (savedTemplates) {
-      try {
-        templates = JSON.parse(savedTemplates);
-      } catch (e) {
-        console.error("Failed to parse templates from localStorage:", e);
+    while (currentIndex < htmlStr.length) {
+      const jsonStart = htmlStr.indexOf('{"type":"doc"', currentIndex);
+      if (jsonStart === -1) {
+        parts.push({ type: 'html', content: htmlStr.substring(currentIndex) });
+        break;
+      }
+      
+      let prefix = htmlStr.substring(currentIndex, jsonStart);
+      
+      // Extract the JSON object by matching curly braces
+      let braceCount = 0;
+      let jsonEnd = -1;
+      for (let i = jsonStart; i < htmlStr.length; i++) {
+        if (htmlStr[i] === '{') braceCount++;
+        else if (htmlStr[i] === '}') {
+          braceCount--;
+          if (braceCount === 0) {
+            jsonEnd = i + 1;
+            break;
+          }
+        }
+      }
+      
+      if (jsonEnd !== -1) {
+        let suffix = htmlStr.substring(jsonEnd);
+        let wrapInStrong = false;
+        
+        const strongPrefixRegex = /<p>\s*<strong>\s*$/i;
+        const strongSuffixRegex = /^\s*<\/strong>\s*<\/p>/i;
+        const pPrefixRegex = /<p>\s*$/i;
+        const pSuffixRegex = /^\s*<\/p>/i;
+        
+        if (strongPrefixRegex.test(prefix) && strongSuffixRegex.test(suffix)) {
+          prefix = prefix.replace(strongPrefixRegex, '');
+          suffix = suffix.replace(strongSuffixRegex, '');
+          wrapInStrong = true;
+        } else if (pPrefixRegex.test(prefix) && pSuffixRegex.test(suffix)) {
+          prefix = prefix.replace(pPrefixRegex, '');
+          suffix = suffix.replace(pSuffixRegex, '');
+        }
+        
+        if (prefix) {
+          parts.push({ type: 'html', content: prefix });
+        }
+        
+        const jsonStr = htmlStr.substring(jsonStart, jsonEnd);
+        try {
+          const parsed = JSON.parse(jsonStr);
+          parts.push({ type: 'tiptap', content: parsed, wrapInStrong });
+        } catch (e) {
+          console.error("Failed to parse embedded TipTap JSON", e);
+          parts.push({ type: 'html', content: jsonStr });
+        }
+        
+        // Update htmlStr and reset index since we sliced suffix
+        htmlStr = suffix;
+        currentIndex = 0;
+      } else {
+        parts.push({ type: 'html', content: htmlStr.substring(jsonStart) });
+        break;
       }
     }
-
-    if (!templates || templates.length === 0) {
-      templates = sanitizeTemplates(DEFAULT_TEMPLATES);
-      localStorage.setItem("synos_report_templates", JSON.stringify(templates));
-    }
     
-    const savedCatalog = localStorage.getItem("synos_test_catalog");
-    let catalog = [];
-    if (savedCatalog) {
-      try {
-        catalog = JSON.parse(savedCatalog);
-      } catch (e) {
-        console.error("Failed to parse catalog from localStorage:", e);
-      }
-    }
-
-    const testCode = metadata?.testCode;
-    const test = catalog.find(t => t.code === testCode);
-
-    let found = null;
-    if (test && test.templateId) {
-      found = templates.find(t => t.id === test.templateId);
-    }
-    if (!found) {
-      // Fallback: match by department/modality case-insensitively
-      const dept = (modality || "").toLowerCase().trim();
-      found = templates.find(t => {
-        const modalityName = (t.modality || "").toLowerCase().trim();
-        return modalityName && (dept.includes(modalityName) || modalityName.includes(dept));
-      });
-    }
-    
-    const rawTemplate = found || templates[0];
-    if (!rawTemplate) return null;
-
-    return {
-      ...rawTemplate,
-      backgroundPath: rawTemplate.backgroundPath || (
-        rawTemplate.modality === "Hematology" ? "/assets/report-masters/hematology-master.svg" :
-        rawTemplate.modality === "Biochemistry" ? "/assets/report-masters/biochemistry-master.svg" :
-        rawTemplate.modality === "Radiology" ? "/assets/report-masters/radiology-master.svg" :
-        rawTemplate.modality === "Histopathology" ? "/assets/report-masters/histopathology-master.svg" :
-        "/assets/report-masters/default-master.svg"
-      )
-    };
+    return (
+      <div className="space-y-2">
+        {parts.map((part, idx) => {
+          if (part.type === 'html') {
+            const trimmedContent = part.content.trim();
+            if (!trimmedContent) return null;
+            if (trimmedContent.startsWith('<') || trimmedContent.includes('<h3') || trimmedContent.includes('<p')) {
+              return <div key={idx} dangerouslySetInnerHTML={{ __html: part.content }} />;
+            }
+            return <div key={idx} className="whitespace-pre-wrap">{part.content}</div>;
+          } else if (part.type === 'tiptap') {
+            const tiptapRender = renderTipTapJSON(part.content);
+            if (part.wrapInStrong) {
+              return <div key={idx} className="font-bold">{tiptapRender}</div>;
+            }
+            return <div key={idx}>{tiptapRender}</div>;
+          }
+          return null;
+        })}
+      </div>
+    );
   };
 
-  const activeTemplate = getTemplate();
+  const activeTemplate = template;
 
   const getCoordinates = (template) => {
     if (!template) return {};
@@ -349,69 +374,74 @@ export const ReportA4 = ({ reportData }) => {
           </div>
         </div>
       )}
-
       {/* 🏥 HEADER RESERVATION (Pre-printed spacer or Digital Branding) */}
       {activeTemplate && activeTemplate.usePreprinted ? (
         <div style={{ height: `${activeTemplate.topMargin || 48}mm` }} className="w-full shrink-0 relative z-10" />
       ) : (
-        <>
-          <div style={{ height: '10mm' }} className="w-full shrink-0 relative z-10" />
-          <div className="w-full flex flex-col mb-6 relative z-10 shrink-0" style={{ paddingBottom: '10px' }}>
-            <div className={`flex items-center gap-4 ${activeTemplate?.logoPosition === 'Right' ? 'flex-row-reverse text-right' : 'flex-row text-left'}`}>
-              {activeTemplate?.includeLogo && (
-                <div className="shrink-0" style={{ width: `${activeTemplate.logoSize || 40}px`, height: `${activeTemplate.logoSize || 40}px` }}>
-                  {activeTemplate.logoUrl ? (
-                    <img src={activeTemplate.logoUrl} alt="Logo" className="w-full h-full object-contain" />
-                  ) : (
-                    <div className="w-full h-full rounded bg-zinc-100 flex items-center justify-center text-zinc-400 font-black text-xs">
-                      LOGO
-                    </div>
-                  )}
-                </div>
-              )}
-              
-              <div className="flex-1">
-                <h1 
-                  style={{
-                    color: activeTemplate?.brandNameColor || '#312e81',
-                    fontSize: `${activeTemplate?.brandNameSize || 16}px`,
-                    fontWeight: activeTemplate?.brandNameWeight || '900',
-                    textTransform: 'uppercase',
-                    margin: 0,
-                    lineHeight: 1.2
-                  }}
-                >
-                  {activeTemplate?.brandNameText || lab?.name || "SynOS Diagnostics Lab"}
-                </h1>
-                {activeTemplate?.brandSubtitleText && (
-                  <p 
-                    style={{
-                      color: activeTemplate?.brandSubtitleColor || '#71717a',
-                      fontSize: `${activeTemplate?.brandSubtitleSize || 9}px`,
-                      margin: '2px 0 0 0',
-                      lineHeight: 1.2
-                    }}
-                  >
-                    {activeTemplate?.brandSubtitleText}
-                  </p>
+        activeTemplate?.includeBranding !== false && (
+          <>
+            <div style={{ height: '10mm' }} className="w-full shrink-0 relative z-10" />
+            <div className="w-full flex flex-col mb-6 relative z-10 shrink-0" style={{ paddingBottom: '10px' }}>
+              <div className={`flex items-center gap-4 ${activeTemplate?.logoPosition === 'Right' ? 'flex-row-reverse text-right' : 'flex-row text-left'}`}>
+                {activeTemplate?.includeLogo !== false && (
+                  <div className="shrink-0" style={{ width: `${activeTemplate.logoSize || 40}px`, height: `${activeTemplate.logoSize || 40}px` }}>
+                    {activeTemplate.logoUrl ? (
+                      <img src={activeTemplate.logoUrl} alt="Logo" className="w-full h-full object-contain" />
+                    ) : (
+                      <div className="w-full h-full rounded bg-zinc-100 flex items-center justify-center text-zinc-400 font-black text-xs">
+                        LOGO
+                      </div>
+                    )}
+                  </div>
+                )}
+                
+                {(activeTemplate?.includeHeaderName !== false || (activeTemplate?.includeHeaderSubtitle !== false && activeTemplate?.brandSubtitleText)) && (
+                  <div className="flex-1">
+                    {activeTemplate?.includeHeaderName !== false && (
+                      <h1 
+                        style={{
+                          color: activeTemplate?.brandNameColor || '#312e81',
+                          fontSize: `${activeTemplate?.brandNameSize || 16}px`,
+                          fontWeight: activeTemplate?.brandNameWeight || '900',
+                          textTransform: 'uppercase',
+                          margin: 0,
+                          lineHeight: 1.2
+                        }}
+                      >
+                        {activeTemplate?.brandNameText || lab?.name || "SynOS Diagnostics Lab"}
+                      </h1>
+                    )}
+                    {activeTemplate?.includeHeaderSubtitle !== false && activeTemplate?.brandSubtitleText && (
+                      <p 
+                        style={{
+                          color: activeTemplate?.brandSubtitleColor || '#71717a',
+                          fontSize: `${activeTemplate?.brandSubtitleSize || 9}px`,
+                          margin: '2px 0 0 0',
+                          lineHeight: 1.2
+                        }}
+                      >
+                        {activeTemplate?.brandSubtitleText}
+                      </p>
+                    )}
+                  </div>
                 )}
               </div>
+              
+              {activeTemplate?.showHeaderDivider && (
+                <div 
+                  style={{
+                    height: `${activeTemplate.headerDividerThickness || 2}px`,
+                    borderBottomStyle: activeTemplate.headerDividerStyle || 'solid',
+                    borderBottomWidth: `${activeTemplate.headerDividerThickness || 2}px`,
+                    borderBottomColor: activeTemplate.headerDividerColor || '#4f46e5',
+                    marginTop: '12px',
+                    width: '100%'
+                  }}
+                />
+              )}
             </div>
-            
-            {activeTemplate?.showHeaderDivider && (
-              <div 
-                style={{
-                  height: `${activeTemplate.headerDividerThickness || 2}px`,
-                  borderBottomStyle: activeTemplate.headerDividerStyle || 'solid',
-                  borderBottomWidth: `${activeTemplate.headerDividerThickness || 2}px`,
-                  borderBottomColor: activeTemplate.headerDividerColor || '#4f46e5',
-                  marginTop: '12px',
-                  width: '100%'
-                }}
-              />
-            )}
-          </div>
-        </>
+          </>
+        )
       )}
 
       {/* 👤 PATIENT INFO BOXES */}

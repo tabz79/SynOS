@@ -28,6 +28,8 @@ import { RadiologyCallOverlay } from './RadiologyCallOverlay';
 import { RichMedicalEditor } from '@/components/editor/RichMedicalEditor';
 import { MedicalMacrosWorkspace } from '@/components/editor/MedicalMacrosWorkspace';
 import { ReportA4 } from '../documents/templates/ReportA4';
+import { useTemplateForReport } from '../documents/templates/hooks/useReportTemplates';
+
 
 
 let sharedConnection = null;
@@ -53,7 +55,9 @@ export function RadiologistTerminal() {
     const [draftNotes, setDraftNotes] = useState('');
     const [reportId, setReportId] = useState(null);
     const [reportData, setReportData] = useState(null);
+    const { template, loading: templateLoading } = useTemplateForReport(reportData);
     const [previewLoading, setPreviewLoading] = useState(false);
+
 
     const isPreviewMode = selectedStudy && (
         selectedStudy.studyStatus === 'DraftReady' || 
@@ -913,6 +917,21 @@ export function RadiologistTerminal() {
                         ) : (
                             /* EDIT MODE PANEL / PREVIEW MODE PANEL */
                             <div className="flex-1 flex flex-col overflow-hidden">
+                                {isClaimExpired && selectedStudy?.studyStatus !== 'Signed' && (
+                                    <div className="bg-amber-500/10 border-b border-amber-500/20 px-4 py-2.5 text-[11px] text-amber-600 dark:text-amber-400 font-bold uppercase tracking-wider flex items-center justify-between gap-2 shrink-0 animate-in fade-in slide-in-from-top-2 duration-300">
+                                        <div className="flex items-center gap-2">
+                                            <span className="h-2 w-2 rounded-full bg-amber-500 animate-pulse shrink-0" />
+                                            <span>Your claim lease has expired. Please reclaim the study to ensure your updates are saved.</span>
+                                        </div>
+                                        <button
+                                            onClick={handleClaimStudy}
+                                            disabled={actionLoading}
+                                            className="px-2.5 py-1 bg-amber-600 hover:bg-amber-700 disabled:opacity-50 text-white rounded font-bold uppercase text-[9px] tracking-wider transition-all shrink-0 active:scale-[0.98]"
+                                        >
+                                            Reclaim Study
+                                        </button>
+                                    </div>
+                                )}
                                 {isPreviewMode ? (
                                     /* PREVIEW MODE PANEL */
                                     <div className="flex-1 flex flex-col overflow-hidden">
@@ -963,15 +982,15 @@ export function RadiologistTerminal() {
                                         )}
 
                                         <div className="flex-1 overflow-auto bg-zinc-300/50 dark:bg-zinc-900/50 p-4 custom-scrollbar">
-                                            {previewLoading ? (
+                                            {(previewLoading || templateLoading) ? (
                                                 <div className="h-full flex flex-col items-center justify-center opacity-30">
                                                     <Loader2 className="w-6 h-6 animate-spin mb-4" />
                                                     <span className="text-[8px] font-black uppercase tracking-[0.2em]">Generating A4 Render...</span>
                                                 </div>
-                                            ) : reportData ? (
+                                            ) : (reportData && template) ? (
                                                 <div className="p-4 origin-top min-w-max flex justify-center">
                                                     <div className="bg-white shadow-[0_20px_50px_rgba(0,0,0,0.1)] rounded-sm overflow-hidden">
-                                                        <ReportA4 reportData={reportData} />
+                                                        <ReportA4 reportData={reportData} template={template} />
                                                     </div>
                                                 </div>
                                             ) : (

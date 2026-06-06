@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ReportA4 } from './templates/ReportA4';
+import { useTemplateForReport } from './templates/hooks/useReportTemplates';
 import { useAuth } from '@/context/AuthContext';
 import { ReportsApi } from '@/api/reports';
 
@@ -40,19 +41,32 @@ export const DocumentPrinter = () => {
     fetchReportData();
   }, [id, token]);
 
+  const { template, loading: templateLoading } = useTemplateForReport(data);
+
   useEffect(() => {
-    if (!loading && data && !error) {
+    if (!loading && !templateLoading && data && template && !error) {
+      // Generate descriptive, unique filename: Token_MRN_PatientName_TestCode
+      const patientName = (data.Patient?.Name || 'Unknown_Patient').replace(/[^a-zA-Z0-9-]/g, '_');
+      const mrn = (data.Patient?.PatientId || 'Unknown_MRN').replace(/[^a-zA-Z0-9-]/g, '_');
+      const tokenNum = (data.Metadata?.Token || 'Unknown_Token').replace(/[^a-zA-Z0-9-]/g, '_');
+      const testCode = (data.Metadata?.TestCode || data.Modality || 'Report').replace(/[^a-zA-Z0-9-]/g, '_');
+      
+      const fileName = `${tokenNum}_${mrn}_${patientName}_${testCode}`;
+      
+      const originalTitle = document.title;
+      document.title = fileName;
+
       // Allow time for styles, fonts, and signature images to settle
       const timer = setTimeout(() => {
         window.print();
-        // Option: navigate back or close tab after print dialog closes
-        // window.close(); 
+        // Restore title after print dialog triggers
+        document.title = originalTitle;
       }, 800);
       return () => clearTimeout(timer);
     }
-  }, [loading, data, error]);
+  }, [loading, templateLoading, data, template, error]);
 
-  if (loading) {
+  if (loading || templateLoading) {
     return (
       <div className="h-screen w-screen bg-zinc-900 flex flex-col items-center justify-center text-white no-print">
         <div className="w-16 h-16 border-4 border-synos-primary border-t-transparent rounded-full animate-spin mb-4"></div>
@@ -102,7 +116,7 @@ export const DocumentPrinter = () => {
       </div>
 
       <div className="relative shadow-[0_0_100px_rgba(0,0,0,0.1)]">
-        <ReportA4 reportData={data} />
+        <ReportA4 reportData={data} template={template} />
       </div>
 
       <footer className="no-print mt-12 mb-12 text-zinc-400 text-[10px] uppercase tracking-[0.3em]">

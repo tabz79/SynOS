@@ -22,5 +22,12 @@ namespace SynOS.Models.DTOs.Reporting
         public int SignaturesCount { get; set; }
         public bool Delivered { get; set; }
         public bool IsManualFlow { get; set; }
+
+        public string? PdfUrl { get; set; }
+        public string? Mrn { get; set; }
+        public string? PatientPhone { get; set; }
+        public string? ReferrerName { get; set; }
+        public Guid? BranchId { get; set; }
+        public string? BranchName { get; set; }
     }
 }

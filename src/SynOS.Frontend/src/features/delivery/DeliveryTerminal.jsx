@@ -19,6 +19,7 @@ import {
     Package
 } from 'lucide-react';
 import { ReportA4 } from '../documents/templates/ReportA4';
+import { useTemplateForReport } from '../documents/templates/hooks/useReportTemplates';
 import { StockRequestPanel } from '../inventory/StockRequestPanel';
 
 export function DeliveryTerminal() {
@@ -36,6 +37,8 @@ export function DeliveryTerminal() {
     const [showWhatsAppPrompt, setShowWhatsAppPrompt] = useState(false);
     const [deliveryPhone, setDeliveryPhone] = useState("");
     const [isInventoryModalOpen, setIsInventoryModalOpen] = useState(false);
+
+    const { template, loading: templateLoading } = useTemplateForReport(reportData);
 
     useEffect(() => {
         fetchWorklist();
@@ -221,11 +224,11 @@ export function DeliveryTerminal() {
                 {/* RIGHT: Preview & Actions (70%) */}
                 <div className="flex-1 flex flex-col min-w-0 bg-white dark:bg-synos-background">
                     <div className="flex-1 overflow-hidden relative">
-                        {isLoadingDetail ? (
+                        {isLoadingDetail || templateLoading ? (
                             <div className="absolute inset-0 flex items-center justify-center bg-white/50 dark:bg-synos-background/50 backdrop-blur-sm z-10">
                                 <Loader2 className="w-12 h-12 animate-spin text-synos-primary" />
                             </div>
-                        ) : reportStructure ? (
+                        ) : (reportStructure && template) ? (
                             <div className="h-full flex flex-col p-8 overflow-hidden">
                                 {/* Standardized Report Preview (Standard SynOS Template) */}
                                 <div className="flex-1 border dark:border-white/5 border-zinc-200 rounded-3xl overflow-hidden bg-zinc-300/50 dark:bg-zinc-900/50 flex flex-col shadow-inner relative">
@@ -239,7 +242,7 @@ export function DeliveryTerminal() {
                                     </div>
                                     <div className="flex-1 overflow-auto p-8 pt-20 custom-scrollbar flex justify-center">
                                         <div className="bg-white shadow-[0_20px_50px_rgba(0,0,0,0.1)] rounded-sm overflow-hidden h-max origin-top scale-[0.85]">
-                                            <ReportA4 reportData={reportData} />
+                                            <ReportA4 reportData={reportData} template={template} />
                                         </div>
                                     </div>
                                 </div>

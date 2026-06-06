@@ -1,4 +1,22 @@
 export const ReportsApi = {
+    searchReportsArchive: async (params) => {
+        const queryParams = new URLSearchParams();
+        Object.entries(params).forEach(([key, val]) => {
+            if (val !== null && val !== undefined && val !== "") {
+                if (Array.isArray(val)) {
+                    val.forEach(v => queryParams.append(key, v));
+                } else {
+                    queryParams.append(key, val);
+                }
+            }
+        });
+        const response = await fetch(`/api/v1/reports/archive?${queryParams.toString()}`, {
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('synos_jwt')}` }
+        });
+        if (!response.ok) throw new Error('Failed to query report archive');
+        return await response.json();
+    },
+
     getReportsByStatus: async (status) => {
         const response = await fetch(`/api/v1/reports?status=${status}`, {
             headers: { 'Authorization': `Bearer ${localStorage.getItem('synos_jwt')}` }
@@ -148,5 +166,82 @@ export const ReportsApi = {
         });
         if (!response.ok) throw new Error('Failed to mark as printed');
         return await response.json();
+    },
+
+    getTemplates: async (modality) => {
+        const url = modality ? `/api/v1/reports/templates?modality=${encodeURIComponent(modality)}` : '/api/v1/reports/templates';
+        const response = await fetch(url, {
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('synos_jwt')}` }
+        });
+        if (!response.ok) throw new Error('Failed to fetch templates');
+        return await response.json();
+    },
+
+    getTemplateById: async (id) => {
+        const response = await fetch(`/api/v1/reports/templates/${id}`, {
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('synos_jwt')}` }
+        });
+        if (!response.ok) throw new Error('Failed to fetch template');
+        return await response.json();
+    },
+
+    createTemplate: async (dto) => {
+        const response = await fetch('/api/v1/reports/templates', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('synos_jwt')}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(dto)
+        });
+        if (!response.ok) {
+            const error = await response.json().catch(() => ({}));
+            throw new Error(error.message || 'Failed to create template');
+        }
+        return await response.json();
+    },
+
+    updateTemplate: async (id, dto) => {
+        const response = await fetch(`/api/v1/reports/templates/${id}`, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('synos_jwt')}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(dto)
+        });
+        if (!response.ok) {
+            const error = await response.json().catch(() => ({}));
+            throw new Error(error.message || 'Failed to update template');
+        }
+        return true;
+    },
+
+    setDefaultTemplate: async (id) => {
+        const response = await fetch(`/api/v1/reports/templates/${id}/set-default`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('synos_jwt')}` }
+        });
+        if (!response.ok) throw new Error('Failed to set default template');
+        return true;
+    },
+
+    publishTemplate: async (id) => {
+        const response = await fetch(`/api/v1/reports/templates/${id}/publish`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('synos_jwt')}` }
+        });
+        if (!response.ok) throw new Error('Failed to publish template');
+        return true;
+    },
+
+    deleteTemplate: async (id) => {
+        const response = await fetch(`/api/v1/reports/templates/${id}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('synos_jwt')}` }
+        });
+        if (!response.ok) throw new Error('Failed to delete template');
+        return true;
     }
 };
+

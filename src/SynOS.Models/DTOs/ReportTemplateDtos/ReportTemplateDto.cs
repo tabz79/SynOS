@@ -17,6 +17,7 @@ namespace SynOS.Models.DTOs.ReportTemplateDtos
         public bool IsDefault { get; set; }
         public bool IsDeleted { get; set; }
         public Guid CreatedBy { get; set; }
+        public Guid? BranchId { get; set; }
         public DateTimeOffset CreatedAt { get; set; }
         public DateTimeOffset UpdatedAt { get; set; }
     }

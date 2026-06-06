@@ -1,4 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useAuth } from '../../context/AuthContext';
+import { ReportsApi } from '../../api/reports';
+import { mapTemplateToBackendDsl, mapBackendDslToTemplate } from '../documents/templates/ReportTemplateService';
+import { useTemplatesList } from '../documents/templates/hooks/useReportTemplates';
 import { DEFAULT_TEMPLATES, sanitizeTemplates } from '../documents/templates/defaultTemplates';
 import { 
   Columns, 
@@ -19,23 +23,6 @@ import {
 } from 'lucide-react';
 import { cn } from "@/lib/utils";
 
-
-
-const loadTemplates = () => {
-  const saved = localStorage.getItem("synos_report_templates");
-  if (saved) {
-    try {
-      const parsed = JSON.parse(saved);
-      return sanitizeTemplates(parsed);
-    } catch (e) {
-      console.error("Failed to parse templates from localStorage:", e);
-    }
-  }
-  // Initialize with seed templates if empty
-  const sanitizedDefault = sanitizeTemplates(DEFAULT_TEMPLATES);
-  localStorage.setItem("synos_report_templates", JSON.stringify(sanitizedDefault));
-  return sanitizedDefault;
-};
 
 const getCoordinates = (template) => {
   const margin = template.leftRightMargin ?? 15;
@@ -77,11 +64,23 @@ const getCoordinates = (template) => {
 };
 
 export function ReportTemplatesScreen() {
-  const [templates, setTemplates] = useState(loadTemplates);
-  const [selectedTemplate, setSelectedTemplate] = useState(() => {
-    const list = loadTemplates();
-    return list[0] || DEFAULT_TEMPLATES[0];
-  });
+  const { user } = useAuth();
+  const { templates, setTemplates, loading, refresh } = useTemplatesList();
+  const [selectedTemplate, setSelectedTemplate] = useState(null);
+
+  useEffect(() => {
+    if (templates.length > 0) {
+      if (!selectedTemplate) {
+        setSelectedTemplate(templates[0]);
+      } else {
+        const updated = templates.find(t => t.id === selectedTemplate.id);
+        if (updated) {
+          setSelectedTemplate(updated);
+        }
+      }
+    }
+  }, [templates]);
+
   const [activeTab, setActiveTab] = useState("columns"); // columns | signatures | settings
   const [previewMode, setPreviewMode] = useState("digital"); // digital | physical
   const [isSavedSuccessfully, setIsSavedSuccessfully] = useState(false);
@@ -128,11 +127,6 @@ export function ReportTemplatesScreen() {
     const handlePointerUp = () => {
       document.removeEventListener('pointermove', handlePointerMove);
       document.removeEventListener('pointerup', handlePointerUp);
-      
-      setTemplates(currentTemplates => {
-        localStorage.setItem("synos_report_templates", JSON.stringify(currentTemplates));
-        return currentTemplates;
-      });
     };
     
     document.addEventListener('pointermove', handlePointerMove);
@@ -188,21 +182,17 @@ export function ReportTemplatesScreen() {
     setActiveColIndex(0);
   };
 
-  const handleCreateTemplate = () => {
+  const handleCreateTemplate = async () => {
     const modalityVal = newTemplateModality === "Custom" ? customModalityText.trim() : newTemplateModality.trim();
     if (!newTemplateTitle.trim() || !modalityVal) return;
 
-    const newId = `temp-${modalityVal.toLowerCase().replace(/[^a-z0-9]/g, "-")}-${Date.now()}`;
-    
-    // Smart Cloning: If selectedTemplate exists, clone all visual styles, spacing, borders, background, margins, coordinates, columns, and signature slots
+    // Smart Cloning
     const baseTemplate = selectedTemplate || {};
-    const newTemplate = {
+    const tempTemplate = {
       ...baseTemplate,
-      id: newId,
       modality: modalityVal,
       title: newTemplateTitle.trim(),
       brandNameText: newTemplateTitle.trim(),
-      // Deep copy to avoid reference sharing
       columns: baseTemplate.columns ? baseTemplate.columns.map(c => ({ ...c })) : [
         { code: "Parameter", title: "Test Parameter", weight: 3, alignment: "Left", bold: true },
         { code: "Value", title: "Observed Value", weight: 2, alignment: "Center", bold: false },
@@ -214,13 +204,33 @@ export function ReportTemplatesScreen() {
       ]
     };
 
-    const updatedList = [...templates, newTemplate];
-    setTemplates(updatedList);
-    localStorage.setItem("synos_report_templates", JSON.stringify(updatedList));
-    setSelectedTemplate(newTemplate);
-    setNewTemplateTitle("");
-    setNewTemplateModality("");
-    setCustomModalityText("");
+    try {
+      const dsl = mapTemplateToBackendDsl(tempTemplate);
+      const createDto = {
+        modality: modalityVal,
+        name: newTemplateTitle.trim(),
+        description: `Template configuration for ${modalityVal}.`,
+        templateJson: dsl,
+        createdBy: user?.id || "00000000-0000-0000-0000-000000000000"
+      };
+
+      const created = await ReportsApi.createTemplate(createDto);
+      
+      setNewTemplateTitle("");
+      setNewTemplateModality("");
+      setCustomModalityText("");
+      
+      // Refresh templates list
+      await refresh();
+      
+      // Map and select the new template
+      const dslObj = created.templateDsl || JSON.parse(created.templateJson);
+      const mappedNew = mapBackendDslToTemplate(dslObj, created.templateId, created.isDefault, created.isPublished);
+      setSelectedTemplate(mappedNew);
+    } catch (e) {
+      console.error("Failed to create template", e);
+      alert(e.message || "Failed to create template");
+    }
   };
 
   const handleShiftColumn = (index, direction) => {
@@ -395,11 +405,45 @@ export function ReportTemplatesScreen() {
     setTemplates(templates.map(t => t.id === selectedTemplate.id ? updatedTemplate : t));
   };
 
-  const handleSaveAll = () => {
-    localStorage.setItem("synos_report_templates", JSON.stringify(templates));
-    setIsSavedSuccessfully(true);
-    setTimeout(() => setIsSavedSuccessfully(false), 3000);
+  const handleSaveAll = async () => {
+    if (!selectedTemplate) return;
+    try {
+      const dsl = mapTemplateToBackendDsl(selectedTemplate);
+      const updateDto = {
+        modality: selectedTemplate.modality,
+        name: selectedTemplate.title || selectedTemplate.name || "",
+        description: selectedTemplate.description || "Updated layout configuration.",
+        templateJson: dsl,
+        isPublished: selectedTemplate.isPublished,
+        isDefault: selectedTemplate.isDefault
+      };
+
+      await ReportsApi.updateTemplate(selectedTemplate.id, updateDto);
+      
+      setIsSavedSuccessfully(true);
+      setTimeout(() => setIsSavedSuccessfully(false), 3000);
+      refresh();
+    } catch (e) {
+      console.error("Failed to save template layout changes", e);
+      alert(e.message || "Failed to save template layout changes");
+    }
   };
+
+  if (loading && templates.length === 0) {
+    return (
+      <div className="w-full h-[calc(100vh-56px)] flex items-center justify-center bg-zinc-50 dark:bg-zinc-950">
+        <span className="text-sm font-semibold text-zinc-500 animate-pulse">Loading report templates...</span>
+      </div>
+    );
+  }
+
+  if (!selectedTemplate) {
+    return (
+      <div className="w-full h-[calc(100vh-56px)] flex items-center justify-center bg-zinc-50 dark:bg-zinc-950">
+        <span className="text-sm font-semibold text-zinc-500 animate-pulse">No template selected</span>
+      </div>
+    );
+  }
 
   const coords = getCoordinates(selectedTemplate);
 

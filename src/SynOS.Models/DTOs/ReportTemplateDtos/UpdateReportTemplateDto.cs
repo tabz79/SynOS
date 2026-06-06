@@ -20,5 +20,6 @@ namespace SynOS.Models.DTOs.ReportTemplateDtos
 
         public bool? IsPublished { get; set; }
         public bool? IsDefault { get; set; }
+        public Guid? BranchId { get; set; }
     }
 }

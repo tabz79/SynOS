@@ -26,6 +26,9 @@ import {
 } from 'lucide-react';
 import { cn } from "@/lib/utils";
 import { AdminApi } from '../../api/admin';
+import { ReportsApi } from '../../api/reports';
+import { mapBackendDslToTemplate, mapTemplateToBackendDsl } from '../documents/templates/ReportTemplateService';
+
 
 // Seed default templates matching ReportTemplatesScreen.jsx
 const DEFAULT_TEMPLATES = [
@@ -248,18 +251,7 @@ const DEFAULT_TEMPLATES = [
 // Helper to look up active template case-insensitively using test department Modality
 const getActiveTemplate = (test, templatesList) => {
   if (!test) return DEFAULT_TEMPLATES[0];
-  let list = templatesList;
-  if (!list) {
-    const saved = localStorage.getItem("synos_report_templates");
-    list = DEFAULT_TEMPLATES;
-    if (saved) {
-      try {
-        list = JSON.parse(saved);
-      } catch (e) {
-        console.error("Failed to parse templates from localStorage:", e);
-      }
-    }
-  }
+  const list = templatesList && templatesList.length > 0 ? templatesList : DEFAULT_TEMPLATES;
 
   let found = null;
   // If manual templateId override exists, match by exact template ID
@@ -925,26 +917,31 @@ export function TestMasterScreen() {
   const [isSavedSuccessfully, setIsSavedSuccessfully] = useState(false);
 
   // Dynamic Template List Hook
-  const [reportTemplatesList, setReportTemplatesList] = useState(() => {
-    const saved = localStorage.getItem("synos_report_templates");
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch (e) {
-        console.error("Failed to parse templates from localStorage:", e);
-      }
+  const [reportTemplatesList, setReportTemplatesList] = useState([]);
+
+  const loadTemplatesFromBackend = async () => {
+    try {
+      const list = await ReportsApi.getTemplates();
+      const mapped = list.map(item => {
+        let dsl = item.templateDsl;
+        if (!dsl && item.templateJson) {
+          try {
+            dsl = JSON.parse(item.templateJson);
+          } catch (e) {
+            console.error(e);
+          }
+        }
+        return mapBackendDslToTemplate(dsl, item.templateId, item.isDefault, item.isPublished);
+      });
+      setReportTemplatesList(mapped);
+    } catch (e) {
+      console.error("Failed to load templates from backend", e);
     }
-    return DEFAULT_TEMPLATES;
-  });
+  };
 
   useEffect(() => {
-    const saved = localStorage.getItem("synos_report_templates");
-    if (saved) {
-      try {
-        setReportTemplatesList(JSON.parse(saved));
-      } catch (e) {
-        console.error("Failed to parse templates from localStorage:", e);
-      }
+    if (activeTab === "report-setup") {
+      loadTemplatesFromBackend();
     }
   }, [activeTab]);
   const [isEditingMetadata, setIsEditingMetadata] = useState(false);
@@ -1032,6 +1029,7 @@ export function TestMasterScreen() {
     };
     
     loadDbTestsAndMerge();
+    loadTemplatesFromBackend();
   }, []);
 
   const handleStartDrag = (e, activeTemplateId, fieldX, fieldY, initValX, initValY, isBottom = false) => {
@@ -1071,7 +1069,21 @@ export function TestMasterScreen() {
       document.removeEventListener('pointerup', handlePointerUp);
       
       setReportTemplatesList(currentTemplates => {
-        localStorage.setItem("synos_report_templates", JSON.stringify(currentTemplates));
+        const updated = currentTemplates.find(t => t.id === activeTemplateId);
+        if (updated) {
+          const dsl = mapTemplateToBackendDsl(updated);
+          const updateDto = {
+            modality: updated.modality,
+            name: updated.title || updated.name || "",
+            description: updated.description || "Updated layout coordinates via Test Master screen drag.",
+            templateJson: dsl,
+            isPublished: updated.isPublished,
+            isDefault: updated.isDefault
+          };
+          ReportsApi.updateTemplate(activeTemplateId, updateDto).catch(e => {
+            console.error("Failed to save dragged coordinate changes to database", e);
+          });
+        }
         return currentTemplates;
       });
     };

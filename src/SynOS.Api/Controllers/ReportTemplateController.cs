@@ -11,7 +11,7 @@ namespace SynOS.Api.Controllers
 {
     [ApiController]
     [Route("api/v1/reports/templates")]
-    [Authorize(Policy = "AdminPolicy")] // Only Admin can manage report templates
+    [Authorize(Roles = "Admin,Radiologist,Pathologist,Typist")]
     public class ReportTemplateController : ControllerBase
     {
         private readonly IReportTemplateService _reportTemplateService;
@@ -24,6 +24,7 @@ namespace SynOS.Api.Controllers
         }
 
         [HttpPost]
+        [Authorize(Policy = "AdminPolicy")]
         public async Task<IActionResult> CreateTemplate([FromBody] CreateReportTemplateDto createDto)
         {
             try
@@ -71,6 +72,7 @@ namespace SynOS.Api.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize(Policy = "AdminPolicy")]
         public async Task<IActionResult> UpdateTemplate(Guid id, [FromBody] UpdateReportTemplateDto updateDto)
         {
             try
@@ -89,6 +91,7 @@ namespace SynOS.Api.Controllers
         }
 
         [HttpPost("{id}/publish")]
+        [Authorize(Policy = "AdminPolicy")]
         public async Task<IActionResult> PublishTemplate(Guid id)
         {
             try
@@ -107,6 +110,7 @@ namespace SynOS.Api.Controllers
         }
 
         [HttpPost("{id}/set-default")]
+        [Authorize(Policy = "AdminPolicy")]
         public async Task<IActionResult> SetDefaultTemplate(Guid id)
         {
             try
@@ -125,6 +129,7 @@ namespace SynOS.Api.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Policy = "AdminPolicy")]
         public async Task<IActionResult> SoftDeleteTemplate(Guid id)
         {
             try
