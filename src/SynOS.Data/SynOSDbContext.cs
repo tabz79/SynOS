@@ -114,6 +114,7 @@ namespace SynOS.Data
 
         // Registry Stabilization (Phase 8)
         public DbSet<DepartmentMaster> DepartmentMasters { get; set; } = null!;
+        public DbSet<ModalityMaster> ModalityMasters { get; set; } = null!;
         public DbSet<TestPricing> TestPricings { get; set; } = null!;
         public DbSet<ProfileMap> ProfileMaps { get; set; } = null!;
 
@@ -413,6 +414,37 @@ namespace SynOS.Data
                     .WithMany()
                     .HasForeignKey(rs => rs.ClaimedByUserId)
                     .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(rs => rs.ModalityMaster)
+                    .WithMany()
+                    .HasForeignKey(rs => rs.ModalityId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<ModalityMaster>(entity =>
+            {
+                entity.ToTable("ModalityMasters");
+                entity.HasIndex(e => e.Code).IsUnique();
+                entity.HasOne(e => e.DepartmentMaster)
+                      .WithMany()
+                      .HasForeignKey(e => e.DepartmentId)
+                      .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<Test>(entity =>
+            {
+                entity.HasOne(e => e.ModalityMaster)
+                      .WithMany()
+                      .HasForeignKey(e => e.ModalityId)
+                      .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<ReportTemplate>(entity =>
+            {
+                entity.HasOne(e => e.ModalityMaster)
+                      .WithMany()
+                      .HasForeignKey(e => e.ModalityId)
+                      .OnDelete(DeleteBehavior.Restrict);
             });
             
             // Financial Facts (Precision Fixes)

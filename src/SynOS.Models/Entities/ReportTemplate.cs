@@ -13,6 +13,11 @@ namespace SynOS.Models.Entities
         [StringLength(50)]
         public string Modality { get; set; }
 
+        public Guid? ModalityId { get; set; }
+
+        [ForeignKey("ModalityId")]
+        public virtual ModalityMaster? ModalityMaster { get; set; }
+
         [Required]
         [StringLength(200)]
         public string Name { get; set; }

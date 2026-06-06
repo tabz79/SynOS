@@ -300,5 +300,124 @@ namespace SynOS.Data
             }
             await context.SaveChangesAsync();
         }
+
+        public static async Task SeedModalityMastersAsync(SynOSDbContext context)
+        {
+            var radDept = await context.DepartmentMasters.FirstOrDefaultAsync(d => d.Code == "RAD");
+            if (radDept == null)
+            {
+                radDept = new DepartmentMaster
+                {
+                    DepartmentId = Guid.NewGuid(),
+                    Code = "RAD",
+                    Name = "Radiology",
+                    MacroDepartment = "Radiology",
+                    IsActive = true,
+                    CreatedAt = DateTimeOffset.UtcNow
+                };
+                context.DepartmentMasters.Add(radDept);
+                await context.SaveChangesAsync();
+            }
+
+            var modalities = new[]
+            {
+                new { Code = "XRAY", Name = "X-Ray" },
+                new { Code = "CT", Name = "CT Scan" },
+                new { Code = "MRI", Name = "MRI" },
+                new { Code = "US", Name = "Ultrasound" }
+            };
+
+            var modalityIds = new Dictionary<string, Guid>();
+
+            foreach (var m in modalities)
+            {
+                var existing = await context.ModalityMasters.FirstOrDefaultAsync(mm => mm.Code == m.Code);
+                if (existing == null)
+                {
+                    var newModality = new ModalityMaster
+                    {
+                        ModalityId = Guid.NewGuid(),
+                        Code = m.Code,
+                        Name = m.Name,
+                        DepartmentId = radDept.DepartmentId,
+                        IsActive = true,
+                        CreatedAt = DateTimeOffset.UtcNow
+                    };
+                    context.ModalityMasters.Add(newModality);
+                    modalityIds[m.Code] = newModality.ModalityId;
+                }
+                else
+                {
+                    modalityIds[m.Code] = existing.ModalityId;
+                }
+            }
+            await context.SaveChangesAsync();
+
+            // CONSOLIDATE LEGACY DATA:
+            var legacyDeptId = Guid.Parse("99f8d2bd-3b7c-4188-840a-2f647aad6454");
+            var legacyDept = await context.DepartmentMasters.FindAsync(legacyDeptId);
+            if (legacyDept != null)
+            {
+                legacyDept.IsActive = false;
+            }
+
+            var xrayGuid = modalityIds["XRAY"];
+
+            // Update all tests pointing to legacy department to point to RAD and set ModalityId to XRAY
+            var legacyTests = await context.Tests
+                .Where(t => t.DepartmentId == legacyDeptId || t.TestCode == "ABD" || t.TestCode == "AORTOGRAM")
+                .ToListAsync();
+
+            foreach (var test in legacyTests)
+            {
+                test.DepartmentId = radDept.DepartmentId;
+                test.ModalityId = xrayGuid;
+                test.Category = "X-Ray";
+            }
+
+            // Update existing radiology studies
+            var studies = await context.RadiologyStudies.ToListAsync();
+            foreach (var s in studies)
+            {
+                if (s.ModalityId == Guid.Empty)
+                {
+                    s.ModalityId = xrayGuid;
+                    s.Modality = "X-Ray";
+                }
+            }
+
+            // Update existing report templates matching string modality to their respective ModalityId
+            var templates = await context.ReportTemplates.ToListAsync();
+            foreach (var t in templates)
+            {
+                if (!t.ModalityId.HasValue && !string.IsNullOrEmpty(t.Modality))
+                {
+                    var modUpper = t.Modality.ToUpperInvariant();
+                    if (modUpper.Contains("XRAY") || modUpper.Contains("X-RAY") || modUpper.Contains("XR"))
+                    {
+                        t.ModalityId = xrayGuid;
+                        t.Modality = "X-Ray";
+                    }
+                    else if (modUpper.Contains("CT"))
+                    {
+                        t.ModalityId = modalityIds["CT"];
+                        t.Modality = "CT Scan";
+                    }
+                    else if (modUpper.Contains("MRI"))
+                    {
+                        t.ModalityId = modalityIds["MRI"];
+                        t.Modality = "MRI";
+                    }
+                    else if (modUpper.Contains("US") || modUpper.Contains("ULTRASOUND") || modUpper.Contains("SONO"))
+                    {
+                        t.ModalityId = modalityIds["US"];
+                        t.Modality = "Ultrasound";
+                    }
+                }
+            }
+
+            await context.SaveChangesAsync();
+            Console.WriteLine("[CatalogSeedService] Seeded base modalities and migrated legacy departments/tests/studies/templates successfully.");
+        }
     }
 }

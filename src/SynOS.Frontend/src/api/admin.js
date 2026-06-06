@@ -79,6 +79,18 @@ export const AdminApi = {
         return apiClient.delete(`/api/v1/admin/departments/${id}`);
     },
 
+    getModalities: async () => {
+        return apiClient.get(`/api/v1/admin/modalities`);
+    },
+
+    createModality: async (dto) => {
+        return apiClient.post(`/api/v1/admin/modalities`, dto);
+    },
+
+    deleteModality: async (id) => {
+        return apiClient.delete(`/api/v1/admin/modalities/${id}`);
+    },
+
     getWorkspaces: async () => {
         return apiClient.get(`${API_BASE}/users/workspaces`);
     },

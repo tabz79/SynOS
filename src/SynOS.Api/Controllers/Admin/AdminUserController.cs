@@ -265,5 +265,69 @@ namespace SynOS.Api.Controllers.Admin
                 return NotFound(new { Message = ex.Message });
             }
         }
+
+        [HttpGet("/api/v1/admin/modalities")]
+        public async Task<IActionResult> GetAllModalities()
+        {
+            var modalities = await _adminUserService.GetAllModalitiesAsync();
+            var dtos = new System.Collections.Generic.List<ModalityMasterDto>();
+            foreach (var m in modalities)
+            {
+                dtos.Add(new ModalityMasterDto
+                {
+                    ModalityId = m.ModalityId,
+                    Code = m.Code,
+                    Name = m.Name,
+                    DepartmentId = m.DepartmentId,
+                    DepartmentName = m.DepartmentMaster?.Name ?? string.Empty,
+                    IsActive = m.IsActive
+                });
+            }
+            return Ok(dtos);
+        }
+
+        [HttpPost("/api/v1/admin/modalities")]
+        public async Task<IActionResult> CreateModality([FromBody] CreateModalityRequest request)
+        {
+            try
+            {
+                var modality = await _adminUserService.CreateModalityAsync(request.Code, request.Name, request.DepartmentId);
+                return Ok(new ModalityMasterDto
+                {
+                    ModalityId = modality.ModalityId,
+                    Code = modality.Code,
+                    Name = modality.Name,
+                    DepartmentId = modality.DepartmentId,
+                    DepartmentName = modality.DepartmentMaster?.Name ?? string.Empty,
+                    IsActive = modality.IsActive
+                });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { Message = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { Message = ex.Message });
+            }
+        }
+
+        [HttpDelete("/api/v1/admin/modalities/{id}")]
+        public async Task<IActionResult> DeleteModality(Guid id)
+        {
+            try
+            {
+                await _adminUserService.DeleteModalityAsync(id);
+                return NoContent();
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { Message = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { Message = ex.Message });
+            }
+        }
     }
 }

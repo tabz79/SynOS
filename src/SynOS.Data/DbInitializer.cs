@@ -49,6 +49,7 @@ namespace SynOS.Data
             CatalogSeedService.SeedSpecimenTypesAsync(context).GetAwaiter().GetResult();
             CatalogSeedService.SeedTubeTypesAsync(context).GetAwaiter().GetResult();
             CatalogSeedService.SeedDepartmentMastersAsync(context).GetAwaiter().GetResult();
+            CatalogSeedService.SeedModalityMastersAsync(context).GetAwaiter().GetResult();
 
             SeedIMS(context);
             SeedWorkforcePolicies(context);

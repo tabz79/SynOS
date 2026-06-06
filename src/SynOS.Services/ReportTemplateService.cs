@@ -139,8 +139,36 @@ namespace SynOS.Services
             }
             else
             {
-                templateEntity = await _context.ReportTemplates.AsNoTracking()
-                    .FirstOrDefaultAsync(t => t.Modality == reportData.Modality && t.IsDefault && t.IsPublished && !t.IsDeleted);
+                // Try resolving ModalityId if it is a radiology report
+                var report = await _context.Reports.AsNoTracking().FirstOrDefaultAsync(r => r.ReportId == visitId);
+                Guid? modalityId = null;
+                if (report != null && report.SourceType == "RadiologyStudy")
+                {
+                    var study = await _context.RadiologyStudies.AsNoTracking().FirstOrDefaultAsync(s => s.RadiologyStudyId == report.SourceId);
+                    if (study != null)
+                    {
+                        modalityId = study.ModalityId;
+                    }
+                }
+
+                if (modalityId.HasValue)
+                {
+                    templateEntity = await _context.ReportTemplates.AsNoTracking()
+                        .FirstOrDefaultAsync(t => t.ModalityId == modalityId.Value && t.IsDefault && t.IsPublished && !t.IsDeleted);
+
+                    // Fallback to legacy string match if no match by ID
+                    if (templateEntity == null)
+                    {
+                        templateEntity = await _context.ReportTemplates.AsNoTracking()
+                            .FirstOrDefaultAsync(t => t.Modality == reportData.Modality && t.IsDefault && t.IsPublished && !t.IsDeleted);
+                    }
+                }
+                else
+                {
+                    templateEntity = await _context.ReportTemplates.AsNoTracking()
+                        .FirstOrDefaultAsync(t => t.Modality == reportData.Modality && t.IsDefault && t.IsPublished && !t.IsDeleted);
+                }
+
                 if (templateEntity == null) throw new InvalidOperationException($"No default, published, and non-deleted template found for modality '{reportData.Modality}'.");
             }
             

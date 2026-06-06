@@ -22,7 +22,9 @@ import {
   Shield,
   ArrowRight,
   TrendingUp,
-  Cpu
+  Cpu,
+  Building,
+  Loader2
 } from 'lucide-react';
 import { cn } from "@/lib/utils";
 import { AdminApi } from '../../api/admin';
@@ -710,6 +712,7 @@ const normalizeDbTest = (dbTest) => {
   const testCode = dbTest.testCode || dbTest.TestCode || dbTest.code;
   const testName = dbTest.testName || dbTest.TestName || dbTest.name;
   const department = dbTest.department || dbTest.Department;
+  const modalityId = dbTest.modalityId || dbTest.ModalityId || null;
   const basePrice = dbTest.basePrice !== undefined ? dbTest.basePrice : (dbTest.BasePrice !== undefined ? dbTest.BasePrice : 0);
   const category = dbTest.category || dbTest.Category || "";
   const tatHours = dbTest.tat_Hours || dbTest.TAT_Hours || dbTest.tatHours || dbTest.TaT_Hours || 24;
@@ -722,6 +725,7 @@ const normalizeDbTest = (dbTest) => {
     code: testCode,
     name: testName,
     department: department,
+    modalityId: modalityId,
     basePrice: Number(basePrice) || 0,
     category: category,
     tatHours: Number(tatHours) || 24,
@@ -810,6 +814,7 @@ const mergeCatalog = (dbTestsList, localCatalog) => {
         name: dbTest.name,
         code: dbTest.code,
         department: dbTest.department,
+        modalityId: dbTest.modalityId,
         basePrice: dbTest.basePrice,
         tatHours: dbTest.tatHours,
         isOutsourced: dbTest.isOutsourced,
@@ -826,6 +831,7 @@ const mergeCatalog = (dbTestsList, localCatalog) => {
         name: dbTest.name,
         code: dbTest.code,
         department: dbTest.department || "Biochemistry",
+        modalityId: dbTest.modalityId,
         basePrice: dbTest.basePrice || 0,
         isProfile: dbTest.isProfile,
         includedTestIds: [],
@@ -906,6 +912,80 @@ export function TestMasterScreen() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedDept, setSelectedDept] = useState("All");
   const [departments, setDepartments] = useState(["All", "Hematology", "Biochemistry", "Health Panels", "Microbiology", "Serology", "Radiology"]);
+  
+  const [dbDeptsList, setDbDeptsList] = useState([]);
+  const [modalitiesList, setModalitiesList] = useState([]);
+  const [showCreateDeptModal, setShowCreateDeptModal] = useState(false);
+  const [showCreateModalityModal, setShowCreateModalityModal] = useState(false);
+
+  const [newDeptCode, setNewDeptCode] = useState("");
+  const [newDeptName, setNewDeptName] = useState("");
+  const [newDeptMacro, setNewDeptMacro] = useState("Radiology");
+  const [isCreatingDept, setIsCreatingDept] = useState(false);
+
+  const [newModalityCode, setNewModalityCode] = useState("");
+  const [newModalityName, setNewModalityName] = useState("");
+  const [isCreatingModality, setIsCreatingModality] = useState(false);
+
+  const handleCreateDepartmentSubmit = async (e) => {
+    e.preventDefault();
+    if (!newDeptCode.trim() || !newDeptName.trim() || !newDeptMacro.trim()) {
+      alert("Please fill all fields.");
+      return;
+    }
+    setIsCreatingDept(true);
+    try {
+      const created = await AdminApi.createDepartment({
+        code: newDeptCode.trim().toUpperCase(),
+        name: newDeptName.trim(),
+        macroDepartment: newDeptMacro.trim()
+      });
+      setDbDeptsList(prev => [...prev, created]);
+      setDepartments(prev => [...prev, created.name]);
+      setMetaDept(created.name);
+      
+      setNewDeptCode("");
+      setNewDeptName("");
+      setShowCreateDeptModal(false);
+    } catch (err) {
+      console.error("Failed to create department:", err);
+      alert(err.message || "Failed to create department");
+    } finally {
+      setIsCreatingDept(false);
+    }
+  };
+
+  const handleCreateModalitySubmit = async (e) => {
+    e.preventDefault();
+    const currentDeptObj = dbDeptsList.find(d => d.name === metaDept);
+    if (!currentDeptObj) {
+      alert("Invalid department selected.");
+      return;
+    }
+    if (!newModalityCode.trim() || !newModalityName.trim()) {
+      alert("Please fill all fields.");
+      return;
+    }
+    setIsCreatingModality(true);
+    try {
+      const created = await AdminApi.createModality({
+        code: newModalityCode.trim().toUpperCase(),
+        name: newModalityName.trim(),
+        departmentId: currentDeptObj.departmentId
+      });
+      setModalitiesList(prev => [...prev, created]);
+      setMetaModalityId(created.modalityId);
+      
+      setNewModalityCode("");
+      setNewModalityName("");
+      setShowCreateModalityModal(false);
+    } catch (err) {
+      console.error("Failed to create modality:", err);
+      alert(err.message || "Failed to create modality");
+    } finally {
+      setIsCreatingModality(false);
+    }
+  };
 
   const [scale, setScale] = useState(1);
   const containerRef = useRef(null);
@@ -979,12 +1059,20 @@ export function TestMasterScreen() {
         
         try {
           const dbDepts = await AdminApi.getDepartments();
+          setDbDeptsList(dbDepts || []);
           if (dbDepts && dbDepts.length > 0) {
             const mappedDepts = ["All", ...dbDepts.map(d => d.name)];
             setDepartments(mappedDepts);
           }
         } catch (deptErr) {
           console.error("Failed to fetch database departments on mount:", deptErr);
+        }
+
+        try {
+          const dbModalities = await AdminApi.getModalities();
+          setModalitiesList(dbModalities || []);
+        } catch (modalitiesErr) {
+          console.error("Failed to fetch database modalities on mount:", modalitiesErr);
         }
         
         const savedCatalog = localStorage.getItem("synos_test_catalog");
@@ -1099,6 +1187,7 @@ export function TestMasterScreen() {
   const [metaIsProfile, setMetaIsProfile] = useState(selectedTest?.isProfile || false);
   const [metaSpecimenTypeCode, setMetaSpecimenTypeCode] = useState(selectedTest?.specimenTypeCode || "SERUM");
   const [metaCategory, setMetaCategory] = useState(selectedTest?.category || "General");
+  const [metaModalityId, setMetaModalityId] = useState(selectedTest?.modalityId || "");
 
   // Right Drawer Contextual States
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -1136,6 +1225,7 @@ export function TestMasterScreen() {
     setMetaIsProfile(test.isProfile);
     setMetaSpecimenTypeCode(test.specimenTypeCode || "SERUM");
     setMetaCategory(test.category || "General");
+    setMetaModalityId(test.modalityId || "");
     setIsEditingMetadata(false);
     setDrawerOpen(false);
 
@@ -1146,9 +1236,14 @@ export function TestMasterScreen() {
   };
 
   const handleSaveMetadata = () => {
+    const deptObj = dbDeptsList.find(d => d.name === metaDept);
+    const isRadiology = deptObj ? deptObj.macroDepartment === "Radiology" : (metaDept === "Radiology" || metaDept === "RAD");
+    if (isRadiology && !metaModalityId) {
+      alert("Imaging Modality is required for Radiology tests.");
+      return;
+    }
     const updated = catalog.map(t => {
       if (t.id === selectedTest.id) {
-        const isRadiology = metaDept === "Radiology" || metaDept === "RAD";
         let cleanedParams = t.parameters || [];
         if (isRadiology) {
           const existingFindings = cleanedParams.find(p => p.code === "FINDINGS") || cleanedParams[0];
@@ -1174,9 +1269,10 @@ export function TestMasterScreen() {
           name: metaName,
           code: metaCode.toUpperCase(),
           department: metaDept,
+          modalityId: isRadiology ? metaModalityId : null,
           isProfile: metaIsProfile,
           specimenTypeCode: isRadiology ? "NO_SPECIMEN" : metaSpecimenTypeCode,
-          category: isRadiology ? metaCategory : "General",
+          category: isRadiology ? (modalitiesList.find(m => m.modalityId === metaModalityId)?.name || metaCategory) : "General",
           parameters: cleanedParams
         };
       }
@@ -1196,17 +1292,29 @@ export function TestMasterScreen() {
 
   const handleAddTest = () => {
     const newId = `test-${Date.now()}`;
-    const isRadiology = selectedDept === "Radiology" || selectedDept === "RAD";
+    const targetDept = selectedDept !== "All" ? selectedDept : "Hematology";
+    const targetDeptObj = dbDeptsList.find(d => d.name === targetDept);
+    const isRadiology = targetDeptObj ? targetDeptObj.macroDepartment === "Radiology" : (targetDept === "Radiology" || targetDept === "RAD");
+    
+    let initialModalityId = "";
+    if (isRadiology) {
+      const filteredMods = modalitiesList.filter(m => m.departmentId === targetDeptObj?.departmentId);
+      if (filteredMods.length > 0) {
+        initialModalityId = filteredMods[0].modalityId;
+      }
+    }
+
     const newTest = {
       id: newId,
       name: "New Diagnostics Test",
       code: `NEW_${Math.floor(100 + Math.random() * 900)}`,
-      department: selectedDept !== "All" ? selectedDept : "Hematology",
+      department: targetDept,
+      modalityId: isRadiology ? initialModalityId : null,
       basePrice: 500,
       isProfile: false,
       includedTestIds: [],
       specimenTypeCode: isRadiology ? "NO_SPECIMEN" : "SERUM",
-      category: isRadiology ? "X-Ray" : "General",
+      category: isRadiology ? (modalitiesList.find(m => m.modalityId === initialModalityId)?.name || "X-Ray") : "General",
       parameters: [
         { 
           code: "PARAM1", 
@@ -1241,7 +1349,8 @@ export function TestMasterScreen() {
     setMetaDept(newTest.department);
     setMetaIsProfile(newTest.isProfile);
     setMetaSpecimenTypeCode(isRadiology ? "NO_SPECIMEN" : "SERUM");
-    setMetaCategory(isRadiology ? "X-Ray" : "General");
+    setMetaCategory(newTest.category);
+    setMetaModalityId(initialModalityId);
     setIsEditingMetadata(true);
     setDrawerOpen(false);
   };
@@ -1513,7 +1622,7 @@ export function TestMasterScreen() {
   };
 
   const handleSaveAll = async () => {
-    // 1. Client-side uniqueness validation
+    // 1. Client-side uniqueness and modality validation
     const codeToTestMap = new Map();
     for (const item of catalog) {
       const normCode = (item.code || "").trim().toUpperCase();
@@ -1526,6 +1635,14 @@ export function TestMasterScreen() {
         return;
       }
       codeToTestMap.set(normCode, item);
+
+      // Enforce modality validation for Radiology tests
+      const deptObj = dbDeptsList.find(d => d.name === item.department);
+      const isRadiology = deptObj ? deptObj.macroDepartment === "Radiology" : (item.department === "Radiology" || item.department === "RAD");
+      if (isRadiology && !item.modalityId) {
+        alert(`Imaging Modality is required for Radiology test "${item.name}".`);
+        return;
+      }
     }
 
     for (const item of catalog) {
@@ -1585,15 +1702,18 @@ export function TestMasterScreen() {
       let updatedSelectedTest = selectedTest ? { ...selectedTest } : null;
 
       const mapToDto = (item) => {
+        const deptObj = dbDeptsList.find(d => d.name === item.department);
+        const isRadiology = deptObj ? deptObj.macroDepartment === "Radiology" : (item.department === "Radiology" || item.department === "RAD");
         return {
           TestCode: item.code,
           TestName: item.name,
           Department: item.department || "Biochemistry",
-          Category: (item.department === "Radiology" || item.department === "RAD") ? (item.category || "X-Ray") : (item.category || "General"),
+          ModalityId: isRadiology ? item.modalityId : null,
+          Category: isRadiology ? (modalitiesList.find(m => m.modalityId === item.modalityId)?.name || item.category || "X-Ray") : (item.category || "General"),
           BasePrice: Number(item.basePrice) || 0,
           TAT_Hours: Number(item.tatHours || item.TAT_Hours) || 24,
           IsOutsourced: !!(item.isOutsourced || (item.outsource && item.outsource.enabled)),
-          SpecimenTypeCode: (item.department === "Radiology" || item.department === "RAD") ? "NO_SPECIMEN" : (item.specimenTypeCode || "SERUM"),
+          SpecimenTypeCode: isRadiology ? "NO_SPECIMEN" : (item.specimenTypeCode || "SERUM"),
           IsProfile: !!item.isProfile,
           Parameters: (item.parameters || []).map((p, idx) => ({
             ParameterCode: p.code,
@@ -1882,45 +2002,90 @@ export function TestMasterScreen() {
                     />
                   </div>
                   <div>
-                    <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 block mb-1">Department</label>
+                    <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 block mb-1 flex items-center justify-between">
+                      <span>Department</span>
+                      <button
+                        type="button"
+                        onClick={() => setShowCreateDeptModal(true)}
+                        className="text-xs font-medium text-synos-primary hover:text-synos-primary/80 transition-colors flex items-center gap-0.5"
+                      >
+                        + Add New
+                      </button>
+                    </label>
                     <select
-                      className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 dark:border-zinc-800 rounded-xl px-2.5 py-2 text-sm w-full text-zinc-900 dark:text-zinc-100 outline-none focus:ring-1 focus:ring-synos-primary"
+                      className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl px-2.5 py-2 text-sm w-full text-zinc-900 dark:text-zinc-100 outline-none focus:ring-1 focus:ring-synos-primary"
                       value={metaDept}
-                      onChange={(e) => setMetaDept(e.target.value)}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setMetaDept(val);
+                        const dObj = dbDeptsList.find(d => d.name === val);
+                        const isRad = dObj ? dObj.macroDepartment === "Radiology" : (val === "Radiology" || val === "RAD");
+                        if (isRad) {
+                          const firstMod = modalitiesList.find(m => m.departmentId === dObj?.departmentId);
+                          setMetaModalityId(firstMod ? firstMod.modalityId : "");
+                        } else {
+                          setMetaModalityId("");
+                        }
+                      }}
                     >
                       {departments.filter(d => d !== "All").map(d => (
                         <option key={d} value={d}>{d}</option>
                       ))}
                     </select>
                   </div>
-                  {(metaDept === "Radiology" || metaDept === "RAD") ? (
-                    <div>
-                      <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 block mb-1">Imaging Modality</label>
-                      <select
-                        className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl px-2.5 py-2 text-sm w-full text-zinc-900 dark:text-zinc-100 outline-none focus:ring-1 focus:ring-synos-primary"
-                        value={metaCategory}
-                        onChange={(e) => setMetaCategory(e.target.value)}
-                      >
-                        <option value="X-Ray">X-Ray</option>
-                        <option value="MRI">MRI</option>
-                        <option value="CT Scan">CT Scan</option>
-                        <option value="Ultrasound">Ultrasound</option>
-                      </select>
-                    </div>
-                  ) : (
-                    <div>
-                      <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 block mb-1">Specimen Type</label>
-                      <select
-                        className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl px-2.5 py-2 text-sm w-full text-zinc-900 dark:text-zinc-100 outline-none focus:ring-1 focus:ring-synos-primary"
-                        value={metaSpecimenTypeCode}
-                        onChange={(e) => setMetaSpecimenTypeCode(e.target.value)}
-                      >
-                        {SPECIMEN_TYPES.map(spec => (
-                          <option key={spec.code} value={spec.code}>{spec.name}</option>
-                        ))}
-                      </select>
-                    </div>
-                  )}
+                  {(() => {
+                    const currentDeptObj = dbDeptsList.find(d => d.name === metaDept);
+                    const isRad = currentDeptObj ? currentDeptObj.macroDepartment === "Radiology" : (metaDept === "Radiology" || metaDept === "RAD");
+                    if (isRad) {
+                      return (
+                        <div>
+                          <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 block mb-1 flex items-center justify-between">
+                            <span>Imaging Modality</span>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (!currentDeptObj) {
+                                  alert("Please save or select a database department first to add a modality.");
+                                  return;
+                                }
+                                setShowCreateModalityModal(true);
+                              }}
+                              className="text-xs font-medium text-synos-primary hover:text-synos-primary/80 transition-colors flex items-center gap-0.5"
+                            >
+                              + Add New
+                            </button>
+                          </label>
+                          <select
+                            className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl px-2.5 py-2 text-sm w-full text-zinc-900 dark:text-zinc-100 outline-none focus:ring-1 focus:ring-synos-primary"
+                            value={metaModalityId}
+                            onChange={(e) => setMetaModalityId(e.target.value)}
+                          >
+                            <option value="">-- Select Modality --</option>
+                            {modalitiesList
+                              .filter(m => !currentDeptObj || m.departmentId === currentDeptObj.departmentId)
+                              .map(m => (
+                                <option key={m.modalityId} value={m.modalityId}>{m.name} ({m.code})</option>
+                              ))}
+                          </select>
+                        </div>
+                      );
+                    } else {
+                      return (
+                        <div>
+                          <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 block mb-1">Specimen Type</label>
+                          <select
+                            className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl px-2.5 py-2 text-sm w-full text-zinc-900 dark:text-zinc-100 outline-none focus:ring-1 focus:ring-synos-primary"
+                            value={metaSpecimenTypeCode}
+                            onChange={(e) => setMetaSpecimenTypeCode(e.target.value)}
+                          >
+                            {SPECIMEN_TYPES.map(spec => (
+                              <option key={spec.code} value={spec.code}>{spec.name}</option>
+                            ))}
+                          </select>
+                        </div>
+                      );
+                    }
+                  })()}
                   <div className="md:col-span-1 flex items-center gap-6 py-2">
                     <label className="flex items-center gap-2 cursor-pointer select-none">
                       <input 
@@ -1983,11 +2148,16 @@ export function TestMasterScreen() {
                   </div>
                   <p className="text-xs text-zinc-500 dark:text-zinc-400 font-medium uppercase tracking-wider mt-1.5">
                     Department: {selectedTest.department} &bull; Base Price: ₹{selectedTest.basePrice} 
-                    {(selectedTest.department === "Radiology" || selectedTest.department === "RAD") ? (
-                      <> &bull; Modality: {selectedTest.category || "X-Ray"}</>
-                    ) : (
-                      <> &bull; Specimen: {selectedTest.specimenTypeCode || "SERUM"}</>
-                    )}
+                    {(() => {
+                      const displayDeptObj = dbDeptsList.find(d => d.name === selectedTest.department);
+                      const displayIsRadiology = displayDeptObj ? displayDeptObj.macroDepartment === "Radiology" : (selectedTest.department === "Radiology" || selectedTest.department === "RAD");
+                      if (displayIsRadiology) {
+                        const mObj = modalitiesList.find(m => m.modalityId === selectedTest.modalityId);
+                        return <> &bull; Modality: {mObj ? `${mObj.name} (${mObj.code})` : (selectedTest.category || "X-Ray")}</>;
+                      } else {
+                        return <> &bull; Specimen: {selectedTest.specimenTypeCode || "SERUM"}</>;
+                      }
+                    })()}
                   </p>
                 </div>
               )}
@@ -3733,6 +3903,143 @@ export function TestMasterScreen() {
           </div>
         </div>
       </div>
+
+      {/* Inline Create Department Modal */}
+      {showCreateDeptModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/70 backdrop-blur-xs p-4">
+          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl max-w-md w-full shadow-2xl overflow-hidden transform transition-all animate-in fade-in zoom-in-95 duration-150">
+            <div className="p-6 border-b border-zinc-100 dark:border-zinc-800 flex items-center justify-between">
+              <h3 className="text-lg font-bold text-zinc-950 dark:text-white">Create New Department</h3>
+              <button 
+                onClick={() => setShowCreateDeptModal(false)}
+                className="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 text-lg font-medium p-1"
+              >
+                &times;
+              </button>
+            </div>
+            <form onSubmit={handleCreateDepartmentSubmit} className="p-6 space-y-4">
+              <div>
+                <label className="text-xs font-bold text-zinc-700 dark:text-zinc-300 block mb-1">Department Code</label>
+                <input 
+                  type="text" 
+                  required
+                  placeholder="e.g. RAD"
+                  className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl px-3.5 py-2 text-sm w-full text-zinc-900 dark:text-zinc-100 outline-none focus:ring-1 focus:ring-synos-primary uppercase"
+                  value={newDeptCode}
+                  onChange={(e) => setNewDeptCode(e.target.value)}
+                />
+              </div>
+              <div>
+                <label className="text-xs font-bold text-zinc-700 dark:text-zinc-300 block mb-1">Department Name</label>
+                <input 
+                  type="text" 
+                  required
+                  placeholder="e.g. Radiology Ultra Sound"
+                  className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl px-3.5 py-2 text-sm w-full text-zinc-900 dark:text-zinc-100 outline-none focus:ring-1 focus:ring-synos-primary"
+                  value={newDeptName}
+                  onChange={(e) => setNewDeptName(e.target.value)}
+                />
+              </div>
+              <div>
+                <label className="text-xs font-bold text-zinc-700 dark:text-zinc-300 block mb-1">Macro Department Group</label>
+                <select
+                  className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl px-2.5 py-2 text-sm w-full text-zinc-900 dark:text-zinc-100 outline-none focus:ring-1 focus:ring-synos-primary"
+                  value={newDeptMacro}
+                  onChange={(e) => setNewDeptMacro(e.target.value)}
+                >
+                  <option value="Radiology">Radiology (Imaging & Scanning)</option>
+                  <option value="Laboratory">Laboratory (Bio-Chem / Pathology)</option>
+                  <option value="Cardiology">Cardiology</option>
+                  <option value="Neurology">Neurology</option>
+                  <option value="General">General</option>
+                </select>
+              </div>
+              <div className="pt-2 flex justify-end gap-2.5 border-t border-zinc-100 dark:border-zinc-800">
+                <button 
+                  type="button"
+                  onClick={() => setShowCreateDeptModal(false)}
+                  className="px-4 py-2 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 text-sm rounded-xl font-bold transition-all"
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="submit"
+                  disabled={isCreatingDept}
+                  className="px-4 py-2 bg-synos-primary hover:bg-synos-primary/90 disabled:opacity-50 text-white text-sm rounded-xl font-bold transition-all flex items-center gap-1.5"
+                >
+                  {isCreatingDept ? "Saving..." : "Create Department"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Inline Create Modality Modal */}
+      {showCreateModalityModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/70 backdrop-blur-xs p-4">
+          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl max-w-md w-full shadow-2xl overflow-hidden transform transition-all animate-in fade-in zoom-in-95 duration-150">
+            <div className="p-6 border-b border-zinc-100 dark:border-zinc-800 flex items-center justify-between">
+              <h3 className="text-lg font-bold text-zinc-950 dark:text-white">Create New Imaging Modality</h3>
+              <button 
+                onClick={() => setShowCreateModalityModal(false)}
+                className="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 text-lg font-medium p-1"
+              >
+                &times;
+              </button>
+            </div>
+            <form onSubmit={handleCreateModalitySubmit} className="p-6 space-y-4">
+              <div>
+                <label className="text-xs font-bold text-zinc-700 dark:text-zinc-300 block mb-1">Target Department (Scope)</label>
+                <input 
+                  type="text" 
+                  disabled
+                  className="bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-800 rounded-xl px-3.5 py-2 text-sm w-full text-zinc-500 dark:text-zinc-400 cursor-not-allowed font-medium"
+                  value={metaDept}
+                />
+              </div>
+              <div>
+                <label className="text-xs font-bold text-zinc-700 dark:text-zinc-300 block mb-1">Modality Code</label>
+                <input 
+                  type="text" 
+                  required
+                  placeholder="e.g. US"
+                  className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl px-3.5 py-2 text-sm w-full text-zinc-900 dark:text-zinc-100 outline-none focus:ring-1 focus:ring-synos-primary uppercase"
+                  value={newModalityCode}
+                  onChange={(e) => setNewModalityCode(e.target.value)}
+                />
+              </div>
+              <div>
+                <label className="text-xs font-bold text-zinc-700 dark:text-zinc-300 block mb-1">Modality Name</label>
+                <input 
+                  type="text" 
+                  required
+                  placeholder="e.g. Ultrasound"
+                  className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl px-3.5 py-2 text-sm w-full text-zinc-900 dark:text-zinc-100 outline-none focus:ring-1 focus:ring-synos-primary"
+                  value={newModalityName}
+                  onChange={(e) => setNewModalityName(e.target.value)}
+                />
+              </div>
+              <div className="pt-2 flex justify-end gap-2.5 border-t border-zinc-100 dark:border-zinc-800">
+                <button 
+                  type="button"
+                  onClick={() => setShowCreateModalityModal(false)}
+                  className="px-4 py-2 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 text-sm rounded-xl font-bold transition-all"
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="submit"
+                  disabled={isCreatingModality}
+                  className="px-4 py-2 bg-synos-primary hover:bg-synos-primary/90 disabled:opacity-50 text-white text-sm rounded-xl font-bold transition-all flex items-center gap-1.5"
+                >
+                  {isCreatingModality ? "Saving..." : "Create Modality"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
     </div>
   );

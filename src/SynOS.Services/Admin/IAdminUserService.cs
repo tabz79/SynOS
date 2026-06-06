@@ -32,6 +32,10 @@ namespace SynOS.Services.Admin
         Task<Branch> CreateBranchAsync(string code, string name, string? address = null, string? phone = null, string? email = null);
         Task<Branch> UpdateBranchAsync(Guid branchId, string code, string name, bool isActive, string? address = null, string? phone = null, string? email = null);
         Task DeleteBranchAsync(Guid branchId);
+
+        Task<IEnumerable<ModalityMaster>> GetAllModalitiesAsync();
+        Task<ModalityMaster> CreateModalityAsync(string code, string name, Guid departmentId);
+        Task DeleteModalityAsync(Guid modalityId);
     }
 
     public class OperationalResourceDto

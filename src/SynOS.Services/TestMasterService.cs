@@ -51,16 +51,18 @@ namespace SynOS.Services
             // Phase 8: Resolve DepartmentId from string
             if (!string.IsNullOrEmpty(dto.Department))
             {
-                var deptMaster = await _context.DepartmentMasters.FirstOrDefaultAsync(d => d.Name == dto.Department);
+                var deptMaster = await _context.DepartmentMasters.FirstOrDefaultAsync(d => d.Name == dto.Department && d.IsActive);
                 if (deptMaster == null)
                 {
-                    // Fallback or Create? For now, we assume Master exists or throw.
-                    // Let's default to creating it if strict mode isn't on, OR throw.
-                    // SAFE: Throw if not found to enforce master data integrity.
-                    // Actually, during migration we might want flexibility but strict is better.
-                    // But wait, DTO likely still has 'Department' string.
-                    // Try to find by Name or Code.
-                     deptMaster = await _context.DepartmentMasters.FirstOrDefaultAsync(d => d.Name == dto.Department || d.Code == dto.Department);
+                    deptMaster = await _context.DepartmentMasters.FirstOrDefaultAsync(d => (d.Name == dto.Department || d.Code == dto.Department) && d.IsActive);
+                }
+                if (deptMaster == null)
+                {
+                    deptMaster = await _context.DepartmentMasters.FirstOrDefaultAsync(d => d.Name == dto.Department);
+                }
+                if (deptMaster == null)
+                {
+                    deptMaster = await _context.DepartmentMasters.FirstOrDefaultAsync(d => d.Name == dto.Department || d.Code == dto.Department);
                 }
                 
                 if (deptMaster != null)
@@ -69,11 +71,12 @@ namespace SynOS.Services
                 }
                 else
                 {
-                     // Fallback: Create dynamic department? No, that violates stabilization.
-                     // Assign to 'Other' or throw?
-                     // Current choice: Leave null, let validation catch it, or assign 'Pathology' default?
-                     // Let's query Pathology default.
-                     var defaultDept = await _context.DepartmentMasters.FirstOrDefaultAsync(d => d.Name == "Pathology");
+                     // Fallback: Let's query active Pathology default first, then legacy Pathology.
+                     var defaultDept = await _context.DepartmentMasters.FirstOrDefaultAsync(d => d.Name == "Pathology" && d.IsActive);
+                     if (defaultDept == null)
+                     {
+                          defaultDept = await _context.DepartmentMasters.FirstOrDefaultAsync(d => d.Name == "Pathology");
+                     }
                      test.DepartmentId = defaultDept?.DepartmentId;
                 }
             }
@@ -130,7 +133,11 @@ namespace SynOS.Services
             // Phase 8: Handle Department Change
             if (dto.Department != null && (test.DepartmentMaster?.Name != dto.Department))
             {
-                var newDept = await _context.DepartmentMasters.FirstOrDefaultAsync(d => d.Name == dto.Department || d.Code == dto.Department);
+                var newDept = await _context.DepartmentMasters.FirstOrDefaultAsync(d => (d.Name == dto.Department || d.Code == dto.Department) && d.IsActive);
+                if (newDept == null)
+                {
+                    newDept = await _context.DepartmentMasters.FirstOrDefaultAsync(d => d.Name == dto.Department || d.Code == dto.Department);
+                }
                 if (newDept != null)
                 {
                     test.DepartmentId = newDept.DepartmentId;
@@ -172,6 +179,7 @@ namespace SynOS.Services
             test.IsOutsourced = dto.IsOutsourced;
             test.SpecimenTypeCode = dto.SpecimenTypeCode;
             test.IsProfile = dto.IsProfile;
+            test.ModalityId = dto.ModalityId; // Save ModalityId
             
             // _mapper.Map(dto, test); // CAUTION: If DTO has BasePrice/Department, this might try to set non-existent props? 
             // Since props are removed from Test, AutoMapper fails silently or errors depending on config.

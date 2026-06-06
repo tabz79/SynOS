@@ -37,6 +37,10 @@ namespace SynOS.Models.Entities
         [ForeignKey("DepartmentId")]
         public virtual DepartmentMaster? DepartmentMaster { get; set; }
 
+        public Guid? ModalityId { get; set; }
+        [ForeignKey("ModalityId")]
+        public virtual ModalityMaster? ModalityMaster { get; set; }
+
         public int TAT_Hours { get; set; } = 24;
 
         public bool IsActive { get; set; } = true;

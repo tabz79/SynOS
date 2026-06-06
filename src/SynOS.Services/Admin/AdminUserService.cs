@@ -412,7 +412,7 @@ namespace SynOS.Services.Admin
 
         public async Task<IEnumerable<DepartmentMaster>> GetAllDepartmentsAsync()
         {
-            return await _context.DepartmentMasters.OrderBy(d => d.Name).ToListAsync();
+            return await _context.DepartmentMasters.Where(d => d.IsActive).OrderBy(d => d.Name).ToListAsync();
         }
 
         public async Task<DepartmentMaster> CreateDepartmentAsync(string code, string name, string? macroDepartment = null)
@@ -612,6 +612,62 @@ namespace SynOS.Services.Admin
                 userId,
                 new { OldWorkspaceIds = oldAccesses, NewWorkspaceIds = newAccesses }
             );
+        }
+
+        public async Task<IEnumerable<ModalityMaster>> GetAllModalitiesAsync()
+        {
+            return await _context.ModalityMasters
+                .Include(m => m.DepartmentMaster)
+                .OrderBy(m => m.Name)
+                .ToListAsync();
+        }
+
+        public async Task<ModalityMaster> CreateModalityAsync(string code, string name, Guid departmentId)
+        {
+            var upperCode = code.Trim().ToUpperInvariant();
+
+            var dept = await _context.DepartmentMasters.FindAsync(departmentId);
+            if (dept == null)
+            {
+                throw new KeyNotFoundException($"Department with ID '{departmentId}' not found.");
+            }
+
+            if (await _context.ModalityMasters.AnyAsync(m => m.Code == upperCode))
+            {
+                throw new InvalidOperationException($"Modality with code '{upperCode}' already exists.");
+            }
+
+            var modality = new ModalityMaster
+            {
+                ModalityId = Guid.NewGuid(),
+                Code = upperCode,
+                Name = name.Trim(),
+                DepartmentId = departmentId,
+                IsActive = true,
+                CreatedAt = DateTimeOffset.UtcNow
+            };
+
+            _context.ModalityMasters.Add(modality);
+            await _context.SaveChangesAsync();
+            return modality;
+        }
+
+        public async Task DeleteModalityAsync(Guid modalityId)
+        {
+            var modality = await _context.ModalityMasters.FindAsync(modalityId);
+            if (modality == null)
+            {
+                throw new KeyNotFoundException("Modality not found.");
+            }
+
+            var referencesTest = await _context.Tests.AnyAsync(t => t.ModalityId == modalityId && t.IsActive);
+            if (referencesTest)
+            {
+                throw new InvalidOperationException("Cannot delete modality because it is currently assigned to one or more active tests.");
+            }
+
+            _context.ModalityMasters.Remove(modality);
+            await _context.SaveChangesAsync();
         }
     }
 }

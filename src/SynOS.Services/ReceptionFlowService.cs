@@ -639,6 +639,45 @@ namespace SynOS.Services
                     .Where(o => o.VisitId == visit.VisitId)
                     .ToListAsync();
 
+                var testIds = orders.Select(o => o.TestId).ToList();
+                var testsInVisit = await _context.Tests
+                    .Include(t => t.DepartmentMaster)
+                    .Where(t => testIds.Contains(t.TestId))
+                    .ToListAsync();
+
+                var hasPathology = false;
+                var hasRadiology = false;
+                foreach (var t in testsInVisit)
+                {
+                    if (t.DepartmentMaster != null && string.Equals(t.DepartmentMaster.MacroDepartment, "Radiology", StringComparison.OrdinalIgnoreCase))
+                    {
+                        hasRadiology = true;
+                    }
+                    else
+                    {
+                        hasPathology = true;
+                    }
+                }
+
+                if (hasRadiology && !hasPathology)
+                {
+                    var dbVisit = await _context.Visits.FindAsync(visit.VisitId);
+                    if (dbVisit != null)
+                    {
+                        dbVisit.Department = "Radiology";
+                        visit.Department = "Radiology";
+                    }
+                }
+                else
+                {
+                    var dbVisit = await _context.Visits.FindAsync(visit.VisitId);
+                    if (dbVisit != null)
+                    {
+                        dbVisit.Department = "Pathology";
+                        visit.Department = "Pathology";
+                    }
+                }
+
                 foreach (var order in orders)
                 {
                     // 1) Try cache first (if available)
@@ -659,11 +698,12 @@ namespace SynOS.Services
                         _logger.LogWarning(ex, "Cache error while fetching tests - falling back to DB");
                     }
 
-                    // 2) Fallback to DB if cache missed
-                    if (test == null)
+                    // 2) Fallback to DB if cache missed or if we need to load navigation properties
+                    if (test == null || test.DepartmentMaster == null || test.ModalityMaster == null)
                     {
                         test = await _context.Tests
                             .Include(t => t.DepartmentMaster) // Include DM
+                            .Include(t => t.ModalityMaster)
                             .AsNoTracking()
                             .FirstOrDefaultAsync(t => t.TestId == order.TestId);
                     }
@@ -674,43 +714,26 @@ namespace SynOS.Services
                         continue; // Skip if test not found
                     }
 
-                    // Phase 8: Use DepartmentMaster.Name
-                    var deptName = test.DepartmentMaster?.Name ?? (string.Equals(test.TestCode, "XRAY", StringComparison.OrdinalIgnoreCase) ? "Radiology" : "Unknown"); 
-                    // Fallback to order department if test dept is null (though order.Department is just a snapshot)
-                    if (string.IsNullOrWhiteSpace(deptName) && !string.IsNullOrWhiteSpace(order.Department)) deptName = order.Department;
+                    var isRadiology = test.DepartmentMaster != null && string.Equals(test.DepartmentMaster.MacroDepartment, "Radiology", StringComparison.OrdinalIgnoreCase);
 
-
-                    if (string.Equals(deptName, "Radiology", StringComparison.OrdinalIgnoreCase))
+                    if (isRadiology)
                     {
+                        if (!test.ModalityId.HasValue)
+                        {
+                            throw new InvalidOperationException($"Test '{test.TestCode}' belongs to Radiology department but has no Imaging Modality assigned.");
+                        }
+
                         var studyExists = await _context.RadiologyStudies.AnyAsync(rs => rs.VisitTestId == order.OrderId);
                         if (!studyExists)
                         {
-                            string modality = "X-Ray"; // default fallback
-                            if (!string.IsNullOrEmpty(test.Category))
-                            {
-                                var catUpper = test.Category.ToUpperInvariant();
-                                if (catUpper.Contains("MRI")) modality = "MRI";
-                                else if (catUpper.Contains("CT")) modality = "CT Scan";
-                                else if (catUpper.Contains("US") || catUpper.Contains("ULTRASOUND") || catUpper.Contains("SONO")) modality = "Ultrasound";
-                                else if (catUpper.Contains("XRAY") || catUpper.Contains("XR") || catUpper.Contains("X-RAY")) modality = "X-Ray";
-                            }
-                            else
-                            {
-                                var nameUpper = test.TestName?.ToUpperInvariant() ?? "";
-                                var codeUpper = test.TestCode?.ToUpperInvariant() ?? "";
-                                if (nameUpper.Contains("MRI") || codeUpper.Contains("MRI")) modality = "MRI";
-                                else if (nameUpper.Contains("CT") || codeUpper.Contains("CT")) modality = "CT Scan";
-                                else if (nameUpper.Contains("ULTRASOUND") || nameUpper.Contains("US ") || nameUpper.Contains("SONO") || codeUpper.Contains("US") || codeUpper.Contains("SONO")) modality = "Ultrasound";
-                                else if (nameUpper.Contains("XRAY") || nameUpper.Contains("X-RAY") || nameUpper.Contains("XR") || codeUpper.Contains("XR") || codeUpper.Contains("XRAY")) modality = "X-Ray";
-                            }
-
                             var newStudy = new RadiologyStudy
                             {
                                 RadiologyStudyId = Guid.NewGuid(),
                                 VisitId = visit.VisitId,
                                 PatientId = visit.PatientId,
                                 VisitTestId = order.OrderId,
-                                Modality = modality, // Use resolved modality
+                                ModalityId = test.ModalityId.Value,
+                                Modality = test.ModalityMaster?.Name ?? "Unknown", // Backward compatibility string
                                 AccessionNumber = await _accessionService.GenerateRadiologyAccessionNumberAsync(visit.BranchId ?? throw new InvalidOperationException("Visit BranchId is required for Accession")),
                                 Status = "PendingImaging",
                                 CreatedBy = userId,

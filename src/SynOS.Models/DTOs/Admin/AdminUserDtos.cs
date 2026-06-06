@@ -96,4 +96,21 @@ namespace SynOS.Models.DTOs.Admin
         public string? Phone { get; set; }
         public string? Email { get; set; }
     }
+
+    public class CreateModalityRequest
+    {
+        public string Code { get; set; } = string.Empty;
+        public string Name { get; set; } = string.Empty;
+        public Guid DepartmentId { get; set; }
+    }
+
+    public class ModalityMasterDto
+    {
+        public Guid ModalityId { get; set; }
+        public string Code { get; set; } = string.Empty;
+        public string Name { get; set; } = string.Empty;
+        public Guid DepartmentId { get; set; }
+        public string DepartmentName { get; set; } = string.Empty;
+        public bool IsActive { get; set; }
+    }
 }

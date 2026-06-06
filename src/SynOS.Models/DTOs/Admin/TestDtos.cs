@@ -11,6 +11,8 @@ namespace SynOS.Models.DTOs.Admin
         public string TestName { get; set; }
         public string Department { get; set; }
         public string Category { get; set; }
+        public Guid? ModalityId { get; set; }
+        public string? ModalityName { get; set; }
         public decimal BasePrice { get; set; }
         public int TAT_Hours { get; set; }
         public bool IsActive { get; set; }
@@ -103,6 +105,7 @@ namespace SynOS.Models.DTOs.Admin
         public string? SpecimenTypeCode { get; set; }
 
         public bool IsProfile { get; set; }
+        public Guid? ModalityId { get; set; }
 
         public List<ParameterSaveDto> Parameters { get; set; } = new List<ParameterSaveDto>();
 

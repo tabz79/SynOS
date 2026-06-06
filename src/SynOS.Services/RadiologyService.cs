@@ -250,7 +250,10 @@ namespace SynOS.Services
                 .Include(v => v.Patient)
                 .Include(v => v.Orders)
                     .ThenInclude(o => o.Test) 
-                        .ThenInclude(t => t.DepartmentMaster) // Added
+                        .ThenInclude(t => t.DepartmentMaster)
+                .Include(v => v.Orders)
+                    .ThenInclude(o => o.Test) 
+                        .ThenInclude(t => t.ModalityMaster)
                 .FirstOrDefaultAsync(v => v.VisitId == visitId);
 
             if (visit == null)
@@ -259,7 +262,7 @@ namespace SynOS.Services
             }
 
             var radiologyOrders = visit.Orders
-                .Where(o => o.Test != null && o.Department == "Radiology") // Corrected to o.Test
+                .Where(o => o.Test != null && o.Department == "Radiology")
                 .ToList();
 
             if (!radiologyOrders.Any())
@@ -282,13 +285,16 @@ namespace SynOS.Services
                     continue;
                 }
 
+                if (order.Test == null) continue;
+
                 var newStudy = new RadiologyStudy
                 {
                     RadiologyStudyId = Guid.NewGuid(),
                     VisitId = visit.VisitId,
                     PatientId = visit.PatientId,
                     VisitTestId = order.OrderId,
-                    Modality = order.Test?.DepartmentMaster?.Name ?? "Unknown", // Refactored
+                    ModalityId = order.Test.ModalityId ?? throw new InvalidOperationException($"Test '{order.Test.TestCode}' belongs to a Radiology department but has no ModalityId assigned."),
+                    Modality = order.Test.ModalityMaster?.Name ?? order.Test.Category ?? "Unknown",
                     Status = "PendingImaging",
                     CreatedBy = userId,
                     CreatedAt = DateTimeOffset.UtcNow
@@ -743,9 +749,12 @@ namespace SynOS.Services
                 }
             };
 
-            var defaultTemplate = await _templateService.GetTemplatesAsync(studyEntity.Modality, false);
-            var template = defaultTemplate.FirstOrDefault(t => t.IsDefault && t.Modality == studyEntity.Modality) ??
-                           defaultTemplate.FirstOrDefault(t => t.IsDefault && string.IsNullOrEmpty(t.Modality));
+            var templates = await _context.ReportTemplates.AsNoTracking()
+                .Where(t => !t.IsDeleted && t.IsPublished && t.IsDefault)
+                .ToListAsync();
+            var template = templates.FirstOrDefault(t => t.ModalityId == studyEntity.ModalityId) ??
+                           templates.FirstOrDefault(t => t.Modality == studyEntity.Modality) ??
+                           templates.FirstOrDefault(t => string.IsNullOrEmpty(t.Modality));
 
             TemplateModel templateModel;
             if (template != null && !string.IsNullOrEmpty(template.TemplateJson))
