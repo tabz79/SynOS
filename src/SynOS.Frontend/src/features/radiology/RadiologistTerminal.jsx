@@ -48,6 +48,9 @@ export function RadiologistTerminal() {
     const [contrast, setContrast] = useState(100);
     const [activeSliceIndex, setActiveSliceIndex] = useState(0);
     const [activeTool, setActiveTool] = useState('Wwwc');
+    const [layout, setLayout] = useState('1x1');
+    const [activeViewportId, setActiveViewportId] = useState('viewport-0');
+    const [viewportSlices, setViewportSlices] = useState({});
     
     // Live Cooperative Draft State
     const [draftFindings, setDraftFindings] = useState('');
@@ -102,6 +105,10 @@ export function RadiologistTerminal() {
     }, []);
 
     const handleSelectStudy = async (study) => {
+        if (viewportManager.current) {
+            viewportManager.current.destroy();
+            viewportManager.current = null;
+        }
         setLoading(true);
         const studyId = study.studyId || study.radiologyStudyId;
         try {
@@ -246,6 +253,16 @@ export function RadiologistTerminal() {
             if (isClaimedByMe && studyId) {
                 if (canvasRef.current) {
                     viewportManager.current = new DicomViewportManager(canvasRef.current, selectedStudy.modality);
+                    viewportManager.current.layout = layout;
+                    viewportManager.current.onSliceChange = (idx) => {
+                        setActiveSliceIndex(idx);
+                    };
+                    viewportManager.current.onViewportSliceChange = (viewportId, current, max) => {
+                        setViewportSlices(prev => ({
+                            ...prev,
+                            [viewportId]: { current, max }
+                        }));
+                    };
                     
                     // Load raw DICOM slices if study contains any extracted slices
                     if (selectedStudy.images && selectedStudy.images.length > 0) {
@@ -280,7 +297,7 @@ export function RadiologistTerminal() {
                 viewportManager.current = null;
             }
         };
-    }, [selectedStudy?.radiologyStudyId || selectedStudy?.studyId, selectedStudy?.claimedByUserId]);
+    }, [selectedStudy?.radiologyStudyId || selectedStudy?.studyId, selectedStudy?.claimedByUserId, layout]);
 
     // Centering & Resizing layout adapter for CSS transitions
     useEffect(() => {
@@ -632,6 +649,14 @@ export function RadiologistTerminal() {
         }
     };
 
+    const handleLayoutChange = (lay) => {
+        if (viewportManager.current) {
+            viewportManager.current.destroy();
+            viewportManager.current = null;
+        }
+        setLayout(lay);
+    };
+
     const handleSliceChange = (idx) => {
         setActiveSliceIndex(idx);
         if (viewportManager.current) {
@@ -658,6 +683,44 @@ export function RadiologistTerminal() {
         gender: selectedStudy.patientGender || selectedStudy.gender || selectedStudy.sex || selectedStudy.patient?.gender || '',
         token: selectedStudy.tokenNumber || selectedStudy.token || selectedStudy.patient?.mrn || ''
     } : null;
+
+    const renderViewportScrollbar = (viewportId) => {
+        const sliceInfo = viewportSlices[viewportId];
+        if (!sliceInfo) return null;
+
+        const { current, max } = sliceInfo;
+        if (!max || max <= 1) return null;
+
+        return (
+            <div className="absolute right-1 top-6 bottom-1 w-6 flex flex-col items-center justify-between z-20 pointer-events-auto bg-black/45 backdrop-blur-xs py-2 rounded-l border border-r-0 dark:border-zinc-850 border-zinc-200">
+                <input
+                    type="range"
+                    min="0"
+                    max={max - 1}
+                    value={current}
+                    onChange={(e) => {
+                        const val = Number(e.target.value);
+                        setViewportSlices(prev => ({
+                            ...prev,
+                            [viewportId]: { ...prev[viewportId], current: val }
+                        }));
+                        if (viewportManager.current) {
+                            viewportManager.current.setViewportSlice(viewportId, val);
+                        }
+                    }}
+                    style={{
+                        writingMode: 'vertical-lr',
+                        height: '75%',
+                        cursor: 'ns-resize'
+                    }}
+                    className="w-1 accent-synos-primary bg-zinc-800 rounded outline-none"
+                />
+                <span className="text-[8px] font-mono text-zinc-400 mt-1 select-none">
+                    {current + 1}/{max}
+                </span>
+            </div>
+        );
+    };
 
     return (
         <div className="h-screen w-screen dark:bg-synos-background bg-zinc-50 dark:text-zinc-100 text-zinc-800 flex flex-col font-sans select-none overflow-hidden">
@@ -782,57 +845,115 @@ export function RadiologistTerminal() {
                                         />
                                     </div>
                                 </div>
-
                                 {/* Active Tool Toggles */}
-                                <div className="flex dark:bg-zinc-900 bg-zinc-100 p-0.5 rounded border dark:border-zinc-850 border-zinc-200">
+                                <div className="flex dark:bg-zinc-900 bg-zinc-100 p-0.5 rounded border dark:border-zinc-850 border-zinc-200 flex-wrap gap-0.5">
                                     <button
                                         onClick={() => handleToggleTool('Wwwc')}
-                                        className={`px-2.5 py-1 rounded text-[10px] font-bold uppercase transition-all ${activeTool === 'Wwwc' ? 'bg-synos-primary text-white shadow-sm' : 'dark:text-zinc-400 text-zinc-650 hover:dark:text-zinc-200 hover:text-zinc-900'}`}
+                                        className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase transition-all ${activeTool === 'Wwwc' ? 'bg-synos-primary text-white shadow-sm' : 'dark:text-zinc-400 text-zinc-650 hover:dark:text-zinc-200 hover:text-zinc-900'}`}
+                                        title="Window Width / Window Center"
                                     >
                                         Windowing
                                     </button>
                                     <button
                                         onClick={() => handleToggleTool('Length')}
-                                        className={`px-2.5 py-1 rounded text-[10px] font-bold uppercase transition-all ${activeTool === 'Length' ? 'bg-synos-primary text-white shadow-sm' : 'dark:text-zinc-400 text-zinc-650 hover:dark:text-zinc-200 hover:text-zinc-900'}`}
+                                        className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase transition-all ${activeTool === 'Length' ? 'bg-synos-primary text-white shadow-sm' : 'dark:text-zinc-400 text-zinc-650 hover:dark:text-zinc-200 hover:text-zinc-900'}`}
+                                        title="Length Caliper"
                                     >
                                         Caliper
                                     </button>
                                     <button
+                                        onClick={() => handleToggleTool('Angle')}
+                                        className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase transition-all ${activeTool === 'Angle' ? 'bg-synos-primary text-white shadow-sm' : 'dark:text-zinc-400 text-zinc-650 hover:dark:text-zinc-200 hover:text-zinc-900'}`}
+                                        title="Cobb Angle"
+                                    >
+                                        Angle
+                                    </button>
+                                    <button
+                                        onClick={() => handleToggleTool('RectangleROI')}
+                                        className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase transition-all ${activeTool === 'RectangleROI' ? 'bg-synos-primary text-white shadow-sm' : 'dark:text-zinc-400 text-zinc-650 hover:dark:text-zinc-200 hover:text-zinc-900'}`}
+                                        title="Rectangle ROI"
+                                    >
+                                        Rect ROI
+                                    </button>
+                                    <button
+                                        onClick={() => handleToggleTool('EllipticalROI')}
+                                        className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase transition-all ${activeTool === 'EllipticalROI' ? 'bg-synos-primary text-white shadow-sm' : 'dark:text-zinc-400 text-zinc-650 hover:dark:text-zinc-200 hover:text-zinc-900'}`}
+                                        title="Elliptical ROI"
+                                    >
+                                        Ellipse ROI
+                                    </button>
+                                    <button
+                                        onClick={() => handleToggleTool('Crosshairs')}
+                                        className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase transition-all ${activeTool === 'Crosshairs' ? 'bg-synos-primary text-white shadow-sm' : 'dark:text-zinc-400 text-zinc-650 hover:dark:text-zinc-200 hover:text-zinc-900'}`}
+                                        title="Crosshair Synchronization (MPR)"
+                                    >
+                                        Crosshair
+                                    </button>
+                                    <button
                                         onClick={() => handleToggleTool('Pan')}
-                                        className={`px-2.5 py-1 rounded text-[10px] font-bold uppercase transition-all ${activeTool === 'Pan' ? 'bg-synos-primary text-white shadow-sm' : 'dark:text-zinc-400 text-zinc-650 hover:dark:text-zinc-200 hover:text-zinc-900'}`}
+                                        className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase transition-all ${activeTool === 'Pan' ? 'bg-synos-primary text-white shadow-sm' : 'dark:text-zinc-400 text-zinc-650 hover:dark:text-zinc-200 hover:text-zinc-900'}`}
                                     >
                                         Pan
                                     </button>
                                     <button
                                         onClick={() => handleToggleTool('Zoom')}
-                                        className={`px-2.5 py-1 rounded text-[10px] font-bold uppercase transition-all ${activeTool === 'Zoom' ? 'bg-synos-primary text-white shadow-sm' : 'dark:text-zinc-400 text-zinc-650 hover:dark:text-zinc-200 hover:text-zinc-900'}`}
+                                        className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase transition-all ${activeTool === 'Zoom' ? 'bg-synos-primary text-white shadow-sm' : 'dark:text-zinc-400 text-zinc-650 hover:dark:text-zinc-200 hover:text-zinc-900'}`}
                                     >
                                         Zoom
                                     </button>
                                 </div>
 
+                                {/* Layout Grid Selector */}
+                                <div className="flex dark:bg-zinc-900 bg-zinc-100 p-0.5 rounded border dark:border-zinc-850 border-zinc-200 gap-0.5 shrink-0">
+                                    {['1x1', '1x2', '2x2', 'MPR'].map((lay) => (
+                                        <button
+                                            key={lay}
+                                            onClick={() => handleLayoutChange(lay)}
+                                            className={`px-2 py-1 rounded text-[10px] font-bold transition-all ${layout === lay ? 'bg-synos-primary text-white shadow-sm' : 'dark:text-zinc-400 text-zinc-655 hover:dark:text-zinc-200 hover:text-zinc-900'}`}
+                                        >
+                                            {lay}
+                                        </button>
+                                    ))}
+                                </div>
+
                                 {/* Slice Scrolling & Actions */}
                                 <div className="flex items-center gap-3">
-                                    {selectedStudy?.images && selectedStudy.images.length > 1 && (
-                                        <div className="flex items-center gap-2 border-r dark:border-synos-border border-zinc-200 pr-3">
-                                            <span className="text-[10px] font-mono dark:text-zinc-400 text-zinc-550">Slice: {activeSliceIndex + 1} / {selectedStudy.images.length}</span>
-                                            <input
-                                                type="range"
-                                                min="0"
-                                                max={selectedStudy.images.length - 1}
-                                                value={activeSliceIndex}
-                                                onChange={(e) => handleSliceChange(Number(e.target.value))}
-                                                className="w-20 accent-synos-primary cursor-pointer"
-                                            />
-                                        </div>
-                                    )}
+                                    {(() => {
+                                        const activeSliceInfo = viewportSlices[activeViewportId] || { current: activeSliceIndex, max: selectedStudy?.images?.length || 1 };
+                                        const { current, max } = activeSliceInfo;
+                                        if (max <= 1) return null;
+                                        return (
+                                            <div className="flex items-center gap-2 border-r dark:border-synos-border border-zinc-200 pr-3">
+                                                <span className="text-[10px] font-mono dark:text-zinc-400 text-zinc-550">
+                                                    Slice: {current + 1} / {max}
+                                                </span>
+                                                <input
+                                                    type="range"
+                                                    min="0"
+                                                    max={max - 1}
+                                                    value={current}
+                                                    onChange={(e) => {
+                                                        const val = Number(e.target.value);
+                                                        setViewportSlices(prev => ({
+                                                            ...prev,
+                                                            [activeViewportId]: { ...prev[activeViewportId], current: val }
+                                                        }));
+                                                        if (viewportManager.current) {
+                                                            viewportManager.current.setViewportSlice(activeViewportId, val);
+                                                        }
+                                                    }}
+                                                    className="w-20 accent-synos-primary cursor-pointer h-1 rounded-lg bg-zinc-200 dark:bg-zinc-850"
+                                                />
+                                            </div>
+                                        );
+                                    })()}
 
                                     <button
                                         onClick={handleClearCalipers}
                                         className="px-2.5 py-1 dark:bg-zinc-900 bg-zinc-100 border dark:border-zinc-800 border-zinc-200 hover:dark:bg-zinc-800 hover:bg-zinc-200/50 dark:text-zinc-300 text-zinc-700 rounded font-bold uppercase tracking-wider text-[10px] flex items-center gap-1.5 transition-all"
                                     >
                                         <Trash2 className="h-3 w-3" />
-                                        Clear Calipers
+                                        Clear Annotations
                                     </button>
                                 </div>
                             </div>
@@ -840,11 +961,106 @@ export function RadiologistTerminal() {
                             {/* Canvas Area */}
                             <div className="flex-1 relative overflow-hidden flex items-center justify-center p-2 dark:bg-synos-background bg-zinc-50">
                                 <div 
-                                    key={selectedStudy.studyId || selectedStudy.radiologyStudyId}
+                                    key={`${selectedStudy.studyId || selectedStudy.radiologyStudyId}_${layout}`}
                                     ref={canvasRef}
                                     onContextMenu={(e) => e.preventDefault()}
-                                    className="w-full h-full border dark:border-synos-border border-zinc-200 dark:bg-black bg-zinc-900 rounded-lg shadow-2xl relative overflow-hidden"
-                                />
+                                    className="absolute inset-2 border dark:border-synos-border border-zinc-200 dark:bg-black bg-zinc-900 rounded-lg shadow-2xl overflow-hidden p-1"
+                                >
+                                   {layout === '1x1' && (
+                                       <div 
+                                           onMouseDown={() => setActiveViewportId('viewport-0')}
+                                           className="w-full h-full relative bg-black rounded overflow-hidden"
+                                       >
+                                           <div id="synos-viewport-0" className="w-full h-full viewport-element" />
+                                           {renderViewportScrollbar('viewport-0')}
+                                       </div>
+                                   )}
+                                   {layout === '1x2' && (
+                                       <div className="grid grid-cols-2 gap-2 w-full h-full">
+                                           <div 
+                                               onMouseDown={() => setActiveViewportId('viewport-0')}
+                                               className="w-full h-full relative bg-black rounded overflow-hidden"
+                                           >
+                                               <div id="synos-viewport-0" className="w-full h-full viewport-element" />
+                                               {renderViewportScrollbar('viewport-0')}
+                                           </div>
+                                           <div 
+                                               onMouseDown={() => setActiveViewportId('viewport-1')}
+                                               className="w-full h-full relative bg-black rounded overflow-hidden"
+                                           >
+                                               <div id="synos-viewport-1" className="w-full h-full viewport-element" />
+                                               {renderViewportScrollbar('viewport-1')}
+                                           </div>
+                                       </div>
+                                   )}
+                                   {layout === '2x2' && (
+                                       <div className="grid grid-cols-2 grid-rows-2 gap-2 w-full h-full">
+                                           <div 
+                                               onMouseDown={() => setActiveViewportId('viewport-0')}
+                                               className="w-full h-full relative bg-black rounded overflow-hidden"
+                                           >
+                                               <div id="synos-viewport-0" className="w-full h-full viewport-element" />
+                                               {renderViewportScrollbar('viewport-0')}
+                                           </div>
+                                           <div 
+                                               onMouseDown={() => setActiveViewportId('viewport-1')}
+                                               className="w-full h-full relative bg-black rounded overflow-hidden"
+                                           >
+                                               <div id="synos-viewport-1" className="w-full h-full viewport-element" />
+                                               {renderViewportScrollbar('viewport-1')}
+                                           </div>
+                                           <div 
+                                               onMouseDown={() => setActiveViewportId('viewport-2')}
+                                               className="w-full h-full relative bg-black rounded overflow-hidden"
+                                           >
+                                               <div id="synos-viewport-2" className="w-full h-full viewport-element" />
+                                               {renderViewportScrollbar('viewport-2')}
+                                           </div>
+                                           <div 
+                                               onMouseDown={() => setActiveViewportId('viewport-3')}
+                                               className="w-full h-full relative bg-black rounded overflow-hidden"
+                                           >
+                                               <div id="synos-viewport-3" className="w-full h-full viewport-element" />
+                                               {renderViewportScrollbar('viewport-3')}
+                                           </div>
+                                       </div>
+                                   )}
+                                   {layout === 'MPR' && (
+                                       <div className="grid grid-cols-2 grid-rows-2 gap-2 w-full h-full">
+                                           <div 
+                                               onMouseDown={() => setActiveViewportId('axial')}
+                                               className="w-full h-full relative bg-black rounded overflow-hidden"
+                                           >
+                                               <div id="synos-viewport-axial" className="w-full h-full viewport-element" />
+                                               <span className="absolute top-2 left-2 text-[10px] bg-black/60 px-1.5 py-0.5 rounded text-white font-mono z-10 select-none">AXIAL</span>
+                                               {renderViewportScrollbar('axial')}
+                                           </div>
+                                           <div 
+                                               onMouseDown={() => setActiveViewportId('sagittal')}
+                                               className="w-full h-full relative bg-black rounded overflow-hidden"
+                                           >
+                                               <div id="synos-viewport-sagittal" className="w-full h-full viewport-element" />
+                                               <span className="absolute top-2 left-2 text-[10px] bg-black/60 px-1.5 py-0.5 rounded text-white font-mono z-10 select-none">SAGITTAL</span>
+                                               {renderViewportScrollbar('sagittal')}
+                                           </div>
+                                           <div 
+                                               onMouseDown={() => setActiveViewportId('coronal')}
+                                               className="w-full h-full relative bg-black rounded overflow-hidden"
+                                           >
+                                               <div id="synos-viewport-coronal" className="w-full h-full viewport-element" />
+                                               <span className="absolute top-2 left-2 text-[10px] bg-black/60 px-1.5 py-0.5 rounded text-white font-mono z-10 select-none">CORONAL</span>
+                                               {renderViewportScrollbar('coronal')}
+                                           </div>
+                                           <div 
+                                               onMouseDown={() => setActiveViewportId('3d')}
+                                               className="w-full h-full relative bg-black rounded overflow-hidden"
+                                           >
+                                               <div id="synos-viewport-3d" className="w-full h-full viewport-element" />
+                                               <span className="absolute top-2 left-2 text-[10px] bg-black/60 px-1.5 py-0.5 rounded text-white font-mono z-10 select-none">3D VOLUME</span>
+                                           </div>
+                                       </div>
+                                   )}
+                                </div>
                             </div>
                         </div>
                     ) : (

@@ -1,21 +1,48 @@
-import cornerstone from 'cornerstone-core';
+// Polyfill SharedArrayBuffer if not supported/enabled by browser security context
+if (typeof window !== 'undefined' && !window.SharedArrayBuffer) {
+  window.SharedArrayBuffer = ArrayBuffer;
+}
+
+import * as cornerstone from '@cornerstonejs/core';
+import * as cornerstoneTools from '@cornerstonejs/tools';
+import cornerstoneDICOMImageLoader from '@cornerstonejs/dicom-image-loader';
+import { cornerstoneStreamingImageVolumeLoader } from '@cornerstonejs/streaming-image-volume-loader';
 import dicomParser from 'dicom-parser';
-import cornerstoneWADOImageLoader from 'cornerstone-wado-image-loader';
-import cornerstoneTools from 'cornerstone-tools';
-import Hammer from 'hammerjs';
-import * as cornerstoneMath from 'cornerstone-math';
 
-// Register global Hammer for tool gestural handlers
-window.Hammer = Hammer;
+// Register low-level parser and core dependencies
+cornerstoneDICOMImageLoader.external.cornerstone = cornerstone;
+cornerstoneDICOMImageLoader.external.dicomParser = dicomParser;
 
-// Register low-level DICOM parsing and core libraries with WADO loader
-cornerstoneWADOImageLoader.external.cornerstone = cornerstone;
-cornerstoneWADOImageLoader.external.dicomParser = dicomParser;
+// Register Cornerstone3D streaming volume loader
+cornerstone.volumeLoader.registerVolumeLoader(
+  'cornerstoneStreamingImageVolume',
+  cornerstoneStreamingImageVolumeLoader
+);
 
-// Wire cornerstone reference inside tool orchestration suite
-cornerstoneTools.external.cornerstone = cornerstone;
-cornerstoneTools.external.Hammer = Hammer;
-cornerstoneTools.external.cornerstoneMath = cornerstoneMath;
-cornerstoneTools.init();
+// Configure WADO loader Web Workers for high-performance multithreaded decoding
+cornerstoneDICOMImageLoader.webWorkerManager.initialize({
+  maxWebWorkers: Math.min(navigator.hardwareConcurrency || 4, 4),
+  startWebWorkersOnDemand: true,
+  taskConfiguration: {
+    decodeTask: {
+      initializeCodecsOnStartup: false,
+      usePDFJS: false,
+      strict: false,
+    },
+  },
+});
 
-export { cornerstone, cornerstoneTools, cornerstoneWADOImageLoader };
+let initPromise = null;
+
+export async function initCornerstone() {
+  if (initPromise) return initPromise;
+  
+  initPromise = (async () => {
+    await cornerstone.init();
+    cornerstoneTools.init();
+  })();
+  
+  return initPromise;
+}
+
+export { cornerstone, cornerstoneTools, cornerstoneDICOMImageLoader };

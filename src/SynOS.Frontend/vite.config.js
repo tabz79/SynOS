@@ -1,13 +1,19 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import path from 'path'
+import wasm from 'vite-plugin-wasm'
+import topLevelAwait from 'vite-plugin-top-level-await'
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), wasm(), topLevelAwait()],
+  worker: {
+    plugins: () => [wasm(), topLevelAwait()]
+  },
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
+      "@cornerstonejs/tools": "@cornerstonejs/tools/dist/umd/index.js"
     },
   },
   build: {
@@ -15,6 +21,10 @@ export default defineConfig({
     emptyOutDir: true
   },
   server: {
+    headers: {
+      'Cross-Origin-Opener-Policy': 'same-origin',
+      'Cross-Origin-Embedder-Policy': 'require-corp'
+    },
     proxy: {
       '/api': {
         target: 'http://127.0.0.1:59999',
