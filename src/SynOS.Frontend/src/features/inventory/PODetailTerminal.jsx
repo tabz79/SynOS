@@ -102,8 +102,8 @@ export const PODetailTerminal = ({ poId, onBack }) => {
                         <ArrowLeft className="w-5 h-5" />
                     </button>
                     <div>
-                        <h2 className="text-xl font-black tracking-tight">Order PO-{po.poId.substring(0, 8).toUpperCase()}</h2>
-                        <div className="flex items-center gap-2 text-[10px] uppercase font-bold tracking-widest text-zinc-400 mt-1">
+                        <h2 className="text-lg font-semibold tracking-tight">Order PO-{po.poId.substring(0, 8).toUpperCase()}</h2>
+                        <div className="flex items-center gap-2 text-[10px] uppercase font-semibold tracking-wider text-zinc-400 mt-1">
                             <Building2 className="w-3 h-3" />
                             {po.supplier?.name}
                             <span className="mx-1">•</span>
@@ -112,8 +112,8 @@ export const PODetailTerminal = ({ poId, onBack }) => {
                     </div>
                 </div>
                 <div className="text-right">
-                    <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Total Value</p>
-                    <p className="text-2xl font-black">₹{items.reduce((acc, item) => acc + (item.orderedQuantity * item.unitPrice), 0).toLocaleString()}</p>
+                    <p className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wider">Total Value</p>
+                    <p className="text-xl font-semibold">₹{items.reduce((acc, item) => acc + (item.orderedQuantity * item.unitPrice), 0).toLocaleString()}</p>
                 </div>
             </div>
 
@@ -123,17 +123,17 @@ export const PODetailTerminal = ({ poId, onBack }) => {
                 <div className="lg:col-span-2 space-y-4">
                     <div className="bg-white dark:bg-zinc-900/40 border dark:border-zinc-800 border-zinc-200 rounded-2xl overflow-hidden shadow-sm">
                         <div className="p-4 border-b dark:border-zinc-800 border-zinc-200 bg-zinc-50/50 dark:bg-zinc-900/40 flex justify-between items-center">
-                            <h3 className="text-[10px] font-black uppercase text-zinc-500 tracking-widest">Line Items</h3>
-                            <span className="text-xs font-bold">{items.length} Positions</span>
+                            <h3 className="text-[10px] font-semibold uppercase text-zinc-500 tracking-wider">Line Items</h3>
+                            <span className="text-xs font-semibold">{items.length} Positions</span>
                         </div>
                         <div className="overflow-x-auto">
                             <table className="w-full text-left">
                                 <thead>
-                                    <tr className="text-[10px] font-bold text-zinc-400 uppercase tracking-tighter border-b dark:border-zinc-800">
-                                        <th className="px-6 py-3 font-black">Item Description</th>
-                                        <th className="px-6 py-3 font-black text-center">Qty</th>
-                                        <th className="px-6 py-3 font-black text-right">Unit Price</th>
-                                        <th className="px-6 py-3 font-black text-right">Ext. Price</th>
+                                    <tr className="text-[10px] font-semibold text-zinc-400 uppercase tracking-wider border-b dark:border-zinc-800">
+                                        <th className="px-6 py-3 font-semibold">Item Description</th>
+                                        <th className="px-6 py-3 font-semibold text-center">Qty</th>
+                                        <th className="px-6 py-3 font-semibold text-right">Unit Price</th>
+                                        <th className="px-6 py-3 font-semibold text-right">Ext. Price</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y dark:divide-zinc-800">
@@ -150,9 +150,9 @@ export const PODetailTerminal = ({ poId, onBack }) => {
                                                         <span className="text-xs font-bold text-zinc-700 dark:text-zinc-200">{item.tube?.name || "Stock Item"}</span>
                                                     </div>
                                                 </td>
-                                                <td className="px-6 py-4 text-center font-black text-xs">{item.orderedQuantity}</td>
+                                                <td className="px-6 py-4 text-center font-semibold text-xs">{item.orderedQuantity}</td>
                                                 <td className="px-6 py-4 text-right text-xs">₹{item.unitPrice.toLocaleString()}</td>
-                                                <td className="px-6 py-4 text-right font-black text-xs">₹{(item.orderedQuantity * item.unitPrice).toLocaleString()}</td>
+                                                <td className="px-6 py-4 text-right font-semibold text-xs">₹{(item.orderedQuantity * item.unitPrice).toLocaleString()}</td>
                                             </tr>
                                         ))
                                     )}
@@ -167,17 +167,17 @@ export const PODetailTerminal = ({ poId, onBack }) => {
                     {po.status === 'Draft' && (
                         <div className="p-8 bg-synos-primary/5 border border-synos-primary/20 rounded-[2rem] space-y-6">
                             <div>
-                                <h3 className="text-lg font-black text-synos-primary tracking-tight">Add Line Item</h3>
-                                <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest">Append demand to order</p>
+                                <h3 className="text-base font-semibold text-synos-primary tracking-tight">Add Line Item</h3>
+                                <p className="text-[10px] text-zinc-500 font-semibold uppercase tracking-wider">Append demand to order</p>
                             </div>
 
                             <div className="space-y-4">
                                 <div className="space-y-1.5">
-                                    <label className="text-[10px] font-black uppercase text-zinc-500 ml-4 tracking-widest">Item Search</label>
+                                    <label className="text-[10px] font-semibold uppercase text-zinc-500 ml-4 tracking-wider">Item Search</label>
                                     <select 
                                         value={newItem.tubeId}
                                         onChange={(e) => setNewItem({...newItem, tubeId: e.target.value})}
-                                        className="w-full bg-white dark:bg-zinc-950 border-none rounded-2xl px-6 py-4 text-xs font-bold focus:ring-2 ring-synos-primary outline-none transition-all dark:text-white"
+                                        className="w-full bg-white dark:bg-zinc-950 border-none rounded-2xl px-6 py-4 text-xs font-medium focus:ring-2 ring-synos-primary outline-none transition-all dark:text-white"
                                     >
                                         <option value="">Choose item...</option>
                                         {catalog.map(item => (
@@ -188,21 +188,21 @@ export const PODetailTerminal = ({ poId, onBack }) => {
 
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-1.5">
-                                        <label className="text-[10px] font-black uppercase text-zinc-500 ml-4 tracking-widest">Quantity</label>
+                                        <label className="text-[10px] font-semibold uppercase text-zinc-500 ml-4 tracking-wider">Quantity</label>
                                         <input 
                                             type="number"
                                             value={newItem.orderedQuantity}
                                             onChange={(e) => setNewItem({...newItem, orderedQuantity: parseInt(e.target.value)})}
-                                            className="w-full bg-white dark:bg-zinc-950 border-none rounded-2xl px-6 py-4 text-xs font-bold focus:ring-2 ring-synos-primary outline-none transition-all dark:text-white"
+                                            className="w-full bg-white dark:bg-zinc-950 border-none rounded-2xl px-6 py-4 text-xs font-medium focus:ring-2 ring-synos-primary outline-none transition-all dark:text-white"
                                         />
                                     </div>
                                     <div className="space-y-1.5">
-                                        <label className="text-[10px] font-black uppercase text-zinc-500 ml-4 tracking-widest">Unit Price (₹)</label>
+                                        <label className="text-[10px] font-semibold uppercase text-zinc-500 ml-4 tracking-wider">Unit Price (₹)</label>
                                         <input 
                                             type="number"
                                             value={newItem.unitPrice}
                                             onChange={(e) => setNewItem({...newItem, unitPrice: parseFloat(e.target.value)})}
-                                            className="w-full bg-white dark:bg-zinc-950 border-none rounded-2xl px-6 py-4 text-xs font-bold focus:ring-2 ring-synos-primary outline-none transition-all dark:text-white"
+                                            className="w-full bg-white dark:bg-zinc-950 border-none rounded-2xl px-6 py-4 text-xs font-medium focus:ring-2 ring-synos-primary outline-none transition-all dark:text-white"
                                         />
                                     </div>
                                 </div>
@@ -210,7 +210,7 @@ export const PODetailTerminal = ({ poId, onBack }) => {
                                 <button 
                                     onClick={handleAddItem}
                                     disabled={!newItem.tubeId || newItem.orderedQuantity <= 0}
-                                    className="w-full bg-synos-primary text-white font-black py-5 rounded-2xl shadow-xl shadow-synos-primary/20 hover:scale-[1.02] transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                                    className="w-full bg-synos-primary text-white font-semibold py-4 rounded-2xl shadow-xl shadow-synos-primary/20 hover:scale-[1.02] transition-all flex items-center justify-center gap-2 disabled:opacity-50"
                                 >
                                     <Plus className="w-5 h-5" />
                                     Add to Order
@@ -222,7 +222,7 @@ export const PODetailTerminal = ({ poId, onBack }) => {
                     <div className="p-8 bg-zinc-900 rounded-[2rem] text-white space-y-4">
                         <div className="flex items-center gap-2">
                             <AlertCircle className="w-5 h-5 text-amber-500" />
-                            <h4 className="text-sm font-black uppercase tracking-widest">
+                            <h4 className="text-xs font-semibold uppercase tracking-wider">
                                 {po.status === 'Draft' ? 'Finalize Order' : 'Order Locked'}
                             </h4>
                         </div>
@@ -235,27 +235,27 @@ export const PODetailTerminal = ({ poId, onBack }) => {
                         {po.status === 'Draft' && (
                             <button 
                                 onClick={handleApprove}
-                                className="w-full py-4 bg-white text-zinc-900 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-emerald-500 hover:text-white transition-all"
+                                className="w-full py-4 bg-white text-zinc-900 rounded-xl text-[10px] font-semibold uppercase tracking-wider hover:bg-emerald-500 hover:text-white transition-all"
                             >
                                 Approve & Lock PO
                             </button>
                         )}
                         {po.status === 'Approved' && (
                             <>
-                                <div className="w-full py-4 bg-emerald-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2">
+                                <div className="w-full py-4 bg-emerald-500 text-white rounded-xl text-[10px] font-semibold uppercase tracking-wider flex items-center justify-center gap-2">
                                     <CheckCircle2 className="w-4 h-4" />
                                     Active Commitment
                                 </div>
                                 <button 
                                     onClick={handleWhatsAppDispatch}
-                                    className="w-full py-4 bg-zinc-800 hover:bg-zinc-700 text-emerald-400 border border-emerald-500/20 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 transition-all"
+                                    className="w-full py-4 bg-zinc-800 hover:bg-zinc-700 text-emerald-400 border border-emerald-500/20 rounded-xl text-[10px] font-semibold uppercase tracking-wider flex items-center justify-center gap-2 transition-all"
                                 >
                                     <MessageSquare className="w-4 h-4" />
                                     Dispatch via WhatsApp
                                 </button>
                                 <button 
                                     onClick={() => window.open(`/api/v1/purchasing/po/${po.poId}/print`, '_blank')}
-                                    className="w-full py-4 bg-transparent hover:bg-white/5 text-zinc-400 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 transition-all"
+                                    className="w-full py-4 bg-transparent hover:bg-white/5 text-zinc-400 rounded-xl text-[10px] font-semibold uppercase tracking-wider flex items-center justify-center gap-2 transition-all"
                                 >
                                     <Printer className="w-4 h-4" />
                                     Print / View PDF

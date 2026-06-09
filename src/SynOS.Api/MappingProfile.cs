@@ -62,10 +62,13 @@ namespace SynOS.Api
             
             // Test Master Mappings
             CreateMap<CreateTestDto, Test>()
+                .ForMember(dest => dest.ReportTemplateId, opt => opt.MapFrom(src => src.ReportTemplateId))
                 .ForMember(dest => dest.Parameters, opt => opt.Ignore());
             CreateMap<UpdateTestDto, Test>()
+                .ForMember(dest => dest.ReportTemplateId, opt => opt.MapFrom(src => src.ReportTemplateId))
                 .ForMember(dest => dest.Parameters, opt => opt.Ignore());
             CreateMap<Test, TestDto>()
+                .ForMember(dest => dest.ReportTemplateId, opt => opt.MapFrom(src => src.ReportTemplateId))
                 .ForMember(dest => dest.Department, opt => opt.MapFrom(src => src.DepartmentMaster != null ? src.DepartmentMaster.Name : string.Empty))
                 .ForMember(dest => dest.ModalityId, opt => opt.MapFrom(src => src.ModalityId))
                 .ForMember(dest => dest.ModalityName, opt => opt.MapFrom(src => src.ModalityMaster != null ? src.ModalityMaster.Name : null))

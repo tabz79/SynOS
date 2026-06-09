@@ -624,6 +624,7 @@ namespace SynOS.Services
                     Token = order.Visit.Token
                 },
                 Status = report.Status,
+                ReportTemplateId = report.ReportTemplateId ?? order.Test?.ReportTemplateId,
                 VerificationMode = report.VerificationMode,
                 SignedAt = report.SignedAt,
                 VerifiedAt = report.VerifiedAt,
@@ -772,6 +773,7 @@ namespace SynOS.Services
 
             var model = new ReportDataModel
             {
+                ReportTemplateId = report.ReportTemplateId ?? order.Test?.ReportTemplateId,
                 Lab = new LabDetails
                 {
                     Name = labProfile.Name,
@@ -927,6 +929,7 @@ namespace SynOS.Services
 
                 var radModel = new ReportDataModel
                 {
+                    ReportTemplateId = report.ReportTemplateId ?? order.Test?.ReportTemplateId,
                     Lab = new LabDetails
                     {
                         Name = radLabProfile.Name,
@@ -1245,6 +1248,7 @@ namespace SynOS.Services
             var now = DateTimeOffset.UtcNow;
             var model = new ReportDataModel
             {
+                ReportTemplateId = report.ReportTemplateId ?? order.Test?.ReportTemplateId,
                 Lab = new LabDetails
                 {
                     Name = labProfile.Name,
@@ -1355,6 +1359,7 @@ namespace SynOS.Services
             // PURE ADAPTER: Reshapes structure, doesn't invent truth.
             return new ReportDataModel
             {
+                ReportTemplateId = report.ReportTemplateId ?? order.Test?.ReportTemplateId,
                 Metadata = new ReportMetadata
                 {
                     ContractVersion = 2,
@@ -1424,6 +1429,7 @@ namespace SynOS.Services
                     Token = order.Visit.Token
                 },
                 Status = report.Status,
+                ReportTemplateId = report.ReportTemplateId,
                 VerificationMode = report.VerificationMode,
                 SignedAt = report.SignedAt,
                 VerifiedAt = report.VerifiedAt,
@@ -1450,7 +1456,7 @@ namespace SynOS.Services
             };
         }
 
-        public async Task<System.Collections.Generic.IEnumerable<ReportListItemDto>> GetReportsByStatusAsync(string status, bool excludeManualFlow = false)
+        public async Task<System.Collections.Generic.IEnumerable<ReportListItemDto>> GetReportsByStatusAsync(string status, bool excludeManualFlow = false, string? department = null)
         {
             // Support comma-separated statuses for multi-state queues (e.g. "Draft,ReadyForVerification")
             var statusList = (status ?? "").Split(',').Select(s => s.Trim()).Where(s => !string.IsNullOrEmpty(s)).ToList();
@@ -1463,6 +1469,21 @@ namespace SynOS.Services
             if (excludeManualFlow)
             {
                 reportsQuery = reportsQuery.Where(r => !r.IsManualFlow);
+            }
+
+            if (!string.IsNullOrEmpty(department))
+            {
+                var matchingDeptCodes = await _context.DepartmentMasters
+                    .Where(dm => dm.MacroDepartment == department || dm.Code == department || dm.Name == department)
+                    .Select(dm => dm.Code)
+                    .ToListAsync();
+
+                if (!matchingDeptCodes.Contains(department))
+                {
+                    matchingDeptCodes.Add(department);
+                }
+
+                reportsQuery = reportsQuery.Where(r => matchingDeptCodes.Contains(r.Department));
             }
 
             var reports = await reportsQuery
@@ -1569,14 +1590,25 @@ namespace SynOS.Services
             var report = await _context.Reports.FirstOrDefaultAsync(r => r.ReportId == reportId);
             if (report == null) throw new KeyNotFoundException($"Report {reportId} not found.");
 
-            // Determine if claiming as Typist or Verifier
-            if (report.Status == "Draft")
-            {
-                report.TypedByUserId = userId;
-            }
-            else if (report.Status == "ReadyForVerification")
+            // Check if the claiming user is a Pathologist
+            var isPathologist = await _context.UserRoles
+                .AnyAsync(ur => ur.UserId == userId && ur.Role.Name == "Pathologist");
+
+            if (isPathologist)
             {
                 report.VerifiedByUserId = userId;
+            }
+            else
+            {
+                // Determine if claiming as Typist or Verifier
+                if (report.Status == "Draft")
+                {
+                    report.TypedByUserId = userId;
+                }
+                else if (report.Status == "ReadyForVerification")
+                {
+                    report.VerifiedByUserId = userId;
+                }
             }
 
             report.UpdatedAt = DateTimeOffset.UtcNow;
@@ -1627,7 +1659,17 @@ namespace SynOS.Services
             // 3. Department filter
             if (!string.IsNullOrWhiteSpace(department) && department != "All")
             {
-                query = query.Where(r => r.Department == department);
+                var matchingDeptCodes = await _context.DepartmentMasters
+                    .Where(dm => dm.MacroDepartment == department || dm.Code == department || dm.Name == department)
+                    .Select(dm => dm.Code)
+                    .ToListAsync();
+
+                if (!matchingDeptCodes.Contains(department))
+                {
+                    matchingDeptCodes.Add(department);
+                }
+
+                query = query.Where(r => matchingDeptCodes.Contains(r.Department));
             }
 
             // 4. Statuses filter

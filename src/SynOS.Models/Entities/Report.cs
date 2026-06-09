@@ -63,6 +63,10 @@ namespace SynOS.Models.Entities
         public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
         public DateTimeOffset? UpdatedAt { get; set; }
 
+        public Guid? ReportTemplateId { get; set; }
+        [ForeignKey("ReportTemplateId")]
+        public virtual ReportTemplate? ReportTemplate { get; set; }
+
         public Guid? SupersededReportId { get; set; }
         [ForeignKey("SupersededReportId")]
         public virtual Report? SupersededReport { get; set; }

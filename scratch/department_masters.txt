@@ -1,0 +1,17 @@
+
+DepartmentId                         Code      Name                          MacroDepartment
+------------                         ----      ----                          ---------------
+7332e068-6139-410b-8581-2a18b3fcf873 CPS       Clinical Pathology Stool      Pathology      
+99f8d2bd-3b7c-4188-840a-2f647aad6454 RADIOLOGY RADIOLOGY                     LAB            
+67a749fe-2739-4135-93de-3833d5e1d4e9 HP        Health Panels                                
+43fe4dfe-464b-4ee3-bd7b-61adda99d6c7 MIC       Microbiology                  Pathology      
+deb1a5b0-f6ee-402d-a5e9-782ac0471a31 SER       Serology                      Pathology      
+7c9f095a-9a13-4b1b-8d21-7926653c812f GENERAL   General Laboratory Operations General        
+0b5d6bee-fa32-4fe2-b3da-7d3f05f27427 CPA       Clinical Pathology            Pathology      
+b2aa15c7-a1d8-40b5-bb12-8f2034d58580 RAD       Radiology                     Radiology      
+abf89470-879f-408e-806b-9a7d1ebfcde3 BIO       Biochemistry                  Pathology      
+95caf5d3-5582-4180-b3be-de6adf921b0f HEM       Hematology                    Pathology      
+3545ae41-9d4b-47d8-a87a-ea39d1af29a0 RADUS     Ultra Sound                   Radiology      
+a22446c6-e2c1-4a41-a72c-efb564c73690 PATHOLOGY Pathology                     Pathology      
+
+

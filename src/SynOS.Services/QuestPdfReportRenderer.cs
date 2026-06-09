@@ -238,11 +238,12 @@ namespace SynOS.Services
                         foreach (var col in visibleColumns)
                         {
                             var cell = header.Cell().BorderBottom(1);
-                            if (col == "Parameter") cell.AlignLeft();
-                            else if (col == "Value" || col == "Unit") cell.AlignCenter();
-                            else if (col == "ReferenceRange") cell.AlignRight();
+                            IContainer contentContainer = cell;
+                            if (col == "Parameter") contentContainer = cell.AlignLeft();
+                            else if (col == "Value" || col == "Unit") contentContainer = cell.AlignCenter();
+                            else if (col == "ReferenceRange") contentContainer = cell.AlignRight();
                             
-                            cell.Text(GetColumnHeaderName(col)).SemiBold();
+                            contentContainer.Text(GetColumnHeaderName(col)).SemiBold();
                         }
                     });
 

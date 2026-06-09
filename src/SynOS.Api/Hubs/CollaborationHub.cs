@@ -8,7 +8,7 @@ using SynOS.Services;
 
 namespace SynOS.Api.Hubs
 {
-    public class RadiologyCollaborationHub : Hub
+    public class CollaborationHub : Hub
     {
         private readonly IDictationSessionService _sessionService;
 
@@ -24,10 +24,10 @@ namespace SynOS.Api.Hubs
             public string Role { get; set; }
             public string CurrentCallState { get; set; } = "Idle"; // Idle, Calling, Ringing, Connected, Busy
             public string ActiveCallPeerUserId { get; set; } // Whom they are connected with / calling
-            public string? CurrentStudyId { get; set; } // Track active study session!
+            public string? CurrentStudyId { get; set; } // Track active study session or report session!
         }
 
-        public RadiologyCollaborationHub(IDictationSessionService sessionService)
+        public CollaborationHub(IDictationSessionService sessionService)
         {
             _sessionService = sessionService ?? throw new ArgumentNullException(nameof(sessionService));
         }
@@ -116,10 +116,17 @@ namespace SynOS.Api.Hubs
                         }
                     }
 
-                    // Leave active study session group
+                    // Leave active study or report session group
                     if (!string.IsNullOrEmpty(presence.CurrentStudyId))
                     {
-                        await Clients.Group($"Session-{presence.CurrentStudyId}").SendAsync("UserLeft", userId);
+                        if (presence.CurrentStudyId.StartsWith("Report-"))
+                        {
+                            await Clients.Group(presence.CurrentStudyId).SendAsync("UserLeft", userId);
+                        }
+                        else
+                        {
+                            await Clients.Group($"Session-{presence.CurrentStudyId}").SendAsync("UserLeft", userId);
+                        }
                     }
 
                     await Clients.All.SendAsync("OnlineUsersChanged", OnlineUsers.Values);
@@ -469,6 +476,70 @@ namespace SynOS.Api.Hubs
                 await Clients.Group($"Session-{studyId}").SendAsync("ReceiveSignRequest");
             }
         }
+
+        // --- Generic DB-Free Report Session Methods (Pathology) ---
+
+        public async Task JoinReportSession(string reportId)
+        {
+            var userIdString = Context.UserIdentifier;
+            if (string.IsNullOrEmpty(userIdString))
+            {
+                throw new HubException("Unauthorized connection.");
+            }
+
+            await Groups.AddToGroupAsync(Context.ConnectionId, $"Report-{reportId}");
+            
+            // Track report presence in memory dictionary
+            if (OnlineUsers.TryGetValue(userIdString, out var presence))
+            {
+                presence.CurrentStudyId = $"Report-{reportId}";
+            }
+
+            // Notify existing group members that we joined
+            await Clients.Group($"Report-{reportId}").SendAsync("UserJoined", userIdString);
+
+            // Notify caller immediately if the other user is already in the same report session
+            var otherUser = OnlineUsers.Values.FirstOrDefault(u => u.CurrentStudyId == $"Report-{reportId}" && u.UserId != userIdString);
+            if (otherUser != null)
+            {
+                await Clients.Caller.SendAsync("UserJoined", otherUser.UserId);
+            }
+        }
+
+        public async Task LeaveReportSession(string reportId)
+        {
+            var userIdString = Context.UserIdentifier;
+            if (!string.IsNullOrEmpty(userIdString) && OnlineUsers.TryGetValue(userIdString, out var presence))
+            {
+                if (presence.CurrentStudyId == $"Report-{reportId}")
+                {
+                    presence.CurrentStudyId = null;
+                }
+            }
+
+            await Groups.RemoveFromGroupAsync(Context.ConnectionId, $"Report-{reportId}");
+            await Clients.Group($"Report-{reportId}").SendAsync("UserLeft", userIdString);
+        }
+
+        public async Task SendReportDraftUpdate(string reportId, string draftJson)
+        {
+            // Broadcast character-by-character updates as a JSON string to other peers in the group
+            await Clients.OthersInGroup($"Report-{reportId}").SendAsync("ReceiveReportDraftUpdate", draftJson);
+        }
+
+        public async Task SendReportDraftSaved(string reportId)
+        {
+            await Clients.Group($"Report-{reportId}").SendAsync("ReceiveReportDraftSaved");
+        }
+
+        public async Task SendReportDraftResumed(string reportId)
+        {
+            await Clients.Group($"Report-{reportId}").SendAsync("ReceiveReportDraftResumed");
+        }
+
+        public async Task SendReportSignRequest(string reportId)
+        {
+            await Clients.Group($"Report-{reportId}").SendAsync("ReceiveReportSignRequest");
+        }
     }
 }
-

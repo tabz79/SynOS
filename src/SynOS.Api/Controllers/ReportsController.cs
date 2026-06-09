@@ -173,7 +173,7 @@ namespace SynOS.Api.Controllers
 
         [HttpGet]
         [Authorize(Policy = "ReportingPolicy")]
-        public async Task<IActionResult> GetReports([FromQuery] string status)
+        public async Task<IActionResult> GetReports([FromQuery] string status, [FromQuery] string? department = null)
         {
             if (string.IsNullOrEmpty(status))
             {
@@ -183,7 +183,7 @@ namespace SynOS.Api.Controllers
             // GPT-5: Pathologists should only see reports intended for digital sign-off.
             // Manual sign-off reports bypass the Pathologist digital queue.
             bool isPathologist = User.IsInRole("Pathologist");
-            var reports = await _reportService.GetReportsByStatusAsync(status, excludeManualFlow: isPathologist);
+            var reports = await _reportService.GetReportsByStatusAsync(status, excludeManualFlow: isPathologist, department: department);
             return Ok(reports);
         }
 

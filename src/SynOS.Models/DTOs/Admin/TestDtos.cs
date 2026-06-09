@@ -19,6 +19,7 @@ namespace SynOS.Models.DTOs.Admin
         public bool IsOutsourced { get; set; }
         public string? SpecimenTypeCode { get; set; }
         public bool IsProfile { get; set; }
+        public Guid? ReportTemplateId { get; set; }
         public List<ParameterDto> Parameters { get; set; } = new List<ParameterDto>();
         public List<string> IncludedTestCodes { get; set; } = new List<string>();
         public DateTimeOffset CreatedAt { get; set; }
@@ -106,6 +107,7 @@ namespace SynOS.Models.DTOs.Admin
 
         public bool IsProfile { get; set; }
         public Guid? ModalityId { get; set; }
+        public Guid? ReportTemplateId { get; set; }
 
         public List<ParameterSaveDto> Parameters { get; set; } = new List<ParameterSaveDto>();
 

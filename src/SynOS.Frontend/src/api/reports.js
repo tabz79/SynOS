@@ -1,4 +1,11 @@
 export const ReportsApi = {
+    _cachedTemplates: null,
+    _cachedTemplatesPromise: null,
+    _clearCache: () => {
+        ReportsApi._cachedTemplates = null;
+        ReportsApi._cachedTemplatesPromise = null;
+    },
+
     searchReportsArchive: async (params) => {
         const queryParams = new URLSearchParams();
         Object.entries(params).forEach(([key, val]) => {
@@ -17,8 +24,12 @@ export const ReportsApi = {
         return await response.json();
     },
 
-    getReportsByStatus: async (status) => {
-        const response = await fetch(`/api/v1/reports?status=${status}`, {
+    getReportsByStatus: async (status, department) => {
+        let url = `/api/v1/reports?status=${status}`;
+        if (department) {
+            url += `&department=${encodeURIComponent(department)}`;
+        }
+        const response = await fetch(url, {
             headers: { 'Authorization': `Bearer ${localStorage.getItem('synos_jwt')}` }
         });
         if (!response.ok) throw new Error('Failed to fetch reports');
@@ -169,23 +180,64 @@ export const ReportsApi = {
     },
 
     getTemplates: async (modality) => {
-        const url = modality ? `/api/v1/reports/templates?modality=${encodeURIComponent(modality)}` : '/api/v1/reports/templates';
+        if (!modality) {
+            if (ReportsApi._cachedTemplates) {
+                return ReportsApi._cachedTemplates;
+            }
+            if (ReportsApi._cachedTemplatesPromise) {
+                return ReportsApi._cachedTemplatesPromise;
+            }
+            const timestamp = Date.now();
+            const url = `/api/v1/reports/templates?_t=${timestamp}`;
+            ReportsApi._cachedTemplatesPromise = fetch(url, {
+                headers: { 
+                    'Authorization': `Bearer ${localStorage.getItem('synos_jwt')}`,
+                    'Cache-Control': 'no-cache',
+                    'Pragma': 'no-cache'
+                }
+            }).then(async response => {
+                if (!response.ok) {
+                    ReportsApi._cachedTemplatesPromise = null;
+                    throw new Error('Failed to fetch templates');
+                }
+                const data = await response.json();
+                ReportsApi._cachedTemplates = data;
+                ReportsApi._cachedTemplatesPromise = null;
+                return data;
+            }).catch(err => {
+                ReportsApi._cachedTemplatesPromise = null;
+                throw err;
+            });
+            return ReportsApi._cachedTemplatesPromise;
+        }
+
+        const timestamp = Date.now();
+        const url = `/api/v1/reports/templates?modality=${encodeURIComponent(modality)}&_t=${timestamp}`;
         const response = await fetch(url, {
-            headers: { 'Authorization': `Bearer ${localStorage.getItem('synos_jwt')}` }
+            headers: { 
+                'Authorization': `Bearer ${localStorage.getItem('synos_jwt')}`,
+                'Cache-Control': 'no-cache',
+                'Pragma': 'no-cache'
+            }
         });
         if (!response.ok) throw new Error('Failed to fetch templates');
         return await response.json();
     },
 
     getTemplateById: async (id) => {
-        const response = await fetch(`/api/v1/reports/templates/${id}`, {
-            headers: { 'Authorization': `Bearer ${localStorage.getItem('synos_jwt')}` }
+        const response = await fetch(`/api/v1/reports/templates/${id}?_t=${Date.now()}`, {
+            headers: { 
+                'Authorization': `Bearer ${localStorage.getItem('synos_jwt')}`,
+                'Cache-Control': 'no-cache',
+                'Pragma': 'no-cache'
+            }
         });
         if (!response.ok) throw new Error('Failed to fetch template');
         return await response.json();
     },
 
     createTemplate: async (dto) => {
+        ReportsApi._clearCache();
         const response = await fetch('/api/v1/reports/templates', {
             method: 'POST',
             headers: {
@@ -202,6 +254,7 @@ export const ReportsApi = {
     },
 
     updateTemplate: async (id, dto) => {
+        ReportsApi._clearCache();
         const response = await fetch(`/api/v1/reports/templates/${id}`, {
             method: 'PUT',
             headers: {
@@ -218,6 +271,7 @@ export const ReportsApi = {
     },
 
     setDefaultTemplate: async (id) => {
+        ReportsApi._clearCache();
         const response = await fetch(`/api/v1/reports/templates/${id}/set-default`, {
             method: 'POST',
             headers: { 'Authorization': `Bearer ${localStorage.getItem('synos_jwt')}` }
@@ -227,6 +281,7 @@ export const ReportsApi = {
     },
 
     publishTemplate: async (id) => {
+        ReportsApi._clearCache();
         const response = await fetch(`/api/v1/reports/templates/${id}/publish`, {
             method: 'POST',
             headers: { 'Authorization': `Bearer ${localStorage.getItem('synos_jwt')}` }
@@ -236,6 +291,7 @@ export const ReportsApi = {
     },
 
     deleteTemplate: async (id) => {
+        ReportsApi._clearCache();
         const response = await fetch(`/api/v1/reports/templates/${id}`, {
             method: 'DELETE',
             headers: { 'Authorization': `Bearer ${localStorage.getItem('synos_jwt')}` }

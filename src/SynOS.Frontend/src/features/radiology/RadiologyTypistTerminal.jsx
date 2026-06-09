@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { SystemBar } from '@/components/layout/SystemBar';
 import { useAuth } from '@/context/AuthContext';
-import { RadiologyCallOverlay } from './RadiologyCallOverlay';
+import { CollaborationCallOverlay } from './CollaborationCallOverlay';
 import { RadiologyApi } from '@/api/radiology';
 import { 
     Activity, 
@@ -28,10 +28,9 @@ let sharedConnection = null;
 let stopTimer = null;
 let subscriberCount = 0;
 
-export function RadiologyTypistTerminal() {
+export function RadiologyTypistTerminal({ selectedStudy, setSelectedStudy, hubConnectionRef, connectionStatus }) {
     const { user } = useAuth();
     const [studies, setStudies] = useState([]);
-    const [selectedStudy, setSelectedStudy] = useState(null);
     const [loading, setLoading] = useState(true);
     const [actionLoading, setActionLoading] = useState(false);
 
@@ -59,8 +58,7 @@ export function RadiologyTypistTerminal() {
 
     // SignalR Connection
     const [liveRadiologistConnected, setLiveRadiologistConnected] = useState(false);
-    const [connectionStatus, setConnectionStatus] = useState('Disconnected');
-    const hubConnection = useRef(null);
+    const hubConnection = hubConnectionRef;
     const currentJoinedStudyIdRef = useRef(null);
 
     const fetchQueue = async () => {
@@ -105,46 +103,87 @@ export function RadiologyTypistTerminal() {
         fetchQueue();
     }, []);
 
-    // Connect SignalR on component mount to support presence and floating audio calls
+    // Connect SignalR event listeners when mounted
     useEffect(() => {
-        isUnmountedRef.current = false;
-        subscriberCount++;
+        const connection = hubConnectionRef?.current;
+        if (!connection) return;
 
-        if (stopTimer) {
-            clearTimeout(stopTimer);
-            stopTimer = null;
-            if (sharedConnection) {
-                hubConnection.current = sharedConnection;
-                if (sharedConnection.state === signalR.HubConnectionState.Connected) {
-                    setConnectionStatus('Connected');
-                } else if (sharedConnection.state === signalR.HubConnectionState.Connecting) {
-                    setConnectionStatus('Connecting');
-                } else if (sharedConnection.state === signalR.HubConnectionState.Reconnecting) {
-                    setConnectionStatus('Reconnecting');
-                } else {
-                    setConnectionStatus('Disconnected');
+        const onReceiveDraftUpdate = (draftContent) => {
+            try {
+                const parsed = JSON.parse(draftContent);
+                const activeStudyId = currentJoinedStudyIdRef.current;
+                if (!activeStudyId) return;
+
+                if (parsed.findings !== undefined) {
+                    setDraftFindings(parsed.findings);
+                    localStorage.setItem(`draft_findings_${activeStudyId}`, parsed.findings);
                 }
+                if (parsed.impression !== undefined) {
+                    setDraftImpression(parsed.impression);
+                    localStorage.setItem(`draft_impression_${activeStudyId}`, parsed.impression);
+                }
+                if (parsed.additionalNotes !== undefined) {
+                    setDraftNotes(parsed.additionalNotes);
+                    localStorage.setItem(`draft_notes_${activeStudyId}`, parsed.additionalNotes);
+                }
+            } catch (e) {
+                console.error("Failed to parse live draft packet:", e);
             }
-        } else {
-            connectSignalR();
+        };
+
+        const onUserJoined = (connectionId) => {
+            setLiveRadiologistConnected(true);
+        };
+
+        const onUserLeft = (connectionId) => {
+            setLiveRadiologistConnected(false);
+        };
+
+        const onReceiveDraftSaved = () => {
+            if (currentJoinedStudyIdRef.current) {
+                handleSelectStudy({ radiologyStudyId: currentJoinedStudyIdRef.current });
+            }
+        };
+
+        const onReceiveDraftResumed = () => {
+            if (currentJoinedStudyIdRef.current) {
+                handleSelectStudy({ radiologyStudyId: currentJoinedStudyIdRef.current });
+            }
+        };
+
+        const onReceiveSignRequest = () => {
+            if (currentJoinedStudyIdRef.current) {
+                handleSelectStudy({ radiologyStudyId: currentJoinedStudyIdRef.current });
+            }
+        };
+
+        connection.on('ReceiveDraftUpdate', onReceiveDraftUpdate);
+        connection.on('UserJoined', onUserJoined);
+        connection.on('UserLeft', onUserLeft);
+        connection.on('ReceiveDraftSaved', onReceiveDraftSaved);
+        connection.on('ReceiveDraftResumed', onReceiveDraftResumed);
+        connection.on('ReceiveSignRequest', onReceiveSignRequest);
+
+        if (connection.state === 'Connected') {
+            connection.invoke('RegisterPresence', 'Typist').catch(err => console.error(err));
+            if (currentJoinedStudyIdRef.current) {
+                connection.invoke('JoinSession', currentJoinedStudyIdRef.current).catch(err => console.error(err));
+            }
         }
 
         return () => {
-            isUnmountedRef.current = true;
-            subscriberCount--;
-            if (subscriberCount <= 0) {
-                subscriberCount = 0;
-                if (stopTimer) clearTimeout(stopTimer);
-                stopTimer = setTimeout(() => {
-                    if (sharedConnection) {
-                        sharedConnection.stop().catch(err => console.error("Error stopping connection on cleanup:", err));
-                        sharedConnection = null;
-                    }
-                    stopTimer = null;
-                }, 2000);
+            connection.off('ReceiveDraftUpdate', onReceiveDraftUpdate);
+            connection.off('UserJoined', onUserJoined);
+            connection.off('UserLeft', onUserLeft);
+            connection.off('ReceiveDraftSaved', onReceiveDraftSaved);
+            connection.off('ReceiveDraftResumed', onReceiveDraftResumed);
+            connection.off('ReceiveSignRequest', onReceiveSignRequest);
+
+            if (currentJoinedStudyIdRef.current && connection.state === 'Connected') {
+                connection.invoke('LeaveSession', currentJoinedStudyIdRef.current).catch(err => console.error(err));
             }
         };
-    }, []);
+    }, [hubConnectionRef?.current]);
 
     // Sync collaborative session when active study changes
     useEffect(() => {
@@ -247,142 +286,6 @@ export function RadiologyTypistTerminal() {
             if (cachedImpression !== null) setDraftImpression(cachedImpression);
             if (cachedNotes !== null) setDraftNotes(cachedNotes);
         }
-    };
-
-    const isUnmountedRef = useRef(false);
-
-    const connectSignalR = async () => {
-        if (sharedConnection && sharedConnection.state === signalR.HubConnectionState.Connected) {
-            hubConnection.current = sharedConnection;
-            setConnectionStatus('Connected');
-            return;
-        }
-        if (sharedConnection && sharedConnection.state === signalR.HubConnectionState.Connecting) {
-            hubConnection.current = sharedConnection;
-            setConnectionStatus('Connecting');
-            return;
-        }
-
-        setConnectionStatus('Connecting');
-
-        const connection = new signalR.HubConnectionBuilder()
-            .withUrl('/radiologyCollaborationHub', {
-                accessTokenFactory: () => localStorage.getItem('synos_jwt'),
-                skipNegotiation: true,
-                transport: signalR.HttpTransportType.WebSockets
-            })
-            .withAutomaticReconnect([0, 2000, 5000, 10000]) // sliding reconnect
-            .build();
-
-        sharedConnection = connection;
-        hubConnection.current = connection;
-
-        connection.onreconnecting((error) => {
-            if (hubConnection.current !== connection) return;
-            setConnectionStatus('Reconnecting');
-            console.warn("SignalR connection lost, attempting reconnect...", error);
-        });
-
-        connection.onreconnected((connectionId) => {
-            if (hubConnection.current !== connection) return;
-            setConnectionStatus('Connected');
-            console.info("SignalR reconnected.", connectionId);
-            connection.invoke('RegisterPresence', 'Typist').catch(err => console.error(err));
-            if (currentJoinedStudyIdRef.current) {
-                connection.invoke('JoinSession', currentJoinedStudyIdRef.current).catch(err => console.error(err));
-                fetchReportDraft(currentJoinedStudyIdRef.current);
-            }
-        });
-
-        connection.onclose((error) => {
-            if (hubConnection.current !== connection) return;
-            setConnectionStatus('Disconnected');
-            console.error("SignalR connection closed.", error);
-        });
-
-        connection.on('ReceiveDraftUpdate', (draftContent) => {
-            if (hubConnection.current !== connection) return;
-            try {
-                const parsed = JSON.parse(draftContent);
-                const activeStudyId = currentJoinedStudyIdRef.current;
-                if (!activeStudyId) return;
-
-                if (parsed.findings !== undefined) {
-                    setDraftFindings(parsed.findings);
-                    localStorage.setItem(`draft_findings_${activeStudyId}`, parsed.findings);
-                }
-                if (parsed.impression !== undefined) {
-                    setDraftImpression(parsed.impression);
-                    localStorage.setItem(`draft_impression_${activeStudyId}`, parsed.impression);
-                }
-                if (parsed.additionalNotes !== undefined) {
-                    setDraftNotes(parsed.additionalNotes);
-                    localStorage.setItem(`draft_notes_${activeStudyId}`, parsed.additionalNotes);
-                }
-            } catch (e) {
-                console.error("Failed to parse live draft packet:", e);
-            }
-        });
-
-        connection.on('UserJoined', (connectionId) => {
-            if (hubConnection.current !== connection) return;
-            setLiveRadiologistConnected(true);
-        });
-
-        connection.on('UserLeft', (connectionId) => {
-            if (hubConnection.current !== connection) return;
-            setLiveRadiologistConnected(false);
-        });
-
-        connection.on('ReceiveDraftSaved', () => {
-            if (hubConnection.current !== connection) return;
-            if (currentJoinedStudyIdRef.current) {
-                handleSelectStudy({ radiologyStudyId: currentJoinedStudyIdRef.current });
-            }
-        });
-
-        connection.on('ReceiveDraftResumed', () => {
-            if (hubConnection.current !== connection) return;
-            if (currentJoinedStudyIdRef.current) {
-                handleSelectStudy({ radiologyStudyId: currentJoinedStudyIdRef.current });
-            }
-        });
-
-        connection.on('ReceiveSignRequest', () => {
-            if (hubConnection.current !== connection) return;
-            if (currentJoinedStudyIdRef.current) {
-                handleSelectStudy({ radiologyStudyId: currentJoinedStudyIdRef.current });
-            }
-        });
-
-        connection.start()
-            .then(async () => {
-                if (hubConnection.current !== connection) return;
-                if (isUnmountedRef.current) {
-                    connection.stop().catch(err => console.error("Error stopping connection on cleanup:", err));
-                    if (sharedConnection === connection) sharedConnection = null;
-                    hubConnection.current = null;
-                    return;
-                }
-                setConnectionStatus('Connected');
-                await connection.invoke('RegisterPresence', 'Typist');
-                if (currentJoinedStudyIdRef.current) {
-                    await connection.invoke('JoinSession', currentJoinedStudyIdRef.current);
-                }
-            })
-            .catch(e => {
-                if (hubConnection.current !== connection) return;
-                if (isUnmountedRef.current) {
-                    if (sharedConnection === connection) sharedConnection = null;
-                    hubConnection.current = null;
-                    return;
-                }
-                if (e && e.name === 'AbortError') {
-                    return;
-                }
-                setConnectionStatus('Disconnected');
-                console.error("Failed to connect to SignalR hub:", e);
-            });
     };
 
     // Live keystroke sync & LocalStorage buffering
@@ -758,12 +661,12 @@ export function RadiologyTypistTerminal() {
                     )}
                 </div>
             </div>
-            <RadiologyCallOverlay 
-                hubConnection={hubConnection.current} 
-                selectedStudy={selectedStudy} 
-                onSelectStudy={(studyId) => handleSelectStudy({ radiologyStudyId: studyId })} 
-                role="Typist"
-            />
+            <style dangerouslySetInnerHTML={{ __html: `
+                .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+                .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+                .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 10px; }
+                .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,0.2); }
+            `}} />
         </div>
     );
 }

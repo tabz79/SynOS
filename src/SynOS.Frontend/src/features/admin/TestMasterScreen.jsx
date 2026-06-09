@@ -719,6 +719,7 @@ const normalizeDbTest = (dbTest) => {
   const isOutsourced = dbTest.isOutsourced !== undefined ? dbTest.isOutsourced : (dbTest.IsOutsourced !== undefined ? dbTest.IsOutsourced : false);
   const isActive = dbTest.isActive !== undefined ? dbTest.isActive : (dbTest.IsActive !== undefined ? dbTest.IsActive : true);
   const specimenTypeCode = dbTest.specimenTypeCode || dbTest.SpecimenTypeCode || "";
+  const templateId = dbTest.reportTemplateId || dbTest.ReportTemplateId || null;
 
   return {
     id: testId,
@@ -726,6 +727,7 @@ const normalizeDbTest = (dbTest) => {
     name: testName,
     department: department,
     modalityId: modalityId,
+    templateId: templateId,
     basePrice: Number(basePrice) || 0,
     category: category,
     tatHours: Number(tatHours) || 24,
@@ -815,6 +817,7 @@ const mergeCatalog = (dbTestsList, localCatalog) => {
         code: dbTest.code,
         department: dbTest.department,
         modalityId: dbTest.modalityId,
+        templateId: dbTest.templateId || merged[existingIndex].templateId || null,
         basePrice: dbTest.basePrice,
         tatHours: dbTest.tatHours,
         isOutsourced: dbTest.isOutsourced,
@@ -832,6 +835,7 @@ const mergeCatalog = (dbTestsList, localCatalog) => {
         code: dbTest.code,
         department: dbTest.department || "Biochemistry",
         modalityId: dbTest.modalityId,
+        templateId: dbTest.templateId || null,
         basePrice: dbTest.basePrice || 0,
         isProfile: dbTest.isProfile,
         includedTestIds: [],
@@ -996,8 +1000,18 @@ export function TestMasterScreen() {
   const [previewMode, setPreviewMode] = useState("digital"); // digital | physical
   const [isSavedSuccessfully, setIsSavedSuccessfully] = useState(false);
 
-  // Dynamic Template List Hook
-  const [reportTemplatesList, setReportTemplatesList] = useState([]);
+  // Dynamic Template List Hook (initialized synchronously from localStorage or fallback defaults)
+  const [reportTemplatesList, setReportTemplatesList] = useState(() => {
+    const saved = localStorage.getItem("synos_report_templates");
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        console.error("Failed to parse cached templates", e);
+      }
+    }
+    return DEFAULT_TEMPLATES;
+  });
 
   const loadTemplatesFromBackend = async () => {
     try {
@@ -1014,10 +1028,16 @@ export function TestMasterScreen() {
         return mapBackendDslToTemplate(dsl, item.templateId, item.isDefault, item.isPublished);
       });
       setReportTemplatesList(mapped);
+      localStorage.setItem("synos_report_templates", JSON.stringify(mapped));
     } catch (e) {
       console.error("Failed to load templates from backend", e);
     }
   };
+
+  // Load templates list upfront on mount
+  useEffect(() => {
+    loadTemplatesFromBackend();
+  }, []);
 
   useEffect(() => {
     if (activeTab === "report-setup") {
@@ -1715,6 +1735,7 @@ export function TestMasterScreen() {
           IsOutsourced: !!(item.isOutsourced || (item.outsource && item.outsource.enabled)),
           SpecimenTypeCode: isRadiology ? "NO_SPECIMEN" : (item.specimenTypeCode || "SERUM"),
           IsProfile: !!item.isProfile,
+          ReportTemplateId: item.templateId || null,
           Parameters: (item.parameters || []).map((p, idx) => ({
             ParameterCode: p.code,
             ParameterName: p.name,

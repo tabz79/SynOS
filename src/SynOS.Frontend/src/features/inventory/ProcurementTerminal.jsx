@@ -88,20 +88,20 @@ export const ProcurementTerminal = () => {
             {/* Quick Stats */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div className="p-4 rounded-xl border dark:border-zinc-800 border-zinc-200 bg-white dark:bg-zinc-900 shadow-sm">
-                    <p className="text-[10px] font-bold text-zinc-500 uppercase">Active POs</p>
-                    <p className="text-xl font-black text-synos-primary">{orders.filter(o => o.status !== 'Closed').length}</p>
+                    <p className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wider">Active POs</p>
+                    <p className="text-lg font-semibold text-synos-primary">{orders.filter(o => o.status !== 'Closed').length}</p>
                 </div>
                 <div className="p-4 rounded-xl border dark:border-zinc-800 border-zinc-200 bg-white dark:bg-zinc-900 shadow-sm">
-                    <p className="text-[10px] font-bold text-zinc-500 uppercase">Pending Receipt</p>
-                    <p className="text-xl font-black text-amber-500">{orders.filter(o => o.status === 'Approved').length}</p>
+                    <p className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wider">Pending Receipt</p>
+                    <p className="text-lg font-semibold text-amber-500">{orders.filter(o => o.status === 'Approved').length}</p>
                 </div>
                 <div className="p-4 rounded-xl border dark:border-zinc-800 border-zinc-200 bg-white dark:bg-zinc-900 shadow-sm">
-                    <p className="text-[10px] font-bold text-zinc-500 uppercase">Order Value (Total)</p>
-                    <p className="text-xl font-black text-zinc-900 dark:text-white">₹--</p>
+                    <p className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wider">Order Value (Total)</p>
+                    <p className="text-lg font-semibold text-zinc-900 dark:text-white">₹--</p>
                 </div>
                 <div className="p-4 rounded-xl border dark:border-zinc-800 border-zinc-200 bg-white dark:bg-zinc-900 shadow-sm">
-                    <p className="text-[10px] font-bold text-zinc-500 uppercase">Suppliers</p>
-                    <p className="text-xl font-black text-zinc-900 dark:text-white">{vendors.length}</p>
+                    <p className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wider">Suppliers</p>
+                    <p className="text-lg font-semibold text-zinc-900 dark:text-white">{vendors.length}</p>
                 </div>
             </div>
 
@@ -196,8 +196,8 @@ export const ProcurementTerminal = () => {
                     <div className="bg-white dark:bg-zinc-950 w-full max-w-md rounded-[2.5rem] shadow-2xl border border-zinc-200 dark:border-white/10 overflow-hidden animate-in zoom-in-95 duration-300">
                         <div className="p-8 border-b dark:border-zinc-800 border-zinc-200 flex items-center justify-between">
                             <div>
-                                <h3 className="text-xl font-black dark:text-white tracking-tight">Initiate Order</h3>
-                                <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mt-0.5">Select your supplying partner</p>
+                                <h3 className="text-lg font-semibold dark:text-white tracking-tight">Initiate Order</h3>
+                                <p className="text-[10px] text-zinc-500 font-semibold uppercase tracking-wider mt-0.5">Select your supplying partner</p>
                             </div>
                             <button onClick={() => setShowCreateModal(false)} className="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-xl">
                                 <X className="w-5 h-5 text-zinc-400" />
@@ -207,7 +207,7 @@ export const ProcurementTerminal = () => {
                         <div className="p-8 space-y-6">
                             <div className="space-y-2">
                                 <div className="flex justify-between items-center px-4">
-                                    <label className="text-[10px] font-black uppercase text-zinc-500 tracking-widest">Select Vendor</label>
+                                    <label className="text-[10px] font-semibold uppercase text-zinc-500 tracking-wider">Select Vendor</label>
                                     <button 
                                         onClick={() => setShowAddVendorModal(true)}
                                         className="text-[10px] text-synos-primary font-bold uppercase hover:underline"
@@ -230,7 +230,7 @@ export const ProcurementTerminal = () => {
                             <button 
                                 onClick={handleCreatePO}
                                 disabled={!selectedVendor}
-                                className="w-full bg-synos-primary text-white font-black py-5 rounded-2xl shadow-xl shadow-synos-primary/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                                className="w-full bg-synos-primary text-white font-semibold py-4 rounded-2xl shadow-xl shadow-synos-primary/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
                             >
                                 Generate Draft PO
                                 <FileText className="w-5 h-5" />
@@ -246,8 +246,8 @@ export const ProcurementTerminal = () => {
                     <div className="bg-white dark:bg-zinc-950 w-full max-w-sm rounded-[2.5rem] shadow-2xl border border-zinc-200 dark:border-white/10 overflow-hidden animate-in zoom-in-95 duration-300">
                         <div className="p-8 border-b dark:border-zinc-800 border-zinc-200 flex items-center justify-between">
                             <div>
-                                <h3 className="text-xl font-black dark:text-white tracking-tight">Onboard Supplier</h3>
-                                <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mt-0.5">Quick master data entry</p>
+                                <h3 className="text-lg font-semibold dark:text-white tracking-tight">Onboard Supplier</h3>
+                                <p className="text-[10px] text-zinc-500 font-semibold uppercase tracking-wider mt-0.5">Quick master data entry</p>
                             </div>
                             <button onClick={() => setShowAddVendorModal(false)} className="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-xl">
                                 <X className="w-5 h-5 text-zinc-400" />
@@ -270,14 +270,14 @@ export const ProcurementTerminal = () => {
                             }
                         }} className="p-8 space-y-4">
                             <div className="space-y-1.5">
-                                <label className="text-[10px] font-black uppercase text-zinc-500 ml-4 tracking-widest">Company Name</label>
-                                <input name="name" required className="w-full bg-zinc-100 dark:bg-white/5 border-none rounded-2xl px-6 py-4 text-xs font-bold focus:ring-2 ring-synos-primary outline-none transition-all dark:text-white" />
+                                <label className="text-[10px] font-semibold uppercase text-zinc-500 ml-4 tracking-wider">Company Name</label>
+                                <input name="name" required className="w-full bg-zinc-100 dark:bg-white/5 border-none rounded-2xl px-6 py-4 text-xs font-medium focus:ring-2 ring-synos-primary outline-none transition-all dark:text-white" />
                             </div>
                             <div className="space-y-1.5">
-                                <label className="text-[10px] font-black uppercase text-zinc-500 ml-4 tracking-widest">Category</label>
-                                <input name="category" placeholder="Medical / Lab / General" className="w-full bg-zinc-100 dark:bg-white/5 border-none rounded-2xl px-6 py-4 text-xs font-bold focus:ring-2 ring-synos-primary outline-none transition-all dark:text-white" />
+                                <label className="text-[10px] font-semibold uppercase text-zinc-500 ml-4 tracking-wider">Category</label>
+                                <input name="category" placeholder="Medical / Lab / General" className="w-full bg-zinc-100 dark:bg-white/5 border-none rounded-2xl px-6 py-4 text-xs font-medium focus:ring-2 ring-synos-primary outline-none transition-all dark:text-white" />
                             </div>
-                            <button type="submit" className="w-full bg-synos-primary text-white font-black py-5 rounded-2xl shadow-xl shadow-synos-primary/20 hover:scale-[1.02] transition-all">
+                            <button type="submit" className="w-full bg-synos-primary text-white font-semibold py-4 rounded-2xl shadow-xl shadow-synos-primary/20 hover:scale-[1.02] transition-all">
                                 Register & Select
                             </button>
                         </form>

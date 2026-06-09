@@ -142,19 +142,19 @@ export const mapBackendDslToTemplate = (dslObj, templateId, isDefault, isPublish
   const meta = dslObj?.meta || {};
   const sections = dslObj?.sections || [];
   
-  const headerSection = sections.find(s => s.type === "Header") || { config: {} };
-  const patientInfoSection = sections.find(s => s.type === "PatientInfo") || { config: {} };
-  const parameterTableSection = sections.find(s => s.type === "ParameterTable") || { config: {} };
-  const interpretationSection = sections.find(s => s.type === "Interpretation") || { config: {} };
-  const signatureSection = sections.find(s => s.type === "SignatureBlock") || { config: {} };
-  const footerSection = sections.find(s => s.type === "Footer") || { config: {} };
+  const headerSection = sections.find(s => s.type === "Header") || {};
+  const patientInfoSection = sections.find(s => s.type === "PatientInfo") || {};
+  const parameterTableSection = sections.find(s => s.type === "ParameterTable") || {};
+  const interpretationSection = sections.find(s => s.type === "Interpretation") || {};
+  const signatureSection = sections.find(s => s.type === "SignatureBlock") || {};
+  const footerSection = sections.find(s => s.type === "Footer") || {};
 
-  const hc = headerSection.config || {};
-  const pic = patientInfoSection.config || {};
-  const ptc = parameterTableSection.config || {};
-  const ic = interpretationSection.config || {};
-  const sc = signatureSection.config || {};
-  const fc = footerSection.config || {};
+  const hc = headerSection.config || headerSection;
+  const pic = patientInfoSection.config || patientInfoSection;
+  const ptc = parameterTableSection.config || parameterTableSection;
+  const ic = interpretationSection.config || interpretationSection;
+  const sc = signatureSection.config || signatureSection;
+  const fc = footerSection.config || footerSection;
 
   return {
     id: templateId || hc.id || `temp-${meta.modality?.toLowerCase()}`,

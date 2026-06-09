@@ -4,6 +4,7 @@
 
 using Microsoft.EntityFrameworkCore;
 using Serilog;
+using Microsoft.AspNetCore.Http.Features;
 using SynOS.Data;
 using SynOS.Services;
 using AutoMapper; // Added for IMapper
@@ -49,6 +50,11 @@ using SynOS.Services.Time; // ADDED
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.Limits.MaxRequestBodySize = 524288000; // 500 MB
+});
+
 if (args.Contains("--check-db"))
 {
     var connStr = builder.Configuration.GetConnectionString("DefaultConnection");
@@ -85,6 +91,10 @@ Log.Logger = new LoggerConfiguration()
 builder.Host.UseSerilog();
 
 // Add services to the container.
+builder.Services.Configure<FormOptions>(options =>
+{
+    options.MultipartBodyLengthLimit = 524288000; // 500 MB
+});
 builder.Services.AddHttpContextAccessor(); // ADDED
 builder.Services.AddScoped<IUserContext, UserContext>(); // ADDED
 
@@ -166,6 +176,7 @@ builder.Services.AddAuthentication(options =>
                 (path.StartsWithSegments("/dashboardHub") || 
                  path.StartsWithSegments("/sampleHub") ||
                  path.StartsWithSegments("/branchOperationsHub") ||
+                 path.StartsWithSegments("/collaborationHub") ||
                  path.StartsWithSegments("/radiologyCollaborationHub")))
             {
                 context.Token = accessToken;
@@ -504,7 +515,8 @@ app.MapControllers();
 // app.MapHub<SynOS.Api.Hubs.SampleHub>("/sampleHub"); // DISABLED TEMPORARILY
 app.MapHub<SynOS.Api.Hubs.DashboardHub>("/dashboardHub"); // RESTORED
 app.MapHub<SynOS.Api.Hubs.BranchOperationsHub>("/branchOperationsHub");
-app.MapHub<SynOS.Api.Hubs.RadiologyCollaborationHub>("/radiologyCollaborationHub");
+app.MapHub<SynOS.Api.Hubs.CollaborationHub>("/collaborationHub");
+app.MapHub<SynOS.Api.Hubs.CollaborationHub>("/radiologyCollaborationHub");
 
 // Validate Branch Configuration
 using (var scope = app.Services.CreateScope())

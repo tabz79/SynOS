@@ -18,6 +18,7 @@ namespace SynOS.Services
         private readonly IMapper _mapper;
         private readonly IReportPdfRenderer _pdfRenderer;
         private readonly IReportService _reportService;
+        private readonly ITestsCacheService _testsCacheService;
 
         private static readonly HashSet<string> ValidSectionTypes = new(StringComparer.OrdinalIgnoreCase)
         {
@@ -25,12 +26,13 @@ namespace SynOS.Services
             "Recommendations", "SignatureBlock", "QRCode", "Footer"
         };
 
-        public ReportTemplateService(SynOSDbContext context, IMapper mapper, IReportPdfRenderer pdfRenderer, IReportService reportService)
+        public ReportTemplateService(SynOSDbContext context, IMapper mapper, IReportPdfRenderer pdfRenderer, IReportService reportService, ITestsCacheService testsCacheService)
         {
             _context = context;
             _mapper = mapper;
             _pdfRenderer = pdfRenderer;
             _reportService = reportService;
+            _testsCacheService = testsCacheService;
         }
 
         public async Task<ReportTemplate> CreateTemplateAsync(CreateReportTemplateDto createDto)
@@ -44,6 +46,7 @@ namespace SynOS.Services
 
             _context.ReportTemplates.Add(reportTemplate);
             await _context.SaveChangesAsync();
+            _testsCacheService?.InvalidateTestsCache();
 
             return reportTemplate;
         }
@@ -85,6 +88,7 @@ namespace SynOS.Services
             template.Version++;
 
             await _context.SaveChangesAsync();
+            _testsCacheService?.InvalidateTestsCache();
         }
 
         public async Task PublishTemplateAsync(Guid templateId)
@@ -94,6 +98,7 @@ namespace SynOS.Services
             template.IsPublished = true;
             template.UpdatedAt = DateTimeOffset.UtcNow;
             await _context.SaveChangesAsync();
+            _testsCacheService?.InvalidateTestsCache();
         }
 
         public async Task SetDefaultTemplateAsync(Guid templateId)
@@ -113,6 +118,7 @@ namespace SynOS.Services
             template.IsPublished = true;
             template.UpdatedAt = DateTimeOffset.UtcNow;
             await _context.SaveChangesAsync();
+            _testsCacheService?.InvalidateTestsCache();
         }
 
         public async Task SoftDeleteTemplateAsync(Guid templateId)
@@ -124,6 +130,7 @@ namespace SynOS.Services
             template.IsPublished = false;
             template.UpdatedAt = DateTimeOffset.UtcNow;
             await _context.SaveChangesAsync();
+            _testsCacheService?.InvalidateTestsCache();
         }
 
         public async Task<byte[]> RenderPdfAsync(Guid visitId, Guid? templateId = null)
@@ -131,16 +138,22 @@ namespace SynOS.Services
             var reportData = await _reportService.GetReportDataForPdfAsync(visitId);
             if (reportData == null) throw new KeyNotFoundException($"Report data for ID {visitId} not found.");
 
-            ReportTemplate templateEntity;
+            ReportTemplate templateEntity = null;
+            var report = await _context.Reports.AsNoTracking().FirstOrDefaultAsync(r => r.ReportId == visitId);
+            
             if (templateId.HasValue)
             {
                 templateEntity = await _context.ReportTemplates.AsNoTracking().FirstOrDefaultAsync(t => t.TemplateId == templateId.Value && !t.IsDeleted);
                 if (templateEntity == null) throw new KeyNotFoundException($"Specified report template with ID {templateId.Value} not found or is deleted.");
             }
-            else
+            else if (report != null && report.ReportTemplateId.HasValue)
+            {
+                templateEntity = await _context.ReportTemplates.AsNoTracking().FirstOrDefaultAsync(t => t.TemplateId == report.ReportTemplateId.Value && !t.IsDeleted);
+            }
+
+            if (templateEntity == null)
             {
                 // Try resolving ModalityId if it is a radiology report
-                var report = await _context.Reports.AsNoTracking().FirstOrDefaultAsync(r => r.ReportId == visitId);
                 Guid? modalityId = null;
                 if (report != null && report.SourceType == "RadiologyStudy")
                 {

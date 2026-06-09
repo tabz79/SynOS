@@ -60,6 +60,7 @@ namespace SynOS.Services.Inventory
             }
             else
             {
+                var emptyGuid = Guid.Empty;
                 var query = from lot in _context.ImsInventoryLots
                             join item in _context.ImsInventoryItems on lot.ItemId equals item.ItemId
                             join consumable in _context.ImsConsumables on item.ItemCode equals consumable.Code into metaJoin
@@ -81,7 +82,7 @@ namespace SynOS.Services.Inventory
                                 TotalQuantity = g.Sum(l => l.CurrentQuantity),
                                 Unit = g.Key.UnitOfMeasure ?? "units",
                                 BranchName = "All Branches",
-                                BranchId = Guid.Empty,
+                                BranchId = emptyGuid,
                                 Status = g.Sum(l => l.CurrentQuantity) <= 0 ? "Critical" :
                                          g.Sum(l => l.CurrentQuantity) <= g.Key.LowStockThreshold ? "Low" : "Healthy"
                             };

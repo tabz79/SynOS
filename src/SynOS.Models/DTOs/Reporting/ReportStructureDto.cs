@@ -9,6 +9,7 @@ namespace SynOS.Models.DTOs.Reporting
     {
         public Guid ReportId { get; set; }
         public Guid SourceId { get; set; }
+        public Guid? ReportTemplateId { get; set; }
         public string Status { get; set; } = string.Empty;
         public string PatientName { get; set; } = string.Empty;
         public string PatientAgeGender { get; set; } = string.Empty;
@@ -32,6 +33,7 @@ namespace SynOS.Models.DTOs.Reporting
             {
                 ReportId = state.ReportId,
                 SourceId = state.SourceId,
+                ReportTemplateId = state.ReportTemplateId,
                 Status = state.Status,
                 PatientName = state.Patient.Name,
                 PatientAgeGender = $"{state.Patient.Age} / {state.Patient.Gender}",
@@ -88,6 +90,7 @@ namespace SynOS.Models.DTOs.Reporting
             {
                 ReportId = ReportId,
                 SourceId = SourceId,
+                ReportTemplateId = ReportTemplateId,
                 Status = Status,
                 Department = Department,
                 SignedAt = SignedAt,

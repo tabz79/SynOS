@@ -57,7 +57,8 @@ namespace SynOS.Api.Controllers
 
         [HttpPost("studies/{studyId}/attachments")]
         [Authorize(Roles = "Admin,Technician,XRayTech,MriTech,CTTech,USTech")]
-        
+        [DisableRequestSizeLimit]
+        [RequestFormLimits(MultipartBodyLengthLimit = 524288000)]
         public async Task<IActionResult> UploadAttachment(Guid studyId, IFormFile file)
         {
             if (file == null || file.Length == 0)
@@ -69,7 +70,7 @@ namespace SynOS.Api.Controllers
             if (!Guid.TryParse(userIdString, out var userId)) return Unauthorized();
             
             // Define constraints
-            const long maxFileSize = 100 * 1024 * 1024; // 100 MB
+            const long maxFileSize = 500 * 1024 * 1024; // 500 MB
             var allowedMimeTypes = new HashSet<string> { "application/pdf", "application/zip", "application/x-zip-compressed" };
 
             if (!allowedMimeTypes.Contains(file.ContentType))

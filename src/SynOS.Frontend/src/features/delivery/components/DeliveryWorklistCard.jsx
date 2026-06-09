@@ -11,7 +11,7 @@ export function DeliveryWorklistCard({ report, isSelected, onClick }) {
     const getStatusBadge = () => {
         if (isDelivered) {
             return (
-                <span className="flex items-center gap-1 text-[8px] font-black uppercase px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-500 border border-blue-500/20 tracking-tighter">
+                <span className="flex items-center gap-1 text-[8px] font-semibold uppercase px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-500 border border-blue-500/20 tracking-tighter">
                     <CheckCircle2 className="w-2 h-2" />
                     Delivered
                 </span>
@@ -19,7 +19,7 @@ export function DeliveryWorklistCard({ report, isSelected, onClick }) {
         }
         if (isDigital) {
             return (
-                <span className="flex items-center gap-1 text-[8px] font-black uppercase px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 tracking-tighter">
+                <span className="flex items-center gap-1 text-[8px] font-semibold uppercase px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 tracking-tighter">
                     <UserCheck className="w-2 h-2" />
                     Digital
                 </span>
@@ -27,7 +27,7 @@ export function DeliveryWorklistCard({ report, isSelected, onClick }) {
         }
         if (report.isManualFlow && !isVerified) {
             return (
-                <span className="flex items-center gap-1 text-[8px] font-black uppercase px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-500 border border-amber-500/20 tracking-tighter">
+                <span className="flex items-center gap-1 text-[8px] font-semibold uppercase px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-500 border border-amber-500/20 tracking-tighter">
                     <Clock className="w-2 h-2" />
                     Manual
                 </span>
@@ -35,14 +35,14 @@ export function DeliveryWorklistCard({ report, isSelected, onClick }) {
         }
         if (!isVerified) {
             return (
-                <span className="flex items-center gap-1 text-[8px] font-black uppercase px-2 py-0.5 rounded-full bg-orange-500/10 text-orange-500 border border-orange-500/20 tracking-tighter">
+                <span className="flex items-center gap-1 text-[8px] font-semibold uppercase px-2 py-0.5 rounded-full bg-orange-500/10 text-orange-500 border border-orange-500/20 tracking-tighter">
                     <Clock className="w-2 h-2" />
                     Needs Verification
                 </span>
             );
         }
         return (
-            <span className="flex items-center gap-1 text-[8px] font-black uppercase px-2 py-0.5 rounded-full bg-zinc-500/10 text-zinc-500 border border-zinc-500/20 tracking-tighter">
+            <span className="flex items-center gap-1 text-[8px] font-semibold uppercase px-2 py-0.5 rounded-full bg-zinc-500/10 text-zinc-500 border border-zinc-500/20 tracking-tighter">
                 Verified
             </span>
         );
@@ -61,8 +61,8 @@ export function DeliveryWorklistCard({ report, isSelected, onClick }) {
             <div className="flex justify-between items-start min-w-0">
                 <div className="flex-1 min-w-0">
                     <h3 className={cn(
-                        "font-bold text-sm tracking-tight truncate mb-0.5",
-                        isSelected ? "text-synos-primary" : "text-zinc-900 dark:text-zinc-100"
+                        "font-semibold text-sm tracking-tight truncate mb-0.5",
+                        isSelected ? "text-synos-primary font-bold" : "text-zinc-900 dark:text-zinc-100"
                     )}>
                         {report.patientName}
                     </h3>
@@ -77,7 +77,7 @@ export function DeliveryWorklistCard({ report, isSelected, onClick }) {
 
             <div className="flex items-center justify-between text-[10px] font-mono text-zinc-400">
                 <span>{report.token}</span>
-                <span className="font-sans font-bold">{report.patientAgeGender}</span>
+                <span className="font-sans font-medium">{report.patientAgeGender}</span>
             </div>
         </button>
     );

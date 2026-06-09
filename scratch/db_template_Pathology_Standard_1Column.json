@@ -1,0 +1,19 @@
+{
+                        "meta": {
+                            "name": "Pathology_Standard_1Column",
+                            "modality": "Pathology",
+                            "layout": "oneColumn",
+                            "pageSize": "A4",
+                            "orientation": "Portrait"
+                        },
+                        "sections": [
+                            { "type": "Header", "title": "Pathology Report", "showLogo": true },
+                            { "type": "PatientInfo", "showPatientName": true, "showPatientId": true, "showDateOfBirth": true, "showGender": true, "showContactInfo": true },
+                            { "type": "ParameterTable", "showReferenceRanges": true, "highlightCriticalValues": true },
+                            { "type": "Comments", "title": "Lab Comments", "visibleIfEmpty": false },
+                            { "type": "Interpretation", "title": "Pathologist Interpretation", "visibleIfEmpty": false },
+                            { "type": "SignatureBlock", "showDoctorName": true, "showCredentials": true, "showDigitalSignatureImage": true },
+                            { "type": "QRCode", "size": 70, "content": "{ReportVerificationLink}" },
+                            { "type": "Footer", "leftText": "SynOS Pathology Lab", "rightText": "Page {PageNumber} of {TotalPages}" }
+                        ]
+                    }

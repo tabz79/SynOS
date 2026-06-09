@@ -5291,6 +5291,9 @@ namespace SynOS.Data.Migrations
                     b.Property<string>("PdfUrl")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<Guid?>("ReportTemplateId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<DateTimeOffset?>("SignedAt")
                         .HasColumnType("datetimeoffset");
 
@@ -5336,6 +5339,8 @@ namespace SynOS.Data.Migrations
                     b.HasKey("ReportId");
 
                     b.HasIndex("PatientId");
+
+                    b.HasIndex("ReportTemplateId");
 
                     b.HasIndex("SignedByUserId");
 
@@ -6263,6 +6268,9 @@ namespace SynOS.Data.Migrations
                     b.Property<Guid?>("ModalityId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<Guid?>("ReportTemplateId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<string>("SpecialInstructions")
                         .HasMaxLength(1000)
                         .HasColumnType("nvarchar(1000)");
@@ -6292,6 +6300,8 @@ namespace SynOS.Data.Migrations
                     b.HasIndex("DepartmentId");
 
                     b.HasIndex("ModalityId");
+
+                    b.HasIndex("ReportTemplateId");
 
                     b.HasIndex("SpecimenTypeCode");
 
@@ -8376,6 +8386,10 @@ namespace SynOS.Data.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("SynOS.Models.Entities.ReportTemplate", "ReportTemplate")
+                        .WithMany()
+                        .HasForeignKey("ReportTemplateId");
+
                     b.HasOne("SynOS.Models.Entities.User", "SignedBy")
                         .WithMany()
                         .HasForeignKey("SignedByUserId")
@@ -8401,6 +8415,8 @@ namespace SynOS.Data.Migrations
                         .HasForeignKey("VisitId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.Navigation("ReportTemplate");
 
                     b.Navigation("SignedBy");
 
@@ -8657,6 +8673,10 @@ namespace SynOS.Data.Migrations
                         .HasForeignKey("ModalityId")
                         .OnDelete(DeleteBehavior.Restrict);
 
+                    b.HasOne("SynOS.Models.Entities.ReportTemplate", "ReportTemplate")
+                        .WithMany()
+                        .HasForeignKey("ReportTemplateId");
+
                     b.HasOne("SynOS.Models.Entities.SpecimenType", "SpecimenType")
                         .WithMany()
                         .HasForeignKey("SpecimenTypeCode");
@@ -8664,6 +8684,8 @@ namespace SynOS.Data.Migrations
                     b.Navigation("DepartmentMaster");
 
                     b.Navigation("ModalityMaster");
+
+                    b.Navigation("ReportTemplate");
 
                     b.Navigation("SpecimenType");
                 });

@@ -24,6 +24,8 @@ import { StockRequestPanel } from '../inventory/StockRequestPanel';
 import { RichMedicalEditor } from '@/components/editor/RichMedicalEditor';
 import { MedicalMacrosWorkspace } from '@/components/editor/MedicalMacrosWorkspace';
 import { RadiologyTypistTerminal } from '../radiology/RadiologyTypistTerminal';
+import * as signalR from '@microsoft/signalr';
+import { CollaborationCallOverlay } from '../radiology/CollaborationCallOverlay';
 
 const evaluateFormula = (formula, values) => {
     if (!formula) return null;
@@ -121,15 +123,203 @@ export function TypistTerminal() {
     const [isQueueCollapsed, setIsQueueCollapsed] = useState(false);
     const [isMacroManagerOpen, setIsMacroManagerOpen] = useState(false);
 
-    const { template, loading: templateLoading } = useTemplateForReport(reportData);
-
-    const requestCounter = useRef(0);
-
     const calculatedReportStructure = useMemo(
         () => applyCalculatedValues(reportStructure),
         [reportStructure]
     );
 
+    const patientName = calculatedReportStructure?.patientName || calculatedReportStructure?.patient?.name;
+    const patientAgeGender = calculatedReportStructure?.patientAgeGender || (calculatedReportStructure?.patient?.age ? `${calculatedReportStructure.patient.age} / ${calculatedReportStructure.patient.gender}` : '');
+    const token = calculatedReportStructure?.token || calculatedReportStructure?.patient?.mrn || '---';
+
+    const [selectedRadiologyStudy, setSelectedRadiologyStudy] = useState(null);
+    const [connectionStatus, setConnectionStatus] = useState('Disconnected');
+    const [livePathologistConnected, setLivePathologistConnected] = useState(false);
+    const hubConnectionRef = useRef(null);
+    const currentJoinedReportIdRef = useRef(null);
+
+    // Connect SignalR on mount and maintain connection for both Pathology and Radiology modes
+    useEffect(() => {
+        let isUnmounted = false;
+        let connection = null;
+
+        const onReceiveReportDraftUpdate = (draftContent) => {
+            try {
+                const parsed = JSON.parse(draftContent);
+                if (parsed.interpretation !== undefined || parsed.comments !== undefined) {
+                    setInterpretation(prev => {
+                        const next = { ...prev };
+                        if (parsed.interpretation !== undefined) next.interpretation = parsed.interpretation;
+                        if (parsed.comments !== undefined) next.comments = parsed.comments;
+                        return next;
+                    });
+                }
+            } catch (e) {
+                console.error("Failed to parse live report draft packet:", e);
+            }
+        };
+
+        const onUserJoined = (connectionId) => {
+            setLivePathologistConnected(true);
+        };
+
+        const onUserLeft = (connectionId) => {
+            setLivePathologistConnected(false);
+        };
+
+        const onReceiveReportDraftSaved = () => {
+            const currentReportId = currentJoinedReportIdRef.current;
+            if (currentReportId) {
+                fetchReportDetail(currentReportId);
+            }
+        };
+
+        const onReceiveReportDraftResumed = () => {
+            const currentReportId = currentJoinedReportIdRef.current;
+            if (currentReportId) {
+                fetchReportDetail(currentReportId);
+            }
+        };
+
+        const onReceiveReportSignRequest = () => {
+            const currentReportId = currentJoinedReportIdRef.current;
+            if (currentReportId) {
+                fetchReportDetail(currentReportId);
+            }
+        };
+
+        const connectSignalR = async () => {
+            setConnectionStatus('Connecting');
+
+            connection = new signalR.HubConnectionBuilder()
+                .withUrl('/radiologyCollaborationHub', {
+                    accessTokenFactory: () => localStorage.getItem('synos_jwt'),
+                    skipNegotiation: true,
+                    transport: signalR.HttpTransportType.WebSockets
+                })
+                .withAutomaticReconnect([0, 2000, 5000, 10000])
+                .build();
+
+            hubConnectionRef.current = connection;
+
+            connection.onreconnecting((error) => {
+                if (isUnmounted) return;
+                setConnectionStatus('Reconnecting');
+                console.warn("SignalR connection lost, attempting reconnect...", error);
+            });
+
+            connection.onreconnected((connectionId) => {
+                if (isUnmounted) return;
+                setConnectionStatus('Connected');
+                console.info("SignalR reconnected.", connectionId);
+                connection.invoke('RegisterPresence', 'Typist').catch(err => console.error(err));
+            });
+
+            connection.onclose((error) => {
+                if (isUnmounted) return;
+                setConnectionStatus('Disconnected');
+                console.error("SignalR connection closed.", error);
+            });
+
+            connection.on('ReceiveReportDraftUpdate', onReceiveReportDraftUpdate);
+            connection.on('UserJoined', onUserJoined);
+            connection.on('UserLeft', onUserLeft);
+            connection.on('ReceiveReportDraftSaved', onReceiveReportDraftSaved);
+            connection.on('ReceiveReportDraftResumed', onReceiveReportDraftResumed);
+            connection.on('ReceiveReportSignRequest', onReceiveReportSignRequest);
+
+            try {
+                await connection.start();
+                if (isUnmounted) {
+                    connection.stop().catch(() => {});
+                    return;
+                }
+                setConnectionStatus('Connected');
+                await connection.invoke('RegisterPresence', 'Typist');
+            } catch (e) {
+                if (isUnmounted) return;
+                setConnectionStatus('Disconnected');
+                console.error("Failed to connect to SignalR hub:", e);
+            }
+        };
+
+        const startPromise = connectSignalR();
+
+        return () => {
+            isUnmounted = true;
+            if (connection) {
+                connection.off('ReceiveReportDraftUpdate', onReceiveReportDraftUpdate);
+                connection.off('UserJoined', onUserJoined);
+                connection.off('UserLeft', onUserLeft);
+                connection.off('ReceiveReportDraftSaved', onReceiveReportDraftSaved);
+                connection.off('ReceiveReportDraftResumed', onReceiveReportDraftResumed);
+                connection.off('ReceiveReportSignRequest', onReceiveReportSignRequest);
+            }
+            startPromise.finally(() => {
+                if (connection && connection.state === signalR.HubConnectionState.Connected) {
+                    connection.stop().catch(() => {});
+                }
+            });
+        };
+    }, []);
+
+    // Call Context resolution based on active tab and selection
+    const callOverlayStudyContext = useMemo(() => {
+        if (activeTerminalMode === 'radiology') {
+            return selectedRadiologyStudy;
+        } else {
+            if (selectedReportId) {
+                return {
+                    reportId: selectedReportId,
+                    patientName: patientName || "Unknown Patient"
+                };
+            }
+            return null;
+        }
+    }, [activeTerminalMode, selectedRadiologyStudy, selectedReportId, patientName]);
+
+    const { template, loading: templateLoading } = useTemplateForReport(reportData);
+
+    const requestCounter = useRef(0);
+
+    useEffect(() => {
+        const connection = hubConnectionRef?.current;
+        if (!connection || connection.state !== 'Connected') return;
+
+        if (selectedReportId && activeTerminalMode === 'pathology') {
+            const reportIdStr = selectedReportId.toString();
+            if (currentJoinedReportIdRef.current && currentJoinedReportIdRef.current !== reportIdStr) {
+                connection.invoke('LeaveReportSession', currentJoinedReportIdRef.current).catch(err => console.error(err));
+            }
+            currentJoinedReportIdRef.current = reportIdStr;
+            connection.invoke('JoinReportSession', reportIdStr).catch(err => console.error(err));
+        } else {
+            if (currentJoinedReportIdRef.current) {
+                connection.invoke('LeaveReportSession', currentJoinedReportIdRef.current).catch(err => console.error(err));
+                currentJoinedReportIdRef.current = null;
+            }
+        }
+    }, [selectedReportId, activeTerminalMode, connectionStatus]);
+
+    const handleFieldChange = async (field, val) => {
+        let update = {};
+        if (field === 'interpretation') {
+            setInterpretation(prev => ({ ...prev, interpretation: val }));
+            update = { interpretation: val, comments: interpretation.comments };
+        } else if (field === 'comments') {
+            setInterpretation(prev => ({ ...prev, comments: val }));
+            update = { interpretation: interpretation.interpretation, comments: val };
+        }
+
+        const connection = hubConnectionRef?.current;
+        if (connection && connection.state === 'Connected' && selectedReportId) {
+            try {
+                await connection.invoke('SendReportDraftUpdate', selectedReportId.toString(), JSON.stringify(update));
+            } catch (err) {
+                console.error("SignalR report broadcast failed:", err);
+            }
+        }
+    };
 
     // Initial Fetch
     useEffect(() => {
@@ -153,7 +343,7 @@ export function TypistTerminal() {
         setIsLoadingList(true);
         try {
             // Fetch both Draft and ReadyForVerification to see pending work
-            const data = await ReportsApi.getReportsByStatus('Draft,ReadyForVerification');
+            const data = await ReportsApi.getReportsByStatus('Draft,ReadyForVerification', 'Pathology');
             setReports(data);
         } catch (err) {
             console.error("Failed to fetch worklist:", err);
@@ -284,14 +474,17 @@ export function TypistTerminal() {
         }
     };
 
-    const patientName = calculatedReportStructure?.patientName || calculatedReportStructure?.patient?.name;
-    const patientAgeGender = calculatedReportStructure?.patientAgeGender || (calculatedReportStructure?.patient?.age ? `${calculatedReportStructure.patient.age} / ${calculatedReportStructure.patient.gender}` : '');
-    const token = calculatedReportStructure?.token || calculatedReportStructure?.patient?.mrn || '---';
+
 
     const memoizedReportPreview = useMemo(() => {
         if (!reportData || !template) return null;
-        return <ReportA4 reportData={reportData} template={template} />;
-    }, [reportData, template]);
+        const previewData = {
+            ...reportData,
+            interpretation: interpretation.interpretation,
+            comments: interpretation.comments
+        };
+        return <ReportA4 reportData={previewData} template={template} />;
+    }, [reportData, template, interpretation]);
 
     return (
         <div className="h-screen w-screen dark:bg-synos-background bg-transparent text-foreground flex flex-col overflow-hidden font-sans selection:bg-indigo-500/30 relative">
@@ -331,7 +524,12 @@ export function TypistTerminal() {
             </div>
 
             {activeTerminalMode === 'radiology' ? (
-                <RadiologyTypistTerminal />
+                <RadiologyTypistTerminal 
+                    selectedStudy={selectedRadiologyStudy}
+                    setSelectedStudy={setSelectedRadiologyStudy}
+                    hubConnectionRef={hubConnectionRef}
+                    connectionStatus={connectionStatus}
+                />
             ) : (
                 <div className="flex-1 flex flex-row gap-4 p-4 overflow-hidden relative">
                 {/* Main Content Container for Scaling Effect */}
@@ -466,50 +664,58 @@ export function TypistTerminal() {
                             </div>
                         ) : (
                             <div className="flex flex-col h-full min-h-0">
-                                <div className="flex items-center justify-between mb-8 pb-6 border-b dark:border-white/5 border-zinc-100 shrink-0">
+                                <div className="flex items-center justify-between mb-4 pb-4 border-b dark:border-white/5 border-zinc-100 shrink-0">
                                     <div className="flex items-center gap-4">
                                         <button
                                             onClick={() => setIsQueueCollapsed(prev => !prev)}
-                                            className="p-2 hover:bg-zinc-500/10 rounded-lg text-zinc-500 transition-all active:scale-95 shrink-0 font-black border dark:border-white/5 border-zinc-200 text-xs flex items-center justify-center w-8 h-8"
+                                            className="p-2 hover:bg-zinc-500/10 rounded-lg text-zinc-500 transition-all active:scale-95 shrink-0 font-bold border dark:border-white/5 border-zinc-200 text-xs flex items-center justify-center w-8 h-8"
                                             title={isQueueCollapsed ? "Show Patient Queue" : "Collapse Workspace"}
                                         >
                                             {isQueueCollapsed ? "→" : "←"}
                                         </button>
-                                        <div className="w-12 h-12 dark:bg-zinc-800 bg-synos-primary/5 rounded-xl flex items-center justify-center text-synos-primary">
-                                            <User className="w-6 h-6" />
+                                        <div className="w-10 h-10 dark:bg-zinc-800 bg-synos-primary/5 rounded-xl flex items-center justify-center text-synos-primary shrink-0">
+                                            <User className="w-5 h-5" />
                                         </div>
                                         <div>
-                                            <h2 className="text-2xl font-black tracking-tight dark:text-zinc-200 uppercase">{patientName}</h2>
-                                            <div className="flex items-center gap-2 dark:text-zinc-500 text-zinc-500 text-sm font-medium">
+                                            <h2 className="text-[18px] font-semibold tracking-tight dark:text-zinc-200 text-zinc-800 uppercase">{patientName}</h2>
+                                            <div className="flex items-center gap-2 dark:text-zinc-500 text-zinc-500 text-xs font-medium">
                                                 <span>{patientAgeGender}</span>
                                                 <span className="w-1 h-1 dark:bg-zinc-700 bg-zinc-300 rounded-full" />
                                                 <span className="font-mono tracking-tighter opacity-70">{token}</span>
                                             </div>
                                         </div>
                                     </div>
-                                    <div className="text-right">
-                                        <span className="text-[10px] uppercase font-black dark:text-zinc-600 text-zinc-400 block mb-1 tracking-widest">Stage</span>
-                                        <div className={cn(
-                                            "px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest",
-                                            calculatedReportStructure?.status === 'ReadyForVerification' 
-                                                ? "bg-amber-500/10 text-amber-600 border border-amber-500/20"
-                                                : "bg-synos-primary/10 text-synos-primary border border-synos-primary/20"
-                                        )}>
-                                            {calculatedReportStructure?.status === 'ReadyForVerification' ? 'SUBMITTED' : (calculatedReportStructure?.status?.replace(/([A-Z])/g, ' $1').trim() || 'Draft')}
+                                    <div className="flex flex-col items-end gap-1">
+                                        {livePathologistConnected && (
+                                            <div className="flex items-center gap-1 px-2 py-0.5 bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 rounded-full text-[8px] font-black uppercase tracking-widest">
+                                                <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
+                                                Live Pathologist
+                                            </div>
+                                        )}
+                                        <div className="text-right">
+                                            <span className="text-[10px] uppercase font-black dark:text-zinc-600 text-zinc-400 block mb-1 tracking-widest">Stage</span>
+                                            <div className={cn(
+                                                "px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest",
+                                                calculatedReportStructure?.status === 'ReadyForVerification' 
+                                                    ? "bg-amber-500/10 text-amber-600 border border-amber-500/20"
+                                                    : "bg-synos-primary/10 text-synos-primary border border-synos-primary/20"
+                                            )}>
+                                                {calculatedReportStructure?.status === 'ReadyForVerification' ? 'SUBMITTED' : (calculatedReportStructure?.status?.replace(/([A-Z])/g, ' $1').trim() || 'Draft')}
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                                <div className="flex-1 flex flex-col min-h-0 gap-6">
+                                <div className="flex-1 flex flex-col min-h-0 gap-4">
                                     {/* Top Half: Test Parameters (Scrollable) */}
-                                    <div className="flex-[1_1_45%] min-h-0 overflow-y-auto pr-2 custom-scrollbar -mx-2 px-2">
-                                        <table className="w-full border-separate border-spacing-y-2">
+                                    <div className="flex-[0_1_35%] max-h-[35%] min-h-[120px] overflow-y-auto pr-2 custom-scrollbar -mx-2 px-2">
+                                        <table className="w-full border-separate border-spacing-y-1">
                                             <thead>
-                                                <tr className="text-[10px] uppercase font-black tracking-widest dark:text-zinc-600 text-zinc-400">
-                                                    <th className="text-left px-4 pb-2">Parameter</th>
-                                                    <th className="text-right px-4 pb-2">Value</th>
-                                                    <th className="text-left px-4 pb-2">Unit</th>
-                                                    <th className="text-left px-4 pb-2">Reference Range</th>
-                                                    <th className="text-left px-4 pb-2">Flag</th>
+                                                <tr className="text-[10px] uppercase font-semibold tracking-widest dark:text-zinc-500 text-zinc-400">
+                                                    <th className="text-left px-3 pb-1">Parameter</th>
+                                                    <th className="text-right px-3 pb-1">Value</th>
+                                                    <th className="text-left px-3 pb-1">Unit</th>
+                                                    <th className="text-left px-3 pb-1">Reference Range</th>
+                                                    <th className="text-left px-3 pb-1">Flag</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -517,8 +723,8 @@ export function TypistTerminal() {
                                                     <React.Fragment key={gIdx}>
                                                         {group.groupName && (
                                                             <tr className="contents">
-                                                                <td colSpan={5} className="pt-4 pb-1">
-                                                                    <span className="text-[11px] font-bold text-indigo-500 uppercase tracking-tight bg-indigo-50 px-2 py-0.5 rounded">
+                                                                <td colSpan={5} className="pt-2 pb-1">
+                                                                    <span className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
                                                                         {group.groupName}
                                                                     </span>
                                                                 </td>
@@ -531,24 +737,24 @@ export function TypistTerminal() {
                                                                     "group transition-all duration-300",
                                                                     isAbnormal ? "dark:bg-amber-50/5 bg-amber-50" : "hover:dark:bg-white/[0.02] hover:bg-zinc-50"
                                                                 )}>
-                                                                    <td className="px-4 py-3 text-sm font-bold first:rounded-l-xl border-y border-transparent">
+                                                                    <td className="px-3 py-1.5 text-[13px] font-medium dark:text-zinc-300 text-zinc-700 first:rounded-l-xl border-y border-transparent">
                                                                         {param.parameterName}
                                                                     </td>
-                                                                    <td className="px-4 py-3 text-sm font-mono font-bold text-right dark:text-zinc-100 text-zinc-900 border-y border-transparent">
+                                                                    <td className="px-3 py-1.5 text-[13px] font-mono font-semibold text-right dark:text-zinc-100 text-zinc-900 border-y border-transparent">
                                                                         <span className={cn(isAbnormal && "font-black text-red-600 underline decoration-red-200 underline-offset-4")}>
                                                                             {param.value || "-"}
                                                                         </span>
                                                                     </td>
-                                                                    <td className="px-4 py-3 text-xs font-medium text-slate-500 border-y border-transparent">
+                                                                    <td className="px-3 py-1.5 text-xs font-medium text-slate-500 border-y border-transparent">
                                                                         {param.unit}
                                                                     </td>
-                                                                    <td className="px-4 py-3 text-xs font-medium text-slate-500 border-y border-transparent">
+                                                                    <td className="px-3 py-1.5 text-xs font-medium text-slate-500 border-y border-transparent">
                                                                         {param.referenceRange}
                                                                     </td>
-                                                                    <td className="px-4 py-3 last:rounded-r-xl border-y border-transparent">
+                                                                    <td className="px-3 py-1.5 last:rounded-r-xl border-y border-transparent">
                                                                         {isAbnormal && (
                                                                             <span className={cn(
-                                                                                "text-[10px] font-black uppercase px-2 py-0.5 rounded-full",
+                                                                                "text-[10px] font-bold uppercase px-2 py-0.5 rounded-full",
                                                                                 param.flag?.includes("Critical") 
                                                                                     ? "bg-red-100 text-red-700" 
                                                                                     : "bg-amber-100 text-amber-700"
@@ -570,15 +776,15 @@ export function TypistTerminal() {
                                     <div className="h-px bg-zinc-200 dark:bg-white/5 shrink-0" />
 
                                     {/* Bottom Half: Clinical Interpretation & Comments (Scrollable) */}
-                                    <div className="flex-[1_1_55%] min-h-0 overflow-y-auto pr-2 custom-scrollbar space-y-6 pt-2">
-                                        <div className="space-y-4">
+                                    <div className="flex-[1_1_65%] min-h-0 overflow-y-auto pr-2 custom-scrollbar space-y-4 pt-1">
+                                        <div className="space-y-3">
                                             <div>
-                                                <label className="text-[10px] uppercase font-black dark:text-zinc-600 text-zinc-400 block mb-2 tracking-widest">
+                                                <label className="text-[10px] uppercase font-semibold dark:text-zinc-500 text-zinc-400 block mb-1 tracking-wider">
                                                     Clinical Interpretation
                                                 </label>
                                                 <RichMedicalEditor 
                                                     value={interpretation.interpretation}
-                                                    onChange={(val) => setInterpretation(prev => ({ ...prev, interpretation: val }))}
+                                                    onChange={(val) => handleFieldChange('interpretation', val)}
                                                     disabled={isLocked || isSaving}
                                                     patientContext={calculatedReportStructure}
                                                     onSaveDraft={handleSaveInterpretation}
@@ -587,12 +793,12 @@ export function TypistTerminal() {
                                             </div>
 
                                             <div>
-                                                <label className="text-[10px] uppercase font-black dark:text-zinc-600 text-zinc-400 block mb-2 tracking-widest">
+                                                <label className="text-[10px] uppercase font-semibold dark:text-zinc-500 text-zinc-400 block mb-1 tracking-wider">
                                                     Pathologist Remarks / Comments
                                                 </label>
                                                 <RichMedicalEditor 
                                                     value={interpretation.comments}
-                                                    onChange={(val) => setInterpretation(prev => ({ ...prev, comments: val }))}
+                                                    onChange={(val) => handleFieldChange('comments', val)}
                                                     disabled={isLocked || isSaving}
                                                     patientContext={calculatedReportStructure}
                                                     onSaveDraft={handleSaveInterpretation}
@@ -726,6 +932,28 @@ export function TypistTerminal() {
                 .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 10px; }
                 .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,0.2); }
             `}} />
+
+            <CollaborationCallOverlay 
+                hubConnection={hubConnectionRef.current} 
+                selectedStudy={callOverlayStudyContext} 
+                onSelectStudy={async (studyId, peerRole) => {
+                    if (peerRole === 'Radiologist') {
+                        setActiveTerminalMode('radiology');
+                        setSelectedRadiologyStudy({ radiologyStudyId: studyId });
+                    } else if (peerRole === 'Pathologist') {
+                        setActiveTerminalMode('pathology');
+                        setSelectedReportId(studyId);
+                    } else {
+                        if (activeTerminalMode === 'radiology') {
+                            setSelectedRadiologyStudy({ radiologyStudyId: studyId });
+                        } else {
+                            setSelectedReportId(studyId);
+                        }
+                    }
+                }} 
+                role="Typist"
+                targetRole={activeTerminalMode === 'pathology' ? 'Pathologist' : 'Radiologist'}
+            />
         </div>
     );
 }

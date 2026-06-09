@@ -59,8 +59,8 @@ const QuickItemModal = ({ isOpen, onClose, onCreated }) => {
             <div className="bg-white dark:bg-zinc-900 w-full max-w-md rounded-[2.5rem] shadow-2xl border border-zinc-200 dark:border-white/10 overflow-hidden animate-in zoom-in-95 duration-300">
                 <div className="p-8 border-b border-zinc-100 dark:border-white/5 flex items-center justify-between bg-zinc-50 dark:bg-white/[0.02]">
                     <div>
-                        <h3 className="text-xl font-black dark:text-white tracking-tight">Provision New Item</h3>
-                        <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mt-1">Register missing consumable</p>
+                        <h3 className="text-xl font-semibold dark:text-white tracking-tight">Provision New Item</h3>
+                        <p className="text-[10px] text-zinc-500 font-semibold uppercase tracking-widest mt-1">Register missing consumable</p>
                     </div>
                     <button onClick={onClose} className="p-2 hover:bg-zinc-200 dark:hover:bg-white/10 rounded-full transition-colors">
                         <X className="w-5 h-5 text-zinc-500" />
@@ -76,37 +76,37 @@ const QuickItemModal = ({ isOpen, onClose, onCreated }) => {
                     
                     <div className="space-y-4">
                         <div className="flex flex-col gap-1.5">
-                            <label className="text-[10px] font-black uppercase text-zinc-500 ml-2">Display Name</label>
+                            <label className="text-[10px] font-semibold uppercase text-zinc-500 ml-2 tracking-wider">Display Name</label>
                             <input 
                                 required
                                 type="text"
                                 value={formData.name}
                                 onChange={(e) => setFormData({...formData, name: e.target.value})}
-                                className="bg-zinc-100 dark:bg-zinc-800/50 border-none rounded-2xl px-5 py-3.5 text-sm font-bold focus:ring-2 ring-synos-primary outline-none transition-all dark:text-white"
+                                className="bg-zinc-100 dark:bg-zinc-800/50 border-none rounded-2xl px-5 py-3.5 text-sm font-medium focus:ring-2 ring-synos-primary outline-none transition-all dark:text-white"
                                 placeholder="e.g. EDTA Tube 4ml"
                             />
                         </div>
 
                         <div className="grid grid-cols-2 gap-4">
                             <div className="flex flex-col gap-1.5">
-                                <label className="text-[10px] font-black uppercase text-zinc-500 ml-2">Unit</label>
+                                <label className="text-[10px] font-semibold uppercase text-zinc-500 ml-2 tracking-wider">Unit</label>
                                 <input 
                                     required
                                     type="text"
                                     value={formData.unitOfMeasure}
                                     onChange={(e) => setFormData({...formData, unitOfMeasure: e.target.value})}
-                                    className="bg-zinc-100 dark:bg-zinc-800/50 border-none rounded-2xl px-5 py-3.5 text-sm font-bold focus:ring-2 ring-synos-primary outline-none transition-all dark:text-white"
+                                    className="bg-zinc-100 dark:bg-zinc-800/50 border-none rounded-2xl px-5 py-3.5 text-sm font-medium focus:ring-2 ring-synos-primary outline-none transition-all dark:text-white"
                                     placeholder="units"
                                 />
                             </div>
                             <div className="flex flex-col gap-1.5">
-                                <label className="text-[10px] font-black uppercase text-zinc-500 ml-2">Alert Threshold</label>
+                                <label className="text-[10px] font-semibold uppercase text-zinc-500 ml-2 tracking-wider">Alert Threshold</label>
                                 <input 
                                     required
                                     type="number"
                                     value={formData.lowStockThreshold}
                                     onChange={(e) => setFormData({...formData, lowStockThreshold: parseInt(e.target.value)})}
-                                    className="bg-zinc-100 dark:bg-zinc-800/50 border-none rounded-2xl px-5 py-3.5 text-sm font-bold focus:ring-2 ring-synos-primary outline-none transition-all dark:text-white"
+                                    className="bg-zinc-100 dark:bg-zinc-800/50 border-none rounded-2xl px-5 py-3.5 text-sm font-medium focus:ring-2 ring-synos-primary outline-none transition-all dark:text-white"
                                 />
                             </div>
                         </div>
@@ -115,7 +115,7 @@ const QuickItemModal = ({ isOpen, onClose, onCreated }) => {
                     <button 
                         type="submit"
                         disabled={isLoading}
-                        className="w-full bg-synos-primary text-white font-black py-4 rounded-2xl shadow-xl shadow-synos-primary/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2"
+                        className="w-full bg-synos-primary text-white font-semibold py-4 rounded-2xl shadow-xl shadow-synos-primary/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2"
                     >
                         {isLoading ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <PlusCircle className="w-5 h-5" />}
                         Register & Select Item
@@ -151,7 +151,7 @@ const InventoryDashboard = ({ isConsolidated, setIsConsolidated, selectedBranchI
 
     if (isLoading) return (
         <div className="flex-1 flex items-center justify-center">
-            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-500 animate-pulse">Calculating System Pulse...</p>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.3em] text-zinc-500 animate-pulse">Calculating System Pulse...</p>
         </div>
     );
 
@@ -376,7 +376,7 @@ const StockLedger = ({ onReceive, isConsolidated, setIsConsolidated, selectedBra
                     ) : (
                         <table className="w-full text-left border-collapse">
                             <thead className="sticky top-0 bg-white dark:bg-zinc-900 z-10">
-                                <tr className="border-b dark:border-white/10 text-[10px] uppercase tracking-wider text-zinc-500 font-black">
+                                <tr className="border-b dark:border-white/10 text-[10px] uppercase tracking-wider text-zinc-400 dark:text-zinc-500 font-semibold">
                                     <th className="px-4 py-4">Item</th>
                                     <th className="px-4 py-4">Code</th>
                                     <th className="px-4 py-4">Branch</th>
@@ -398,12 +398,12 @@ const StockLedger = ({ onReceive, isConsolidated, setIsConsolidated, selectedBra
                                         )}
                                     >
                                         <td className="px-4 py-4">
-                                            <div className="font-bold dark:text-zinc-200 leading-tight">{item.itemName}</div>
+                                            <div className="font-semibold dark:text-zinc-200 leading-tight">{item.itemName}</div>
                                         </td>
                                         <td className="px-4 py-4 text-[10px] font-mono text-zinc-500 uppercase">{item.itemCode}</td>
                                         <td className="px-4 py-4 text-xs text-zinc-500 font-medium">{item.branchName}</td>
                                         <td className={cn(
-                                            "px-4 py-4 text-right font-black font-mono text-lg",
+                                            "px-4 py-4 text-right font-semibold font-mono text-base",
                                             item.status === 'Critical' ? "text-red-500" : 
                                             item.status === 'Low' ? "text-amber-500" : "text-emerald-500"
                                         )}>
@@ -411,17 +411,17 @@ const StockLedger = ({ onReceive, isConsolidated, setIsConsolidated, selectedBra
                                         </td>
                                         <td className="px-4 py-4">
                                             {item.status === 'Critical' ? (
-                                                <span className="flex items-center gap-1.5 text-[9px] font-black uppercase text-red-500 bg-red-500/10 px-2.5 py-1 rounded-full w-fit border border-red-500/20">
+                                                <span className="flex items-center gap-1.5 text-[9px] font-semibold uppercase text-red-500 bg-red-500/10 px-2.5 py-1 rounded-full w-fit border border-red-500/20">
                                                     <AlertCircle className="w-3 h-3" />
                                                     Stock Out
                                                 </span>
                                             ) : item.status === 'Low' ? (
-                                                <span className="flex items-center gap-1.5 text-[9px] font-black uppercase text-amber-500 bg-amber-500/10 px-2.5 py-1 rounded-full w-fit border border-amber-500/20">
+                                                <span className="flex items-center gap-1.5 text-[9px] font-semibold uppercase text-amber-500 bg-amber-500/10 px-2.5 py-1 rounded-full w-fit border border-amber-500/20">
                                                     <AlertCircle className="w-3 h-3" />
                                                     Low Stock
                                                 </span>
                                             ) : (
-                                                <span className="flex items-center gap-1.5 text-[9px] font-black uppercase text-emerald-500 bg-emerald-500/10 px-2.5 py-1 rounded-full w-fit border border-emerald-500/20">
+                                                <span className="flex items-center gap-1.5 text-[9px] font-semibold uppercase text-emerald-500 bg-emerald-500/10 px-2.5 py-1 rounded-full w-fit border border-emerald-500/20">
                                                     <CheckCircle2 className="w-3 h-3" />
                                                     Healthy
                                                 </span>
@@ -456,7 +456,7 @@ const StockLedger = ({ onReceive, isConsolidated, setIsConsolidated, selectedBra
                     <>
                         <div className="p-6 border-b border-zinc-200 dark:border-white/5 flex items-center justify-between shrink-0 bg-zinc-50 dark:bg-white/[0.02]">
                             <div>
-                                <h3 className="font-black text-lg dark:text-white leading-tight">{selectedItem.itemName}</h3>
+                                <h3 className="font-semibold text-lg dark:text-white leading-tight">{selectedItem.itemName}</h3>
                                 <p className="text-[10px] text-zinc-500 font-mono uppercase tracking-widest">{selectedItem.itemCode} • {selectedItem.branchName}</p>
                             </div>
                             <button 
@@ -471,16 +471,16 @@ const StockLedger = ({ onReceive, isConsolidated, setIsConsolidated, selectedBra
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="bg-zinc-50 dark:bg-white/[0.02] p-4 rounded-2xl border border-zinc-200 dark:border-white/5">
                                     <div className="text-[10px] font-bold text-zinc-500 uppercase mb-1">In Stock</div>
-                                    <div className="text-2xl font-black dark:text-white font-mono">{selectedItem.totalQuantity} <span className="text-xs font-normal text-zinc-500 uppercase">{selectedItem.unit}</span></div>
+                                    <div className="text-xl font-semibold dark:text-white font-mono">{selectedItem.totalQuantity} <span className="text-xs font-normal text-zinc-500 uppercase">{selectedItem.unit}</span></div>
                                 </div>
                                 <div className="bg-zinc-50 dark:bg-white/[0.02] p-4 rounded-2xl border border-zinc-200 dark:border-white/5">
                                     <div className="text-[10px] font-bold text-zinc-500 uppercase mb-1">Batches</div>
-                                    <div className="text-2xl font-black dark:text-white font-mono">{lots.length}</div>
+                                    <div className="text-xl font-semibold dark:text-white font-mono">{lots.length}</div>
                                 </div>
                             </div>
 
                             <div className="flex flex-col gap-3">
-                                <h4 className="text-[10px] font-black uppercase text-zinc-500 tracking-widest">Active Lots / Batches</h4>
+                                <h4 className="text-[10px] font-semibold uppercase text-zinc-400 dark:text-zinc-500 tracking-wider">Active Lots / Batches</h4>
                                 {isLotsLoading ? (
                                     <div className="py-20 text-center text-zinc-500 animate-pulse font-bold text-[10px] uppercase">Retrieving Batches...</div>
                                 ) : lots.length === 0 ? (
@@ -491,7 +491,7 @@ const StockLedger = ({ onReceive, isConsolidated, setIsConsolidated, selectedBra
                                             <div key={lot.lotId} className="p-4 bg-white dark:bg-zinc-800/50 border border-zinc-200 dark:border-white/5 rounded-2xl group/lot relative overflow-hidden">
                                                 <div className="flex justify-between items-start mb-2">
                                                     <div className="font-bold font-mono text-sm dark:text-white">#{lot.lotNumber}</div>
-                                                    <div className="font-black font-mono text-emerald-500">{lot.quantity}</div>
+                                                    <div className="font-semibold font-mono text-emerald-500">{lot.quantity}</div>
                                                 </div>
                                                 <div className="flex items-center justify-between text-[10px] text-zinc-500 font-bold uppercase">
                                                     <span>Rec: {new Date(lot.receivedAt).toLocaleDateString()}</span>
@@ -613,12 +613,12 @@ const ReceiveStock = ({ prefilledItem }) => {
 
             <div className="mb-8 flex items-end justify-between px-2">
                 <div>
-                    <h2 className="text-3xl font-black dark:text-white mb-2 tracking-tight">Receive Stock</h2>
-                    <p className="text-zinc-500 font-bold uppercase text-[10px] tracking-[0.2em]">Goods Received Note (GRN) Entry</p>
+                    <h2 className="text-2xl font-semibold dark:text-white mb-2 tracking-tight">Receive Stock</h2>
+                    <p className="text-zinc-500 font-semibold uppercase text-[10px] tracking-[0.2em]">Goods Received Note (GRN) Entry</p>
                 </div>
                 <button 
                     onClick={() => setIsModalOpen(true)}
-                    className="flex items-center gap-2 text-[10px] font-black uppercase text-synos-primary bg-synos-primary/10 px-4 py-2 rounded-xl border border-synos-primary/20 hover:scale-105 active:scale-95 transition-all"
+                    className="flex items-center gap-2 text-[10px] font-semibold uppercase text-synos-primary bg-synos-primary/10 px-4 py-2 rounded-xl border border-synos-primary/20 hover:scale-105 active:scale-95 transition-all"
                 >
                     <Plus className="w-3 h-3" />
                     New Item Identity
@@ -628,12 +628,12 @@ const ReceiveStock = ({ prefilledItem }) => {
             <form onSubmit={handleSubmit} className="bg-white dark:bg-zinc-900/50 rounded-[2.5rem] border border-zinc-200 dark:border-white/5 p-10 shadow-2xl flex flex-col gap-8">
                 <div className="grid grid-cols-1 gap-6">
                     <div className="flex flex-col gap-2">
-                        <label className="text-[10px] font-black uppercase text-zinc-500 ml-4 tracking-widest">Select Item</label>
+                        <label className="text-[10px] font-semibold uppercase text-zinc-500 ml-4 tracking-wider">Select Item</label>
                         <select 
                             required
                             value={formData.itemId}
                             onChange={(e) => setFormData({ ...formData, itemId: e.target.value })}
-                            className="bg-zinc-100 dark:bg-zinc-800/50 border-none rounded-2xl px-6 py-4 text-sm font-bold focus:ring-2 ring-synos-primary outline-none transition-all dark:text-white"
+                            className="bg-zinc-100 dark:bg-zinc-800/50 border-none rounded-2xl px-6 py-4 text-sm font-medium focus:ring-2 ring-synos-primary outline-none transition-all dark:text-white"
                         >
                             <option value="">Choose an inventory item...</option>
                             {items.map(item => (
@@ -643,11 +643,11 @@ const ReceiveStock = ({ prefilledItem }) => {
                     </div>
 
                     <div className="flex flex-col gap-2">
-                        <label className="text-[10px] font-black uppercase text-zinc-500 ml-4 tracking-widest">Select Vendor / Supplier (For Finance Payable)</label>
+                        <label className="text-[10px] font-semibold uppercase text-zinc-500 ml-4 tracking-wider">Select Vendor / Supplier (For Finance Payable)</label>
                         <select 
                             value={formData.supplierId}
                             onChange={(e) => setFormData({ ...formData, supplierId: e.target.value })}
-                            className="bg-zinc-100 dark:bg-zinc-800/50 border-none rounded-2xl px-6 py-4 text-sm font-bold focus:ring-2 ring-synos-primary outline-none transition-all dark:text-white"
+                            className="bg-zinc-100 dark:bg-zinc-800/50 border-none rounded-2xl px-6 py-4 text-sm font-medium focus:ring-2 ring-synos-primary outline-none transition-all dark:text-white"
                         >
                             <option value="">Manual Entry (No Payable) / Select Vendor...</option>
                             {suppliers.map(s => (
@@ -658,18 +658,18 @@ const ReceiveStock = ({ prefilledItem }) => {
 
                     <div className="grid grid-cols-2 gap-6">
                         <div className="flex flex-col gap-2">
-                            <label className="text-[10px] font-black uppercase text-zinc-500 ml-4 tracking-widest">Batch / Lot #</label>
+                            <label className="text-[10px] font-semibold uppercase text-zinc-500 ml-4 tracking-wider">Batch / Lot #</label>
                             <input 
                                 required
                                 type="text" 
                                 placeholder="e.g. BATCH-2024-001"
                                 value={formData.batchNumber}
                                 onChange={(e) => setFormData({ ...formData, batchNumber: e.target.value })}
-                                className="bg-zinc-100 dark:bg-zinc-800/50 border-none rounded-2xl px-6 py-4 text-sm font-bold focus:ring-2 ring-synos-primary outline-none transition-all dark:text-white uppercase placeholder:normal-case placeholder:font-normal"
+                                className="bg-zinc-100 dark:bg-zinc-800/50 border-none rounded-2xl px-6 py-4 text-sm font-medium focus:ring-2 ring-synos-primary outline-none transition-all dark:text-white uppercase placeholder:normal-case placeholder:font-normal"
                             />
                         </div>
                         <div className="flex flex-col gap-2">
-                            <label className="text-[10px] font-black uppercase text-zinc-500 ml-4 tracking-widest">Quantity Received</label>
+                            <label className="text-[10px] font-semibold uppercase text-zinc-500 ml-4 tracking-wider">Quantity Received</label>
                             <input 
                                 required
                                 type="number" 
@@ -677,29 +677,29 @@ const ReceiveStock = ({ prefilledItem }) => {
                                 placeholder="0.00"
                                 value={formData.quantity}
                                 onChange={(e) => setFormData({ ...formData, quantity: e.target.value })}
-                                className="bg-zinc-100 dark:bg-zinc-800/50 border-none rounded-2xl px-6 py-4 text-sm font-bold focus:ring-2 ring-synos-primary outline-none transition-all dark:text-white font-mono"
+                                className="bg-zinc-100 dark:bg-zinc-800/50 border-none rounded-2xl px-6 py-4 text-sm font-medium focus:ring-2 ring-synos-primary outline-none transition-all dark:text-white font-mono"
                             />
                         </div>
                     </div>
 
                     <div className="grid grid-cols-2 gap-6">
                         <div className="flex flex-col gap-2">
-                            <label className="text-[10px] font-black uppercase text-zinc-500 ml-4 tracking-widest">Expiry Date</label>
+                            <label className="text-[10px] font-semibold uppercase text-zinc-500 ml-4 tracking-wider">Expiry Date</label>
                             <input 
                                 type="date" 
                                 value={formData.expiryDate}
                                 onChange={(e) => setFormData({ ...formData, expiryDate: e.target.value })}
-                                className="bg-zinc-100 dark:bg-zinc-800/50 border-none rounded-2xl px-6 py-4 text-sm font-bold focus:ring-2 ring-synos-primary outline-none transition-all dark:text-white"
+                                className="bg-zinc-100 dark:bg-zinc-800/50 border-none rounded-2xl px-6 py-4 text-sm font-medium focus:ring-2 ring-synos-primary outline-none transition-all dark:text-white"
                             />
                         </div>
                         <div className="flex flex-col gap-2">
-                            <label className="text-[10px] font-black uppercase text-zinc-500 ml-4 tracking-widest">Unit Cost (Optional)</label>
+                            <label className="text-[10px] font-semibold uppercase text-zinc-500 ml-4 tracking-wider">Unit Cost (Optional)</label>
                             <input 
                                 type="number" 
                                 step="0.01"
                                 value={formData.unitCost}
                                 onChange={(e) => setFormData({ ...formData, unitCost: e.target.value })}
-                                className="bg-zinc-100 dark:bg-zinc-800/50 border-none rounded-2xl px-6 py-4 text-sm font-bold focus:ring-2 ring-synos-primary outline-none transition-all dark:text-white font-mono"
+                                className="bg-zinc-100 dark:bg-zinc-800/50 border-none rounded-2xl px-6 py-4 text-sm font-medium focus:ring-2 ring-synos-primary outline-none transition-all dark:text-white font-mono"
                             />
                         </div>
                     </div>
@@ -708,7 +708,7 @@ const ReceiveStock = ({ prefilledItem }) => {
                 <button 
                     type="submit"
                     disabled={isSubmitting}
-                    className="mt-4 w-full bg-synos-primary text-white font-black py-6 rounded-[1.5rem] shadow-2xl shadow-synos-primary/30 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:scale-100"
+                    className="mt-4 w-full bg-synos-primary text-white font-semibold py-4 rounded-[1.5rem] shadow-2xl shadow-synos-primary/30 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:scale-100"
                 >
                     {isSubmitting ? (
                         <>
@@ -802,7 +802,7 @@ const RequestsQueue = () => {
                 ) : (
                     <table className="w-full text-left border-collapse">
                         <thead className="sticky top-0 bg-white dark:bg-zinc-900 z-10">
-                            <tr className="border-b dark:border-white/10 text-[10px] uppercase tracking-wider text-zinc-500 font-black">
+                            <tr className="border-b dark:border-white/10 text-[10px] uppercase tracking-wider text-zinc-400 dark:text-zinc-500 font-semibold">
                                 <th className="px-4 py-4">Consumable</th>
                                 <th className="px-4 py-4">Branch</th>
                                 <th className="px-4 py-4">Requested By</th>
@@ -818,14 +818,14 @@ const RequestsQueue = () => {
                                         <div className="text-[9px] text-zinc-500 font-mono mt-0.5">{new Date(req.requestedAt).toLocaleString()}</div>
                                     </td>
                                     <td className="px-4 py-4">
-                                        <span className="text-[10px] font-black uppercase text-synos-primary bg-synos-primary/10 px-2 py-0.5 rounded-md border border-synos-primary/20">
+                                        <span className="text-[10px] font-semibold uppercase text-synos-primary bg-synos-primary/10 px-2 py-0.5 rounded-md border border-synos-primary/20">
                                             {req.branchName}
                                         </span>
                                     </td>
                                     <td className="px-4 py-4 text-xs text-zinc-500 font-medium">{req.requestedByUserName}</td>
                                     <td className="px-4 py-4 text-right">
-                                        <div className="font-black font-mono text-lg dark:text-white">
-                                            {req.quantity} <span className="text-[9px] uppercase font-bold text-zinc-500">{req.unitOfMeasure}</span>
+                                        <div className="font-semibold font-mono text-base dark:text-white">
+                                            {req.quantity} <span className="text-[9px] uppercase font-semibold text-zinc-500">{req.unitOfMeasure}</span>
                                         </div>
                                     </td>
                                     <td className="px-4 py-4 text-right">
@@ -842,7 +842,7 @@ const RequestsQueue = () => {
                                                 disabled={isActioning !== null}
                                                 onClick={() => handleFulfill(req.requestId)}
                                                 className={cn(
-                                                    "bg-synos-primary text-white text-[10px] font-black uppercase px-4 py-2 rounded-xl transition-all shadow-lg shadow-synos-primary/20 flex items-center gap-2",
+                                                    "bg-synos-primary text-white text-[10px] font-semibold uppercase px-4 py-2 rounded-xl transition-all shadow-lg shadow-synos-primary/20 flex items-center gap-2",
                                                     isActioning === req.requestId ? "opacity-50" : "hover:scale-105 active:scale-95"
                                                 )}
                                             >
@@ -923,7 +923,7 @@ const MovementHistory = () => {
                 ) : (
                     <table className="w-full text-left border-collapse">
                         <thead className="sticky top-0 bg-white dark:bg-zinc-900 z-10">
-                            <tr className="border-b dark:border-white/10 text-[10px] uppercase tracking-wider text-zinc-500 font-black">
+                            <tr className="border-b dark:border-white/10 text-[10px] uppercase tracking-wider text-zinc-400 dark:text-zinc-500 font-semibold">
                                 <th className="px-4 py-4">Item & Batch</th>
                                 <th className="px-4 py-4">Type</th>
                                 <th className="px-4 py-4">Quantity</th>
@@ -945,14 +945,14 @@ const MovementHistory = () => {
                                     </td>
                                     <td className="px-4 py-4">
                                         <span className={cn(
-                                            "text-[9px] font-black uppercase px-2 py-0.5 rounded-md border",
+                                            "text-[9px] font-semibold uppercase px-2 py-0.5 rounded-md border",
                                             getMovementBadge(move.movementType)
                                         )}>
                                             {move.movementType}
                                         </span>
                                     </td>
                                     <td className="px-4 py-4">
-                                        <div className="font-black font-mono dark:text-white">
+                                        <div className="font-semibold font-mono dark:text-white">
                                             {move.quantity > 0 ? `+${move.quantity}` : move.quantity}
                                         </div>
                                     </td>
@@ -1087,8 +1087,13 @@ export function InventoryTerminal() {
                                             : "text-zinc-500 dark:hover:bg-zinc-900 hover:bg-zinc-200/50 hover:text-zinc-900 border-transparent"
                                     )}
                                 >
-                                    <tab.icon className={cn("w-4 h-4 shrink-0 transition-colors", activeTab === tab.id ? "text-synos-primary" : "group-hover:text-synos-primary")} />
-                                    <span className="type-label !text-zinc-500 group-hover:text-zinc-900 dark:group-hover:text-zinc-300 transition-colors">{tab.label}</span>
+                                    <tab.icon className={cn("w-4 h-4 shrink-0 transition-colors", activeTab === tab.id ? "text-synos-primary dark:text-white" : "text-zinc-500 group-hover:text-synos-primary")} />
+                                    <span className={cn(
+                                        "type-label transition-colors",
+                                        activeTab === tab.id 
+                                            ? "text-synos-primary dark:text-white font-semibold" 
+                                            : "text-zinc-500 group-hover:text-zinc-900 dark:group-hover:text-zinc-300"
+                                    )}>{tab.label}</span>
                                 </button>
                             ))}
                         </div>

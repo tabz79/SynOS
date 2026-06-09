@@ -24,7 +24,7 @@ import {
     Lock
 } from 'lucide-react';
 import * as signalR from '@microsoft/signalr';
-import { RadiologyCallOverlay } from './RadiologyCallOverlay';
+import { CollaborationCallOverlay } from './CollaborationCallOverlay';
 import { RichMedicalEditor } from '@/components/editor/RichMedicalEditor';
 import { MedicalMacrosWorkspace } from '@/components/editor/MedicalMacrosWorkspace';
 import { ReportA4 } from '../documents/templates/ReportA4';
@@ -75,12 +75,74 @@ export function RadiologistTerminal() {
     // SignalR Connection
     const [liveTypistConnected, setLiveTypistConnected] = useState(false);
     const [connectionStatus, setConnectionStatus] = useState('Disconnected');
+    const [isHubReady, setIsHubReady] = useState(false);
     const hubConnection = useRef(null);
     const currentJoinedStudyIdRef = useRef(null);
 
     // Canvas references
     const canvasRef = useRef(null);
     const viewportManager = useRef(null);
+
+    // Resizable panel widths (pixels)
+    const [leftWidth, setLeftWidth] = useState(300);
+    const [rightWidth, setRightWidth] = useState(450);
+    const containerRef = useRef(null);
+    const isResizingLeft = useRef(false);
+    const isResizingRight = useRef(false);
+
+    const handleLeftResizeStart = (e) => {
+        e.preventDefault();
+        isResizingLeft.current = true;
+        document.body.style.cursor = 'col-resize';
+        document.body.style.userSelect = 'none';
+    };
+
+    const handleRightResizeStart = (e) => {
+        e.preventDefault();
+        isResizingRight.current = true;
+        document.body.style.cursor = 'col-resize';
+        document.body.style.userSelect = 'none';
+    };
+
+    useEffect(() => {
+        const handlePointerMove = (e) => {
+            if (!containerRef.current) return;
+            const containerRect = containerRef.current.getBoundingClientRect();
+            
+            if (isResizingLeft.current) {
+                const newWidth = Math.max(220, Math.min(500, e.clientX - containerRect.left));
+                setLeftWidth(newWidth);
+                if (viewportManager.current) {
+                    viewportManager.current.resize();
+                }
+            } else if (isResizingRight.current) {
+                const newWidth = Math.max(320, Math.min(650, containerRect.right - e.clientX));
+                setRightWidth(newWidth);
+                if (viewportManager.current) {
+                    viewportManager.current.resize();
+                }
+            }
+        };
+
+        const handlePointerUp = () => {
+            if (isResizingLeft.current || isResizingRight.current) {
+                isResizingLeft.current = false;
+                isResizingRight.current = false;
+                document.body.style.cursor = '';
+                document.body.style.userSelect = '';
+                if (viewportManager.current) {
+                    viewportManager.current.resize();
+                }
+            }
+        };
+
+        window.addEventListener('pointermove', handlePointerMove);
+        window.addEventListener('pointerup', handlePointerUp);
+        return () => {
+            window.removeEventListener('pointermove', handlePointerMove);
+            window.removeEventListener('pointerup', handlePointerUp);
+        };
+    }, []);
 
     const fetchWorklist = async () => {
         setLoading(true);
@@ -207,27 +269,94 @@ export function RadiologistTerminal() {
         isUnmountedRef.current = false;
         subscriberCount++;
 
+        const onReceiveDraftUpdate = (draftContent) => {
+            try {
+                const parsed = JSON.parse(draftContent);
+                const activeStudyId = currentJoinedStudyIdRef.current;
+                if (!activeStudyId) return;
+
+                if (parsed.findings !== undefined) setDraftFindings(parsed.findings);
+                if (parsed.impression !== undefined) setDraftImpression(parsed.impression);
+                if (parsed.additionalNotes !== undefined) setDraftNotes(parsed.additionalNotes);
+            } catch (e) {
+                console.error("Failed to parse live draft packet:", e);
+            }
+        };
+
+        const onUserJoined = (connectionId) => {
+            setLiveTypistConnected(true);
+        };
+
+        const onUserLeft = (connectionId) => {
+            setLiveTypistConnected(false);
+        };
+
+        const onReceiveDraftSaved = () => {
+            if (currentJoinedStudyIdRef.current) {
+                handleSelectStudy({ radiologyStudyId: currentJoinedStudyIdRef.current });
+            }
+        };
+
+        const onReceiveDraftResumed = () => {
+            if (currentJoinedStudyIdRef.current) {
+                handleSelectStudy({ radiologyStudyId: currentJoinedStudyIdRef.current });
+            }
+        };
+
+        const onReceiveSignRequest = () => {
+            if (currentJoinedStudyIdRef.current) {
+                handleSelectStudy({ radiologyStudyId: currentJoinedStudyIdRef.current });
+            }
+        };
+
+        const registerHandlers = (conn) => {
+            conn.on('ReceiveDraftUpdate', onReceiveDraftUpdate);
+            conn.on('UserJoined', onUserJoined);
+            conn.on('UserLeft', onUserLeft);
+            conn.on('ReceiveDraftSaved', onReceiveDraftSaved);
+            conn.on('ReceiveDraftResumed', onReceiveDraftResumed);
+            conn.on('ReceiveSignRequest', onReceiveSignRequest);
+        };
+
+        const unregisterHandlers = (conn) => {
+            conn.off('ReceiveDraftUpdate', onReceiveDraftUpdate);
+            conn.off('UserJoined', onUserJoined);
+            conn.off('UserLeft', onUserLeft);
+            conn.off('ReceiveDraftSaved', onReceiveDraftSaved);
+            conn.off('ReceiveDraftResumed', onReceiveDraftResumed);
+            conn.off('ReceiveSignRequest', onReceiveSignRequest);
+        };
+
         if (stopTimer) {
             clearTimeout(stopTimer);
             stopTimer = null;
             if (sharedConnection) {
                 hubConnection.current = sharedConnection;
+                registerHandlers(sharedConnection);
                 if (sharedConnection.state === signalR.HubConnectionState.Connected) {
                     setConnectionStatus('Connected');
+                    setIsHubReady(true);
                 } else if (sharedConnection.state === signalR.HubConnectionState.Connecting) {
                     setConnectionStatus('Connecting');
+                    setIsHubReady(false);
                 } else if (sharedConnection.state === signalR.HubConnectionState.Reconnecting) {
                     setConnectionStatus('Reconnecting');
+                    setIsHubReady(false);
                 } else {
                     setConnectionStatus('Disconnected');
+                    setIsHubReady(false);
                 }
             }
         } else {
-            connectSignalR();
+            connectSignalR(registerHandlers);
         }
 
         return () => {
             isUnmountedRef.current = true;
+            const connection = hubConnection.current;
+            if (connection) {
+                unregisterHandlers(connection);
+            }
             subscriberCount--;
             if (subscriberCount <= 0) {
                 subscriberCount = 0;
@@ -276,13 +405,13 @@ export function RadiologistTerminal() {
                 // Switch session groups dynamically
                 const studyIdStr = studyId.toString();
                 if (currentJoinedStudyIdRef.current && currentJoinedStudyIdRef.current !== studyIdStr) {
-                    if (hubConnection.current && hubConnection.current.state === 'Connected') {
+                    if (hubConnection.current && hubConnection.current.state === 'Connected' && isHubReady) {
                         hubConnection.current.invoke('LeaveSession', currentJoinedStudyIdRef.current).catch(err => console.error(err));
                     }
                 }
                 
                 currentJoinedStudyIdRef.current = studyIdStr;
-                if (hubConnection.current && hubConnection.current.state === 'Connected') {
+                if (hubConnection.current && hubConnection.current.state === 'Connected' && isHubReady) {
                     hubConnection.current.invoke('JoinSession', studyIdStr).catch(err => console.error(err));
                 }
 
@@ -297,7 +426,7 @@ export function RadiologistTerminal() {
                 viewportManager.current = null;
             }
         };
-    }, [selectedStudy?.radiologyStudyId || selectedStudy?.studyId, selectedStudy?.claimedByUserId, layout]);
+    }, [selectedStudy?.radiologyStudyId || selectedStudy?.studyId, selectedStudy?.claimedByUserId, layout, isHubReady]);
 
     // Centering & Resizing layout adapter for CSS transitions
     useEffect(() => {
@@ -366,19 +495,24 @@ export function RadiologistTerminal() {
 
     const isUnmountedRef = useRef(false);
 
-    const connectSignalR = async () => {
+    const connectSignalR = async (registerHandlers) => {
         if (sharedConnection && sharedConnection.state === signalR.HubConnectionState.Connected) {
             hubConnection.current = sharedConnection;
+            registerHandlers(sharedConnection);
             setConnectionStatus('Connected');
+            setIsHubReady(true);
             return;
         }
         if (sharedConnection && sharedConnection.state === signalR.HubConnectionState.Connecting) {
             hubConnection.current = sharedConnection;
+            registerHandlers(sharedConnection);
             setConnectionStatus('Connecting');
+            setIsHubReady(false);
             return;
         }
 
         setConnectionStatus('Connecting');
+        setIsHubReady(false);
 
         const connection = new signalR.HubConnectionBuilder()
             .withUrl('/radiologyCollaborationHub', {
@@ -395,13 +529,13 @@ export function RadiologistTerminal() {
         connection.onreconnecting((error) => {
             if (hubConnection.current !== connection) return;
             setConnectionStatus('Reconnecting');
-            console.warn("SignalR connection lost, attempting reconnect...", error);
+            setIsHubReady(false);
         });
 
         connection.onreconnected((connectionId) => {
             if (hubConnection.current !== connection) return;
             setConnectionStatus('Connected');
-            console.info("SignalR reconnected.", connectionId);
+            setIsHubReady(true);
             connection.invoke('RegisterPresence', 'Radiologist').catch(err => console.error(err));
             if (currentJoinedStudyIdRef.current) {
                 connection.invoke('JoinSession', currentJoinedStudyIdRef.current).catch(err => console.error(err));
@@ -412,51 +546,10 @@ export function RadiologistTerminal() {
         connection.onclose((error) => {
             if (hubConnection.current !== connection) return;
             setConnectionStatus('Disconnected');
-            console.error("SignalR connection closed.", error);
+            setIsHubReady(false);
         });
 
-        connection.on('ReceiveDraftUpdate', (draftContent) => {
-            if (hubConnection.current !== connection) return;
-            try {
-                const parsed = JSON.parse(draftContent);
-                if (parsed.findings !== undefined) setDraftFindings(parsed.findings);
-                if (parsed.impression !== undefined) setDraftImpression(parsed.impression);
-                if (parsed.additionalNotes !== undefined) setDraftNotes(parsed.additionalNotes);
-            } catch (e) {
-                console.error("Failed to parse live draft packet:", e);
-            }
-        });
-
-        connection.on('UserJoined', (connectionId) => {
-            if (hubConnection.current !== connection) return;
-            setLiveTypistConnected(true);
-        });
-
-        connection.on('UserLeft', (connectionId) => {
-            if (hubConnection.current !== connection) return;
-            setLiveTypistConnected(false);
-        });
-
-        connection.on('ReceiveDraftSaved', () => {
-            if (hubConnection.current !== connection) return;
-            if (currentJoinedStudyIdRef.current) {
-                handleSelectStudy({ radiologyStudyId: currentJoinedStudyIdRef.current });
-            }
-        });
-
-        connection.on('ReceiveDraftResumed', () => {
-            if (hubConnection.current !== connection) return;
-            if (currentJoinedStudyIdRef.current) {
-                handleSelectStudy({ radiologyStudyId: currentJoinedStudyIdRef.current });
-            }
-        });
-
-        connection.on('ReceiveSignRequest', () => {
-            if (hubConnection.current !== connection) return;
-            if (currentJoinedStudyIdRef.current) {
-                handleSelectStudy({ radiologyStudyId: currentJoinedStudyIdRef.current });
-            }
-        });
+        registerHandlers(connection);
 
         connection.start()
             .then(async () => {
@@ -468,6 +561,7 @@ export function RadiologistTerminal() {
                     return;
                 }
                 setConnectionStatus('Connected');
+                setIsHubReady(true);
                 await connection.invoke('RegisterPresence', 'Radiologist');
                 if (currentJoinedStudyIdRef.current) {
                     await connection.invoke('JoinSession', currentJoinedStudyIdRef.current);
@@ -484,6 +578,7 @@ export function RadiologistTerminal() {
                     return;
                 }
                 setConnectionStatus('Disconnected');
+                setIsHubReady(false);
                 console.error("Failed to connect to SignalR hub:", e);
             });
     };
@@ -728,11 +823,14 @@ export function RadiologistTerminal() {
             <SystemBar syncStatus={connectionStatus === 'Connected' ? 'Synced' : 'Not Synced'} />
 
             {/* Core Workstation Workspace */}
-            <div className="flex-1 grid grid-cols-12 overflow-hidden">
+            <div ref={containerRef} className="flex-1 flex overflow-hidden relative w-full">
                 {/* 1. Modality Worklist Queue */}
-                <div className={`border-r dark:border-synos-border border-zinc-200 flex flex-col h-full dark:bg-synos-background/35 bg-zinc-50/50 transition-all duration-300 ease-synos ${
-                    isQueueCollapsed && !isMacroManagerOpen ? "hidden" : "col-span-3 flex"
-                }`}>
+                <div 
+                    style={{ width: isQueueCollapsed && !isMacroManagerOpen ? 0 : leftWidth }}
+                    className={`border-r dark:border-synos-border border-zinc-200 flex flex-col h-full dark:bg-synos-background/35 bg-zinc-50/50 transition-all duration-300 ease-synos shrink-0 overflow-hidden ${
+                        isQueueCollapsed && !isMacroManagerOpen ? "w-0" : "flex"
+                    }`}
+                >
                     {isMacroManagerOpen ? (
                         <div className="dark:bg-zinc-900 bg-white dark:border-white/5 border-black/[0.1] shadow-[0_4px_20px_rgba(0,0,0,0.05)] rounded-xl p-4 flex flex-col h-full min-h-0">
                             <MedicalMacrosWorkspace onClose={() => setIsMacroManagerOpen(false)} />
@@ -806,10 +904,19 @@ export function RadiologistTerminal() {
                     )}
                 </div>
 
+                {/* Left resizer divider */}
+                {!isQueueCollapsed && (
+                    <div 
+                        onPointerDown={handleLeftResizeStart}
+                        className="w-[3px] hover:w-[6px] hover:bg-synos-primary bg-zinc-200 dark:bg-zinc-800/80 cursor-col-resize h-full select-none z-30 transition-all flex items-center justify-center shrink-0 group"
+                        title="Drag to resize worklist panel"
+                    >
+                        <div className="w-[1px] h-8 bg-zinc-400 dark:bg-zinc-650 rounded group-hover:bg-white" />
+                    </div>
+                )}
+
                 {/* 2. WebGL Resizable Viewport */}
-                <div className={`h-full flex flex-col overflow-hidden border-r dark:border-synos-border border-zinc-200 dark:bg-black bg-zinc-950 transition-all duration-300 ease-synos ${
-                    isQueueCollapsed ? "col-span-7" : "col-span-5"
-                }`}>
+                <div className="h-full flex-1 flex flex-col overflow-hidden dark:bg-black bg-zinc-950 min-w-[300px]">
                     {selectedStudy ? (
                         <div className="flex-1 flex flex-col overflow-hidden">
                             {/* Viewport Control Strip */}
@@ -1074,10 +1181,24 @@ export function RadiologistTerminal() {
                     )}
                 </div>
 
+                {/* Right resizer divider */}
+                {selectedStudy && (
+                    <div 
+                        onPointerDown={handleRightResizeStart}
+                        className="w-[3px] hover:w-[6px] hover:bg-synos-primary bg-zinc-200 dark:bg-zinc-800/80 cursor-col-resize h-full select-none z-30 transition-all flex items-center justify-center shrink-0 group"
+                        title="Drag to resize report dictation panel"
+                    >
+                        <div className="w-[1px] h-8 bg-zinc-400 dark:bg-zinc-650 rounded group-hover:bg-white" />
+                    </div>
+                )}
+
                 {/* 3. Dictation Panel */}
-                <div className={`h-full flex flex-col overflow-hidden dark:bg-synos-surface bg-white transition-all duration-300 ease-synos ${
-                    isQueueCollapsed ? "col-span-5" : "col-span-4"
-                }`}>
+                <div 
+                    style={{ width: selectedStudy ? rightWidth : 0 }}
+                    className={`h-full flex flex-col overflow-hidden dark:bg-synos-surface bg-white border-l dark:border-synos-border border-zinc-200 shrink-0 ${
+                        !selectedStudy ? "w-0" : ""
+                    }`}
+                >
                     {selectedStudy ? (
                         !isClaimedByMe ? (
                             /* CLAIM DASHBOARD VIEW */
@@ -1321,7 +1442,7 @@ export function RadiologistTerminal() {
                     )}
                 </div>
             </div>
-            <RadiologyCallOverlay 
+            <CollaborationCallOverlay 
                 hubConnection={hubConnection.current} 
                 selectedStudy={selectedStudy} 
                 onSelectStudy={(studyId) => handleSelectStudy({ radiologyStudyId: studyId })} 

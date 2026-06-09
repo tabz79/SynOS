@@ -749,6 +749,7 @@ namespace SynOS.Services
                                 Department = "Radiology",
                                 SourceType = "RadiologyStudy",
                                 SourceId = newStudy.RadiologyStudyId,
+                                ReportTemplateId = test.ReportTemplateId,
                                 Status = "Draft",
                                 CurrentVersion = 1,
                                 CreatedAt = DateTimeOffset.UtcNow

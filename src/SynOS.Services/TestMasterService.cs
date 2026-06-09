@@ -180,6 +180,7 @@ namespace SynOS.Services
             test.SpecimenTypeCode = dto.SpecimenTypeCode;
             test.IsProfile = dto.IsProfile;
             test.ModalityId = dto.ModalityId; // Save ModalityId
+            test.ReportTemplateId = dto.ReportTemplateId; // Save ReportTemplateId
             
             // _mapper.Map(dto, test); // CAUTION: If DTO has BasePrice/Department, this might try to set non-existent props? 
             // Since props are removed from Test, AutoMapper fails silently or errors depending on config.

@@ -9,6 +9,7 @@ namespace SynOS.Services
     // --- REPORT DATA CONTRACT V2 (The Future) ---
     public class ReportDataModel
     {
+        public Guid? ReportTemplateId { get; set; }
         public ReportMetadata Metadata { get; set; } = new ReportMetadata();
         public LabDetails Lab { get; set; } = new LabDetails();
         public string Modality { get; set; } = string.Empty;

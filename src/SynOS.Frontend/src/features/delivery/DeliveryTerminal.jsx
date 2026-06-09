@@ -167,11 +167,11 @@ export function DeliveryTerminal() {
                     <div className="p-6 space-y-4 shrink-0">
                         <div className="flex items-center gap-3">
                             <div className="w-10 h-10 rounded-xl bg-synos-primary/10 flex items-center justify-center text-synos-primary">
-                                <Truck className="w-6 h-6" />
+                                <Truck className="w-5 h-5" />
                             </div>
                             <div>
-                                <h2 className="text-xl font-black tracking-tight dark:text-white text-zinc-900">Delivery Desk</h2>
-                                <p className="text-[10px] uppercase font-black tracking-widest text-zinc-400">Queue Management</p>
+                                <h2 className="text-lg font-semibold tracking-tight dark:text-white text-zinc-900">Delivery Desk</h2>
+                                <p className="text-[10px] uppercase font-medium tracking-widest text-zinc-400">Queue Management</p>
                             </div>
                         </div>
                         <div className="relative">
@@ -190,7 +190,7 @@ export function DeliveryTerminal() {
                         {isLoadingList ? (
                             <div className="flex items-center justify-center py-12 opacity-30"><Loader2 className="w-8 h-8 animate-spin" /></div>
                         ) : filteredReports.length === 0 ? (
-                            <div className="text-center py-12 opacity-20 font-black uppercase text-xs tracking-widest">No pending reports</div>
+                            <div className="text-center py-12 opacity-25 font-semibold uppercase text-xs tracking-widest">No pending reports</div>
                         ) : filteredReports.map(report => (
                             <DeliveryWorklistCard
                                 key={report.reportId}
@@ -214,7 +214,7 @@ export function DeliveryTerminal() {
                             title="Request Stock"
                         >
                             <Package className="w-5 h-5" />
-                            <span className="text-[10px] font-black uppercase tracking-widest overflow-hidden max-w-0 group-hover:max-w-xs transition-all duration-500">
+                            <span className="text-[10px] font-semibold uppercase tracking-widest overflow-hidden max-w-0 group-hover:max-w-xs transition-all duration-500">
                                 Request Stock
                             </span>
                         </button>
@@ -235,7 +235,7 @@ export function DeliveryTerminal() {
                                     <div className="absolute inset-x-0 top-0 h-12 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-md border-b dark:border-white/5 border-black/5 flex items-center px-6 z-10">
                                         <div className="flex items-center gap-2">
                                             <FileText className="w-4 h-4 text-synos-primary" />
-                                            <span className="text-[10px] font-black uppercase tracking-widest dark:text-zinc-400 text-zinc-600">
+                                            <span className="text-[10px] font-semibold uppercase tracking-widest dark:text-zinc-400 text-zinc-600">
                                                 High-Fidelity Preview
                                             </span>
                                         </div>
@@ -248,20 +248,20 @@ export function DeliveryTerminal() {
                                 </div>
                                 
                                 {/* BOTTOM ACTION BAR */}
-                                <div className="h-32 mt-8 shrink-0 flex items-center justify-between px-10 rounded-3xl bg-white dark:bg-zinc-900 border dark:border-white/5 border-zinc-200 shadow-2xl shadow-black/10">
-                                    <div className="flex items-center gap-6">
+                                <div className="h-20 mt-4 shrink-0 flex items-center justify-between px-6 rounded-2xl bg-white dark:bg-zinc-900 border dark:border-white/5 border-zinc-200 shadow-xl shadow-black/5">
+                                    <div className="flex items-center gap-4">
                                         <div className={cn(
-                                            "w-14 h-14 rounded-2xl flex items-center justify-center shadow-inner",
+                                            "w-10 h-10 rounded-xl flex items-center justify-center shadow-inner",
                                             isVerified ? "bg-emerald-500/10 text-emerald-500" : "bg-orange-500/10 text-orange-500"
                                         )}>
-                                            {isVerified ? <CheckCircle2 className="w-8 h-8" /> : <ShieldCheck className="w-8 h-8" />}
+                                            {isVerified ? <CheckCircle2 className="w-5 h-5" /> : <ShieldCheck className="w-5 h-5" />}
                                         </div>
                                         <div>
-                                            <h4 className="text-lg font-black tracking-tight dark:text-white text-zinc-900">
+                                            <h4 className="text-sm font-semibold tracking-tight dark:text-white text-zinc-900">
                                                 {isVerified ? "Verification Complete" : 
                                                  reportStructure?.isManualFlow ? "Awaiting Manual Signature" : "Physical Verification Needed"}
                                             </h4>
-                                            <p className="text-xs text-zinc-500 font-medium">
+                                            <p className="text-[11px] text-zinc-550 font-medium">
                                                 {isVerified ? "Manually verified by desk operator." : 
                                                  isDigital && !reportStructure?.isManualFlow ? "Digital signature detected. System trust verified." : 
                                                  reportStructure?.isManualFlow ? "Typist requested manual sign-off on paper report. Please check hardcopy." :
@@ -270,30 +270,30 @@ export function DeliveryTerminal() {
                                         </div>
                                     </div>
 
-                                    <div className="flex items-center gap-4">
+                                    <div className="flex items-center gap-3">
                                         {!isVerified ? (
                                             <button 
                                                 onClick={handleMarkVerified}
                                                 disabled={isVerifying}
-                                                className="bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 px-10 py-5 rounded-2xl font-black text-sm uppercase tracking-widest shadow-xl active:scale-95 transition-all flex items-center gap-3 disabled:opacity-50"
+                                                className="bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 px-6 py-2.5 rounded-xl font-bold text-xs uppercase tracking-widest shadow-lg active:scale-95 transition-all flex items-center gap-2 disabled:opacity-50"
                                             >
-                                                {isVerifying ? <Loader2 className="w-5 h-5 animate-spin" /> : <ShieldCheck className="w-5 h-5" />}
+                                                {isVerifying ? <Loader2 className="w-4 h-4 animate-spin" /> : <ShieldCheck className="w-4 h-4" />}
                                                 Mark Physically Verified
                                             </button>
                                         ) : (
-                                            <div className="flex items-center gap-4 animate-in slide-in-from-right-8 duration-300">
+                                            <div className="flex items-center gap-3 animate-in slide-in-from-right-8 duration-300">
                                                 <button 
                                                     onClick={() => setShowWhatsAppPrompt(true)}
-                                                    className="bg-emerald-600 hover:bg-emerald-700 text-white px-10 py-5 rounded-2xl font-black text-sm uppercase tracking-widest shadow-xl shadow-emerald-500/20 active:scale-95 transition-all flex items-center gap-3"
+                                                    className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2.5 rounded-xl font-bold text-xs uppercase tracking-widest shadow-lg shadow-emerald-500/10 active:scale-95 transition-all flex items-center gap-2"
                                                 >
-                                                    <MessageSquare className="w-5 h-5" />
+                                                    <MessageSquare className="w-4 h-4" />
                                                     Send WhatsApp
                                                 </button>
                                                 <button 
                                                     onClick={handlePrint}
-                                                    className="bg-synos-primary hover:bg-synos-primary/90 text-white px-10 py-5 rounded-2xl font-black text-sm uppercase tracking-widest shadow-xl shadow-synos-primary/20 active:scale-95 transition-all flex items-center gap-3"
+                                                    className="bg-synos-primary hover:bg-synos-primary/90 text-white px-6 py-2.5 rounded-xl font-bold text-xs uppercase tracking-widest shadow-lg shadow-synos-primary/10 active:scale-95 transition-all flex items-center gap-2"
                                                 >
-                                                    <Printer className="w-5 h-5" />
+                                                    <Printer className="w-4 h-4" />
                                                     Print & Mark Delivered
                                                 </button>
                                             </div>
@@ -304,7 +304,7 @@ export function DeliveryTerminal() {
                         ) : (
                             <div className="h-full flex flex-col items-center justify-center opacity-10 grayscale p-20 text-center">
                                 <Truck className="w-48 h-48 mb-8" />
-                                <h2 className="text-4xl font-black uppercase tracking-tighter">Delivery Queue Ready</h2>
+                                <h2 className="text-xl font-semibold uppercase tracking-tight">Delivery Queue Ready</h2>
                                 <p className="text-xl font-medium mt-4">Select a report from the list to begin distribution.</p>
                             </div>
                         )}
@@ -325,8 +325,8 @@ export function DeliveryTerminal() {
                         <div className="w-16 h-16 rounded-3xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center mb-8">
                             <Smartphone className="w-8 h-8" />
                         </div>
-                        <h3 className="text-3xl font-black uppercase tracking-tighter mb-4 dark:text-white">WhatsApp Softcopy</h3>
-                        <p className="text-lg text-zinc-500 mb-10 font-medium leading-tight">Send secure report link to patient.</p>
+                        <h3 className="text-xl font-semibold uppercase tracking-tight mb-2 dark:text-white">WhatsApp Softcopy</h3>
+                        <p className="text-sm text-zinc-550 mb-6 font-medium leading-tight">Send secure report link to patient.</p>
                         
                         <div className="space-y-6">
                             {/* Option 1: Registered Number */}
@@ -339,22 +339,22 @@ export function DeliveryTerminal() {
                                     disabled={isDelivering}
                                     className="w-full bg-emerald-500 hover:bg-emerald-600 text-white p-6 rounded-[2rem] flex flex-col items-center gap-1 group transition-all active:scale-95 shadow-xl shadow-emerald-500/20 disabled:opacity-50"
                                 >
-                                    <span className="text-[10px] font-black uppercase tracking-[0.2em] opacity-80 italic">Registered Number</span>
-                                    <span className="text-2xl font-black tracking-tighter flex items-center gap-2">
+                                    <span className="text-[10px] font-semibold uppercase tracking-[0.2em] opacity-80 italic">Registered Number</span>
+                                    <span className="text-lg font-semibold tracking-tight flex items-center gap-2">
                                         {isDelivering ? <Loader2 className="w-6 h-6 animate-spin" /> : <MessageSquare className="w-6 h-6" />}
                                         {reportStructure.patient.phone}
                                     </span>
                                 </button>
                             ) : (
                                 <div className="bg-zinc-100 dark:bg-zinc-800 p-6 rounded-[2rem] text-center border-2 border-dashed border-zinc-200 dark:border-zinc-700">
-                                    <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">No Registered Number Found</p>
+                                    <p className="text-[10px] font-semibold uppercase tracking-widest text-zinc-500">No Registered Number Found</p>
                                 </div>
                             )}
 
                             {/* Divider */}
                             <div className="flex items-center gap-4 text-zinc-300 dark:text-zinc-700 py-2">
                                 <div className="h-[1px] flex-1 bg-current" />
-                                <span className="text-[8px] font-black uppercase tracking-widest">or send to alternative</span>
+                                <span className="text-[8px] font-semibold uppercase tracking-widest">or send to alternative</span>
                                 <div className="h-[1px] flex-1 bg-current" />
                             </div>
 
@@ -372,14 +372,14 @@ export function DeliveryTerminal() {
                                 <div className="flex gap-4">
                                     <button 
                                         onClick={() => setShowWhatsAppPrompt(false)}
-                                        className="flex-1 bg-zinc-100 dark:bg-zinc-800 text-zinc-500 py-5 rounded-2xl font-black text-xs uppercase tracking-widest active:scale-95 transition-all hover:bg-zinc-200 dark:hover:bg-zinc-700"
+                                        className="flex-1 bg-zinc-100 dark:bg-zinc-800 text-zinc-500 py-3 rounded-xl font-bold text-xs uppercase tracking-widest active:scale-95 transition-all hover:bg-zinc-200 dark:hover:bg-zinc-700"
                                     >
                                         Cancel
                                     </button>
                                     <button 
                                         onClick={handleWhatsApp}
                                         disabled={isDelivering || !deliveryPhone || deliveryPhone.length < 10}
-                                        className="flex-[2] bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 py-5 rounded-2xl font-black text-xs uppercase tracking-widest active:scale-95 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                                        className="flex-[2] bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 py-3 rounded-xl font-bold text-xs uppercase tracking-widest active:scale-95 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
                                     >
                                         {isDelivering ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
                                         Send to This Number

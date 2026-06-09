@@ -16,7 +16,7 @@ import {
     Maximize2
 } from 'lucide-react';
 
-export function RadiologyCallOverlay({ hubConnection, selectedStudy, onSelectStudy, role }) {
+export function CollaborationCallOverlay({ hubConnection, selectedStudy, onSelectStudy, role, targetRole }) {
     const { user } = useAuth();
     
     // Call States: 'idle' | 'calling' | 'ringing' | 'connected'
@@ -432,7 +432,7 @@ export function RadiologyCallOverlay({ hubConnection, selectedStudy, onSelectStu
         const peer = onlineUsers.find(u => u.userId === selectedPeerId);
         if (!peer) return;
 
-        const studyId = selectedStudy.studyId || selectedStudy.radiologyStudyId;
+        const studyId = selectedStudy.studyId || selectedStudy.radiologyStudyId || selectedStudy.reportId;
         const patientName = selectedStudy.patientName;
 
         setCallDetails({
@@ -466,7 +466,7 @@ export function RadiologyCallOverlay({ hubConnection, selectedStudy, onSelectStu
             try {
                 // Auto-select study context on accept (Constraint 1 & Requirement 3)
                 if (callDetails.studyId && onSelectStudy) {
-                    await onSelectStudy(callDetails.studyId);
+                    await onSelectStudy(callDetails.studyId, callDetails.peerRole);
                 }
 
                 await hubConnection.invoke('AcceptCall', callDetails.peerUserId);
@@ -555,8 +555,8 @@ export function RadiologyCallOverlay({ hubConnection, selectedStudy, onSelectStu
     };
 
     // Filter available colleagues of the opposite role
-    const targetRole = role === 'Radiologist' ? 'Typist' : 'Radiologist';
-    const availableColleagues = onlineUsers.filter(u => u.role === targetRole);
+    const resolvedTargetRole = targetRole || (role === 'Radiologist' ? 'Typist' : 'Radiologist');
+    const availableColleagues = onlineUsers.filter(u => u.role === resolvedTargetRole);
 
     return (
         <div className="fixed bottom-6 right-6 z-[99] pointer-events-auto flex flex-col items-end gap-3 font-sans select-none">
@@ -586,7 +586,7 @@ export function RadiologyCallOverlay({ hubConnection, selectedStudy, onSelectStu
                     </div>
                     
                     <div className="dark:bg-zinc-950/50 bg-zinc-50 rounded-xl p-3 border dark:border-zinc-800 border-zinc-200 flex flex-col gap-0.5">
-                        <span className="text-[9px] uppercase font-bold text-zinc-500 tracking-wider">Contextual Study</span>
+                        <span className="text-[9px] uppercase font-bold text-zinc-500 tracking-wider">Contextual File</span>
                         <span className="text-xs font-semibold dark:text-zinc-300 text-zinc-700 truncate">{callDetails.patientName}</span>
                     </div>
 
@@ -651,7 +651,7 @@ export function RadiologyCallOverlay({ hubConnection, selectedStudy, onSelectStu
                         </span>
                         <button 
                             onClick={() => setIsCallMinimised(false)}
-                            className="p-1 hover:bg-zinc-500/10 dark:hover:bg-zinc-800 rounded text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 transition-colors"
+                            className="p-1 hover:bg-zinc-500/10 dark:hover:bg-zinc-800 rounded text-zinc-400 hover:text-zinc-650 dark:hover:text-zinc-200 transition-colors"
                             title="Maximize Call Controls"
                         >
                             <Maximize2 className="w-3.5 h-3.5" />
@@ -703,7 +703,7 @@ export function RadiologyCallOverlay({ hubConnection, selectedStudy, onSelectStu
                                     isMuted 
                                         ? 'bg-red-500/10 border-red-500/20 text-red-500 hover:bg-red-500/15' 
                                         : 'dark:bg-zinc-800 bg-zinc-100 dark:border-zinc-700 border-zinc-200 hover:dark:bg-zinc-700 hover:bg-zinc-200 text-zinc-600 dark:text-zinc-300'
-                                }`}
+                                    }`}
                                 title={isMuted ? "Unmute Mic" : "Mute Mic"}
                             >
                                 {isMuted ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
@@ -761,10 +761,10 @@ export function RadiologyCallOverlay({ hubConnection, selectedStudy, onSelectStu
 
                             {/* Dropdown list of online colleagues */}
                             <div className="space-y-1.5">
-                                <label className="text-[9px] uppercase font-bold text-zinc-500 block">Available Online {targetRole}s</label>
+                                <label className="text-[9px] uppercase font-bold text-zinc-500 block">Available Online {resolvedTargetRole}s</label>
                                 {availableColleagues.length === 0 ? (
                                     <div className="text-[11px] italic text-zinc-400 py-3 text-center border border-dashed dark:border-zinc-800 border-zinc-200 rounded-xl">
-                                        No {targetRole}s online.
+                                        No {resolvedTargetRole}s online.
                                     </div>
                                 ) : (
                                     <select
@@ -786,7 +786,7 @@ export function RadiologyCallOverlay({ hubConnection, selectedStudy, onSelectStu
                             <div className="dark:bg-zinc-950/50 bg-zinc-50 rounded-xl p-3 border dark:border-zinc-850 border-zinc-200 text-[11px] flex flex-col gap-0.5">
                                 <span className="text-[9px] uppercase font-bold text-zinc-500">Contextual Patient</span>
                                 <span className="font-bold dark:text-zinc-300 text-zinc-700 truncate">
-                                    {selectedStudy ? selectedStudy.patientName : "No Study Selected"}
+                                    {selectedStudy ? selectedStudy.patientName : "No context selected"}
                                 </span>
                                 {!selectedStudy && (
                                     <span className="text-[9px] text-red-500 font-medium mt-0.5">
@@ -814,7 +814,7 @@ export function RadiologyCallOverlay({ hubConnection, selectedStudy, onSelectStu
                                 ? 'bg-synos-primary border-synos-primary text-white' 
                                 : 'dark:bg-zinc-900 bg-white dark:border-zinc-850 border-zinc-200 text-synos-primary hover:text-synos-primary-light'
                         }`}
-                        title="Radiology Audio Link"
+                        title="Collaboration Audio Link"
                     >
                         <Phone className="w-5 h-5" />
                     </button>

@@ -9,6 +9,7 @@ namespace SynOS.Models.DTOs
         public Guid OrderId { get; set; }
         public PatientSummaryDto Patient { get; set; }
         public VisitSummaryDto Visit { get; set; }
+        public Guid? ReportTemplateId { get; set; }
         public string Status { get; set; }
         public string? VerificationMode { get; set; }
         public DateTimeOffset? SignedAt { get; set; }

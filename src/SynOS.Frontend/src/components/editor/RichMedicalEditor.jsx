@@ -167,7 +167,11 @@ export function RichMedicalEditor({
         onUpdate: ({ editor }) => {
             const jsonStr = JSON.stringify(editor.getJSON());
             lastValueRef.current = jsonStr;
-            onChange?.(jsonStr);
+            
+            // Only propagate changes if the editor is focused (active user typing)
+            if (editor.isFocused) {
+                onChange?.(jsonStr);
+            }
 
             // Calculate Word Count
             const text = editor.getText();

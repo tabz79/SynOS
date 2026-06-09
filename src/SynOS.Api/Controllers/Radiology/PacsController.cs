@@ -22,6 +22,8 @@ namespace SynOS.Api.Controllers.Radiology
         }
 
         [HttpPost("{radiologyStudyId:guid}/upload")]
+        [DisableRequestSizeLimit]
+        [RequestFormLimits(MultipartBodyLengthLimit = 524288000)]
         public async Task<IActionResult> UploadDicom(Guid radiologyStudyId, [FromForm] IFormFileCollection files)
         {
             if (files == null || !files.Any())

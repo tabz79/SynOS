@@ -119,8 +119,8 @@ export function StockRequestPanel({ isOpen, onClose }) {
                         <Package className="h-5 w-5" />
                     </div>
                     <div>
-                        <h2 className={cn("text-lg font-bold tracking-tight", ui.title)}>Stock Request</h2>
-                        <p className={cn("text-[10px] uppercase font-bold tracking-widest", ui.subtitle)}>{user?.branchName}</p>
+                        <h2 className={cn("text-lg font-semibold tracking-tight", ui.title)}>Stock Request</h2>
+                        <p className={cn("text-[10px] uppercase font-semibold tracking-wider", ui.subtitle)}>{user?.branchName}</p>
                     </div>
                 </div>
                 <button
@@ -149,11 +149,11 @@ export function StockRequestPanel({ isOpen, onClose }) {
                         {/* Search & Toggle */}
                         <div className="space-y-3">
                             <div className="flex items-center justify-between">
-                                <label className={cn("text-xs font-bold uppercase tracking-wider", ui.subtitle)}>Select Consumable</label>
+                                <label className={cn("text-xs font-semibold uppercase tracking-wider", ui.subtitle)}>Select Consumable</label>
                                 <button 
                                     onClick={() => setShowAll(!showAll)}
                                     className={cn(
-                                        "flex items-center gap-1.5 text-[10px] uppercase tracking-wider font-black px-2 py-1 rounded transition-all",
+                                        "flex items-center gap-1.5 text-[10px] uppercase tracking-wider font-semibold px-2 py-1 rounded transition-all",
                                         showAll 
                                             ? "bg-amber-500/20 text-amber-500" 
                                             : isDark ? "bg-zinc-800 text-zinc-500 hover:text-zinc-300" : "bg-zinc-100 text-zinc-400 hover:text-zinc-600"
@@ -180,7 +180,7 @@ export function StockRequestPanel({ isOpen, onClose }) {
                             {isLoading ? (
                                 <div className="flex flex-col items-center justify-center py-10 opacity-40">
                                     <Loader2 className="h-8 w-8 animate-spin" />
-                                    <p className="mt-2 text-xs font-bold uppercase tracking-widest">Scanning Catalog...</p>
+                                    <p className="mt-2 text-xs font-semibold uppercase tracking-wider">Scanning Catalog...</p>
                                 </div>
                             ) : filteredItems.length === 0 ? (
                                 <div className="py-10 text-center opacity-40">
@@ -217,7 +217,7 @@ export function StockRequestPanel({ isOpen, onClose }) {
                                                 <Package className="h-4 w-4" />
                                             </div>
                                             <div>
-                                                <div className="text-sm font-bold">{item.name}</div>
+                                                <div className="text-sm font-semibold">{item.name}</div>
                                                 <div className="text-[10px] opacity-60 font-mono">{item.code} • {item.unitOfMeasure}</div>
                                             </div>
                                         </div>
@@ -233,16 +233,16 @@ export function StockRequestPanel({ isOpen, onClose }) {
 
                         {/* Quantity */}
                         <div className={cn("p-4 rounded-2xl border", isDark ? "bg-black/20 border-white/5" : "bg-zinc-50 border-zinc-200")}>
-                            <label className={cn("text-[10px] uppercase font-black tracking-widest block mb-2", ui.subtitle)}>Desired Quantity</label>
+                            <label className={cn("text-[10px] uppercase font-semibold tracking-wider block mb-2", ui.subtitle)}>Desired Quantity</label>
                             <div className="flex items-center gap-4">
                                 <input 
                                     type="number"
                                     min="1"
                                     value={quantity}
                                     onChange={(e) => setQuantity(e.target.value)}
-                                    className={cn("flex-1 rounded-xl border py-4 text-center text-2xl font-black outline-none transition-all", ui.input)}
+                                    className={cn("flex-1 rounded-xl border py-4 text-center text-xl font-semibold outline-none transition-all", ui.input)}
                                 />
-                                <div className={cn("text-sm font-bold uppercase", ui.subtitle)}>{selectedItem?.unitOfMeasure || 'units'}</div>
+                                <div className={cn("text-sm font-semibold uppercase", ui.subtitle)}>{selectedItem?.unitOfMeasure || 'units'}</div>
                             </div>
                         </div>
 
@@ -262,7 +262,7 @@ export function StockRequestPanel({ isOpen, onClose }) {
                         onClick={handleSubmit}
                         disabled={!selectedItem || isSubmitting}
                         className={cn(
-                            "w-full rounded-xl py-4 text-sm font-black uppercase tracking-widest flex items-center justify-center gap-2 shadow-xl transition-all active:scale-95 disabled:opacity-30 disabled:active:scale-100",
+                            "w-full rounded-xl py-4 text-sm font-semibold uppercase tracking-wider flex items-center justify-center gap-2 shadow-xl transition-all active:scale-95 disabled:opacity-30 disabled:active:scale-100",
                             !selectedItem 
                                 ? (isDark ? "bg-zinc-800 text-zinc-500" : "bg-zinc-100 text-zinc-400") 
                                 : "bg-emerald-600 text-white hover:bg-emerald-500 shadow-emerald-900/20"

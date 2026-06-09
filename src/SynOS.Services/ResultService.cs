@@ -253,15 +253,21 @@ namespace SynOS.Services
 
             if (report == null)
             {
-                // Ensure we have visit/patient context for the root order if it's different
                 var finalRootOrder = rootOrder.OrderId == currentOrder.OrderId 
                     ? currentOrder 
                     : await _context.Orders
                         .Include(o => o.Visit)
                             .ThenInclude(v => v.Patient)
+                        .Include(o => o.Test)
                         .FirstOrDefaultAsync(o => o.OrderId == rootOrder.OrderId);
 
                 if (finalRootOrder == null) throw new KeyNotFoundException("Root order context lost.");
+
+                // If finalRootOrder was currentOrder, make sure Test is loaded
+                if (finalRootOrder.Test == null)
+                {
+                    await _context.Entry(finalRootOrder).Reference(o => o.Test).LoadAsync();
+                }
 
                 report = new Report
                 {
@@ -271,6 +277,7 @@ namespace SynOS.Services
                     VisitId = finalRootOrder.VisitId,
                     PatientId = finalRootOrder.Visit.Patient.PatientId,
                     Department = finalRootOrder.Department,
+                    ReportTemplateId = finalRootOrder.Test?.ReportTemplateId,
                     Status = "Draft", // Corrected per GPT-5: Lab submits to Draft, Typist pushes to Ready
                     CreatedAt = DateTimeOffset.UtcNow,
                     UpdatedAt = DateTimeOffset.UtcNow

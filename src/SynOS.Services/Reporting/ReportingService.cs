@@ -266,12 +266,16 @@ namespace SynOS.Services.Reporting
                     .FirstOrDefaultAsync(rs => rs.RadiologyStudyId == report.SourceId);
                 if (study != null)
                 {
-                    order = await _context.Orders.FirstOrDefaultAsync(o => o.OrderId == study.VisitTestId);
+                    order = await _context.Orders
+                        .Include(o => o.Test)
+                        .FirstOrDefaultAsync(o => o.OrderId == study.VisitTestId);
                 }
             }
             else
             {
-                order = await _context.Orders.FirstOrDefaultAsync(o => o.OrderId == report.SourceId);
+                order = await _context.Orders
+                    .Include(o => o.Test)
+                    .FirstOrDefaultAsync(o => o.OrderId == report.SourceId);
             }
 
             if (order == null) throw new KeyNotFoundException($"Order for report {report.ReportId} not found.");
@@ -328,6 +332,7 @@ namespace SynOS.Services.Reporting
             {
                 ReportId = report.ReportId,
                 SourceId = report.SourceId,
+                ReportTemplateId = report.ReportTemplateId ?? order.Test?.ReportTemplateId,
                 Status = report.Status,
                 PatientName = $"{visit.Patient.FirstName} {visit.Patient.LastName}",
                 PatientAgeGender = $"{CalculateAge(visit.Patient.DateOfBirth)} / {visit.Patient.Gender}",

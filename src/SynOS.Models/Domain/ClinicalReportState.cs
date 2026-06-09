@@ -7,6 +7,7 @@ namespace SynOS.Models.Domain
     {
         public Guid ReportId { get; set; }
         public Guid SourceId { get; set; }
+        public Guid? ReportTemplateId { get; set; }
         public string Status { get; set; } = string.Empty;
         public string Department { get; set; } = string.Empty;
         public DateTimeOffset? SignedAt { get; set; }
