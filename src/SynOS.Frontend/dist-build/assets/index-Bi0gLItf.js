@@ -20108,20 +20108,13 @@ Details: ${i.inner}`);
           className: "fixed inset-0 z-40",
           onClick: () => u(null)
         }),
-        s.jsxs("div", {
-          className: "flex items-center gap-1.5 h-12 ml-8",
-          children: [
-            s.jsx("img", {
-              src: "/assets/logo-icon.png",
-              alt: "SynOS Symbol",
-              className: "h-[30px] object-contain"
-            }),
-            s.jsx("img", {
-              src: "/assets/logo-text.png",
-              alt: "SynOS Wordmark",
-              className: "h-[30px] object-contain dark:invert"
-            })
-          ]
+        s.jsx("div", {
+          className: "flex items-center ml-[36px]",
+          children: s.jsx("img", {
+            src: "/assets/synos-lockup.svg",
+            alt: "SynOS",
+            className: "h-8 object-contain dark:invert"
+          })
         }),
         s.jsxs("div", {
           className: "flex items-center gap-3",

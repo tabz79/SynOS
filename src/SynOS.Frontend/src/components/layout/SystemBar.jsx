@@ -116,16 +116,11 @@ export function SystemBar({ serverTime, syncStatus = "Not Synced" }) {
       )}
 
       {/* LEFT — Identity (Single Brand Lockup) */}
-      <div className="flex items-center gap-1.5 h-12 ml-8">
+      <div className="flex items-center ml-[36px]">
         <img 
-          src="/assets/logo-icon.png" 
-          alt="SynOS Symbol" 
-          className="h-[30px] object-contain" 
-        />
-        <img 
-          src="/assets/logo-text.png" 
-          alt="SynOS Wordmark" 
-          className="h-[30px] object-contain dark:invert relative top-[3.3px]" 
+          src="/assets/synos-lockup.svg" 
+          alt="SynOS" 
+          className="h-8 object-contain dark:invert" 
         />
       </div>
 
