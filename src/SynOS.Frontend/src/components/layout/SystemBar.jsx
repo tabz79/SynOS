@@ -116,7 +116,10 @@ export function SystemBar({ serverTime, syncStatus = "Not Synced" }) {
       )}
 
       {/* LEFT — Identity (Single Brand Lockup) */}
-      <div className="flex items-center ml-[36px]">
+      <div 
+        className="flex items-center ml-[36px] cursor-pointer"
+        onClick={() => navigate('/')}
+      >
         <img 
           src="/assets/synos-lockup.svg" 
           alt="SynOS" 

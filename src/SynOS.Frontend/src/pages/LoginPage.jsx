@@ -53,14 +53,14 @@ export function LoginPage() {
     if (authData?.requiresBranchSelection) {
         return (
             <div className="h-screen w-screen bg-synos-background flex items-center justify-center p-4">
-                <div className="w-full max-w-sm bg-zinc-900 border border-synos-border rounded-xl p-8 shadow-2xl">
-                    <h2 className="text-xl font-bold text-white mb-6 text-center">Select Branch</h2>
+                <div className="w-full max-w-sm bg-white border border-zinc-200/80 rounded-2xl p-8 shadow-xl">
+                    <h2 className="text-xl font-bold text-zinc-900 mb-6 text-center">Select Branch</h2>
                     <div className="space-y-2 max-h-64 overflow-y-auto pr-2">
                         {authData.availableBranches.map(branch => (
                             <button
                                 key={branch.branchId}
                                 onClick={() => handleBranchSelect(branch.branchId)}
-                                className="w-full bg-zinc-800 border border-zinc-700 hover:border-synos-primary text-white p-3 rounded text-left transition-all"
+                                className="w-full bg-zinc-50 border border-zinc-200 hover:border-synos-primary hover:bg-zinc-100/50 text-zinc-900 p-3 rounded-xl text-left transition-all font-medium"
                             >
                                 {branch.name}
                             </button>
@@ -73,44 +73,44 @@ export function LoginPage() {
 
     return (
         <div className="h-screen w-screen bg-synos-background flex items-center justify-center p-4">
-            <div className="w-full max-w-sm bg-zinc-900 border border-synos-border rounded-xl p-8 shadow-2xl">
+            <div className="w-full max-w-sm bg-white border border-zinc-200/80 rounded-2xl p-8 shadow-xl">
                 <div className="mb-6 flex flex-col items-center justify-center text-center">
                     <img 
-                        src="/assets/logo-text.png" 
+                        src="/assets/synos-lockup.svg" 
                         alt="SynOS Logo" 
-                        className="h-16 object-contain mb-4 brightness-0 invert" 
+                        className="h-8 object-contain mb-4" 
                     />
-                    <p className="text-zinc-550 text-[10px] font-bold uppercase tracking-widest">Authorized Personnel Only</p>
+                    <p className="text-zinc-500 text-[10px] font-bold uppercase tracking-widest">Authorized Personnel Only</p>
                 </div>
 
                 <form onSubmit={handleInitialSubmit} className="space-y-4">
                     {error && (
-                        <div className="bg-red-500/10 border border-red-500/50 text-red-200 text-sm p-3 rounded flex items-center gap-2">
-                            <AlertCircle className="w-4 h-4" />
+                        <div className="bg-red-50 border border-red-200 text-red-700 text-sm p-3 rounded flex items-center gap-2">
+                            <AlertCircle className="w-4 h-4 text-red-500" />
                             {error}
                         </div>
                     )}
 
                     <div className="space-y-1">
-                        <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Username</label>
+                        <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider">Username</label>
                         <input
                             type="text"
                             required
                             value={username}
                             onChange={(e) => setUsername(e.target.value)}
-                            className="w-full bg-black/50 border border-zinc-700 rounded p-2 text-white focus:outline-none focus:border-synos-primary transition-colors"
+                            className="w-full bg-zinc-50 border border-zinc-200 rounded p-2 text-zinc-900 focus:outline-none focus:border-synos-primary transition-colors"
                             placeholder="username"
                         />
                     </div>
 
                     <div className="space-y-1">
-                        <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Password</label>
+                        <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider">Password</label>
                         <input
                             type="password"
                             required
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            className="w-full bg-black/50 border border-zinc-700 rounded p-2 text-white focus:outline-none focus:border-synos-primary transition-colors"
+                            className="w-full bg-zinc-50 border border-zinc-200 rounded p-2 text-zinc-900 focus:outline-none focus:border-synos-primary transition-colors"
                             placeholder="••••••••"
                         />
                     </div>
@@ -118,7 +118,7 @@ export function LoginPage() {
                     <button
                         type="submit"
                         disabled={isSubmitting}
-                        className="w-full bg-white text-black font-bold py-2.5 rounded hover:bg-zinc-200 transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="w-full bg-synos-primary hover:bg-synos-primary/90 text-white font-bold py-2.5 rounded transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
                         {isSubmitting ? 'Authenticating...' : 'Access Portal'}
