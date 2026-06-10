@@ -16,7 +16,8 @@ import {
     Banknote,
     Activity,
     CheckCircle2,
-    Loader2
+    Loader2,
+    Eye
 } from 'lucide-react';
 import { useTheme } from "@/context/ThemeContext";
 import { cn } from "@/lib/utils";
@@ -104,13 +105,24 @@ export function ControlTowerDashboard() {
 
     const cardClasses = "bg-white shadow-[0_4px_12px_rgba(0,0,0,0.04),inset_0_1px_0_rgba(255,255,255,1)] border border-black/[0.1]";
 
-    const cards = [
+    const operationsCards = [
         { title: "Reception", subtitle: "Registration & Billing", icon: UserPlus, data: summary?.reception, path: "/reception", btnText: "Open Reception" },
+        { title: "Reports Typing", subtitle: "Data Entry & Review", icon: Keyboard, data: summary?.reportsTyping, path: "/typist", btnText: "Open Typing" },
+        { title: "Delivery Desk", subtitle: "Report Dispatch", icon: Truck, data: summary?.delivery, path: "/delivery", btnText: "Open Delivery" },
+    ];
+
+    const pathologyCards = [
         { title: "Phlebotomy", subtitle: "Sample Collection", icon: Syringe, data: summary?.phlebotomy, path: "/phlebotomist", btnText: "Open Phlebotomy" },
         { title: "Lab Workbench", subtitle: "Processing & Testing", icon: Beaker, data: summary?.labWorkbench, path: "/workbench", btnText: "Open Workbench" },
-        { title: "Reports Typing", subtitle: "Data Entry & Review", icon: Keyboard, data: summary?.reportsTyping, path: "/typist", btnText: "Open Typing" },
         { title: "Pathologist", subtitle: "Final Validation", icon: UserCheck, data: summary?.pathologist, path: "/pathologist", btnText: "Open Pathologist" },
-        { title: "Delivery Desk", subtitle: "Report Dispatch", icon: Truck, data: summary?.delivery, path: "/delivery", btnText: "Open Delivery" },
+    ];
+
+    const radiologyCards = [
+        { title: "X-Ray Technician", subtitle: "Image Acquisition", icon: Activity, data: summary?.xRayTech, path: "/xraytech", btnText: "Open X-Ray" },
+        { title: "Ultrasound Technician", subtitle: "Ultrasonic Scan", icon: Activity, data: summary?.usTech, path: "/ustech", btnText: "Open Ultrasound" },
+        { title: "CT Technician", subtitle: "CT Scan Acquisition", icon: Activity, data: summary?.ctTech, path: "/cttech", btnText: "Open CT Scan" },
+        { title: "MRI Technician", subtitle: "Magnetic Resonance", icon: Activity, data: summary?.mriTech, path: "/mritech", btnText: "Open MRI" },
+        { title: "Radiologist", subtitle: "Clinical Reporting", icon: Eye, data: summary?.radiologist, path: "/radiologist", btnText: "Open Radiologist" },
     ];
 
     const activeBranchName = isConsolidated 
@@ -154,30 +166,43 @@ export function ControlTowerDashboard() {
                 )}
             </div>
 
-            {/* Hero Banner */}
-            <div 
-                style={cardStyle}
-                className={cn("relative overflow-hidden rounded-xl p-8 flex items-center justify-between", cardClasses)}
-            >
-                <div className="relative z-10 space-y-2">
-                    <div className="flex items-center gap-3">
-                        <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
-                        <h2 className="type-display !text-2xl">Reality Pulse: All Systems Green</h2>
-                    </div>
-                    <p className="type-body opacity-80 pl-4">Synthesized intelligence confirms 100% operational throughput for {activeBranchName}.</p>
+            {/* Operations Section */}
+            <div className="space-y-4">
+                <div className="flex items-center gap-2 border-b border-black/[0.05] dark:border-white/[0.05] pb-2">
+                    <span className="w-1 h-4 bg-synos-primary rounded-full" />
+                    <h2 className="text-xs font-black dark:text-zinc-400 text-zinc-650 tracking-wider uppercase">Operations</h2>
                 </div>
-                
-                <div className="relative flex items-center gap-8 opacity-10">
-                    <Activity className="w-20 h-20 text-zinc-500" />
-                    <Beaker className="w-16 h-16 text-zinc-500" />
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {operationsCards.map((card) => (
+                        <DepartmentCard key={card.title} {...card} onAction={() => navigate(card.path)} cardStyle={cardStyle} cardClasses={cardClasses} />
+                    ))}
                 </div>
             </div>
 
-            {/* Department Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {cards.map((card) => (
-                    <DepartmentCard key={card.title} {...card} onAction={() => navigate(card.path)} cardStyle={cardStyle} cardClasses={cardClasses} />
-                ))}
+            {/* Pathology Section */}
+            <div className="space-y-4">
+                <div className="flex items-center gap-2 border-b border-black/[0.05] dark:border-white/[0.05] pb-2">
+                    <span className="w-1 h-4 bg-synos-primary rounded-full" />
+                    <h2 className="text-xs font-black dark:text-zinc-400 text-zinc-650 tracking-wider uppercase">Pathology</h2>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {pathologyCards.map((card) => (
+                        <DepartmentCard key={card.title} {...card} onAction={() => navigate(card.path)} cardStyle={cardStyle} cardClasses={cardClasses} />
+                    ))}
+                </div>
+            </div>
+
+            {/* Radiology Section */}
+            <div className="space-y-4">
+                <div className="flex items-center gap-2 border-b border-black/[0.05] dark:border-white/[0.05] pb-2">
+                    <span className="w-1 h-4 bg-synos-primary rounded-full" />
+                    <h2 className="text-xs font-black dark:text-zinc-400 text-zinc-650 tracking-wider uppercase">Radiology</h2>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {radiologyCards.map((card) => (
+                        <DepartmentCard key={card.title} {...card} onAction={() => navigate(card.path)} cardStyle={cardStyle} cardClasses={cardClasses} />
+                    ))}
+                </div>
             </div>
 
             {/* Financial Strip */}

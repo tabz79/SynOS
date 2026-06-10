@@ -32,19 +32,22 @@ export function AdminLayout() {
             title: "Control Tower",
             items: [
                 { name: "Dashboard", icon: LayoutDashboard, path: "/admin", exact: true },
+                // Operations
                 { name: "Reception", icon: UserPlus, path: "/reception" },
+                { name: "Reports Typing", icon: Keyboard, path: "/typist" },
+                { name: "Delivery Desk", icon: Truck, path: "/delivery" },
+                { name: "Inventory (Ops)", icon: Box, path: "/inventory" },
+                { name: "Finance (Ops)", icon: IndianRupee, path: "/finance" },
+                // Pathology
                 { name: "Phlebotomy", icon: Syringe, path: "/phlebotomist" },
                 { name: "Lab Workbench", icon: Beaker, path: "/workbench" },
-                { name: "Reports Typing", icon: Keyboard, path: "/typist" },
                 { name: "Pathologist", icon: UserCheck, path: "/pathologist" },
-                { name: "Radiologist", icon: Eye, path: "/radiologist" },
+                // Radiology
                 { name: "X-Ray Technician", icon: Activity, path: "/xraytech" },
                 { name: "Ultrasound Technician", icon: Activity, path: "/ustech" },
                 { name: "CT Technician", icon: Activity, path: "/cttech" },
                 { name: "MRI Technician", icon: Activity, path: "/mritech" },
-                { name: "Delivery Desk", icon: Truck, path: "/delivery" },
-                { name: "Inventory (Ops)", icon: Box, path: "/inventory" },
-                { name: "Finance (Ops)", icon: IndianRupee, path: "/finance" },
+                { name: "Radiologist", icon: Eye, path: "/radiologist" },
             ]
         }
     ];

@@ -11,6 +11,11 @@ namespace SynOS.Models.DTOs.Dashboard.ControlTower
         public ControlTowerCardDto ReportsTyping { get; set; } = new();
         public ControlTowerCardDto Pathologist { get; set; } = new();
         public ControlTowerCardDto Delivery { get; set; } = new();
+        public ControlTowerCardDto XRayTech { get; set; } = new();
+        public ControlTowerCardDto USTech { get; set; } = new();
+        public ControlTowerCardDto CTTech { get; set; } = new();
+        public ControlTowerCardDto MriTech { get; set; } = new();
+        public ControlTowerCardDto Radiologist { get; set; } = new();
         public FinancialStripDto Financials { get; set; } = new();
     }
 

@@ -99,7 +99,7 @@ export function SystemBar({ serverTime, syncStatus = "Not Synced" }) {
   return (
     <div
       className={cn(
-        "sticky top-0 z-50 h-14 w-full px-6 flex items-center justify-between select-none transition-all duration-300 isolation-auto",
+        "sticky top-0 z-50 h-12 w-full px-6 flex items-center justify-between select-none transition-all duration-300 isolation-auto",
         ui.bar
       )}
       style={{
@@ -115,14 +115,18 @@ export function SystemBar({ serverTime, syncStatus = "Not Synced" }) {
         <div className="fixed inset-0 z-40" onClick={() => setActiveDropdown(null)} />
       )}
 
-      {/* LEFT — Identity */}
-      <div className="flex flex-col leading-none">
-        <span className="text-zinc-900 dark:text-white font-bold tracking-tight text-base">
-          SynOS
-        </span>
-        <span className="text-zinc-500 text-[10px] tracking-wider uppercase">
-          Synthesized Lab Intelligence
-        </span>
+      {/* LEFT — Identity (Single Brand Lockup) */}
+      <div className="flex items-center gap-1.5 h-12 ml-8">
+        <img 
+          src="/assets/logo-icon.png" 
+          alt="SynOS Symbol" 
+          className="h-[30px] object-contain" 
+        />
+        <img 
+          src="/assets/logo-text.png" 
+          alt="SynOS Wordmark" 
+          className="h-[30px] object-contain dark:invert relative top-[3.3px]" 
+        />
       </div>
 
       {/* RIGHT — Controls */}

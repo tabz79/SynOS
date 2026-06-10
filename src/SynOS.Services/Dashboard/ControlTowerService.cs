@@ -26,12 +26,17 @@ namespace SynOS.Services.Dashboard
             // Sequential execution to maintain EF Core thread safety on a single scoped context.
             // We wrap each sector in a local try-catch to ensure high availability.
             
-            summary.Reception = await SafeFetch(() => GetReceptionCardAsync(branchId), "Reception");
-            summary.Phlebotomy = await SafeFetch(() => GetPhlebotomyCardAsync(branchId), "Phlebotomy");
-            summary.LabWorkbench = await SafeFetch(() => GetWorkbenchCardAsync(branchId), "LabWorkbench");
-            summary.ReportsTyping = await SafeFetch(() => GetTypistCardAsync(branchId), "ReportsTyping");
-            summary.Pathologist = await SafeFetch(() => GetPathologistCardAsync(branchId), "Pathologist");
-            summary.Delivery = await SafeFetch(() => GetDeliveryCardAsync(branchId), "Delivery");
+            summary.Reception = await SafeFetch(() => GetReceptionCardAsync(branchId), "Reception") ?? new();
+            summary.Phlebotomy = await SafeFetch(() => GetPhlebotomyCardAsync(branchId), "Phlebotomy") ?? new();
+            summary.LabWorkbench = await SafeFetch(() => GetWorkbenchCardAsync(branchId), "LabWorkbench") ?? new();
+            summary.ReportsTyping = await SafeFetch(() => GetTypistCardAsync(branchId), "ReportsTyping") ?? new();
+            summary.Pathologist = await SafeFetch(() => GetPathologistCardAsync(branchId), "Pathologist") ?? new();
+            summary.Delivery = await SafeFetch(() => GetDeliveryCardAsync(branchId), "Delivery") ?? new();
+            summary.XRayTech = await SafeFetch(() => GetXRayTechCardAsync(branchId), "XRayTech") ?? new();
+            summary.USTech = await SafeFetch(() => GetUSTechCardAsync(branchId), "USTech") ?? new();
+            summary.CTTech = await SafeFetch(() => GetCTTechCardAsync(branchId), "CTTech") ?? new();
+            summary.MriTech = await SafeFetch(() => GetMriTechCardAsync(branchId), "MriTech") ?? new();
+            summary.Radiologist = await SafeFetch(() => GetRadiologistCardAsync(branchId), "Radiologist") ?? new();
             summary.Financials = await SafeFetch(() => GetFinancialsAsync(branchId), "Financials") ?? new FinancialStripDto();
 
             return summary;
@@ -328,6 +333,213 @@ namespace SynOS.Services.Dashboard
                 OnlineReceived = Math.Round(onlineReceived, 2),
                 ReferralPayouts = Math.Round(referralPayouts, 2),
                 NetCashInHand = Math.Round(cashReceived - referralPayouts, 2)
+            };
+        }
+
+        private async Task<ControlTowerCardDto> GetXRayTechCardAsync(Guid? branchId)
+        {
+            var query = _context.RadiologyStudies
+                .AsNoTracking()
+                .Where(s => !s.IsSoftDeleted && (s.Status == "PendingImaging" || s.Status == "Assigned") && s.Modality == "X-Ray");
+
+            if (branchId.HasValue)
+            {
+                query = query.Where(s => s.Visit != null && s.Visit.BranchId == branchId.Value);
+            }
+
+            var count = await query.CountAsync();
+            var rawItems = await query
+                .OrderBy(s => s.CreatedAt)
+                .Take(3)
+                .Select(s => new {
+                    s.RadiologyStudyId,
+                    PatientName = s.Patient != null ? $"{s.Patient.FirstName} {s.Patient.LastName}" : "Unknown",
+                    TestName = s.Order != null && s.Order.Test != null ? s.Order.Test.TestName : "X-Ray Study",
+                    s.Status
+                })
+                .ToListAsync();
+
+            var items = rawItems.Select(s => new ControlTowerItemDto
+            {
+                Id = s.RadiologyStudyId,
+                Name = s.PatientName,
+                Detail = s.TestName,
+                StatusBadge = s.Status == "Assigned" ? "Assigned" : "Pending"
+            }).ToList();
+
+            return new ControlTowerCardDto
+            {
+                Count = count,
+                PrimaryText = $"{count} scans pending",
+                Status = count > 3 ? "Needs Attention" : "On Track",
+                Items = items
+            };
+        }
+
+        private async Task<ControlTowerCardDto> GetUSTechCardAsync(Guid? branchId)
+        {
+            var query = _context.RadiologyStudies
+                .AsNoTracking()
+                .Where(s => !s.IsSoftDeleted && (s.Status == "PendingImaging" || s.Status == "Assigned") && s.Modality == "Ultrasound");
+
+            if (branchId.HasValue)
+            {
+                query = query.Where(s => s.Visit != null && s.Visit.BranchId == branchId.Value);
+            }
+
+            var count = await query.CountAsync();
+            var rawItems = await query
+                .OrderBy(s => s.CreatedAt)
+                .Take(3)
+                .Select(s => new {
+                    s.RadiologyStudyId,
+                    PatientName = s.Patient != null ? $"{s.Patient.FirstName} {s.Patient.LastName}" : "Unknown",
+                    TestName = s.Order != null && s.Order.Test != null ? s.Order.Test.TestName : "Ultrasound Study",
+                    s.Status
+                })
+                .ToListAsync();
+
+            var items = rawItems.Select(s => new ControlTowerItemDto
+            {
+                Id = s.RadiologyStudyId,
+                Name = s.PatientName,
+                Detail = s.TestName,
+                StatusBadge = s.Status == "Assigned" ? "Assigned" : "Pending"
+            }).ToList();
+
+            return new ControlTowerCardDto
+            {
+                Count = count,
+                PrimaryText = $"{count} scans pending",
+                Status = count > 3 ? "Needs Attention" : "On Track",
+                Items = items
+            };
+        }
+
+        private async Task<ControlTowerCardDto> GetCTTechCardAsync(Guid? branchId)
+        {
+            var query = _context.RadiologyStudies
+                .AsNoTracking()
+                .Where(s => !s.IsSoftDeleted && (s.Status == "PendingImaging" || s.Status == "Assigned") && s.Modality == "CT Scan");
+
+            if (branchId.HasValue)
+            {
+                query = query.Where(s => s.Visit != null && s.Visit.BranchId == branchId.Value);
+            }
+
+            var count = await query.CountAsync();
+            var rawItems = await query
+                .OrderBy(s => s.CreatedAt)
+                .Take(3)
+                .Select(s => new {
+                    s.RadiologyStudyId,
+                    PatientName = s.Patient != null ? $"{s.Patient.FirstName} {s.Patient.LastName}" : "Unknown",
+                    TestName = s.Order != null && s.Order.Test != null ? s.Order.Test.TestName : "CT Scan Study",
+                    s.Status
+                })
+                .ToListAsync();
+
+            var items = rawItems.Select(s => new ControlTowerItemDto
+            {
+                Id = s.RadiologyStudyId,
+                Name = s.PatientName,
+                Detail = s.TestName,
+                StatusBadge = s.Status == "Assigned" ? "Assigned" : "Pending"
+            }).ToList();
+
+            return new ControlTowerCardDto
+            {
+                Count = count,
+                PrimaryText = $"{count} scans pending",
+                Status = count > 3 ? "Needs Attention" : "On Track",
+                Items = items
+            };
+        }
+
+        private async Task<ControlTowerCardDto> GetMriTechCardAsync(Guid? branchId)
+        {
+            var query = _context.RadiologyStudies
+                .AsNoTracking()
+                .Where(s => !s.IsSoftDeleted && (s.Status == "PendingImaging" || s.Status == "Assigned") && s.Modality == "MRI");
+
+            if (branchId.HasValue)
+            {
+                query = query.Where(s => s.Visit != null && s.Visit.BranchId == branchId.Value);
+            }
+
+            var count = await query.CountAsync();
+            var rawItems = await query
+                .OrderBy(s => s.CreatedAt)
+                .Take(3)
+                .Select(s => new {
+                    s.RadiologyStudyId,
+                    PatientName = s.Patient != null ? $"{s.Patient.FirstName} {s.Patient.LastName}" : "Unknown",
+                    TestName = s.Order != null && s.Order.Test != null ? s.Order.Test.TestName : "MRI Study",
+                    s.Status
+                })
+                .ToListAsync();
+
+            var items = rawItems.Select(s => new ControlTowerItemDto
+            {
+                Id = s.RadiologyStudyId,
+                Name = s.PatientName,
+                Detail = s.TestName,
+                StatusBadge = s.Status == "Assigned" ? "Assigned" : "Pending"
+            }).ToList();
+
+            return new ControlTowerCardDto
+            {
+                Count = count,
+                PrimaryText = $"{count} scans pending",
+                Status = count > 3 ? "Needs Attention" : "On Track",
+                Items = items
+            };
+        }
+
+        private async Task<ControlTowerCardDto> GetRadiologistCardAsync(Guid? branchId)
+        {
+            var query = _context.RadiologyStudies
+                .AsNoTracking()
+                .Where(s => !s.IsSoftDeleted && (s.Status == "AwaitingDictation" || s.Status == "DictationSessionStarted" || s.Status == "DraftReady" || s.Status == "AwaitingSignature"));
+
+            if (branchId.HasValue)
+            {
+                query = query.Where(s => s.Visit != null && s.Visit.BranchId == branchId.Value);
+            }
+
+            var count = await query.CountAsync();
+            var rawItems = await query
+                .OrderBy(s => s.CreatedAt)
+                .Take(3)
+                .Select(s => new {
+                    s.RadiologyStudyId,
+                    PatientName = s.Patient != null ? $"{s.Patient.FirstName} {s.Patient.LastName}" : "Unknown",
+                    TestName = s.Order != null && s.Order.Test != null ? s.Order.Test.TestName : "Radiology Study",
+                    s.Status
+                })
+                .ToListAsync();
+
+            var items = rawItems.Select(s => new ControlTowerItemDto
+            {
+                Id = s.RadiologyStudyId,
+                Name = s.PatientName,
+                Detail = s.TestName,
+                StatusBadge = s.Status switch
+                {
+                    "AwaitingDictation" => "Awaiting",
+                    "DictationSessionStarted" => "Drafting",
+                    "DraftReady" => "Draft",
+                    "AwaitingSignature" => "Signing",
+                    _ => s.Status
+                }
+            }).ToList();
+
+            return new ControlTowerCardDto
+            {
+                Count = count,
+                PrimaryText = $"{count} reports waiting",
+                Status = count > 3 ? "Needs Attention" : "On Track",
+                Items = items
             };
         }
 

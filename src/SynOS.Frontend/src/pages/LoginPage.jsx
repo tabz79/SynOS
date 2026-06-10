@@ -74,9 +74,13 @@ export function LoginPage() {
     return (
         <div className="h-screen w-screen bg-synos-background flex items-center justify-center p-4">
             <div className="w-full max-w-sm bg-zinc-900 border border-synos-border rounded-xl p-8 shadow-2xl">
-                <div className="mb-8 text-center">
-                    <h1 className="text-2xl font-bold text-white mb-2">SynOS Login</h1>
-                    <p className="text-zinc-500 text-sm">Authorized Personnel Only</p>
+                <div className="mb-6 flex flex-col items-center justify-center text-center">
+                    <img 
+                        src="/assets/logo-text.png" 
+                        alt="SynOS Logo" 
+                        className="h-16 object-contain mb-4 brightness-0 invert" 
+                    />
+                    <p className="text-zinc-550 text-[10px] font-bold uppercase tracking-widest">Authorized Personnel Only</p>
                 </div>
 
                 <form onSubmit={handleInitialSubmit} className="space-y-4">
