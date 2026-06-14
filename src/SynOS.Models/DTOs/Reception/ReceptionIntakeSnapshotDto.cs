@@ -59,6 +59,8 @@ namespace SynOS.Models.DTOs.Reception
         public decimal Price { get; set; }
         public bool IsOutsourced { get; set; }
         public string? ReferenceLabName { get; set; }
+        public Guid? ParentOrderId { get; set; }
+        public bool IsProfile { get; set; }
     }
 
     public class IntakeBilling

@@ -24,8 +24,8 @@ export function VisitDetails({ snapshot, visitId, onVisitUpdated, isPrepaidInten
     // 1. PURE RENDER SOURCE: Snapshot
     const visit = snapshot?.visit;
     const tests = visit?.tests || [];
-    const internalTests = tests.filter(t => !t.isOutsourced);
-    const outsourcedTests = tests.filter(t => t.isOutsourced);
+    const internalTests = tests.filter(t => !t.isOutsourced && !t.parentOrderId && !(t.price === 0 && !t.isProfile && tests.some(p => p.isProfile)));
+    const outsourcedTests = tests.filter(t => t.isOutsourced && !t.parentOrderId && !(t.price === 0 && !t.isProfile && tests.some(p => p.isProfile)));
 
     // Strict Governance Rule (Phase 6.4.4) + Phase 1 Alignment:
     // UI is ReadOnly if:

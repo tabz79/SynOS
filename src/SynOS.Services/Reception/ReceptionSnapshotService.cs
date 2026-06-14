@@ -233,6 +233,7 @@ namespace SynOS.Services.Reception
                 PaymentCollectionModel = visit.PaymentCollectionModel ?? "LabCollects",
                 Tests = visit.Orders?
                     .Where(o => o.Status != SynOS.Models.Enums.OrderStatus.Cancelled) // 🔹 FIX: Exclude Cancelled Orders
+                    .Where(o => o.ParentOrderId == null && !(o.Price == 0 && o.Test != null && !o.Test.IsProfile && visit.Orders.Any(po => po.Test != null && po.Test.IsProfile && po.Status != SynOS.Models.Enums.OrderStatus.Cancelled)))
                     .Select(o => new IntakeTestItem
                 {
                     OrderId = o.OrderId,
@@ -242,7 +243,9 @@ namespace SynOS.Services.Reception
                     Department = o.Department,
                     Price = o.Price,
                     IsOutsourced = o.IsOutsourced,
-                    ReferenceLabName = o.ReferenceLabName
+                    ReferenceLabName = o.ReferenceLabName,
+                    ParentOrderId = o.ParentOrderId,
+                    IsProfile = o.Test != null ? o.Test.IsProfile : false
                 }).ToList() ?? new List<IntakeTestItem>()
             };
 

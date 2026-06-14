@@ -224,6 +224,7 @@ namespace SynOS.Services.Operations
                     
                     TestCodes = visit.Orders
                         .Where(o => o.Status != SynOS.Models.Enums.OrderStatus.Cancelled)
+                        .Where(o => o.ParentOrderId == null && !(o.Price == 0 && o.Test != null && !o.Test.IsProfile && visit.Orders.Any(po => po.Test != null && po.Test.IsProfile && po.Status != SynOS.Models.Enums.OrderStatus.Cancelled)))
                         .Select(o => o.TestCode).ToList(),
                     
                     PaymentDisplay = DerivePaymentDisplay(visit, invoice),
@@ -349,6 +350,7 @@ namespace SynOS.Services.Operations
                 
                 TestCodes = visit.Orders
                     .Where(o => o.Status != SynOS.Models.Enums.OrderStatus.Cancelled)
+                    .Where(o => o.ParentOrderId == null && !(o.Price == 0 && o.Test != null && !o.Test.IsProfile && visit.Orders.Any(po => po.Test != null && po.Test.IsProfile && po.Status != SynOS.Models.Enums.OrderStatus.Cancelled)))
                     .Select(o => o.TestCode).ToList(),
                 
                 PaymentDisplay = DerivePaymentDisplay(visit, invoice),
