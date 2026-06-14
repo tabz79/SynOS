@@ -47,6 +47,26 @@
     /* INVERTED CARD LOGIC */
     --synos-card: #ffffff;
     --synos-card-text: #18181b;
+
+    /* Workspace Spacing (Default/Normal) */
+    --ws-padding: 1rem;       /* 16px */
+    --ws-gap: 1rem;           /* 16px */
+    --ws-header-py: 1rem;     /* 16px */
+    --ws-header-margin: 1rem; /* 16px */
+    --ws-footer-pt: 1.5rem;   /* 24px */
+    --ws-btn-py: 0.75rem;     /* 12px */
+  }
+
+  /* Compact Workspace Mode - activated when window height < 750px */
+  @media (max-height: 750px) {
+    :root {
+      --ws-padding: 0.5rem;       /* 8px (py-2) */
+      --ws-gap: 0.5rem;           /* 8px */
+      --ws-header-py: 0.5rem;     /* 8px */
+      --ws-header-margin: 0.5rem; /* 8px */
+      --ws-footer-pt: 0.5rem;     /* 8px */
+      --ws-btn-py: 0.5rem;        /* 8px */
+    }
   }
 
   /* DARK MODE (CANONICAL) */
@@ -285,6 +305,17 @@
   /* Signatures MUST be together */
   .no-break {
     break-inside: avoid !important;
+  }
+
+  .preview-report-wrapper {
+    transform: none !important;
+    position: static !important;
+  }
+
+  .preview-right-panel {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
   }
 
   * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }

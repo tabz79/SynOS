@@ -65,6 +65,14 @@ export function PathologistTerminal() {
     const [tempProfile, setTempProfile] = useState({ name: "", designation: "" });
     const [isQueueCollapsed, setIsQueueCollapsed] = useState(false);
     const [isMacroManagerOpen, setIsMacroManagerOpen] = useState(false);
+    const [previewScale, setPreviewScale] = useState(0.6);
+    const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
+    const [isDragging, setIsDragging] = useState(false);
+    const dragStartRef = useRef({ x: 0, y: 0 });
+    const previewContainerRef = useRef(null);
+    const [rightPanelWidth, setRightPanelWidth] = useState(550);
+    const isResizingRight = useRef(false);
+    const mainContainerRef = useRef(null);
 
     const { template, loading: templateLoading } = useTemplateForReport(reportData);
 
@@ -349,6 +357,8 @@ export function PathologistTerminal() {
         if (selectedReportId) {
             fetchReportDetail(selectedReportId);
             setIsQueueCollapsed(true);
+            setPreviewScale(0.6); // Reset zoom on report change
+            setPanOffset({ x: 0, y: 0 }); // Reset pan position
         } else {
             setReportStructure(null);
             setReportData(null);
@@ -357,6 +367,75 @@ export function PathologistTerminal() {
             setIsQueueCollapsed(false);
         }
     }, [selectedReportId]);
+
+    // Ctrl+Scroll listener for Report Preview Zoom
+    useEffect(() => {
+        const container = previewContainerRef.current;
+        if (!container) return;
+
+        const handleWheel = (e) => {
+            if (e.ctrlKey) {
+                e.preventDefault();
+                const delta = -e.deltaY;
+                const factor = delta > 0 ? 1.05 : 0.95;
+                setPreviewScale(prev => Math.min(Math.max(prev * factor, 0.2), 3.0));
+            }
+        };
+
+        container.addEventListener('wheel', handleWheel, { passive: false });
+        return () => {
+            container.removeEventListener('wheel', handleWheel);
+        };
+    }, [reportData]);
+
+    const handlePreviewMouseDown = (e) => {
+        if (e.button !== 0) return; // Only left click
+        setIsDragging(true);
+        dragStartRef.current = { x: e.clientX - panOffset.x, y: e.clientY - panOffset.y };
+    };
+
+    const handlePreviewMouseMove = (e) => {
+        if (!isDragging) return;
+        setPanOffset({
+            x: e.clientX - dragStartRef.current.x,
+            y: e.clientY - dragStartRef.current.y
+        });
+    };
+
+    const handlePreviewMouseUp = () => {
+        setIsDragging(false);
+    };
+
+    const handleRightResizeStart = (e) => {
+        e.preventDefault();
+        isResizingRight.current = true;
+        document.body.style.cursor = 'col-resize';
+        document.body.style.userSelect = 'none';
+    };
+
+    useEffect(() => {
+        const handlePointerMove = (e) => {
+            if (!mainContainerRef.current || !isResizingRight.current) return;
+            const containerRect = mainContainerRef.current.getBoundingClientRect();
+            const newWidth = Math.max(320, Math.min(850, containerRect.right - e.clientX));
+            setRightPanelWidth(newWidth);
+        };
+
+        const handlePointerUp = () => {
+            if (isResizingRight.current) {
+                isResizingRight.current = false;
+                document.body.style.cursor = '';
+                document.body.style.userSelect = '';
+            }
+        };
+
+        window.addEventListener('pointermove', handlePointerMove);
+        window.addEventListener('pointerup', handlePointerUp);
+        return () => {
+            window.removeEventListener('pointermove', handlePointerMove);
+            window.removeEventListener('pointerup', handlePointerUp);
+        };
+    }, []);
 
     const fetchWorklist = async () => {
         setIsLoadingList(true);
@@ -617,18 +696,22 @@ export function PathologistTerminal() {
 
             <SystemBar serverTime={null} syncStatus={connectionStatus === 'Connected' ? 'Synced' : 'Not Synced'} />
 
-            <div className="flex-1 flex flex-row gap-4 p-4 overflow-hidden relative">
+            <div className="flex-1 flex flex-row overflow-hidden relative" style={{ padding: 'var(--ws-padding)', gap: 'var(--ws-gap)' }}>
                 {/* Main Content Container for Scaling Effect */}
-                <div className={cn(
-                    "flex-1 flex flex-row gap-4 transition-all duration-500 ease-out h-full",
-                    isInventoryModalOpen ? "opacity-40 pointer-events-none scale-[0.99]" : "opacity-100"
-                )}>
+                <div 
+                    ref={mainContainerRef}
+                    className={cn(
+                        "flex-1 flex flex-row transition-all duration-500 ease-out h-full",
+                        isInventoryModalOpen ? "opacity-40 pointer-events-none scale-[0.99]" : "opacity-100"
+                    )} 
+                    style={{ gap: 'var(--ws-gap)' }}
+                >
                 
                 {/* LEFT PANEL: Worklist (15%) */}
                 <div className={cn(
-                    "flex flex-col gap-4 min-h-0 no-print relative transition-all duration-300 ease-in-out",
+                    "flex flex-col min-h-0 no-print relative transition-all duration-300 ease-in-out",
                     (isQueueCollapsed && !isMacroManagerOpen) ? "w-0 overflow-hidden opacity-0 pointer-events-none" : "w-[15%] opacity-100"
-                )}>
+                )} style={{ gap: 'var(--ws-gap)' }}>
                     {isMacroManagerOpen ? (
                         <div className="dark:bg-zinc-900 bg-white dark:border-white/5 border-black/[0.1] shadow-[0_4px_20px_rgba(0,0,0,0.05)] rounded-xl p-4 flex flex-col h-full min-h-0">
                             <MedicalMacrosWorkspace onClose={() => setIsMacroManagerOpen(false)} />
@@ -717,12 +800,9 @@ export function PathologistTerminal() {
                     )}
                 </div>
 
-                {/* CENTER PANEL: Report Editor (35%) */}
-                <div className={cn(
-                    "flex flex-col gap-4 min-h-0 transition-all duration-300 ease-in-out",
-                    isQueueCollapsed ? "w-[50%]" : "w-[35%]"
-                )}>
-                    <div className="dark:bg-zinc-900 bg-white dark:border-white/5 border-black/[0.1] shadow-[0_4px_20px_rgba(0,0,0,0.05)] rounded-xl p-6 flex-1 flex flex-col min-h-0">
+                {/* CENTER PANEL: Report Editor */}
+                <div className="flex-1 flex flex-col min-h-0" style={{ gap: 'var(--ws-gap)' }}>
+                    <div className="dark:bg-zinc-900 bg-white dark:border-white/5 border-black/[0.1] shadow-[0_4px_20px_rgba(0,0,0,0.05)] rounded-xl flex-1 flex flex-col min-h-0" style={{ padding: 'var(--ws-padding)' }}>
                         {isLoadingDetail ? (
                             <div className="flex-1 flex flex-col items-center justify-center opacity-50">
                                 <Loader2 className="w-10 h-10 animate-spin mb-4 text-indigo-500" />
@@ -776,38 +856,39 @@ export function PathologistTerminal() {
                                 )}
 
                                 {/* Header */}
-                                <div className="flex items-center justify-between mb-4 pb-4 border-b dark:border-white/5 border-zinc-100 shrink-0">
-                                    <div className="flex items-center gap-4">
+                                <div className="flex items-center justify-between mb-2 pb-2 border-b dark:border-white/5 border-zinc-100 shrink-0 select-none">
+                                    <div className="flex items-center gap-3">
                                         <button
                                             onClick={() => setIsQueueCollapsed(prev => !prev)}
-                                            className="p-2 hover:bg-zinc-500/10 rounded-lg text-zinc-500 transition-all active:scale-95 shrink-0 font-bold border dark:border-white/5 border-zinc-200 text-xs flex items-center justify-center w-8 h-8"
+                                            className="p-1 hover:bg-zinc-500/10 rounded-lg text-zinc-500 transition-all active:scale-95 shrink-0 font-bold border dark:border-white/5 border-zinc-200 text-xs flex items-center justify-center w-6 h-6"
                                             title={isQueueCollapsed ? "Show Patient Queue" : "Collapse Workspace"}
                                         >
                                             {isQueueCollapsed ? "→" : "←"}
                                         </button>
-                                        <div className="w-10 h-10 dark:bg-zinc-800 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-500 shrink-0">
-                                            <User className="w-5 h-5" />
+                                        <div className="w-7 h-7 dark:bg-zinc-800 bg-indigo-50 rounded-lg flex items-center justify-center text-indigo-500 shrink-0">
+                                            <User className="w-4 h-4" />
                                         </div>
-                                        <div>
-                                            <h2 className="text-[18px] font-semibold tracking-tight dark:text-zinc-200 text-zinc-800 uppercase">{patientName}</h2>
-                                            <div className="flex items-center gap-2 dark:text-zinc-500 text-zinc-500 text-xs font-medium">
+                                        <div className="flex items-center gap-2 flex-wrap">
+                                            <h2 className="text-sm font-bold tracking-tight dark:text-zinc-200 text-zinc-800 uppercase">{patientName}</h2>
+                                            <span className="text-zinc-400 text-xs">•</span>
+                                            <div className="flex items-center gap-1.5 dark:text-zinc-400 text-zinc-500 text-xs font-semibold">
                                                 <span>{patientAgeGender}</span>
-                                                <span className="w-1 h-1 dark:bg-zinc-700 bg-zinc-300 rounded-full" />
-                                                <span className="font-mono">{token}</span>
+                                                <span className="text-zinc-400 font-normal">|</span>
+                                                <span className="font-mono text-[11px] tracking-tight">{token}</span>
                                             </div>
                                         </div>
                                     </div>
-                                    <div className="text-right flex flex-col items-end gap-2">
+                                    <div className="flex items-center gap-3">
                                         {liveTypistConnected && (
-                                            <div className="flex items-center gap-1 px-2 py-0.5 bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 rounded-full text-[8px] font-black uppercase tracking-widest">
-                                                <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
+                                            <div className="flex items-center gap-1 px-1.5 py-0.5 bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 rounded-full text-[8px] font-black uppercase tracking-widest shrink-0">
+                                                <div className="w-1 h-1 bg-emerald-500 rounded-full animate-pulse" />
                                                 Live Typist
                                             </div>
                                         )}
-                                        <span className="text-[10px] uppercase font-black dark:text-zinc-600 text-zinc-400 block tracking-widest">Status / Modality</span>
-                                        <div className="flex items-center gap-2">
+                                        <div className="flex items-center gap-1.5 text-xs font-semibold">
+                                            <span className="text-[9px] uppercase font-bold dark:text-zinc-500 text-zinc-400 tracking-wider">Status:</span>
                                             <div className={cn(
-                                                "px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border",
+                                                "px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider border",
                                                 reportStructure?.status === 'Signed' ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20" :
                                                 reportStructure?.status === 'ManualVerified' ? "bg-cyan-500/10 text-cyan-500 border-cyan-500/20" :
                                                 reportStructure?.status === 'ReadyForVerification' ? "bg-orange-500/10 text-orange-500 border-orange-500/20" :
@@ -815,7 +896,7 @@ export function PathologistTerminal() {
                                             )}>
                                                 {reportStructure?.status?.replace(/([A-Z])/g, ' $1').trim() || 'Draft'}
                                             </div>
-                                            <span className="dark:bg-zinc-800 bg-zinc-100 dark:text-zinc-300 text-zinc-700 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border dark:border-white/5 border-zinc-200">
+                                            <span className="dark:bg-zinc-800 bg-zinc-100 dark:text-zinc-300 text-zinc-750 px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider border dark:border-white/5 border-zinc-200">
                                                 {reportStructure?.modality}
                                             </span>
                                         </div>
@@ -936,7 +1017,7 @@ export function PathologistTerminal() {
                                             </div>
                                         </div>
                                         
-                                        <div className="flex items-center justify-between mt-6 pb-4">
+                                        <div className="flex items-center justify-between" style={{ marginTop: 'var(--ws-footer-pt)' }}>
                                             <div className="flex items-center gap-2">
                                                 {!isReadOnly ? (
                                                     <div className="flex flex-col gap-2">
@@ -950,14 +1031,16 @@ export function PathologistTerminal() {
                                                             <button 
                                                                 onClick={handleSaveInterpretation}
                                                                 disabled={isSaving || (!interpretation.interpretation && !interpretation.comments)}
-                                                                className="bg-zinc-100 text-zinc-600 hover:bg-zinc-200 font-bold text-xs px-6 py-2.5 rounded-xl transition-all active:scale-95 disabled:opacity-40"
+                                                                className="bg-zinc-100 text-zinc-600 hover:bg-zinc-200 font-bold text-xs px-6 rounded-xl transition-all active:scale-95 disabled:opacity-40"
+                                                                style={{ paddingTop: 'var(--ws-btn-py)', paddingBottom: 'var(--ws-btn-py)' }}
                                                             >
                                                                 {isSaving ? "Syncing..." : "Update Report"}
                                                             </button>
                                                             {reportStructure?.status === 'ReadyForVerification' && (
                                                                 <button 
                                                                     onClick={handleReopen}
-                                                                    className="text-red-500 hover:bg-red-50 font-bold text-xs px-6 py-2.5 rounded-xl transition-all border border-transparent hover:border-red-100"
+                                                                    className="text-red-500 hover:bg-red-50 font-bold text-xs px-6 rounded-xl transition-all border border-transparent hover:border-red-100"
+                                                                    style={{ paddingTop: 'var(--ws-btn-py)', paddingBottom: 'var(--ws-btn-py)' }}
                                                                 >
                                                                     Reject to Typist
                                                                 </button>
@@ -975,7 +1058,8 @@ export function PathologistTerminal() {
                                                 <div className="flex gap-4">
                                                     <button 
                                                         onClick={handlePrint}
-                                                        className="bg-zinc-100 hover:bg-zinc-200 text-zinc-900 px-6 py-3 rounded-2xl font-bold text-sm transition-all active:scale-95 flex items-center gap-2"
+                                                        className="bg-zinc-100 hover:bg-zinc-200 text-zinc-900 px-6 rounded-2xl font-bold text-sm transition-all active:scale-95 flex items-center gap-2"
+                                                        style={{ paddingTop: 'var(--ws-btn-py)', paddingBottom: 'var(--ws-btn-py)' }}
                                                     >
                                                         <Printer className="w-4 h-4" />
                                                         Print Review
@@ -983,7 +1067,8 @@ export function PathologistTerminal() {
                                                     <button 
                                                         onClick={handleSign}
                                                         disabled={isSigning || !selectedReportId || !isIdentityComplete}
-                                                        className="bg-slate-900 text-white hover:bg-black px-8 py-3 rounded-2xl font-bold text-sm shadow-xl shadow-black/10 transition-all active:scale-95 flex items-center gap-2 disabled:bg-slate-200 disabled:text-slate-400 disabled:shadow-none"
+                                                        className="bg-slate-900 text-white hover:bg-black px-8 rounded-2xl font-bold text-sm shadow-xl shadow-black/10 transition-all active:scale-95 flex items-center gap-2 disabled:bg-slate-200 disabled:text-slate-400 disabled:shadow-none"
+                                                        style={{ paddingTop: 'var(--ws-btn-py)', paddingBottom: 'var(--ws-btn-py)' }}
                                                     >
                                                         {isSigning ? <Loader2 className="w-4 h-4 animate-spin" /> : <Signature className="w-4 h-4" />}
                                                         Verify & Sign Digitally
@@ -993,7 +1078,8 @@ export function PathologistTerminal() {
                                             {isReadOnly && (
                                                 <button 
                                                     onClick={handlePrint}
-                                                    className="bg-synos-primary text-white hover:opacity-90 px-8 py-3 rounded-2xl font-bold text-sm shadow-xl shadow-synos-primary/20 transition-all active:scale-95 flex items-center gap-2"
+                                                    className="bg-synos-primary text-white hover:opacity-90 px-8 rounded-2xl font-bold text-sm shadow-xl shadow-synos-primary/20 transition-all active:scale-95 flex items-center gap-2"
+                                                    style={{ paddingTop: 'var(--ws-btn-py)', paddingBottom: 'var(--ws-btn-py)' }}
                                                 >
                                                     <Printer className="w-4 h-4" />
                                                     Print Final Report
@@ -1007,14 +1093,29 @@ export function PathologistTerminal() {
                     </div>
                 </div>
 
-                {/* RIGHT PANEL: Pure Live Render (50%) */}
-                <div className="w-[50%] flex flex-col min-h-0">
+                {/* Resizer divider */}
+                <div 
+                    onPointerDown={handleRightResizeStart}
+                    className="w-[3px] hover:w-[6px] hover:bg-synos-primary bg-zinc-200 dark:bg-zinc-800/80 cursor-col-resize h-full select-none z-30 transition-all flex items-center justify-center shrink-0 group rounded-lg no-print"
+                    title="Drag to resize draft preview panel"
+                >
+                    <div className="w-[1px] h-8 bg-zinc-400 dark:bg-zinc-650 rounded group-hover:bg-white" />
+                </div>
+
+                {/* RIGHT PANEL: Pure Live Render */}
+                <div 
+                    style={{ width: rightPanelWidth }}
+                    className="flex flex-col min-h-0 shrink-0 preview-right-panel"
+                >
                     <div className="dark:bg-zinc-900 bg-zinc-200 shadow-inner rounded-xl flex-1 flex flex-col min-h-0 overflow-hidden border dark:border-white/5 border-black/5">
-                        <div className="dark:bg-zinc-950 bg-[linear-gradient(to_bottom,rgba(248,253,255,0.98)_0%,rgba(238,245,248,0.98)_50%,rgba(228,235,238,0.98)_100%)] px-6 py-3 border-b dark:border-white/5 border-black/5 flex items-center justify-between z-10 shrink-0">
+                        <div className="dark:bg-zinc-950 bg-[linear-gradient(to_bottom,rgba(248,253,255,0.98)_0%,rgba(238,245,248,0.98)_50%,rgba(228,235,238,0.98)_100%)] px-6 py-3 border-b dark:border-white/5 border-black/5 flex items-center justify-between z-10 shrink-0 select-none no-print">
                              <div className="flex items-center gap-2">
                                 <FileText className="w-4 h-4 text-synos-primary" />
                                 <span className="text-[10px] font-black uppercase tracking-widest dark:text-zinc-400 text-zinc-600">
                                     {isReadOnly ? "Audit Evidence" : "Live Preview"}
+                                </span>
+                                <span className="text-[9px] font-mono bg-zinc-100 dark:bg-zinc-800 dark:text-zinc-400 text-zinc-500 px-1.5 py-0.5 rounded ml-2">
+                                    Ctrl+Scroll to Zoom ({Math.round(previewScale * 100)}%) • Drag to Pan
                                 </span>
                              </div>
                              {reportData && (
@@ -1033,22 +1134,36 @@ export function PathologistTerminal() {
                              )}
                         </div>
                         
-                        <div className="flex-1 overflow-auto bg-zinc-300/50 dark:bg-zinc-900/50 p-4 custom-scrollbar">
+                        <div 
+                            ref={previewContainerRef} 
+                            className="flex-1 overflow-hidden bg-zinc-300/50 dark:bg-zinc-900/50 relative select-none print:overflow-visible print:bg-white print:p-0"
+                            onMouseDown={handlePreviewMouseDown}
+                            onMouseMove={handlePreviewMouseMove}
+                            onMouseUp={handlePreviewMouseUp}
+                            onMouseLeave={handlePreviewMouseUp}
+                            style={{ cursor: isDragging ? 'grabbing' : 'grab' }}
+                        >
                             {(isLoadingDetail || templateLoading) ? (
-                                <div className="h-full flex flex-col items-center justify-center opacity-30">
+                                <div className="h-full flex flex-col items-center justify-center opacity-30 no-print">
                                     <Loader2 className="w-6 h-6 animate-spin mb-4" />
                                     <span className="text-[8px] font-black uppercase tracking-[0.2em]">Assembling Preview...</span>
                                 </div>
                             ) : (!reportData || !template) ? (
-                                <div className="h-full flex flex-col items-center justify-center text-center opacity-20 p-8">
+                                <div className="h-full flex flex-col items-center justify-center text-center opacity-20 p-8 no-print">
                                     <Printer className="w-12 h-12 mb-4" />
                                     <p className="text-[9px] font-black uppercase tracking-widest leading-relaxed">
                                         Select record for high-fidelity render
                                     </p>
                                 </div>
                             ) : (
-                                <div className="p-4 origin-top min-w-max flex justify-center">
-                                    <div className="bg-white shadow-[0_20px_50px_rgba(0,0,0,0.1)] rounded-sm overflow-hidden">
+                                <div className="p-4 flex justify-center items-start print:p-0 print:block w-full h-full absolute top-0 left-0">
+                                    <div 
+                                        className="preview-report-wrapper bg-white shadow-[0_20px_50px_rgba(0,0,0,0.1)] rounded-sm overflow-hidden print:shadow-none print:rounded-none origin-top min-w-[210mm] transition-transform duration-75 select-none"
+                                        style={{ 
+                                            transform: `translate(${panOffset.x}px, ${panOffset.y}px) scale(${previewScale})`,
+                                            pointerEvents: isDragging ? 'none' : 'auto'
+                                        }}
+                                    >
                                         {memoizedReportPreview}
                                     </div>
                                 </div>

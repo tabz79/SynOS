@@ -122,6 +122,14 @@ export function TypistTerminal() {
     const [searchTerm, setSearchTerm] = useState("");
     const [isQueueCollapsed, setIsQueueCollapsed] = useState(false);
     const [isMacroManagerOpen, setIsMacroManagerOpen] = useState(false);
+    const [previewScale, setPreviewScale] = useState(0.6);
+    const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
+    const [isDragging, setIsDragging] = useState(false);
+    const dragStartRef = useRef({ x: 0, y: 0 });
+    const previewContainerRef = useRef(null);
+    const [rightPanelWidth, setRightPanelWidth] = useState(550);
+    const isResizingRight = useRef(false);
+    const mainContainerRef = useRef(null);
 
     const calculatedReportStructure = useMemo(
         () => applyCalculatedValues(reportStructure),
@@ -331,6 +339,8 @@ export function TypistTerminal() {
         if (selectedReportId) {
             fetchReportDetail(selectedReportId);
             setIsQueueCollapsed(true);
+            setPreviewScale(0.6); // Reset zoom on report change
+            setPanOffset({ x: 0, y: 0 }); // Reset pan position
         } else {
             setReportStructure(null);
             setInterpretation({ interpretation: "", comments: "" });
@@ -338,6 +348,75 @@ export function TypistTerminal() {
             setIsQueueCollapsed(false);
         }
     }, [selectedReportId]);
+
+    // Ctrl+Scroll listener for Report Preview Zoom
+    useEffect(() => {
+        const container = previewContainerRef.current;
+        if (!container) return;
+
+        const handleWheel = (e) => {
+            if (e.ctrlKey) {
+                e.preventDefault();
+                const delta = -e.deltaY;
+                const factor = delta > 0 ? 1.05 : 0.95;
+                setPreviewScale(prev => Math.min(Math.max(prev * factor, 0.2), 3.0));
+            }
+        };
+
+        container.addEventListener('wheel', handleWheel, { passive: false });
+        return () => {
+            container.removeEventListener('wheel', handleWheel);
+        };
+    }, [reportData]);
+
+    const handlePreviewMouseDown = (e) => {
+        if (e.button !== 0) return; // Only left click
+        setIsDragging(true);
+        dragStartRef.current = { x: e.clientX - panOffset.x, y: e.clientY - panOffset.y };
+    };
+
+    const handlePreviewMouseMove = (e) => {
+        if (!isDragging) return;
+        setPanOffset({
+            x: e.clientX - dragStartRef.current.x,
+            y: e.clientY - dragStartRef.current.y
+        });
+    };
+
+    const handlePreviewMouseUp = () => {
+        setIsDragging(false);
+    };
+
+    const handleRightResizeStart = (e) => {
+        e.preventDefault();
+        isResizingRight.current = true;
+        document.body.style.cursor = 'col-resize';
+        document.body.style.userSelect = 'none';
+    };
+
+    useEffect(() => {
+        const handlePointerMove = (e) => {
+            if (!mainContainerRef.current || !isResizingRight.current) return;
+            const containerRect = mainContainerRef.current.getBoundingClientRect();
+            const newWidth = Math.max(320, Math.min(850, containerRect.right - e.clientX));
+            setRightPanelWidth(newWidth);
+        };
+
+        const handlePointerUp = () => {
+            if (isResizingRight.current) {
+                isResizingRight.current = false;
+                document.body.style.cursor = '';
+                document.body.style.userSelect = '';
+            }
+        };
+
+        window.addEventListener('pointermove', handlePointerMove);
+        window.addEventListener('pointerup', handlePointerUp);
+        return () => {
+            window.removeEventListener('pointermove', handlePointerMove);
+            window.removeEventListener('pointerup', handlePointerUp);
+        };
+    }, []);
 
     const fetchWorklist = async () => {
         setIsLoadingList(true);
@@ -498,30 +577,32 @@ export function TypistTerminal() {
                 <SystemBar serverTime={null} syncStatus="Synced" />
             </div>
 
-            <div className="px-4 py-2 border-b dark:border-white/5 border-zinc-200 bg-zinc-900/10 flex items-center gap-2 select-none no-print">
-                <button
-                    onClick={() => setActiveTerminalMode('pathology')}
-                    className={cn(
-                        "px-4 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all",
-                        activeTerminalMode === 'pathology' 
-                            ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/25"
-                            : "text-zinc-500 hover:text-zinc-300 hover:bg-zinc-850/40"
-                    )}
-                >
-                    Pathology Reports
-                </button>
-                <button
-                    onClick={() => setActiveTerminalMode('radiology')}
-                    className={cn(
-                        "px-4 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all",
-                        activeTerminalMode === 'radiology'
-                            ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/25"
-                            : "text-zinc-500 hover:text-zinc-300 hover:bg-zinc-850/40"
-                    )}
-                >
-                    Radiology Live Dictation
-                </button>
-            </div>
+            {!selectedReportId && (
+                <div className="px-4 py-2 border-b dark:border-white/5 border-zinc-200 bg-zinc-900/10 flex items-center gap-2 select-none no-print">
+                    <button
+                        onClick={() => setActiveTerminalMode('pathology')}
+                        className={cn(
+                            "px-4 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all",
+                            activeTerminalMode === 'pathology' 
+                                ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/25"
+                                : "text-zinc-500 hover:text-zinc-300 hover:bg-zinc-850/40"
+                        )}
+                    >
+                        Pathology Reports
+                    </button>
+                    <button
+                        onClick={() => setActiveTerminalMode('radiology')}
+                        className={cn(
+                            "px-4 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all",
+                            activeTerminalMode === 'radiology'
+                                ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/25"
+                                : "text-zinc-500 hover:text-zinc-300 hover:bg-zinc-850/40"
+                        )}
+                    >
+                        Radiology Live Dictation
+                    </button>
+                </div>
+            )}
 
             {activeTerminalMode === 'radiology' ? (
                 <RadiologyTypistTerminal 
@@ -531,16 +612,20 @@ export function TypistTerminal() {
                     connectionStatus={connectionStatus}
                 />
             ) : (
-                <div className="flex-1 flex flex-row gap-4 p-4 overflow-hidden relative">
+                <div className="flex-1 flex flex-row overflow-hidden relative" style={{ padding: 'var(--ws-padding)', gap: 'var(--ws-gap)' }}>
                 {/* Main Content Container for Scaling Effect */}
+                <div 
+                    ref={mainContainerRef}
+                    className={cn(
+                        "flex-1 flex flex-row transition-all duration-500 ease-out h-full",
+                        isInventoryModalOpen ? "opacity-40 pointer-events-none scale-[0.99]" : "opacity-100"
+                    )} 
+                    style={{ gap: 'var(--ws-gap)' }}
+                >
                 <div className={cn(
-                    "flex-1 flex flex-row gap-4 transition-all duration-500 ease-out h-full",
-                    isInventoryModalOpen ? "opacity-40 pointer-events-none scale-[0.99]" : "opacity-100"
-                )}>
-                <div className={cn(
-                    "flex flex-col gap-4 min-h-0 no-print relative transition-all duration-300 ease-in-out",
+                    "flex flex-col min-h-0 no-print relative transition-all duration-300 ease-in-out",
                     (isQueueCollapsed && !isMacroManagerOpen) ? "w-0 overflow-hidden opacity-0 pointer-events-none" : "w-[15%] opacity-100"
-                )}>
+                )} style={{ gap: 'var(--ws-gap)' }}>
                     {isMacroManagerOpen ? (
                         <div className="dark:bg-zinc-900 bg-white dark:border-white/5 border-black/[0.1] shadow-[0_4px_20px_rgba(0,0,0,0.05)] rounded-xl p-4 flex flex-col h-full min-h-0">
                             <MedicalMacrosWorkspace onClose={() => setIsMacroManagerOpen(false)} />
@@ -629,11 +714,8 @@ export function TypistTerminal() {
                     )}
                 </div>
 
-                <div className={cn(
-                    "flex flex-col gap-4 min-h-0 no-print transition-all duration-300 ease-in-out",
-                    isQueueCollapsed ? "w-[50%]" : "w-[35%]"
-                )}>
-                    <div className="dark:bg-zinc-900 bg-white dark:border-white/5 border-black/[0.1] shadow-[0_4px_20px_rgba(0,0,0,0.05)] rounded-xl p-6 flex-1 flex flex-col min-h-0">
+                <div className="flex-1 flex flex-col min-h-0 no-print" style={{ gap: 'var(--ws-gap)' }}>
+                    <div className="dark:bg-zinc-900 bg-white dark:border-white/5 border-black/[0.1] shadow-[0_4px_20px_rgba(0,0,0,0.05)] rounded-xl flex-1 flex flex-col min-h-0" style={{ padding: 'var(--ws-padding)' }}>
                         {isLoadingDetail ? (
                             <div className="flex-1 flex flex-col items-center justify-center opacity-50">
                                 <Loader2 className="w-10 h-10 animate-spin mb-4 text-synos-primary" />
@@ -664,38 +746,39 @@ export function TypistTerminal() {
                             </div>
                         ) : (
                             <div className="flex flex-col h-full min-h-0">
-                                <div className="flex items-center justify-between mb-4 pb-4 border-b dark:border-white/5 border-zinc-100 shrink-0">
-                                    <div className="flex items-center gap-4">
+                                <div className="flex items-center justify-between mb-2 pb-2 border-b dark:border-white/5 border-zinc-100 shrink-0 select-none">
+                                    <div className="flex items-center gap-3">
                                         <button
                                             onClick={() => setIsQueueCollapsed(prev => !prev)}
-                                            className="p-2 hover:bg-zinc-500/10 rounded-lg text-zinc-500 transition-all active:scale-95 shrink-0 font-bold border dark:border-white/5 border-zinc-200 text-xs flex items-center justify-center w-8 h-8"
+                                            className="p-1 hover:bg-zinc-500/10 rounded-lg text-zinc-500 transition-all active:scale-95 shrink-0 font-bold border dark:border-white/5 border-zinc-200 text-xs flex items-center justify-center w-6 h-6"
                                             title={isQueueCollapsed ? "Show Patient Queue" : "Collapse Workspace"}
                                         >
                                             {isQueueCollapsed ? "→" : "←"}
                                         </button>
-                                        <div className="w-10 h-10 dark:bg-zinc-800 bg-synos-primary/5 rounded-xl flex items-center justify-center text-synos-primary shrink-0">
-                                            <User className="w-5 h-5" />
+                                        <div className="w-7 h-7 dark:bg-zinc-800 bg-synos-primary/5 rounded-lg flex items-center justify-center text-synos-primary shrink-0">
+                                            <User className="w-4 h-4" />
                                         </div>
-                                        <div>
-                                            <h2 className="text-[18px] font-semibold tracking-tight dark:text-zinc-200 text-zinc-800 uppercase">{patientName}</h2>
-                                            <div className="flex items-center gap-2 dark:text-zinc-500 text-zinc-500 text-xs font-medium">
+                                        <div className="flex items-center gap-2 flex-wrap">
+                                            <h2 className="text-sm font-bold tracking-tight dark:text-zinc-200 text-zinc-800 uppercase">{patientName}</h2>
+                                            <span className="text-zinc-400 text-xs">•</span>
+                                            <div className="flex items-center gap-1.5 dark:text-zinc-400 text-zinc-500 text-xs font-semibold">
                                                 <span>{patientAgeGender}</span>
-                                                <span className="w-1 h-1 dark:bg-zinc-700 bg-zinc-300 rounded-full" />
-                                                <span className="font-mono tracking-tighter opacity-70">{token}</span>
+                                                <span className="text-zinc-400 font-normal">|</span>
+                                                <span className="font-mono text-[11px] tracking-tight">{token}</span>
                                             </div>
                                         </div>
                                     </div>
-                                    <div className="flex flex-col items-end gap-1">
+                                    <div className="flex items-center gap-3">
                                         {livePathologistConnected && (
-                                            <div className="flex items-center gap-1 px-2 py-0.5 bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 rounded-full text-[8px] font-black uppercase tracking-widest">
-                                                <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
+                                            <div className="flex items-center gap-1 px-1.5 py-0.5 bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 rounded-full text-[8px] font-black uppercase tracking-widest shrink-0">
+                                                <div className="w-1 h-1 bg-emerald-500 rounded-full animate-pulse" />
                                                 Live Pathologist
                                             </div>
                                         )}
-                                        <div className="text-right">
-                                            <span className="text-[10px] uppercase font-black dark:text-zinc-600 text-zinc-400 block mb-1 tracking-widest">Stage</span>
+                                        <div className="flex items-center gap-1.5 text-xs font-semibold">
+                                            <span className="text-[9px] uppercase font-bold dark:text-zinc-500 text-zinc-400 tracking-wider">Stage:</span>
                                             <div className={cn(
-                                                "px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest",
+                                                "px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider",
                                                 calculatedReportStructure?.status === 'ReadyForVerification' 
                                                     ? "bg-amber-500/10 text-amber-600 border border-amber-500/20"
                                                     : "bg-synos-primary/10 text-synos-primary border border-synos-primary/20"
@@ -807,28 +890,29 @@ export function TypistTerminal() {
                                                 />
                                             </div>
                                         </div>
-                                        
-                                        <div className="flex items-center justify-between mt-6 pb-4">
+                                                                            <div className="flex items-center justify-between" style={{ marginTop: 'var(--ws-footer-pt)' }}>
                                             {!isLocked ? (
-                                                <div className="flex flex-col gap-3 w-full">
+                                                <div className="flex flex-col w-full" style={{ gap: 'var(--ws-gap)' }}>
                                                     {lastSavedAt && (
                                                         <div className="text-[10px] font-bold text-green-500 uppercase tracking-widest animate-pulse flex items-center gap-1.5 self-end">
                                                             <div className="w-1.5 h-1.5 bg-green-500 rounded-full" />
                                                             Preview Updated via Backend
                                                         </div>
                                                     )}
-                                                    <div className="grid grid-cols-2 gap-3 w-full">
+                                                    <div className="grid grid-cols-2 w-full" style={{ gap: 'var(--ws-gap)' }}>
                                                         <button 
                                                             onClick={handleSaveInterpretation}
                                                             disabled={isSaving || (!interpretation.interpretation && !interpretation.comments)}
-                                                            className="dark:bg-zinc-800 bg-zinc-100 dark:text-zinc-300 text-zinc-600 hover:dark:bg-zinc-700 hover:bg-zinc-200 font-bold text-[10px] px-2 py-3 rounded-xl transition-all active:scale-95 disabled:opacity-40 uppercase tracking-tight"
+                                                            className="dark:bg-zinc-800 bg-zinc-100 dark:text-zinc-300 text-zinc-600 hover:dark:bg-zinc-700 hover:bg-zinc-200 font-bold text-[10px] px-2 rounded-xl transition-all active:scale-95 disabled:opacity-40 uppercase tracking-tight"
+                                                            style={{ paddingTop: 'var(--ws-btn-py)', paddingBottom: 'var(--ws-btn-py)' }}
                                                         >
                                                             {isSaving ? "Saving..." : "Save Draft"}
                                                         </button>
                                                         <button 
                                                             onClick={() => window.print()}
                                                             disabled={!selectedReportId}
-                                                            className="dark:bg-zinc-800 bg-zinc-100 dark:text-zinc-300 text-zinc-600 hover:dark:bg-zinc-700 hover:bg-zinc-200 font-bold text-[10px] px-2 py-3 rounded-xl transition-all active:scale-95 flex items-center justify-center gap-2 uppercase tracking-tight"
+                                                            className="dark:bg-zinc-800 bg-zinc-100 dark:text-zinc-300 text-zinc-600 hover:dark:bg-zinc-700 hover:bg-zinc-200 font-bold text-[10px] px-2 rounded-xl transition-all active:scale-95 flex items-center justify-center gap-2 uppercase tracking-tight"
+                                                            style={{ paddingTop: 'var(--ws-btn-py)', paddingBottom: 'var(--ws-btn-py)' }}
                                                         >
                                                             <Printer className="w-3 h-3" />
                                                             Quick Print
@@ -837,19 +921,21 @@ export function TypistTerminal() {
                                                         <button 
                                                             onClick={() => handleSubmit(false)}
                                                             disabled={isSubmitting || isSaving || !interpretation.interpretation}
-                                                            className="col-span-2 bg-synos-primary text-white hover:opacity-90 px-4 py-3 rounded-xl font-black text-[10px] shadow-xl shadow-synos-primary/20 transition-all active:scale-95 flex items-center justify-center gap-1.5 disabled:bg-zinc-300 dark:disabled:bg-zinc-800 disabled:shadow-none uppercase tracking-tight"
+                                                            className="col-span-2 bg-synos-primary text-white hover:opacity-90 px-4 rounded-xl font-black text-[10px] shadow-xl shadow-synos-primary/20 transition-all active:scale-95 flex items-center justify-center gap-1.5 disabled:bg-zinc-300 dark:disabled:bg-zinc-800 disabled:shadow-none uppercase tracking-tight"
+                                                            style={{ paddingTop: 'var(--ws-btn-py)', paddingBottom: 'var(--ws-btn-py)' }}
                                                         >
                                                             {isSubmitting ? <Loader2 className="w-3 h-3 animate-spin" /> : <ShieldCheck className="w-3 h-3" />}
                                                             Submit for Digital Sign
                                                         </button>
-
+ 
                                                         <button 
                                                             onClick={() => {
                                                                 window.print();
                                                                 handleSubmit(true);
                                                             }}
                                                             disabled={isSubmitting || isSaving || !interpretation.interpretation}
-                                                            className="col-span-2 border-2 border-amber-500/50 text-amber-600 hover:bg-amber-500/5 px-4 py-3 rounded-xl font-black text-[10px] transition-all active:scale-95 flex items-center justify-center gap-1.5 disabled:opacity-40 uppercase tracking-tight"
+                                                            className="col-span-2 border-2 border-amber-500/50 text-amber-600 hover:bg-amber-500/5 px-4 rounded-xl font-black text-[10px] transition-all active:scale-95 flex items-center justify-center gap-1.5 disabled:opacity-40 uppercase tracking-tight"
+                                                            style={{ paddingTop: 'var(--ws-btn-py)', paddingBottom: 'var(--ws-btn-py)' }}
                                                         >
                                                             <Printer className="w-3 h-3" />
                                                             Print & Submit for Manual Sign
@@ -872,13 +958,28 @@ export function TypistTerminal() {
                     </div>
                 </div>
 
-                {/* RIGHT PANEL: Pure Live Render (50%) */}
-                <div className="w-[50%] flex flex-col min-h-0">
+                {/* Resizer divider */}
+                <div 
+                    onPointerDown={handleRightResizeStart}
+                    className="w-[3px] hover:w-[6px] hover:bg-synos-primary bg-zinc-200 dark:bg-zinc-800/80 cursor-col-resize h-full select-none z-30 transition-all flex items-center justify-center shrink-0 group rounded-lg no-print"
+                    title="Drag to resize draft preview panel"
+                >
+                    <div className="w-[1px] h-8 bg-zinc-400 dark:bg-zinc-650 rounded group-hover:bg-white" />
+                </div>
+
+                {/* RIGHT PANEL: Pure Live Render */}
+                <div 
+                    style={{ width: rightPanelWidth }}
+                    className="flex flex-col min-h-0 shrink-0 preview-right-panel"
+                >
                     <div className="dark:bg-zinc-900 bg-zinc-200 shadow-inner rounded-xl flex-1 flex flex-col min-h-0 overflow-hidden border dark:border-white/5 border-black/5">
                         <div className="dark:bg-zinc-950 bg-[linear-gradient(to_bottom,rgba(248,253,255,0.98)_0%,rgba(238,245,248,0.98)_50%,rgba(228,235,238,0.98)_100%)] px-6 py-3 border-b dark:border-white/5 border-black/5 flex items-center justify-between z-10 no-print">
-                             <div className="flex items-center gap-2">
+                             <div className="flex items-center gap-2 select-none">
                                 <FileText className="w-4 h-4 text-synos-primary" />
                                 <span className="text-[10px] font-black uppercase tracking-widest dark:text-zinc-400 text-zinc-600">Draft Preview</span>
+                                <span className="text-[9px] font-mono bg-zinc-100 dark:bg-zinc-800 dark:text-zinc-400 text-zinc-500 px-1.5 py-0.5 rounded ml-2">
+                                    Ctrl+Scroll to Zoom ({Math.round(previewScale * 100)}%) • Drag to Pan
+                                </span>
                              </div>
                              {reportData && (
                                 <div className="flex items-center gap-1.5">
@@ -888,7 +989,15 @@ export function TypistTerminal() {
                              )}
                         </div>
                         
-                        <div className="flex-1 overflow-auto bg-zinc-300/50 dark:bg-zinc-900/50 p-4 custom-scrollbar print:overflow-visible print:bg-white print:p-0">
+                        <div 
+                            ref={previewContainerRef} 
+                            className="flex-1 overflow-hidden bg-zinc-300/50 dark:bg-zinc-900/50 relative select-none print:overflow-visible print:bg-white print:p-0"
+                            onMouseDown={handlePreviewMouseDown}
+                            onMouseMove={handlePreviewMouseMove}
+                            onMouseUp={handlePreviewMouseUp}
+                            onMouseLeave={handlePreviewMouseUp}
+                            style={{ cursor: isDragging ? 'grabbing' : 'grab' }}
+                        >
                             {(isLoadingDetail || templateLoading) ? (
                                 <div className="h-full flex flex-col items-center justify-center opacity-30 no-print">
                                     <Loader2 className="w-6 h-6 animate-spin mb-4" />
@@ -902,8 +1011,14 @@ export function TypistTerminal() {
                                     </p>
                                 </div>
                             ) : (
-                                <div className="p-4 origin-top min-w-max flex justify-center print:p-0 print:block">
-                                    <div className="bg-white shadow-[0_20px_50px_rgba(0,0,0,0.1)] rounded-sm overflow-hidden print:shadow-none print:rounded-none">
+                                <div className="p-4 flex justify-center items-start print:p-0 print:block w-full h-full absolute top-0 left-0">
+                                    <div 
+                                        className="preview-report-wrapper bg-white shadow-[0_20px_50px_rgba(0,0,0,0.1)] rounded-sm overflow-hidden print:shadow-none print:rounded-none origin-top min-w-[210mm] transition-transform duration-75 select-none"
+                                        style={{ 
+                                            transform: `translate(${panOffset.x}px, ${panOffset.y}px) scale(${previewScale})`,
+                                            pointerEvents: isDragging ? 'none' : 'auto'
+                                        }}
+                                    >
                                         {memoizedReportPreview}
                                     </div>
                                 </div>

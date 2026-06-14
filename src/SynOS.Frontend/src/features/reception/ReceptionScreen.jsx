@@ -161,7 +161,7 @@ export function ReceptionScreen() {
     }, []);
 
     // STAGE 7: FLIP ANIMATION STATE
-    const [isSummaryCollapsed, setIsSummaryCollapsed] = useState(false);
+    const [isSummaryCollapsed, setIsSummaryCollapsed] = useState(() => window.innerHeight < 700);
 
     // MOTION CANON: Vertical FLIP Group
     const summaryRef = useRef(null);
