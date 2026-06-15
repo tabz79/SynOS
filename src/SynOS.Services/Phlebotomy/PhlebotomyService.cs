@@ -295,7 +295,7 @@ namespace SynOS.Services.Phlebotomy
             var visitId = assignment.SourceReferenceId;
             var branchInfo = await _db.Visits
                 .Where(v => v.VisitId == visitId)
-                .Select(v => new { v.BranchId, v.Branch.Code, v.Token })
+                .Select(v => new { v.BranchId, v.Branch.Code, v.Token, v.PatientId })
                 .FirstOrDefaultAsync();
 
             if (branchInfo?.BranchId == null) return CollectResult.NotFound;
@@ -435,6 +435,30 @@ namespace SynOS.Services.Phlebotomy
                         {
                             await _tubeConsumptionService.ConsumeStockForSpecimenAsync(specimenInstance.SpecimenId, _userContext.CurrentUserId);
                         }
+                    }
+                }
+
+                // Create draft reports for all root pathology orders in this visit
+                var rootOrders = orders.Where(o => o.ParentOrderId == null && string.Equals(o.Department, "Pathology", StringComparison.OrdinalIgnoreCase)).ToList();
+                foreach (var rootOrder in rootOrders)
+                {
+                    var existingReport = await _db.Reports.AnyAsync(r => r.SourceId == rootOrder.OrderId && r.SourceType == "Order" && r.VisitId == visitId);
+                    if (!existingReport)
+                    {
+                        var report = new Report
+                        {
+                            ReportId = Guid.NewGuid(),
+                            SourceId = rootOrder.OrderId,
+                            SourceType = "Order",
+                            VisitId = visitId,
+                            PatientId = branchInfo.PatientId,
+                            Department = rootOrder.Department,
+                            ReportTemplateId = rootOrder.Test?.ReportTemplateId,
+                            Status = "Draft",
+                            CreatedAt = DateTimeOffset.UtcNow,
+                            UpdatedAt = DateTimeOffset.UtcNow
+                        };
+                        await _db.Reports.AddAsync(report);
                     }
                 }
 

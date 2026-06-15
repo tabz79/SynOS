@@ -5,6 +5,7 @@ namespace SynOS.Models.DTOs.Reporting
     public class ReportListItemDto
     {
         public Guid ReportId { get; set; }
+        public Guid VisitId { get; set; }
         public string PatientName { get; set; } = string.Empty;
         public string PatientAgeGender { get; set; } = string.Empty; // e.g., "30 / Male"
         public string TestName { get; set; } = string.Empty;

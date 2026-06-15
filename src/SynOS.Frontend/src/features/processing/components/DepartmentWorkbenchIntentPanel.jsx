@@ -273,6 +273,19 @@ export function DepartmentWorkbenchIntentPanel({ assignmentId, onClose, onDirtyU
         }
     };
 
+    const handleSendEmptyToTypist = async () => {
+        if (!window.confirm("Are you sure you want to send this report with empty values to the Typist?")) return;
+        try {
+            setIsSaving(true);
+            await ProcessingApi.completeAssignment(assignmentId);
+            onClose();
+        } catch (err) {
+            console.error("Skip to typist failed", err);
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
     if (isLoading) {
         return (
             <div className="h-full flex items-center justify-center dark:bg-zinc-900 bg-white rounded-xl border dark:border-white/5 border-zinc-200">
@@ -370,20 +383,29 @@ export function DepartmentWorkbenchIntentPanel({ assignmentId, onClose, onDirtyU
                         {!isClaiming && <ArrowRight className="w-4 h-4" />}
                     </button>
                 ) : isAssignedToMe ? (
-                    <div className="flex gap-2">
+                    <div className="flex flex-col gap-2 w-full">
+                        <div className="flex gap-2">
+                            <button 
+                                 onClick={handleSaveDraft} 
+                                 disabled={isSaving}
+                                 className="flex-1 h-12 rounded-xl text-xs font-bold border dark:border-white/10 border-zinc-200 dark:text-zinc-300 hover:bg-zinc-500/5 transition-all disabled:opacity-50"
+                            >
+                                Save Draft
+                            </button>
+                            <button 
+                                onClick={handleComplete}
+                                className="flex-1 h-12 bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl text-xs font-bold shadow-lg shadow-cyan-500/20 transition-all active:scale-[0.98] disabled:opacity-50"
+                                disabled={isSaving}
+                            >
+                                Complete Processing
+                            </button>
+                        </div>
                         <button 
-                             onClick={handleSaveDraft} 
-                             disabled={isSaving}
-                             className="flex-1 h-12 rounded-xl text-sm font-bold border dark:border-white/10 border-zinc-200 dark:text-zinc-300 hover:bg-zinc-500/5 transition-all disabled:opacity-50"
-                        >
-                            Save Draft
-                        </button>
-                        <button 
-                            onClick={handleComplete}
-                            className="flex-[1.5] h-12 bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl text-sm font-bold shadow-lg shadow-cyan-500/20 transition-all active:scale-[0.98] disabled:opacity-50"
+                            onClick={handleSendEmptyToTypist}
+                            className="w-full h-10 dark:bg-zinc-800 bg-zinc-100 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-500 dark:text-zinc-400 rounded-xl text-xs font-bold transition-all active:scale-[0.98] disabled:opacity-50"
                             disabled={isSaving}
                         >
-                            Complete Processing
+                            Skip / Send Empty to Typist
                         </button>
                     </div>
                 ) : (

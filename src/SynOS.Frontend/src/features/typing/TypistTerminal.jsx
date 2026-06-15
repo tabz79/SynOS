@@ -57,6 +57,44 @@ const evaluateFormula = (formula, values) => {
     }
 };
 
+const getFlagForValue = (value, referenceRange) => {
+    if (value === undefined || value === null || value === "") return "Normal";
+    const val = parseFloat(value);
+    if (isNaN(val)) return "Normal";
+
+    if (!referenceRange) return "Normal";
+    const rangeStr = referenceRange.trim();
+
+    try {
+        if (rangeStr.includes('-')) {
+            const parts = rangeStr.split('-');
+            if (parts.length === 2) {
+                const rLow = parseFloat(parts[0].trim());
+                const rHigh = parseFloat(parts[1].trim());
+                if (!isNaN(rLow) && !isNaN(rHigh)) {
+                    if (val < rLow) return "Low";
+                    if (val > rHigh) return "High";
+                }
+            }
+        }
+        else if (rangeStr.startsWith('<')) {
+            const rHigh = parseFloat(rangeStr.substring(1).trim());
+            if (!isNaN(rHigh) && val >= rHigh) {
+                return "High";
+            }
+        }
+        else if (rangeStr.startsWith('>')) {
+            const rLow = parseFloat(rangeStr.substring(1).trim());
+            if (!isNaN(rLow) && val <= rLow) {
+                return "Low";
+            }
+        }
+    } catch (e) {
+        console.error("Failed to parse range string:", referenceRange, e);
+    }
+    return "Normal";
+};
+
 const applyCalculatedValues = (structure) => {
     if (!structure?.groups?.length) return structure;
 
@@ -112,6 +150,7 @@ export function TypistTerminal() {
     const [selectedReportId, setSelectedReportId] = useState(null);
     const [reportStructure, setReportStructure] = useState(null);
     const [reportData, setReportData] = useState(null);
+    const [resultsState, setResultsState] = useState({});
     const [isLoadingList, setIsLoadingList] = useState(false);
     const [isLoadingDetail, setIsLoadingDetail] = useState(false);
     const [interpretation, setInterpretation] = useState({ interpretation: "", comments: "" });
@@ -132,8 +171,21 @@ export function TypistTerminal() {
     const mainContainerRef = useRef(null);
 
     const calculatedReportStructure = useMemo(
-        () => applyCalculatedValues(reportStructure),
-        [reportStructure]
+        () => {
+            if (!reportStructure) return null;
+            const mergedStructure = {
+                ...reportStructure,
+                groups: reportStructure.groups?.map(group => ({
+                    ...group,
+                    parameters: group.parameters?.map(param => ({
+                        ...param,
+                        value: resultsState[param.parameterCode] !== undefined ? resultsState[param.parameterCode] : param.value
+                    }))
+                }))
+            };
+            return applyCalculatedValues(mergedStructure);
+        },
+        [reportStructure, resultsState]
     );
 
     const patientName = calculatedReportStructure?.patientName || calculatedReportStructure?.patient?.name;
@@ -161,6 +213,12 @@ export function TypistTerminal() {
                         if (parsed.comments !== undefined) next.comments = parsed.comments;
                         return next;
                     });
+                }
+                if (parsed.resultsState !== undefined) {
+                    setResultsState(prev => ({
+                        ...prev,
+                        ...parsed.resultsState
+                    }));
                 }
             } catch (e) {
                 console.error("Failed to parse live report draft packet:", e);
@@ -329,6 +387,21 @@ export function TypistTerminal() {
         }
     };
 
+    const handleResultsChange = async (paramCode, val) => {
+        setResultsState(prev => {
+            const next = { ...prev, [paramCode]: val };
+            
+            const connection = hubConnectionRef?.current;
+            if (connection && connection.state === 'Connected' && selectedReportId) {
+                const update = { resultsState: next };
+                connection.invoke('SendReportDraftUpdate', selectedReportId.toString(), JSON.stringify(update))
+                    .catch(err => console.error("SignalR report broadcast failed:", err));
+            }
+            
+            return next;
+        });
+    };
+
     // Initial Fetch
     useEffect(() => {
         fetchWorklist();
@@ -447,6 +520,20 @@ export function TypistTerminal() {
                 interpretation: structureRes.interpretation?.summary || "",
                 comments: structureRes.interpretation?.notes || ""
             });
+
+            // Initialize results state for editing
+            const initialResults = {};
+            if (structureRes.report?.groups) {
+                structureRes.report.groups.forEach(g => {
+                    if (g.parameters) {
+                        g.parameters.forEach(p => {
+                            initialResults[p.parameterCode] = p.value;
+                        });
+                    }
+                });
+            }
+            setResultsState(initialResults);
+
             setLastSavedAt(null);
         } catch (err) {
             console.error("Failed to fetch report detail:", err);
@@ -463,19 +550,33 @@ export function TypistTerminal() {
         const currentRequestId = ++requestCounter.current;
 
         try {
-            // 1. Save to Backend
+            // 1. Save Results (Parameters) if editing is allowed
+            if (reportStructure?.canEditValues && Object.keys(resultsState).length > 0) {
+                const resultsPayload = Object.entries(resultsState).map(([code, val]) => ({
+                    ParameterCode: code,
+                    Value: val
+                }));
+                await ReportsApi.saveResults(reportStructure.sourceId, resultsPayload);
+            }
+
+            // 2. Save Interpretation to Backend
             await ReportsApi.updateInterpretation(
                 selectedReportId, 
                 interpretation.interpretation, 
                 interpretation.comments
             );
 
-            // 2. Hard Re-fetch (Rule 1: Backend is Truth, bypass snapshot in Draft)
+            // 3. Hard Re-fetch (Rule 1: Backend is Truth, bypass snapshot in Draft)
             const freshData = await ReportsApi.getReportData(selectedReportId, true);
 
-            // 3. Race Condition Guard (GPT-5 Safeguard)
+            // 4. Race Condition Guard (GPT-5 Safeguard)
             if (currentRequestId === requestCounter.current) {
                 setReportData(freshData);
+                // Also trigger re-fetch of full report structure to get updated values & flags in display
+                const fullRes = await ReportsApi.getFullReport(selectedReportId);
+                if (currentRequestId === requestCounter.current) {
+                    setReportStructure(fullRes.report);
+                }
                 setLastSavedAt(new Date());
                 // Auto-clear success message after 3s
                 setTimeout(() => setLastSavedAt(null), 3000);
@@ -504,8 +605,14 @@ export function TypistTerminal() {
             // 2. Submit with intent
             await ReportsApi.submitReport(selectedReportId, isManual);
             // 3. Refresh
+            const otherDrafts = siblingReports.filter(r => r.status === 'Draft' && r.reportId !== selectedReportId);
             await fetchWorklist();
-            setSelectedReportId(null);
+            if (otherDrafts.length > 0) {
+                alert(`Reminder: This patient has ${otherDrafts.length} other report(s) remaining (e.g. ${otherDrafts.map(d => d.testName).join(', ')}). Please ensure all are completed.`);
+                setSelectedReportId(otherDrafts[0].reportId);
+            } else {
+                setSelectedReportId(null);
+            }
         } catch (err) {
             console.error("Submission failed:", err);
             alert("Failed to submit report: " + err.message);
@@ -555,15 +662,35 @@ export function TypistTerminal() {
 
 
 
+    const currentReportItem = reports.find(r => r.reportId === selectedReportId);
+    const siblingReports = currentReportItem ? reports.filter(r => r.token === currentReportItem.token) : [];
+    const currentReportIndex = currentReportItem ? siblingReports.findIndex(r => r.reportId === selectedReportId) : -1;
+    const remainingReportsCount = siblingReports.filter(r => r.status === 'Draft').length;
+
     const memoizedReportPreview = useMemo(() => {
         if (!reportData || !template) return null;
-        const previewData = {
+        const mergedReportData = {
             ...reportData,
+            results: reportData.results?.map(group => ({
+                ...group,
+                parameters: group.parameters?.map(param => {
+                    const typedVal = resultsState[param.code];
+                    const val = typedVal !== undefined ? typedVal : param.value;
+                    const flag = getFlagForValue(val, param.referenceRangeText || param.referenceRange);
+                    return {
+                        ...param,
+                        value: val,
+                        displayValue: val,
+                        flag: flag,
+                        isAbnormal: flag !== "Normal" && flag !== ""
+                    };
+                })
+            })),
             interpretation: interpretation.interpretation,
             comments: interpretation.comments
         };
-        return <ReportA4 reportData={previewData} template={template} />;
-    }, [reportData, template, interpretation]);
+        return <ReportA4 reportData={mergedReportData} template={template} />;
+    }, [reportData, template, interpretation, resultsState]);
 
     return (
         <div className="h-screen w-screen dark:bg-synos-background bg-transparent text-foreground flex flex-col overflow-hidden font-sans selection:bg-indigo-500/30 relative">
@@ -766,6 +893,35 @@ export function TypistTerminal() {
                                                 <span className="text-zinc-400 font-normal">|</span>
                                                 <span className="font-mono text-[11px] tracking-tight">{token}</span>
                                             </div>
+                                            {siblingReports.length > 1 && (
+                                                <>
+                                                    <span className="text-zinc-400 text-xs">•</span>
+                                                    <div className="flex items-center gap-2 px-2 py-0.5 bg-indigo-500/10 border border-indigo-500/20 text-indigo-500 rounded-lg text-[10px] font-bold">
+                                                        <span>Report {currentReportIndex + 1} of {siblingReports.length}</span>
+                                                        <span className="opacity-45">|</span>
+                                                        <button 
+                                                            onClick={() => setSelectedReportId(siblingReports[currentReportIndex - 1].reportId)} 
+                                                            disabled={currentReportIndex === 0}
+                                                            className="hover:underline disabled:opacity-30 disabled:no-underline font-bold"
+                                                        >
+                                                            ← Prev
+                                                        </button>
+                                                        <span className="opacity-40">|</span>
+                                                        <button 
+                                                            onClick={() => setSelectedReportId(siblingReports[currentReportIndex + 1].reportId)} 
+                                                            disabled={currentReportIndex === siblingReports.length - 1}
+                                                            className="hover:underline disabled:opacity-30 disabled:no-underline font-bold"
+                                                        >
+                                                            Next →
+                                                        </button>
+                                                    </div>
+                                                </>
+                                            )}
+                                            {siblingReports.length > 1 && remainingReportsCount > 0 && (
+                                                <span className="bg-rose-500/10 text-rose-500 border border-rose-500/20 text-[10px] px-2 py-0.5 rounded-full font-bold">
+                                                    {remainingReportsCount} {remainingReportsCount === 1 ? 'Report' : 'Reports'} Remaining
+                                                </span>
+                                            )}
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-3">
@@ -814,7 +970,9 @@ export function TypistTerminal() {
                                                             </tr>
                                                         )}
                                                         {group.parameters.map((param, pIdx) => {
-                                                            const isAbnormal = param.flag && param.flag !== "Normal" && param.flag !== "" && param.flag !== "N";
+                                                            const currentValue = resultsState[param.parameterCode] !== undefined ? resultsState[param.parameterCode] : (param.value || "");
+                                                            const currentFlag = getFlagForValue(currentValue, param.referenceRange);
+                                                            const isAbnormal = currentFlag !== "Normal" && currentFlag !== "";
                                                             return (
                                                                 <tr key={pIdx} className={cn(
                                                                     "group transition-all duration-300",
@@ -824,9 +982,21 @@ export function TypistTerminal() {
                                                                         {param.parameterName}
                                                                     </td>
                                                                     <td className="px-3 py-1.5 text-[13px] font-mono font-semibold text-right dark:text-zinc-100 text-zinc-900 border-y border-transparent">
-                                                                        <span className={cn(isAbnormal && "font-black text-red-600 underline decoration-red-200 underline-offset-4")}>
-                                                                            {param.value || "-"}
-                                                                        </span>
+                                                                        {reportStructure?.canEditValues && !isLocked ? (
+                                                                            <input 
+                                                                                type="text"
+                                                                                value={currentValue}
+                                                                                onChange={(e) => handleResultsChange(param.parameterCode, e.target.value)}
+                                                                                className={cn(
+                                                                                    "w-24 text-right bg-indigo-50/50 border-b border-indigo-200 focus:outline-none focus:border-indigo-500 px-1 font-mono font-semibold",
+                                                                                    isAbnormal && "font-black text-red-600 border-red-300 focus:border-red-550"
+                                                                                )}
+                                                                            />
+                                                                        ) : (
+                                                                            <span className={cn(isAbnormal && "font-black text-red-600 underline decoration-red-200 underline-offset-4")}>
+                                                                                {currentValue || "-"}
+                                                                            </span>
+                                                                        )}
                                                                     </td>
                                                                     <td className="px-3 py-1.5 text-xs font-medium text-slate-500 border-y border-transparent">
                                                                         {param.unit}
@@ -838,11 +1008,11 @@ export function TypistTerminal() {
                                                                         {isAbnormal && (
                                                                             <span className={cn(
                                                                                 "text-[10px] font-bold uppercase px-2 py-0.5 rounded-full",
-                                                                                param.flag?.includes("Critical") 
+                                                                                currentFlag?.includes("Critical") 
                                                                                     ? "bg-red-100 text-red-700" 
-                                                                                    : "bg-amber-100 text-amber-700"
+                                                                                    : (currentFlag === "Low" ? "bg-blue-100 text-blue-700" : "bg-amber-100 text-amber-700")
                                                                             )}>
-                                                                                {param.flag}
+                                                                                {currentFlag}
                                                                             </span>
                                                                         )}
                                                                     </td>
@@ -902,7 +1072,7 @@ export function TypistTerminal() {
                                                     <div className="grid grid-cols-2 w-full" style={{ gap: 'var(--ws-gap)' }}>
                                                         <button 
                                                             onClick={handleSaveInterpretation}
-                                                            disabled={isSaving || (!interpretation.interpretation && !interpretation.comments)}
+                                                            disabled={isSaving}
                                                             className="dark:bg-zinc-800 bg-zinc-100 dark:text-zinc-300 text-zinc-600 hover:dark:bg-zinc-700 hover:bg-zinc-200 font-bold text-[10px] px-2 rounded-xl transition-all active:scale-95 disabled:opacity-40 uppercase tracking-tight"
                                                             style={{ paddingTop: 'var(--ws-btn-py)', paddingBottom: 'var(--ws-btn-py)' }}
                                                         >

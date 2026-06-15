@@ -1566,6 +1566,7 @@ namespace SynOS.Services
                 return new ReportListItemDto
                 {
                     ReportId = r.ReportId,
+                    VisitId = r.VisitId,
                     PatientName = patient != null ? $"{patient.FirstName} {patient.LastName}" : "Unknown",
                     PatientAgeGender = patient != null ? $"{age} / {patient.Gender}" : "N/A",
                     TestName = order?.Test?.TestName ?? order?.TestCode ?? "Unknown",

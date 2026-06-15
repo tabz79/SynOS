@@ -280,31 +280,24 @@ namespace SynOS.Services.Reporting
 
             if (order == null) throw new KeyNotFoundException($"Order for report {report.ReportId} not found.");
 
-            // 2. Discover ALL TestCodes in this report context
-            // Fix: Instead of only looking at the triggering Order, use all active TestCodes in the Visit.
-            // This ensures sibling parameters (TP, ALB) are discovered even if the report is for GLOB.
-            var visitTestCodes = await _context.Orders
-                .Where(o => o.VisitId == order.VisitId && o.Status != SynOS.Models.Enums.OrderStatus.Cancelled)
-                .Select(o => o.TestCode)
-                .Distinct()
+            // 2. Discover TestCodes in this report context (root order + child orders)
+            var reportOrders = await _context.Orders
+                .Where(o => (o.OrderId == order.OrderId || o.ParentOrderId == order.OrderId) && o.Status != SynOS.Models.Enums.OrderStatus.Cancelled)
                 .ToListAsync();
 
-            var allTestCodes = new HashSet<string>(visitTestCodes);
+            var reportTestCodes = reportOrders.Select(o => o.TestCode).Distinct().ToList();
+            var allTestCodes = new HashSet<string>(reportTestCodes);
 
             // 3. Fetch Catalog Metadata for all these tests
             var catalogParams = await _context.CatalogParameters
                 .Where(cp => allTestCodes.Contains(cp.TestCode) && cp.IsActive)
                 .ToListAsync();
 
-            // 4. Fetch Results (only latest for each parameter)
-            // Fix: Load all results for the entire Visit context, not just the single triggered Order.
-            var visitOrderIds = await _context.Orders
-                .Where(o => o.VisitId == order.VisitId && o.Status != SynOS.Models.Enums.OrderStatus.Cancelled)
-                .Select(o => o.OrderId)
-                .ToListAsync();
+            // 4. Fetch Results (only latest for each parameter) matching this report's orders
+            var reportOrderIds = reportOrders.Select(o => o.OrderId).ToList();
 
             var results = await _context.Results
-                .Where(r => visitOrderIds.Contains(r.OrderId) && r.Status != "Superseded")
+                .Where(r => reportOrderIds.Contains(r.OrderId) && r.Status != "Superseded")
                 .ToListAsync();
 
             // 5. Fetch Test Notes (linked by Panel TestCode or Child TestCodes)

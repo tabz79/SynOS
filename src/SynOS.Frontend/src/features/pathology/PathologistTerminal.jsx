@@ -39,6 +39,44 @@ let sharedConnection = null;
 let stopTimer = null;
 let subscriberCount = 0;
 
+const getFlagForValue = (value, referenceRange) => {
+    if (value === undefined || value === null || value === "") return "Normal";
+    const val = parseFloat(value);
+    if (isNaN(val)) return "Normal";
+
+    if (!referenceRange) return "Normal";
+    const rangeStr = referenceRange.trim();
+
+    try {
+        if (rangeStr.includes('-')) {
+            const parts = rangeStr.split('-');
+            if (parts.length === 2) {
+                const rLow = parseFloat(parts[0].trim());
+                const rHigh = parseFloat(parts[1].trim());
+                if (!isNaN(rLow) && !isNaN(rHigh)) {
+                    if (val < rLow) return "Low";
+                    if (val > rHigh) return "High";
+                }
+            }
+        }
+        else if (rangeStr.startsWith('<')) {
+            const rHigh = parseFloat(rangeStr.substring(1).trim());
+            if (!isNaN(rHigh) && val >= rHigh) {
+                return "High";
+            }
+        }
+        else if (rangeStr.startsWith('>')) {
+            const rLow = parseFloat(rangeStr.substring(1).trim());
+            if (!isNaN(rLow) && val <= rLow) {
+                return "Low";
+            }
+        }
+    } catch (e) {
+        console.error("Failed to parse range string:", referenceRange, e);
+    }
+    return "Normal";
+};
+
 export function PathologistTerminal() {
     const { user } = useAuth();
     const { theme } = useTheme();
@@ -112,6 +150,12 @@ export function PathologistTerminal() {
                         if (parsed.comments !== undefined) next.comments = parsed.comments;
                         return next;
                     });
+                }
+                if (parsed.resultsState !== undefined) {
+                    setResultsState(prev => ({
+                        ...prev,
+                        ...parsed.resultsState
+                    }));
                 }
             } catch (e) {
                 console.error("Failed to parse live report draft packet:", e);
@@ -248,6 +292,21 @@ export function PathologistTerminal() {
                 console.error("SignalR report broadcast failed:", err);
             }
         }
+    };
+
+    const handleResultsChange = async (paramCode, val) => {
+        setResultsState(prev => {
+            const next = { ...prev, [paramCode]: val };
+            
+            const connection = hubConnection.current;
+            if (connection && connection.state === 'Connected' && selectedReportId) {
+                const update = { resultsState: next };
+                connection.invoke('SendReportDraftUpdate', selectedReportId.toString(), JSON.stringify(update))
+                    .catch(err => console.error("SignalR report broadcast failed:", err));
+            }
+            
+            return next;
+        });
     };
 
     const connectSignalR = async (registerHandlers) => {
@@ -557,9 +616,14 @@ export function PathologistTerminal() {
 
         try {
             await ReportsApi.signReport(reportId);
+            const otherPending = siblingReports.filter(r => r.status !== 'Signed' && r.status !== 'ManualVerified' && r.reportId !== reportId);
             await fetchWorklist();
-            // UX Fix: Don't clear selection. Re-fetch current report to show SIGNED state.
-            await fetchReportDetail(reportId);
+            if (otherPending.length > 0) {
+                alert(`Reminder: This patient has ${otherPending.length} other report(s) remaining (e.g. ${otherPending.map(d => d.testName).join(', ')}). Please ensure all are completed.`);
+                setSelectedReportId(otherPending[0].reportId);
+            } else {
+                await fetchReportDetail(reportId);
+            }
         } catch (err) {
             console.error("Signing failed:", err);
             alert("Digital Signature Protocol Failed: " + (err.response?.data?.message || err.message));
@@ -668,19 +732,39 @@ export function PathologistTerminal() {
         }
     };
 
+    const currentReportItem = reports.find(r => r.reportId === selectedReportId);
+    const siblingReports = currentReportItem ? reports.filter(r => r.token === currentReportItem.token) : [];
+    const currentReportIndex = currentReportItem ? siblingReports.findIndex(r => r.reportId === selectedReportId) : -1;
+    const remainingReportsCount = siblingReports.filter(r => r.status !== 'Signed' && r.status !== 'ManualVerified').length;
+
     const patientName = reportStructure?.patientName || reportStructure?.patient?.name;
     const patientAgeGender = reportStructure?.patientAgeGender || (reportStructure?.patient?.age ? `${reportStructure.patient.age} / ${reportStructure.patient.gender}` : '');
     const token = reportStructure?.token || reportStructure?.patient?.mrn || '---';
 
     const memoizedReportPreview = useMemo(() => {
         if (!reportData || !template) return null;
-        const previewData = {
+        const mergedReportData = {
             ...reportData,
+            results: reportData.results?.map(group => ({
+                ...group,
+                parameters: group.parameters?.map(param => {
+                    const typedVal = resultsState[param.code];
+                    const val = typedVal !== undefined ? typedVal : param.value;
+                    const flag = getFlagForValue(val, param.referenceRangeText || param.referenceRange);
+                    return {
+                        ...param,
+                        value: val,
+                        displayValue: val,
+                        flag: flag,
+                        isAbnormal: flag !== "Normal" && flag !== ""
+                    };
+                })
+            })),
             interpretation: interpretation.interpretation,
             comments: interpretation.comments
         };
-        return <ReportA4 reportData={previewData} template={template} />;
-    }, [reportData, template, interpretation]);
+        return <ReportA4 reportData={mergedReportData} template={template} />;
+    }, [reportData, template, interpretation, resultsState]);
 
     return (
         <div className="h-screen w-screen dark:bg-synos-background bg-transparent text-foreground flex flex-col overflow-hidden font-sans selection:bg-indigo-500/30 relative">
@@ -876,6 +960,35 @@ export function PathologistTerminal() {
                                                 <span className="text-zinc-400 font-normal">|</span>
                                                 <span className="font-mono text-[11px] tracking-tight">{token}</span>
                                             </div>
+                                            {siblingReports.length > 1 && (
+                                                <>
+                                                    <span className="text-zinc-400 text-xs">•</span>
+                                                    <div className="flex items-center gap-2 px-2 py-0.5 bg-indigo-500/10 border border-indigo-500/20 text-indigo-500 rounded-lg text-[10px] font-bold">
+                                                        <span>Report {currentReportIndex + 1} of {siblingReports.length}</span>
+                                                        <span className="opacity-45">|</span>
+                                                        <button 
+                                                            onClick={() => setSelectedReportId(siblingReports[currentReportIndex - 1].reportId)} 
+                                                            disabled={currentReportIndex === 0}
+                                                            className="hover:underline disabled:opacity-30 disabled:no-underline font-bold"
+                                                        >
+                                                            ← Prev
+                                                        </button>
+                                                        <span className="opacity-40">|</span>
+                                                        <button 
+                                                            onClick={() => setSelectedReportId(siblingReports[currentReportIndex + 1].reportId)} 
+                                                            disabled={currentReportIndex === siblingReports.length - 1}
+                                                            className="hover:underline disabled:opacity-30 disabled:no-underline font-bold"
+                                                        >
+                                                            Next →
+                                                        </button>
+                                                    </div>
+                                                </>
+                                            )}
+                                            {siblingReports.length > 1 && remainingReportsCount > 0 && (
+                                                <span className="bg-rose-500/10 text-rose-500 border border-rose-500/20 text-[10px] px-2 py-0.5 rounded-full font-bold">
+                                                    {remainingReportsCount} {remainingReportsCount === 1 ? 'Report' : 'Reports'} Remaining
+                                                </span>
+                                            )}
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-3">
@@ -930,7 +1043,9 @@ export function PathologistTerminal() {
                                                             </tr>
                                                         )}
                                                         {group.parameters.map((param, pIdx) => {
-                                                            const isAbnormal = param.flag && param.flag !== "Normal" && param.flag !== "" && param.flag !== "N";
+                                                            const currentValue = resultsState[param.parameterCode] !== undefined ? resultsState[param.parameterCode] : (param.value || "");
+                                                            const currentFlag = getFlagForValue(currentValue, param.referenceRange);
+                                                            const isAbnormal = currentFlag !== "Normal" && currentFlag !== "";
                                                             return (
                                                                 <tr key={pIdx} className={cn(
                                                                     "group transition-colors",
@@ -943,13 +1058,16 @@ export function PathologistTerminal() {
                                                                         {reportStructure?.canEditValues && !isReadOnly ? (
                                                                             <input 
                                                                                 type="text"
-                                                                                value={resultsState[param.parameterCode] || ""}
-                                                                                onChange={(e) => setResultsState(prev => ({ ...prev, [param.parameterCode]: e.target.value }))}
-                                                                                className="w-24 text-right bg-indigo-50/50 border-b border-indigo-200 focus:outline-none focus:border-indigo-500 font-bold px-1"
+                                                                                value={currentValue}
+                                                                                onChange={(e) => handleResultsChange(param.parameterCode, e.target.value)}
+                                                                                className={cn(
+                                                                                    "w-24 text-right bg-indigo-50/50 border-b border-indigo-200 focus:outline-none focus:border-indigo-500 px-1 font-mono font-semibold",
+                                                                                    isAbnormal && "font-black text-red-600 border-red-300 focus:border-red-550"
+                                                                                )}
                                                                             />
                                                                         ) : (
                                                                             <span className={cn(isAbnormal && "font-black text-red-600 underline decoration-red-200 underline-offset-4")}>
-                                                                                {param.value || "-"}
+                                                                                {currentValue || "-"}
                                                                             </span>
                                                                         )}
                                                                     </td>
@@ -963,11 +1081,11 @@ export function PathologistTerminal() {
                                                                         {isAbnormal && (
                                                                             <span className={cn(
                                                                                 "text-[10px] font-bold uppercase px-2 py-0.5 rounded-full",
-                                                                                param.flag?.includes("Critical") 
+                                                                                currentFlag?.includes("Critical") 
                                                                                     ? "bg-red-100 text-red-700" 
-                                                                                    : "bg-amber-100 text-amber-700"
+                                                                                    : (currentFlag === "Low" ? "bg-blue-100 text-blue-700" : "bg-amber-100 text-amber-700")
                                                                             )}>
-                                                                                {param.flag}
+                                                                                {currentFlag}
                                                                             </span>
                                                                         )}
                                                                     </td>
@@ -1030,7 +1148,7 @@ export function PathologistTerminal() {
                                                         <div className="flex items-center gap-3">
                                                             <button 
                                                                 onClick={handleSaveInterpretation}
-                                                                disabled={isSaving || (!interpretation.interpretation && !interpretation.comments)}
+                                                                disabled={isSaving}
                                                                 className="bg-zinc-100 text-zinc-600 hover:bg-zinc-200 font-bold text-xs px-6 rounded-xl transition-all active:scale-95 disabled:opacity-40"
                                                                 style={{ paddingTop: 'var(--ws-btn-py)', paddingBottom: 'var(--ws-btn-py)' }}
                                                             >
