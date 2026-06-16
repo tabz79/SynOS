@@ -19,7 +19,8 @@ import { ProcessingApi } from '@/api/processing';
 export function DepartmentWorkbenchScreen() {
     const { theme } = useTheme();
     const { user } = useAuth();
-    const { queue, summary, isLoading, updateLocalState } = useProcessing();
+    const [showHistory, setShowHistory] = useState(false);
+    const { queue, summary, isLoading, updateLocalState } = useProcessing(showHistory);
 
     // UI State
     const [isIntentPanelOpen, setIsIntentPanelOpen] = useState(false);
@@ -114,15 +115,23 @@ export function DepartmentWorkbenchScreen() {
     const isAdmin = user?.role === 'Admin' || user?.role === 'SystemAdmin';
 
     const filteredQueue = queue.filter(item => {
-        if (activeTab === "available") return !item.assignedResourceId;
-        
-        // ADMIN RULE: Admins see EVERYTHING in the assigned tab
-        if (isAdmin) {
-            return !!item.assignedResourceId;
+        if (showHistory) {
+            if (activeTab === "available") {
+                return item.assignedResourceId !== user?.resourceId;
+            } else {
+                return item.assignedResourceId === user?.resourceId;
+            }
+        } else {
+            if (activeTab === "available") return !item.assignedResourceId;
+            
+            // ADMIN RULE: Admins see EVERYTHING in the assigned tab
+            if (isAdmin) {
+                return !!item.assignedResourceId;
+            }
+            
+            // Standard User: See only what is assigned to ME
+            return item.assignedResourceId === user?.resourceId;
         }
-        
-        // Standard User: See only what is assigned to ME
-        return item.assignedResourceId === user?.resourceId;
     });
 
     const selectedItem = queue.find(i => i.id === selectedAssignmentId);
@@ -176,6 +185,32 @@ export function DepartmentWorkbenchScreen() {
                                                 {tab}
                                             </button>
                                         ))}
+                                    </div>
+
+                                    {/* History Switcher */}
+                                    <div className="flex items-center gap-1 dark:bg-zinc-900/50 bg-white rounded-lg p-1 border dark:border-white/5 border-zinc-200 shadow-sm shrink-0">
+                                        <button
+                                            onClick={() => setShowHistory(false)}
+                                            className={cn(
+                                                "text-[10px] uppercase font-bold px-3 py-1 rounded transition-all",
+                                                !showHistory 
+                                                    ? "bg-zinc-800 text-white shadow-sm"
+                                                    : "text-zinc-500 hover:text-zinc-900"
+                                            )}
+                                        >
+                                            Live
+                                        </button>
+                                        <button
+                                            onClick={() => setShowHistory(true)}
+                                            className={cn(
+                                                "text-[10px] uppercase font-bold px-3 py-1 rounded transition-all",
+                                                showHistory 
+                                                    ? "bg-zinc-800 text-white shadow-sm"
+                                                    : "text-zinc-500 hover:text-zinc-900"
+                                            )}
+                                        >
+                                            History (7d)
+                                        </button>
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-2">

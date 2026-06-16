@@ -26,6 +26,7 @@ export function DeliveryTerminal() {
     const { user } = useAuth();
     const { theme } = useTheme();
     const [reports, setReports] = useState([]);
+    const [showHistory, setShowHistory] = useState(false);
     const [selectedReportId, setSelectedReportId] = useState(null);
     const [reportStructure, setReportStructure] = useState(null);
     const [reportData, setReportData] = useState(null);
@@ -42,7 +43,7 @@ export function DeliveryTerminal() {
 
     useEffect(() => {
         fetchWorklist();
-    }, []);
+    }, [showHistory]);
 
     useEffect(() => {
         if (selectedReportId) {
@@ -56,8 +57,10 @@ export function DeliveryTerminal() {
     const fetchWorklist = async () => {
         setIsLoadingList(true);
         try {
-            // GPT-5: List all reports that are NOT Draft and NOT Reopened
-            const data = await ReportsApi.getReportsByStatus('ReadyForVerification,Signed,ManualVerified');
+            // Live: ReadyForVerification, Signed, ManualVerified
+            // History: Delivered
+            const statusStr = showHistory ? 'Delivered' : 'ReadyForVerification,Signed,ManualVerified';
+            const data = await ReportsApi.getReportsByStatus(statusStr, undefined, showHistory);
             setReports(data);
             
             // Auto-select first if none selected
@@ -165,13 +168,34 @@ export function DeliveryTerminal() {
                 {/* LEFT: Worklist (30%) */}
                 <div className="w-[30%] border-r dark:border-white/5 border-zinc-200 flex flex-col bg-white/50 dark:bg-zinc-950/20 backdrop-blur-xl relative">
                     <div className="p-6 space-y-4 shrink-0">
-                        <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-xl bg-synos-primary/10 flex items-center justify-center text-synos-primary">
-                                <Truck className="w-5 h-5" />
+                        <div className="flex items-center justify-between gap-3">
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-xl bg-synos-primary/10 flex items-center justify-center text-synos-primary">
+                                    <Truck className="w-5 h-5" />
+                                </div>
+                                <div>
+                                    <h2 className="text-lg font-semibold tracking-tight dark:text-white text-zinc-900">Delivery Desk</h2>
+                                    <p className="text-[10px] uppercase font-medium tracking-widest text-zinc-400">Queue Management</p>
+                                </div>
                             </div>
-                            <div>
-                                <h2 className="text-lg font-semibold tracking-tight dark:text-white text-zinc-900">Delivery Desk</h2>
-                                <p className="text-[10px] uppercase font-medium tracking-widest text-zinc-400">Queue Management</p>
+
+                            <div className="flex items-center gap-2 dark:bg-zinc-950/50 bg-zinc-50 rounded-lg p-1 border dark:border-white/5 border-zinc-200 shadow-sm w-fit shrink-0 font-sans">
+                                <button
+                                    onClick={() => setShowHistory(false)}
+                                    className={`text-[9px] uppercase font-bold px-2 py-0.5 rounded transition-all ${
+                                        !showHistory ? "bg-zinc-800 text-white shadow-sm" : "text-zinc-500 hover:text-zinc-850 dark:hover:text-zinc-300"
+                                    }`}
+                                >
+                                    Live
+                                </button>
+                                <button
+                                    onClick={() => setShowHistory(true)}
+                                    className={`text-[9px] uppercase font-bold px-2 py-0.5 rounded transition-all ${
+                                        showHistory ? "bg-zinc-800 text-white shadow-sm" : "text-zinc-500 hover:text-zinc-850 dark:hover:text-zinc-300"
+                                    }`}
+                                >
+                                    History (7d)
+                                </button>
                             </div>
                         </div>
                         <div className="relative">

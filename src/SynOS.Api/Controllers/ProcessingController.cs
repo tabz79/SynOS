@@ -39,9 +39,9 @@ namespace SynOS.Api.Controllers
         }
 
         [HttpGet("queue")]
-        public async Task<IActionResult> GetQueue()
+        public async Task<IActionResult> GetQueue([FromQuery] bool includeHistory = false)
         {
-            var queue = await _processingService.GetQueueAsync();
+            var queue = await _processingService.GetQueueAsync(includeHistory);
             return Ok(queue);
         }
 

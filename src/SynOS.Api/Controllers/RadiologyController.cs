@@ -37,9 +37,9 @@ namespace SynOS.Api.Controllers
 
         [HttpGet("studies/queue")]
         [Authorize(Roles = "Admin,Technician,XRayTech,MriTech,CTTech,USTech,Radiologist,Typist")]
-        public async Task<IActionResult> GetTechnicianQueue([FromQuery] string[] status)
+        public async Task<IActionResult> GetTechnicianQueue([FromQuery] string[] status, [FromQuery] bool includeHistory = false)
         {
-            var queue = await _radiologyService.GetTechnicianQueueAsync(status);
+            var queue = await _radiologyService.GetTechnicianQueueAsync(status, includeHistory);
             return Ok(queue);
         }
 

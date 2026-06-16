@@ -39,6 +39,10 @@ export function PhlebotomyScreen() {
     const queueRef = useRef(null);
     useFlipGroup([summaryRef, queueRef], [isSummaryCollapsed], { scaleCompensation: true });
 
+    const [showHistory, setShowHistory] = useState(false);
+    const showHistoryRef = useRef(false);
+    useEffect(() => { showHistoryRef.current = showHistory; }, [showHistory]);
+
     // Helper: Normalize Backend DTO using shared API method
     const normalizeQueueData = ReceptionApi.normalizeQueueData;
 
@@ -48,21 +52,25 @@ export function PhlebotomyScreen() {
         row.operationalStatus === 'Pending Collection' ||
         row.operationalStatus === 'Collected' ||
         row.operationalStatus === 'In Processing' ||
-        row.operationalStatus === 'Reporting';
+        row.operationalStatus === 'Reporting' ||
+        row.operationalStatus === 'Completed' ||
+        row.operationalStatus === 'Reported' ||
+        row.operationalStatus === 'Delivered' ||
+        showHistoryRef.current;
 
     // Wiring: Initial Load + SignalR Subscription
     useEffect(() => {
         // 1. Initial Snapshot
         const loadInitial = async () => {
+            setIsLoadingQueue(true);
             try {
                 const [summaryData, queueData] = await Promise.all([
                     ReceptionApi.getDashboardSummary(),
-                    ReceptionApi.getActionQueue(false) // Today's pending only
+                    ReceptionApi.getActionQueue(showHistory)
                 ]);
 
                 if (summaryData) setSummary(summaryData);
                 if (Array.isArray(queueData)) {
-                    // Filter for Branch-wide pending collections
                     const phleboData = normalizeQueueData(queueData).filter(isPhleboRelevant);
                     setActionQueue(phleboData);
                 }
@@ -106,7 +114,7 @@ export function PhlebotomyScreen() {
             });
 
             SignalRService.onActionQueueUpdated(() => {
-                ReceptionApi.getActionQueue(false).then(data => {
+                ReceptionApi.getActionQueue(showHistoryRef.current).then(data => {
                     if (Array.isArray(data)) {
                         setActionQueue(normalizeQueueData(data).filter(isPhleboRelevant));
                     }
@@ -134,7 +142,7 @@ export function PhlebotomyScreen() {
         // Failsafe Polling (every 5 minutes)
         const interval = setInterval(async () => {
             try {
-                const data = await ReceptionApi.getActionQueue(false);
+                const data = await ReceptionApi.getActionQueue(showHistoryRef.current);
                 if (Array.isArray(data)) {
                     setActionQueue(normalizeQueueData(data).filter(isPhleboRelevant));
                 }
@@ -208,15 +216,23 @@ export function PhlebotomyScreen() {
 
     // Filtered Queue Data (Client-Side Isolation vs Admin Oversight)
     const filteredQueue = actionQueue.filter(row => {
-        if (activeAssignmentTab === "available") {
-            return !row.assignedPhlebotomistId;
-        } else {
-            // ADMIN RULE: Admins see EVERYTHING in the assigned tab
-            if (isAdmin) {
-                return !!row.assignedPhlebotomistId;
+        if (showHistory) {
+            if (activeAssignmentTab === "available") {
+                return row.assignedPhlebotomistId !== user?.id;
+            } else {
+                return row.assignedPhlebotomistId === user?.id;
             }
-            // Standard User: See only what is assigned to ME
-            return row.assignedPhlebotomistId === user?.id;
+        } else {
+            if (activeAssignmentTab === "available") {
+                return !row.assignedPhlebotomistId;
+            } else {
+                // ADMIN RULE: Admins see EVERYTHING in the assigned tab
+                if (isAdmin) {
+                    return !!row.assignedPhlebotomistId;
+                }
+                // Standard User: See only what is assigned to ME
+                return row.assignedPhlebotomistId === user?.id;
+            }
         }
     });
 
@@ -275,6 +291,26 @@ export function PhlebotomyScreen() {
                                             )}
                                         >
                                             Assigned
+                                        </button>
+                                    </div>
+                                    <div className="flex items-center gap-2 dark:bg-zinc-900/50 bg-white rounded-lg p-1 border dark:border-white/5 border-zinc-200 shadow-sm">
+                                        <button
+                                            onClick={() => setShowHistory(false)}
+                                            className={cn(
+                                                "text-[10px] uppercase font-bold px-2 py-0.5 rounded transition-all",
+                                                !showHistory ? "bg-zinc-800 text-white shadow-sm" : (theme === 'dark' ? "text-zinc-500 hover:text-zinc-300" : "text-zinc-500 hover:text-zinc-900")
+                                            )}
+                                        >
+                                            Live
+                                        </button>
+                                        <button
+                                            onClick={() => setShowHistory(true)}
+                                            className={cn(
+                                                "text-[10px] uppercase font-bold px-2 py-0.5 rounded transition-all",
+                                                showHistory ? "bg-zinc-800 text-white shadow-sm" : (theme === 'dark' ? "text-zinc-500 hover:text-zinc-300" : "text-zinc-500 hover:text-zinc-900")
+                                            )}
+                                        >
+                                            History (7d)
                                         </button>
                                     </div>
                                 </div>

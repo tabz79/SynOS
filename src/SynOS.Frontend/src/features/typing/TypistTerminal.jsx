@@ -147,6 +147,7 @@ export function TypistTerminal() {
     // State
     const [activeTerminalMode, setActiveTerminalMode] = useState('pathology'); // 'pathology' or 'radiology'
     const [reports, setReports] = useState([]);
+    const [showHistory, setShowHistory] = useState(false);
     const [selectedReportId, setSelectedReportId] = useState(null);
     const [reportStructure, setReportStructure] = useState(null);
     const [reportData, setReportData] = useState(null);
@@ -405,7 +406,7 @@ export function TypistTerminal() {
     // Initial Fetch
     useEffect(() => {
         fetchWorklist();
-    }, []);
+    }, [showHistory]);
 
     // Selection Fetch
     useEffect(() => {
@@ -494,8 +495,8 @@ export function TypistTerminal() {
     const fetchWorklist = async () => {
         setIsLoadingList(true);
         try {
-            // Fetch both Draft and ReadyForVerification to see pending work
-            const data = await ReportsApi.getReportsByStatus('Draft,ReadyForVerification', 'Pathology');
+            const statusStr = showHistory ? 'Signed,ManualVerified,Finalized' : 'Draft,ReadyForVerification';
+            const data = await ReportsApi.getReportsByStatus(statusStr, 'Pathology', showHistory);
             setReports(data);
         } catch (err) {
             console.error("Failed to fetch worklist:", err);
@@ -638,15 +639,23 @@ export function TypistTerminal() {
         
         if (!matchesSearch) return false;
 
-        if (activeTab === "available") {
-            return !r.typedByUserId;
-        } else {
-            // ADMIN RULE: Admins see EVERYTHING in the assigned tab
-            if (isAdmin) {
-                return !!r.typedByUserId;
+        if (showHistory) {
+            if (activeTab === "available") {
+                return r.typedByUserId !== user?.id;
+            } else {
+                return r.typedByUserId === user?.id;
             }
-            // Standard User: See only what I am typing
-            return r.typedByUserId === user?.id;
+        } else {
+            if (activeTab === "available") {
+                return !r.typedByUserId;
+            } else {
+                // ADMIN RULE: Admins see EVERYTHING in the assigned tab
+                if (isAdmin) {
+                    return !!r.typedByUserId;
+                }
+                // Standard User: See only what I am typing
+                return r.typedByUserId === user?.id;
+            }
         }
     });
 
@@ -768,6 +777,27 @@ export function TypistTerminal() {
                                     <span className="bg-synos-primary/10 text-synos-primary dark:text-synos-primary/80 text-xs font-bold px-2 py-0.5 rounded-full">
                                         {filteredReports.length}
                                     </span>
+                                </div>
+
+                                <div className="flex items-center gap-2 dark:bg-zinc-950/50 bg-zinc-50 rounded-lg p-1 border dark:border-white/5 border-zinc-200 shadow-sm w-fit self-start">
+                                    <button
+                                        onClick={() => setShowHistory(false)}
+                                        className={cn(
+                                            "text-[9px] uppercase font-bold px-2 py-0.5 rounded transition-all",
+                                            !showHistory ? "bg-zinc-800 text-white shadow-sm" : (theme === 'dark' ? "text-zinc-500 hover:text-zinc-300" : "text-zinc-500 hover:text-zinc-900")
+                                        )}
+                                    >
+                                        Live
+                                    </button>
+                                    <button
+                                        onClick={() => setShowHistory(true)}
+                                        className={cn(
+                                            "text-[9px] uppercase font-bold px-2 py-0.5 rounded transition-all",
+                                            showHistory ? "bg-zinc-800 text-white shadow-sm" : (theme === 'dark' ? "text-zinc-500 hover:text-zinc-300" : "text-zinc-500 hover:text-zinc-900")
+                                        )}
+                                    >
+                                        History (7d)
+                                    </button>
                                 </div>
                                 
                                 <div className="flex items-center gap-1 dark:bg-zinc-950 bg-zinc-50 p-1 rounded-xl border dark:border-white/5 border-zinc-200">

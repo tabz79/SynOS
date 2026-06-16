@@ -1456,15 +1456,41 @@ namespace SynOS.Services
             };
         }
 
-        public async Task<System.Collections.Generic.IEnumerable<ReportListItemDto>> GetReportsByStatusAsync(string status, bool excludeManualFlow = false, string? department = null)
+        public async Task<System.Collections.Generic.IEnumerable<ReportListItemDto>> GetReportsByStatusAsync(string status, bool excludeManualFlow = false, string? department = null, bool includeHistory = false)
         {
             // Support comma-separated statuses for multi-state queues (e.g. "Draft,ReadyForVerification")
             var statusList = (status ?? "").Split(',').Select(s => s.Trim()).Where(s => !string.IsNullOrEmpty(s)).ToList();
+
+            var today = DateTimeOffset.UtcNow.Date;
+            var startDate = today.AddDays(-7);
+            var nextDay = today.AddDays(1);
+
+            // Terminal/Completed statuses for reports
+            var terminalStatuses = new List<string> { "Signed", "ManualVerified", "Finalized" };
 
             var reportsQuery = _context.Reports
                 .Include(r => r.TypedByUser)
                 .Include(r => r.VerifiedByUser)
                 .Where(r => statusList.Contains(r.Status) && (r.SourceType == "Order" || r.SourceType == "RadiologyStudy"));
+
+            if (!includeHistory)
+            {
+                // Live View:
+                // Show Active (non-terminal) reports from the last 7 days OR
+                // Show Completed (terminal) reports ONLY from today
+                reportsQuery = reportsQuery.Where(r => 
+                    (!terminalStatuses.Contains(r.Status) && (r.CreatedAt >= startDate || r.UpdatedAt >= startDate)) ||
+                    (terminalStatuses.Contains(r.Status) && (r.UpdatedAt ?? r.CreatedAt) >= today && (r.UpdatedAt ?? r.CreatedAt) < nextDay)
+                );
+            }
+            else
+            {
+                // History View:
+                // Show Completed (terminal) reports from the last 7 days
+                reportsQuery = reportsQuery.Where(r => 
+                    terminalStatuses.Contains(r.Status) && (r.UpdatedAt ?? r.CreatedAt) >= startDate && (r.UpdatedAt ?? r.CreatedAt) < nextDay
+                );
+            }
 
             if (excludeManualFlow)
             {
@@ -1578,6 +1604,8 @@ namespace SynOS.Services
                     Token = order?.Visit?.Token ?? "---",
                     TypedByUserName = r.TypedByUser?.Name,
                     VerifiedByUserName = r.VerifiedByUser?.Name,
+                    TypedByUserId = r.TypedByUserId,
+                    VerifiedByUserId = r.VerifiedByUserId,
                     IsPhysicallyVerified = r.IsPhysicallyVerified,
                     SignaturesCount = sigCount,
                     Delivered = r.Delivered,
@@ -1800,6 +1828,8 @@ namespace SynOS.Services
                     Token = r.Visit?.Token ?? "---",
                     TypedByUserName = r.TypedByUser?.Name,
                     VerifiedByUserName = r.VerifiedByUser?.Name,
+                    TypedByUserId = r.TypedByUserId,
+                    VerifiedByUserId = r.VerifiedByUserId,
                     IsPhysicallyVerified = r.IsPhysicallyVerified,
                     SignaturesCount = sigCount,
                     Delivered = r.Delivered,

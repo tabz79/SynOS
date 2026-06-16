@@ -1,0 +1,8 @@
+ReportId                             VisitId                              SourceType                                         SourceId                             Department                                         Status                                            
+------------------------------------ ------------------------------------ -------------------------------------------------- ------------------------------------ -------------------------------------------------- --------------------------------------------------
+2CA711BA-A0C5-46D9-BB54-10ADC58A1AC7 014F385B-FCE8-4D5E-B40F-0A537846336B Order                                              5867F7D6-0481-45D6-8D74-0D1DDFF2C67E BIO                                                Signed                                            
+763C98AD-80DC-48C6-BB73-53625C62A937 11D78A62-53E7-4D4D-B2B3-64208AC6196F RadiologyStudy                                     17ED3DA1-3525-4309-8D14-00206CCD8092 Radiology                                          Draft                                             
+C18D54E0-6CE0-42D3-89AA-AFA53F2EDFCD 4298D663-9C95-4224-9D38-B9F3C10D7C3C Order                                              694D2F36-68EA-4000-93FC-5E2DFD26E82F BIO                                                ReadyForVerification                              
+8577AC09-90FB-41F6-9D41-DF18D80EF035 AE23388E-2D74-49B4-AF4C-AD3947015722 Order                                              D9D805E6-330C-4B6D-BF1B-EABBD7EF85CD BIO                                                ReadyForVerification                              
+
+(4 rows affected)

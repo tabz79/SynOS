@@ -8,7 +8,7 @@ namespace SynOS.Services
     public interface IRadiologyService
     {
         // Technician Flow
-        Task<IEnumerable<RadiologyStudyQueueDto>> GetTechnicianQueueAsync(string[] statuses);
+        Task<IEnumerable<RadiologyStudyQueueDto>> GetTechnicianQueueAsync(string[] statuses, bool includeHistory = false);
         Task AssignStudyAsync(Guid studyId, Guid userId);
         Task<ReportAttachmentDto> AddAttachmentToStudyAsync(Guid studyId, Guid userId, string displayName, string fileUrl, string attachmentType);
         Task MarkImagingCompletedAsync(Guid studyId, Guid userId);

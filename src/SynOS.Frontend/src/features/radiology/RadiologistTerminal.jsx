@@ -39,6 +39,7 @@ let subscriberCount = 0;
 export function RadiologistTerminal() {
     const { user } = useAuth();
     const [studies, setStudies] = useState([]);
+    const [showHistory, setShowHistory] = useState(false);
     const [selectedStudy, setSelectedStudy] = useState(null);
     const [loading, setLoading] = useState(true);
     const [actionLoading, setActionLoading] = useState(false);
@@ -147,8 +148,11 @@ export function RadiologistTerminal() {
     const fetchWorklist = async () => {
         setLoading(true);
         try {
-            // Fetch studies awaiting reporting
-            const response = await fetch('/api/v1/radiology/studies/queue?status=AwaitingDictation&status=DictationSessionStarted&status=DraftReady&status=AwaitingSignature', {
+            const statuses = showHistory 
+                ? ['Signed', 'ManualVerified', 'Finalized'] 
+                : ['AwaitingDictation', 'DictationSessionStarted', 'DraftReady', 'AwaitingSignature'];
+            const params = statuses.map(s => `status=${encodeURIComponent(s)}`).join('&');
+            const response = await fetch(`/api/v1/radiology/studies/queue?includeHistory=${showHistory}&${params}`, {
                 headers: { 'Authorization': `Bearer ${localStorage.getItem('synos_jwt')}` }
             });
             if (response.ok) {
@@ -164,7 +168,7 @@ export function RadiologistTerminal() {
 
     useEffect(() => {
         fetchWorklist();
-    }, []);
+    }, [showHistory]);
 
     const handleSelectStudy = async (study) => {
         if (viewportManager.current) {
@@ -837,11 +841,32 @@ export function RadiologistTerminal() {
                         </div>
                     ) : (
                         <>
-                            <div className="p-4 border-b dark:border-synos-border border-zinc-200 dark:bg-synos-surface bg-white flex justify-between items-center">
-                                <span className="font-black text-xs uppercase tracking-wider dark:text-zinc-400 text-zinc-550">Interpretations Worklist</span>
-                                <span className="text-[10px] dark:bg-zinc-800 bg-zinc-100 dark:text-zinc-400 text-zinc-600 px-2 py-0.5 rounded-full font-bold">
-                                    {studies.length} active
-                                </span>
+                            <div className="p-4 border-b dark:border-synos-border border-zinc-200 dark:bg-synos-surface bg-white flex flex-col gap-3">
+                                <div className="flex justify-between items-center">
+                                    <span className="font-black text-xs uppercase tracking-wider dark:text-zinc-400 text-zinc-550">Interpretations Worklist</span>
+                                    <span className="text-[10px] dark:bg-zinc-800 bg-zinc-100 dark:text-zinc-400 text-zinc-650 px-2 py-0.5 rounded-full font-bold">
+                                        {studies.length} {showHistory ? "history" : "active"}
+                                    </span>
+                                </div>
+
+                                <div className="flex items-center gap-2 dark:bg-zinc-950/50 bg-zinc-50 rounded-lg p-1 border dark:border-white/5 border-zinc-200 shadow-sm w-fit">
+                                    <button
+                                        onClick={() => setShowHistory(false)}
+                                        className={`text-[9px] uppercase font-bold px-2 py-0.5 rounded transition-all ${
+                                            !showHistory ? "bg-zinc-800 text-white shadow-sm" : "text-zinc-500 hover:text-zinc-850 dark:hover:text-zinc-300"
+                                        }`}
+                                    >
+                                        Live
+                                    </button>
+                                    <button
+                                        onClick={() => setShowHistory(true)}
+                                        className={`text-[9px] uppercase font-bold px-2 py-0.5 rounded transition-all ${
+                                            showHistory ? "bg-zinc-800 text-white shadow-sm" : "text-zinc-500 hover:text-zinc-850 dark:hover:text-zinc-300"
+                                        }`}
+                                    >
+                                        History (7d)
+                                    </button>
+                                </div>
                             </div>
 
                             <div className="flex-1 overflow-y-auto p-3 space-y-2">

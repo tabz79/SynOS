@@ -17,6 +17,8 @@ namespace SynOS.Models.DTOs.Reporting
         public string Token { get; set; } = string.Empty;
         public string? TypedByUserName { get; set; }
         public string? VerifiedByUserName { get; set; }
+        public Guid? TypedByUserId { get; set; }
+        public Guid? VerifiedByUserId { get; set; }
         
         // GPT-5: Delivery & Verification Audit Flags
         public bool IsPhysicallyVerified { get; set; }

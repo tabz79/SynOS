@@ -1,7 +1,7 @@
 
 export const ProcessingApi = {
-    getQueue: async () => {
-        const response = await fetch('/api/processing/queue', {
+    getQueue: async (includeHistory = false) => {
+        const response = await fetch(`/api/processing/queue?includeHistory=${includeHistory}`, {
             headers: { 'Authorization': `Bearer ${localStorage.getItem('synos_jwt')}` }
         });
         if (!response.ok) {

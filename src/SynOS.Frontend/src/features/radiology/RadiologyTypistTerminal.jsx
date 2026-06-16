@@ -31,6 +31,7 @@ let subscriberCount = 0;
 export function RadiologyTypistTerminal({ selectedStudy, setSelectedStudy, hubConnectionRef, connectionStatus }) {
     const { user } = useAuth();
     const [studies, setStudies] = useState([]);
+    const [showHistory, setShowHistory] = useState(false);
     const [loading, setLoading] = useState(true);
     const [actionLoading, setActionLoading] = useState(false);
 
@@ -64,7 +65,11 @@ export function RadiologyTypistTerminal({ selectedStudy, setSelectedStudy, hubCo
     const fetchQueue = async () => {
         setLoading(true);
         try {
-            const response = await fetch('/api/v1/radiology/studies/queue?status=AwaitingDictation&status=DictationSessionStarted&status=DraftReady&status=AwaitingSignature', {
+            const statuses = showHistory 
+                ? ['Signed', 'ManualVerified', 'Finalized'] 
+                : ['AwaitingDictation', 'DictationSessionStarted', 'DraftReady', 'AwaitingSignature'];
+            const params = statuses.map(s => `status=${encodeURIComponent(s)}`).join('&');
+            const response = await fetch(`/api/v1/radiology/studies/queue?includeHistory=${showHistory}&${params}`, {
                 headers: { 'Authorization': `Bearer ${localStorage.getItem('synos_jwt')}` }
             });
             if (response.ok) {
@@ -101,7 +106,7 @@ export function RadiologyTypistTerminal({ selectedStudy, setSelectedStudy, hubCo
 
     useEffect(() => {
         fetchQueue();
-    }, []);
+    }, [showHistory]);
 
     // Connect SignalR event listeners when mounted
     useEffect(() => {
@@ -434,14 +439,35 @@ export function RadiologyTypistTerminal({ selectedStudy, setSelectedStudy, hubCo
                         </div>
                     ) : (
                         <>
-                            <div className="p-4 border-b dark:border-synos-border border-zinc-200 dark:bg-synos-surface bg-white flex justify-between items-center">
-                                <span className="font-black text-xs uppercase tracking-wider dark:text-zinc-400 text-zinc-550">Collaborative Queue</span>
-                                <button 
-                                    onClick={fetchQueue}
-                                    className="p-1.5 dark:hover:bg-zinc-800 hover:bg-zinc-200/60 rounded transition-colors dark:text-zinc-400 text-zinc-650 hover:dark:text-zinc-200 hover:text-zinc-900"
-                                >
-                                    <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} />
-                                </button>
+                            <div className="p-4 border-b dark:border-synos-border border-zinc-200 dark:bg-synos-surface bg-white flex flex-col gap-3">
+                                <div className="flex justify-between items-center">
+                                    <span className="font-black text-xs uppercase tracking-wider dark:text-zinc-400 text-zinc-550">Collaborative Queue</span>
+                                    <button 
+                                        onClick={fetchQueue}
+                                        className="p-1.5 dark:hover:bg-zinc-800 hover:bg-zinc-200/60 rounded transition-colors dark:text-zinc-400 text-zinc-650 hover:dark:text-zinc-200 hover:text-zinc-900"
+                                    >
+                                        <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} />
+                                    </button>
+                                </div>
+
+                                <div className="flex items-center gap-2 dark:bg-zinc-950/50 bg-zinc-50 rounded-lg p-1 border dark:border-white/5 border-zinc-200 shadow-sm w-fit">
+                                    <button
+                                        onClick={() => setShowHistory(false)}
+                                        className={`text-[9px] uppercase font-bold px-2 py-0.5 rounded transition-all ${
+                                            !showHistory ? "bg-zinc-800 text-white shadow-sm" : "text-zinc-500 hover:text-zinc-850 dark:hover:text-zinc-300"
+                                        }`}
+                                    >
+                                        Live
+                                    </button>
+                                    <button
+                                        onClick={() => setShowHistory(true)}
+                                        className={`text-[9px] uppercase font-bold px-2 py-0.5 rounded transition-all ${
+                                            showHistory ? "bg-zinc-800 text-white shadow-sm" : "text-zinc-500 hover:text-zinc-850 dark:hover:text-zinc-300"
+                                        }`}
+                                    >
+                                        History (7d)
+                                    </button>
+                                </div>
                             </div>
 
                             <div className="flex-1 overflow-y-auto p-3 space-y-2">

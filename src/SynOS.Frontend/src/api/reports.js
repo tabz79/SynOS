@@ -24,8 +24,8 @@ export const ReportsApi = {
         return await response.json();
     },
 
-    getReportsByStatus: async (status, department) => {
-        let url = `/api/v1/reports?status=${status}`;
+    getReportsByStatus: async (status, department, includeHistory = false) => {
+        let url = `/api/v1/reports?status=${status}&includeHistory=${includeHistory}`;
         if (department) {
             url += `&department=${encodeURIComponent(department)}`;
         }

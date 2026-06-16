@@ -1,9 +1,9 @@
 export const RadiologyApi = {
-    getTechnicianQueue: async (statuses = []) => {
-        let url = '/api/v1/radiology/studies/queue';
+    getTechnicianQueue: async (statuses = [], includeHistory = false) => {
+        let url = `/api/v1/radiology/studies/queue?includeHistory=${includeHistory}`;
         if (statuses.length > 0) {
             const params = statuses.map(s => `status=${encodeURIComponent(s)}`).join('&');
-            url += `?${params}`;
+            url += `&${params}`;
         }
         const response = await fetch(url, {
             headers: { 'Authorization': `Bearer ${localStorage.getItem('synos_jwt')}` }

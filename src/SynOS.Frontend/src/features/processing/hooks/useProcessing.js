@@ -3,7 +3,7 @@ import { ProcessingApi } from '@/api/processing';
 import { SignalRService } from '@/lib/signalr';
 import { useAuth } from '@/context/AuthContext';
 
-export function useProcessing() {
+export function useProcessing(showHistory = false) {
     const [queue, setQueue] = useState([]);
     const [summary, setSummary] = useState({
         pending: 0,
@@ -17,7 +17,7 @@ export function useProcessing() {
     const loadQueue = useCallback(async () => {
         try {
             setIsLoading(true);
-            const data = await ProcessingApi.getQueue();
+            const data = await ProcessingApi.getQueue(showHistory);
             const normalized = ProcessingApi.normalizeQueueData(data);
             setQueue(normalized);
             updateSummary(normalized);
@@ -26,7 +26,7 @@ export function useProcessing() {
         } finally {
             setIsLoading(false);
         }
-    }, []);
+    }, [showHistory]);
 
     const updateSummary = (items) => {
         const stats = {

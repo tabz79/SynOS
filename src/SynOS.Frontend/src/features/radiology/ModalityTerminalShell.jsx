@@ -20,6 +20,7 @@ import {
 
 export function ModalityTerminalShell({ modalityName, technicianRole }) {
     const [queue, setQueue] = useState([]);
+    const [showHistory, setShowHistory] = useState(false);
     const [loading, setLoading] = useState(true);
     const [activeStudy, setActiveStudy] = useState(null);
     const [actionLoading, setActionLoading] = useState(false);
@@ -35,7 +36,10 @@ export function ModalityTerminalShell({ modalityName, technicianRole }) {
     const fetchQueue = async () => {
         setLoading(true);
         try {
-            const data = await RadiologyApi.getTechnicianQueue(['PendingImaging', 'Assigned']);
+            const statuses = showHistory 
+                ? ['AwaitingDictation', 'DictationSessionStarted', 'DraftReady', 'AwaitingSignature', 'Signed', 'ManualVerified', 'Finalized'] 
+                : ['PendingImaging', 'Assigned', 'AwaitingDictation', 'DictationSessionStarted', 'DraftReady', 'AwaitingSignature', 'Signed', 'ManualVerified', 'Finalized'];
+            const data = await RadiologyApi.getTechnicianQueue(statuses, showHistory);
             // Filter by modality if applicable
             const filtered = data.filter(s => s.modality.toLowerCase().includes(modalityName.toLowerCase()) || modalityName === "General");
             setQueue(filtered);
@@ -48,14 +52,17 @@ export function ModalityTerminalShell({ modalityName, technicianRole }) {
 
     useEffect(() => {
         fetchQueue();
-    }, [modalityName]);
+    }, [modalityName, showHistory]);
 
     const handleAssign = async (studyId) => {
         setActionLoading(true);
         try {
             await RadiologyApi.assignStudy(studyId);
             // Refresh queue and select active study
-            const data = await RadiologyApi.getTechnicianQueue(['PendingImaging', 'Assigned']);
+            const statuses = showHistory 
+                ? ['AwaitingDictation', 'DictationSessionStarted', 'DraftReady', 'AwaitingSignature', 'Signed', 'ManualVerified', 'Finalized'] 
+                : ['PendingImaging', 'Assigned', 'AwaitingDictation', 'DictationSessionStarted', 'DraftReady', 'AwaitingSignature', 'Signed', 'ManualVerified', 'Finalized'];
+            const data = await RadiologyApi.getTechnicianQueue(statuses, showHistory);
             const updated = data.find(s => s.radiologyStudyId === studyId);
             setActiveStudy(updated);
             fetchQueue();
@@ -146,17 +153,38 @@ export function ModalityTerminalShell({ modalityName, technicianRole }) {
             <div className="flex-1 grid grid-cols-12 overflow-hidden">
                 {/* Left Panel: Workflow Worklist Queue */}
                 <div className="col-span-4 border-r dark:border-synos-border border-zinc-200 flex flex-col h-full dark:bg-synos-background/40 bg-zinc-50/50">
-                    <div className="p-4 border-b dark:border-synos-border border-zinc-200 flex justify-between items-center dark:bg-synos-surface bg-white">
-                        <div className="flex items-center gap-2">
-                            <Activity className="h-4 w-4 text-emerald-500 animate-pulse" />
-                            <span className="font-bold text-sm uppercase tracking-wider dark:text-zinc-300 text-zinc-700">Modality Worklist</span>
+                    <div className="p-4 border-b dark:border-synos-border border-zinc-200 flex flex-col gap-3 dark:bg-synos-surface bg-white">
+                        <div className="flex justify-between items-center">
+                            <div className="flex items-center gap-2">
+                                <Activity className="h-4 w-4 text-emerald-500 animate-pulse" />
+                                <span className="font-bold text-sm uppercase tracking-wider dark:text-zinc-300 text-zinc-700">Modality Worklist</span>
+                            </div>
+                            <button 
+                                onClick={fetchQueue}
+                                className="p-1.5 dark:hover:bg-zinc-800 hover:bg-zinc-200/60 rounded transition-colors dark:text-zinc-400 text-zinc-650 hover:dark:text-zinc-200 hover:text-zinc-900"
+                            >
+                                <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} />
+                            </button>
                         </div>
-                        <button 
-                            onClick={fetchQueue}
-                            className="p-1.5 dark:hover:bg-zinc-800 hover:bg-zinc-200/60 rounded transition-colors dark:text-zinc-400 text-zinc-650 hover:dark:text-zinc-200 hover:text-zinc-900"
-                        >
-                            <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} />
-                        </button>
+
+                        <div className="flex items-center gap-2 dark:bg-zinc-950/50 bg-zinc-50 rounded-lg p-1 border dark:border-white/5 border-zinc-200 shadow-sm w-fit">
+                            <button
+                                onClick={() => setShowHistory(false)}
+                                className={`text-[9px] uppercase font-bold px-2 py-0.5 rounded transition-all ${
+                                    !showHistory ? "bg-zinc-800 text-white shadow-sm" : "text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-300"
+                                }`}
+                            >
+                                Live
+                            </button>
+                            <button
+                                onClick={() => setShowHistory(true)}
+                                className={`text-[9px] uppercase font-bold px-2 py-0.5 rounded transition-all ${
+                                    showHistory ? "bg-zinc-800 text-white shadow-sm" : "text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-300"
+                                }`}
+                            >
+                                History (7d)
+                            </button>
+                        </div>
                     </div>
 
                     <div className="flex-1 overflow-y-auto p-3 space-y-2">

@@ -37,7 +37,7 @@ namespace SynOS.Services.Operational
             _logger = logger;
         }
 
-        public async Task<IEnumerable<ProcessingQueueItemDto>> GetQueueAsync()
+        public async Task<IEnumerable<ProcessingQueueItemDto>> GetQueueAsync(bool includeHistory = false)
         {
             // 1. Validate Mode
             if (!string.Equals(_userContext.CurrentMode, "operational", StringComparison.OrdinalIgnoreCase)) return Enumerable.Empty<ProcessingQueueItemDto>();
@@ -47,9 +47,10 @@ namespace SynOS.Services.Operational
             var isAdmin = _userContext.CurrentRole == "Admin" || _userContext.CurrentRole == "SystemAdmin";
             if (resource == null && !isAdmin) return Enumerable.Empty<ProcessingQueueItemDto>();
 
-            // 3. Query Queue (V1 Rules)
+            // 3. Query Queue (Live / History Window)
             var today = DateTimeOffset.UtcNow.Date;
-            var window24h = DateTimeOffset.UtcNow.AddHours(-24);
+            var startDate = includeHistory ? today.AddDays(-7) : today;
+            var nextDay = today.AddDays(1);
 
             var query = _db.ProcessingAssignments
                 .Include(a => a.Specimen)
@@ -64,13 +65,24 @@ namespace SynOS.Services.Operational
                 query = query.Where(a => a.DepartmentCode == resource!.DepartmentCode);
             }
 
-            var items = await query
-                .Where(a => 
-                    (a.Status == ProcessingAssignmentStatus.Pending && a.CreatedAt >= today) || 
-                    (resource != null && a.AssignedResourceId == resource.OperationalResourceId && 
-                        (a.Status == ProcessingAssignmentStatus.Claimed || 
-                        (a.Status == ProcessingAssignmentStatus.Completed && a.CompletedAt >= window24h)))
-                )
+            IQueryable<ProcessingAssignment> filteredQuery;
+            if (!includeHistory)
+            {
+                // Live View: show Pending/Claimed assignments from last 7 days + Completed assignments completed today
+                filteredQuery = query.Where(a => 
+                    (a.Status != ProcessingAssignmentStatus.Completed && a.CreatedAt >= today.AddDays(-7)) ||
+                    (a.Status == ProcessingAssignmentStatus.Completed && a.CompletedAt >= today && a.CompletedAt < nextDay)
+                );
+            }
+            else
+            {
+                // History View: show Completed assignments from last 7 days
+                filteredQuery = query.Where(a => 
+                    a.Status == ProcessingAssignmentStatus.Completed && a.CompletedAt >= startDate && a.CompletedAt < nextDay
+                );
+            }
+
+            var items = await filteredQuery
                 .Select(a => new ProcessingQueueItemDto
                 {
                     ProcessingAssignmentId = a.ProcessingAssignmentId,
