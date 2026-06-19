@@ -233,6 +233,19 @@ namespace SynOS.Api.Controllers.Admin
             return File(bytes, "text/csv", "test_master_template.csv");
         }
 
+        [HttpGet("catalog/template")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> GetCatalogTemplate()
+        {
+            var path = "d:\\Projects\\SynOS-Synthesized-Lab-Intelligence\\SynOS_Catalog_Master_Template_VERIFIED.xlsx";
+            if (!System.IO.File.Exists(path))
+            {
+                return NotFound("Template file not found");
+            }
+            var bytes = await System.IO.File.ReadAllBytesAsync(path);
+            return File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "SynOS_Catalog_Master_Template.xlsx");
+        }
+
         [HttpPost("import-csv")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> ImportCsv([FromForm] CsvImportRequestDto request)

@@ -123,13 +123,37 @@ export function ActivityStream({ serverTime }) {
     };
 
     const groupedEvents = useMemo(() => {
+        // Create a map of VisitId -> Latest (non-draft preferred) Token
+        const latestTokenMap = {};
+        events.forEach(event => {
+            const visitId = event.visitId || event.VisitId || event.metadataObj?.VisitId;
+            const rawToken = event.tokenId || event.TokenId || event.token || event.metadataObj?.TokenId;
+            if (visitId && rawToken) {
+                const cleanToken = rawToken.trim();
+                const isDraft = cleanToken.toUpperCase().startsWith("DRAFT-");
+                const current = latestTokenMap[visitId];
+                if (!current) {
+                    latestTokenMap[visitId] = cleanToken;
+                } else if (current.toUpperCase().startsWith("DRAFT-") && !isDraft) {
+                    latestTokenMap[visitId] = cleanToken;
+                }
+            }
+        });
+
         const groups = [];
         let currentGroup = null;
 
         events.forEach(event => {
             const msg = event.title || event.summaryText || event.SummaryText || "";
+            const visitId = event.visitId || event.VisitId || event.metadataObj?.VisitId;
             const rawToken = event.tokenId || event.TokenId || event.token || event.metadataObj?.TokenId;
-            const token = rawToken || "System";
+            
+            // Resolve token using our latestTokenMap
+            let token = rawToken || "System";
+            if (visitId && latestTokenMap[visitId]) {
+                token = latestTokenMap[visitId];
+            }
+            token = (token || "").trim();
 
             if (!currentGroup || currentGroup.token !== token) {
                 if (currentGroup) groups.push(currentGroup);

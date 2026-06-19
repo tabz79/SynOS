@@ -11,6 +11,7 @@ using SynOS.Data;
 using SynOS.Models.Dtos;
 using SynOS.Models.Entities;
 using SynOS.Models.Entities.Catalog;
+using SynOS.Models.Entities.IMS;
 
 namespace SynOS.Services
 {
@@ -129,14 +130,19 @@ namespace SynOS.Services
                 log.AffectedTestCodes = JsonSerializer.Serialize(affectedTestCodes);
 
                 await ProvisionDepartmentsAsync(result);
+                await ProvisionSpecimenTypesAsync(result);
                 await _context.SaveChangesAsync();
-                _logger.LogInformation("Provisioning step completed: Departments");
+                _logger.LogInformation("Provisioning step completed: Departments and SpecimenTypes");
 
                 if (affectedTestCodes.Any())
                 {
                     await ProvisionTestsAsync(affectedTestCodes, result);
                     await _context.SaveChangesAsync();
                     _logger.LogInformation("Provisioning step completed: Tests");
+
+                    await ProvisionImsTestTubeMapsAsync(affectedTestCodes, result);
+                    await _context.SaveChangesAsync();
+                    _logger.LogInformation("Provisioning step completed: IMS_TestTubeMaps");
 
                     await ProvisionParametersAsync(affectedTestCodes, result);
                     await _context.SaveChangesAsync();
@@ -275,6 +281,20 @@ namespace SynOS.Services
             foreach (var catalog in catalogs)
             {
                 var master = masters.FirstOrDefault(m => m.Code == catalog.DepartmentCode);
+                var category = catalog.ServiceCategoryCode;
+                var normalizedMacro = category;
+
+                if (string.Equals(category, "LAB", StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(category, "PATHOLOGY", StringComparison.OrdinalIgnoreCase))
+                {
+                    normalizedMacro = "Pathology";
+                }
+                else if (string.Equals(category, "RAD", StringComparison.OrdinalIgnoreCase) ||
+                         string.Equals(category, "RADIOLOGY", StringComparison.OrdinalIgnoreCase))
+                {
+                    normalizedMacro = "Radiology";
+                }
+
                 if (master == null)
                 {
                     master = new DepartmentMaster
@@ -282,7 +302,7 @@ namespace SynOS.Services
                         DepartmentId = Guid.NewGuid(),
                         Code = catalog.DepartmentCode,
                         Name = catalog.DepartmentName,
-                        MacroDepartment = catalog.ServiceCategoryCode,
+                        MacroDepartment = normalizedMacro,
                         IsActive = true,
                         CreatedAt = DateTimeOffset.UtcNow
                     };
@@ -291,7 +311,7 @@ namespace SynOS.Services
                 else
                 {
                     master.Name = catalog.DepartmentName;
-                    master.MacroDepartment = catalog.ServiceCategoryCode;
+                    master.MacroDepartment = normalizedMacro;
                     master.IsActive = true;
                 }
             }
@@ -310,6 +330,7 @@ namespace SynOS.Services
                 .ToListAsync();
 
             var depts = await _context.DepartmentMasters.ToListAsync();
+            var modalities = await _context.ModalityMasters.ToListAsync();
 
             foreach (var code in allTestCodes)
             {
@@ -338,7 +359,6 @@ namespace SynOS.Services
                         catalog.TestCode);
                     throw new InvalidOperationException($"Catalog Validation Failed: Test '{catalog.TestCode}' must have both a TubeCode and SpecimenCode mapped.");
                 }
-                // -----------------------------------------------------------
                 
                 if (test == null)
                 {
@@ -364,6 +384,34 @@ namespace SynOS.Services
                     test.IsActive = true;
                     test.UpdatedAt = DateTimeOffset.UtcNow;
                 }
+
+                if (isRadiology)
+                {
+                    var modCode = "XRAY";
+                    var nameUpper = catalog.TestName.ToUpperInvariant();
+                    var deptUpper = catalog.DepartmentCode.ToUpperInvariant();
+                    if (nameUpper.Contains("MRI") || nameUpper.Contains("MAGNETIC RESONANCE"))
+                    {
+                        modCode = "MRI";
+                    }
+                    else if (nameUpper.Contains("CT ") || nameUpper.Contains(" CT") || nameUpper.Contains("CT-") || nameUpper.Contains("HRCT") || nameUpper.Contains("CECT"))
+                    {
+                        modCode = "CT";
+                    }
+                    else if (nameUpper.Contains("U/S") || nameUpper.Contains("ULTRASOUND") || nameUpper.Contains("USG") || nameUpper.Contains("SONO") || deptUpper == "RAD_US")
+                    {
+                        modCode = "US";
+                    }
+                    var matchedMod = modalities.FirstOrDefault(m => string.Equals(m.Code, modCode, StringComparison.OrdinalIgnoreCase));
+                    test.ModalityId = matchedMod?.ModalityId;
+                    test.Category = matchedMod?.Name;
+                }
+                else
+                {
+                    test.ModalityId = null;
+                    test.Category = "Clinical " + (dept?.Code ?? "BIO");
+                }
+
                 result.TestsAffected++;
             }
         }
@@ -381,12 +429,12 @@ namespace SynOS.Services
             // Rule 1, 2, 5: 'existings' ONLY contains parameters loaded from the database, use AsNoTracking
             var existingValidationParams = await _context.Parameters
                 .AsNoTracking()
-                .Where(p => testIds.Values.Contains(p.TestId))
+                .Where(p => testCodes.Contains(p.Test.TestCode))
                 .ToListAsync();
 
             // Load tracked items separately so we can update them without EF tracking confusion
             var trackedParams = await _context.Parameters
-                .Where(p => testIds.Values.Contains(p.TestId))
+                .Where(p => testCodes.Contains(p.Test.TestCode))
                 .ToListAsync();
 
             foreach (var testCode in testCodes)
@@ -466,42 +514,103 @@ namespace SynOS.Services
                 .Where(p => testCodes.Contains(p.TestCode))
                 .ToListAsync();
 
+            var stagingRanges = await _context.CatalogReferenceRanges
+                .Where(r => testCodes.Contains(r.TestCode))
+                .ToListAsync();
+
             var existingRanges = await _context.ReferenceRanges
-                .Where(r => paramIds.Select(p => p.ParameterId).Contains(r.ParameterId))
+                .Where(r => testCodes.Contains(r.Parameter.Test.TestCode))
                 .ToListAsync();
 
             foreach (var pInfo in paramIds)
             {
-                var catalog = catalogParams.FirstOrDefault(cp => cp.TestCode == pInfo.TestCode && cp.ParameterCode == pInfo.ParameterCode);
-                if (catalog == null || string.IsNullOrWhiteSpace(catalog.ReferenceRange)) continue;
+                var targetRanges = new List<ReferenceRange>();
 
-                var ranges = existingRanges.Where(r => r.ParameterId == pInfo.ParameterId).ToList();
-                var defaultRange = ranges.FirstOrDefault(r => r.AgeGroup == "ALL" && r.Sex == "ALL");
+                // 1. Get demographic reference ranges from staging
+                var pRanges = stagingRanges
+                    .Where(r => r.TestCode == pInfo.TestCode && r.ParameterCode == pInfo.ParameterCode)
+                    .ToList();
 
-                if (defaultRange == null)
+                if (pRanges.Any())
                 {
-                    _context.ReferenceRanges.Add(new ReferenceRange
+                    foreach (var sr in pRanges)
                     {
-                        ReferenceRangeId = Guid.NewGuid(),
-                        ParameterId = pInfo.ParameterId,
-                        AgeGroup = "ALL",
-                        Sex = "ALL",
-                        TextRange = catalog.ReferenceRange,
-                        EffectiveFrom = DateTime.UtcNow.Date,
-                        IsActive = true,
-                        CreatedAt = DateTimeOffset.UtcNow
-                    });
+                        targetRanges.Add(new ReferenceRange
+                        {
+                            ReferenceRangeId = Guid.NewGuid(),
+                            ParameterId = pInfo.ParameterId,
+                            Sex = sr.Sex,
+                            AgeMin = sr.AgeMin,
+                            AgeMax = sr.AgeMax,
+                            RefLow = sr.RefLow,
+                            RefHigh = sr.RefHigh,
+                            CriticalLow = sr.CriticalLow,
+                            CriticalHigh = sr.CriticalHigh,
+                            TextRange = sr.TextRange,
+                            EffectiveFrom = sr.EffectiveFrom,
+                            EffectiveTo = sr.EffectiveTo,
+                            IsActive = sr.IsActive,
+                            AgeGroup = DeriveAgeGroup(sr.AgeMin, sr.AgeMax),
+                            CreatedAt = DateTimeOffset.UtcNow,
+                            UpdatedAt = DateTimeOffset.UtcNow
+                        });
+                    }
                 }
                 else
                 {
-                    if (defaultRange.TextRange != catalog.ReferenceRange)
+                    // 2. Fallback to CatalogParameter.ReferenceRange for legacy imports
+                    var catalog = catalogParams.FirstOrDefault(cp => cp.TestCode == pInfo.TestCode && cp.ParameterCode == pInfo.ParameterCode);
+                    if (catalog != null && !string.IsNullOrWhiteSpace(catalog.ReferenceRange))
                     {
-                        defaultRange.TextRange = catalog.ReferenceRange;
-                        defaultRange.UpdatedAt = DateTimeOffset.UtcNow;
+                        targetRanges.Add(new ReferenceRange
+                        {
+                            ReferenceRangeId = Guid.NewGuid(),
+                            ParameterId = pInfo.ParameterId,
+                            AgeGroup = "ALL",
+                            Sex = "ALL",
+                            TextRange = catalog.ReferenceRange,
+                            EffectiveFrom = DateTime.UtcNow.Date,
+                            IsActive = true,
+                            CreatedAt = DateTimeOffset.UtcNow,
+                            UpdatedAt = DateTimeOffset.UtcNow
+                        });
                     }
                 }
-                // Note: Other ranges (pediatric, gender specific) are left untouched.
+
+                // 3. Clean-sweep sync: Delete existing operational ranges and insert target ranges
+                var currentRanges = existingRanges.Where(r => r.ParameterId == pInfo.ParameterId).ToList();
+                if (currentRanges.Any())
+                {
+                    _context.ReferenceRanges.RemoveRange(currentRanges);
+                }
+
+                if (targetRanges.Any())
+                {
+                    _context.ReferenceRanges.AddRange(targetRanges);
+                }
+
+                result.ParametersAffected += targetRanges.Count;
             }
+        }
+
+        private string DeriveAgeGroup(int? ageMin, int? ageMax)
+        {
+            if (ageMin == null && ageMax == null)
+            {
+                return "ALL";
+            }
+            if (ageMin != null && ageMax != null)
+            {
+                if (ageMin == 0 && ageMax <= 1) return "Infant";
+                if (ageMin == 0 && ageMax <= 12) return "Child";
+                if (ageMin >= 12) return "Adult";
+                return $"Age {ageMin}-{ageMax}";
+            }
+            if (ageMin != null)
+            {
+                return $"Age >= {ageMin}";
+            }
+            return $"Age <= {ageMax}";
         }
 
         private async Task ProvisionPanelMappingsAsync(List<string> testCodes, CatalogProvisioningResultDto result)
@@ -515,7 +624,7 @@ namespace SynOS.Services
                 .ToListAsync();
 
             var existingMappings = await _context.ProfileMaps
-                .Where(m => testIds.Values.Contains(m.ParentTestId))
+                .Where(m => testCodes.Contains(m.ParentTest.TestCode))
                 .ToListAsync();
 
             foreach (var panelCode in testCodes)
@@ -524,6 +633,12 @@ namespace SynOS.Services
 
                 var catalogs = catalogMappings.Where(m => m.PanelTestCode == panelCode).ToList();
                 var existings = existingMappings.Where(m => m.ParentTestId == parentId).ToList();
+
+                // Delete existing mappings for a clean-sweep sync
+                if (existings.Any())
+                {
+                    _context.ProfileMaps.RemoveRange(existings);
+                }
 
                 foreach (var catalog in catalogs)
                 {
@@ -538,25 +653,15 @@ namespace SynOS.Services
                         if (childId == Guid.Empty) continue;
                     }
 
-                    var mapping = existings.FirstOrDefault(m => m.ChildTestId == childId);
-                    if (mapping == null)
+                    _context.ProfileMaps.Add(new ProfileMap
                     {
-                        _context.ProfileMaps.Add(new ProfileMap
-                        {
-                            ProfileMapId = Guid.NewGuid(),
-                            ParentTestId = parentId,
-                            ChildTestId = childId,
-                            Sequence = catalog.SortOrder
-                        });
-                        result.MappingsAffected++;
-                    }
-                    else if (mapping.Sequence != catalog.SortOrder)
-                    {
-                        mapping.Sequence = catalog.SortOrder;
-                        result.MappingsAffected++;
-                    }
+                        ProfileMapId = Guid.NewGuid(),
+                        ParentTestId = parentId,
+                        ChildTestId = childId,
+                        Sequence = catalog.SortOrder
+                    });
+                    result.MappingsAffected++;
                 }
-                // Note: Existing manual mappings are NEVER deleted (Add/Update Only rule).
             }
         }
 
@@ -605,6 +710,83 @@ namespace SynOS.Services
                     CreatedAt = now
                 });
                 result.PricingChanges++;
+            }
+        }
+
+        private async Task ProvisionImsTestTubeMapsAsync(List<string> testCodes, CatalogProvisioningResultDto result)
+        {
+            var tests = await _context.Tests
+                .Where(t => testCodes.Contains(t.TestCode) && t.IsActive && t.SpecimenTypeCode != "NO_SPECIMEN")
+                .ToListAsync();
+
+            var catalogTests = await _context.CatalogTests
+                .Where(c => testCodes.Contains(c.TestCode) && !string.IsNullOrEmpty(c.TubeCode))
+                .ToListAsync();
+
+            var tubeMasters = await _context.ImsTubeMasters.ToListAsync();
+
+            var testIds = tests.Select(t => t.TestId).ToList();
+            var existingMaps = await _context.ImsTestTubeMaps
+                .Where(m => testCodes.Contains(m.Test.TestCode))
+                .ToListAsync();
+
+            foreach (var test in tests)
+            {
+                var catalog = catalogTests.FirstOrDefault(c => c.TestCode == test.TestCode);
+                if (catalog == null || string.IsNullOrEmpty(catalog.TubeCode)) continue;
+
+                // Find in ImsTubeMasters using code or name mapping
+                var tube = tubeMasters.FirstOrDefault(tb => string.Equals(tb.Code, catalog.TubeCode, StringComparison.OrdinalIgnoreCase)
+                                                         || string.Equals(tb.Name, catalog.TubeCode, StringComparison.OrdinalIgnoreCase));
+                if (tube == null)
+                {
+                    _logger.LogWarning("ProvisionImsTestTubeMapsAsync: Tube with code/name '{TubeCode}' not found in IMS_TubeMasters for Test '{TestCode}'", catalog.TubeCode, test.TestCode);
+                    continue;
+                }
+
+                // Check if mapping already exists
+                var existingMap = existingMaps.FirstOrDefault(m => m.TestId == test.TestId && m.TubeId == tube.TubeId);
+                if (existingMap == null)
+                {
+                    var newMap = new ImsTestTubeMap
+                    {
+                        MapId = Guid.NewGuid(),
+                        TestId = test.TestId,
+                        TubeId = tube.TubeId,
+                        QuantityPerSample = 1
+                    };
+                    _context.ImsTestTubeMaps.Add(newMap);
+                    _logger.LogInformation("ProvisionImsTestTubeMapsAsync: Created new IMS_TestTubeMap for Test '{TestCode}' and Tube '{TubeCode}'", test.TestCode, catalog.TubeCode);
+                }
+            }
+        }
+
+        private async Task ProvisionSpecimenTypesAsync(CatalogProvisioningResultDto result)
+        {
+            var catalogs = await _context.CatalogSpecimenTypes.ToListAsync();
+            var masters = await _context.SpecimenTypes.ToListAsync();
+
+            foreach (var catalog in catalogs)
+            {
+                var master = masters.FirstOrDefault(m => m.Code.Equals(catalog.SpecimenCode, StringComparison.OrdinalIgnoreCase));
+                if (master == null)
+                {
+                    master = new SpecimenType
+                    {
+                        Code = catalog.SpecimenCode.ToUpperInvariant(),
+                        Name = catalog.SpecimenName,
+                        ContainerCategory = "Other",
+                        IsActive = true,
+                        CreatedAt = DateTimeOffset.UtcNow
+                    };
+                    _context.SpecimenTypes.Add(master);
+                    _logger.LogInformation("ProvisionSpecimenTypesAsync: Created new SpecimenType '{SpecimenCode}'", catalog.SpecimenCode);
+                }
+                else
+                {
+                    master.Name = catalog.SpecimenName;
+                    master.IsActive = true;
+                }
             }
         }
     }

@@ -27,7 +27,7 @@ export function PhlebotomyIntentPanel({ isOpen, visitId, closePanel, queueItem, 
 
     // Derived Status from Queue Item (as per plan adjustment)
     const isAvailable = queueItem && !queueItem.assignedPhlebotomistId;
-    const isAssignedToMe = queueItem?.assignedPhlebotomistId === user?.id;
+    const isAssignedToMe = queueItem?.assignedPhlebotomistId?.toLowerCase() === user?.id?.toLowerCase();
 
     useEffect(() => {
         let isMounted = true;

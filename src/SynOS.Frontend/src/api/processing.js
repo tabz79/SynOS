@@ -76,21 +76,27 @@ export const ProcessingApi = {
     },
 
     normalizeQueueData: (items) => {
-        return items.map(item => ({
-            id: item.processingAssignmentId,
-            token: item.accessionNumber,
-            patientName: item.patientName,
-            testName: item.testName,
-            priority: item.priority,
-            specimenType: item.specimenTypeCode,
-            status: item.status, // ProcessingAssignmentStatus enum
-            assignedResourceId: item.assignedResourceId,
-            assignedTechnicianName: item.assignedTechnicianName,
-            createdAt: item.createdAt,
-            // ActionQueue expected fields
-            operationalStatus: item.status === 0 ? "Pending" : 
-                             item.status === 1 ? "Assigned" : 
-                             item.status === 2 ? "Completed" : "Error"
-        }));
+        return items.map(item => {
+            const isPending = item.status === 0 || item.status === "Pending" || item.status === 3 || item.status === "Reopened";
+            const isAssigned = item.status === 1 || item.status === "Claimed" || item.status === "Assigned" || item.status === "DraftSaved";
+            const isCompleted = item.status === 2 || item.status === "Completed";
+            
+            return {
+                id: item.processingAssignmentId,
+                token: item.accessionNumber,
+                patientName: item.patientName,
+                testName: item.testName,
+                priority: item.priority,
+                specimenType: item.specimenTypeCode,
+                status: item.status, // ProcessingAssignmentStatus enum
+                assignedResourceId: item.assignedResourceId,
+                assignedTechnicianName: item.assignedTechnicianName,
+                createdAt: item.createdAt,
+                // ActionQueue expected fields
+                operationalStatus: isPending ? "Pending" : 
+                                  isAssigned ? "Assigned" : 
+                                  isCompleted ? "Completed" : "Error"
+            };
+        });
     }
 };

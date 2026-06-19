@@ -215,5 +215,23 @@ export const AdminApi = {
 
     getAuditLogs: async (query) => {
         return apiClient.get(`${API_BASE}/audit-logs${query}`);
+    },
+
+    validateCatalog: async (file) => {
+        const formData = new FormData();
+        formData.append('File', file);
+        formData.append('ValidateOnly', 'true');
+        return apiClient.post(`${API_BASE}/tests/catalog/import`, formData);
+    },
+
+    importCatalog: async (file) => {
+        const formData = new FormData();
+        formData.append('File', file);
+        formData.append('ValidateOnly', 'false');
+        return apiClient.post(`${API_BASE}/tests/catalog/import`, formData);
+    },
+
+    provisionCatalog: async (versionHash) => {
+        return apiClient.post(`${API_BASE}/tests/catalog/provision`, { versionHash });
     }
 };

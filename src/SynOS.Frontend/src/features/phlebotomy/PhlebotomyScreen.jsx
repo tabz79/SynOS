@@ -47,16 +47,21 @@ export function PhlebotomyScreen() {
     const normalizeQueueData = ReceptionApi.normalizeQueueData;
 
     // Filter Function for Branch-Wide Phlebotomy View
-    const isPhleboRelevant = (row) => 
-        row.operationalStatus === 'Ready for Sample' || 
-        row.operationalStatus === 'Pending Collection' ||
-        row.operationalStatus === 'Collected' ||
-        row.operationalStatus === 'In Processing' ||
-        row.operationalStatus === 'Reporting' ||
-        row.operationalStatus === 'Completed' ||
-        row.operationalStatus === 'Reported' ||
-        row.operationalStatus === 'Delivered' ||
-        showHistoryRef.current;
+    const isPhleboRelevant = (row) => {
+        if (showHistoryRef.current) {
+            return row.operationalStatus === 'Collected' ||
+                   row.operationalStatus === 'In Processing' ||
+                   row.operationalStatus === 'Reporting' ||
+                   row.operationalStatus === 'Completed' ||
+                   row.operationalStatus === 'Reported' ||
+                   row.operationalStatus === 'Delivered';
+        } else {
+            return row.operationalStatus === 'Ready for Sample' || 
+                   row.operationalStatus === 'Pending Collection' ||
+                   row.operationalStatus === 'Collected' ||
+                   row.operationalStatus === 'In Processing';
+        }
+    };
 
     // Wiring: Initial Load + SignalR Subscription
     useEffect(() => {
@@ -216,11 +221,14 @@ export function PhlebotomyScreen() {
 
     // Filtered Queue Data (Client-Side Isolation vs Admin Oversight)
     const filteredQueue = actionQueue.filter(row => {
+        const rowPhleboId = row.assignedPhlebotomistId?.toLowerCase();
+        const userId = user?.id?.toLowerCase();
+
         if (showHistory) {
             if (activeAssignmentTab === "available") {
-                return row.assignedPhlebotomistId !== user?.id;
+                return rowPhleboId !== userId;
             } else {
-                return row.assignedPhlebotomistId === user?.id;
+                return rowPhleboId === userId;
             }
         } else {
             if (activeAssignmentTab === "available") {
@@ -231,7 +239,7 @@ export function PhlebotomyScreen() {
                     return !!row.assignedPhlebotomistId;
                 }
                 // Standard User: See only what is assigned to ME
-                return row.assignedPhlebotomistId === user?.id;
+                return rowPhleboId === userId;
             }
         }
     });

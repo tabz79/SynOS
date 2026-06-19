@@ -809,12 +809,19 @@ export function ReportTemplatesScreen() {
                         <input
                           id="new-col-code"
                           type="text"
-                          placeholder="e.g. Methodology, Range"
+                          list="column-codes-suggestions"
+                          placeholder="e.g. ReferenceRange, Unit"
                           className="w-full bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl px-3 py-2 text-xs text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 focus:ring-1 focus:ring-synos-primary outline-none"
                           value={newColCode}
                           onChange={(e) => setNewColCode(e.target.value)}
                           required
                         />
+                        <datalist id="column-codes-suggestions">
+                          <option value="Parameter" />
+                          <option value="Value" />
+                          <option value="Unit" />
+                          <option value="ReferenceRange" />
+                        </datalist>
                       </div>
                       <div className="space-y-1 md:col-span-2">
                         <label className="text-[9px] font-semibold text-zinc-400 dark:text-zinc-500 ml-1">Header Title</label>

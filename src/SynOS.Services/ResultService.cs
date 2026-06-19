@@ -202,12 +202,6 @@ namespace SynOS.Services
                 .Where(r => r.OrderId == orderId)
                 .ToListAsync();
 
-            if (!results.Any())
-            {
-                _logger.LogWarning("SubmitForVerification called for OrderId {OrderId} with no results", orderId);
-                return;
-            }
-
             foreach (var r in results)
             {
                 if (string.Equals(r.Status, "Draft", StringComparison.OrdinalIgnoreCase))

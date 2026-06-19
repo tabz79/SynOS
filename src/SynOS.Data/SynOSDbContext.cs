@@ -256,6 +256,7 @@ namespace SynOS.Data
         public DbSet<CatalogParameter> CatalogParameters { get; set; } = null!;
         public DbSet<CatalogTestNote> CatalogTestNotes { get; set; } = null!;
         public DbSet<CatalogPanelMapping> CatalogPanelMappings { get; set; } = null!;
+        public DbSet<CatalogReferenceRange> CatalogReferenceRanges { get; set; } = null!;
         public DbSet<CatalogProvisioningLock> CatalogProvisioningLocks { get; set; } = null!;
         public DbSet<CatalogProvisioningLog> CatalogProvisioningLogs { get; set; } = null!;
         public DbSet<ImsConsumableLot> ImsConsumableLots { get; set; } = null!;
@@ -1629,6 +1630,13 @@ modelBuilder.Entity<ReceivableFact>(entity =>
                       .WithMany(t => t.ChildMappings)
                       .HasForeignKey(e => e.ChildTestCode)
                       .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<CatalogReferenceRange>(entity =>
+            {
+                entity.ToTable("Catalog_ReferenceRanges");
+                entity.HasKey(e => e.Id);
+                entity.HasIndex(e => new { e.TestCode, e.ParameterCode });
             });
 
             // Report Governance Configurations

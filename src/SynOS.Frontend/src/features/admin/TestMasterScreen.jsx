@@ -24,7 +24,10 @@ import {
   TrendingUp,
   Cpu,
   Building,
-  Loader2
+  Loader2,
+  Download,
+  UploadCloud,
+  RefreshCw
 } from 'lucide-react';
 import { cn } from "@/lib/utils";
 import { AdminApi } from '../../api/admin';
@@ -916,6 +919,26 @@ export function TestMasterScreen() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedDept, setSelectedDept] = useState("All");
   const [departments, setDepartments] = useState(["All", "Hematology", "Biochemistry", "Health Panels", "Microbiology", "Serology", "Radiology"]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const searchContainerRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (searchContainerRef.current && !searchContainerRef.current.contains(event.target)) {
+        setShowSuggestions(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  const getDeptCount = (deptName) => {
+    if (!catalog) return 0;
+    if (deptName === "All") return catalog.length;
+    return catalog.filter(t => (t.department || "").toLowerCase() === deptName.toLowerCase()).length;
+  };
   
   const [dbDeptsList, setDbDeptsList] = useState([]);
   const [modalitiesList, setModalitiesList] = useState([]);
@@ -930,6 +953,143 @@ export function TestMasterScreen() {
   const [newModalityCode, setNewModalityCode] = useState("");
   const [newModalityName, setNewModalityName] = useState("");
   const [isCreatingModality, setIsCreatingModality] = useState(false);
+
+  // Catalog Import & Provisioning States
+  const [showImportModal, setShowImportModal] = useState(false);
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [isValidating, setIsValidating] = useState(false);
+  const [validationResult, setValidationResult] = useState(null);
+  const [isImporting, setIsImporting] = useState(false);
+  const [importSummary, setImportSummary] = useState(null);
+  const [isSyncingCatalog, setIsSyncingCatalog] = useState(false);
+  const [toast, setToast] = useState(null);
+
+  const showToast = (message, type = 'success') => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 3000);
+  };
+
+  const handleSyncCatalogOnly = async () => {
+    setIsSyncingCatalog(true);
+    try {
+      const provisionRes = await AdminApi.provisionCatalog("");
+      showToast(`Catalog sync completed. Tests affected: ${provisionRes.testsAffected || 0}`, 'success');
+      await handleReloadCatalog();
+    } catch (err) {
+      console.error(err);
+      showToast(err.message || "Catalog Sync failed.", 'error');
+    } finally {
+      setIsSyncingCatalog(false);
+    }
+  };
+
+  const handleDownloadTemplate = async () => {
+    try {
+      const token = localStorage.getItem('synos_jwt');
+      const headers = {};
+      if (token) {
+          headers['Authorization'] = `Bearer ${token}`;
+      }
+      const branchId = localStorage.getItem('synos_oversight_branch_id');
+      let url = '/api/v1/admin/tests/catalog/template';
+      if (branchId) {
+          url += `?branchId=${branchId}`;
+      }
+      const response = await fetch(url, { headers });
+      if (!response.ok) throw new Error("Failed to download template");
+      const blob = await response.blob();
+      const downloadUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      link.setAttribute('download', 'SynOS_Catalog_Master_Template.xlsx');
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode.removeChild(link);
+    } catch (err) {
+      console.error(err);
+      alert(err.message || "Failed to download catalog template");
+    }
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (!file.name.endsWith('.xlsx')) {
+        alert("Please select an Excel (.xlsx) file only.");
+        return;
+      }
+      setSelectedFile(file);
+      setValidationResult(null);
+      setImportSummary(null);
+    }
+  };
+
+  const handleReloadCatalog = async () => {
+    setIsLoadingTests(true);
+    try {
+      const dbTests = await AdminApi.getTests();
+      setOriginalDbTests(dbTests || []);
+      const merged = mergeDbTestsWithLocal(INITIAL_TEST_CATALOG, dbTests || []);
+      setCatalog(merged);
+      if (merged.length > 0) {
+        setSelectedTest(merged[0]);
+      }
+    } catch (err) {
+      console.error("Failed to reload tests:", err);
+    } finally {
+      setIsLoadingTests(false);
+    }
+  };
+
+  const handleValidateCatalog = async () => {
+    if (!selectedFile) return;
+    setIsValidating(true);
+    setValidationResult(null);
+    try {
+      const res = await AdminApi.validateCatalog(selectedFile);
+      setValidationResult(res.importResult || res);
+    } catch (err) {
+      console.error(err);
+      if (err.message) {
+        try {
+          const parsed = JSON.parse(err.message);
+          setValidationResult(parsed.importResult || parsed);
+        } catch {
+          setValidationResult({ success: false, globalErrors: [err.message] });
+        }
+      } else {
+        setValidationResult({ success: false, globalErrors: ["Validation request failed."] });
+      }
+    } finally {
+      setIsValidating(false);
+    }
+  };
+
+  const handleImportCatalog = async () => {
+    if (!selectedFile) return;
+    setIsImporting(true);
+    setImportSummary(null);
+    try {
+      const importRes = await AdminApi.importCatalog(selectedFile);
+      const versionHash = importRes.previewImpact?.versionHash || importRes.importResult?.versionHash;
+      const provisionRes = await AdminApi.provisionCatalog(versionHash);
+      
+      setImportSummary({
+        success: true,
+        testsAffected: provisionRes.testsAffected || 0,
+        parametersAffected: provisionRes.parametersAffected || 0,
+        mappingsAffected: provisionRes.mappingsAffected || 0,
+        pricingChanges: provisionRes.pricingChanges || 0
+      });
+      
+      await handleReloadCatalog();
+    } catch (err) {
+      console.error(err);
+      alert(err.message || "Catalog provisioning failed.");
+    } finally {
+      setIsImporting(false);
+    }
+  };
 
   const handleCreateDepartmentSubmit = async (e) => {
     e.preventDefault();
@@ -1885,26 +2045,61 @@ export function TestMasterScreen() {
           </p>
         </div>
 
-        <button
-          id="btn-save-catalog-master"
-          onClick={handleSaveAll}
-          disabled={isLoadingTests}
-          className="px-6 py-2.5 bg-synos-primary hover:bg-synos-primary/95 text-white font-bold text-sm uppercase tracking-wider rounded-xl shadow-md shadow-synos-primary/10 active:scale-95 transition-all flex items-center gap-2 self-start md:self-auto disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {isLoadingTests ? (
-            <>
-              <span className="w-4 h-4 rounded-full border-2 border-white border-t-transparent animate-spin" /> Saving Changes...
-            </>
-          ) : isSavedSuccessfully ? (
-            <>
-              <Check className="w-4 h-4 text-white animate-bounce" /> Catalog Saved Successfully
-            </>
-          ) : (
-            <>
-              <Check className="w-4 h-4" /> Save Catalog Changes
-            </>
-          )}
-        </button>
+        <div className="flex flex-wrap items-center gap-3 self-start md:self-auto">
+          <button
+            type="button"
+            onClick={handleDownloadTemplate}
+            className="px-4 py-2.5 border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-900/50 text-zinc-700 dark:text-zinc-300 font-semibold text-sm rounded-xl flex items-center gap-2 transition-all active:scale-95 shadow-sm"
+          >
+            <Download className="w-4 h-4" /> Download Template
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setShowImportModal(true)}
+            className="px-4 py-2.5 bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 font-semibold text-sm rounded-xl flex items-center gap-2 transition-all active:scale-95 shadow-sm"
+          >
+            <UploadCloud className="w-4 h-4" /> Import Catalog
+          </button>
+
+          <button
+            type="button"
+            onClick={handleSyncCatalogOnly}
+            disabled={isSyncingCatalog}
+            className="px-4 py-2.5 border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-900/50 text-zinc-700 dark:text-zinc-300 font-semibold text-sm rounded-xl flex items-center gap-2 transition-all active:scale-95 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isSyncingCatalog ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" /> Syncing...
+              </>
+            ) : (
+              <>
+                <RefreshCw className="w-4 h-4" /> Sync Catalog
+              </>
+            )}
+          </button>
+
+          <button
+            id="btn-save-catalog-master"
+            onClick={handleSaveAll}
+            disabled={isLoadingTests}
+            className="px-6 py-2.5 bg-synos-primary hover:bg-synos-primary/95 text-white font-bold text-sm uppercase tracking-wider rounded-xl shadow-md shadow-synos-primary/10 active:scale-95 transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isLoadingTests ? (
+              <>
+                <span className="w-4 h-4 rounded-full border-2 border-white border-t-transparent animate-spin" /> Saving Changes...
+              </>
+            ) : isSavedSuccessfully ? (
+              <>
+                <Check className="w-4 h-4 text-white animate-bounce" /> Catalog Saved Successfully
+              </>
+            ) : (
+              <>
+                <Check className="w-4 h-4" /> Save Catalog Changes
+              </>
+            )}
+          </button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch flex-1 min-h-0 overflow-hidden pb-4">
@@ -1921,35 +2116,81 @@ export function TestMasterScreen() {
             </button>
           </div>
 
-          <div className="relative shrink-0">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
-            <input
-              id="test-catalog-search-input"
-              type="text"
-              placeholder="Search tests..."
-              className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl py-2.5 pl-10 pr-4 text-sm focus:outline-none focus:ring-1 focus:ring-synos-primary/50 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
+          <div ref={searchContainerRef} className="relative shrink-0 flex flex-col gap-2">
+            <div className="relative">
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
+              <input
+                id="test-catalog-search-input"
+                type="text"
+                placeholder="Search tests..."
+                className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl py-2.5 pl-10 pr-10 text-sm focus:outline-none focus:ring-1 focus:ring-synos-primary/50 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                onFocus={() => setShowSuggestions(true)}
+              />
+              {searchTerm && (
+                <button
+                  onClick={() => setSearchTerm("")}
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 p-0.5 hover:bg-zinc-200 dark:hover:bg-zinc-850 rounded-md text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 transition-colors"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              )}
+            </div>
+
+            {/* Active Department Filter Badge */}
+            {selectedDept !== "All" && (
+              <div className="flex items-center justify-between bg-synos-primary/10 text-synos-primary border border-synos-primary/20 px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0">
+                <span className="truncate">Dept: {selectedDept}</span>
+                <button
+                  onClick={() => setSelectedDept("All")}
+                  className="hover:bg-synos-primary/25 rounded-md p-0.5 transition-colors"
+                  title="Clear filter"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            )}
+
+            {/* Suggestions Overlay Dropdown */}
+            {showSuggestions && (
+              <div className="absolute left-0 right-0 top-full mt-2 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-xl z-50 p-2 max-h-72 overflow-y-auto custom-scrollbar">
+                <div className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider px-3 py-2 border-b border-zinc-100 dark:border-zinc-900/50 mb-1 flex items-center justify-between">
+                  <span>Filter by Department</span>
+                  <span>Tests</span>
+                </div>
+                {departments.map(dept => {
+                  const count = getDeptCount(dept);
+                  return (
+                    <button
+                      key={dept}
+                      onClick={() => {
+                        setSelectedDept(dept);
+                        setShowSuggestions(false);
+                      }}
+                      className={cn(
+                        "w-full text-left px-3 py-2 rounded-xl text-xs font-semibold transition-all flex items-center justify-between",
+                        selectedDept === dept
+                          ? "bg-synos-primary/10 text-synos-primary font-bold"
+                          : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-900/40 hover:text-zinc-900 dark:hover:text-zinc-200"
+                      )}
+                    >
+                      <span>{dept}</span>
+                      <span className={cn(
+                        "text-[10px] px-1.5 py-0.5 rounded font-bold font-mono",
+                        selectedDept === dept 
+                          ? "bg-synos-primary/20 text-synos-primary"
+                          : "bg-zinc-100 dark:bg-zinc-900 text-zinc-500"
+                      )}>
+                        {count}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
           </div>
 
-          {/* Department Quick Filter Badges */}
-          <div className="flex flex-wrap gap-1.5 pb-1 shrink-0">
-            {departments.map(dept => (
-              <button
-                key={dept}
-                onClick={() => setSelectedDept(dept)}
-                className={cn(
-                  "px-3 py-1.5 rounded-lg text-xs font-bold border transition-all",
-                  selectedDept === dept
-                    ? "bg-synos-primary/15 border-synos-primary/30 text-synos-primary"
-                    : "bg-zinc-50 dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800 text-zinc-500 hover:border-zinc-300 dark:hover:border-zinc-700"
-                )}
-              >
-                {dept}
-              </button>
-            ))}
-          </div>
 
           <div className="space-y-1.5 flex-1 min-h-0 overflow-y-auto pr-1 custom-scrollbar">
             {filteredCatalog.map(test => (
@@ -1998,9 +2239,10 @@ export function TestMasterScreen() {
 
         {/* Center Workspace & Editor Area */}
         <div className="lg:col-span-9 flex flex-col lg:h-full min-h-0 space-y-4 overflow-hidden">
-          
-          {/* Metadata Top Bar */}
-          <div className="bg-white dark:bg-zinc-900/40 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 shadow-sm flex items-center justify-between shrink-0">
+          {selectedTest ? (
+            <>
+              {/* Metadata Top Bar */}
+              <div className="bg-white dark:bg-zinc-900/40 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 shadow-sm flex items-center justify-between shrink-0">
             <div className="flex-1 min-w-0 pr-4">
               {isEditingMetadata ? (
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
@@ -3510,6 +3752,22 @@ export function TestMasterScreen() {
               </div>
             )}
           </div>
+          </>
+          ) : (
+            <div className="flex-1 bg-white dark:bg-zinc-900/40 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-8 flex flex-col items-center justify-center text-center shadow-sm">
+              <Beaker className="w-12 h-12 text-zinc-300 dark:text-zinc-700 mb-3 animate-pulse" />
+              <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-1">No Test Selected</h3>
+              <p className="text-sm text-zinc-500 dark:text-zinc-400 max-w-sm mb-4">
+                Please select a test from the catalog on the left, or create a new one to get started.
+              </p>
+              <button
+                onClick={handleAddTest}
+                className="px-4 py-2 bg-synos-primary hover:bg-synos-primary/95 text-white text-sm font-semibold rounded-xl shadow transition-all active:scale-95 flex items-center gap-2"
+              >
+                <Plus className="w-4 h-4" /> Create First Test
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
@@ -4059,6 +4317,210 @@ export function TestMasterScreen() {
               </div>
             </form>
           </div>
+        </div>
+      )}
+      {showImportModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/70 backdrop-blur-sm p-4">
+          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl max-w-2xl w-full shadow-2xl overflow-hidden transform transition-all animate-in fade-in zoom-in-95 duration-150 flex flex-col max-h-[85vh]">
+            
+            {/* Header */}
+            <div className="p-6 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between shrink-0">
+              <div className="flex items-center gap-2">
+                <UploadCloud className="w-6 h-6 text-synos-primary animate-pulse" />
+                <h3 className="text-lg font-bold text-zinc-950 dark:text-white">Import / Sync Test Catalog</h3>
+              </div>
+              <button 
+                onClick={() => {
+                  setShowImportModal(false);
+                  setSelectedFile(null);
+                  setValidationResult(null);
+                  setImportSummary(null);
+                }}
+                className="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 text-xl font-semibold p-1"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Scrollable Body */}
+            <div className="p-6 overflow-y-auto space-y-6 flex-1 min-h-0">
+              
+              {/* Template Section */}
+              <div className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 p-5 rounded-xl flex items-center justify-between gap-4">
+                <div className="space-y-1">
+                  <h4 className="text-sm font-bold text-zinc-800 dark:text-zinc-200">Need the catalog template?</h4>
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400">Download the structured catalog workbook with all required sheet layouts.</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleDownloadTemplate}
+                  className="px-4 py-2 bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 text-xs rounded-xl font-bold transition-all flex items-center gap-2 shadow-sm shrink-0"
+                >
+                  <Download className="w-3.5 h-3.5" /> Download Template
+                </button>
+              </div>
+
+              {/* Upload Drop Zone */}
+              <div className="border-2 border-dashed border-zinc-300 dark:border-zinc-700 rounded-xl p-8 text-center flex flex-col items-center justify-center gap-3 bg-zinc-50/30 hover:bg-zinc-50/60 dark:hover:bg-zinc-950/30 transition-colors relative">
+                <input 
+                  type="file" 
+                  accept=".xlsx" 
+                  onChange={handleFileChange}
+                  className="absolute inset-0 opacity-0 cursor-pointer"
+                />
+                <UploadCloud className="w-10 h-10 text-zinc-400" />
+                <div className="space-y-1">
+                  <p className="text-sm font-bold text-zinc-700 dark:text-zinc-300">
+                    {selectedFile ? selectedFile.name : "Drag & drop your .xlsx catalog here"}
+                  </p>
+                  <p className="text-xs text-zinc-400">Only Excel files (.xlsx) are supported</p>
+                </div>
+                {selectedFile && (
+                  <button
+                    type="button"
+                    onClick={() => setSelectedFile(null)}
+                    className="text-xs font-bold text-red-500 hover:underline mt-1 z-10 relative"
+                  >
+                    Clear selection
+                  </button>
+                )}
+              </div>
+
+              {/* Validation / Action Panel */}
+              {selectedFile && !importSummary && (
+                <div className="flex flex-col gap-3">
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      disabled={isValidating}
+                      onClick={handleValidateCatalog}
+                      className="flex-1 py-2.5 bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 text-xs rounded-xl font-bold transition-all text-center flex items-center justify-center gap-2 disabled:opacity-50"
+                    >
+                      {isValidating ? (
+                        <>
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" /> Validating...
+                        </>
+                      ) : "Validate Catalog File"}
+                    </button>
+
+                    {validationResult?.success && (
+                      <button
+                        type="button"
+                        disabled={isImporting}
+                        onClick={handleImportCatalog}
+                        className="flex-1 py-2.5 bg-synos-primary hover:bg-synos-primary/95 text-white text-xs rounded-xl font-bold transition-all text-center flex items-center justify-center gap-2 disabled:opacity-50 shadow-md shadow-synos-primary/10"
+                      >
+                        {isImporting ? (
+                          <>
+                            <Loader2 className="w-3.5 h-3.5 animate-spin" /> Provisioning...
+                          </>
+                        ) : "Import & Provision"}
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Validation Output */}
+                  {validationResult && (
+                    <div className={cn(
+                      "p-4 rounded-xl border text-xs space-y-3",
+                      validationResult.success 
+                        ? "bg-emerald-50 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-800/40 text-emerald-800 dark:text-emerald-300"
+                        : "bg-red-50 dark:bg-red-950/20 border-red-200 dark:border-red-800/40 text-red-800 dark:text-red-300"
+                    )}>
+                      <div className="flex items-center gap-2 font-bold">
+                        {validationResult.success ? (
+                          <>
+                            <CheckSquare className="w-4 h-4 text-emerald-500" />
+                            <span>Catalog structure is valid! Ready for database sync.</span>
+                          </>
+                        ) : (
+                          <>
+                            <AlertCircle className="w-4 h-4 text-red-500" />
+                            <span>Catalog validation failed with {validationResult.rowLevelErrors?.length || 0} errors.</span>
+                          </>
+                        )}
+                      </div>
+
+                      {validationResult.rowLevelErrors && validationResult.rowLevelErrors.length > 0 && (
+                        <div className="max-h-48 overflow-y-auto space-y-1.5 border-t border-red-200 dark:border-red-800/40 pt-3 font-mono">
+                          {validationResult.rowLevelErrors.map((err, idx) => (
+                            <div key={idx} className="flex gap-2">
+                              <span className="text-red-500 font-bold shrink-0">[{err.sheetName || "Sheet"} Row {err.rowNumber || 0}]:</span>
+                              <span>{err.errorMessage}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {validationResult.globalErrors && validationResult.globalErrors.length > 0 && (
+                        <div className="space-y-1 border-t border-red-200 dark:border-red-800/40 pt-3">
+                          {validationResult.globalErrors.map((err, idx) => (
+                            <p key={idx} className="font-semibold text-red-500">{err}</p>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Import Results Summary Screen */}
+              {importSummary && (
+                <div className="bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800/40 p-5 rounded-xl space-y-4">
+                  <div className="flex items-center gap-2 text-emerald-800 dark:text-emerald-300 font-bold">
+                    <Check className="w-5 h-5 bg-emerald-500 text-white rounded-full p-0.5 animate-bounce" />
+                    <span>Catalog Synchronized & Provisioned Successfully!</span>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3 text-xs font-semibold text-zinc-700 dark:text-zinc-300">
+                    <div className="bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 p-3 rounded-lg flex flex-col gap-1">
+                      <span className="text-zinc-400 text-[10px] uppercase">Tests Affected</span>
+                      <span className="text-lg font-bold">{importSummary.testsAffected}</span>
+                    </div>
+                    <div className="bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 p-3 rounded-lg flex flex-col gap-1">
+                      <span className="text-zinc-400 text-[10px] uppercase">Parameters Affected</span>
+                      <span className="text-lg font-bold">{importSummary.parametersAffected}</span>
+                    </div>
+                    <div className="bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 p-3 rounded-lg flex flex-col gap-1">
+                      <span className="text-zinc-400 text-[10px] uppercase">Mappings Configured</span>
+                      <span className="text-lg font-bold">{importSummary.mappingsAffected}</span>
+                    </div>
+                    <div className="bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 p-3 rounded-lg flex flex-col gap-1">
+                      <span className="text-zinc-400 text-[10px] uppercase">Pricing Records Updated</span>
+                      <span className="text-lg font-bold">{importSummary.pricingChanges}</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+            </div>
+
+            {/* Footer */}
+            <div className="p-6 border-t border-zinc-200 dark:border-zinc-800 flex justify-end gap-3 shrink-0 bg-zinc-50/50 dark:bg-zinc-900/20">
+              <button 
+                type="button"
+                onClick={() => {
+                  setShowImportModal(false);
+                  setSelectedFile(null);
+                  setValidationResult(null);
+                  setImportSummary(null);
+                }}
+                className="px-4 py-2 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 text-xs rounded-xl font-bold transition-all"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {toast && (
+        <div className={cn(
+          "fixed bottom-4 right-4 z-50 px-4 py-2.5 rounded-xl text-white text-xs font-bold shadow-lg animate-in fade-in slide-in-from-bottom-2 duration-200 flex items-center gap-2",
+          toast.type === 'success' ? "bg-emerald-500 shadow-emerald-500/20" : "bg-red-500 shadow-red-500/20"
+        )}>
+          {toast.type === 'success' ? <Check className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}
+          <span>{toast.message}</span>
         </div>
       )}
 

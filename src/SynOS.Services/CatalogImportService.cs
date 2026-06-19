@@ -59,6 +59,7 @@ namespace SynOS.Services
                 ProcessTests(workbook, tests, departments, specimenTypes, tubeTypes, result);
                 ProcessPanelMappings(workbook, tests, result);
                 ProcessParameters(workbook, parameters, tests, result);
+                ProcessReferenceRanges(workbook, tests, parameters, result);
 
                 if (result.RowLevelErrors.Any())
                 {
@@ -595,6 +596,106 @@ namespace SynOS.Services
                         });
                     }
                 }
+            }
+        }
+
+        private void ProcessReferenceRanges(XLWorkbook workbook, Dictionary<string, CatalogTest> testCache, Dictionary<(string, string), CatalogParameter> paramCache, CatalogImportResultDto result)
+        {
+            var sheet = workbook.Worksheets.FirstOrDefault(ws => ws.Name == "ReferenceRanges");
+            if (sheet == null) return;
+
+            var headerMap = GetHeaderMap(sheet);
+            Console.WriteLine($"[Import] ReferenceRanges Header Map: {string.Join(", ", headerMap.Select(kv => $"{kv.Key}:{kv.Value}"))}");
+
+            // Clear existing staging ranges to perform a clean sync of staging data
+            var existingStaging = _context.CatalogReferenceRanges.ToList();
+            if (existingStaging.Any())
+            {
+                _context.CatalogReferenceRanges.RemoveRange(existingStaging);
+            }
+
+            var rows = sheet.RangeUsed().RowsUsed().Skip(1);
+            foreach (IXLRangeRow row in rows)
+            {
+                var testCode = GetCellValue(row, headerMap, "TestCode")?.ToUpperInvariant();
+                var paramCode = GetCellValue(row, headerMap, "ParameterCode")?.ToUpperInvariant();
+                
+                if (string.IsNullOrWhiteSpace(testCode) || string.IsNullOrWhiteSpace(paramCode)) continue;
+
+                if (!testCache.ContainsKey(testCode))
+                {
+                    result.RowLevelErrors.Add(new RowLevelError { SheetName = "ReferenceRanges", RowNumber = row.RowNumber(), ErrorMessage = $"Unknown TestCode: {testCode}" });
+                    continue;
+                }
+
+                if (!paramCache.ContainsKey((testCode, paramCode)))
+                {
+                    result.RowLevelErrors.Add(new RowLevelError { SheetName = "ReferenceRanges", RowNumber = row.RowNumber(), ErrorMessage = $"Unknown ParameterCode '{paramCode}' for TestCode '{testCode}'" });
+                    continue;
+                }
+
+                var sex = GetCellValue(row, headerMap, "Sex") ?? "ALL";
+                
+                var ageMinStr = GetCellValue(row, headerMap, "AgeMin");
+                int? ageMin = null;
+                if (int.TryParse(ageMinStr, out var amin)) ageMin = amin;
+
+                var ageMaxStr = GetCellValue(row, headerMap, "AgeMax");
+                int? ageMax = null;
+                if (int.TryParse(ageMaxStr, out var amax)) ageMax = amax;
+
+                var refLowStr = GetCellValue(row, headerMap, "RefLow");
+                decimal? refLow = null;
+                if (decimal.TryParse(refLowStr, out var rlow)) refLow = rlow;
+
+                var refHighStr = GetCellValue(row, headerMap, "RefHigh");
+                decimal? refHigh = null;
+                if (decimal.TryParse(refHighStr, out var rhigh)) refHigh = rhigh;
+
+                var critLowStr = GetCellValue(row, headerMap, "CriticalLow");
+                decimal? criticalLow = null;
+                if (decimal.TryParse(critLowStr, out var clow)) criticalLow = clow;
+
+                var critHighStr = GetCellValue(row, headerMap, "CriticalHigh");
+                decimal? criticalHigh = null;
+                if (decimal.TryParse(critHighStr, out var chigh)) criticalHigh = chigh;
+
+                var textRange = GetCellValue(row, headerMap, "TextRange");
+
+                var effFromStr = GetCellValue(row, headerMap, "EffectiveFrom");
+                DateTime effFrom = DateTime.UtcNow.Date;
+                if (DateTime.TryParse(effFromStr, out var efrom)) effFrom = efrom;
+
+                var effToStr = GetCellValue(row, headerMap, "EffectiveTo");
+                DateTime? effTo = null;
+                if (DateTime.TryParse(effToStr, out var eto)) effTo = eto;
+
+                var isActiveStr = GetCellValue(row, headerMap, "IsActive")?.ToLowerInvariant();
+                bool isActive = isActiveStr != "false" && isActiveStr != "0";
+
+                var entity = new CatalogReferenceRange
+                {
+                    Id = Guid.NewGuid(),
+                    TestCode = testCode,
+                    ParameterCode = paramCode,
+                    Sex = sex,
+                    AgeMin = ageMin,
+                    AgeMax = ageMax,
+                    RefLow = refLow,
+                    RefHigh = refHigh,
+                    CriticalLow = criticalLow,
+                    CriticalHigh = criticalHigh,
+                    TextRange = textRange,
+                    EffectiveFrom = effFrom,
+                    EffectiveTo = effTo,
+                    IsActive = isActive,
+                    CreatedAt = DateTimeOffset.UtcNow,
+                    UpdatedAt = DateTimeOffset.UtcNow
+                };
+
+                _context.CatalogReferenceRanges.Add(entity);
+                result.NewInsertedCount++;
+                result.SuccessCount++;
             }
         }
 

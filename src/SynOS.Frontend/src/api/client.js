@@ -75,6 +75,9 @@ const handleResponse = async (response) => {
     }
     
     if (!response.ok) {
+        if (data && !data.message && (data.rowLevelErrors || data.globalErrors || data.errorCount)) {
+            throw new Error(JSON.stringify(data));
+        }
         throw new Error(data.message || `API Error: ${response.status}`);
     }
     

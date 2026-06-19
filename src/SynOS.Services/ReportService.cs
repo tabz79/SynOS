@@ -1499,14 +1499,23 @@ namespace SynOS.Services
 
             if (!string.IsNullOrEmpty(department))
             {
+                var isPathology = string.Equals(department, "Pathology", StringComparison.OrdinalIgnoreCase);
                 var matchingDeptCodes = await _context.DepartmentMasters
-                    .Where(dm => dm.MacroDepartment == department || dm.Code == department || dm.Name == department)
+                    .Where(dm => dm.MacroDepartment == department || (isPathology && dm.MacroDepartment == "LAB") || dm.Code == department || dm.Name == department)
                     .Select(dm => dm.Code)
                     .ToListAsync();
 
                 if (!matchingDeptCodes.Contains(department))
                 {
                     matchingDeptCodes.Add(department);
+                }
+
+                if (isPathology)
+                {
+                    matchingDeptCodes = matchingDeptCodes
+                        .Where(code => !string.Equals(code, "RAD", StringComparison.OrdinalIgnoreCase) 
+                                    && !string.Equals(code, "RADIOLOGY", StringComparison.OrdinalIgnoreCase))
+                        .ToList();
                 }
 
                 reportsQuery = reportsQuery.Where(r => matchingDeptCodes.Contains(r.Department));
@@ -1576,11 +1585,16 @@ namespace SynOS.Services
                 .GroupBy(id => id)
                 .ToDictionary(g => g.Key, g => g.Count());
 
-            return reports.Select(r => {
-                var orderId = getOrderId(r);
-                orders.TryGetValue(orderId, out var order);
-                abnormalCounts.TryGetValue(orderId, out var abnormalCount);
-                signatureCounts.TryGetValue(r.ReportId, out var sigCount);
+            return reports
+                .Where(r => {
+                    var orderId = getOrderId(r);
+                    return orderId != Guid.Empty && orders.ContainsKey(orderId);
+                })
+                .Select(r => {
+                    var orderId = getOrderId(r);
+                    orders.TryGetValue(orderId, out var order);
+                    abnormalCounts.TryGetValue(orderId, out var abnormalCount);
+                    signatureCounts.TryGetValue(r.ReportId, out var sigCount);
                 
                 var patient = order?.Visit?.Patient;
                 var age = 0;
@@ -1688,8 +1702,9 @@ namespace SynOS.Services
             // 3. Department filter
             if (!string.IsNullOrWhiteSpace(department) && department != "All")
             {
+                var isPathology = string.Equals(department, "Pathology", StringComparison.OrdinalIgnoreCase);
                 var matchingDeptCodes = await _context.DepartmentMasters
-                    .Where(dm => dm.MacroDepartment == department || dm.Code == department || dm.Name == department)
+                    .Where(dm => dm.MacroDepartment == department || (isPathology && dm.MacroDepartment == "LAB") || dm.Code == department || dm.Name == department)
                     .Select(dm => dm.Code)
                     .ToListAsync();
 
