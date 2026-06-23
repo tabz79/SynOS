@@ -10,6 +10,7 @@ using SynOS.Services;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using SynOS.Models.Entities.Catalog;
+using SynOS.Services.Catalog;
 
 namespace SynOS.Api.Controllers.Admin
 {
@@ -271,6 +272,46 @@ namespace SynOS.Api.Controllers.Admin
                 return BadRequest(result);
             }
             return Ok(result);
+        }
+
+        [HttpPost("import-interpretation")]
+        [Authorize(Roles = "Admin")]
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> ImportInterpretation([FromForm] IFormFile file)
+        {
+            if (file == null || file.Length == 0)
+                return BadRequest("No file uploaded");
+
+            try
+            {
+                var extension = System.IO.Path.GetExtension(file.FileName).ToLowerInvariant();
+                string content = "";
+
+                using var stream = file.OpenReadStream();
+
+                if (extension == ".txt")
+                {
+                    content = DocumentParser.ParseTxt(stream);
+                }
+                else if (extension == ".docx")
+                {
+                    content = DocumentParser.ParseDocx(stream);
+                }
+                else if (extension == ".rtf")
+                {
+                    content = DocumentParser.ParseRtf(stream);
+                }
+                else
+                {
+                    return BadRequest("Unsupported file extension. Only .txt, .rtf, and .docx files are supported.");
+                }
+
+                return Ok(new { Content = content });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { Message = $"Failed to parse document: {ex.Message}" });
+            }
         }
 
         [HttpGet("export-csv")]

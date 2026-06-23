@@ -3,7 +3,7 @@ import { Search, X, Loader2, UserPlus, Phone, Fingerprint, ArrowRight, User, Ale
 import { cn } from '@/lib/utils'
 import { ReceptionApi } from '@/api/reception'
 import { useTheme } from '@/context/ThemeContext'
-import { RichPatientCard } from '@/components/patient/RichPatientCard'
+import { RichPatientCard, calculateDetailedAge } from '@/components/patient/RichPatientCard'
 
 
 export function PatientIdentification({ snapshot, onSelectPatient, onClearPatient }) {
@@ -233,7 +233,11 @@ export function PatientIdentification({ snapshot, onSelectPatient, onClearPatien
 
 
 function RegisterFormInline({ onSuccess, onCancel, initialMobile = '' }) {
-    const [formData, setFormData] = useState({ name: '', mobile: initialMobile, age: '', gender: 'Male' });
+    const [formData, setFormData] = useState({ name: '', mobile: initialMobile, gender: 'Male' });
+    const [entryMode, setEntryMode] = useState("dob"); // "dob" or "age"
+    const [dob, setDob] = useState("");
+    const [age, setAge] = useState("");
+    const [ageUnit, setAgeUnit] = useState("Years"); // "Years", "Months", "Days"
     const [error, setError] = useState(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const { theme } = useTheme();
@@ -249,10 +253,8 @@ function RegisterFormInline({ onSuccess, onCancel, initialMobile = '' }) {
             inactive: "text-zinc-500 hover:text-zinc-300"
         }
     } : {
-        // MATCHING VISIT DETAILS SLAB STYLE
         container: "p-4 rounded-xl bg-black/[0.02] border border-black/5 shadow-inner space-y-4",
         label: "type-label mb-1.5 block",
-        // MATCHING ETCHED INPUTS
         input: "bg-white/85 border-white/50 shadow-[inset_0_1px_2px_rgba(0,0,0,0.06)] type-body focus:ring-1 focus:ring-black/5 transition-all placeholder:text-zinc-400 disabled:opacity-50",
         genderBox: "bg-black/5 p-1 rounded-lg border border-black/5",
         genderBtn: {
@@ -263,16 +265,59 @@ function RegisterFormInline({ onSuccess, onCancel, initialMobile = '' }) {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!formData.name || !formData.mobile || !formData.age) {
-            setError("All fields marked * are required");
+        if (!formData.name || !formData.mobile) {
+            setError("Name and Mobile are required");
             return;
         }
+
+        let finalDob = null;
+        let isDateOfBirthKnown = true;
+        let finalAge = null;
+
+        if (entryMode === "dob") {
+            if (!dob) {
+                setError("Date of Birth is required");
+                return;
+            }
+            finalDob = dob;
+            isDateOfBirthKnown = true;
+            
+            // simple year difference for fallback
+            const diffYears = new Date().getFullYear() - new Date(dob).getFullYear();
+            finalAge = diffYears >= 0 ? diffYears : 0;
+        } else {
+            if (!age || isNaN(parseInt(age, 10))) {
+                setError("Age is required");
+                return;
+            }
+            isDateOfBirthKnown = false;
+            const num = parseInt(age, 10);
+            const d = new Date();
+            if (ageUnit === "Years") {
+                d.setFullYear(d.getFullYear() - num);
+                finalAge = num;
+            } else if (ageUnit === "Months") {
+                d.setMonth(d.getMonth() - num);
+                finalAge = 0;
+            } else if (ageUnit === "Days") {
+                d.setDate(d.getDate() - num);
+                finalAge = 0;
+            }
+            finalDob = d.toISOString().split('T')[0];
+        }
+
         setIsSubmitting(true);
         setError(null);
         try {
-            const result = await ReceptionApi.registerPatient(formData);
+            const apiPayload = {
+                ...formData,
+                dob: finalDob,
+                isDateOfBirthKnown,
+                age: finalAge
+            };
+            const result = await ReceptionApi.registerPatient(apiPayload);
             if (result && result.patientId) {
-                onSuccess(result, formData);
+                onSuccess(result, { ...formData, dob: finalDob, isDateOfBirthKnown, age: finalAge });
             }
         } catch (err) {
             setError(err.message);
@@ -283,8 +328,6 @@ function RegisterFormInline({ onSuccess, onCancel, initialMobile = '' }) {
 
     return (
         <form onSubmit={handleSubmit} className={cn("animate-in fade-in zoom-in-95 duration-200", ui.container)}>
-            {/* Header / Title if needed, but context is usually enough. Just a distinct block. */}
-
             {error && (
                 <div className="flex items-center gap-2 text-xs text-red-600 bg-red-50 border border-red-100 p-2 rounded-lg">
                     <AlertCircle className="w-3 h-3" />
@@ -308,7 +351,7 @@ function RegisterFormInline({ onSuccess, onCancel, initialMobile = '' }) {
                     </div>
                 </div>
 
-                {/* 2. ROW: MOBILE + AGE */}
+                {/* 2. ROW: MOBILE + ENTRY MODE */}
                 <div className="grid grid-cols-2 gap-4">
                     <div>
                         <label className={ui.label}>Mobile <span className="text-red-400">*</span></label>
@@ -320,18 +363,80 @@ function RegisterFormInline({ onSuccess, onCancel, initialMobile = '' }) {
                         />
                     </div>
                     <div>
-                        <label className={ui.label}>Age <span className="text-red-400">*</span></label>
-                        <input
-                            type="number"
-                            className={cn("w-full h-10 rounded-lg px-3 py-2 outline-none", ui.input)}
-                            placeholder="25"
-                            value={formData.age}
-                            onChange={e => setFormData({ ...formData, age: e.target.value })}
-                        />
+                        <label className={ui.label}>Entry Method <span className="text-red-400">*</span></label>
+                        <div className={cn("flex", ui.genderBox)}>
+                            {[
+                                { key: "dob", label: "DOB" },
+                                { key: "age", label: "Age" }
+                            ].map(mode => (
+                                <button
+                                    key={mode.key}
+                                    type="button"
+                                    onClick={() => setEntryMode(mode.key)}
+                                    className={cn(
+                                        "flex-1 text-xs py-1.5 rounded-md transition-all duration-200",
+                                        entryMode === mode.key ? ui.genderBtn.active : ui.genderBtn.inactive
+                                    )}
+                                >
+                                    {mode.label}
+                                </button>
+                            ))}
+                        </div>
                     </div>
                 </div>
 
-                {/* 3. GENDER SEGMENTED CONTROL */}
+                {/* 3. ROW: DOB or AGE INPUT */}
+                {entryMode === "dob" ? (
+                    <div className="grid grid-cols-2 gap-4 items-end animate-in fade-in duration-200">
+                        <div>
+                            <label className={ui.label}>Date of Birth <span className="text-red-400">*</span></label>
+                            <input
+                                type="date"
+                                className={cn("w-full h-10 rounded-lg px-3 py-2 outline-none", ui.input)}
+                                value={dob}
+                                max={new Date().toISOString().split('T')[0]}
+                                onChange={e => setDob(e.target.value)}
+                            />
+                        </div>
+                        <div className="h-10 flex items-center pl-2">
+                            {dob ? (
+                                <div className="text-xs text-zinc-500 font-medium">
+                                    Calculated Age: <span className="text-synos-primary font-bold">{calculateDetailedAge(dob).text}</span>
+                                </div>
+                            ) : (
+                                <span className="text-xs text-zinc-400 italic">Enter DOB to calculate age</span>
+                            )}
+                        </div>
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-2 gap-4 animate-in fade-in duration-200">
+                        <div>
+                            <label className={ui.label}>Age <span className="text-red-400">*</span></label>
+                            <input
+                                type="number"
+                                min="0"
+                                className={cn("w-full h-10 rounded-lg px-3 py-2 outline-none", ui.input)}
+                                placeholder="Age"
+                                value={age}
+                                onChange={e => setAge(e.target.value)}
+                            />
+                        </div>
+                        <div>
+                            <label className={ui.label}>Age Unit <span className="text-red-400">*</span></label>
+                            <select
+                                className={cn("w-full h-10 rounded-lg px-3 py-2 outline-none border", ui.input)}
+                                value={ageUnit}
+                                onChange={e => setAgeUnit(e.target.value)}
+                            >
+                                <option value="Years">Years</option>
+                                <option value="Months">Months</option>
+                                <option value="Days">Days</option>
+                            </select>
+                        </div>
+                    </div>
+                )}
+
+                {/* 4. GENDER SEGMENTED CONTROL */}
                 <div>
                     <label className={ui.label}>Gender <span className="text-red-400">*</span></label>
                     <div className={cn("flex", ui.genderBox)}>

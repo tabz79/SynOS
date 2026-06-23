@@ -70,9 +70,57 @@ namespace SynOS.Services.Reporting
 
         public async Task<ReportInterpretation?> GetInterpretationAsync(Guid reportId)
         {
-            return await _dbContext.ReportInterpretations
+            var existing = await _dbContext.ReportInterpretations
                 .AsNoTracking()
                 .FirstOrDefaultAsync(ri => ri.ReportId == reportId);
+
+            if (existing != null)
+            {
+                return existing;
+            }
+
+            var report = await _dbContext.Reports
+                .AsNoTracking()
+                .FirstOrDefaultAsync(r => r.ReportId == reportId);
+
+            if (report == null) return null;
+
+            Order? order = null;
+            if (report.SourceType == "RadiologyStudy")
+            {
+                var study = await _dbContext.RadiologyStudies
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(rs => rs.RadiologyStudyId == report.SourceId);
+                if (study != null)
+                {
+                    order = await _dbContext.Orders
+                        .Include(o => o.Test)
+                        .AsNoTracking()
+                        .FirstOrDefaultAsync(o => o.OrderId == study.VisitTestId);
+                }
+            }
+            else
+            {
+                order = await _dbContext.Orders
+                    .Include(o => o.Test)
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(o => o.OrderId == report.SourceId);
+            }
+
+            if (order?.Test != null && !string.IsNullOrWhiteSpace(order.Test.DefaultInterpretation))
+            {
+                return new ReportInterpretation
+                {
+                    ReportId = reportId,
+                    Summary = order.Test.DefaultInterpretation,
+                    Notes = string.Empty,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow,
+                    CreatedBy = Guid.Empty
+                };
+            }
+
+            return null;
         }
     }
 }

@@ -270,9 +270,9 @@ namespace SynOS.Data
                 new { Code = "RAD", Name = "Radiology", Macro = "Radiology" },
                 new { Code = "BIO", Name = "Biochemistry", Macro = "Pathology" },
                 new { Code = "HEM", Name = "Hematology", Macro = "Pathology" },
-                new { Code = "SER", Name = "Serology", Macro = "Pathology" },
-                new { Code = "MIC", Name = "Microbiology", Macro = "Pathology" },
-                new { Code = "CPA", Name = "Clinical Pathology", Macro = "Pathology" },
+                new { Code = "SERO", Name = "Serology", Macro = "Pathology" },
+                new { Code = "MICRO", Name = "Microbiology", Macro = "Pathology" },
+                new { Code = "CP", Name = "Clinical Pathology", Macro = "Pathology" },
                 new { Code = "CPS", Name = "Clinical Pathology Stool", Macro = "Pathology" }
             };
 
@@ -296,8 +296,21 @@ namespace SynOS.Data
                     existing.Code = sd.Code;
                     existing.Name = sd.Name;
                     existing.MacroDepartment = sd.Macro;
+                    existing.IsActive = true; // Ensure they are active
                 }
             }
+
+            // 3. Deactivate legacy unused department codes
+            var legacyCodesToDeactivate = new[] { "CPA", "MIC", "SER" };
+            foreach (var code in legacyCodesToDeactivate)
+            {
+                var legacyDept = allDepts.FirstOrDefault(d => d.Code.Equals(code, StringComparison.OrdinalIgnoreCase));
+                if (legacyDept != null)
+                {
+                    legacyDept.IsActive = false;
+                }
+            }
+
             await context.SaveChangesAsync();
         }
 

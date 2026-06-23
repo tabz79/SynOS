@@ -59,5 +59,9 @@ namespace SynOS.Models.Entities.Catalog
         public virtual ICollection<CatalogPanelMapping> ChildMappings { get; set; } = new List<CatalogPanelMapping>();
 
         public virtual ICollection<CatalogTestNote> TestNotes { get; set; } = new List<CatalogTestNote>();
+
+        public string? DefaultInterpretation { get; set; }
+        public DateTimeOffset? DefaultInterpretationLastUpdatedAt { get; set; }
+        public Guid? DefaultInterpretationLastUpdatedBy { get; set; }
     }
 }

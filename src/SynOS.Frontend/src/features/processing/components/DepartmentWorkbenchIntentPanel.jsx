@@ -312,7 +312,8 @@ export function DepartmentWorkbenchIntentPanel({ assignmentId, onClose, onDirtyU
                                 lastName: detail.patient?.patientName.split(' ').slice(1).join(' '),
                                 mrn: detail.patient?.mrn,
                                 gender: detail.patient?.sex,
-                                dateOfBirth: new Date(new Date().getFullYear() - detail.patient?.age, 0, 1).toISOString(), // Estimated
+                                dateOfBirth: detail.patient?.dateOfBirth,
+                                isDateOfBirthKnown: detail.patient?.isDateOfBirthKnown,
                                 lastVisitTestCodes: detail.tests?.map(t => t.testCode) || []
                             }}
                             isLocked={true}

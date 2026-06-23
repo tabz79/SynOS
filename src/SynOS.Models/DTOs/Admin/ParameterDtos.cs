@@ -36,6 +36,47 @@ namespace SynOS.Models.DTOs.Admin
         public bool UseAdult { get; set; }
         public decimal? AdultMin { get; set; }
         public decimal? AdultMax { get; set; }
+
+        // Category overrides
+        public bool UseNewbornMale { get; set; }
+        public decimal? NewbornMaleMin { get; set; }
+        public decimal? NewbornMaleMax { get; set; }
+        public string? NewbornMaleText { get; set; }
+
+        public bool UseNewbornFemale { get; set; }
+        public decimal? NewbornFemaleMin { get; set; }
+        public decimal? NewbornFemaleMax { get; set; }
+        public string? NewbornFemaleText { get; set; }
+
+        public bool UseInfantMale { get; set; }
+        public decimal? InfantMaleMin { get; set; }
+        public decimal? InfantMaleMax { get; set; }
+        public string? InfantMaleText { get; set; }
+
+        public bool UseInfantFemale { get; set; }
+        public decimal? InfantFemaleMin { get; set; }
+        public decimal? InfantFemaleMax { get; set; }
+        public string? InfantFemaleText { get; set; }
+
+        public bool UseChildMale { get; set; }
+        public decimal? ChildMaleMin { get; set; }
+        public decimal? ChildMaleMax { get; set; }
+        public string? ChildMaleText { get; set; }
+
+        public bool UseChildFemale { get; set; }
+        public decimal? ChildFemaleMin { get; set; }
+        public decimal? ChildFemaleMax { get; set; }
+        public string? ChildFemaleText { get; set; }
+
+        public bool UseAdultMale { get; set; }
+        public decimal? AdultMaleMin { get; set; }
+        public decimal? AdultMaleMax { get; set; }
+        public string? AdultMaleText { get; set; }
+
+        public bool UseAdultFemale { get; set; }
+        public decimal? AdultFemaleMin { get; set; }
+        public decimal? AdultFemaleMax { get; set; }
+        public string? AdultFemaleText { get; set; }
     }
 
     public class CreateParameterDto

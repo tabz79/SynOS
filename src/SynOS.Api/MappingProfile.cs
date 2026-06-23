@@ -78,9 +78,13 @@ namespace SynOS.Api
                        ? src.TestPricings.OrderByDescending(tp => tp.EffectiveFrom).FirstOrDefault()!.BasePrice
                        : 0m)
                     : 0m))
+                .ForMember(dest => dest.Parameters, opt => opt.MapFrom(src => 
+                    src.Parameters != null 
+                    ? src.Parameters.Where(p => p.IsActive).OrderBy(p => p.SortOrder).ToList() 
+                    : new List<Parameter>()))
                 .ForMember(dest => dest.IncludedTestCodes, opt => opt.MapFrom(src => 
                     src.ProfileChildren != null 
-                    ? src.ProfileChildren.Where(pc => pc.ChildTest != null).Select(pc => pc.ChildTest!.TestCode).ToList() 
+                    ? src.ProfileChildren.Where(pc => pc.ChildTest != null).OrderBy(pc => pc.Sequence).Select(pc => pc.ChildTest!.TestCode).ToList() 
                     : new List<string>()));
 
             CreateMap<CreateParameterDto, Parameter>();
@@ -100,7 +104,48 @@ namespace SynOS.Api
                 .ForMember(dest => dest.ChildMax, opt => opt.MapFrom(src => src.ReferenceRanges != null ? src.ReferenceRanges.Where(r => r.AgeGroup == "Child" && r.IsActive).Select(r => r.RefHigh).FirstOrDefault() : null))
                 .ForMember(dest => dest.UseAdult, opt => opt.MapFrom(src => src.ReferenceRanges != null && src.ReferenceRanges.Any(r => r.AgeGroup == "Adult" && r.IsActive)))
                 .ForMember(dest => dest.AdultMin, opt => opt.MapFrom(src => src.ReferenceRanges != null ? src.ReferenceRanges.Where(r => r.AgeGroup == "Adult" && r.IsActive).Select(r => r.RefLow).FirstOrDefault() : null))
-                .ForMember(dest => dest.AdultMax, opt => opt.MapFrom(src => src.ReferenceRanges != null ? src.ReferenceRanges.Where(r => r.AgeGroup == "Adult" && r.IsActive).Select(r => r.RefHigh).FirstOrDefault() : null));
+                .ForMember(dest => dest.AdultMax, opt => opt.MapFrom(src => src.ReferenceRanges != null ? src.ReferenceRanges.Where(r => r.AgeGroup == "Adult" && r.IsActive).Select(r => r.RefHigh).FirstOrDefault() : null))
+                
+                // Category overrides
+                .ForMember(dest => dest.UseNewbornMale, opt => opt.MapFrom(src => src.ReferenceRanges != null && src.ReferenceRanges.Any(r => r.Sex == "Male" && r.AgeGroup == "Newborn" && r.IsActive)))
+                .ForMember(dest => dest.NewbornMaleMin, opt => opt.MapFrom(src => src.ReferenceRanges != null ? src.ReferenceRanges.Where(r => r.Sex == "Male" && r.AgeGroup == "Newborn" && r.IsActive).Select(r => r.RefLow).FirstOrDefault() : null))
+                .ForMember(dest => dest.NewbornMaleMax, opt => opt.MapFrom(src => src.ReferenceRanges != null ? src.ReferenceRanges.Where(r => r.Sex == "Male" && r.AgeGroup == "Newborn" && r.IsActive).Select(r => r.RefHigh).FirstOrDefault() : null))
+                .ForMember(dest => dest.NewbornMaleText, opt => opt.MapFrom(src => src.ReferenceRanges != null ? src.ReferenceRanges.Where(r => r.Sex == "Male" && r.AgeGroup == "Newborn" && r.IsActive).Select(r => r.TextRange).FirstOrDefault() : null))
+                
+                .ForMember(dest => dest.UseNewbornFemale, opt => opt.MapFrom(src => src.ReferenceRanges != null && src.ReferenceRanges.Any(r => r.Sex == "Female" && r.AgeGroup == "Newborn" && r.IsActive)))
+                .ForMember(dest => dest.NewbornFemaleMin, opt => opt.MapFrom(src => src.ReferenceRanges != null ? src.ReferenceRanges.Where(r => r.Sex == "Female" && r.AgeGroup == "Newborn" && r.IsActive).Select(r => r.RefLow).FirstOrDefault() : null))
+                .ForMember(dest => dest.NewbornFemaleMax, opt => opt.MapFrom(src => src.ReferenceRanges != null ? src.ReferenceRanges.Where(r => r.Sex == "Female" && r.AgeGroup == "Newborn" && r.IsActive).Select(r => r.RefHigh).FirstOrDefault() : null))
+                .ForMember(dest => dest.NewbornFemaleText, opt => opt.MapFrom(src => src.ReferenceRanges != null ? src.ReferenceRanges.Where(r => r.Sex == "Female" && r.AgeGroup == "Newborn" && r.IsActive).Select(r => r.TextRange).FirstOrDefault() : null))
+                
+                .ForMember(dest => dest.UseInfantMale, opt => opt.MapFrom(src => src.ReferenceRanges != null && src.ReferenceRanges.Any(r => r.Sex == "Male" && r.AgeGroup == "Infant" && r.IsActive)))
+                .ForMember(dest => dest.InfantMaleMin, opt => opt.MapFrom(src => src.ReferenceRanges != null ? src.ReferenceRanges.Where(r => r.Sex == "Male" && r.AgeGroup == "Infant" && r.IsActive).Select(r => r.RefLow).FirstOrDefault() : null))
+                .ForMember(dest => dest.InfantMaleMax, opt => opt.MapFrom(src => src.ReferenceRanges != null ? src.ReferenceRanges.Where(r => r.Sex == "Male" && r.AgeGroup == "Infant" && r.IsActive).Select(r => r.RefHigh).FirstOrDefault() : null))
+                .ForMember(dest => dest.InfantMaleText, opt => opt.MapFrom(src => src.ReferenceRanges != null ? src.ReferenceRanges.Where(r => r.Sex == "Male" && r.AgeGroup == "Infant" && r.IsActive).Select(r => r.TextRange).FirstOrDefault() : null))
+                
+                .ForMember(dest => dest.UseInfantFemale, opt => opt.MapFrom(src => src.ReferenceRanges != null && src.ReferenceRanges.Any(r => r.Sex == "Female" && r.AgeGroup == "Infant" && r.IsActive)))
+                .ForMember(dest => dest.InfantFemaleMin, opt => opt.MapFrom(src => src.ReferenceRanges != null ? src.ReferenceRanges.Where(r => r.Sex == "Female" && r.AgeGroup == "Infant" && r.IsActive).Select(r => r.RefLow).FirstOrDefault() : null))
+                .ForMember(dest => dest.InfantFemaleMax, opt => opt.MapFrom(src => src.ReferenceRanges != null ? src.ReferenceRanges.Where(r => r.Sex == "Female" && r.AgeGroup == "Infant" && r.IsActive).Select(r => r.RefHigh).FirstOrDefault() : null))
+                .ForMember(dest => dest.InfantFemaleText, opt => opt.MapFrom(src => src.ReferenceRanges != null ? src.ReferenceRanges.Where(r => r.Sex == "Female" && r.AgeGroup == "Infant" && r.IsActive).Select(r => r.TextRange).FirstOrDefault() : null))
+                
+                .ForMember(dest => dest.UseChildMale, opt => opt.MapFrom(src => src.ReferenceRanges != null && src.ReferenceRanges.Any(r => r.Sex == "Male" && r.AgeGroup == "Child" && r.IsActive)))
+                .ForMember(dest => dest.ChildMaleMin, opt => opt.MapFrom(src => src.ReferenceRanges != null ? src.ReferenceRanges.Where(r => r.Sex == "Male" && r.AgeGroup == "Child" && r.IsActive).Select(r => r.RefLow).FirstOrDefault() : null))
+                .ForMember(dest => dest.ChildMaleMax, opt => opt.MapFrom(src => src.ReferenceRanges != null ? src.ReferenceRanges.Where(r => r.Sex == "Male" && r.AgeGroup == "Child" && r.IsActive).Select(r => r.RefHigh).FirstOrDefault() : null))
+                .ForMember(dest => dest.ChildMaleText, opt => opt.MapFrom(src => src.ReferenceRanges != null ? src.ReferenceRanges.Where(r => r.Sex == "Male" && r.AgeGroup == "Child" && r.IsActive).Select(r => r.TextRange).FirstOrDefault() : null))
+                
+                .ForMember(dest => dest.UseChildFemale, opt => opt.MapFrom(src => src.ReferenceRanges != null && src.ReferenceRanges.Any(r => r.Sex == "Female" && r.AgeGroup == "Child" && r.IsActive)))
+                .ForMember(dest => dest.ChildFemaleMin, opt => opt.MapFrom(src => src.ReferenceRanges != null ? src.ReferenceRanges.Where(r => r.Sex == "Female" && r.AgeGroup == "Child" && r.IsActive).Select(r => r.RefLow).FirstOrDefault() : null))
+                .ForMember(dest => dest.ChildFemaleMax, opt => opt.MapFrom(src => src.ReferenceRanges != null ? src.ReferenceRanges.Where(r => r.Sex == "Female" && r.AgeGroup == "Child" && r.IsActive).Select(r => r.RefHigh).FirstOrDefault() : null))
+                .ForMember(dest => dest.ChildFemaleText, opt => opt.MapFrom(src => src.ReferenceRanges != null ? src.ReferenceRanges.Where(r => r.Sex == "Female" && r.AgeGroup == "Child" && r.IsActive).Select(r => r.TextRange).FirstOrDefault() : null))
+                
+                .ForMember(dest => dest.UseAdultMale, opt => opt.MapFrom(src => src.ReferenceRanges != null && src.ReferenceRanges.Any(r => r.Sex == "Male" && r.AgeGroup == "Adult" && r.IsActive)))
+                .ForMember(dest => dest.AdultMaleMin, opt => opt.MapFrom(src => src.ReferenceRanges != null ? src.ReferenceRanges.Where(r => r.Sex == "Male" && r.AgeGroup == "Adult" && r.IsActive).Select(r => r.RefLow).FirstOrDefault() : null))
+                .ForMember(dest => dest.AdultMaleMax, opt => opt.MapFrom(src => src.ReferenceRanges != null ? src.ReferenceRanges.Where(r => r.Sex == "Male" && r.AgeGroup == "Adult" && r.IsActive).Select(r => r.RefHigh).FirstOrDefault() : null))
+                .ForMember(dest => dest.AdultMaleText, opt => opt.MapFrom(src => src.ReferenceRanges != null ? src.ReferenceRanges.Where(r => r.Sex == "Male" && r.AgeGroup == "Adult" && r.IsActive).Select(r => r.TextRange).FirstOrDefault() : null))
+                
+                .ForMember(dest => dest.UseAdultFemale, opt => opt.MapFrom(src => src.ReferenceRanges != null && src.ReferenceRanges.Any(r => r.Sex == "Female" && r.AgeGroup == "Adult" && r.IsActive)))
+                .ForMember(dest => dest.AdultFemaleMin, opt => opt.MapFrom(src => src.ReferenceRanges != null ? src.ReferenceRanges.Where(r => r.Sex == "Female" && r.AgeGroup == "Adult" && r.IsActive).Select(r => r.RefLow).FirstOrDefault() : null))
+                .ForMember(dest => dest.AdultFemaleMax, opt => opt.MapFrom(src => src.ReferenceRanges != null ? src.ReferenceRanges.Where(r => r.Sex == "Female" && r.AgeGroup == "Adult" && r.IsActive).Select(r => r.RefHigh).FirstOrDefault() : null))
+                .ForMember(dest => dest.AdultFemaleText, opt => opt.MapFrom(src => src.ReferenceRanges != null ? src.ReferenceRanges.Where(r => r.Sex == "Female" && r.AgeGroup == "Adult" && r.IsActive).Select(r => r.TextRange).FirstOrDefault() : null));
 
             CreateMap<CreateReferenceRangeDto, ReferenceRange>();
             CreateMap<UpdateReferenceRangeDto, ReferenceRange>();

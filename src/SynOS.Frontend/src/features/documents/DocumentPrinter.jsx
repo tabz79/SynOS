@@ -4,6 +4,7 @@ import { ReportA4 } from './templates/ReportA4';
 import { useTemplateForReport } from './templates/hooks/useReportTemplates';
 import { useAuth } from '@/context/AuthContext';
 import { ReportsApi } from '@/api/reports';
+import { AdminApi } from '@/api/admin';
 
 import { mapBackendDslToTemplate } from './templates/ReportTemplateService';
 
@@ -20,7 +21,7 @@ export const DocumentPrinter = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const resolveTemplate = (reportData, mappedList) => {
+  const resolveTemplate = (reportData, mappedList, catalog = []) => {
     const modality = reportData?.modality || reportData?.Modality;
     const testCode = reportData?.metadata?.testCode || reportData?.metadata?.TestCode || reportData?.testCode || reportData?.TestCode;
     const reportTemplateId = reportData?.reportTemplateId || reportData?.ReportTemplateId || reportData?.templateId || reportData?.TemplateId;
@@ -34,16 +35,12 @@ export const DocumentPrinter = () => {
       found = mappedList.find(t => t.id === reportTemplateId);
     }
 
-    // 2. Local catalog settings override
-    if (!found) {
-      const savedCatalog = localStorage.getItem("synos_test_catalog");
-      let catalog = [];
-      if (savedCatalog) {
-        try { catalog = JSON.parse(savedCatalog); } catch (e) {}
-      }
-      const test = catalog.find(t => t.code === testCode);
-      if (test && test.templateId) {
-        found = mappedList.find(t => t.id === test.templateId);
+    // 2. Catalog settings override from database
+    if (!found && testCode) {
+      const test = catalog.find(t => (t.testCode || t.TestCode || t.code || "").toUpperCase() === (testCode || "").toUpperCase());
+      const templateId = test?.reportTemplateId || test?.ReportTemplateId || test?.templateId;
+      if (templateId) {
+        found = mappedList.find(t => t.id === templateId);
       }
     }
 
@@ -122,9 +119,17 @@ export const DocumentPrinter = () => {
           return mapBackendDslToTemplate(dsl, item.templateId, item.isDefault, item.isPublished);
         });
 
+        // 3.5 Fetch tests catalog for overrides
+        let catalog = [];
+        try {
+          catalog = await AdminApi.getTests();
+        } catch (catalogErr) {
+          console.warn("Failed to load catalog for printing overrides", catalogErr);
+        }
+
         // 4. Resolve templates for all reports
         const resolvedTemplates = finalReportDataList.map(report => 
-          resolveTemplate(report, mappedTemplates)
+          resolveTemplate(report, mappedTemplates, catalog)
         );
 
         setReportsData(finalReportDataList);

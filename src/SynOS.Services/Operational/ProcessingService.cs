@@ -324,7 +324,8 @@ namespace SynOS.Services.Operational
                                 a.Specimen.Visit.Patient.FirstName,
                                 a.Specimen.Visit.Patient.LastName,
                                 a.Specimen.Visit.Patient.Gender,
-                                a.Specimen.Visit.Patient.DateOfBirth
+                                a.Specimen.Visit.Patient.DateOfBirth,
+                                a.Specimen.Visit.Patient.IsDateOfBirthKnown
                             }
                         }
                     }
@@ -365,6 +366,96 @@ namespace SynOS.Services.Operational
                 .Where(r => orderIds.Contains(r.OrderId))
                 .ToListAsync();
 
+            // Retrieve ProfileMaps to know child sequences
+            var parentIds = orders.Where(o => o.ParentOrderId != null).Select(o => o.ParentOrderId!.Value).Distinct().ToList();
+            var profileMaps = await _db.ProfileMaps
+                .Where(m => parentIds.Contains(m.ParentTestId))
+                .ToListAsync();
+
+            var rootOrders = orders.Where(o => o.ParentOrderId == null).OrderBy(o => o.TestCode).ToList();
+            var orderWeights = new Dictionary<Guid, int>();
+            int baseWeight = 100;
+            foreach (var root in rootOrders)
+            {
+                orderWeights[root.OrderId] = baseWeight;
+                
+                var children = orders.Where(o => o.ParentOrderId == root.OrderId).ToList();
+                if (children.Any())
+                {
+                    var sortedChildren = children
+                        .OrderBy(c => {
+                            var map = profileMaps.FirstOrDefault(m => m.ParentTestId == root.TestId && m.ChildTestId == c.TestId);
+                            return map?.Sequence ?? 999;
+                        })
+                        .ToList();
+                    
+                    int childOffset = 1;
+                    foreach (var child in sortedChildren)
+                    {
+                        orderWeights[child.OrderId] = baseWeight + childOffset++;
+                    }
+                }
+                baseWeight += 100;
+            }
+
+            foreach (var o in orders)
+            {
+                if (!orderWeights.ContainsKey(o.OrderId))
+                {
+                    orderWeights[o.OrderId] = baseWeight++;
+                }
+            }
+
+            var testDtos = new List<AssignmentTestDto>();
+            foreach (var o in orders)
+            {
+                var catalogTest = catalogTests.FirstOrDefault(t => t.TestCode == o.TestCode);
+                var parameterDtos = new List<AssignmentParameterDto>();
+                if (catalogTest?.Parameters != null)
+                {
+                    foreach (var cp in catalogTest.Parameters.Where(p => p.IsActive).OrderBy(p => p.SortOrder))
+                    {
+                        var resolvedRange = await Utils.ReferenceRangeResolver.ResolveRangeAsync(
+                            _db, 
+                            cp.ParameterCode, 
+                            patient.Gender, 
+                            patient.DateOfBirth, 
+                            snapshot.Specimen.CollectedAt ?? DateTime.UtcNow
+                        );
+
+                        if (string.IsNullOrEmpty(resolvedRange))
+                        {
+                            resolvedRange = cp.ReferenceRange;
+                        }
+
+                        parameterDtos.Add(new AssignmentParameterDto
+                        {
+                            ParameterCode = cp.ParameterCode,
+                            ParameterName = cp.ParameterName,
+                            DataType = cp.DataType,
+                            Unit = cp.Unit,
+                            ReferenceRange = resolvedRange,
+                            SortOrder = cp.SortOrder,
+                            IsRequired = cp.IsRequired,
+                            EnumOptions = cp.EnumOptions,
+                            ExistingResultValue = results.FirstOrDefault(r => r.OrderId == o.OrderId && r.ParameterCode == cp.ParameterCode)?.Value,
+                            IsCalculated = cp.IsCalculated || !string.IsNullOrWhiteSpace(cp.Formula),
+                            Formula = cp.Formula,
+                            HasFormula = cp.IsCalculated || !string.IsNullOrWhiteSpace(cp.Formula)
+                        });
+                    }
+                }
+
+                testDtos.Add(new AssignmentTestDto
+                {
+                    OrderId = o.OrderId,
+                    TestCode = o.TestCode,
+                    TestName = catalogTest?.TestName ?? o.TestCode,
+                    SortOrder = orderWeights.TryGetValue(o.OrderId, out var weight) ? weight : 0,
+                    Parameters = parameterDtos
+                });
+            }
+
             // Assemble DTO
             var detailDto = new ProcessingAssignmentDetailDto
             {
@@ -379,7 +470,9 @@ namespace SynOS.Services.Operational
                     MRN = patient.MRN,
                     PatientName = $"{patient.FirstName} {patient.LastName}",
                     Sex = patient.Gender,
-                    Age = (int)((DateTime.Today - patient.DateOfBirth).TotalDays / 365.25)
+                    Age = (int)((DateTime.Today - patient.DateOfBirth).TotalDays / 365.25),
+                    DateOfBirth = patient.DateOfBirth,
+                    IsDateOfBirthKnown = patient.IsDateOfBirthKnown
                 },
                 Specimen = new AssignmentSpecimenDto
                 {
@@ -388,37 +481,7 @@ namespace SynOS.Services.Operational
                     SpecimenType = snapshot.Specimen.SpecimenTypeCode,
                     CollectionTime = snapshot.Specimen.CollectedAt
                 },
-                Tests = orders.Select(o =>
-                {
-                    var catalogTest = catalogTests.FirstOrDefault(t => t.TestCode == o.TestCode);
-                    return new AssignmentTestDto
-                    {
-                        OrderId = o.OrderId,
-                        TestCode = o.TestCode,
-                        TestName = catalogTest?.TestName ?? o.TestCode,
-                        SortOrder = 0,
-                        Parameters = catalogTest?.Parameters
-                            .Where(p => p.IsActive)
-                            .OrderBy(p => p.SortOrder)
-                            .Select(cp => new AssignmentParameterDto
-                            {
-                                ParameterCode = cp.ParameterCode,
-                                ParameterName = cp.ParameterName,
-                                DataType = cp.DataType,
-                                Unit = cp.Unit,
-                                ReferenceRange = cp.ReferenceRange,
-                                SortOrder = cp.SortOrder,
-                                IsRequired = cp.IsRequired,
-                                EnumOptions = cp.EnumOptions,
-                                ExistingResultValue = results.FirstOrDefault(r => r.OrderId == o.OrderId && r.ParameterCode == cp.ParameterCode)?.Value,
-                                IsCalculated = cp.IsCalculated || !string.IsNullOrWhiteSpace(cp.Formula),
-                                Formula = cp.Formula,
-                                HasFormula = cp.IsCalculated || !string.IsNullOrWhiteSpace(cp.Formula)
-                            }).ToList() ?? new List<AssignmentParameterDto>()
-                    };
-                })
-                .OrderBy(t => t.SortOrder)
-                .ToList()
+                Tests = testDtos.OrderBy(t => t.SortOrder).ToList()
             };
 
             return detailDto;

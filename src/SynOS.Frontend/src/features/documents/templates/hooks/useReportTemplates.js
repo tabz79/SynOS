@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { ReportsApi } from '../../../../api/reports';
+import { AdminApi } from '../../../../api/admin';
 import { DEFAULT_TEMPLATES, sanitizeTemplates } from '../defaultTemplates';
 import { mapBackendDslToTemplate } from '../ReportTemplateService';
 
@@ -9,24 +10,11 @@ export function useTemplateForReport(reportData) {
   const testCode = reportData?.metadata?.testCode || reportData?.metadata?.TestCode || reportData?.testCode || reportData?.TestCode;
   const reportTemplateId = reportData?.reportTemplateId || reportData?.ReportTemplateId || reportData?.templateId || reportData?.TemplateId;
 
-  // Resolve active template synchronously from cache / localStorage to prevent layout flash
+  // Resolve active template synchronously from default fallback list initially to prevent layout flash
   const [template, setTemplate] = useState(() => {
     if (!modality) return null;
     
-    // Resolve list from localStorage or DEFAULT_TEMPLATES
-    let mappedList = [];
-    const saved = localStorage.getItem("synos_report_templates");
-    if (saved) {
-      try {
-        mappedList = JSON.parse(saved);
-      } catch (e) {
-        console.error(e);
-      }
-    }
-    if (!mappedList || mappedList.length === 0) {
-      mappedList = sanitizeTemplates(DEFAULT_TEMPLATES);
-    }
-
+    const mappedList = sanitizeTemplates(DEFAULT_TEMPLATES);
     let found = null;
     
     // 1. Check if report specifies a ReportTemplateId directly from backend
@@ -34,24 +22,7 @@ export function useTemplateForReport(reportData) {
       found = mappedList.find(t => t.id === reportTemplateId);
     }
 
-    // 2. Check local catalog settings override
-    if (!found) {
-      const savedCatalog = localStorage.getItem("synos_test_catalog");
-      let catalog = [];
-      if (savedCatalog) {
-        try {
-          catalog = JSON.parse(savedCatalog);
-        } catch (e) {
-          console.error(e);
-        }
-      }
-      const test = catalog.find(t => t.code === testCode);
-      if (test && test.templateId) {
-        found = mappedList.find(t => t.id === test.templateId);
-      }
-    }
-
-    // 3. Default template for modality
+    // 2. Default template for modality
     if (!found) {
       const normModality = (modality || "").toLowerCase().trim();
       const isRad = normModality.includes("rad");
@@ -59,17 +30,17 @@ export function useTemplateForReport(reportData) {
       found = mappedList.find(t => t.isDefault && (t.modality || "").toLowerCase().trim() === targetModality);
     }
 
-    // 4. Default template globally
+    // 3. Default template globally
     if (!found) {
       found = mappedList.find(t => t.isDefault);
     }
 
-    // 5. First template in list
+    // 4. First template in list
     if (!found) {
       found = mappedList[0];
     }
 
-    // 6. Default fallback
+    // 5. Default fallback
     if (!found) {
       const dept = modality.toLowerCase().trim();
       const localTemplates = sanitizeTemplates(DEFAULT_TEMPLATES);
@@ -110,9 +81,6 @@ export function useTemplateForReport(reportData) {
           return mapBackendDslToTemplate(dsl, item.templateId, item.isDefault, item.isPublished);
         });
 
-        // Save fresh templates list to localStorage cache
-        localStorage.setItem("synos_report_templates", JSON.stringify(mappedList));
-
         // Resolve active template
         let found = null;
         
@@ -121,23 +89,20 @@ export function useTemplateForReport(reportData) {
           found = mappedList.find(t => t.id === reportTemplateId);
         }
 
-        // 2. Check local catalog settings override
-        if (!found) {
-          const savedCatalog = localStorage.getItem("synos_test_catalog");
-          let catalog = [];
-          if (savedCatalog) {
-            try {
-              catalog = JSON.parse(savedCatalog);
-            } catch (e) {
-              console.error(e);
+        // 2. Check catalog settings override directly from API to avoid localStorage
+        if (!found && testCode) {
+          try {
+            const catalog = await AdminApi.getTests();
+            const test = catalog.find(t => (t.testCode || t.TestCode || t.code || "").toUpperCase() === (testCode || "").toUpperCase());
+            const templateId = test?.reportTemplateId || test?.ReportTemplateId || test?.templateId;
+            if (templateId) {
+              found = mappedList.find(t => t.id === templateId);
             }
-          }
-          const test = catalog.find(t => t.code === testCode);
-          if (test && test.templateId) {
-            found = mappedList.find(t => t.id === test.templateId);
+          } catch (catalogErr) {
+            console.error("Failed to load catalog for template resolution", catalogErr);
           }
         }
- 
+
         // 3. Default template for modality
         if (!found) {
           const normModality = (modality || "").toLowerCase().trim();
@@ -166,7 +131,9 @@ export function useTemplateForReport(reportData) {
           }) || localTemplates[0];
         }
 
-        setTemplate(found);
+        if (isMounted) {
+          setTemplate(found);
+        }
       } catch (err) {
         console.error("Failed to load active template from backend, using local fallback", err);
         if (!isMounted) return;
@@ -191,17 +158,7 @@ export function useTemplateForReport(reportData) {
 
 // React hook to fetch all templates and expose mutation methods
 export function useTemplatesList() {
-  const [templates, setTemplates] = useState(() => {
-    const saved = localStorage.getItem("synos_report_templates");
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch (e) {
-        console.error(e);
-      }
-    }
-    return [];
-  });
+  const [templates, setTemplates] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const fetchAll = async () => {
@@ -220,7 +177,6 @@ export function useTemplatesList() {
         return mapBackendDslToTemplate(dsl, item.templateId, item.isDefault, item.isPublished);
       });
       setTemplates(mapped);
-      localStorage.setItem("synos_report_templates", JSON.stringify(mapped));
     } catch (e) {
       console.error("Failed to load templates list", e);
     } finally {

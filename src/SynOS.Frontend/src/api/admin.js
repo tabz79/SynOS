@@ -233,5 +233,11 @@ export const AdminApi = {
 
     provisionCatalog: async (versionHash) => {
         return apiClient.post(`${API_BASE}/tests/catalog/provision`, { versionHash });
+    },
+
+    importInterpretation: async (file) => {
+        const formData = new FormData();
+        formData.append('file', file);
+        return apiClient.post(`${API_BASE}/tests/import-interpretation`, formData);
     }
 };

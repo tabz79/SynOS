@@ -374,19 +374,23 @@ export const ReceptionApi = {
      */
     registerPatient: async (payload) => {
         // MAP FRONTEND TO BACKEND DTO
-        // Backend expects: { Phone, Name, Dob, Gender }
+        // Backend expects: { Phone, Name, Dob, Gender, IsDateOfBirthKnown }
 
-        let dob = null;
-        if (payload.age) {
+        let dob = payload.dob || null;
+        let isDateOfBirthKnown = payload.isDateOfBirthKnown !== undefined ? payload.isDateOfBirthKnown : true;
+        
+        if (!dob && payload.age) {
             const currentYear = new Date().getFullYear();
             const birthYear = currentYear - parseInt(payload.age);
             dob = `${birthYear}-01-01T00:00:00Z`; // Approximate
+            isDateOfBirthKnown = false;
         }
 
         const backendPayload = {
             Phone: payload.mobile,
             Name: payload.name,
             Dob: dob,
+            IsDateOfBirthKnown: isDateOfBirthKnown,
             Gender: payload.gender
         };
 

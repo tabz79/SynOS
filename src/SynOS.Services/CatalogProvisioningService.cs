@@ -371,7 +371,10 @@ namespace SynOS.Services
                         SpecimenTypeCode = isRadiology && string.IsNullOrWhiteSpace(catalog.SpecimenCode) ? "NO_SPECIMEN" : catalog.SpecimenCode,
                         IsProfile = catalog.IsPanel,
                         IsActive = true,
-                        CreatedAt = DateTimeOffset.UtcNow
+                        CreatedAt = DateTimeOffset.UtcNow,
+                        DefaultInterpretation = catalog.DefaultInterpretation,
+                        DefaultInterpretationLastUpdatedAt = catalog.DefaultInterpretationLastUpdatedAt,
+                        DefaultInterpretationLastUpdatedBy = catalog.DefaultInterpretationLastUpdatedBy
                     };
                     _context.Tests.Add(test);
                 }
@@ -383,6 +386,9 @@ namespace SynOS.Services
                     test.IsProfile = catalog.IsPanel;
                     test.IsActive = true;
                     test.UpdatedAt = DateTimeOffset.UtcNow;
+                    test.DefaultInterpretation = catalog.DefaultInterpretation;
+                    test.DefaultInterpretationLastUpdatedAt = catalog.DefaultInterpretationLastUpdatedAt;
+                    test.DefaultInterpretationLastUpdatedBy = catalog.DefaultInterpretationLastUpdatedBy;
                 }
 
                 if (isRadiology)
@@ -601,13 +607,15 @@ namespace SynOS.Services
             }
             if (ageMin != null && ageMax != null)
             {
-                if (ageMin == 0 && ageMax <= 1) return "Infant";
-                if (ageMin == 0 && ageMax <= 12) return "Child";
+                if (ageMin == 0 && ageMax == 0) return "Newborn";
+                if (ageMin == 0 && ageMax == 1) return "Infant";
+                if (ageMin == 1 && ageMax == 12) return "Child";
                 if (ageMin >= 12) return "Adult";
                 return $"Age {ageMin}-{ageMax}";
             }
             if (ageMin != null)
             {
+                if (ageMin >= 12) return "Adult";
                 return $"Age >= {ageMin}";
             }
             return $"Age <= {ageMax}";

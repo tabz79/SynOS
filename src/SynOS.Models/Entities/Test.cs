@@ -71,5 +71,9 @@ namespace SynOS.Models.Entities
         public virtual ICollection<ProfileMap> ProfileParents { get; set; } = new List<ProfileMap>();
 
         public virtual ICollection<SynOS.Models.Entities.Payables.ReferenceLabRateRule> ReferenceLabRateRules { get; set; } = new List<SynOS.Models.Entities.Payables.ReferenceLabRateRule>();
+
+        public string? DefaultInterpretation { get; set; }
+        public DateTimeOffset? DefaultInterpretationLastUpdatedAt { get; set; }
+        public Guid? DefaultInterpretationLastUpdatedBy { get; set; }
     }
 }

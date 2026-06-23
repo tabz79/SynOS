@@ -8,6 +8,7 @@ namespace SynOS.Models.DTOs.Reception
         public string Phone { get; set; } = string.Empty;
         public string? Gender { get; set; }
         public DateTime? Dob { get; set; }
+        public bool? IsDateOfBirthKnown { get; set; }
     }
 
     public class IntakeRegisterPatientResponse

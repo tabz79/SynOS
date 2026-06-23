@@ -96,6 +96,12 @@ namespace SynOS.Services
                 };
             }
 
+            if (!string.IsNullOrEmpty(dto.DefaultInterpretation))
+            {
+                test.DefaultInterpretationLastUpdatedAt = DateTimeOffset.UtcNow;
+                test.DefaultInterpretationLastUpdatedBy = actorUserId;
+            }
+
             _context.Tests.Add(test);
             await _context.SaveChangesAsync();
 
@@ -186,6 +192,13 @@ namespace SynOS.Services
             // Since props are removed from Test, AutoMapper fails silently or errors depending on config.
             // To be safe, rely on the manual updates above and standard properties.
             
+            if (test.DefaultInterpretation != dto.DefaultInterpretation)
+            {
+                test.DefaultInterpretation = dto.DefaultInterpretation;
+                test.DefaultInterpretationLastUpdatedAt = DateTimeOffset.UtcNow;
+                test.DefaultInterpretationLastUpdatedBy = actorUserId;
+            }
+
             test.UpdatedAt = DateTimeOffset.UtcNow;
 
             await _context.SaveChangesAsync();
@@ -696,7 +709,10 @@ namespace SynOS.Services
                     IsActive = test.IsActive,
                     CreatedBy = actorUserId,
                     CreatedAt = DateTimeOffset.UtcNow,
-                    UpdatedAt = DateTimeOffset.UtcNow
+                    UpdatedAt = DateTimeOffset.UtcNow,
+                    DefaultInterpretation = test.DefaultInterpretation,
+                    DefaultInterpretationLastUpdatedAt = test.DefaultInterpretationLastUpdatedAt,
+                    DefaultInterpretationLastUpdatedBy = test.DefaultInterpretationLastUpdatedBy
                 };
                 _context.CatalogTests.Add(catalogTest);
             }
@@ -711,6 +727,9 @@ namespace SynOS.Services
                 catalogTest.IsActive = test.IsActive;
                 catalogTest.UpdatedBy = actorUserId;
                 catalogTest.UpdatedAt = DateTimeOffset.UtcNow;
+                catalogTest.DefaultInterpretation = test.DefaultInterpretation;
+                catalogTest.DefaultInterpretationLastUpdatedAt = test.DefaultInterpretationLastUpdatedAt;
+                catalogTest.DefaultInterpretationLastUpdatedBy = test.DefaultInterpretationLastUpdatedBy;
             }
             await _context.SaveChangesAsync();
 
@@ -809,9 +828,38 @@ namespace SynOS.Services
 
                 // Sync demographic reference ranges
                 var currentParamRanges = opRanges.Where(r => r.ParameterId == opParam.ParameterId).ToList();
+                var currentCatalogRanges = await _context.CatalogReferenceRanges
+                    .Where(r => r.TestCode == test.TestCode && r.ParameterCode == paramDto.ParameterCode)
+                    .ToListAsync();
 
-                void SyncRange(bool use, string sex, string ageGroup, decimal? min, decimal? max)
+                void SyncRange(bool use, string sex, string ageGroup, decimal? min, decimal? max, string? textRange = null)
                 {
+                    // Derive age min/max for Catalog_ReferenceRanges based on ageGroup
+                    int? catAgeMin = null;
+                    int? catAgeMax = null;
+
+                    if (ageGroup == "Newborn")
+                    {
+                        catAgeMin = 0;
+                        catAgeMax = 0; // Newborns are 0-28 days, represented as 0 years in catalog age-based system
+                    }
+                    else if (ageGroup == "Infant")
+                    {
+                        catAgeMin = 0;
+                        catAgeMax = 1; // 29 days - 12 months, represented as up to 1 year
+                    }
+                    else if (ageGroup == "Child")
+                    {
+                        catAgeMin = 1;
+                        catAgeMax = 12; // 1-12 years
+                    }
+                    else if (ageGroup == "Adult")
+                    {
+                        catAgeMin = 12;
+                        catAgeMax = 120; // 13+ years
+                    }
+
+                    // 1. Sync Operational database (ReferenceRanges)
                     var existing = currentParamRanges.FirstOrDefault(r => r.Sex == sex && r.AgeGroup == ageGroup);
                     if (use)
                     {
@@ -825,6 +873,7 @@ namespace SynOS.Services
                                 Sex = sex,
                                 RefLow = min,
                                 RefHigh = max,
+                                TextRange = textRange,
                                 EffectiveFrom = DateTime.UtcNow.Date,
                                 IsActive = true,
                                 CreatedAt = DateTimeOffset.UtcNow,
@@ -836,6 +885,7 @@ namespace SynOS.Services
                         {
                             existing.RefLow = min;
                             existing.RefHigh = max;
+                            existing.TextRange = textRange;
                             existing.IsActive = true;
                             existing.UpdatedAt = DateTimeOffset.UtcNow;
                         }
@@ -847,6 +897,47 @@ namespace SynOS.Services
                             _context.ReferenceRanges.Remove(existing);
                         }
                     }
+
+                    // 2. Sync Catalog database (Catalog_ReferenceRanges)
+                    var existingCat = currentCatalogRanges.FirstOrDefault(r => r.Sex == sex && r.AgeMin == catAgeMin && r.AgeMax == catAgeMax);
+                    if (use)
+                    {
+                        if (existingCat == null)
+                        {
+                            var newCatRange = new CatalogReferenceRange
+                            {
+                                Id = Guid.NewGuid(),
+                                TestCode = test.TestCode,
+                                ParameterCode = paramDto.ParameterCode,
+                                Sex = sex,
+                                AgeMin = catAgeMin,
+                                AgeMax = catAgeMax,
+                                RefLow = min,
+                                RefHigh = max,
+                                TextRange = textRange,
+                                EffectiveFrom = DateTime.UtcNow.Date,
+                                IsActive = true,
+                                CreatedAt = DateTimeOffset.UtcNow,
+                                UpdatedAt = DateTimeOffset.UtcNow
+                            };
+                            _context.CatalogReferenceRanges.Add(newCatRange);
+                        }
+                        else
+                        {
+                            existingCat.RefLow = min;
+                            existingCat.RefHigh = max;
+                            existingCat.TextRange = textRange;
+                            existingCat.IsActive = true;
+                            existingCat.UpdatedAt = DateTimeOffset.UtcNow;
+                        }
+                    }
+                    else
+                    {
+                        if (existingCat != null)
+                        {
+                            _context.CatalogReferenceRanges.Remove(existingCat);
+                        }
+                    }
                 }
 
                 SyncRange(paramDto.UseMale, "Male", "ALL", paramDto.MaleMin, paramDto.MaleMax);
@@ -855,9 +946,50 @@ namespace SynOS.Services
                 SyncRange(paramDto.UseChild, "ALL", "Child", paramDto.ChildMin, paramDto.ChildMax);
                 SyncRange(paramDto.UseAdult, "ALL", "Adult", paramDto.AdultMin, paramDto.AdultMax);
 
+                // Category specific overrides (Newborn, Infant, Child, Adult for Male/Female)
+                SyncRange(paramDto.UseNewbornMale, "Male", "Newborn", paramDto.NewbornMaleMin, paramDto.NewbornMaleMax, paramDto.NewbornMaleText);
+                SyncRange(paramDto.UseNewbornFemale, "Female", "Newborn", paramDto.NewbornFemaleMin, paramDto.NewbornFemaleMax, paramDto.NewbornFemaleText);
+                SyncRange(paramDto.UseInfantMale, "Male", "Infant", paramDto.InfantMaleMin, paramDto.InfantMaleMax, paramDto.InfantMaleText);
+                SyncRange(paramDto.UseInfantFemale, "Female", "Infant", paramDto.InfantFemaleMin, paramDto.InfantFemaleMax, paramDto.InfantFemaleText);
+                SyncRange(paramDto.UseChildMale, "Male", "Child", paramDto.ChildMaleMin, paramDto.ChildMaleMax, paramDto.ChildMaleText);
+                SyncRange(paramDto.UseChildFemale, "Female", "Child", paramDto.ChildFemaleMin, paramDto.ChildFemaleMax, paramDto.ChildFemaleText);
+                SyncRange(paramDto.UseAdultMale, "Male", "Adult", paramDto.AdultMaleMin, paramDto.AdultMaleMax, paramDto.AdultMaleText);
+                SyncRange(paramDto.UseAdultFemale, "Female", "Adult", paramDto.AdultFemaleMin, paramDto.AdultFemaleMax, paramDto.AdultFemaleText);
+
                 if (!string.IsNullOrWhiteSpace(paramDto.ReferenceRange))
                 {
                     var range = currentParamRanges.FirstOrDefault(r => r.ParameterId == opParam.ParameterId && r.AgeGroup == "ALL" && r.Sex == "ALL");
+                    decimal? refLow = null;
+                    decimal? refHigh = null;
+
+                    // Try parsing default numeric range
+                    var rangeStr = paramDto.ReferenceRange.Trim();
+                    if (rangeStr.Contains('-'))
+                    {
+                        var parts = rangeStr.Split('-');
+                        if (parts.Length == 2 && 
+                            decimal.TryParse(parts[0].Trim(), out var rLow) && 
+                            decimal.TryParse(parts[1].Trim(), out var rHigh))
+                        {
+                            refLow = rLow;
+                            refHigh = rHigh;
+                        }
+                    }
+                    else if (rangeStr.StartsWith('<'))
+                    {
+                        if (decimal.TryParse(rangeStr.Substring(1).Trim(), out var rHigh))
+                        {
+                            refHigh = rHigh;
+                        }
+                    }
+                    else if (rangeStr.StartsWith('>'))
+                    {
+                        if (decimal.TryParse(rangeStr.Substring(1).Trim(), out var rLow))
+                        {
+                            refLow = rLow;
+                        }
+                    }
+
                     if (range == null)
                     {
                         range = new ReferenceRange
@@ -867,6 +999,8 @@ namespace SynOS.Services
                             AgeGroup = "ALL",
                             Sex = "ALL",
                             TextRange = paramDto.ReferenceRange,
+                            RefLow = refLow,
+                            RefHigh = refHigh,
                             EffectiveFrom = DateTime.UtcNow.Date,
                             IsActive = true,
                             CreatedAt = DateTimeOffset.UtcNow,
@@ -877,8 +1011,41 @@ namespace SynOS.Services
                     else
                     {
                         range.TextRange = paramDto.ReferenceRange;
+                        range.RefLow = refLow;
+                        range.RefHigh = refHigh;
                         range.IsActive = true;
                         range.UpdatedAt = DateTimeOffset.UtcNow;
+                    }
+
+                    // Sync default range to Catalog_ReferenceRanges as well to avoid clean sweep wiping it
+                    var existingCat = currentCatalogRanges.FirstOrDefault(r => r.Sex == "ALL" && r.AgeMin == null && r.AgeMax == null);
+                    if (existingCat == null)
+                    {
+                        var newCatRange = new CatalogReferenceRange
+                        {
+                            Id = Guid.NewGuid(),
+                            TestCode = test.TestCode,
+                            ParameterCode = paramDto.ParameterCode,
+                            Sex = "ALL",
+                            AgeMin = null,
+                            AgeMax = null,
+                            RefLow = refLow,
+                            RefHigh = refHigh,
+                            TextRange = paramDto.ReferenceRange,
+                            EffectiveFrom = DateTime.UtcNow.Date,
+                            IsActive = true,
+                            CreatedAt = DateTimeOffset.UtcNow,
+                            UpdatedAt = DateTimeOffset.UtcNow
+                        };
+                        _context.CatalogReferenceRanges.Add(newCatRange);
+                    }
+                    else
+                    {
+                        existingCat.RefLow = refLow;
+                        existingCat.RefHigh = refHigh;
+                        existingCat.TextRange = paramDto.ReferenceRange;
+                        existingCat.IsActive = true;
+                        existingCat.UpdatedAt = DateTimeOffset.UtcNow;
                     }
                 }
                 else
@@ -887,6 +1054,12 @@ namespace SynOS.Services
                     if (range != null)
                     {
                         _context.ReferenceRanges.Remove(range);
+                    }
+
+                    var existingCat = currentCatalogRanges.FirstOrDefault(r => r.Sex == "ALL" && r.AgeMin == null && r.AgeMax == null);
+                    if (existingCat != null)
+                    {
+                        _context.CatalogReferenceRanges.Remove(existingCat);
                     }
                 }
             }

@@ -160,9 +160,9 @@ namespace SynOS.Services.Reporting
             var structure = await BuildDynamicStructureAsync(version.Report, visit);
             var domainState = structure.ToDomain();
 
+            Order order = null;
             try
             {
-                Order order = null;
                 if (version.Report.SourceType == "RadiologyStudy")
                 {
                     var study = await _context.RadiologyStudies
@@ -233,6 +233,14 @@ namespace SynOS.Services.Reporting
             {
                 domainState.Comments = interpretationData.Notes ?? string.Empty;
                 domainState.Interpretation = interpretationData.Summary ?? string.Empty;
+            }
+            else if (order != null)
+            {
+                var test = await _context.Tests.AsNoTracking().FirstOrDefaultAsync(t => t.TestId == order.TestId);
+                if (test != null && !string.IsNullOrWhiteSpace(test.DefaultInterpretation))
+                {
+                    domainState.Interpretation = test.DefaultInterpretation;
+                }
             }
 
             var json = JsonSerializer.Serialize(domainState);
@@ -328,7 +336,7 @@ namespace SynOS.Services.Reporting
                 ReportTemplateId = report.ReportTemplateId ?? order.Test?.ReportTemplateId,
                 Status = report.Status,
                 PatientName = $"{visit.Patient.FirstName} {visit.Patient.LastName}",
-                PatientAgeGender = $"{CalculateAge(visit.Patient.DateOfBirth)} / {visit.Patient.Gender}",
+                PatientAgeGender = $"{Utils.ReferenceRangeResolver.CalculateAge(visit.Patient.DateOfBirth, visit.TokenDate)} / {visit.Patient.Gender}",
                 Token = visit.Token,
                 Department = report.Department,
                 SignedAt = report.SignedAt,
@@ -340,15 +348,55 @@ namespace SynOS.Services.Reporting
                 {
                     Name = $"{visit.Patient.FirstName} {visit.Patient.LastName}",
                     MRN = visit.Patient.MRN,
-                    Age = CalculateAge(visit.Patient.DateOfBirth),
+                    Age = Utils.ReferenceRangeResolver.CalculateAge(visit.Patient.DateOfBirth, visit.TokenDate),
                     Gender = visit.Patient.Gender,
-                    Phone = visit.Patient.CurrentPhoneNumber
+                    Phone = visit.Patient.CurrentPhoneNumber,
+                    DateOfBirth = visit.Patient.DateOfBirth.ToString("yyyy-MM-dd")
                 }
             };
             var groups = new Dictionary<string, ReportGroupDto>();
 
+            // Retrieve sequence mapping for the root test if it is a profile
+            var childTestSequences = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+            if (order.Test != null && order.Test.IsProfile)
+            {
+                var childMappings = await _context.ProfileMaps
+                    .Where(pm => pm.ParentTestId == order.Test.TestId)
+                    .OrderBy(pm => pm.Sequence)
+                    .ToListAsync();
+                
+                int seq = 1;
+                foreach (var mapping in childMappings)
+                {
+                    var childTest = await _context.Tests.FindAsync(mapping.ChildTestId);
+                    if (childTest != null)
+                    {
+                        childTestSequences[childTest.TestCode] = seq++;
+                    }
+                }
+            }
+
+            int GetTestSequence(string testCode)
+            {
+                if (string.Equals(testCode, order.TestCode, StringComparison.OrdinalIgnoreCase))
+                {
+                    return childTestSequences.Count + 1; // Profile native parameters come last
+                }
+                if (childTestSequences.TryGetValue(testCode, out var seq))
+                {
+                    return seq;
+                }
+                return 0; // Standalone or default
+            }
+
             // Iterate through catalog structure instead of flat results to support panels/placeholders
-            foreach (var meta in catalogParams.OrderBy(cp => cp.DisplayGroupOrder).ThenBy(cp => cp.SortOrder))
+            var sortedCatalogParams = catalogParams
+                .OrderBy(cp => cp.DisplayGroupOrder)
+                .ThenBy(cp => GetTestSequence(cp.TestCode))
+                .ThenBy(cp => cp.SortOrder)
+                .ToList();
+
+            foreach (var meta in sortedCatalogParams)
             {
                 var groupName = meta.DisplayGroup ?? "General";
                 var groupOrder = meta.DisplayGroupOrder;
@@ -427,15 +475,15 @@ namespace SynOS.Services.Reporting
                     if (paramDto.Value != null)
                     {
                         var resultObj = result ?? new Result { Value = paramDto.Value, ParameterCode = paramDto.ParameterCode };
-                        paramDto.Flag = await CalculateFlagAsync(resultObj, meta, dto.Patient);
+                        paramDto.Flag = await CalculateFlagAsync(resultObj, meta, dto.Patient, visit.TokenDate);
                         paramDto.IsAbnormal = paramDto.Flag != "Normal";
-                        paramDto.ReferenceRange = await GetFormattedRangeAsync(meta, dto.Patient);
+                        paramDto.ReferenceRange = await GetFormattedRangeAsync(meta, dto.Patient, visit.TokenDate);
                     }
                     else
                     {
                         paramDto.Flag = "Normal";
                         paramDto.IsAbnormal = false;
-                        paramDto.ReferenceRange = await GetFormattedRangeAsync(meta, dto.Patient);
+                        paramDto.ReferenceRange = await GetFormattedRangeAsync(meta, dto.Patient, visit.TokenDate);
                     }
 
                     groups[groupName].Parameters.Add(paramDto);
@@ -464,8 +512,8 @@ namespace SynOS.Services.Reporting
 
                                 // Re-compute Flag / ReferenceRange for newly resolved calculation
                                 var dummyResult = new Result { Value = param.Value, ParameterCode = param.ParameterCode };
-                                param.Flag = await CalculateFlagAsync(dummyResult, meta, dto.Patient);
-                                param.ReferenceRange = await GetFormattedRangeAsync(meta, dto.Patient);
+                                param.Flag = await CalculateFlagAsync(dummyResult, meta, dto.Patient, visit.TokenDate);
+                                param.ReferenceRange = await GetFormattedRangeAsync(meta, dto.Patient, visit.TokenDate);
 
                                 _logger.LogInformation("FINAL PASS [{Iteration}/2] → Evaluated {ParameterCode}", iteration, param.ParameterCode);
                                 anyComputed = true;
@@ -491,18 +539,27 @@ namespace SynOS.Services.Reporting
             return dto;
         }
 
-        private async Task<string> CalculateFlagAsync(Result result, CatalogParameter meta, PatientHeaderDto patient)
+        private async Task<string> CalculateFlagAsync(Result result, CatalogParameter meta, PatientHeaderDto patient, DateTime referenceDate)
         {
             if (decimal.TryParse(result.Value, out var val) && meta != null)
             {
+                // Parse patient DOB to calculate age category
+                DateTime dob;
+                if (!DateTime.TryParse(patient.DateOfBirth, out dob))
+                {
+                    dob = referenceDate.AddYears(-patient.Age);
+                }
+
+                string patientAgeGroup = Utils.ReferenceRangeResolver.DetermineAgeCategory(dob, referenceDate);
+
                 // Find matching demographic range in ReferenceRanges table
-                // Note: We need to find the ParameterId for CatalogParameter or link them
-                // For V1, we search by ParameterCode (assuming match)
                 var range = await _context.ReferenceRanges
-                    .FirstOrDefaultAsync(r => r.Parameter.ParameterCode == result.ParameterCode && 
-                                             (r.Sex == "ALL" || r.Sex == patient.Gender) &&
-                                             (!r.AgeMin.HasValue || patient.Age >= r.AgeMin) &&
-                                             (!r.AgeMax.HasValue || patient.Age <= r.AgeMax));
+                    .Where(r => r.Parameter.ParameterCode == result.ParameterCode && r.IsActive &&
+                               (r.Sex == "ALL" || r.Sex == patient.Gender) &&
+                               (r.AgeGroup == "ALL" || r.AgeGroup == patientAgeGroup))
+                    .OrderByDescending(r => r.Sex == patient.Gender)
+                    .ThenByDescending(r => r.AgeGroup == patientAgeGroup)
+                    .FirstOrDefaultAsync();
 
                 if (range != null)
                 {
@@ -549,31 +606,17 @@ namespace SynOS.Services.Reporting
             return "Normal";
         }
 
-        private async Task<string> GetFormattedRangeAsync(CatalogParameter meta, PatientHeaderDto patient)
+        private async Task<string> GetFormattedRangeAsync(CatalogParameter meta, PatientHeaderDto patient, DateTime referenceDate)
         {
             if (meta == null) return string.Empty;
 
-            var range = await _context.ReferenceRanges
-                .FirstOrDefaultAsync(r => r.Parameter.ParameterCode == meta.ParameterCode && 
-                                         (r.Sex == "ALL" || r.Sex == patient.Gender) &&
-                                         (!r.AgeMin.HasValue || patient.Age >= r.AgeMin) &&
-                                         (!r.AgeMax.HasValue || patient.Age <= r.AgeMax));
-
-            if (range != null)
+            DateTime dob;
+            if (!DateTime.TryParse(patient.DateOfBirth, out dob))
             {
-                if (!string.IsNullOrEmpty(range.TextRange)) return range.TextRange;
-                if (range.RefLow.HasValue && range.RefHigh.HasValue) 
-                    return $"{range.RefLow.Value:#.##} - {range.RefHigh.Value:#.##}";
+                dob = referenceDate.AddYears(-patient.Age);
             }
 
-            return string.Empty;
-        }
-
-        private int CalculateAge(DateTime dob)
-        {
-            var age = DateTime.Today.Year - dob.Year;
-            if (dob.Date > DateTime.Today.AddYears(-age)) age--;
-            return age;
+            return await Utils.ReferenceRangeResolver.ResolveRangeAsync(_context, meta.ParameterCode, patient.Gender, dob, referenceDate);
         }
 
         private string FormatValue(string value, int? decimalPlaces)

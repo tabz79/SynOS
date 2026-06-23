@@ -49,7 +49,7 @@ namespace SynOS.Services.Reception
                 FirstName = firstName,
                 LastName = lastName,
                 DateOfBirth = request.Dob ?? new DateTime(1900, 1, 1),
-                IsDateOfBirthKnown = request.Dob.HasValue,
+                IsDateOfBirthKnown = request.IsDateOfBirthKnown ?? request.Dob.HasValue,
                 Gender = request.Gender ?? "Unknown",
                 CurrentPhoneNumber = request.Phone,
                 CreatedAt = DateTime.UtcNow,

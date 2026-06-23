@@ -1,5 +1,10 @@
-import { useTheme } from '@/context/ThemeContext' // Added
+import { useState, useRef } from 'react'
+import { X, Loader2, UserPlus, Save } from 'lucide-react'
+import { cn } from '@/lib/utils'
+import { ReceptionApi } from '@/api/reception'
+import { useTheme } from '@/context/ThemeContext'
 import { useFocusTrap } from '@/hooks/useFocusTrap'
+import { calculateDetailedAge } from '@/components/patient/RichPatientCard'
 
 export function PatientRegistrationModal({ isOpen, onClose, onPatientRegistered }) {
     const { theme } = useTheme();
@@ -8,10 +13,14 @@ export function PatientRegistrationModal({ isOpen, onClose, onPatientRegistered 
     const [formData, setFormData] = useState({
         name: '',
         mobile: '',
-        age: '',
         gender: 'Male', // Default
         email: ''
     });
+    const [entryMode, setEntryMode] = useState("dob"); // "dob" or "age"
+    const [dob, setDob] = useState("");
+    const [age, setAge] = useState("");
+    const [ageUnit, setAgeUnit] = useState("Years"); // "Years", "Months", "Days"
+    
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState(null);
 
@@ -26,22 +35,67 @@ export function PatientRegistrationModal({ isOpen, onClose, onPatientRegistered 
         setError(null);
 
         // Basic Validation
-        if (!formData.name || !formData.mobile || !formData.age) {
-            setError("Name, Mobile, and Age are required.");
+        if (!formData.name || !formData.mobile) {
+            setError("Name and Mobile are required.");
             return;
+        }
+
+        let finalDob = null;
+        let isDateOfBirthKnown = true;
+        let finalAge = null;
+
+        if (entryMode === "dob") {
+            if (!dob) {
+                setError("Date of Birth is required.");
+                return;
+            }
+            finalDob = dob;
+            isDateOfBirthKnown = true;
+            
+            // simple year difference for fallback
+            const diffYears = new Date().getFullYear() - new Date(dob).getFullYear();
+            finalAge = diffYears >= 0 ? diffYears : 0;
+        } else {
+            if (!age || isNaN(parseInt(age, 10))) {
+                setError("Age is required.");
+                return;
+            }
+            isDateOfBirthKnown = false;
+            const num = parseInt(age, 10);
+            const d = new Date();
+            if (ageUnit === "Years") {
+                d.setFullYear(d.getFullYear() - num);
+                finalAge = num;
+            } else if (ageUnit === "Months") {
+                d.setMonth(d.getMonth() - num);
+                finalAge = 0;
+            } else if (ageUnit === "Days") {
+                d.setDate(d.getDate() - num);
+                finalAge = 0;
+            }
+            finalDob = d.toISOString().split('T')[0];
         }
 
         setIsSubmitting(true);
         try {
-            // Call API
-            const result = await ReceptionApi.registerPatient(formData);
+            const apiPayload = {
+                ...formData,
+                dob: finalDob,
+                isDateOfBirthKnown,
+                age: finalAge
+            };
+            const result = await ReceptionApi.registerPatient(apiPayload);
 
             // Result should contain { patientId: "..." }
             if (result && result.patientId) {
-                onPatientRegistered(result.patientId, formData);
+                onPatientRegistered(result.patientId, { ...formData, dob: finalDob, isDateOfBirthKnown, age: finalAge });
                 onClose(); // Close modal on success
                 // Reset form
-                setFormData({ name: '', mobile: '', age: '', gender: 'Male', email: '' });
+                setFormData({ name: '', mobile: '', gender: 'Male', email: '' });
+                setDob("");
+                setAge("");
+                setAgeUnit("Years");
+                setEntryMode("dob");
             } else {
                 throw new Error("Invalid response from server");
             }
@@ -104,7 +158,7 @@ export function PatientRegistrationModal({ isOpen, onClose, onPatientRegistered 
                             />
                         </div>
 
-                        {/* Mobile & Age Row */}
+                        {/* Mobile & Entry Method Row */}
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-1.5">
                                 <label className="text-xs font-medium text-zinc-500">Mobile Number *</label>
@@ -120,19 +174,92 @@ export function PatientRegistrationModal({ isOpen, onClose, onPatientRegistered 
                                 />
                             </div>
                             <div className="space-y-1.5">
-                                <label className="text-xs font-medium text-zinc-500">Age *</label>
-                                <input
-                                    type="number"
-                                    className={cn(
-                                        "w-full rounded-md px-3 py-2 text-sm focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition-all placeholder:text-zinc-400",
-                                        isDark ? "bg-zinc-900 border-zinc-800 text-white" : "bg-white border-zinc-200 text-zinc-900 shadow-sm"
-                                    )}
-                                    placeholder="25"
-                                    value={formData.age}
-                                    onChange={e => setFormData({ ...formData, age: e.target.value })}
-                                />
+                                <label className="text-xs font-medium text-zinc-500">Entry Method *</label>
+                                <div className={cn(
+                                    "flex p-0.5 rounded-lg border",
+                                    isDark ? "bg-zinc-950 border-zinc-800" : "bg-zinc-100 border-zinc-200"
+                                )}>
+                                    {[
+                                        { key: "dob", label: "DOB" },
+                                        { key: "age", label: "Age" }
+                                    ].map(mode => (
+                                        <button
+                                            key={mode.key}
+                                            type="button"
+                                            onClick={() => setEntryMode(mode.key)}
+                                            className={cn(
+                                                "flex-1 text-xs py-1 rounded-md transition-all duration-250",
+                                                entryMode === mode.key
+                                                    ? (isDark ? "bg-zinc-850 text-white font-semibold" : "bg-white text-zinc-900 font-bold shadow-sm")
+                                                    : "text-zinc-500 hover:text-zinc-900 font-medium"
+                                            )}
+                                        >
+                                            {mode.label}
+                                        </button>
+                                    ))}
+                                </div>
                             </div>
                         </div>
+
+                        {/* DOB or Age entry */}
+                        {entryMode === "dob" ? (
+                            <div className="grid grid-cols-2 gap-4 items-end animate-in fade-in duration-200">
+                                <div className="space-y-1.5">
+                                    <label className="text-xs font-medium text-zinc-500">Date of Birth *</label>
+                                    <input
+                                        type="date"
+                                        className={cn(
+                                            "w-full rounded-md px-3 py-2 text-sm focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition-all placeholder:text-zinc-400",
+                                            isDark ? "bg-zinc-900 border-zinc-800 text-white" : "bg-white border-zinc-200 text-zinc-900 shadow-sm"
+                                        )}
+                                        value={dob}
+                                        max={new Date().toISOString().split('T')[0]}
+                                        onChange={e => setDob(e.target.value)}
+                                    />
+                                </div>
+                                <div className="h-9 flex items-center pl-1 text-[11px] text-zinc-500 font-medium leading-tight">
+                                    {dob ? (
+                                        <span>
+                                            Calculated Age: <strong className="text-emerald-600">{calculateDetailedAge(dob).text}</strong>
+                                        </span>
+                                    ) : (
+                                        <span className="italic text-zinc-400">Enter DOB</span>
+                                    )}
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="grid grid-cols-2 gap-4 animate-in fade-in duration-200">
+                                <div className="space-y-1.5">
+                                    <label className="text-xs font-medium text-zinc-500">Age *</label>
+                                    <input
+                                        type="number"
+                                        min="0"
+                                        className={cn(
+                                            "w-full rounded-md px-3 py-2 text-sm focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition-all placeholder:text-zinc-400",
+                                            isDark ? "bg-zinc-900 border-zinc-800 text-white" : "bg-white border-zinc-200 text-zinc-900 shadow-sm"
+                                        )}
+                                        placeholder="Age"
+                                        value={age}
+                                        onChange={e => setAge(e.target.value)}
+                                    />
+                                </div>
+                                <div className="space-y-1.5">
+                                    <label className="text-xs font-medium text-zinc-500">Age Unit *</label>
+                                    <select
+                                        className={cn(
+                                            "w-full rounded-md px-3 py-2 text-sm focus:border-emerald-500 outline-none transition-all",
+                                            isDark ? "bg-zinc-900 border-zinc-800 text-white" : "bg-white border-zinc-200 text-zinc-900 shadow-sm"
+                                        )}
+                                        value={ageUnit}
+                                        onChange={e => setAgeUnit(e.target.value)}
+                                    >
+                                        <option value="Years">Years</option>
+                                        <option value="Months">Months</option>
+                                        <option value="Days">Days</option>
+                                    </select>
+                                </div>
+                            </div>
+                        )}
 
                         {/* Gender & Email Row */}
                         <div className="grid grid-cols-2 gap-4">
@@ -160,7 +287,7 @@ export function PatientRegistrationModal({ isOpen, onClose, onPatientRegistered 
                                         isDark ? "bg-zinc-900 border-zinc-800 text-white" : "bg-white border-zinc-200 text-zinc-900 shadow-sm"
                                     )}
                                     placeholder="rahul@example.com"
-                                    value={formData.email}
+                                    value={formData.email || ""}
                                     onChange={e => setFormData({ ...formData, email: e.target.value })}
                                 />
                             </div>

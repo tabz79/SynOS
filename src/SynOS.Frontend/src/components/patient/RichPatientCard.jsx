@@ -1,13 +1,83 @@
 import { cn } from '@/lib/utils'
 import { useTheme } from '@/context/ThemeContext'
 
+export const calculateDetailedAge = (dobString) => {
+    if (!dobString) return { text: "-", category: "Adult" };
+    const dob = new Date(dobString);
+    if (isNaN(dob.getTime())) return { text: "-", category: "Adult" };
+    
+    const today = new Date();
+    const timeDiff = today - dob;
+    const days = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+    
+    if (days < 0) return { text: "0 Days", category: "Newborn" };
+    
+    if (days <= 28) {
+        return { text: `${days} Day${days !== 1 ? 's' : ''}`, category: "Newborn" };
+    }
+    
+    // Calculate months and days
+    let months = today.getMonth() - dob.getMonth() + (12 * (today.getFullYear() - dob.getFullYear()));
+    let remainingDays = today.getDate() - dob.getDate();
+    if (remainingDays < 0) {
+        months--;
+        const prevMonth = new Date(today.getFullYear(), today.getMonth(), 0);
+        remainingDays += prevMonth.getDate();
+    }
+    
+    if (months < 12) {
+        const parts = [];
+        if (months > 0) parts.push(`${months} Month${months > 1 ? 's' : ''}`);
+        if (remainingDays > 0) parts.push(`${remainingDays} Day${remainingDays > 1 ? 's' : ''}`);
+        return { text: parts.join(' ') || "1 Month", category: "Infant" };
+    }
+    
+    // Calculate years and months
+    let years = today.getFullYear() - dob.getFullYear();
+    let remainingMonths = today.getMonth() - dob.getMonth();
+    if (remainingMonths < 0 || (remainingMonths === 0 && today.getDate() < dob.getDate())) {
+        years--;
+        remainingMonths += 12;
+    }
+    if (today.getDate() < dob.getDate()) {
+        remainingMonths--;
+    }
+    
+    if (years <= 12) {
+        const parts = [`${years} Year${years > 1 ? 's' : ''}`];
+        if (remainingMonths > 0) parts.push(`${remainingMonths} Month${remainingMonths > 1 ? 's' : ''}`);
+        return { text: parts.join(' '), category: "Child" };
+    }
+    
+    return { text: `${years} Years`, category: "Adult" };
+};
+
+export const formatPatientDob = (dobString, isDobKnown) => {
+    if (!dobString) return "";
+    const dob = new Date(dobString);
+    if (isNaN(dob.getTime())) return "";
+    
+    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const day = String(dob.getDate()).padStart(2, '0');
+    const month = months[dob.getMonth()];
+    const year = dob.getFullYear();
+    
+    const status = isDobKnown === true || isDobKnown === "true" || isDobKnown === 1 ? "Exact" : "Estimated";
+    return `${day}-${month}-${year} (${status})`;
+};
+
 export const RichPatientCard = ({ patient, onAction, actionLabel, isLocked }) => {
     // Robust extraction
     const p = patient;
     let name = p.name || p.Name || p.fullName || p.FullName || p.displayName || p.DisplayName || `${p.firstName || p.FirstName || ''} ${p.lastName || p.LastName || ''}`.trim();
     const mobile = p.mobile || p.Mobile || p.phoneNumber || p.PhoneNumber || p.phone || p.Phone || p.currentPhoneNumber || p.CurrentPhoneNumber;
     const mrn = p.mrn || p.MRN || "—";
-    const age = p.age || p.Age;
+    
+    const dob = p.dateOfBirth || p.DateOfBirth || p.dob || p.Dob;
+    const isDobKnown = p.isDateOfBirthKnown !== undefined ? p.isDateOfBirthKnown : (p.IsDateOfBirthKnown !== undefined ? p.IsDateOfBirthKnown : true);
+
+    const detailedAge = calculateDetailedAge(dob);
+    const dobText = formatPatientDob(dob, isDobKnown);
 
     // Normalize Gender (Handle: Male, male, M, m, etc)
     const rawGender = p.gender || p.Gender || p.sex || p.Sex || '';
@@ -81,11 +151,17 @@ export const RichPatientCard = ({ patient, onAction, actionLabel, isLocked }) =>
                 </div>
 
                 {/* ROW 2: META + LABEL */}
-                <div className="flex items-center gap-2 type-code opacity-80 leading-none">
+                <div className="flex flex-wrap items-center gap-2 type-code opacity-80 leading-none">
                     {/* Age */}
                     <span className="px-2 py-0.5 rounded-full bg-white/60 border border-zinc-200 text-zinc-700 font-medium text-xs">
-                        {age ? `${age}Y` : '-'}
+                        Age: {detailedAge.text}
                     </span>
+                    {/* DOB */}
+                    {dobText && (
+                        <span className="px-2 py-0.5 rounded-full bg-white/60 border border-zinc-200 text-zinc-700 font-medium text-xs">
+                            DOB: {dobText}
+                        </span>
+                    )}
                     {/* Gender */}
                     <span className="w-6 h-6 rounded-full bg-white/60 border border-zinc-200 text-zinc-700 flex items-center justify-center font-medium text-xs">
                         {genderInitial}

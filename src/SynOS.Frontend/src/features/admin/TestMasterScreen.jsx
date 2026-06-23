@@ -27,12 +27,14 @@ import {
   Loader2,
   Download,
   UploadCloud,
-  RefreshCw
+  RefreshCw,
+  GripVertical
 } from 'lucide-react';
 import { cn } from "@/lib/utils";
 import { AdminApi } from '../../api/admin';
 import { ReportsApi } from '../../api/reports';
 import { mapBackendDslToTemplate, mapTemplateToBackendDsl } from '../documents/templates/ReportTemplateService';
+import { RichMedicalEditor } from '@/components/editor/RichMedicalEditor';
 
 
 // Seed default templates matching ReportTemplatesScreen.jsx
@@ -640,28 +642,7 @@ const sanitizeCatalogSigs = (catalogList) => {
     };
   });
 };
-
-const getInitialCatalog = () => {
-  const saved = localStorage.getItem("synos_test_catalog");
-  if (saved) {
-    try {
-      const parsed = JSON.parse(saved);
-      return sanitizeCatalogSigs(parsed);
-    } catch (e) {
-      console.error("Failed to parse catalog from localStorage:", e);
-    }
-  }
-  return sanitizeCatalogSigs(INITIAL_TEST_CATALOG);
-};
-
-const getInitialSelectedTest = (catalogList) => {
-  const savedSelectedId = localStorage.getItem("synos_selected_test_id");
-  if (savedSelectedId) {
-    const found = catalogList.find(t => t.id === savedSelectedId);
-    if (found) return found;
-  }
-  return catalogList[0] || INITIAL_TEST_CATALOG[0];
-};
+// Caching helpers removed to resolve QuotaExceededError
 
 const formatReferenceRange = (p) => {
   if (!p) return "";
@@ -709,6 +690,45 @@ const getParamMidpoint = (p) => {
   return (min + (max - min) / 2).toFixed(1);
 };
 
+const renderPreviewInterpretation = (content) => {
+  if (!content) return null;
+  const trimmed = content.trim();
+  if (trimmed.startsWith('{')) {
+    try {
+      const parsed = JSON.parse(trimmed);
+      if (parsed && parsed.type === 'doc') {
+        const renderNode = (node, idx) => {
+          if (!node) return null;
+          if (node.type === 'text') {
+            let element = <span key={idx}>{node.text}</span>;
+            if (node.marks) {
+              for (const mark of node.marks) {
+                if (mark.type === 'bold') element = <strong className="font-bold">{element}</strong>;
+                else if (mark.type === 'italic') element = <em className="italic">{element}</em>;
+                else if (mark.type === 'underline') element = <u className="underline">{element}</u>;
+              }
+            }
+            return element;
+          }
+          const children = node.content ? node.content.map((child, cIdx) => renderNode(child, cIdx)) : null;
+          switch (node.type) {
+            case 'doc': return <div className="space-y-0.5" key={idx}>{children}</div>;
+            case 'paragraph': return <p className="leading-normal min-h-3" key={idx}>{children}</p>;
+            case 'bulletList': return <ul className="list-disc pl-3 space-y-0.5" key={idx}>{children}</ul>;
+            case 'orderedList': return <ol className="list-decimal pl-3 space-y-0.5" key={idx}>{children}</ol>;
+            case 'listItem': return <li className="leading-tight" key={idx}>{children}</li>;
+            default: return <React.Fragment key={idx}>{children}</React.Fragment>;
+          }
+        };
+        return renderNode(parsed);
+      }
+    } catch (e) {
+      console.error("Preview JSON parse failed", e);
+    }
+  }
+  return <p className="leading-normal whitespace-pre-wrap">{content}</p>;
+};
+
 const normalizeDbTest = (dbTest) => {
   if (!dbTest) return null;
   const testId = dbTest.testId || dbTest.TestId || dbTest.id;
@@ -723,6 +743,7 @@ const normalizeDbTest = (dbTest) => {
   const isActive = dbTest.isActive !== undefined ? dbTest.isActive : (dbTest.IsActive !== undefined ? dbTest.IsActive : true);
   const specimenTypeCode = dbTest.specimenTypeCode || dbTest.SpecimenTypeCode || "";
   const templateId = dbTest.reportTemplateId || dbTest.ReportTemplateId || null;
+  const defaultInterpretation = dbTest.defaultInterpretation || dbTest.DefaultInterpretation || "";
 
   return {
     id: testId,
@@ -738,6 +759,7 @@ const normalizeDbTest = (dbTest) => {
     isActive: !!isActive,
     specimenTypeCode: specimenTypeCode,
     isProfile: !!dbTest.isProfile,
+    defaultInterpretation: defaultInterpretation,
     parameters: (dbTest.parameters || []).map(p => {
       let minRange = undefined;
       let maxRange = undefined;
@@ -774,126 +796,59 @@ const normalizeDbTest = (dbTest) => {
         childMax: p.childMax !== null && p.childMax !== undefined ? p.childMax : "",
         useAdult: !!p.useAdult,
         adultMin: p.adultMin !== null && p.adultMin !== undefined ? p.adultMin : "",
-        adultMax: p.adultMax !== null && p.adultMax !== undefined ? p.adultMax : ""
+        adultMax: p.adultMax !== null && p.adultMax !== undefined ? p.adultMax : "",
+
+        // New category overrides
+        useNewbornMale: !!p.useNewbornMale,
+        newbornMaleMin: p.newbornMaleMin !== null && p.newbornMaleMin !== undefined ? p.newbornMaleMin : "",
+        newbornMaleMax: p.newbornMaleMax !== null && p.newbornMaleMax !== undefined ? p.newbornMaleMax : "",
+        newbornMaleText: p.newbornMaleText || "",
+
+        useNewbornFemale: !!p.useNewbornFemale,
+        newbornFemaleMin: p.newbornFemaleMin !== null && p.newbornFemaleMin !== undefined ? p.newbornFemaleMin : "",
+        newbornFemaleMax: p.newbornFemaleMax !== null && p.newbornFemaleMax !== undefined ? p.newbornFemaleMax : "",
+        newbornFemaleText: p.newbornFemaleText || "",
+
+        useInfantMale: !!p.useInfantMale,
+        infantMaleMin: p.infantMaleMin !== null && p.infantMaleMin !== undefined ? p.infantMaleMin : "",
+        infantMaleMax: p.infantMaleMax !== null && p.infantMaleMax !== undefined ? p.infantMaleMax : "",
+        infantMaleText: p.infantMaleText || "",
+
+        useInfantFemale: !!p.useInfantFemale,
+        infantFemaleMin: p.infantFemaleMin !== null && p.infantFemaleMin !== undefined ? p.infantFemaleMin : "",
+        infantFemaleMax: p.infantFemaleMax !== null && p.infantFemaleMax !== undefined ? p.infantFemaleMax : "",
+        infantFemaleText: p.infantFemaleText || "",
+
+        useChildMale: !!p.useChildMale,
+        childMaleMin: p.childMaleMin !== null && p.childMaleMin !== undefined ? p.childMaleMin : "",
+        childMaleMax: p.childMaleMax !== null && p.childMaleMax !== undefined ? p.childMaleMax : "",
+        childMaleText: p.childMaleText || "",
+
+        useChildFemale: !!p.useChildFemale,
+        childFemaleMin: p.childFemaleMin !== null && p.childFemaleMin !== undefined ? p.childFemaleMin : "",
+        childFemaleMax: p.childFemaleMax !== null && p.childFemaleMax !== undefined ? p.childFemaleMax : "",
+        childFemaleText: p.childFemaleText || "",
+
+        useAdultMale: !!p.useAdultMale,
+        adultMaleMin: p.adultMaleMin !== null && p.adultMaleMin !== undefined ? p.adultMaleMin : "",
+        adultMaleMax: p.adultMaleMax !== null && p.adultMaleMax !== undefined ? p.adultMaleMax : "",
+        adultMaleText: p.adultMaleText || "",
+
+        useAdultFemale: !!p.useAdultFemale,
+        adultFemaleMin: p.adultFemaleMin !== null && p.adultFemaleMin !== undefined ? p.adultFemaleMin : "",
+        adultFemaleMax: p.adultFemaleMax !== null && p.adultFemaleMax !== undefined ? p.adultFemaleMax : "",
+        adultFemaleText: p.adultFemaleText || ""
       };
-    }),
+    }).sort((a, b) => a.sortOrder - b.sortOrder),
     dbIncludedTestCodes: dbTest.includedTestCodes || []
   };
 };
-
-const mergeCatalog = (dbTestsList, localCatalog) => {
-  const normalizedDbTests = (dbTestsList || []).map(normalizeDbTest).filter(Boolean);
-  
-  // Prune local catalog items that have GUID IDs but are missing from the active db list
-  const activeLocalCatalog = (localCatalog || []).filter(localTest => {
-    const isGuid = localTest.id && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(localTest.id);
-    if (!isGuid) return true; // Keep temporary unsaved items in memory
-    
-    // Check if it exists in the active DB list
-    const exists = normalizedDbTests.some(
-      dbTest => (dbTest.id && dbTest.id === localTest.id) ||
-                (dbTest.code && dbTest.code.toLowerCase() === localTest.code.toLowerCase())
-    );
-    return exists;
-  });
-
-  const merged = [...activeLocalCatalog];
-
-  normalizedDbTests.forEach(dbTest => {
-    // 1. Search for a local test with the EXACT SAME ID
-    let existingIndex = merged.findIndex(
-      localTest => localTest.id && dbTest.id && localTest.id === dbTest.id
-    );
-
-    // 2. If not found by ID, search by CODE
-    if (existingIndex === -1) {
-      existingIndex = merged.findIndex(
-        localTest => localTest.code && localTest.code.toLowerCase() === dbTest.code.toLowerCase()
-      );
-    }
-
-    if (existingIndex > -1) {
-      merged[existingIndex] = {
-        ...merged[existingIndex],
-        id: dbTest.id,
-        name: dbTest.name,
-        code: dbTest.code,
-        department: dbTest.department,
-        modalityId: dbTest.modalityId,
-        templateId: dbTest.templateId || merged[existingIndex].templateId || null,
-        basePrice: dbTest.basePrice,
-        tatHours: dbTest.tatHours,
-        isOutsourced: dbTest.isOutsourced,
-        isActive: dbTest.isActive,
-        category: dbTest.category,
-        specimenTypeCode: dbTest.specimenTypeCode || merged[existingIndex].specimenTypeCode || "SERUM",
-        isProfile: dbTest.isProfile,
-        parameters: dbTest.parameters && dbTest.parameters.length > 0 ? dbTest.parameters : merged[existingIndex].parameters,
-        dbIncludedTestCodes: dbTest.dbIncludedTestCodes
-      };
-    } else {
-      merged.push({
-        id: dbTest.id,
-        name: dbTest.name,
-        code: dbTest.code,
-        department: dbTest.department || "Biochemistry",
-        modalityId: dbTest.modalityId,
-        templateId: dbTest.templateId || null,
-        basePrice: dbTest.basePrice || 0,
-        isProfile: dbTest.isProfile,
-        includedTestIds: [],
-        dbIncludedTestCodes: dbTest.dbIncludedTestCodes,
-        parameters: dbTest.parameters || [],
-        reportStyle: "Standard A4",
-        signatureSlots: ["Default Pathologist (Lab Owner)"],
-        showRange: true,
-        showMethod: true,
-        showInterpretation: true,
-        pricing: { branchA: dbTest.basePrice, branchB: dbTest.basePrice, corporate: dbTest.basePrice },
-        outsource: { enabled: dbTest.isOutsourced, partnerLab: "", fee: 0, instructions: "" },
-        tatHours: dbTest.tatHours,
-        isOutsourced: dbTest.isOutsourced,
-        isActive: dbTest.isActive,
-        category: dbTest.category,
-        specimenTypeCode: dbTest.specimenTypeCode || ((dbTest.department === "Radiology" || dbTest.department === "RAD") ? "NO_SPECIMEN" : "SERUM")
-      });
-    }
-  });
-
-  // Resolve includedTestIds from dbIncludedTestCodes
-  merged.forEach(item => {
-    if (item.dbIncludedTestCodes && item.dbIncludedTestCodes.length > 0) {
-      item.includedTestIds = item.dbIncludedTestCodes.map(code => {
-        const found = merged.find(t => t.code && t.code.toLowerCase() === code.toLowerCase());
-        return found ? found.id : null;
-      }).filter(Boolean);
-    }
-  });
-
-  // Self-healing post-merge deduplication stage
-  const seenIds = new Set();
-  const seenCodes = new Set();
-  const uniqueMerged = [];
-
-  merged.forEach(test => {
-    const testId = test.id;
-    const testCode = (test.code || "").toUpperCase().trim();
-    if (!seenIds.has(testId) && !seenCodes.has(testCode)) {
-      uniqueMerged.push(test);
-      seenIds.add(testId);
-      seenCodes.add(testCode);
-    }
-  });
-
-  return uniqueMerged;
-};
-
 export function TestMasterScreen() {
-  const [catalog, setCatalog] = useState(getInitialCatalog);
+  const [catalog, setCatalog] = useState(() => sanitizeCatalogSigs(INITIAL_TEST_CATALOG));
 
   const getCompiledProfileParameters = (test, catalogList) => {
     if (!test || !test.isProfile) {
-      return test?.parameters || [];
+      return [];
     }
     const compiled = [];
     const includedIds = test.includedTestIds || [];
@@ -913,7 +868,10 @@ export function TestMasterScreen() {
     return compiled;
   };
 
-  const [selectedTest, setSelectedTest] = useState(() => getInitialSelectedTest(catalog));
+  const [selectedTest, setSelectedTest] = useState(() => INITIAL_TEST_CATALOG[0]);
+  const [draggedParamIdx, setDraggedParamIdx] = useState(null);
+  const [draggedChildTestIdx, setDraggedChildTestIdx] = useState(null);
+  const [profileSearchTerm, setProfileSearchTerm] = useState("");
   const [originalDbTests, setOriginalDbTests] = useState([]);
   const [isLoadingTests, setIsLoadingTests] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -1160,18 +1118,8 @@ export function TestMasterScreen() {
   const [previewMode, setPreviewMode] = useState("digital"); // digital | physical
   const [isSavedSuccessfully, setIsSavedSuccessfully] = useState(false);
 
-  // Dynamic Template List Hook (initialized synchronously from localStorage or fallback defaults)
-  const [reportTemplatesList, setReportTemplatesList] = useState(() => {
-    const saved = localStorage.getItem("synos_report_templates");
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch (e) {
-        console.error("Failed to parse cached templates", e);
-      }
-    }
-    return DEFAULT_TEMPLATES;
-  });
+  // Dynamic Template List Hook (initialized directly using default templates fallback before API load)
+  const [reportTemplatesList, setReportTemplatesList] = useState(DEFAULT_TEMPLATES);
 
   const loadTemplatesFromBackend = async () => {
     try {
@@ -1188,7 +1136,6 @@ export function TestMasterScreen() {
         return mapBackendDslToTemplate(dsl, item.templateId, item.isDefault, item.isPublished);
       });
       setReportTemplatesList(mapped);
-      localStorage.setItem("synos_report_templates", JSON.stringify(mapped));
     } catch (e) {
       console.error("Failed to load templates from backend", e);
     }
@@ -1228,10 +1175,10 @@ export function TestMasterScreen() {
     }
 
     return () => observer.disconnect();
-  }, [showLivePreview]);
+  }, [showLivePreview, activeTab]);
 
   useEffect(() => {
-    const loadDbTestsAndMerge = async () => {
+    const loadDbTests = async () => {
       setIsLoadingTests(true);
       try {
         const dbTests = await AdminApi.getTests();
@@ -1255,39 +1202,32 @@ export function TestMasterScreen() {
           console.error("Failed to fetch database modalities on mount:", modalitiesErr);
         }
         
-        const savedCatalog = localStorage.getItem("synos_test_catalog");
-        let localCatalogList = INITIAL_TEST_CATALOG;
-        if (savedCatalog) {
-          try {
-            localCatalogList = JSON.parse(savedCatalog);
-          } catch (e) {
-            console.error("Failed to parse catalog from localStorage:", e);
+        const normalized = (dbTests || []).map(normalizeDbTest).filter(Boolean);
+        
+        // Resolve profile children IDs
+        normalized.forEach(item => {
+          if (item.dbIncludedTestCodes && item.dbIncludedTestCodes.length > 0) {
+            item.includedTestIds = item.dbIncludedTestCodes.map(code => {
+              const found = normalized.find(t => t.code && t.code.toLowerCase() === code.toLowerCase());
+              return found ? found.id : null;
+            }).filter(Boolean);
           }
-        }
+        });
         
-        localCatalogList = sanitizeCatalogSigs(localCatalogList);
-        
-        const merged = mergeCatalog(dbTests, localCatalogList);
-        setCatalog(merged);
-        localStorage.setItem("synos_test_catalog", JSON.stringify(merged));
+        setCatalog(normalized);
         
         const savedSelectedId = localStorage.getItem("synos_selected_test_id");
-        let currentSelected = selectedTest;
-        if (!currentSelected && savedSelectedId) {
-          currentSelected = merged.find(t => t.id === savedSelectedId);
+        let currentSelected = null;
+        if (savedSelectedId) {
+          currentSelected = normalized.find(t => t.id === savedSelectedId);
+        }
+        if (!currentSelected && normalized.length > 0) {
+          currentSelected = normalized[0];
         }
         
         if (currentSelected) {
-          const updatedSelected = merged.find(t => t.code === currentSelected.code) || 
-                                  merged.find(t => t.id === currentSelected.id) || 
-                                  merged[0];
-          if (updatedSelected) {
-            setSelectedTest(updatedSelected);
-            localStorage.setItem("synos_selected_test_id", updatedSelected.id);
-          }
-        } else if (merged.length > 0) {
-          setSelectedTest(merged[0]);
-          localStorage.setItem("synos_selected_test_id", merged[0].id);
+          setSelectedTest(currentSelected);
+          localStorage.setItem("synos_selected_test_id", currentSelected.id);
         }
       } catch (err) {
         console.error("Failed to fetch database tests on mount:", err);
@@ -1296,7 +1236,7 @@ export function TestMasterScreen() {
       }
     };
     
-    loadDbTestsAndMerge();
+    loadDbTests();
     loadTemplatesFromBackend();
   }, []);
 
@@ -1392,9 +1332,51 @@ export function TestMasterScreen() {
   const [editUseChild, setEditUseChild] = useState(false);
   const [editChildMin, setEditChildMin] = useState("");
   const [editChildMax, setEditChildMax] = useState("");
-  const [editUseAdult, setEditUseAdult] = useState(false);
   const [editAdultMin, setEditAdultMin] = useState("");
   const [editAdultMax, setEditAdultMax] = useState("");
+
+  // New category overrides states
+  const [editDefaultRange, setEditDefaultRange] = useState("");
+  
+  const [editUseNewbornMale, setEditUseNewbornMale] = useState(false);
+  const [editNewbornMaleMin, setEditNewbornMaleMin] = useState("");
+  const [editNewbornMaleMax, setEditNewbornMaleMax] = useState("");
+  const [editNewbornMaleText, setEditNewbornMaleText] = useState("");
+
+  const [editUseNewbornFemale, setEditUseNewbornFemale] = useState(false);
+  const [editNewbornFemaleMin, setEditNewbornFemaleMin] = useState("");
+  const [editNewbornFemaleMax, setEditNewbornFemaleMax] = useState("");
+  const [editNewbornFemaleText, setEditNewbornFemaleText] = useState("");
+
+  const [editUseInfantMale, setEditUseInfantMale] = useState(false);
+  const [editInfantMaleMin, setEditInfantMaleMin] = useState("");
+  const [editInfantMaleMax, setEditInfantMaleMax] = useState("");
+  const [editInfantMaleText, setEditInfantMaleText] = useState("");
+
+  const [editUseInfantFemale, setEditUseInfantFemale] = useState(false);
+  const [editInfantFemaleMin, setEditInfantFemaleMin] = useState("");
+  const [editInfantFemaleMax, setEditInfantFemaleMax] = useState("");
+  const [editInfantFemaleText, setEditInfantFemaleText] = useState("");
+
+  const [editUseChildMale, setEditUseChildMale] = useState(false);
+  const [editChildMaleMin, setEditChildMaleMin] = useState("");
+  const [editChildMaleMax, setEditChildMaleMax] = useState("");
+  const [editChildMaleText, setEditChildMaleText] = useState("");
+
+  const [editUseChildFemale, setEditUseChildFemale] = useState(false);
+  const [editChildFemaleMin, setEditChildFemaleMin] = useState("");
+  const [editChildFemaleMax, setEditChildFemaleMax] = useState("");
+  const [editChildFemaleText, setEditChildFemaleText] = useState("");
+
+  const [editUseAdultMale, setEditUseAdultMale] = useState(false);
+  const [editAdultMaleMin, setEditAdultMaleMin] = useState("");
+  const [editAdultMaleMax, setEditAdultMaleMax] = useState("");
+  const [editAdultMaleText, setEditAdultMaleText] = useState("");
+
+  const [editUseAdultFemale, setEditUseAdultFemale] = useState(false);
+  const [editAdultFemaleMin, setEditAdultFemaleMin] = useState("");
+  const [editAdultFemaleMax, setEditAdultFemaleMax] = useState("");
+  const [editAdultFemaleText, setEditAdultFemaleText] = useState("");
 
   const handleSelectTest = (test) => {
     setSelectedTest(test);
@@ -1562,9 +1544,6 @@ export function TestMasterScreen() {
         return otId !== testId;
       }));
 
-      // Update localStorage immediately
-      localStorage.setItem("synos_test_catalog", JSON.stringify(remaining));
-
       if (selectedTest && selectedTest.id === testId) {
         const fallback = remaining[0] || null;
         if (fallback) {
@@ -1597,14 +1576,72 @@ export function TestMasterScreen() {
     }
 
     const updatedParams = [...selectedTest.parameters];
-    updatedParams[paramIdx] = {
-      ...updatedParams[paramIdx],
-      [field]: finalVal
-    };
+    
+    if (field === 'referenceRange') {
+      let parsedMin = "";
+      let parsedMax = "";
+      const trimmedVal = (val || "").trim();
+      if (trimmedVal.includes(" - ")) {
+        const parts = trimmedVal.split(" - ");
+        if (parts.length === 2 && !isNaN(parts[0].trim()) && !isNaN(parts[1].trim())) {
+          parsedMin = Number(parts[0].trim());
+          parsedMax = Number(parts[1].trim());
+        }
+      }
+      updatedParams[paramIdx] = {
+        ...updatedParams[paramIdx],
+        referenceRange: val,
+        minRange: parsedMin !== "" ? parsedMin : "",
+        maxRange: parsedMax !== "" ? parsedMax : ""
+      };
+    } else {
+      updatedParams[paramIdx] = {
+        ...updatedParams[paramIdx],
+        [field]: finalVal
+      };
+    }
 
     const updatedTest = {
       ...selectedTest,
       parameters: updatedParams
+    };
+
+    const updatedCatalog = catalog.map(t => t.id === selectedTest.id ? updatedTest : t);
+    setCatalog(updatedCatalog);
+    setSelectedTest(updatedTest);
+  };
+
+  const moveParameterRow = (fromIdx, toIdx) => {
+    if (fromIdx === toIdx || fromIdx < 0 || toIdx < 0 || fromIdx >= selectedTest.parameters.length || toIdx >= selectedTest.parameters.length) return;
+    const updatedParams = [...selectedTest.parameters];
+    const [movedItem] = updatedParams.splice(fromIdx, 1);
+    updatedParams.splice(toIdx, 0, movedItem);
+
+    // Reassign sortOrder sequentially
+    const reorderedParams = updatedParams.map((p, idx) => ({
+      ...p,
+      sortOrder: idx + 1
+    }));
+
+    const updatedTest = {
+      ...selectedTest,
+      parameters: reorderedParams
+    };
+
+    const updatedCatalog = catalog.map(t => t.id === selectedTest.id ? updatedTest : t);
+    setCatalog(updatedCatalog);
+    setSelectedTest(updatedTest);
+  };
+
+  const moveIncludedTestRow = (fromIdx, toIdx) => {
+    if (fromIdx === toIdx || fromIdx < 0 || toIdx < 0 || fromIdx >= selectedTest.includedTestIds.length || toIdx >= selectedTest.includedTestIds.length) return;
+    const updatedIds = [...selectedTest.includedTestIds];
+    const [movedItem] = updatedIds.splice(fromIdx, 1);
+    updatedIds.splice(toIdx, 0, movedItem);
+
+    const updatedTest = {
+      ...selectedTest,
+      includedTestIds: updatedIds
     };
 
     const updatedCatalog = catalog.map(t => t.id === selectedTest.id ? updatedTest : t);
@@ -1653,6 +1690,7 @@ export function TestMasterScreen() {
   // Open Contextual Slide Drawer
   const openDrawer = (paramCode, mode) => {
     const param = selectedTest.parameters.find(p => p.code === paramCode);
+    console.log("OPEN_DRAWER_PARAM", param);
     if (!param) return;
 
     setDrawerParamCode(paramCode);
@@ -1675,9 +1713,75 @@ export function TestMasterScreen() {
     setEditUseChild(!!param.useChild);
     setEditChildMin(param.childMin !== undefined && param.childMin !== null ? param.childMin : "");
     setEditChildMax(param.childMax !== undefined && param.childMax !== null ? param.childMax : "");
-    setEditUseAdult(!!param.useAdult);
     setEditAdultMin(param.adultMin !== undefined && param.adultMin !== null ? param.adultMin : "");
     setEditAdultMax(param.adultMax !== undefined && param.adultMax !== null ? param.adultMax : "");
+
+    // Load category overrides with fallback to legacy properties
+    setEditDefaultRange(param.referenceRange || "");
+
+    const legacyUseMale = param.useMale ?? (param.maleMin !== undefined && param.maleMin !== "" && param.maleMin !== null);
+    const legacyMaleMin = param.maleMin !== undefined && param.maleMin !== null ? param.maleMin : "";
+    const legacyMaleMax = param.maleMax !== undefined && param.maleMax !== null ? param.maleMax : "";
+
+    const legacyUseFemale = param.useFemale ?? (param.femaleMin !== undefined && param.femaleMin !== "" && param.femaleMin !== null);
+    const legacyFemaleMin = param.femaleMin !== undefined && param.femaleMin !== null ? param.femaleMin : "";
+    const legacyFemaleMax = param.femaleMax !== undefined && param.femaleMax !== null ? param.femaleMax : "";
+
+    const legacyUseInfant = !!param.useInfant;
+    const legacyInfantMin = param.infantMin !== undefined && param.infantMin !== null ? param.infantMin : "";
+    const legacyInfantMax = param.infantMax !== undefined && param.infantMax !== null ? param.infantMax : "";
+
+    const legacyUseChild = !!param.useChild;
+    const legacyChildMin = param.childMin !== undefined && param.childMin !== null ? param.childMin : "";
+    const legacyChildMax = param.childMax !== undefined && param.childMax !== null ? param.childMax : "";
+
+    const legacyUseAdult = !!param.useAdult;
+    const legacyAdultMin = param.adultMin !== undefined && param.adultMin !== null ? param.adultMin : "";
+    const legacyAdultMax = param.adultMax !== undefined && param.adultMax !== null ? param.adultMax : "";
+
+    // Newborn values: no legacy fallback
+    setEditUseNewbornMale(param.useNewbornMale ?? false);
+    setEditNewbornMaleMin(param.newbornMaleMin !== undefined && param.newbornMaleMin !== null ? param.newbornMaleMin : "");
+    setEditNewbornMaleMax(param.newbornMaleMax !== undefined && param.newbornMaleMax !== null ? param.newbornMaleMax : "");
+    setEditNewbornMaleText(param.newbornMaleText || "");
+
+    setEditUseNewbornFemale(param.useNewbornFemale ?? false);
+    setEditNewbornFemaleMin(param.newbornFemaleMin !== undefined && param.newbornFemaleMin !== null ? param.newbornFemaleMin : "");
+    setEditNewbornFemaleMax(param.newbornFemaleMax !== undefined && param.newbornFemaleMax !== null ? param.newbornFemaleMax : "");
+    setEditNewbornFemaleText(param.newbornFemaleText || "");
+
+    // Infant: uses legacy useInfant and min/max for defaults if category specific flags are null
+    setEditUseInfantMale(param.useInfantMale ?? (param.useInfant ? true : legacyUseMale));
+    setEditInfantMaleMin(param.infantMaleMin !== undefined && param.infantMaleMin !== null ? param.infantMaleMin : (legacyInfantMin || legacyMaleMin));
+    setEditInfantMaleMax(param.infantMaleMax !== undefined && param.infantMaleMax !== null ? param.infantMaleMax : (legacyInfantMax || legacyMaleMax));
+    setEditInfantMaleText(param.infantMaleText || "");
+
+    setEditUseInfantFemale(param.useInfantFemale ?? (param.useInfant ? true : legacyUseFemale));
+    setEditInfantFemaleMin(param.infantFemaleMin !== undefined && param.infantFemaleMin !== null ? param.infantFemaleMin : (legacyInfantMin || legacyFemaleMin));
+    setEditInfantFemaleMax(param.infantFemaleMax !== undefined && param.infantFemaleMax !== null ? param.infantFemaleMax : (legacyInfantMax || legacyFemaleMax));
+    setEditInfantFemaleText(param.infantFemaleText || "");
+
+    // Child: uses legacy useChild and min/max for defaults if category specific flags are null
+    setEditUseChildMale(param.useChildMale ?? (param.useChild ? true : legacyUseMale));
+    setEditChildMaleMin(param.childMaleMin !== undefined && param.childMaleMin !== null ? param.childMaleMin : (legacyChildMin || legacyMaleMin));
+    setEditChildMaleMax(param.childMaleMax !== undefined && param.childMaleMax !== null ? param.childMaleMax : (legacyChildMax || legacyMaleMax));
+    setEditChildMaleText(param.childMaleText || "");
+
+    setEditUseChildFemale(param.useChildFemale ?? (param.useChild ? true : legacyUseFemale));
+    setEditChildFemaleMin(param.childFemaleMin !== undefined && param.childFemaleMin !== null ? param.childFemaleMin : (legacyChildMin || legacyFemaleMin));
+    setEditChildFemaleMax(param.childFemaleMax !== undefined && param.childFemaleMax !== null ? param.childFemaleMax : (legacyChildMax || legacyFemaleMax));
+    setEditChildFemaleText(param.childFemaleText || "");
+
+    // Adult: uses legacy useAdult or useMale/useFemale if category specific flags are null
+    setEditUseAdultMale(param.useAdultMale ?? (param.useAdult ? true : legacyUseMale));
+    setEditAdultMaleMin(param.adultMaleMin !== undefined && param.adultMaleMin !== null ? param.adultMaleMin : (legacyAdultMin || legacyMaleMin));
+    setEditAdultMaleMax(param.adultMaleMax !== undefined && param.adultMaleMax !== null ? param.adultMaleMax : (legacyAdultMax || legacyMaleMax));
+    setEditAdultMaleText(param.adultMaleText || "");
+
+    setEditUseAdultFemale(param.useAdultFemale ?? (param.useAdult ? true : legacyUseFemale));
+    setEditAdultFemaleMin(param.adultFemaleMin !== undefined && param.adultFemaleMin !== null ? param.adultFemaleMin : (legacyAdultMin || legacyFemaleMin));
+    setEditAdultFemaleMax(param.adultFemaleMax !== undefined && param.adultFemaleMax !== null ? param.adultFemaleMax : (legacyAdultMax || legacyFemaleMax));
+    setEditAdultFemaleText(param.adultFemaleText || "");
 
     setDrawerOpen(true);
   };
@@ -1693,26 +1797,71 @@ export function TestMasterScreen() {
           narrativeTemplate: editNarrative,
           analyzerModel: editAnalyzerModel,
           analyzerChannel: editAnalyzerChannel,
-          useMale: editUseMale,
-          maleMin: editUseMale ? (editMaleMin !== "" ? Number(editMaleMin) : null) : null,
-          maleMax: editUseMale ? (editMaleMax !== "" ? Number(editMaleMax) : null) : null,
-          useFemale: editUseFemale,
-          femaleMin: editUseFemale ? (editFemaleMin !== "" ? Number(editFemaleMin) : null) : null,
-          femaleMax: editUseFemale ? (editFemaleMax !== "" ? Number(editFemaleMax) : null) : null,
-          useInfant: editUseInfant,
-          infantMin: editUseInfant ? (editInfantMin !== "" ? Number(editInfantMin) : null) : null,
-          infantMax: editUseInfant ? (editInfantMax !== "" ? Number(editInfantMax) : null) : null,
-          useChild: editUseChild,
-          childMin: editUseChild ? (editChildMin !== "" ? Number(editChildMin) : null) : null,
-          childMax: editUseChild ? (editChildMax !== "" ? Number(editChildMax) : null) : null,
-          useAdult: editUseAdult,
-          adultMin: editUseAdult ? (editAdultMin !== "" ? Number(editAdultMin) : null) : null,
-          adultMax: editUseAdult ? (editAdultMax !== "" ? Number(editAdultMax) : null) : null,
+          referenceRange: editDefaultRange,
+
+          // Legacy fields for backward compatibility
+          useMale: false,
+          maleMin: null,
+          maleMax: null,
+          useFemale: false,
+          femaleMin: null,
+          femaleMax: null,
+          useInfant: editUseInfantMale || editUseInfantFemale,
+          infantMin: editUseInfantMale ? (editInfantMaleMin !== "" ? Number(editInfantMaleMin) : null) : (editUseInfantFemale ? (editInfantFemaleMin !== "" ? Number(editInfantFemaleMin) : null) : null),
+          infantMax: editUseInfantMale ? (editInfantMaleMax !== "" ? Number(editInfantMaleMax) : null) : (editUseInfantFemale ? (editInfantFemaleMax !== "" ? Number(editInfantFemaleMax) : null) : null),
+          useChild: editUseChildMale || editUseChildFemale,
+          childMin: editUseChildMale ? (editChildMaleMin !== "" ? Number(editChildMaleMin) : null) : (editUseChildFemale ? (editChildFemaleMin !== "" ? Number(editChildFemaleMin) : null) : null),
+          childMax: editUseChildMale ? (editChildMaleMax !== "" ? Number(editChildMaleMax) : null) : (editUseChildFemale ? (editChildFemaleMax !== "" ? Number(editChildFemaleMax) : null) : null),
+          useAdult: editUseAdultMale || editUseAdultFemale,
+          adultMin: editUseAdultMale ? (editAdultMaleMin !== "" ? Number(editAdultMaleMin) : null) : (editUseAdultFemale ? (editAdultFemaleMin !== "" ? Number(editAdultFemaleMin) : null) : null),
+          adultMax: editUseAdultMale ? (editAdultMaleMax !== "" ? Number(editAdultMaleMax) : null) : (editUseAdultFemale ? (editAdultFemaleMax !== "" ? Number(editAdultFemaleMax) : null) : null),
+
+          // Category Specific Overrides
+          useNewbornMale: editUseNewbornMale,
+          newbornMaleMin: editUseNewbornMale && editNewbornMaleMin !== "" ? Number(editNewbornMaleMin) : null,
+          newbornMaleMax: editUseNewbornMale && editNewbornMaleMax !== "" ? Number(editNewbornMaleMax) : null,
+          newbornMaleText: editUseNewbornMale ? editNewbornMaleText : null,
+
+          useNewbornFemale: editUseNewbornFemale,
+          newbornFemaleMin: editUseNewbornFemale && editNewbornFemaleMin !== "" ? Number(editNewbornFemaleMin) : null,
+          newbornFemaleMax: editUseNewbornFemale && editNewbornFemaleMax !== "" ? Number(editNewbornFemaleMax) : null,
+          newbornFemaleText: editUseNewbornFemale ? editNewbornFemaleText : null,
+
+          useInfantMale: editUseInfantMale,
+          infantMaleMin: editUseInfantMale && editInfantMaleMin !== "" ? Number(editInfantMaleMin) : null,
+          infantMaleMax: editUseInfantMale && editInfantMaleMax !== "" ? Number(editInfantMaleMax) : null,
+          infantMaleText: editUseInfantMale ? editInfantMaleText : null,
+
+          useInfantFemale: editUseInfantFemale,
+          infantFemaleMin: editUseInfantFemale && editInfantFemaleMin !== "" ? Number(editInfantFemaleMin) : null,
+          infantFemaleMax: editUseInfantFemale && editInfantFemaleMax !== "" ? Number(editInfantFemaleMax) : null,
+          infantFemaleText: editUseInfantFemale ? editInfantFemaleText : null,
+
+          useChildMale: editUseChildMale,
+          childMaleMin: editUseChildMale && editChildMaleMin !== "" ? Number(editChildMaleMin) : null,
+          childMaleMax: editUseChildMale && editChildMaleMax !== "" ? Number(editChildMaleMax) : null,
+          childMaleText: editUseChildMale ? editChildMaleText : null,
+
+          useChildFemale: editUseChildFemale,
+          childFemaleMin: editUseChildFemale && editChildFemaleMin !== "" ? Number(editChildFemaleMin) : null,
+          childFemaleMax: editUseChildFemale && editChildFemaleMax !== "" ? Number(editChildFemaleMax) : null,
+          childFemaleText: editUseChildFemale ? editChildFemaleText : null,
+
+          useAdultMale: editUseAdultMale,
+          adultMaleMin: editUseAdultMale && editAdultMaleMin !== "" ? Number(editAdultMaleMin) : null,
+          adultMaleMax: editUseAdultMale && editAdultMaleMax !== "" ? Number(editAdultMaleMax) : null,
+          adultMaleText: editUseAdultMale ? editAdultMaleText : null,
+
+          useAdultFemale: editUseAdultFemale,
+          adultFemaleMin: editUseAdultFemale && editAdultFemaleMin !== "" ? Number(editAdultFemaleMin) : null,
+          adultFemaleMax: editUseAdultFemale && editAdultFemaleMax !== "" ? Number(editAdultFemaleMax) : null,
+          adultFemaleText: editUseAdultFemale ? editAdultFemaleText : null,
+
           genderRanges: {
-            maleMin: editUseMale ? Number(editMaleMin) || 0 : 0,
-            maleMax: editUseMale ? Number(editMaleMax) || 0 : 0,
-            femaleMin: editUseFemale ? Number(editFemaleMin) || 0 : 0,
-            femaleMax: editUseFemale ? Number(editFemaleMax) || 0 : 0
+            maleMin: editUseAdultMale ? Number(editAdultMaleMin) || 0 : 0,
+            maleMax: editUseAdultMale ? Number(editAdultMaleMax) || 0 : 0,
+            femaleMin: editUseAdultFemale ? Number(editAdultFemaleMin) || 0 : 0,
+            femaleMax: editUseAdultFemale ? Number(editAdultFemaleMax) || 0 : 0
           }
         };
       }
@@ -1795,7 +1944,6 @@ export function TestMasterScreen() {
     const updatedCatalog = catalog.map(t => t.id === selectedTest.id ? updatedTest : t);
     setCatalog(updatedCatalog);
     setSelectedTest(updatedTest);
-    localStorage.setItem("synos_test_catalog", JSON.stringify(updatedCatalog));
     localStorage.setItem("synos_selected_test_id", selectedTest.id);
     setIsSavedSuccessfully(true);
     setTimeout(() => setIsSavedSuccessfully(false), 2500);
@@ -1896,6 +2044,7 @@ export function TestMasterScreen() {
           SpecimenTypeCode: isRadiology ? "NO_SPECIMEN" : (item.specimenTypeCode || "SERUM"),
           IsProfile: !!item.isProfile,
           ReportTemplateId: item.templateId || null,
+          DefaultInterpretation: item.defaultInterpretation || null,
           Parameters: (item.parameters || []).map((p, idx) => ({
             ParameterCode: p.code,
             ParameterName: p.name,
@@ -1905,7 +2054,7 @@ export function TestMasterScreen() {
             Methodology: p.method || null,
             Formula: p.formula || null,
             IsCalculated: !!(p.hasFormula || p.formula),
-            ReferenceRange: formatReferenceRange(p),
+            ReferenceRange: p.referenceRange || formatReferenceRange(p),
             UseMale: !!p.useMale,
             MaleMin: p.useMale && p.maleMin !== undefined && p.maleMin !== "" && p.maleMin !== null ? Number(p.maleMin) : null,
             MaleMax: p.useMale && p.maleMax !== undefined && p.maleMax !== "" && p.maleMax !== null ? Number(p.maleMax) : null,
@@ -1920,7 +2069,48 @@ export function TestMasterScreen() {
             ChildMax: p.useChild && p.childMax !== undefined && p.childMax !== "" && p.childMax !== null ? Number(p.childMax) : null,
             UseAdult: !!p.useAdult,
             AdultMin: p.useAdult && p.adultMin !== undefined && p.adultMin !== "" && p.adultMin !== null ? Number(p.adultMin) : null,
-            AdultMax: p.useAdult && p.adultMax !== undefined && p.adultMax !== "" && p.adultMax !== null ? Number(p.adultMax) : null
+            AdultMax: p.useAdult && p.adultMax !== undefined && p.adultMax !== "" && p.adultMax !== null ? Number(p.adultMax) : null,
+
+            // New Category overrides
+            UseNewbornMale: !!p.useNewbornMale,
+            NewbornMaleMin: p.useNewbornMale && p.newbornMaleMin !== undefined && p.newbornMaleMin !== "" && p.newbornMaleMin !== null ? Number(p.newbornMaleMin) : null,
+            NewbornMaleMax: p.useNewbornMale && p.newbornMaleMax !== undefined && p.newbornMaleMax !== "" && p.newbornMaleMax !== null ? Number(p.newbornMaleMax) : null,
+            NewbornMaleText: p.newbornMaleText || null,
+
+            UseNewbornFemale: !!p.useNewbornFemale,
+            NewbornFemaleMin: p.useNewbornFemale && p.newbornFemaleMin !== undefined && p.newbornFemaleMin !== "" && p.newbornFemaleMin !== null ? Number(p.newbornFemaleMin) : null,
+            NewbornFemaleMax: p.useNewbornFemale && p.newbornFemaleMax !== undefined && p.newbornFemaleMax !== "" && p.newbornFemaleMax !== null ? Number(p.newbornFemaleMax) : null,
+            NewbornFemaleText: p.newbornFemaleText || null,
+
+            UseInfantMale: !!p.useInfantMale,
+            InfantMaleMin: p.useInfantMale && p.infantMaleMin !== undefined && p.infantMaleMin !== "" && p.infantMaleMin !== null ? Number(p.infantMaleMin) : null,
+            InfantMaleMax: p.useInfantMale && p.infantMaleMax !== undefined && p.infantMaleMax !== "" && p.infantMaleMax !== null ? Number(p.infantMaleMax) : null,
+            InfantMaleText: p.infantMaleText || null,
+
+            UseInfantFemale: !!p.useInfantFemale,
+            InfantFemaleMin: p.useInfantFemale && p.infantFemaleMin !== undefined && p.infantFemaleMin !== "" && p.infantFemaleMin !== null ? Number(p.infantFemaleMin) : null,
+            InfantFemaleMax: p.useInfantFemale && p.infantFemaleMax !== undefined && p.infantFemaleMax !== "" && p.infantFemaleMax !== null ? Number(p.infantFemaleMax) : null,
+            InfantFemaleText: p.infantFemaleText || null,
+
+            UseChildMale: !!p.useChildMale,
+            ChildMaleMin: p.useChildMale && p.childMaleMin !== undefined && p.childMaleMin !== "" && p.childMaleMin !== null ? Number(p.childMaleMin) : null,
+            ChildMaleMax: p.useChildMale && p.childMaleMax !== undefined && p.childMaleMax !== "" && p.childMaleMax !== null ? Number(p.childMaleMax) : null,
+            ChildMaleText: p.childMaleText || null,
+
+            UseChildFemale: !!p.useChildFemale,
+            ChildFemaleMin: p.useChildFemale && p.childFemaleMin !== undefined && p.childFemaleMin !== "" && p.childFemaleMin !== null ? Number(p.childFemaleMin) : null,
+            ChildFemaleMax: p.useChildFemale && p.childFemaleMax !== undefined && p.childFemaleMax !== "" && p.childFemaleMax !== null ? Number(p.childFemaleMax) : null,
+            ChildFemaleText: p.childFemaleText || null,
+
+            UseAdultMale: !!p.useAdultMale,
+            AdultMaleMin: p.useAdultMale && p.adultMaleMin !== undefined && p.adultMaleMin !== "" && p.adultMaleMin !== null ? Number(p.adultMaleMin) : null,
+            AdultMaleMax: p.useAdultMale && p.adultMaleMax !== undefined && p.adultMaleMax !== "" && p.adultMaleMax !== null ? Number(p.adultMaleMax) : null,
+            AdultMaleText: p.adultMaleText || null,
+
+            UseAdultFemale: !!p.useAdultFemale,
+            AdultFemaleMin: p.useAdultFemale && p.adultFemaleMin !== undefined && p.adultFemaleMin !== "" && p.adultFemaleMin !== null ? Number(p.adultFemaleMin) : null,
+            AdultFemaleMax: p.useAdultFemale && p.adultFemaleMax !== undefined && p.adultFemaleMax !== "" && p.adultFemaleMax !== null ? Number(p.adultFemaleMax) : null,
+            AdultFemaleText: p.adultFemaleText || null
           })),
           IncludedTestCodes: (item.includedTestIds || []).map(childId => {
             const childTest = currentCatalog.find(t => t.id === childId);
@@ -1937,6 +2127,7 @@ export function TestMasterScreen() {
       });
 
       const savedItemsMap = new Map();
+      const saveErrors = [];
 
       // 2. Handle Insertions and Updates in dependency-safe order
       for (const item of sortedCatalog) {
@@ -1958,18 +2149,19 @@ export function TestMasterScreen() {
           };
           try {
             await AdminApi.updateTest(targetId, dto);
-          } catch (err) {
-            console.error(`Failed to update test ${targetId}:`, err);
-          }
-          
-          const updatedItem = {
-            ...item,
-            id: targetId
-          };
-          savedItemsMap.set(item.id, updatedItem);
+            const updatedItem = {
+              ...item,
+              id: targetId
+            };
+            savedItemsMap.set(item.id, updatedItem);
 
-          if (selectedTest && (selectedTest.id === item.id || selectedTest.code === item.code)) {
-            updatedSelectedTest = updatedItem;
+            if (selectedTest && (selectedTest.id === item.id || selectedTest.code === item.code)) {
+              updatedSelectedTest = updatedItem;
+            }
+          } catch (err) {
+            console.error(`Failed to update test ${item.code} (${targetId}):`, err);
+            saveErrors.push({ code: item.code, error: err.message || err.toString() || "Unknown error" });
+            savedItemsMap.set(item.id, item);
           }
         } else {
           const dto = mapToDto(item);
@@ -1988,6 +2180,7 @@ export function TestMasterScreen() {
             }
           } catch (err) {
             console.error(`Failed to create test ${item.code}:`, err);
+            saveErrors.push({ code: item.code, error: err.message || err.toString() || "Unknown error" });
             savedItemsMap.set(item.id, item);
           }
         }
@@ -2002,7 +2195,6 @@ export function TestMasterScreen() {
 
       // 4. Update catalog and selected test states
       setCatalog(updatedCatalog);
-      localStorage.setItem("synos_test_catalog", JSON.stringify(updatedCatalog));
 
       if (updatedSelectedTest) {
         const found = updatedCatalog.find(t => t.id === updatedSelectedTest.id);
@@ -2013,14 +2205,642 @@ export function TestMasterScreen() {
         localStorage.setItem("synos_selected_test_id", updatedSelectedTest.id);
       }
 
-      setIsSavedSuccessfully(true);
-      setTimeout(() => setIsSavedSuccessfully(false), 2500);
+      if (saveErrors.length > 0) {
+        const errList = saveErrors.map(e => `- ${e.code}: ${e.error}`).join("\n");
+        alert(`Failed to save catalog changes for the following test(s):\n\n${errList}`);
+      } else {
+        setIsSavedSuccessfully(true);
+        setTimeout(() => setIsSavedSuccessfully(false), 2500);
+      }
 
     } catch (error) {
       console.error("Critical error during catalog sync:", error);
     } finally {
       setIsLoadingTests(false);
     }
+  };
+
+  const renderLivePreview = () => {
+    if (!showLivePreview) return null;
+
+    const activeTemplate = getActiveTemplate(selectedTest, reportTemplatesList);
+    const coords = getCoordinates(activeTemplate);
+    const hasTemplateColumns = activeTemplate.columns && activeTemplate.columns.length > 0;
+    const totalWeight = hasTemplateColumns ? activeTemplate.columns.reduce((sum, c) => sum + c.weight, 0) : 1;
+    const childParams = getCompiledProfileParameters(selectedTest, catalog);
+    const childCodes = new Set(childParams.map(cp => cp.code));
+    const nativeParams = (selectedTest.parameters || []).filter(np => !childCodes.has(np.code));
+    const displayParams = [...childParams, ...nativeParams];
+
+    const interpretationVal = activeTab === "interpretation"
+      ? (selectedTest.defaultInterpretation || "")
+      : (selectedTest.interpretationComment ?? (displayParams && displayParams[0]?.narrativeTemplate ? displayParams[0]?.narrativeTemplate : ""));
+
+    const shouldShowInterpretation = activeTab === "interpretation"
+      ? !!interpretationVal
+      : (selectedTest.showInterpretation && !!interpretationVal);
+
+    const interpretationContent = renderPreviewInterpretation(interpretationVal);
+
+    return (
+      <div className="lg:col-span-6 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 shadow-inner space-y-4 lg:h-full lg:overflow-y-auto custom-scrollbar flex flex-col min-h-0">
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-semibold text-zinc-650 dark:text-zinc-400">Live Renderer Layout Preview</span>
+            <span className="bg-emerald-500/10 text-emerald-500 border border-emerald-500/25 px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-widest flex items-center gap-0.5">
+              <Sparkles className="w-2.5 h-2.5" /> PDF WYSIWYG
+            </span>
+          </div>
+          
+          <div className="flex bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 p-0.5 rounded-xl text-[10px] font-bold">
+            <button
+              onClick={() => setPreviewMode("digital")}
+              className={cn(
+                "px-3 py-1 rounded-lg transition-all",
+                previewMode === "digital" 
+                  ? "bg-white dark:bg-zinc-800 shadow-sm text-synos-primary font-extrabold" 
+                  : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-950 dark:hover:text-zinc-200"
+              )}
+            >
+              Digital
+            </button>
+            <button
+              onClick={() => setPreviewMode("physical")}
+              className={cn(
+                "px-3 py-1 rounded-lg transition-all",
+                previewMode === "physical" 
+                  ? "bg-white dark:bg-zinc-800 shadow-sm text-zinc-800 dark:text-zinc-200 font-extrabold" 
+                  : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-950 dark:hover:text-zinc-200"
+              )}
+            >
+              Physical
+            </button>
+          </div>
+        </div>
+
+        <div className="w-full overflow-x-auto border border-zinc-200 dark:border-zinc-800 rounded-xl bg-zinc-100 dark:bg-zinc-950 p-4 flex justify-center">
+          <div 
+            className="relative transition-all" 
+            style={{ 
+              width: `${794 * scale}px`, 
+              height: `${1123 * scale + 32}px`, 
+              overflow: "hidden" 
+            }}
+          >
+            <div 
+              id="report-a4-canvas"
+              className={cn(
+                activeTemplate.enableAbsolutePositioning 
+                  ? "text-zinc-900 relative select-none transition-all box-border overflow-hidden text-left" 
+                  : "bg-white text-zinc-900 shadow-2xl relative select-none transition-all box-border overflow-hidden text-left",
+                activeTemplate.density === "Compact" ? "font-sans" : "font-serif"
+              )}
+              style={{
+                width: "794px",
+                height: "1123px",
+                transform: `scale(${scale})`,
+                transformOrigin: "top left",
+                padding: activeTemplate.enableAbsolutePositioning ? 0 : `${activeTemplate.pagePadding ?? 24}px`,
+                borderWidth: activeTemplate.enableAbsolutePositioning ? 0 : `${activeTemplate.borderWidth ?? 1}px`,
+                borderStyle: activeTemplate.enableAbsolutePositioning ? "none" : (activeTemplate.borderStyle || "solid"),
+                borderColor: activeTemplate.enableAbsolutePositioning ? "transparent" : (activeTemplate.borderColor || "#e2e8f0"),
+                borderRadius: activeTemplate.enableAbsolutePositioning ? 0 : `${activeTemplate.borderRadius ?? 0}px`,
+                backgroundColor: activeTemplate.enableAbsolutePositioning 
+                  ? "transparent" 
+                  : (activeTemplate.bgType === "solid" ? (activeTemplate.bgColor || "#ffffff") : "#ffffff"),
+                position: "absolute",
+                top: 0,
+                left: 0
+              }}
+            >
+              
+              {((previewMode === "digital") || (previewMode === "physical" && !activeTemplate.usePreprinted)) && activeTemplate.backgroundPath && (
+                <div 
+                  className="absolute inset-0 bg-cover bg-center pointer-events-none"
+                  style={{ 
+                    backgroundImage: `url(${activeTemplate.backgroundPath})`, 
+                    opacity: activeTemplate.bgImageOpacity ?? 0.05,
+                    zIndex: 0 
+                  }} 
+                />
+              )}
+
+              {((previewMode === "digital") || (previewMode === "physical" && !activeTemplate.usePreprinted)) && activeTemplate.bgType === "gradient" && (
+                <div 
+                  className="absolute inset-0 pointer-events-none"
+                  style={{ 
+                    backgroundImage: `linear-gradient(${activeTemplate.bgGradientAngle || 135}deg, ${activeTemplate.bgGradientStart || '#ffffff'}, ${activeTemplate.bgGradientEnd || '#f1f5f9'})`,
+                    zIndex: 0 
+                  }} 
+                />
+              )}
+
+              {((previewMode === "digital") || (previewMode === "physical" && !activeTemplate.usePreprinted)) && activeTemplate.includeBranding && (activeTemplate.includeWatermark ?? true) && activeTemplate.watermarkText && (
+                <div 
+                  className="absolute inset-0 flex items-center justify-center pointer-events-none select-none font-semibold font-mono tracking-wider"
+                  style={{ 
+                    opacity: activeTemplate.watermarkOpacity || 0.05, 
+                    color: '#000',
+                    fontSize: `${activeTemplate.watermarkSize || 32}px`,
+                    transform: `rotate(${activeTemplate.watermarkRotation ?? 12}deg)`,
+                    zIndex: 5
+                  }}
+                >
+                  {activeTemplate.watermarkText}
+                </div>
+              )}
+
+              <div className="relative z-10 w-full h-full flex flex-col justify-between">
+                <div>
+                  {((previewMode === "digital") || (previewMode === "physical" && !activeTemplate.usePreprinted)) && activeTemplate.includeBranding && (() => {
+                    const hasLogo = (activeTemplate.includeLogo ?? true) && !!activeTemplate.logoUrl;
+                    const hasTitle = activeTemplate.includeHeaderName ?? true;
+                    const hasSubtitle = activeTemplate.includeHeaderSubtitle ?? true;
+
+                    if (!hasLogo && !hasTitle && !hasSubtitle) return null;
+
+                    const logoEl = hasLogo ? (
+                      <img 
+                        src={activeTemplate.logoUrl} 
+                        alt="Logo" 
+                        style={{ width: `${activeTemplate.logoSize || 40}px`, height: 'auto', objectFit: 'contain' }}
+                        className="max-h-12 relative z-10"
+                      />
+                    ) : (
+                      (activeTemplate.includeLogo ?? true) ? (
+                        <div 
+                          className="rounded-lg flex items-center justify-center font-semibold text-white select-none relative z-10 animate-pulse"
+                          style={{
+                            width: `${activeTemplate.logoSize || 32}px`,
+                            height: `${activeTemplate.logoSize || 32}px`,
+                            backgroundColor: activeTemplate.brandNameColor || "#4f46e5",
+                            fontSize: `${Math.max(10, (activeTemplate.logoSize || 32) * 0.35)}px`
+                          }}
+                        >
+                          {(activeTemplate.brandNameText || activeTemplate.clinicName || "SY").substring(0, 2).toUpperCase()}
+                        </div>
+                      ) : null
+                    );
+
+                    const brandTextEl = (hasTitle || hasSubtitle) ? (
+                      <div className="relative z-10 text-left">
+                        {hasTitle && (
+                          <h4 
+                            style={{
+                              fontSize: `${activeTemplate.brandNameSize || 14}px`,
+                              fontWeight: activeTemplate.brandNameWeight || "900",
+                              color: activeTemplate.brandNameColor || "#1e1b4b"
+                            }}
+                            className="uppercase tracking-tight leading-tight"
+                          >
+                            {activeTemplate.brandNameText || activeTemplate.clinicName || "SynOS Diagnostics"}
+                          </h4>
+                        )}
+                        {hasSubtitle && (
+                          <p 
+                            style={{
+                              fontSize: `${activeTemplate.brandSubtitleSize || 8}px`,
+                              color: activeTemplate.brandSubtitleColor || "#71717a"
+                            }}
+                            className="font-medium mt-0.5 leading-none"
+                          >
+                            {activeTemplate.brandSubtitleText || "Accredited Diagnostics Lab"}
+                          </p>
+                        )}
+                      </div>
+                    ) : null;
+
+                    const dividerStyle = activeTemplate.showHeaderDivider !== false ? {
+                      borderBottomWidth: `${activeTemplate.headerDividerThickness ?? 2}px`,
+                      borderBottomStyle: activeTemplate.headerDividerStyle || "solid",
+                      borderBottomColor: activeTemplate.headerDividerColor || "#e2e8f0"
+                    } : {};
+
+                    if (activeTemplate.logoPosition === "Center") {
+                      return (
+                        <div className="w-full pb-2 mb-3 space-y-2.5 relative z-10" style={dividerStyle}>
+                          <div className="flex flex-col items-center text-center gap-1.5">
+                            {logoEl}
+                            {brandTextEl}
+                          </div>
+                        </div>
+                      );
+                    } else if (activeTemplate.logoPosition === "Right") {
+                      return (
+                        <div className="w-full pb-2 mb-3 flex justify-between items-stretch gap-4 relative z-10" style={dividerStyle}>
+                          <div className="w-[10px]" />
+                          <div className="flex items-center gap-2.5 text-right">
+                            {brandTextEl}
+                            {logoEl}
+                          </div>
+                        </div>
+                      );
+                    } else {
+                      return (
+                        <div className="w-full pb-2 mb-3 flex justify-between items-stretch gap-4 relative z-10" style={dividerStyle}>
+                          <div className="flex items-center gap-2.5">
+                            {logoEl}
+                            {brandTextEl}
+                          </div>
+                        </div>
+                      );
+                    }
+                  })()}
+
+                  {!activeTemplate.enableAbsolutePositioning && previewMode === "physical" && activeTemplate.usePreprinted && (
+                    <div className="h-[90px] border border-dashed border-zinc-200 bg-zinc-50/50 rounded-lg flex flex-col justify-center items-center mb-6 relative z-10">
+                      <span className="text-[8px] font-semibold tracking-wider text-zinc-650">Physical pre-printed sheet header region</span>
+                      <span className="text-[7px] text-zinc-400 font-mono mt-0.5">Top Safe Margins: {activeTemplate.topMargin}mm (~90px gap)</span>
+                    </div>
+                  )}
+
+                  {activeTemplate.enableAbsolutePositioning ? (
+                    <>
+                      <span className="hidden" data-patient-name-placeholder={"{" + "{" + "PATIENT_NAME" + "}" + "}"} />
+                      <span className="hidden" data-ref-doctor-placeholder={"{" + "{" + "REF_DOCTOR" + "}" + "}"} />
+                      <span className="hidden" data-age-sex-placeholder={"{" + "{" + "AGE_SEX" + "}" + "}"} />
+                      <span className="hidden" data-patient-id-placeholder={"{" + "{" + "PATIENT_ID" + "}" + "}"} />
+                      <span className="hidden" data-billing-date-placeholder={"{" + "{" + "BILLING_DATE" + "}" + "}"} />
+                      <span className="hidden" data-report-date-placeholder={"{" + "{" + "REPORT_DATE" + "}" + "}"} />
+                      <div
+                        style={{
+                          position: 'absolute',
+                          left: `${coords.patientNameX}mm`,
+                          top: `${coords.patientNameY}mm`,
+                          cursor: 'grab',
+                          zIndex: 20
+                        }}
+                        onPointerDown={(e) => handleStartDrag(e, activeTemplate.id, 'patientNameX', 'patientNameY', coords.patientNameX, coords.patientNameY)}
+                        className="bg-transparent border-0 shadow-none p-1 text-[10px] text-zinc-850 dark:text-zinc-200 transition-all select-none hover:ring-1 hover:ring-synos-primary/50 hover:bg-synos-primary/5 rounded"
+                      >
+                        <span className="font-bold text-zinc-800 dark:text-zinc-100">Rajesh Kumar</span>
+                      </div>
+ 
+                      <div
+                        style={{
+                          position: 'absolute',
+                          left: `${coords.patientAgeSexX}mm`,
+                          top: `${coords.patientAgeSexY}mm`,
+                          cursor: 'grab',
+                          zIndex: 20
+                        }}
+                        onPointerDown={(e) => handleStartDrag(e, activeTemplate.id, 'patientAgeSexX', 'patientAgeSexY', coords.patientAgeSexX, coords.patientAgeSexY)}
+                        className="bg-transparent border-0 shadow-none p-1 text-[10px] text-zinc-850 dark:text-zinc-200 transition-all select-none hover:ring-1 hover:ring-synos-primary/50 hover:bg-synos-primary/5 rounded"
+                      >
+                        <span className="font-semibold text-zinc-700 dark:text-zinc-300">32Y / Male</span>
+                      </div>
+ 
+                      <div
+                        style={{
+                          position: 'absolute',
+                          left: `${coords.refDoctorX}mm`,
+                          top: `${coords.refDoctorY}mm`,
+                          cursor: 'grab',
+                          zIndex: 20
+                        }}
+                        onPointerDown={(e) => handleStartDrag(e, activeTemplate.id, 'refDoctorX', 'refDoctorY', coords.refDoctorX, coords.refDoctorY)}
+                        className="bg-transparent border-0 shadow-none p-1 text-[10px] text-zinc-850 dark:text-zinc-200 transition-all select-none hover:ring-1 hover:ring-synos-primary/50 hover:bg-synos-primary/5 rounded"
+                      >
+                        <span className="font-bold text-zinc-850 dark:text-zinc-100">Dr. S. Sharma, MD</span>
+                      </div>
+ 
+                      <div
+                        style={{
+                          position: 'absolute',
+                          left: `${coords.patientIdX}mm`,
+                          top: `${coords.patientIdY}mm`,
+                          cursor: 'grab',
+                          zIndex: 20
+                        }}
+                        onPointerDown={(e) => handleStartDrag(e, activeTemplate.id, 'patientIdX', 'patientIdY', coords.patientIdX, coords.patientIdY)}
+                        className="bg-transparent border-0 shadow-none p-1 text-[10px] text-zinc-855 dark:text-zinc-200 transition-all select-none hover:ring-1 hover:ring-synos-primary/50 hover:bg-synos-primary/5 rounded"
+                      >
+                        <span className="font-semibold font-mono text-zinc-700 dark:text-zinc-300">PID-2026-8940</span>
+                      </div>
+ 
+                      <div
+                        style={{
+                          position: 'absolute',
+                          left: `${coords.billingDateX}mm`,
+                          top: `${coords.billingDateY}mm`,
+                          cursor: 'grab',
+                          zIndex: 20
+                        }}
+                        onPointerDown={(e) => handleStartDrag(e, activeTemplate.id, 'billingDateX', 'billingDateY', coords.billingDateX, coords.billingDateY)}
+                        className="bg-transparent border-0 shadow-none p-1 text-[10px] text-zinc-855 dark:text-zinc-200 transition-all select-none hover:ring-1 hover:ring-synos-primary/50 hover:bg-synos-primary/5 rounded"
+                      >
+                        <span className="font-semibold text-zinc-700 dark:text-zinc-300">20-May-2026</span>
+                      </div>
+ 
+                      <div
+                        style={{
+                          position: 'absolute',
+                          left: `${coords.reportDateX}mm`,
+                          top: `${coords.reportDateY}mm`,
+                          cursor: 'grab',
+                          zIndex: 20
+                        }}
+                        onPointerDown={(e) => handleStartDrag(e, activeTemplate.id, 'reportDateX', 'reportDateY', coords.reportDateX, coords.reportDateY)}
+                        className="bg-transparent border-0 shadow-none p-1 text-[10px] text-zinc-855 dark:text-zinc-200 transition-all select-none hover:ring-1 hover:ring-synos-primary/50 hover:bg-synos-primary/5 rounded"
+                      >
+                        <span className="font-bold text-zinc-800 dark:text-zinc-100">22-May-2026</span>
+                      </div>
+                    </>
+                  ) : (
+                    <div
+                      style={{
+                        marginTop: '10px',
+                        marginBottom: '15px'
+                      }}
+                      className="transition-all"
+                    >
+                      <div className="flex justify-between items-center text-[9px] border-b border-zinc-150 pb-1.5 font-semibold text-zinc-655 dark:text-zinc-400">
+                        <div>
+                          <span className="font-bold text-zinc-800">Patient:</span> Rajesh Kumar, M / 32Y
+                        </div>
+                        <div>
+                          <span className="font-bold text-zinc-800">Referrer:</span> Dr. S. Sharma, MD
+                        </div>
+                        <div>
+                          <span className="font-bold text-zinc-800">Date:</span> 20-May-2026
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {activeTemplate.enableAbsolutePositioning ? (
+                    <div
+                      style={{
+                        position: 'absolute',
+                        left: `${coords.testTitleX}mm`,
+                        top: `${coords.testTitleY}mm`,
+                        cursor: 'grab',
+                        zIndex: 20
+                      }}
+                      onPointerDown={(e) => handleStartDrag(e, activeTemplate.id, 'testTitleX', 'testTitleY', coords.testTitleX, coords.testTitleY)}
+                      className="bg-transparent border-0 shadow-none p-1 transition-all select-none hover:ring-1 hover:ring-synos-primary/50 hover:bg-synos-primary/5 rounded animate-in fade-in duration-200"
+                    >
+                      <div className="font-extrabold text-[10px] text-zinc-900 uppercase">
+                        {selectedTest.name} ({selectedTest.code})
+                      </div>
+                    </div>
+                  ) : null}
+
+                  <div
+                    style={activeTemplate.enableAbsolutePositioning ? {
+                      position: 'absolute',
+                      top: `${coords.resultsTableY}mm`,
+                      left: `${coords.resultsTableX}mm`,
+                      width: `calc(210mm - ${(activeTemplate.leftRightMargin ?? 15) * 2}mm)`,
+                      cursor: 'grab',
+                      zIndex: 10
+                    } : {
+                      marginTop: '20px',
+                      flex: 1
+                    }}
+                    onPointerDown={activeTemplate.enableAbsolutePositioning ? (e) => handleStartDrag(e, activeTemplate.id, 'resultsTableX', 'resultsTableY', coords.resultsTableX, coords.resultsTableY) : undefined}
+                    className={cn(
+                      "transition-all",
+                      activeTemplate.enableAbsolutePositioning && "hover:ring-1 hover:ring-synos-primary/50 hover:bg-synos-primary/5 p-1 rounded"
+                    )}
+                  >
+                    {!activeTemplate.enableAbsolutePositioning && (
+                      <div className="font-extrabold text-[10px] text-zinc-900 uppercase mb-1">{selectedTest.name} ({selectedTest.code})</div>
+                    )}
+                    {selectedTest.reportStyle === "Two Column Grid" ? (
+                      <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-[8px] mt-2">
+                        {displayParams && displayParams.map((p, i) => (
+                          <div key={i} className="border-b border-zinc-200 pb-1 flex justify-between items-center">
+                            <div>
+                              <span className="font-semibold block text-[8px]">{p.name}</span>
+                              {selectedTest.showMethod && p.method && <span className="text-[6px] text-zinc-655 italic">{p.method}</span>}
+                            </div>
+                            <div className="text-right">
+                              <span className="font-mono font-bold text-[8px]">{getParamMidpoint(p)} {p.unit}</span>
+                              {selectedTest.showRange && <span className="text-[6px] text-zinc-550 block">Ref: {formatReferenceRange(p)}</span>}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : selectedTest.reportStyle === "Descriptive Narrative" ? (
+                      <div className="space-y-2 text-[8px] text-zinc-700 mt-2">
+                        {displayParams && displayParams.map((p, i) => (
+                          <div 
+                            key={i} 
+                            className={cn(
+                              activeTemplate.enableAbsolutePositioning 
+                                ? "bg-transparent p-0 pb-2 border-b border-zinc-200 shadow-none rounded-none" 
+                                : "bg-zinc-50 p-2 rounded-lg border border-zinc-200"
+                            )}
+                          >
+                            <span className="font-bold text-zinc-900 block text-[8px]">{p.name} ({p.code})</span>
+                            <p className="mt-1 leading-normal text-[7.5px]">
+                              The analyte value is measured at <strong className="font-mono text-zinc-900">{getParamMidpoint(p)} {p.unit}</strong>.
+                              {selectedTest.showRange && ` The physiological biological reference interval is ${formatReferenceRange(p)} ${p.unit}.`}
+                              {selectedTest.showMethod && p.method && ` Methodology used for estimation: ${p.method}.`}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    ) : hasTemplateColumns ? (
+                      <table className={cn(
+                        "w-full text-left text-[8px] border-collapse mt-2",
+                        selectedTest.reportStyle === "Standard A4" && !activeTemplate.enableAbsolutePositioning && "border border-zinc-200"
+                      )}>
+                        <thead>
+                          <tr className={cn(
+                            selectedTest.reportStyle === "Modern Tabular"
+                              ? (activeTemplate.enableAbsolutePositioning ? "bg-transparent text-zinc-600 font-bold border-t border-b border-zinc-200" : "bg-zinc-100 text-zinc-600 font-bold border-t border-b border-zinc-200")
+                              : (activeTemplate.enableAbsolutePositioning ? "bg-transparent border-t border-b border-zinc-200 text-zinc-400 font-bold" : "bg-zinc-50 border-b border-zinc-200 text-zinc-400 font-bold")
+                          )}>
+                            {activeTemplate.columns.map((col, idx) => (
+                              <th
+                                key={idx}
+                                className={cn(
+                                  "py-1 px-2",
+                                  selectedTest.reportStyle === "Standard A4" && "border-r border-zinc-200 last:border-r-0",
+                                  col.alignment === "Left" ? "text-left" : col.alignment === "Center" ? "text-center" : "text-right"
+                                )}
+                                style={{ width: `${(col.weight / totalWeight) * 100}%` }}
+                              >
+                                {col.title}
+                              </th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-zinc-200 text-zinc-800">
+                          {displayParams && displayParams.map((p, i) => (
+                            <tr 
+                              key={i} 
+                              className={cn(
+                                selectedTest.reportStyle === "Modern Tabular" && i % 2 === 1 && !activeTemplate.enableAbsolutePositioning && "bg-zinc-50/30"
+                              )}
+                            >
+                              {activeTemplate.columns.map((col, idx) => {
+                                let text = "";
+                                if (col.code === "Parameter") text = p.name;
+                                else if (col.code === "Value") {
+                                  text = getParamMidpoint(p);
+                                }
+                                else if (col.code === "Unit") text = p.unit;
+                                else if (col.code === "ReferenceRange") text = selectedTest.showRange ? formatReferenceRange(p) : "";
+                                else if (col.code === "Methodology") text = selectedTest.showMethod ? p.method : "";
+
+                                return (
+                                  <td
+                                    key={idx}
+                                    className={cn(
+                                      "py-1 px-2",
+                                      selectedTest.reportStyle === "Standard A4" && "border-r border-zinc-200 last:border-r-0",
+                                      col.bold && "font-bold text-zinc-950",
+                                      col.alignment === "Left" ? "text-left" : col.alignment === "Center" ? "text-center" : "text-right"
+                                    )}
+                                  >
+                                    {text}
+                                  </td>
+                                );
+                              })}
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    ) : (
+                      <table className={cn(
+                        "w-full text-left text-[8px] border-collapse mt-2",
+                        selectedTest.reportStyle === "Standard A4" && !activeTemplate.enableAbsolutePositioning && "border border-zinc-200"
+                      )}>
+                        <thead>
+                          <tr className={cn(
+                            selectedTest.reportStyle === "Modern Tabular"
+                              ? (activeTemplate.enableAbsolutePositioning ? "bg-transparent text-zinc-600 font-bold border-t border-b border-zinc-200" : "bg-zinc-100 text-zinc-600 font-bold border-t border-b border-zinc-200")
+                              : (activeTemplate.enableAbsolutePositioning ? "bg-transparent border-t border-b border-zinc-200 text-zinc-400 font-bold" : "bg-zinc-50 border-b border-zinc-200 text-zinc-400 font-bold")
+                          )}>
+                            <th className={cn("py-1 px-2", selectedTest.reportStyle === "Standard A4" && !activeTemplate.enableAbsolutePositioning && "border-r border-zinc-200")}>Analyte</th>
+                            <th className={cn("py-1 px-2 text-center", selectedTest.reportStyle === "Standard A4" && !activeTemplate.enableAbsolutePositioning && "border-r border-zinc-200")}>Value</th>
+                            <th className={cn("py-1 px-2 text-center", selectedTest.reportStyle === "Standard A4" && !activeTemplate.enableAbsolutePositioning && "border-r border-zinc-200")}>Unit</th>
+                            {selectedTest.showRange && <th className={cn("py-1 px-2 text-right", selectedTest.reportStyle === "Standard A4" && !activeTemplate.enableAbsolutePositioning && "border-r border-zinc-200")}>Reference Interval</th>}
+                            {selectedTest.showMethod && <th className="py-1 px-2 text-right">Methodology</th>}
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-zinc-200 text-zinc-800">
+                          {displayParams && displayParams.map((p, i) => (
+                            <tr 
+                              key={i} 
+                              className={cn(
+                                selectedTest.reportStyle === "Modern Tabular" && i % 2 === 1 && !activeTemplate.enableAbsolutePositioning && "bg-zinc-50/30"
+                              )}
+                            >
+                              <td className={cn("py-1 px-2 font-semibold", selectedTest.reportStyle === "Standard A4" && !activeTemplate.enableAbsolutePositioning && "border-r border-zinc-200")}>{p.name}</td>
+                              <td className={cn("py-1 px-2 text-center font-mono font-bold", selectedTest.reportStyle === "Standard A4" && !activeTemplate.enableAbsolutePositioning && "border-r border-zinc-200")}>{getParamMidpoint(p)}</td>
+                              <td className={cn("py-1 px-2 text-center font-mono text-zinc-500", selectedTest.reportStyle === "Standard A4" && !activeTemplate.enableAbsolutePositioning && "border-r border-zinc-200")}>{p.unit}</td>
+                              {selectedTest.showRange && (
+                                <td className={cn("py-1 px-2 text-right font-mono text-zinc-650", selectedTest.reportStyle === "Standard A4" && !activeTemplate.enableAbsolutePositioning && "border-r border-zinc-200")}>
+                                   {formatReferenceRange(p)}
+                                </td>
+                              )}
+                              {selectedTest.showMethod && (
+                                <td className="py-1 px-2 text-right text-zinc-650 italic text-[6.5px]">{p.method}</td>
+                              )}
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    )}
+
+                    {!activeTemplate.enableAbsolutePositioning && shouldShowInterpretation && (
+                      <div className="bg-zinc-50 p-2.5 rounded-lg border border-zinc-200 mt-3 text-left">
+                        <span className="font-bold block text-[7px] text-zinc-500 uppercase tracking-wide">Commentaries & Remarks</span>
+                        <div className="text-[7.5px] italic text-zinc-655 mt-0.5 leading-normal">
+                          {interpretationContent}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {activeTemplate.enableAbsolutePositioning && shouldShowInterpretation && (
+                    <div
+                      style={{
+                        position: 'absolute',
+                        top: `${coords.interpretationY}mm`,
+                        left: `${coords.interpretationX}mm`,
+                        width: `calc(210mm - ${(activeTemplate.leftRightMargin ?? 15) * 2}mm)`,
+                        cursor: 'grab',
+                        zIndex: 10
+                      }}
+                      onPointerDown={(e) => handleStartDrag(e, activeTemplate.id, 'interpretationX', 'interpretationY', coords.interpretationX, coords.interpretationY)}
+                      className="bg-transparent border-0 shadow-none p-1 transition-all select-none hover:ring-1 hover:ring-synos-primary/50 hover:bg-synos-primary/5 rounded animate-in fade-in duration-200"
+                    >
+                      <div className="bg-transparent p-0 border-t border-dashed border-zinc-200 text-left pt-2">
+                        <span className="font-bold block text-[7px] text-zinc-500 uppercase tracking-wide">Commentaries & Remarks</span>
+                        <div className="text-[7.5px] italic text-zinc-655 mt-0.5 leading-normal">
+                          {interpretationContent}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <div>
+                  {(activeTemplate.includeSignatures ?? true) && selectedTest.signatureSlots && selectedTest.signatureSlots.length > 0 && (
+                    <div 
+                      style={activeTemplate.enableAbsolutePositioning ? {
+                        position: 'absolute',
+                        bottom: `${coords.signatureY}mm`,
+                        left: `${coords.signatureX}mm`,
+                        width: `calc(210mm - ${(activeTemplate.leftRightMargin ?? 15) * 2}mm)`,
+                        cursor: 'grab',
+                        zIndex: 10
+                      } : {
+                        marginTop: '30px'
+                      }}
+                      onPointerDown={activeTemplate.enableAbsolutePositioning ? (e) => handleStartDrag(e, activeTemplate.id, 'signatureX', 'signatureY', coords.signatureX, coords.signatureY, true) : undefined}
+                      className={cn(
+                        "grid grid-cols-3 gap-6 pt-4 border-t border-dashed border-zinc-200 transition-all text-center",
+                        activeTemplate.enableAbsolutePositioning && "hover:ring-1 hover:ring-synos-primary/50 hover:bg-synos-primary/5 p-1 rounded"
+                      )}
+                    >
+                      {selectedTest.signatureSlots.map((sig, sigIdx) => (
+                        <div key={sigIdx} className="text-center min-h-[45px] flex flex-col justify-end">
+                          {((previewMode === "digital") || (previewMode === "physical" && !activeTemplate.usePreprinted)) && activeTemplate.includeBranding && (
+                            <span className="font-mono text-[7px] text-zinc-500 italic block mb-0.5">/Signed digitally/</span>
+                          )}
+                          <div className="border-t border-zinc-300 pt-1 text-[8px] font-semibold text-zinc-650">
+                            {sig}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {!activeTemplate.enableAbsolutePositioning && previewMode === "physical" && activeTemplate.usePreprinted && (
+                    <div className="h-[70px] border border-dashed border-zinc-200 bg-zinc-50/50 rounded-lg flex flex-col justify-center items-center mt-4 relative z-10">
+                      <span className="text-[8px] font-semibold tracking-wider text-zinc-650">Physical pre-printed sheet region</span>
+                      <span className="text-[7px] text-zinc-400 font-mono mt-0.5">Bottom Safe Margins: {activeTemplate.bottomMargin}mm (~70px gap)</span>
+                    </div>
+                  )}
+
+                  {((previewMode === "digital") || (previewMode === "physical" && !activeTemplate.usePreprinted)) && activeTemplate.includeBranding && (activeTemplate.includeFooter ?? true) && activeTemplate.footerText && (
+                    <div 
+                      style={activeTemplate.enableAbsolutePositioning ? {
+                        position: 'absolute',
+                        bottom: '8mm',
+                        left: `${activeTemplate.leftRightMargin ?? 15}mm`,
+                        width: `calc(210mm - ${(activeTemplate.leftRightMargin ?? 15) * 2}mm)`,
+                        zIndex: 10
+                      } : {}}
+                      className="mt-4 pt-2 border-t border-zinc-200 text-center text-[7px] text-zinc-400 font-medium"
+                    >
+                      {activeTemplate.footerText}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+    );
   };
 
   const filteredCatalog = catalog.filter(t => {
@@ -2463,6 +3283,17 @@ export function TestMasterScreen() {
                 <FileText className="w-4 h-4" /> Report Setup
               </button>
               <button
+                onClick={() => setActiveTab("interpretation")}
+                className={cn(
+                  "px-5 py-2.5 text-sm font-semibold border-b-2 transition-all flex items-center gap-1.5 -mb-px",
+                  activeTab === "interpretation"
+                    ? "border-synos-primary text-synos-primary"
+                    : "border-transparent text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300"
+                )}
+              >
+                <Sparkles className="w-4 h-4 text-violet-500 animate-pulse" /> Interpretation
+              </button>
+              <button
                 onClick={() => setActiveTab("pricing")}
                 className={cn(
                   "px-5 py-2.5 text-sm font-semibold border-b-2 transition-all flex items-center gap-1.5 -mb-px",
@@ -2666,7 +3497,7 @@ export function TestMasterScreen() {
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-semibold text-zinc-650 dark:text-zinc-400">Parameters Specification Grid</span>
                     <div className="text-xs text-zinc-600 dark:text-zinc-400 dark:text-zinc-600 dark:text-zinc-400 font-bold flex items-center gap-1.5">
-                      <Sliders className="w-4 h-4 text-synos-primary" /> Changes are instantly recorded.
+                  <Sliders className="w-4 h-4 text-synos-primary" /> Changes are instantly recorded.
                     </div>
                   </div>
 
@@ -2674,13 +3505,12 @@ export function TestMasterScreen() {
                     <table className="w-full text-left border-collapse text-sm">
                       <thead>
                         <tr className="bg-zinc-50 dark:bg-zinc-950 border-b border-zinc-200 dark:border-zinc-800">
+                          <th className="py-3 px-4 font-bold text-zinc-500 dark:text-zinc-400 text-xs uppercase w-[70px] text-center">S.No.</th>
                           {selectedTest.isProfile && <th className="py-3 px-4 font-bold text-zinc-500 dark:text-zinc-400 text-xs uppercase w-[150px]">Source</th>}
                           <th className="py-3 px-4 font-bold text-zinc-500 dark:text-zinc-400 text-xs uppercase w-[100px]">Code</th>
                           <th className="py-3 px-4 font-bold text-zinc-500 dark:text-zinc-400 text-xs uppercase min-w-[170px]">Parameter Name</th>
                           <th className="py-3 px-4 font-bold text-zinc-500 dark:text-zinc-400 text-xs uppercase w-[80px]">Unit</th>
-                          <th className="py-3 px-4 font-bold text-zinc-500 dark:text-zinc-400 text-xs uppercase w-[80px]">Min</th>
-                          <th className="py-3 px-4 font-bold text-zinc-500 dark:text-zinc-400 text-xs uppercase w-[80px]">Max</th>
-                          <th className="py-3 px-4 font-bold text-zinc-500 dark:text-zinc-400 text-xs uppercase w-[150px]">Ref Range (Text Override)</th>
+                          <th className="py-3 px-4 font-bold text-zinc-500 dark:text-zinc-400 text-xs uppercase w-[220px]">Default Reference Range</th>
                           <th className="py-3 px-4 font-bold text-zinc-500 dark:text-zinc-400 text-xs uppercase w-[130px]">Methodology</th>
                           <th className="py-3 px-4 font-bold text-zinc-500 dark:text-zinc-400 text-xs uppercase w-[120px] text-center">Settings</th>
                           <th className="py-3 px-4 font-bold text-zinc-500 dark:text-zinc-400 text-xs uppercase w-[50px] text-center"></th>
@@ -2692,7 +3522,54 @@ export function TestMasterScreen() {
                           const nativeIdx = idx - childParams.length;
 
                           return (
-                            <tr key={idx} className={cn("hover:bg-zinc-50/50 dark:hover:bg-zinc-800/10 group transition-colors", isFromChild && "bg-zinc-50/20 dark:bg-zinc-950/5")}>
+                            <tr 
+                              key={idx} 
+                              draggable={!isFromChild}
+                              onDragStart={(e) => {
+                                if (!isFromChild) {
+                                  setDraggedParamIdx(nativeIdx);
+                                  e.dataTransfer.setData("text/plain", nativeIdx);
+                                }
+                              }}
+                              onDragOver={(e) => {
+                                if (!isFromChild) {
+                                  e.preventDefault();
+                                }
+                              }}
+                              onDrop={(e) => {
+                                if (!isFromChild && draggedParamIdx !== null) {
+                                  moveParameterRow(draggedParamIdx, nativeIdx);
+                                }
+                              }}
+                              onDragEnd={() => {
+                                setDraggedParamIdx(null);
+                              }}
+                              className={cn("hover:bg-zinc-50/50 dark:hover:bg-zinc-800/10 group transition-colors", isFromChild && "bg-zinc-50/20 dark:bg-zinc-950/5", draggedParamIdx === nativeIdx && "opacity-40 bg-zinc-100 dark:bg-zinc-800")}
+                            >
+                              <td className="py-1.5 px-2 text-center w-[70px] select-none">
+                                {isFromChild ? (
+                                  <span className="text-zinc-450 dark:text-zinc-500 font-bold text-xs">{idx + 1}</span>
+                                ) : (
+                                  <div className="flex items-center gap-1 justify-center">
+                                    <GripVertical className="w-3.5 h-3.5 text-zinc-350 dark:text-zinc-650 cursor-grab active:cursor-grabbing hover:text-zinc-500 drag-handle shrink-0" />
+                                    <input
+                                      type="number"
+                                      min="1"
+                                      max={combinedParams.length}
+                                      value={idx + 1}
+                                      onChange={(e) => {
+                                        const val = parseInt(e.target.value, 10);
+                                        if (!isNaN(val)) {
+                                          const newPos = Math.max(1, Math.min(combinedParams.length, val));
+                                          const targetNativeIdx = Math.max(0, Math.min(nativeParams.length - 1, newPos - 1 - childParams.length));
+                                          moveParameterRow(nativeIdx, targetNativeIdx);
+                                        }
+                                      }}
+                                      className="w-8 bg-transparent text-center focus:bg-white dark:focus:bg-zinc-950 focus:ring-1 focus:ring-synos-primary outline-none py-0.5 rounded text-zinc-800 dark:text-zinc-200 font-bold text-xs border border-transparent hover:border-zinc-200 dark:hover:border-zinc-800 focus:border-zinc-300 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none shrink-0"
+                                    />
+                                  </div>
+                                )}
+                              </td>
                               {selectedTest.isProfile && (
                                 <td className="py-2.5 px-4">
                                   {isFromChild ? (
@@ -2747,34 +3624,10 @@ export function TestMasterScreen() {
                                   type="text"
                                   readOnly={isFromChild}
                                   className={cn(
-                                    "w-full bg-transparent hover:bg-zinc-50 dark:hover:bg-zinc-900 focus:bg-white dark:focus:bg-zinc-950 focus:ring-1 focus:ring-synos-primary outline-none px-3 py-2 rounded font-mono text-zinc-700 dark:text-zinc-350 text-sm",
-                                    isFromChild && "text-zinc-400 dark:text-zinc-500 cursor-not-allowed hover:bg-transparent dark:hover:bg-transparent"
-                                  )}
-                                  value={p.minRange ?? ""}
-                                  onChange={(e) => !isFromChild && handleParamCellChange(nativeIdx, 'minRange', e.target.value)}
-                                />
-                              </td>
-                              <td className="py-1.5 px-1.5">
-                                <input
-                                  type="text"
-                                  readOnly={isFromChild}
-                                  className={cn(
-                                    "w-full bg-transparent hover:bg-zinc-50 dark:hover:bg-zinc-900 focus:bg-white dark:focus:bg-zinc-950 focus:ring-1 focus:ring-synos-primary outline-none px-3 py-2 rounded font-mono text-zinc-700 dark:text-zinc-300 text-sm",
-                                    isFromChild && "text-zinc-400 dark:text-zinc-500 cursor-not-allowed hover:bg-transparent dark:hover:bg-transparent"
-                                  )}
-                                  value={p.maxRange ?? ""}
-                                  onChange={(e) => !isFromChild && handleParamCellChange(nativeIdx, 'maxRange', e.target.value)}
-                                />
-                              </td>
-                              <td className="py-1.5 px-1.5">
-                                <input
-                                  type="text"
-                                  readOnly={isFromChild}
-                                  className={cn(
                                     "w-full bg-transparent hover:bg-zinc-50 dark:hover:bg-zinc-900 focus:bg-white dark:focus:bg-zinc-950 focus:ring-1 focus:ring-synos-primary outline-none px-3 py-2 rounded text-zinc-700 dark:text-zinc-300 text-sm",
                                     isFromChild && "text-zinc-400 dark:text-zinc-500 cursor-not-allowed hover:bg-transparent dark:hover:bg-transparent"
                                   )}
-                                  placeholder={p.minRange !== undefined && p.maxRange !== undefined && p.minRange !== "" && p.maxRange !== "" && p.minRange !== null && p.maxRange !== null ? `${p.minRange} - ${p.maxRange}` : "e.g. 1.2 - 2.5 : 1"}
+                                  placeholder="e.g. 13.0 - 18.0 or Negative"
                                   value={p.referenceRange ?? ""}
                                   onChange={(e) => !isFromChild && handleParamCellChange(nativeIdx, 'referenceRange', e.target.value)}
                                 />
@@ -2988,643 +3841,106 @@ export function TestMasterScreen() {
                 </div>
 
                 {/* Live Preview Card */}
-                {showLivePreview && (
-                  <div className="lg:col-span-6 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 shadow-inner space-y-4 lg:h-full lg:overflow-y-auto custom-scrollbar flex flex-col min-h-0">
-                    <div className="flex items-center justify-between gap-4">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-semibold text-zinc-600 dark:text-zinc-400">Live Renderer Layout Preview</span>
-                        <span className="bg-emerald-500/10 text-emerald-500 border border-emerald-500/25 px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-widest flex items-center gap-0.5">
-                          <Sparkles className="w-2.5 h-2.5" /> PDF WYSIWYG
-                        </span>
-                      </div>
-                      
-                      {/* Segmented Mode Selector Toggle */}
-                      <div className="flex bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 p-0.5 rounded-xl text-[10px] font-bold">
-                        <button
-                          onClick={() => setPreviewMode("digital")}
-                          className={cn(
-                            "px-3 py-1 rounded-lg transition-all",
-                            previewMode === "digital" 
-                              ? "bg-white dark:bg-zinc-800 shadow-sm text-synos-primary font-extrabold" 
-                              : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-950 dark:hover:text-zinc-200"
-                          )}
-                        >
-                          Digital
-                        </button>
-                        <button
-                          onClick={() => setPreviewMode("physical")}
-                          className={cn(
-                            "px-3 py-1 rounded-lg transition-all",
-                            previewMode === "physical" 
-                              ? "bg-white dark:bg-zinc-800 shadow-sm text-zinc-800 dark:text-zinc-200 font-extrabold" 
-                              : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-950 dark:hover:text-zinc-200"
-                          )}
-                        >
-                          Physical
-                        </button>
-                      </div>
+                {renderLivePreview()}
+              </div>
+            )}
+            {/* Tab: Interpretation (Rich Medical Editor & Live Preview) */}
+            {activeTab === "interpretation" && (
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch lg:h-full min-h-0 overflow-hidden">
+                {/* Form / Editor Column */}
+                <div className={cn(
+                  "bg-white dark:bg-zinc-900/40 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 shadow-sm space-y-4 lg:h-full lg:overflow-y-auto custom-scrollbar",
+                  showLivePreview ? "lg:col-span-6" : "lg:col-span-12"
+                )}>
+                  <div>
+                    <h3 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">Default Interpretation Template</h3>
+                    <p className="text-xs text-zinc-500 mt-1">
+                      Configure a default narrative template that will automatically seed into report drafts for <strong>{selectedTest.name}</strong> inside the Typist and Pathologist queues.
+                    </p>
+                  </div>
+
+                  <div className="space-y-4">
+                    {/* Rich Editor */}
+                    <div className="border border-zinc-200 dark:border-zinc-800 rounded-xl overflow-hidden min-h-[300px]">
+                      <RichMedicalEditor
+                        value={selectedTest.defaultInterpretation || ""}
+                        onChange={(newVal) => {
+                          const updatedTest = { ...selectedTest, defaultInterpretation: newVal };
+                          const updatedCatalog = catalog.map(t => t.id === selectedTest.id ? updatedTest : t);
+                          setCatalog(updatedCatalog);
+                          setSelectedTest(updatedTest);
+                        }}
+                        placeholder="Compose default clinical interpretation or report templates here..."
+                      />
                     </div>
 
-                    {/* High-Fidelity preview box */}
-                    {(() => {
-                      const activeTemplate = getActiveTemplate(selectedTest, reportTemplatesList);
-                      const coords = getCoordinates(activeTemplate);
-                      const hasTemplateColumns = activeTemplate.columns && activeTemplate.columns.length > 0;
-                      const totalWeight = hasTemplateColumns ? activeTemplate.columns.reduce((sum, c) => sum + c.weight, 0) : 1;
-                      const childParams = getCompiledProfileParameters(selectedTest, catalog);
-                      const childCodes = new Set(childParams.map(cp => cp.code));
-                      const nativeParams = (selectedTest.parameters || []).filter(np => !childCodes.has(np.code));
-                      const displayParams = [...childParams, ...nativeParams];
-                      return (
-                        <div ref={containerRef} className="w-full overflow-x-auto border border-zinc-200 dark:border-zinc-800 rounded-xl bg-zinc-100 dark:bg-zinc-950 p-4 flex justify-center">
-                          <div 
-                            className="relative transition-all" 
-                            style={{ 
-                              width: `${794 * scale}px`, 
-                              height: `${1123 * scale + 32}px`, 
-                              overflow: "hidden" 
-                            }}
-                          >
-                            <div 
-                              id="report-a4-canvas"
-                              className={cn(
-                                activeTemplate.enableAbsolutePositioning 
-                                  ? "text-zinc-900 relative select-none transition-all box-border overflow-hidden text-left" 
-                                  : "bg-white text-zinc-900 shadow-2xl relative select-none transition-all box-border overflow-hidden text-left",
-                                activeTemplate.density === "Compact" ? "font-sans" : "font-serif"
-                              )}
-                              style={{
-                                width: "794px",
-                                height: "1123px",
-                                transform: `scale(${scale})`,
-                                transformOrigin: "top left",
-                                padding: activeTemplate.enableAbsolutePositioning ? 0 : `${activeTemplate.pagePadding ?? 24}px`,
-                                borderWidth: activeTemplate.enableAbsolutePositioning ? 0 : `${activeTemplate.borderWidth ?? 1}px`,
-                                borderStyle: activeTemplate.enableAbsolutePositioning ? "none" : (activeTemplate.borderStyle || "solid"),
-                                borderColor: activeTemplate.enableAbsolutePositioning ? "transparent" : (activeTemplate.borderColor || "#e2e8f0"),
-                                borderRadius: activeTemplate.enableAbsolutePositioning ? 0 : `${activeTemplate.borderRadius ?? 0}px`,
-                                backgroundColor: activeTemplate.enableAbsolutePositioning 
-                                  ? "transparent" 
-                                  : (activeTemplate.bgType === "solid" ? (activeTemplate.bgColor || "#ffffff") : "#ffffff"),
-                                position: "absolute",
-                                top: 0,
-                                left: 0
-                              }}
-                            >
+                    {/* File Import Dropzone / Button */}
+                    <div className="p-4 rounded-xl border border-dashed border-zinc-200 dark:border-zinc-800 flex items-center justify-between gap-4 bg-zinc-50/50 dark:bg-zinc-950/20">
+                      <div className="space-y-0.5">
+                        <span className="text-xs font-bold text-zinc-700 dark:text-zinc-300 block">Import Interpretation Template</span>
+                        <span className="text-[10px] text-zinc-400">Extract clinical text from Microsoft Word (.docx), RTF (.rtf), or plain text (.txt). Headers/footers are skipped.</span>
+                      </div>
+                      <div>
+                        <input
+                          type="file"
+                          id="import-interpretation-file"
+                          accept=".docx,.rtf,.txt"
+                          className="hidden"
+                          onChange={async (e) => {
+                            const file = e.target.files?.[0];
+                            if (!file) return;
+                            
+                            const isConfirmed = window.confirm(`Importing "${file.name}" will append or replace the current interpretation editor text. Continue?`);
+                            if (!isConfirmed) return;
+
+                            const loader = document.getElementById("import-loader");
+                            if (loader) loader.classList.remove("hidden");
+
+                            try {
+                              const res = await AdminApi.importInterpretation(file);
+                              const newText = res.content || res.Content || "";
                               
-                              {/* Background Backdrop Master Artwork */}
-                              {((previewMode === "digital") || (previewMode === "physical" && !activeTemplate.usePreprinted)) && activeTemplate.backgroundPath && (
-                                <div 
-                                  className="absolute inset-0 bg-cover bg-center pointer-events-none"
-                                  style={{ 
-                                    backgroundImage: `url(${activeTemplate.backgroundPath})`, 
-                                    opacity: activeTemplate.bgImageOpacity ?? 0.05,
-                                    zIndex: 0 
-                                  }} 
-                                />
-                              )}
+                              // TipTap JSON format or clean plain text
+                              let formatText = newText;
+                              if (!newText.startsWith("{")) {
+                                // Convert plain text paragraph lines to simple TipTap JSON doc
+                                const paragraphs = newText.split("\n").map(p => ({
+                                  type: "paragraph",
+                                  content: p.trim() ? [{ type: "text", text: p.trim() }] : []
+                                }));
+                                formatText = JSON.stringify({
+                                  type: "doc",
+                                  content: paragraphs
+                                });
+                              }
 
-                              {/* Background Gradient layer */}
-                              {((previewMode === "digital") || (previewMode === "physical" && !activeTemplate.usePreprinted)) && activeTemplate.bgType === "gradient" && (
-                                <div 
-                                  className="absolute inset-0 pointer-events-none"
-                                  style={{ 
-                                    backgroundImage: `linear-gradient(${activeTemplate.bgGradientAngle || 135}deg, ${activeTemplate.bgGradientStart || '#ffffff'}, ${activeTemplate.bgGradientEnd || '#f1f5f9'})`,
-                                    zIndex: 0 
-                                  }} 
-                                />
-                              )}
-
-                              {/* Digital mode Watermark overlay */}
-                              {((previewMode === "digital") || (previewMode === "physical" && !activeTemplate.usePreprinted)) && activeTemplate.includeBranding && (activeTemplate.includeWatermark ?? true) && activeTemplate.watermarkText && (
-                                <div 
-                                  className="absolute inset-0 flex items-center justify-center pointer-events-none select-none font-semibold font-mono tracking-wider"
-                                  style={{ 
-                                    opacity: activeTemplate.watermarkOpacity || 0.05, 
-                                    color: '#000',
-                                    fontSize: `${activeTemplate.watermarkSize || 32}px`,
-                                    transform: `rotate(${activeTemplate.watermarkRotation ?? 12}deg)`,
-                                    zIndex: 5
-                                  }}
-                                >
-                                  {activeTemplate.watermarkText}
-                                </div>
-                              )}
-
-                              {/* Content Box */}
-                              <div className="relative z-10 w-full h-full flex flex-col justify-between">
-                                <div>
-                                  {/* Brand headers with custom logo, positioning, colors and fonts */}
-                                  {((previewMode === "digital") || (previewMode === "physical" && !activeTemplate.usePreprinted)) && activeTemplate.includeBranding && (() => {
-                                    const hasLogo = (activeTemplate.includeLogo ?? true) && !!activeTemplate.logoUrl;
-                                    const hasTitle = activeTemplate.includeHeaderName ?? true;
-                                    const hasSubtitle = activeTemplate.includeHeaderSubtitle ?? true;
-
-                                    if (!hasLogo && !hasTitle && !hasSubtitle) return null;
-
-                                    const logoEl = hasLogo ? (
-                                      <img 
-                                        src={activeTemplate.logoUrl} 
-                                        alt="Logo" 
-                                        style={{ width: `${activeTemplate.logoSize || 40}px`, height: 'auto', objectFit: 'contain' }}
-                                        className="max-h-12 relative z-10"
-                                      />
-                                    ) : (
-                                      (activeTemplate.includeLogo ?? true) ? (
-                                        <div 
-                                          className="rounded-lg flex items-center justify-center font-semibold text-white select-none relative z-10 animate-pulse"
-                                          style={{
-                                            width: `${activeTemplate.logoSize || 32}px`,
-                                            height: `${activeTemplate.logoSize || 32}px`,
-                                            backgroundColor: activeTemplate.brandNameColor || "#4f46e5",
-                                            fontSize: `${Math.max(10, (activeTemplate.logoSize || 32) * 0.35)}px`
-                                          }}
-                                        >
-                                          {(activeTemplate.brandNameText || activeTemplate.clinicName || "SY").substring(0, 2).toUpperCase()}
-                                        </div>
-                                      ) : null
-                                    );
-
-                                    const brandTextEl = (hasTitle || hasSubtitle) ? (
-                                      <div className="relative z-10 text-left">
-                                        {hasTitle && (
-                                          <h4 
-                                            style={{
-                                              fontSize: `${activeTemplate.brandNameSize || 14}px`,
-                                              fontWeight: activeTemplate.brandNameWeight || "900",
-                                              color: activeTemplate.brandNameColor || "#1e1b4b"
-                                            }}
-                                            className="uppercase tracking-tight leading-tight"
-                                          >
-                                            {activeTemplate.brandNameText || activeTemplate.clinicName || "SynOS Diagnostics"}
-                                          </h4>
-                                        )}
-                                        {hasSubtitle && (
-                                          <p 
-                                            style={{
-                                              fontSize: `${activeTemplate.brandSubtitleSize || 8}px`,
-                                              color: activeTemplate.brandSubtitleColor || "#71717a"
-                                            }}
-                                            className="font-medium mt-0.5 leading-none"
-                                          >
-                                            {activeTemplate.brandSubtitleText || "Accredited Diagnostics Lab"}
-                                          </p>
-                                        )}
-                                      </div>
-                                    ) : null;
-
-                                    const dividerStyle = activeTemplate.showHeaderDivider !== false ? {
-                                      borderBottomWidth: `${activeTemplate.headerDividerThickness ?? 2}px`,
-                                      borderBottomStyle: activeTemplate.headerDividerStyle || "solid",
-                                      borderBottomColor: activeTemplate.headerDividerColor || "#e2e8f0"
-                                    } : {};
-
-                                    if (activeTemplate.logoPosition === "Center") {
-                                      return (
-                                        <div className="w-full pb-2 mb-3 space-y-2.5 relative z-10" style={dividerStyle}>
-                                          <div className="flex flex-col items-center text-center gap-1.5">
-                                            {logoEl}
-                                            {brandTextEl}
-                                          </div>
-                                        </div>
-                                      );
-                                    } else if (activeTemplate.logoPosition === "Right") {
-                                      return (
-                                        <div className="w-full pb-2 mb-3 flex justify-between items-stretch gap-4 relative z-10" style={dividerStyle}>
-                                          <div className="w-[10px]" />
-                                          <div className="flex items-center gap-2.5 text-right">
-                                            {brandTextEl}
-                                            {logoEl}
-                                          </div>
-                                        </div>
-                                      );
-                                    } else {
-                                      return (
-                                        <div className="w-full pb-2 mb-3 flex justify-between items-stretch gap-4 relative z-10" style={dividerStyle}>
-                                          <div className="flex items-center gap-2.5">
-                                            {logoEl}
-                                            {brandTextEl}
-                                          </div>
-                                        </div>
-                                      );
-                                    }
-                                  })()}
-
-                                  {/* Physical Preprinted top space indicators in non-absolute layout */}
-                                  {!activeTemplate.enableAbsolutePositioning && previewMode === "physical" && activeTemplate.usePreprinted && (
-                                    <div className="h-[90px] border border-dashed border-zinc-200 bg-zinc-50/50 rounded-lg flex flex-col justify-center items-center mb-6 relative z-10">
-                                      <span className="text-[8px] font-semibold tracking-wider text-zinc-650">Physical pre-printed sheet header region</span>
-                                      <span className="text-[7px] text-zinc-400 font-mono mt-0.5">Top Safe Margins: {activeTemplate.topMargin}mm (~90px gap)</span>
-                                    </div>
-                                  )}
-
-                                  {/* Patient Info block */}
-                                  {activeTemplate.enableAbsolutePositioning ? (
-                                    <>
-                                      {/* Invisible placeholders for future workflow binding - mapping structure */}
-                                      <span className="hidden" data-patient-name-placeholder={"{" + "{" + "PATIENT_NAME" + "}" + "}"} />
-                                      <span className="hidden" data-ref-doctor-placeholder={"{" + "{" + "REF_DOCTOR" + "}" + "}"} />
-                                      <span className="hidden" data-age-sex-placeholder={"{" + "{" + "AGE_SEX" + "}" + "}"} />
-                                      <span className="hidden" data-patient-id-placeholder={"{" + "{" + "PATIENT_ID" + "}" + "}"} />
-                                      <span className="hidden" data-billing-date-placeholder={"{" + "{" + "BILLING_DATE" + "}" + "}"} />
-                                      <span className="hidden" data-report-date-placeholder={"{" + "{" + "REPORT_DATE" + "}" + "}"} />                                      {/* 1. Patient Name */}
-                                      <div
-                                        style={{
-                                          position: 'absolute',
-                                          left: `${coords.patientNameX}mm`,
-                                          top: `${coords.patientNameY}mm`,
-                                          cursor: 'grab',
-                                          zIndex: 20
-                                        }}
-                                        onPointerDown={(e) => handleStartDrag(e, activeTemplate.id, 'patientNameX', 'patientNameY', coords.patientNameX, coords.patientNameY)}
-                                        className="bg-transparent border-0 shadow-none p-1 text-[10px] text-zinc-850 dark:text-zinc-200 transition-all select-none hover:ring-1 hover:ring-synos-primary/50 hover:bg-synos-primary/5 rounded"
-                                      >
-                                        <span className="font-bold text-zinc-800 dark:text-zinc-100">Rajesh Kumar</span>
-                                      </div>
- 
-                                      {/* 2. Age / Sex */}
-                                      <div
-                                        style={{
-                                          position: 'absolute',
-                                          left: `${coords.patientAgeSexX}mm`,
-                                          top: `${coords.patientAgeSexY}mm`,
-                                          cursor: 'grab',
-                                          zIndex: 20
-                                        }}
-                                        onPointerDown={(e) => handleStartDrag(e, activeTemplate.id, 'patientAgeSexX', 'patientAgeSexY', coords.patientAgeSexX, coords.patientAgeSexY)}
-                                        className="bg-transparent border-0 shadow-none p-1 text-[10px] text-zinc-850 dark:text-zinc-200 transition-all select-none hover:ring-1 hover:ring-synos-primary/50 hover:bg-synos-primary/5 rounded"
-                                      >
-                                        <span className="font-semibold text-zinc-700 dark:text-zinc-300">32Y / Male</span>
-                                      </div>
- 
-                                      {/* 3. Ref Doctor */}
-                                      <div
-                                        style={{
-                                          position: 'absolute',
-                                          left: `${coords.refDoctorX}mm`,
-                                          top: `${coords.refDoctorY}mm`,
-                                          cursor: 'grab',
-                                          zIndex: 20
-                                        }}
-                                        onPointerDown={(e) => handleStartDrag(e, activeTemplate.id, 'refDoctorX', 'refDoctorY', coords.refDoctorX, coords.refDoctorY)}
-                                        className="bg-transparent border-0 shadow-none p-1 text-[10px] text-zinc-850 dark:text-zinc-200 transition-all select-none hover:ring-1 hover:ring-synos-primary/50 hover:bg-synos-primary/5 rounded"
-                                      >
-                                        <span className="font-bold text-zinc-850 dark:text-zinc-100">Dr. S. Sharma, MD</span>
-                                      </div>
- 
-                                      {/* 4. Patient ID */}
-                                      <div
-                                        style={{
-                                          position: 'absolute',
-                                          left: `${coords.patientIdX}mm`,
-                                          top: `${coords.patientIdY}mm`,
-                                          cursor: 'grab',
-                                          zIndex: 20
-                                        }}
-                                        onPointerDown={(e) => handleStartDrag(e, activeTemplate.id, 'patientIdX', 'patientIdY', coords.patientIdX, coords.patientIdY)}
-                                        className="bg-transparent border-0 shadow-none p-1 text-[10px] text-zinc-850 dark:text-zinc-200 transition-all select-none hover:ring-1 hover:ring-synos-primary/50 hover:bg-synos-primary/5 rounded"
-                                      >
-                                        <span className="font-semibold font-mono text-zinc-700 dark:text-zinc-300">PID-2026-8940</span>
-                                      </div>
- 
-                                      {/* 5. Billing Date */}
-                                      <div
-                                        style={{
-                                          position: 'absolute',
-                                          left: `${coords.billingDateX}mm`,
-                                          top: `${coords.billingDateY}mm`,
-                                          cursor: 'grab',
-                                          zIndex: 20
-                                        }}
-                                        onPointerDown={(e) => handleStartDrag(e, activeTemplate.id, 'billingDateX', 'billingDateY', coords.billingDateX, coords.billingDateY)}
-                                        className="bg-transparent border-0 shadow-none p-1 text-[10px] text-zinc-850 dark:text-zinc-200 transition-all select-none hover:ring-1 hover:ring-synos-primary/50 hover:bg-synos-primary/5 rounded"
-                                      >
-                                        <span className="font-semibold text-zinc-700 dark:text-zinc-300">20-May-2026</span>
-                                      </div>
- 
-                                      {/* 6. Report Date */}
-                                      <div
-                                        style={{
-                                          position: 'absolute',
-                                          left: `${coords.reportDateX}mm`,
-                                          top: `${coords.reportDateY}mm`,
-                                          cursor: 'grab',
-                                          zIndex: 20
-                                        }}
-                                        onPointerDown={(e) => handleStartDrag(e, activeTemplate.id, 'reportDateX', 'reportDateY', coords.reportDateX, coords.reportDateY)}
-                                        className="bg-transparent border-0 shadow-none p-1 text-[10px] text-zinc-850 dark:text-zinc-200 transition-all select-none hover:ring-1 hover:ring-synos-primary/50 hover:bg-synos-primary/5 rounded"
-                                      >
-                                        <span className="font-bold text-zinc-800 dark:text-zinc-100">22-May-2026</span>
-                                      </div>
-                                    </>
-                                  ) : (
-                                    /* Default/Legacy Patient Info block */
-                                    <div
-                                      style={{
-                                        marginTop: '10px',
-                                        marginBottom: '15px'
-                                      }}
-                                      className="transition-all"
-                                    >
-                                      <div className="flex justify-between items-center text-[9px] border-b border-zinc-150 pb-1.5 font-semibold text-zinc-650 dark:text-zinc-400">
-                                        <div>
-                                          <span className="font-bold text-zinc-800">Patient:</span> Rajesh Kumar, M / 32Y
-                                        </div>
-                                        <div>
-                                          <span className="font-bold text-zinc-800">Referrer:</span> Dr. S. Sharma, MD
-                                        </div>
-                                        <div>
-                                          <span className="font-bold text-zinc-800">Date:</span> 20-May-2026
-                                        </div>
-                                      </div>
-                                    </div>
-                                  )}
-
-                                  {/* 7. Test Title */}
-                                  {activeTemplate.enableAbsolutePositioning ? (
-                                    <div
-                                      style={{
-                                        position: 'absolute',
-                                        left: `${coords.testTitleX}mm`,
-                                        top: `${coords.testTitleY}mm`,
-                                        cursor: 'grab',
-                                        zIndex: 20
-                                      }}
-                                      onPointerDown={(e) => handleStartDrag(e, activeTemplate.id, 'testTitleX', 'testTitleY', coords.testTitleX, coords.testTitleY)}
-                                      className="bg-transparent border-0 shadow-none p-1 transition-all select-none hover:ring-1 hover:ring-synos-primary/50 hover:bg-synos-primary/5 rounded animate-in fade-in duration-200"
-                                    >
-                                      <div className="font-extrabold text-[10px] text-zinc-900 uppercase">
-                                        {selectedTest.name} ({selectedTest.code})
-                                      </div>
-                                    </div>
-                                  ) : null}
-
-                                  {/* 8. Results Table */}
-                                  <div
-                                    style={activeTemplate.enableAbsolutePositioning ? {
-                                      position: 'absolute',
-                                      top: `${coords.resultsTableY}mm`,
-                                      left: `${coords.resultsTableX}mm`,
-                                      width: `calc(210mm - ${(activeTemplate.leftRightMargin ?? 15) * 2}mm)`,
-                                      cursor: 'grab',
-                                      zIndex: 10
-                                    } : {
-                                      marginTop: '20px',
-                                      flex: 1
-                                    }}
-                                    onPointerDown={activeTemplate.enableAbsolutePositioning ? (e) => handleStartDrag(e, activeTemplate.id, 'resultsTableX', 'resultsTableY', coords.resultsTableX, coords.resultsTableY) : undefined}
-                                    className={cn(
-                                      "transition-all",
-                                      activeTemplate.enableAbsolutePositioning && "hover:ring-1 hover:ring-synos-primary/50 hover:bg-synos-primary/5 p-1 rounded"
-                                    )}
-                                  >
-                                    {!activeTemplate.enableAbsolutePositioning && (
-                                      <div className="font-extrabold text-[10px] text-zinc-900 uppercase mb-1">{selectedTest.name} ({selectedTest.code})</div>
-                                    )}
-                                                                      {selectedTest.reportStyle === "Two Column Grid" ? (
-                                      <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-[8px] mt-2">
-                                        {displayParams && displayParams.map((p, i) => (
-                                          <div key={i} className="border-b border-zinc-200 pb-1 flex justify-between items-center">
-                                            <div>
-                                              <span className="font-semibold block text-[8px]">{p.name}</span>
-                                              {selectedTest.showMethod && p.method && <span className="text-[6px] text-zinc-655 italic">{p.method}</span>}
-                                            </div>
-                                            <div className="text-right">
-                                              <span className="font-mono font-bold text-[8px]">{getParamMidpoint(p)} {p.unit}</span>
-                                              {selectedTest.showRange && <span className="text-[6px] text-zinc-550 block">Ref: {formatReferenceRange(p)}</span>}
-                                            </div>
-                                          </div>
-                                        ))}
-                                      </div>
-                                    ) : selectedTest.reportStyle === "Descriptive Narrative" ? (
-                                      <div className="space-y-2 text-[8px] text-zinc-700 mt-2">
-                                        {displayParams && displayParams.map((p, i) => (
-                                          <div 
-                                            key={i} 
-                                            className={cn(
-                                              activeTemplate.enableAbsolutePositioning 
-                                                ? "bg-transparent p-0 pb-2 border-b border-zinc-200 shadow-none rounded-none" 
-                                                : "bg-zinc-50 p-2 rounded-lg border border-zinc-200"
-                                            )}
-                                          >
-                                            <span className="font-bold text-zinc-900 block text-[8px]">{p.name} ({p.code})</span>
-                                            <p className="mt-1 leading-normal text-[7.5px]">
-                                              The analyte value is measured at <strong className="font-mono text-zinc-900">{getParamMidpoint(p)} {p.unit}</strong>.
-                                              {selectedTest.showRange && ` The physiological biological reference interval is ${formatReferenceRange(p)} ${p.unit}.`}
-                                              {selectedTest.showMethod && p.method && ` Methodology used for estimation: ${p.method}.`}
-                                            </p>
-                                          </div>
-                                        ))}
-                                      </div>
-                                    ) : hasTemplateColumns ? (
-                                      /* Dynamic Tabular layout utilizing active template's columns configuration */
-                                      <table className={cn(
-                                        "w-full text-left text-[8px] border-collapse mt-2",
-                                        selectedTest.reportStyle === "Standard A4" && !activeTemplate.enableAbsolutePositioning && "border border-zinc-200"
-                                      )}>
-                                        <thead>
-                                          <tr className={cn(
-                                            selectedTest.reportStyle === "Modern Tabular"
-                                              ? (activeTemplate.enableAbsolutePositioning ? "bg-transparent text-zinc-600 font-bold border-t border-b border-zinc-200" : "bg-zinc-100 text-zinc-600 font-bold border-t border-b border-zinc-200")
-                                              : (activeTemplate.enableAbsolutePositioning ? "bg-transparent border-t border-b border-zinc-200 text-zinc-400 font-bold" : "bg-zinc-50 border-b border-zinc-200 text-zinc-400 font-bold")
-                                          )}>
-                                            {activeTemplate.columns.map((col, idx) => (
-                                              <th
-                                                key={idx}
-                                                className={cn(
-                                                  "py-1 px-2",
-                                                  selectedTest.reportStyle === "Standard A4" && "border-r border-zinc-200 last:border-r-0",
-                                                  col.alignment === "Left" ? "text-left" : col.alignment === "Center" ? "text-center" : "text-right"
-                                                )}
-                                                style={{ width: `${(col.weight / totalWeight) * 100}%` }}
-                                              >
-                                                {col.title}
-                                              </th>
-                                            ))}
-                                          </tr>
-                                        </thead>
-                                        <tbody className="divide-y divide-zinc-200 text-zinc-800">
-                                          {displayParams && displayParams.map((p, i) => (
-                                            <tr 
-                                              key={i} 
-                                              className={cn(
-                                                selectedTest.reportStyle === "Modern Tabular" && i % 2 === 1 && !activeTemplate.enableAbsolutePositioning && "bg-zinc-50/30"
-                                              )}
-                                            >
-                                              {activeTemplate.columns.map((col, idx) => {
-                                                let text = "";
-                                                if (col.code === "Parameter") text = p.name;
-                                                else if (col.code === "Value") {
-                                                  text = getParamMidpoint(p);
-                                                }
-                                                else if (col.code === "Unit") text = p.unit;
-                                                else if (col.code === "ReferenceRange") text = selectedTest.showRange ? formatReferenceRange(p) : "";
-                                                else if (col.code === "Methodology") text = selectedTest.showMethod ? p.method : "";
-
-                                                return (
-                                                  <td
-                                                    key={idx}
-                                                    className={cn(
-                                                      "py-1 px-2",
-                                                      selectedTest.reportStyle === "Standard A4" && "border-r border-zinc-200 last:border-r-0",
-                                                      col.bold && "font-bold text-zinc-950",
-                                                      col.alignment === "Left" ? "text-left" : col.alignment === "Center" ? "text-center" : "text-right"
-                                                    )}
-                                                  >
-                                                    {text}
-                                                  </td>
-                                                );
-                                              })}
-                                            </tr>
-                                          ))}
-                                        </tbody>
-                                      </table>
-                                    ) : (
-                                      /* Fallback to simple tables if template columns are missing */
-                                      <table className={cn(
-                                        "w-full text-left text-[8px] border-collapse mt-2",
-                                        selectedTest.reportStyle === "Standard A4" && !activeTemplate.enableAbsolutePositioning && "border border-zinc-200"
-                                      )}>
-                                        <thead>
-                                          <tr className={cn(
-                                            selectedTest.reportStyle === "Modern Tabular"
-                                              ? (activeTemplate.enableAbsolutePositioning ? "bg-transparent text-zinc-600 font-bold border-t border-b border-zinc-200" : "bg-zinc-100 text-zinc-600 font-bold border-t border-b border-zinc-200")
-                                              : (activeTemplate.enableAbsolutePositioning ? "bg-transparent border-t border-b border-zinc-200 text-zinc-400 font-bold" : "bg-zinc-50 border-b border-zinc-200 text-zinc-400 font-bold")
-                                          )}>
-                                            <th className={cn("py-1 px-2", selectedTest.reportStyle === "Standard A4" && !activeTemplate.enableAbsolutePositioning && "border-r border-zinc-200")}>Analyte</th>
-                                            <th className={cn("py-1 px-2 text-center", selectedTest.reportStyle === "Standard A4" && !activeTemplate.enableAbsolutePositioning && "border-r border-zinc-200")}>Value</th>
-                                            <th className={cn("py-1 px-2 text-center", selectedTest.reportStyle === "Standard A4" && !activeTemplate.enableAbsolutePositioning && "border-r border-zinc-200")}>Unit</th>
-                                            {selectedTest.showRange && <th className={cn("py-1 px-2 text-right", selectedTest.reportStyle === "Standard A4" && !activeTemplate.enableAbsolutePositioning && "border-r border-zinc-200")}>Reference Interval</th>}
-                                            {selectedTest.showMethod && <th className="py-1 px-2 text-right">Methodology</th>}
-                                          </tr>
-                                        </thead>
-                                        <tbody className="divide-y divide-zinc-200 text-zinc-800">
-                                          {displayParams && displayParams.map((p, i) => (
-                                            <tr 
-                                              key={i} 
-                                              className={cn(
-                                                selectedTest.reportStyle === "Modern Tabular" && i % 2 === 1 && !activeTemplate.enableAbsolutePositioning && "bg-zinc-50/30"
-                                              )}
-                                            >
-                                              <td className={cn("py-1 px-2 font-semibold", selectedTest.reportStyle === "Standard A4" && !activeTemplate.enableAbsolutePositioning && "border-r border-zinc-200")}>{p.name}</td>
-                                              <td className={cn("py-1 px-2 text-center font-mono font-bold", selectedTest.reportStyle === "Standard A4" && !activeTemplate.enableAbsolutePositioning && "border-r border-zinc-200")}>{getParamMidpoint(p)}</td>
-                                              <td className={cn("py-1 px-2 text-center font-mono text-zinc-500", selectedTest.reportStyle === "Standard A4" && !activeTemplate.enableAbsolutePositioning && "border-r border-zinc-200")}>{p.unit}</td>
-                                              {selectedTest.showRange && (
-                                                <td className={cn("py-1 px-2 text-right font-mono text-zinc-650", selectedTest.reportStyle === "Standard A4" && !activeTemplate.enableAbsolutePositioning && "border-r border-zinc-200")}>
-                                                   {formatReferenceRange(p)}
-                                                </td>
-                                              )}
-                                              {selectedTest.showMethod && (
-                                                <td className="py-1 px-2 text-right text-zinc-650 italic text-[6.5px]">{p.method}</td>
-                                              )}
-                                            </tr>
-                                          ))}
-                                        </tbody>
-                                      </table>
-                                    )}
-
-                                    {/* Interpretations commentaries in legacy mode */}
-                                    {!activeTemplate.enableAbsolutePositioning && selectedTest.showInterpretation && (selectedTest.interpretationComment || (displayParams && displayParams[0]?.narrativeTemplate)) && (
-                                      <div className="bg-zinc-50 p-2.5 rounded-lg border border-zinc-200 mt-3 text-left">
-                                        <span className="font-bold block text-[7px] text-zinc-500 uppercase tracking-wide">Commentaries & Remarks</span>
-                                        <p className="text-[7.5px] italic text-zinc-655 mt-0.5 leading-normal">
-                                          {selectedTest.interpretationComment ?? displayParams[0]?.narrativeTemplate}
-                                        </p>
-                                      </div>
-                                    )}
-                                  </div>
-
-                                  {/* 9. Interpretation Comments (Draggable absolute position mode) */}
-                                  {activeTemplate.enableAbsolutePositioning && selectedTest.showInterpretation && (selectedTest.interpretationComment || (displayParams && displayParams[0]?.narrativeTemplate)) && (
-                                    <div
-                                      style={{
-                                        position: 'absolute',
-                                        top: `${coords.interpretationY}mm`,
-                                        left: `${coords.interpretationX}mm`,
-                                        width: `calc(210mm - ${(activeTemplate.leftRightMargin ?? 15) * 2}mm)`,
-                                        cursor: 'grab',
-                                        zIndex: 10
-                                      }}
-                                      onPointerDown={(e) => handleStartDrag(e, activeTemplate.id, 'interpretationX', 'interpretationY', coords.interpretationX, coords.interpretationY)}
-                                      className="bg-transparent border-0 shadow-none p-1 transition-all select-none hover:ring-1 hover:ring-synos-primary/50 hover:bg-synos-primary/5 rounded animate-in fade-in duration-200"
-                                    >
-                                      <div className="bg-transparent p-0 border-t border-dashed border-zinc-200 text-left pt-2">
-                                        <span className="font-bold block text-[7px] text-zinc-500 uppercase tracking-wide">Commentaries & Remarks</span>
-                                        <p className="text-[7.5px] italic text-zinc-655 mt-0.5 leading-normal">
-                                          {selectedTest.interpretationComment ?? displayParams[0]?.narrativeTemplate}
-                                        </p>
-                                      </div>
-                                    </div>
-                                  )}
-                                </div>
-
-                              {/* Footer & Signatures Region */}
-                              <div>
-                                {/* 10. Signature Area */}
-                                {(activeTemplate.includeSignatures ?? true) && selectedTest.signatureSlots && selectedTest.signatureSlots.length > 0 && (
-                                  <div 
-                                    style={activeTemplate.enableAbsolutePositioning ? {
-                                      position: 'absolute',
-                                      bottom: `${coords.signatureY}mm`,
-                                      left: `${coords.signatureX}mm`,
-                                      width: `calc(210mm - ${(activeTemplate.leftRightMargin ?? 15) * 2}mm)`,
-                                      cursor: 'grab',
-                                      zIndex: 10
-                                    } : {
-                                      marginTop: '30px'
-                                    }}
-                                    onPointerDown={activeTemplate.enableAbsolutePositioning ? (e) => handleStartDrag(e, activeTemplate.id, 'signatureX', 'signatureY', coords.signatureX, coords.signatureY, true) : undefined}
-                                    className={cn(
-                                      "grid grid-cols-3 gap-6 pt-4 border-t border-dashed border-zinc-200 transition-all text-center",
-                                      activeTemplate.enableAbsolutePositioning && "hover:ring-1 hover:ring-synos-primary/50 hover:bg-synos-primary/5 p-1 rounded"
-                                    )}
-                                  >
-                                    {selectedTest.signatureSlots.map((sig, sigIdx) => (
-                                      <div key={sigIdx} className="text-center min-h-[45px] flex flex-col justify-end">
-                                        {((previewMode === "digital") || (previewMode === "physical" && !activeTemplate.usePreprinted)) && activeTemplate.includeBranding && (
-                                          <span className="font-mono text-[7px] text-zinc-500 italic block mb-0.5">/Signed digitally/</span>
-                                        )}
-                                        <div className="border-t border-zinc-300 pt-1 text-[8px] font-semibold text-zinc-650">
-                                          {sig}
-                                        </div>
-                                      </div>
-                                    ))}
-                                  </div>
-                                )}
-
-                                {/* Physical Preprinted Bottom Margins indicator in non-absolute layout */}
-                                {!activeTemplate.enableAbsolutePositioning && previewMode === "physical" && activeTemplate.usePreprinted && (
-                                  <div className="h-[70px] border border-dashed border-zinc-200 bg-zinc-50/50 rounded-lg flex flex-col justify-center items-center mt-4 relative z-10">
-                                    <span className="text-[8px] font-semibold tracking-wider text-zinc-600">Physical pre-printed sheet region</span>
-                                    <span className="text-[7px] text-zinc-400 font-mono mt-0.5">Bottom Safe Margins: {activeTemplate.bottomMargin}mm (~70px gap)</span>
-                                  </div>
-                                )}
-
-                                {/* Digital mode Footer bar */}
-                                {((previewMode === "digital") || (previewMode === "physical" && !activeTemplate.usePreprinted)) && activeTemplate.includeBranding && (activeTemplate.includeFooter ?? true) && activeTemplate.footerText && (
-                                  <div 
-                                    style={activeTemplate.enableAbsolutePositioning ? {
-                                      position: 'absolute',
-                                      bottom: '8mm',
-                                      left: `${activeTemplate.leftRightMargin ?? 15}mm`,
-                                      width: `calc(210mm - ${(activeTemplate.leftRightMargin ?? 15) * 2}mm)`,
-                                      zIndex: 10
-                                    } : {}}
-                                    className="mt-4 pt-2 border-t border-zinc-200 text-center text-[7px] text-zinc-400 font-medium"
-                                  >
-                                    {activeTemplate.footerText}
-                                  </div>
-                                )}
-                              </div>
-                              </div>
-
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })()}
+                              const updatedTest = { ...selectedTest, defaultInterpretation: formatText };
+                              const updatedCatalog = catalog.map(t => t.id === selectedTest.id ? updatedTest : t);
+                              setCatalog(updatedCatalog);
+                              setSelectedTest(updatedTest);
+                            } catch (err) {
+                              console.error("Import failed:", err);
+                              alert("Failed to import document: " + (err.message || err));
+                            } finally {
+                              if (loader) loader.classList.add("hidden");
+                              e.target.value = "";
+                            }
+                          }}
+                        />
+                        <label
+                          htmlFor="import-interpretation-file"
+                          className="cursor-pointer py-2 px-3.5 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-xs font-bold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all flex items-center gap-1.5 shadow-sm"
+                        >
+                          <UploadCloud className="w-4 h-4 text-violet-500" />
+                          <span>Upload Document</span>
+                          <span id="import-loader" className="hidden animate-spin rounded-full h-3.5 w-3.5 border-b-2 border-synos-primary"></span>
+                        </label>
+                      </div>
+                    </div>
                   </div>
-                )}
+                </div>
+
+                {renderLivePreview()}
               </div>
             )}
             {/* Tab: Pricing */}
@@ -3709,45 +4025,145 @@ export function TestMasterScreen() {
                 <div className="flex items-center justify-between">
                   <div>
                     <h3 className="text-xs font-semibold text-zinc-600 dark:text-zinc-400">Compose Panel / Profiles</h3>
-                    <p className="text-[10px] text-zinc-500 mt-0.5">Select the individual tests that compile into this comprehensive panel package.</p>
+                    <p className="text-[10px] text-zinc-500 mt-0.5">Select and sequence the individual tests that compile into this comprehensive panel package.</p>
                   </div>
                   <span className="bg-amber-500/10 text-amber-500 border border-amber-500/25 px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider">
-                    {selectedTest.includedTestIds?.length || 0} Tests Selected
+                    {(selectedTest.includedTestIds || []).length} Tests Selected
                   </span>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[300px] overflow-y-auto pr-1">
-                  {catalog
-                    .filter(t => !t.isProfile)
-                    .map(test => {
-                      const isIncluded = selectedTest.includedTestIds?.includes(test.id);
-                      return (
-                        <div
-                          key={test.id}
-                          onClick={() => handleToggleProfileTest(test.id)}
-                          className={cn(
-                            "p-3 rounded-xl border cursor-pointer select-none transition-all flex items-center justify-between group",
-                            isIncluded
-                              ? "bg-amber-500/5 border-amber-500/30 text-zinc-800 dark:text-zinc-250"
-                              : "bg-zinc-50 dark:bg-zinc-900/10 border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100/50"
-                          )}
-                        >
-                          <div>
-                            <span className="font-bold text-xs block text-zinc-800 dark:text-zinc-200">{test.name}</span>
-                            <span className="text-[9px] font-bold text-zinc-400 mt-1 uppercase tracking-wider bg-zinc-200/50 dark:bg-zinc-800 px-1.5 py-0.5 rounded inline-block">{test.code}</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <span className="text-[10px] text-zinc-400 font-semibold">{test.parameters?.length || 0} Parameters</span>
-                            <div className={cn(
-                              "w-4 h-4 rounded-md border flex items-center justify-center transition-all",
-                              isIncluded ? "bg-amber-500 border-amber-500 text-white" : "border-zinc-300 dark:border-zinc-700"
-                            )}>
-                              {isIncluded && <Check className="w-3 h-3 stroke-[3]" />}
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 h-[calc(100%-40px)] min-h-[400px]">
+                  {/* Left Column: Available Tests Selection */}
+                  <div className="lg:col-span-7 flex flex-col space-y-3 h-full border-r border-zinc-150 dark:border-zinc-850 pr-5">
+                    <div className="flex items-center justify-between">
+                      <h4 className="text-[11px] font-bold uppercase tracking-wider text-zinc-450 dark:text-zinc-500">Available Tests</h4>
+                      <input 
+                        type="text"
+                        placeholder="Search tests..."
+                        value={profileSearchTerm}
+                        onChange={(e) => setProfileSearchTerm(e.target.value)}
+                        className="text-xs border border-zinc-200 dark:border-zinc-800 rounded-lg px-2 py-1 bg-transparent text-zinc-800 dark:text-zinc-200 focus:outline-none focus:ring-1 focus:ring-amber-500 max-w-[180px]"
+                      />
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 overflow-y-auto flex-1 pr-1 custom-scrollbar max-h-[420px]">
+                      {catalog
+                        .filter(t => !t.isProfile && t.id !== selectedTest.id && (t.name.toLowerCase().includes(profileSearchTerm.toLowerCase()) || t.code.toLowerCase().includes(profileSearchTerm.toLowerCase())))
+                        .map(test => {
+                          const isIncluded = (selectedTest.includedTestIds || []).includes(test.id);
+                          return (
+                            <div
+                              key={test.id}
+                              onClick={() => handleToggleProfileTest(test.id)}
+                              className={cn(
+                                "p-3 rounded-xl border cursor-pointer select-none transition-all flex items-center justify-between group",
+                                isIncluded
+                                  ? "bg-amber-500/5 border-amber-500/30 text-zinc-800 dark:text-zinc-250"
+                                  : "bg-zinc-50 dark:bg-zinc-900/10 border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100/50"
+                              )}
+                            >
+                              <div className="min-w-0 flex-1 pr-2">
+                                <span className="font-bold text-xs block text-zinc-800 dark:text-zinc-200 truncate" title={test.name}>{test.name}</span>
+                                <span className="text-[9px] font-bold text-zinc-450 mt-1 uppercase tracking-wider bg-zinc-200/50 dark:bg-zinc-800 px-1.5 py-0.5 rounded inline-block">{test.code}</span>
+                              </div>
+                              <div className="flex items-center gap-2 shrink-0">
+                                <span className="text-[10px] text-zinc-400 font-semibold">{test.parameters?.length || 0} Param</span>
+                                <div className={cn(
+                                  "w-4 h-4 rounded-md border flex items-center justify-center transition-all",
+                                  isIncluded ? "bg-amber-500 border-amber-500 text-white" : "border-zinc-300 dark:border-zinc-700"
+                                )}>
+                                  {isIncluded && <Check className="w-3 h-3 stroke-[3]" />}
+                                </div>
+                              </div>
                             </div>
-                          </div>
-                        </div>
-                      );
-                    })}
+                          );
+                        })}
+                    </div>
+                  </div>
+
+                  {/* Right Column: Ordered Sequence of Selected Tests */}
+                  <div className="lg:col-span-5 flex flex-col space-y-3 h-full">
+                    <h4 className="text-[11px] font-bold uppercase tracking-wider text-zinc-450 dark:text-zinc-500">Selected Sequence (Drag or edit S.No)</h4>
+                    <div className="border border-zinc-200 dark:border-zinc-800 rounded-xl overflow-hidden flex-1 flex flex-col min-h-[300px] max-h-[420px] overflow-y-auto custom-scrollbar">
+                      <table className="w-full text-left border-collapse text-sm">
+                        <thead>
+                          <tr className="bg-zinc-50 dark:bg-zinc-950 border-b border-zinc-200 dark:border-zinc-800">
+                            <th className="py-2.5 px-3 font-bold text-zinc-500 dark:text-zinc-400 text-xs uppercase w-[70px] text-center">S.No.</th>
+                            <th className="py-2.5 px-3 font-bold text-zinc-500 dark:text-zinc-400 text-xs uppercase w-[80px]">Code</th>
+                            <th className="py-2.5 px-3 font-bold text-zinc-500 dark:text-zinc-400 text-xs uppercase">Child Test</th>
+                            <th className="py-2.5 px-3 font-bold text-zinc-500 dark:text-zinc-400 text-xs uppercase w-[50px] text-center"></th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
+                          {(selectedTest.includedTestIds || []).map((childId, sidx) => {
+                            const childTest = catalog.find(t => t.id === childId);
+                            if (!childTest) return null;
+                            return (
+                              <tr 
+                                key={childId}
+                                draggable
+                                onDragStart={(e) => {
+                                  setDraggedChildTestIdx(sidx);
+                                  e.dataTransfer.setData("text/plain", sidx);
+                                }}
+                                onDragOver={(e) => {
+                                  e.preventDefault();
+                                }}
+                                onDrop={(e) => {
+                                  if (draggedChildTestIdx !== null) {
+                                    moveIncludedTestRow(draggedChildTestIdx, sidx);
+                                  }
+                                }}
+                                onDragEnd={() => {
+                                  setDraggedChildTestIdx(null);
+                                }}
+                                className={cn(
+                                  "hover:bg-zinc-50/50 dark:hover:bg-zinc-800/10 group transition-colors",
+                                  draggedChildTestIdx === sidx && "opacity-40 bg-zinc-100 dark:bg-zinc-800"
+                                )}
+                              >
+                                <td className="py-1.5 px-2 text-center w-[70px] select-none">
+                                  <div className="flex items-center gap-1 justify-center">
+                                    <GripVertical className="w-3.5 h-3.5 text-zinc-350 dark:text-zinc-650 cursor-grab active:cursor-grabbing hover:text-zinc-500 drag-handle shrink-0" />
+                                    <input
+                                      type="number"
+                                      min="1"
+                                      max={selectedTest.includedTestIds.length}
+                                      value={sidx + 1}
+                                      onChange={(e) => {
+                                        const val = parseInt(e.target.value, 10);
+                                        if (!isNaN(val)) {
+                                          const newPos = Math.max(1, Math.min(selectedTest.includedTestIds.length, val));
+                                          moveIncludedTestRow(sidx, newPos - 1);
+                                        }
+                                      }}
+                                      className="w-8 bg-transparent text-center focus:bg-white dark:focus:bg-zinc-950 focus:ring-1 focus:ring-synos-primary outline-none py-0.5 rounded text-zinc-800 dark:text-zinc-200 font-bold text-xs border border-transparent hover:border-zinc-200 dark:hover:border-zinc-800 focus:border-zinc-300 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none shrink-0"
+                                    />
+                                  </div>
+                                </td>
+                                <td className="py-2 px-3 font-mono text-xs font-bold text-zinc-500 uppercase">{childTest.code}</td>
+                                <td className="py-2 px-3 font-medium text-xs text-zinc-800 dark:text-zinc-200">{childTest.name}</td>
+                                <td className="py-2 px-3 text-center">
+                                  <button 
+                                    onClick={() => handleToggleProfileTest(childId)}
+                                    className="p-1 text-zinc-400 hover:text-red-500 rounded transition-colors"
+                                  >
+                                    <X className="w-3.5 h-3.5" />
+                                  </button>
+                                </td>
+                              </tr>
+                            );
+                          })}
+                          {(selectedTest.includedTestIds || []).length === 0 && (
+                            <tr>
+                              <td colSpan="4" className="py-8 text-center text-zinc-400 italic text-xs">
+                                No child tests selected. Select tests from the left panel.
+                              </td>
+                            </tr>
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
                 </div>
               </div>
             )}
@@ -3924,188 +4340,111 @@ export function TestMasterScreen() {
                 )}
               </div>
             )}
-
-            {/* Drawer context: reference overrides */}
+                  {/* Drawer context: reference overrides */}
             {drawerMode === "ranges" && (
-              <div className="space-y-4">
-                <span className="text-[10px] font-semibold text-zinc-700 dark:text-zinc-300 block">Biological Reference Intervals</span>
-                
-                {/* Male */}
-                <div className="bg-zinc-50 dark:bg-zinc-900/30 p-3 rounded-2xl border border-zinc-200 dark:border-zinc-800 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[9px] font-semibold text-indigo-600 dark:text-indigo-400 block">Male Specific Overrides</span>
-                    <input
-                      type="checkbox"
-                      checked={editUseMale}
-                      onChange={(e) => setEditUseMale(e.target.checked)}
-                      className="rounded border-zinc-300 text-indigo-600 focus:ring-indigo-500 w-3.5 h-3.5 cursor-pointer"
-                    />
-                  </div>
-                  {editUseMale && (
-                    <div className="grid grid-cols-2 gap-2 animate-in slide-in-from-top-1 duration-100">
-                      <div>
-                        <label className="text-[8px] font-bold text-zinc-400 dark:text-zinc-500 uppercase">Male Min</label>
-                        <input
-                          type="number"
-                          className="bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg px-2.5 py-1 text-xs w-full text-zinc-900 dark:text-zinc-100 font-mono outline-none"
-                          value={editMaleMin}
-                          onChange={(e) => setEditMaleMin(e.target.value)}
-                        />
-                      </div>
-                      <div>
-                        <label className="text-[8px] font-bold text-zinc-400 dark:text-zinc-500 uppercase">Male Max</label>
-                        <input
-                          type="number"
-                          className="bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg px-2.5 py-1 text-xs w-full text-zinc-900 dark:text-zinc-100 font-mono outline-none"
-                          value={editMaleMax}
-                          onChange={(e) => setEditMaleMax(e.target.value)}
-                        />
-                      </div>
-                    </div>
-                  )}
+              <div className="space-y-4 animate-in fade-in duration-200">
+                {/* Default Range */}
+                <div className="bg-zinc-50 dark:bg-zinc-900/30 p-3 rounded-2xl border border-zinc-200 dark:border-zinc-800 space-y-2">
+                  <span className="text-[9px] font-bold text-zinc-500 uppercase block">Default Reference Range (Mandatory)</span>
+                  <input
+                    type="text"
+                    className="bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg px-2.5 py-1.5 text-xs w-full text-zinc-900 dark:text-zinc-100 font-mono outline-none focus:ring-1 focus:ring-synos-primary"
+                    placeholder="e.g. 13.0 - 18.0 or Negative"
+                    value={editDefaultRange}
+                    onChange={(e) => setEditDefaultRange(e.target.value)}
+                  />
+                  <p className="text-[8px] text-zinc-400">This range is used if no gender/age overrides are configured or if they do not match the patient.</p>
                 </div>
 
-                {/* Female */}
-                <div className="bg-zinc-50 dark:bg-zinc-900/30 p-3 rounded-2xl border border-zinc-200 dark:border-zinc-800 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[9px] font-semibold text-rose-600 dark:text-rose-400 block">Female Specific Overrides</span>
-                    <input
-                      type="checkbox"
-                      checked={editUseFemale}
-                      onChange={(e) => setEditUseFemale(e.target.checked)}
-                      className="rounded border-zinc-300 text-rose-600 focus:ring-rose-500 w-3.5 h-3.5 cursor-pointer"
-                    />
-                  </div>
-                  {editUseFemale && (
-                    <div className="grid grid-cols-2 gap-2 animate-in slide-in-from-top-1 duration-100">
-                      <div>
-                        <label className="text-[8px] font-bold text-zinc-400 dark:text-zinc-500 uppercase">Female Min</label>
-                        <input
-                          type="number"
-                          className="bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg px-2.5 py-1 text-xs w-full text-zinc-900 dark:text-zinc-100 font-mono outline-none"
-                          value={editFemaleMin}
-                          onChange={(e) => setEditFemaleMin(e.target.value)}
-                        />
-                      </div>
-                      <div>
-                        <label className="text-[8px] font-bold text-zinc-400 dark:text-zinc-500 uppercase">Female Max</label>
-                        <input
-                          type="number"
-                          className="bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg px-2.5 py-1 text-xs w-full text-zinc-900 dark:text-zinc-100 font-mono outline-none"
-                          value={editFemaleMax}
-                          onChange={(e) => setEditFemaleMax(e.target.value)}
-                        />
-                      </div>
-                    </div>
-                  )}
-                </div>
+                <span className="text-[10px] font-semibold text-zinc-700 dark:text-zinc-300 block">Biological Category Overrides (Optional)</span>
+
+                {/* Newborn */}
+                <CategoryOverrideSection
+                  title="Newborn Overrides (0-28 days)"
+                  useMale={editUseNewbornMale}
+                  setUseMale={setEditUseNewbornMale}
+                  maleMin={editNewbornMaleMin}
+                  setMaleMin={setEditNewbornMaleMin}
+                  maleMax={editNewbornMaleMax}
+                  setMaleMax={setEditNewbornMaleMax}
+                  maleText={editNewbornMaleText}
+                  setMaleText={setEditNewbornMaleText}
+                  useFemale={editUseNewbornFemale}
+                  setUseFemale={setEditUseNewbornFemale}
+                  femaleMin={editNewbornFemaleMin}
+                  setFemaleMin={setEditNewbornFemaleMin}
+                  femaleMax={editNewbornFemaleMax}
+                  setFemaleMax={setEditNewbornFemaleMax}
+                  femaleText={editNewbornFemaleText}
+                  setFemaleText={setEditNewbornFemaleText}
+                  colorClass="text-cyan-600 dark:text-cyan-400"
+                />
 
                 {/* Infant */}
-                <div className="bg-zinc-50 dark:bg-zinc-900/30 p-3 rounded-2xl border border-zinc-200 dark:border-zinc-800 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[9px] font-semibold text-cyan-600 dark:text-cyan-400 block">Infant Specific Overrides</span>
-                    <input
-                      type="checkbox"
-                      checked={editUseInfant}
-                      onChange={(e) => setEditUseInfant(e.target.checked)}
-                      className="rounded border-zinc-300 text-cyan-600 focus:ring-cyan-500 w-3.5 h-3.5 cursor-pointer"
-                    />
-                  </div>
-                  {editUseInfant && (
-                    <div className="grid grid-cols-2 gap-2 animate-in slide-in-from-top-1 duration-100">
-                      <div>
-                        <label className="text-[8px] font-bold text-zinc-400 dark:text-zinc-500 uppercase">Infant Min</label>
-                        <input
-                          type="number"
-                          className="bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg px-2.5 py-1 text-xs w-full text-zinc-900 dark:text-zinc-100 font-mono outline-none"
-                          value={editInfantMin}
-                          onChange={(e) => setEditInfantMin(e.target.value)}
-                        />
-                      </div>
-                      <div>
-                        <label className="text-[8px] font-bold text-zinc-400 dark:text-zinc-500 uppercase">Infant Max</label>
-                        <input
-                          type="number"
-                          className="bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg px-2.5 py-1 text-xs w-full text-zinc-900 dark:text-zinc-100 font-mono outline-none"
-                          value={editInfantMax}
-                          onChange={(e) => setEditInfantMax(e.target.value)}
-                        />
-                      </div>
-                    </div>
-                  )}
-                </div>
+                <CategoryOverrideSection
+                  title="Infant Overrides (29 days - 12 months)"
+                  useMale={editUseInfantMale}
+                  setUseMale={setEditUseInfantMale}
+                  maleMin={editInfantMaleMin}
+                  setMaleMin={setEditInfantMaleMin}
+                  maleMax={editInfantMaleMax}
+                  setMaleMax={setEditInfantMaleMax}
+                  maleText={editInfantMaleText}
+                  setMaleText={setEditInfantMaleText}
+                  useFemale={editUseInfantFemale}
+                  setUseFemale={setEditUseInfantFemale}
+                  femaleMin={editInfantFemaleMin}
+                  setFemaleMin={setEditInfantFemaleMin}
+                  femaleMax={editInfantFemaleMax}
+                  setFemaleMax={setEditInfantFemaleMax}
+                  femaleText={editInfantFemaleText}
+                  setFemaleText={setEditInfantFemaleText}
+                  colorClass="text-indigo-600 dark:text-indigo-400"
+                />
 
                 {/* Child */}
-                <div className="bg-zinc-50 dark:bg-zinc-900/30 p-3 rounded-2xl border border-zinc-200 dark:border-zinc-800 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[9px] font-semibold text-emerald-600 dark:text-emerald-400 block">Child Specific Overrides</span>
-                    <input
-                      type="checkbox"
-                      checked={editUseChild}
-                      onChange={(e) => setEditUseChild(e.target.checked)}
-                      className="rounded border-zinc-300 text-emerald-600 focus:ring-emerald-500 w-3.5 h-3.5 cursor-pointer"
-                    />
-                  </div>
-                  {editUseChild && (
-                    <div className="grid grid-cols-2 gap-2 animate-in slide-in-from-top-1 duration-100">
-                      <div>
-                        <label className="text-[8px] font-bold text-zinc-400 dark:text-zinc-500 uppercase">Child Min</label>
-                        <input
-                          type="number"
-                          className="bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg px-2.5 py-1 text-xs w-full text-zinc-900 dark:text-zinc-100 font-mono outline-none"
-                          value={editChildMin}
-                          onChange={(e) => setEditChildMin(e.target.value)}
-                        />
-                      </div>
-                      <div>
-                        <label className="text-[8px] font-bold text-zinc-400 dark:text-zinc-500 uppercase">Child Max</label>
-                        <input
-                          type="number"
-                          className="bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg px-2.5 py-1 text-xs w-full text-zinc-900 dark:text-zinc-100 font-mono outline-none"
-                          value={editChildMax}
-                          onChange={(e) => setEditChildMax(e.target.value)}
-                        />
-                      </div>
-                    </div>
-                  )}
-                </div>
+                <CategoryOverrideSection
+                  title="Child Overrides (1-12 years)"
+                  useMale={editUseChildMale}
+                  setUseMale={setEditUseChildMale}
+                  maleMin={editChildMaleMin}
+                  setMaleMin={setEditChildMaleMin}
+                  maleMax={editChildMaleMax}
+                  setMaleMax={setEditChildMaleMax}
+                  maleText={editChildMaleText}
+                  setMaleText={setEditChildMaleText}
+                  useFemale={editUseChildFemale}
+                  setUseFemale={setEditUseChildFemale}
+                  femaleMin={editChildFemaleMin}
+                  setFemaleMin={setEditChildFemaleMin}
+                  femaleMax={editChildFemaleMax}
+                  setFemaleMax={setEditChildFemaleMax}
+                  femaleText={editChildFemaleText}
+                  setFemaleText={setEditChildFemaleText}
+                  colorClass="text-emerald-600 dark:text-emerald-400"
+                />
 
                 {/* Adult */}
-                <div className="bg-zinc-50 dark:bg-zinc-900/30 p-3 rounded-2xl border border-zinc-200 dark:border-zinc-800 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[9px] font-semibold text-amber-600 dark:text-amber-400 block">Adult Specific Overrides</span>
-                    <input
-                      type="checkbox"
-                      checked={editUseAdult}
-                      onChange={(e) => setEditUseAdult(e.target.checked)}
-                      className="rounded border-zinc-300 text-amber-600 focus:ring-amber-500 w-3.5 h-3.5 cursor-pointer"
-                    />
-                  </div>
-                  {editUseAdult && (
-                    <div className="grid grid-cols-2 gap-2 animate-in slide-in-from-top-1 duration-100">
-                      <div>
-                        <label className="text-[8px] font-bold text-zinc-400 dark:text-zinc-500 uppercase">Adult Min</label>
-                        <input
-                          type="number"
-                          className="bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg px-2.5 py-1 text-xs w-full text-zinc-900 dark:text-zinc-100 font-mono outline-none"
-                          value={editAdultMin}
-                          onChange={(e) => setEditAdultMin(e.target.value)}
-                        />
-                      </div>
-                      <div>
-                        <label className="text-[8px] font-bold text-zinc-400 dark:text-zinc-500 uppercase">Adult Max</label>
-                        <input
-                          type="number"
-                          className="bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg px-2.5 py-1 text-xs w-full text-zinc-900 dark:text-zinc-100 font-mono outline-none"
-                          value={editAdultMax}
-                          onChange={(e) => setEditAdultMax(e.target.value)}
-                        />
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                <p className="text-[8px] text-zinc-400 leading-tight">These overrides apply dynamically in report templates depending on the demographics configured inside patient records.</p>
+                <CategoryOverrideSection
+                  title="Adult Overrides (13+ years)"
+                  useMale={editUseAdultMale}
+                  setUseMale={setEditUseAdultMale}
+                  maleMin={editAdultMaleMin}
+                  setMaleMin={setEditAdultMaleMin}
+                  maleMax={editAdultMaleMax}
+                  setMaleMax={setEditAdultMaleMax}
+                  maleText={editAdultMaleText}
+                  setMaleText={setEditAdultMaleText}
+                  useFemale={editUseAdultFemale}
+                  setUseFemale={setEditUseAdultFemale}
+                  femaleMin={editAdultFemaleMin}
+                  setFemaleMin={setEditAdultFemaleMin}
+                  femaleMax={editAdultFemaleMax}
+                  setFemaleMax={setEditAdultFemaleMax}
+                  femaleText={editAdultFemaleText}
+                  setFemaleText={setEditAdultFemaleText}
+                  colorClass="text-amber-600 dark:text-amber-400"
+                />
               </div>
             )}
 
@@ -4529,3 +4868,132 @@ export function TestMasterScreen() {
 }
 
 export default TestMasterScreen;
+
+function CategoryOverrideSection({
+  title,
+  useMale,
+  setUseMale,
+  maleMin,
+  setMaleMin,
+  maleMax,
+  setMaleMax,
+  maleText,
+  setMaleText,
+  useFemale,
+  setUseFemale,
+  femaleMin,
+  setFemaleMin,
+  femaleMax,
+  setFemaleMax,
+  femaleText,
+  setFemaleText,
+  colorClass
+}) {
+  return (
+    <div className="bg-zinc-50 dark:bg-zinc-900/30 p-3 rounded-2xl border border-zinc-200 dark:border-zinc-800 space-y-3">
+      <span className={cn("text-[9px] font-bold block", colorClass)}>{title}</span>
+      
+      {/* Male Specific */}
+      <div className="space-y-2">
+        <div className="flex items-center justify-between">
+          <label className="text-[9.5px] font-medium text-zinc-650 dark:text-zinc-350 flex items-center gap-1.5 cursor-pointer select-none">
+            <input
+              type="checkbox"
+              checked={useMale}
+              onChange={(e) => setUseMale(e.target.checked)}
+              className="rounded border-zinc-300 text-synos-primary focus:ring-synos-primary w-3.5 h-3.5"
+            />
+            Male Override
+          </label>
+        </div>
+        {useMale && (
+          <div className="pl-5 space-y-2 animate-in slide-in-from-top-1 duration-100">
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <label className="text-[8px] font-bold text-zinc-400 uppercase">Male Min</label>
+                <input
+                  type="number"
+                  className="bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg px-2.5 py-1 text-xs w-full text-zinc-900 dark:text-zinc-100 font-mono outline-none"
+                  placeholder="Low"
+                  value={maleMin}
+                  onChange={(e) => setMaleMin(e.target.value)}
+                />
+              </div>
+              <div>
+                <label className="text-[8px] font-bold text-zinc-400 uppercase">Male Max</label>
+                <input
+                  type="number"
+                  className="bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg px-2.5 py-1 text-xs w-full text-zinc-900 dark:text-zinc-100 font-mono outline-none"
+                  placeholder="High"
+                  value={maleMax}
+                  onChange={(e) => setMaleMax(e.target.value)}
+                />
+              </div>
+            </div>
+            <div>
+              <label className="text-[8px] font-bold text-zinc-400 uppercase">Male Text Range (Fallback)</label>
+              <input
+                type="text"
+                className="bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg px-2.5 py-1 text-xs w-full text-zinc-900 dark:text-zinc-100 font-mono outline-none"
+                placeholder="e.g. Up to 1% or Negative"
+                value={maleText}
+                onChange={(e) => setMaleText(e.target.value)}
+              />
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Female Specific */}
+      <div className="space-y-2 pt-1 border-t border-zinc-100 dark:border-zinc-800/50">
+        <div className="flex items-center justify-between">
+          <label className="text-[9.5px] font-medium text-zinc-650 dark:text-zinc-350 flex items-center gap-1.5 cursor-pointer select-none">
+            <input
+              type="checkbox"
+              checked={useFemale}
+              onChange={(e) => setUseFemale(e.target.checked)}
+              className="rounded border-zinc-300 text-synos-primary focus:ring-synos-primary w-3.5 h-3.5"
+            />
+            Female Override
+          </label>
+        </div>
+        {useFemale && (
+          <div className="pl-5 space-y-2 animate-in slide-in-from-top-1 duration-100">
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <label className="text-[8px] font-bold text-zinc-400 uppercase">Female Min</label>
+                <input
+                  type="number"
+                  className="bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg px-2.5 py-1 text-xs w-full text-zinc-900 dark:text-zinc-100 font-mono outline-none"
+                  placeholder="Low"
+                  value={femaleMin}
+                  onChange={(e) => setFemaleMin(e.target.value)}
+                />
+              </div>
+              <div>
+                <label className="text-[8px] font-bold text-zinc-400 uppercase">Female Max</label>
+                <input
+                  type="number"
+                  className="bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg px-2.5 py-1 text-xs w-full text-zinc-900 dark:text-zinc-100 font-mono outline-none"
+                  placeholder="High"
+                  value={femaleMax}
+                  onChange={(e) => setFemaleMax(e.target.value)}
+                />
+              </div>
+            </div>
+            <div>
+              <label className="text-[8px] font-bold text-zinc-400 uppercase">Female Text Range (Fallback)</label>
+              <input
+                type="text"
+                className="bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg px-2.5 py-1 text-xs w-full text-zinc-900 dark:text-zinc-100 font-mono outline-none"
+                placeholder="e.g. Up to 1% or Negative"
+                value={femaleText}
+                onChange={(e) => setFemaleText(e.target.value)}
+              />
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}

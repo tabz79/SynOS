@@ -24,6 +24,8 @@ namespace SynOS.Models.DTOs.Processing
         public string PatientName { get; set; } = string.Empty;
         public int Age { get; set; }
         public string Sex { get; set; } = string.Empty;
+        public DateTime DateOfBirth { get; set; }
+        public bool IsDateOfBirthKnown { get; set; }
     }
 
     public class AssignmentSpecimenDto
