@@ -706,6 +706,14 @@ const renderPreviewInterpretation = (content) => {
                 if (mark.type === 'bold') element = <strong className="font-bold">{element}</strong>;
                 else if (mark.type === 'italic') element = <em className="italic">{element}</em>;
                 else if (mark.type === 'underline') element = <u className="underline">{element}</u>;
+                else if (mark.type === 'fontSize') {
+                  const size = mark.attrs?.size;
+                  element = <span style={{ fontSize: size }}>{element}</span>;
+                }
+                else if (mark.type === 'fontFamily') {
+                  const font = mark.attrs?.font;
+                  element = <span style={{ fontFamily: font }}>{element}</span>;
+                }
               }
             }
             return element;
@@ -714,9 +722,17 @@ const renderPreviewInterpretation = (content) => {
           switch (node.type) {
             case 'doc': return <div className="space-y-0.5" key={idx}>{children}</div>;
             case 'paragraph': return <p className="leading-normal min-h-3" key={idx}>{children}</p>;
+            case 'heading': {
+              const Tag = `h${node.attrs?.level || 3}`;
+              return <Tag className="font-black uppercase tracking-tight my-1.5" key={idx}>{children}</Tag>;
+            }
             case 'bulletList': return <ul className="list-disc pl-3 space-y-0.5" key={idx}>{children}</ul>;
             case 'orderedList': return <ol className="list-decimal pl-3 space-y-0.5" key={idx}>{children}</ol>;
             case 'listItem': return <li className="leading-tight" key={idx}>{children}</li>;
+            case 'table': return <table className="w-full border-collapse border-2 border-zinc-200 my-1 text-[11px]" key={idx}><tbody>{children}</tbody></table>;
+            case 'tableRow': return <tr className="border-b border-zinc-150" key={idx}>{children}</tr>;
+            case 'tableHeader': return <th className="border border-zinc-200 p-1 bg-zinc-50 font-bold text-left text-[11px]" key={idx}>{children}</th>;
+            case 'tableCell': return <td className="border border-zinc-200 p-1 text-[11px]" key={idx}>{children}</td>;
             default: return <React.Fragment key={idx}>{children}</React.Fragment>;
           }
         };
@@ -1421,7 +1437,7 @@ export function TestMasterScreen() {
               formula: "",
               analyzerModel: "",
               analyzerChannel: "",
-              narrativeTemplate: existingFindings?.narrativeTemplate || t.interpretationComment || "FINDINGS:\n\nIMPRESSION:",
+              narrativeTemplate: existingFindings?.narrativeTemplate || t.defaultInterpretation || "FINDINGS:\n\nIMPRESSION:",
               genderRanges: {}
             }
           ];
@@ -1945,8 +1961,6 @@ export function TestMasterScreen() {
     setCatalog(updatedCatalog);
     setSelectedTest(updatedTest);
     localStorage.setItem("synos_selected_test_id", selectedTest.id);
-    setIsSavedSuccessfully(true);
-    setTimeout(() => setIsSavedSuccessfully(false), 2500);
   };
 
   const handleSaveAll = async () => {
@@ -2234,7 +2248,7 @@ export function TestMasterScreen() {
 
     const interpretationVal = activeTab === "interpretation"
       ? (selectedTest.defaultInterpretation || "")
-      : (selectedTest.interpretationComment ?? (displayParams && displayParams[0]?.narrativeTemplate ? displayParams[0]?.narrativeTemplate : ""));
+      : (selectedTest.defaultInterpretation || (displayParams && displayParams[0]?.narrativeTemplate ? displayParams[0]?.narrativeTemplate : ""));
 
     const shouldShowInterpretation = activeTab === "interpretation"
       ? !!interpretationVal
@@ -3354,7 +3368,7 @@ export function TestMasterScreen() {
                     formula: "",
                     analyzerModel: "",
                     analyzerChannel: "",
-                    narrativeTemplate: selectedTest.interpretationComment || "",
+                    narrativeTemplate: selectedTest.defaultInterpretation || "",
                     genderRanges: {}
                   };
                 }
@@ -3448,7 +3462,6 @@ export function TestMasterScreen() {
                             onClick={() => {
                               const templateText = "NORMAL STUDY:\n\nFINDINGS:\n- Lungs and airways are clear.\n- Heart size is normal.\n- Pleural spaces are free.\n\nIMPRESSION:\nNormal chest study.";
                               handleRadiologyParamChange("narrativeTemplate", templateText);
-                              handleReportSetupFieldChange("interpretationComment", templateText);
                             }}
                             className="text-[10px] text-synos-primary font-bold hover:underline flex items-center gap-1"
                           >
@@ -3462,7 +3475,6 @@ export function TestMasterScreen() {
                           value={dictationParam.narrativeTemplate || ""}
                           onChange={(e) => {
                             handleRadiologyParamChange("narrativeTemplate", e.target.value);
-                            handleReportSetupFieldChange("interpretationComment", e.target.value);
                           }}
                         />
                         <p className="text-[10px] text-zinc-500 dark:text-zinc-400 font-medium ml-1">
@@ -3825,15 +3837,15 @@ export function TestMasterScreen() {
                       </div>
 
                       {selectedTest.showInterpretation && (
-                        <div className="space-y-1.5 animate-in slide-in-from-top-2 duration-200">
-                          <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 block ml-1">Interpretation commentary text</label>
-                          <textarea
-                            rows="4"
-                            className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 dark:border-zinc-800 rounded-xl px-3.5 py-2.5 text-sm w-full text-zinc-900 dark:text-zinc-100 outline-none focus:ring-1 focus:ring-synos-primary placeholder-zinc-400 font-medium"
-                            placeholder="Type standard medical commentaries or test explanations to render inside report..."
-                            value={selectedTest.interpretationComment ?? (selectedTest.parameters?.[0]?.narrativeTemplate ?? "")}
-                            onChange={(e) => handleReportSetupFieldChange("interpretationComment", e.target.value)}
-                          />
+                        <div className="space-y-2.5 p-4 rounded-xl bg-violet-500/5 border border-violet-500/10 animate-in slide-in-from-top-2 duration-200 text-left">
+                          <div className="flex items-center gap-2 text-violet-600 dark:text-violet-400">
+                            <Sparkles className="w-4 h-4" />
+                            <span className="text-xs font-bold uppercase tracking-wider">Clinical Interpretation Template Enabled</span>
+                          </div>
+                          <p className="text-xs text-zinc-650 dark:text-zinc-400 leading-relaxed font-medium">
+                            The report will render standard clinical interpretation comments. 
+                            To compose and format the rich interpretation template, please use the dedicated **Interpretation** tab.
+                          </p>
                         </div>
                       )}
                     </div>
@@ -3849,37 +3861,13 @@ export function TestMasterScreen() {
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch lg:h-full min-h-0 overflow-hidden">
                 {/* Form / Editor Column */}
                 <div className={cn(
-                  "bg-white dark:bg-zinc-900/40 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 shadow-sm space-y-4 lg:h-full lg:overflow-y-auto custom-scrollbar",
+                  "bg-white dark:bg-zinc-900/40 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 shadow-sm flex flex-col h-full overflow-hidden space-y-4",
                   showLivePreview ? "lg:col-span-6" : "lg:col-span-12"
                 )}>
-                  <div>
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-150 dark:border-zinc-800 pb-3 shrink-0">
                     <h3 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">Default Interpretation Template</h3>
-                    <p className="text-xs text-zinc-500 mt-1">
-                      Configure a default narrative template that will automatically seed into report drafts for <strong>{selectedTest.name}</strong> inside the Typist and Pathologist queues.
-                    </p>
-                  </div>
-
-                  <div className="space-y-4">
-                    {/* Rich Editor */}
-                    <div className="border border-zinc-200 dark:border-zinc-800 rounded-xl overflow-hidden min-h-[300px]">
-                      <RichMedicalEditor
-                        value={selectedTest.defaultInterpretation || ""}
-                        onChange={(newVal) => {
-                          const updatedTest = { ...selectedTest, defaultInterpretation: newVal };
-                          const updatedCatalog = catalog.map(t => t.id === selectedTest.id ? updatedTest : t);
-                          setCatalog(updatedCatalog);
-                          setSelectedTest(updatedTest);
-                        }}
-                        placeholder="Compose default clinical interpretation or report templates here..."
-                      />
-                    </div>
-
-                    {/* File Import Dropzone / Button */}
-                    <div className="p-4 rounded-xl border border-dashed border-zinc-200 dark:border-zinc-800 flex items-center justify-between gap-4 bg-zinc-50/50 dark:bg-zinc-950/20">
-                      <div className="space-y-0.5">
-                        <span className="text-xs font-bold text-zinc-700 dark:text-zinc-300 block">Import Interpretation Template</span>
-                        <span className="text-[10px] text-zinc-400">Extract clinical text from Microsoft Word (.docx), RTF (.rtf), or plain text (.txt). Headers/footers are skipped.</span>
-                      </div>
+                    <div className="flex items-center gap-3">
+                      <span className="text-xs font-bold text-zinc-700 dark:text-zinc-300">Import Interpretation Template</span>
                       <div>
                         <input
                           type="file"
@@ -3929,7 +3917,7 @@ export function TestMasterScreen() {
                         />
                         <label
                           htmlFor="import-interpretation-file"
-                          className="cursor-pointer py-2 px-3.5 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-xs font-bold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all flex items-center gap-1.5 shadow-sm"
+                          className="cursor-pointer py-1.5 px-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-xs font-bold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all flex items-center gap-1.5 shadow-sm"
                         >
                           <UploadCloud className="w-4 h-4 text-violet-500" />
                           <span>Upload Document</span>
@@ -3937,6 +3925,20 @@ export function TestMasterScreen() {
                         </label>
                       </div>
                     </div>
+                  </div>
+
+                  <div className="flex-1 min-h-0 h-full">
+                    <RichMedicalEditor
+                      value={selectedTest.defaultInterpretation || ""}
+                      onChange={(newVal) => {
+                        const updatedTest = { ...selectedTest, defaultInterpretation: newVal };
+                        const updatedCatalog = catalog.map(t => t.id === selectedTest.id ? updatedTest : t);
+                        setCatalog(updatedCatalog);
+                        setSelectedTest(updatedTest);
+                      }}
+                      placeholder="Compose default clinical interpretation or report templates here..."
+                      className="h-full border-0 bg-transparent dark:bg-transparent shadow-none rounded-none"
+                    />
                   </div>
                 </div>
 

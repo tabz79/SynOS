@@ -60,6 +60,12 @@ const renderTipTapJSON = (node) => {
                 } else if (mark.type === 'highlight') {
                     const color = mark.attrs?.color || '#fef08a';
                     element = <mark style={{ backgroundColor: color }} className="px-0.5 rounded-sm">{element}</mark>;
+                } else if (mark.type === 'fontSize') {
+                    const size = mark.attrs?.size;
+                    element = <span style={{ fontSize: size }}>{element}</span>;
+                } else if (mark.type === 'fontFamily') {
+                    const font = mark.attrs?.font;
+                    element = <span style={{ fontFamily: font }}>{element}</span>;
                 }
             }
         }

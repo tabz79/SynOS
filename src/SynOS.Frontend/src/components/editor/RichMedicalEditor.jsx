@@ -9,6 +9,71 @@ import { TableHeader } from '@tiptap/extension-table-header';
 import Placeholder from '@tiptap/extension-placeholder';
 import { MacrosApi } from '@/api/macros';
 import { cn } from "@/lib/utils";
+import { Mark } from '@tiptap/core';
+
+export const FontSize = Mark.create({
+  name: 'fontSize',
+  addAttributes() {
+    return {
+      size: {
+        default: null,
+        parseHTML: element => element.style.fontSize,
+        renderHTML: attributes => {
+          if (!attributes.size) return {};
+          return { style: `font-size: ${attributes.size}` };
+        },
+      },
+    };
+  },
+  parseHTML() {
+    return [{ tag: 'span[style*="font-size"]' }];
+  },
+  renderHTML({ HTMLAttributes }) {
+    return ['span', HTMLAttributes, 0];
+  },
+  addCommands() {
+    return {
+      setFontSize: size => ({ chain }) => {
+        return chain().setMark(this.name, { size }).run();
+      },
+      unsetFontSize: () => ({ chain }) => {
+        return chain().unsetMark(this.name).run();
+      },
+    };
+  },
+});
+
+export const FontFamily = Mark.create({
+  name: 'fontFamily',
+  addAttributes() {
+    return {
+      font: {
+        default: null,
+        parseHTML: element => element.style.fontFamily,
+        renderHTML: attributes => {
+          if (!attributes.font) return {};
+          return { style: `font-family: ${attributes.font}` };
+        },
+      },
+    };
+  },
+  parseHTML() {
+    return [{ tag: 'span[style*="font-family"]' }];
+  },
+  renderHTML({ HTMLAttributes }) {
+    return ['span', HTMLAttributes, 0];
+  },
+  addCommands() {
+    return {
+      setFontFamily: font => ({ chain }) => {
+        return chain().setMark(this.name, { font }).run();
+      },
+      unsetFontFamily: () => ({ chain }) => {
+        return chain().unsetMark(this.name).run();
+      },
+    };
+  },
+});
 import { 
     Bold, 
     Italic, 
@@ -37,7 +102,8 @@ export function RichMedicalEditor({
     disabled = false,
     patientContext = null,
     onSaveDraft = null,
-    onOpenMacroManager = null
+    onOpenMacroManager = null,
+    className
 }) {
     const [wordCount, setWordCount] = useState(0);
     const [currentPath, setCurrentPath] = useState('p');
@@ -48,7 +114,8 @@ export function RichMedicalEditor({
     const [slashFilter, setSlashFilter] = useState('');
     const [slashIndex, setSlashIndex] = useState(0);
     const slashSearchPos = useRef(-1);
-    const lastValueRef = useRef(value);
+    const lastValueRef = useRef(undefined);
+    console.log("[RichMedicalEditor.jsx] Initializing lastValueRef.current to:", lastValueRef.current);
     const containerRef = useRef(null);
 
     // Right-Click Context Menu state
@@ -141,6 +208,8 @@ export function RichMedicalEditor({
             placeholder: placeholder,
             emptyEditorClass: 'is-editor-empty',
         }),
+        FontSize,
+        FontFamily,
     ], [placeholder]);
 
     const editor = useEditor({
@@ -166,16 +235,15 @@ export function RichMedicalEditor({
         },
         onUpdate: ({ editor }) => {
             const jsonStr = JSON.stringify(editor.getJSON());
-            lastValueRef.current = jsonStr;
             
-            // Only propagate changes if the editor is focused (active user typing)
-            if (editor.isFocused) {
-                onChange?.(jsonStr);
-            }
-
             // Calculate Word Count
             const text = editor.getText();
             setWordCount(text.trim() ? text.trim().split(/\s+/).length : 0);
+
+            if (jsonStr !== lastValueRef.current) {
+                lastValueRef.current = jsonStr;
+                onChange?.(jsonStr);
+            }
 
             // Detect Slash Command
             const selection = editor.state.selection;
@@ -231,16 +299,31 @@ export function RichMedicalEditor({
     useEffect(() => {
         if (!editor) return;
 
+        console.log("[RichMedicalEditor.jsx] useEffect sync triggered:");
+        console.log("  1. incoming value prop:", value);
+        console.log("  2. lastValueRef.current:", lastValueRef.current);
+        console.log("  3. editor.getJSON() (raw content):", JSON.stringify(editor.getJSON()));
+
         // If the incoming value is identical to the last value we processed or sent, bypass entirely
-        if (value === lastValueRef.current) return;
+        if (value === lastValueRef.current) {
+            console.log("  4. early exit: YES, value === lastValueRef.current. Bypassing sync.");
+            return;
+        }
+        console.log("  4. early exit: NO");
         lastValueRef.current = value;
 
         // PERFORMANCE GUARD: Bypass sync from parent state if the editor is focused (active typing)
-        if (editor.isFocused) return;
+        if (editor.isFocused) {
+            console.log("  Bypassing sync because editor is currently focused.");
+            return;
+        }
 
         try {
             if (!value) {
-                if (editor.getText() !== '') editor.commands.clearContent();
+                if (editor.getText() !== '') {
+                    console.log("  5. calling clearContent() since value is empty");
+                    editor.commands.clearContent();
+                }
                 return;
             }
 
@@ -248,11 +331,15 @@ export function RichMedicalEditor({
             if (value.startsWith('{"type":"doc"')) {
                 const currentJSON = JSON.stringify(editor.getJSON());
                 if (currentJSON !== value) {
+                    console.log("  5. calling setContent() with parsed JSON value");
                     editor.commands.setContent(JSON.parse(value));
+                } else {
+                    console.log("  5. editor content matches value, setContent() skipped");
                 }
             } else {
                 // If it is legacy plain text, set it as HTML / paragraphs
                 const cleanHTML = value.split('\n').map(line => `<p>${line}</p>`).join('');
+                console.log("  5. calling setContent() with cleanHTML");
                 editor.commands.setContent(cleanHTML);
             }
         } catch (e) {
@@ -352,7 +439,7 @@ export function RichMedicalEditor({
     if (!editor) return null;
 
     return (
-        <div ref={containerRef} className="flex flex-col border dark:border-white/5 border-zinc-200 rounded-2xl dark:bg-zinc-950/40 bg-zinc-50/50 relative group/editor">
+        <div ref={containerRef} className={cn("flex flex-col border dark:border-white/5 border-zinc-200 rounded-2xl dark:bg-zinc-950/40 bg-zinc-50/50 relative group/editor", className)}>
             {/* Unified Top Workstation Toolbar */}
             <div className="flex flex-wrap items-center justify-between px-3 py-2 border-b dark:border-white/5 border-zinc-200 dark:bg-zinc-900 bg-[linear-gradient(to_bottom,rgba(248,253,255,0.98)_0%,rgba(238,245,248,0.98)_50%,rgba(228,235,238,0.98)_100%)] rounded-t-2xl sticky top-0 z-20 transition-all select-none">
                 <div className="flex flex-wrap items-center gap-1">
@@ -389,6 +476,80 @@ export function RichMedicalEditor({
                     >
                         <UnderlineIcon className="w-4 h-4" />
                     </button>
+
+                    <div className="w-px h-4 bg-zinc-200 dark:bg-white/10 mx-1" />
+
+                    <select
+                        className="bg-transparent text-xs font-bold text-zinc-600 dark:text-zinc-400 outline-none border border-zinc-200 dark:border-zinc-800 rounded-lg px-2 py-1 cursor-pointer hover:bg-zinc-500/5 transition-colors focus:ring-1 focus:ring-synos-primary"
+                        value={
+                            editor.isActive('heading', { level: 1 }) ? 'h1' :
+                            editor.isActive('heading', { level: 2 }) ? 'h2' :
+                            editor.isActive('heading', { level: 3 }) ? 'h3' : 'p'
+                        }
+                        onChange={(e) => {
+                            const val = e.target.value;
+                            if (val === 'h1') {
+                                editor.chain().focus().toggleHeading({ level: 1 }).run();
+                            } else if (val === 'h2') {
+                                editor.chain().focus().toggleHeading({ level: 2 }).run();
+                            } else if (val === 'h3') {
+                                editor.chain().focus().toggleHeading({ level: 3 }).run();
+                            } else {
+                                editor.chain().focus().setParagraph().run();
+                            }
+                        }}
+                    >
+                        <option value="p" className="dark:bg-zinc-950 bg-white text-zinc-800 dark:text-zinc-250">Normal Text</option>
+                        <option value="h1" className="dark:bg-zinc-955 bg-white text-zinc-900 dark:text-zinc-200 font-extrabold text-lg">Heading (Large)</option>
+                        <option value="h2" className="dark:bg-zinc-955 bg-white text-zinc-900 dark:text-zinc-200 font-bold text-base">Subheading (Medium)</option>
+                        <option value="h3" className="dark:bg-zinc-955 bg-white text-zinc-900 dark:text-zinc-200 font-semibold text-sm">Minor Heading (Small)</option>
+                    </select>
+ 
+                    <div className="w-px h-4 bg-zinc-200 dark:bg-white/10 mx-1" />
+
+                    {/* Font Family Selector */}
+                    <select
+                        className="bg-transparent text-xs font-bold text-zinc-655 dark:text-zinc-400 outline-none border border-zinc-200 dark:border-zinc-800 rounded-lg px-2 py-1 cursor-pointer hover:bg-zinc-500/5 transition-colors focus:ring-1 focus:ring-synos-primary"
+                        value={editor.getAttributes('fontFamily').font || 'default'}
+                        onChange={(e) => {
+                            const val = e.target.value;
+                            if (val === 'default') {
+                                editor.chain().focus().unsetFontFamily().run();
+                            } else {
+                                editor.chain().focus().setFontFamily(val).run();
+                            }
+                        }}
+                        title="Font Family"
+                    >
+                        <option value="default" className="dark:bg-zinc-950 bg-white text-zinc-800 dark:text-zinc-250">Font: Default</option>
+                        <option value="Inter, sans-serif" className="dark:bg-zinc-955 bg-white text-zinc-900 dark:text-zinc-200" style={{ fontFamily: 'Inter, sans-serif' }}>Inter</option>
+                        <option value="Arial, sans-serif" className="dark:bg-zinc-955 bg-white text-zinc-900 dark:text-zinc-200" style={{ fontFamily: 'Arial, sans-serif' }}>Arial</option>
+                        <option value="'Times New Roman', serif" className="dark:bg-zinc-955 bg-white text-zinc-900 dark:text-zinc-200" style={{ fontFamily: "'Times New Roman', serif" }}>Times New Roman</option>
+                        <option value="Georgia, serif" className="dark:bg-zinc-955 bg-white text-zinc-900 dark:text-zinc-200" style={{ fontFamily: 'Georgia, serif' }}>Georgia</option>
+                        <option value="'Courier New', monospace" className="dark:bg-zinc-955 bg-white text-zinc-900 dark:text-zinc-200" style={{ fontFamily: "'Courier New', monospace" }}>Courier New</option>
+                    </select>
+
+                    <div className="w-px h-4 bg-zinc-200 dark:bg-white/10 mx-1" />
+
+                    {/* Font Size Selector */}
+                    <select
+                        className="bg-transparent text-xs font-bold text-zinc-655 dark:text-zinc-400 outline-none border border-zinc-200 dark:border-zinc-800 rounded-lg px-2 py-1 cursor-pointer hover:bg-zinc-500/5 transition-colors focus:ring-1 focus:ring-synos-primary w-16"
+                        value={editor.getAttributes('fontSize').size || 'default'}
+                        onChange={(e) => {
+                            const val = e.target.value;
+                            if (val === 'default') {
+                                editor.chain().focus().unsetFontSize().run();
+                            } else {
+                                editor.chain().focus().setFontSize(val).run();
+                            }
+                        }}
+                        title="Font Size"
+                    >
+                        <option value="default" className="dark:bg-zinc-950 bg-white text-zinc-800 dark:text-zinc-250">Size</option>
+                        {['9px', '10px', '11px', '12px', '13px', '14px', '15px', '16px', '18px', '20px', '24px', '28px', '32px', '36px'].map(sz => (
+                            <option key={sz} value={sz} className="dark:bg-zinc-955 bg-white text-zinc-900 dark:text-zinc-200">{sz.replace('px', '')}</option>
+                        ))}
+                    </select>
 
                     <div className="w-px h-4 bg-zinc-200 dark:bg-white/10 mx-1" />
 
@@ -440,12 +601,12 @@ export function RichMedicalEditor({
                 </div>
             </div>
 
-            {/* Editor Area (Dynamically auto-growing) */}
+            {/* Editor Area (Dynamically auto-growing or filling parent height) */}
             <div 
-                className="p-4 outline-none prose dark:prose-invert max-w-none text-sm leading-relaxed dark:text-zinc-200 text-zinc-800 transition-all cursor-text min-h-[150px] h-auto overflow-y-visible"
+                className="p-4 outline-none prose dark:prose-invert max-w-none text-sm leading-relaxed dark:text-zinc-200 text-zinc-800 transition-all cursor-text flex-1 overflow-y-auto min-h-0"
                 onContextMenu={handleContextMenu}
             >
-                <EditorContent editor={editor} />
+                <EditorContent editor={editor} className="outline-none min-h-full h-full" />
             </div>
 
             {/* Bottom Workstation Status Bar */}
@@ -567,6 +728,28 @@ export function RichMedicalEditor({
                 .ProseMirror {
                     outline: none !important;
                     min-height: 150px;
+                    height: 100%;
+                }
+                .ProseMirror h1 {
+                    font-size: 1.4rem !important;
+                    font-weight: 800 !important;
+                    margin-top: 1rem !important;
+                    margin-bottom: 0.5rem !important;
+                    text-transform: uppercase !important;
+                }
+                .ProseMirror h2 {
+                    font-size: 1.2rem !important;
+                    font-weight: 750 !important;
+                    margin-top: 0.75rem !important;
+                    margin-bottom: 0.4rem !important;
+                    text-transform: uppercase !important;
+                }
+                .ProseMirror h3 {
+                    font-size: 1.05rem !important;
+                    font-weight: 700 !important;
+                    margin-top: 0.5rem !important;
+                    margin-bottom: 0.3rem !important;
+                    text-transform: uppercase !important;
                 }
                 .ProseMirror ::selection {
                     background-color: rgba(99, 102, 241, 0.3) !important;
