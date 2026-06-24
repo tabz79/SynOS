@@ -1059,11 +1059,10 @@ export function TypistTerminal() {
                                     <div className="h-px bg-zinc-200 dark:bg-white/5 shrink-0" />
 
                                     {/* Bottom Half: Clinical Interpretation & Comments (Scrollable) */}
-                                    <div className="flex-[1_1_65%] min-h-0 overflow-y-auto pr-2 custom-scrollbar space-y-4 pt-1">
-                                        <div className="space-y-3">
-                                            <div>
+                                    <div className="flex-[1_1_65%] min-h-0 overflow-y-auto pr-2 custom-scrollbar space-y-4 pt-1 flex flex-col justify-between">
+                                            <div className="flex-1 flex flex-col min-h-0">
                                                 <label className="text-[10px] uppercase font-semibold dark:text-zinc-500 text-zinc-400 block mb-1 tracking-wider">
-                                                    Clinical Interpretation
+                                                    Clinical Report Narrative
                                                 </label>
                                                 <RichMedicalEditor 
                                                     value={interpretation.interpretation}
@@ -1072,25 +1071,10 @@ export function TypistTerminal() {
                                                     patientContext={calculatedReportStructure}
                                                     onSaveDraft={handleSaveInterpretation}
                                                     onOpenMacroManager={() => setIsMacroManagerOpen(true)}
+                                                    className="flex-1 min-h-0"
                                                 />
                                             </div>
-
-                                            <div>
-                                                <label className="text-[10px] uppercase font-semibold dark:text-zinc-500 text-zinc-400 block mb-1 tracking-wider">
-                                                    Pathologist Remarks / Comments
-                                                </label>
-                                                <RichMedicalEditor 
-                                                    value={interpretation.comments}
-                                                    onChange={(val) => handleFieldChange('comments', val)}
-                                                    disabled={isLocked || isSaving}
-                                                    patientContext={calculatedReportStructure}
-                                                    onSaveDraft={handleSaveInterpretation}
-                                                    placeholder="Enter internal notes or comments..."
-                                                    onOpenMacroManager={() => setIsMacroManagerOpen(true)}
-                                                />
-                                            </div>
-                                        </div>
-                                                                            <div className="flex items-center justify-between" style={{ marginTop: 'var(--ws-footer-pt)' }}>
+                                            <div className="flex items-center justify-between" style={{ marginTop: 'var(--ws-footer-pt)' }}>
                                             {!isLocked ? (
                                                 <div className="flex flex-col w-full" style={{ gap: 'var(--ws-gap)' }}>
                                                     {lastSavedAt && (

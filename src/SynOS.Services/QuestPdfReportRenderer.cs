@@ -250,8 +250,11 @@ namespace SynOS.Services
                     foreach (var group in data.Results)
                     {
                         // Group Heading
-                        table.Cell().ColumnSpan((uint)visibleColumns.Count).Background(Colors.Grey.Lighten4).PaddingVertical(2).PaddingHorizontal(5)
-                             .Text(group.GroupName).SemiBold().FontSize(11);
+                        if (!string.IsNullOrWhiteSpace(group.GroupName))
+                        {
+                            table.Cell().ColumnSpan((uint)visibleColumns.Count).Background(Colors.Grey.Lighten4).PaddingVertical(2).PaddingHorizontal(5)
+                                 .Text(group.GroupName).SemiBold().FontSize(11);
+                        }
 
                         foreach (var parameter in group.Parameters)
                         {
@@ -272,8 +275,6 @@ namespace SynOS.Services
 
             column.Item().PaddingBottom(10).Column(commentsCol =>
             {
-                commentsCol.Item().Text(config.Title).FontSize(14).SemiBold();
-                commentsCol.Item().LineHorizontal(1);
                 commentsCol.Item().PaddingVertical(5).Text(data.Comments);
             });
         }
@@ -284,8 +285,6 @@ namespace SynOS.Services
             
             column.Item().PaddingBottom(10).Column(interpCol =>
             {
-                interpCol.Item().Text(config.Title).FontSize(14).SemiBold();
-                interpCol.Item().LineHorizontal(1);
                 interpCol.Item().PaddingVertical(5).Text(data.Interpretation);
             });
         }

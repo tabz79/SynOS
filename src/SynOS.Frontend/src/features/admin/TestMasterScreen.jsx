@@ -760,6 +760,7 @@ const normalizeDbTest = (dbTest) => {
   const specimenTypeCode = dbTest.specimenTypeCode || dbTest.SpecimenTypeCode || "";
   const templateId = dbTest.reportTemplateId || dbTest.ReportTemplateId || null;
   const defaultInterpretation = dbTest.defaultInterpretation || dbTest.DefaultInterpretation || "";
+  const reportTitle = dbTest.reportTitle || dbTest.ReportTitle || "";
 
   return {
     id: testId,
@@ -776,6 +777,7 @@ const normalizeDbTest = (dbTest) => {
     specimenTypeCode: specimenTypeCode,
     isProfile: !!dbTest.isProfile,
     defaultInterpretation: defaultInterpretation,
+    reportTitle: reportTitle,
     parameters: (dbTest.parameters || []).map(p => {
       let minRange = undefined;
       let maxRange = undefined;
@@ -2059,6 +2061,7 @@ export function TestMasterScreen() {
           IsProfile: !!item.isProfile,
           ReportTemplateId: item.templateId || null,
           DefaultInterpretation: item.defaultInterpretation || null,
+          ReportTitle: item.reportTitle || null,
           Parameters: (item.parameters || []).map((p, idx) => ({
             ParameterCode: p.code,
             ParameterName: p.name,
@@ -3732,6 +3735,17 @@ export function TestMasterScreen() {
                   <h3 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">Report Presentation Settings</h3>
                   
                   <div className="space-y-4">
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 block ml-1">Report Title</label>
+                      <input
+                        type="text"
+                        placeholder="Leave empty to use Test Name"
+                        className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl px-3.5 py-2.5 text-sm w-full text-zinc-900 dark:text-zinc-100 outline-none focus:ring-1 focus:ring-synos-primary font-medium"
+                        value={selectedTest.reportTitle || ""}
+                        onChange={(e) => handleReportSetupFieldChange("reportTitle", e.target.value)}
+                      />
+                    </div>
+
                     <div className="space-y-1.5">
                       <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 block ml-1">Report design template</label>
                       <div className="flex gap-2">

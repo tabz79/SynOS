@@ -729,7 +729,7 @@ namespace SynOS.Services
                     GeneratedAt = DateTimeOffset.UtcNow,
                     ReferenceDoctor = result.visit.Referrer?.ProviderName ?? "Self / Walk-in"
                 },
-                ReportTitle = $"Radiology Report - {studyEntity.Order.Test.TestName}",
+                ReportTitle = !string.IsNullOrWhiteSpace(studyEntity.Order.Test?.ReportTitle) ? studyEntity.Order.Test.ReportTitle : studyEntity.Order.Test?.TestName,
                 Modality = studyEntity.Modality,
                 Patient = new PatientInfo
                 {

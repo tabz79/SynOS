@@ -399,6 +399,10 @@ namespace SynOS.Services.Reporting
             foreach (var meta in sortedCatalogParams)
             {
                 var groupName = meta.DisplayGroup ?? "General";
+                if (string.IsNullOrWhiteSpace(groupName) || string.Equals(groupName, "General", StringComparison.OrdinalIgnoreCase))
+                {
+                    groupName = string.Empty;
+                }
                 var groupOrder = meta.DisplayGroupOrder;
 
                 if (!groups.ContainsKey(groupName))

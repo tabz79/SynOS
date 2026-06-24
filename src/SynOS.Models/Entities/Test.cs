@@ -75,5 +75,6 @@ namespace SynOS.Models.Entities
         public string? DefaultInterpretation { get; set; }
         public DateTimeOffset? DefaultInterpretationLastUpdatedAt { get; set; }
         public Guid? DefaultInterpretationLastUpdatedBy { get; set; }
+        public string? ReportTitle { get; set; }
     }
 }

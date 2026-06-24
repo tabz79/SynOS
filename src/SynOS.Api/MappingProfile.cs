@@ -63,15 +63,19 @@ namespace SynOS.Api
             // Test Master Mappings
             CreateMap<CreateTestDto, Test>()
                 .ForMember(dest => dest.ReportTemplateId, opt => opt.MapFrom(src => src.ReportTemplateId))
-                .ForMember(dest => dest.Parameters, opt => opt.Ignore());
+                .ForMember(dest => dest.Parameters, opt => opt.Ignore())
+                .ForMember(dest => dest.ReportTitle, opt => opt.MapFrom(src => src.ReportTitle));
             CreateMap<UpdateTestDto, Test>()
                 .ForMember(dest => dest.ReportTemplateId, opt => opt.MapFrom(src => src.ReportTemplateId))
-                .ForMember(dest => dest.Parameters, opt => opt.Ignore());
+                .ForMember(dest => dest.Parameters, opt => opt.Ignore())
+                .ForMember(dest => dest.ReportTitle, opt => opt.MapFrom(src => src.ReportTitle));
             CreateMap<Test, TestDto>()
                 .ForMember(dest => dest.ReportTemplateId, opt => opt.MapFrom(src => src.ReportTemplateId))
                 .ForMember(dest => dest.Department, opt => opt.MapFrom(src => src.DepartmentMaster != null ? src.DepartmentMaster.Name : string.Empty))
                 .ForMember(dest => dest.ModalityId, opt => opt.MapFrom(src => src.ModalityId))
                 .ForMember(dest => dest.ModalityName, opt => opt.MapFrom(src => src.ModalityMaster != null ? src.ModalityMaster.Name : null))
+                .ForMember(dest => dest.DefaultInterpretation, opt => opt.MapFrom(src => src.DefaultInterpretation))
+                .ForMember(dest => dest.ReportTitle, opt => opt.MapFrom(src => src.ReportTitle))
                 .ForMember(dest => dest.BasePrice, opt => opt.MapFrom(src => 
                     src.TestPricings != null && src.TestPricings.Any()
                     ? (src.TestPricings.OrderByDescending(tp => tp.EffectiveFrom).FirstOrDefault() != null

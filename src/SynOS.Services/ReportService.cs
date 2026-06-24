@@ -808,7 +808,7 @@ namespace SynOS.Services
                     Token = order.Visit?.Token ?? "N/A"
                 },
                 Modality = domain.Department,
-                ReportTitle = $"{domain.Department} Diagnostic Report",
+                ReportTitle = !string.IsNullOrWhiteSpace(order.Test?.ReportTitle) ? order.Test.ReportTitle : (order.Test?.TestName ?? $"{domain.Department} Report"),
                 Patient = new PatientInfo
                 {
                     PatientId = domain.Patient.MRN,
@@ -960,7 +960,7 @@ namespace SynOS.Services
                         Token = order.Visit?.Token ?? "N/A"
                     },
                     Modality = "Radiology",
-                    ReportTitle = $"{order.Test?.TestName ?? "Radiology"} Diagnostic Report",
+                    ReportTitle = !string.IsNullOrWhiteSpace(order.Test?.ReportTitle) ? order.Test.ReportTitle : (order.Test?.TestName ?? "Radiology"),
                     Patient = new PatientInfo
                     {
                         Name = $"{patient.FirstName} {patient.LastName}",
@@ -1283,7 +1283,7 @@ namespace SynOS.Services
                     Token = order.Visit?.Token ?? "N/A"
                 },
                 Modality = order.Department,
-                ReportTitle = $"{order.Department} Diagnostic Report",
+                ReportTitle = !string.IsNullOrWhiteSpace(order.Test?.ReportTitle) ? order.Test.ReportTitle : (order.Test?.TestName ?? $"{order.Department} Report"),
                 Patient = new PatientInfo
                 {
                     Name = $"{patient.FirstName} {patient.LastName}",

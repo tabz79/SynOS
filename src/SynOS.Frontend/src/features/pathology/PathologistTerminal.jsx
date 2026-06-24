@@ -1135,11 +1135,10 @@ export function PathologistTerminal() {
                                     <div className="h-px bg-zinc-200 dark:bg-white/5 shrink-0" />
 
                                     {/* Bottom Half: Editors & Actions (Scrollable) */}
-                                    <div className="flex-[1_1_65%] min-h-0 overflow-y-auto pr-2 custom-scrollbar space-y-4 pt-1">
-                                        <div className="space-y-3">
-                                            <div>
+                                    <div className="flex-[1_1_65%] min-h-0 overflow-y-auto pr-2 custom-scrollbar space-y-4 pt-1 flex flex-col justify-between">
+                                            <div className="flex-1 flex flex-col min-h-0">
                                                 <label className="text-[10px] uppercase font-semibold dark:text-zinc-500 text-zinc-400 block mb-1 tracking-wider">
-                                                    Clinical Summary (Ready for Verification)
+                                                    Clinical Report Narrative
                                                 </label>
                                                 <RichMedicalEditor 
                                                     value={interpretation.interpretation}
@@ -1149,24 +1148,9 @@ export function PathologistTerminal() {
                                                     onSaveDraft={handleSaveInterpretation}
                                                     placeholder="Verify core clinical findings..."
                                                     onOpenMacroManager={() => setIsMacroManagerOpen(true)}
+                                                    className="flex-1 min-h-0"
                                                 />
                                             </div>
-
-                                            <div>
-                                                <label className="text-[10px] uppercase font-semibold dark:text-zinc-500 text-zinc-400 block mb-1 tracking-wider">
-                                                    Pathologist Remarks / Additional Insights
-                                                </label>
-                                                <RichMedicalEditor 
-                                                    value={interpretation.comments}
-                                                    onChange={(val) => handleFieldChange('comments', val)}
-                                                    disabled={isReadOnly || isSaving}
-                                                    patientContext={reportStructure}
-                                                    onSaveDraft={handleSaveInterpretation}
-                                                    placeholder="Append final pathologist notes..."
-                                                    onOpenMacroManager={() => setIsMacroManagerOpen(true)}
-                                                />
-                                            </div>
-                                        </div>
                                         
                                         <div className="flex items-center justify-between" style={{ marginTop: 'var(--ws-footer-pt)' }}>
                                             <div className="flex items-center gap-2">

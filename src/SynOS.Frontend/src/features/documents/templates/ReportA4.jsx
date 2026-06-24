@@ -664,7 +664,6 @@ export const ReportA4 = ({ reportData, template }) => {
         <div className="mt-6 space-y-4">
            {interpretation && (
              <div className="break-inside-avoid">
-                <div className="font-bold text-[10px] uppercase mb-1">Observation / Inference :</div>
                 <div className="text-[12px] leading-tight select-text">
                   {renderRichContent(interpretation)}
                 </div>
@@ -674,7 +673,6 @@ export const ReportA4 = ({ reportData, template }) => {
            {comments && (
              <div className="grid grid-cols-1 gap-2 text-[11px] select-text break-inside-avoid mt-2">
                 <div className="flex gap-2">
-                  <span className="font-bold uppercase">Comments :</span>
                   <div className="flex-1 font-medium">{renderRichContent(comments)}</div>
                 </div>
              </div>

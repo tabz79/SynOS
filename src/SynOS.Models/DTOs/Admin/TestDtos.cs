@@ -28,6 +28,7 @@ namespace SynOS.Models.DTOs.Admin
         public string? DefaultInterpretation { get; set; }
         public DateTimeOffset? DefaultInterpretationLastUpdatedAt { get; set; }
         public Guid? DefaultInterpretationLastUpdatedBy { get; set; }
+        public string? ReportTitle { get; set; }
     }
 
     public class ParameterSaveDto
@@ -160,6 +161,7 @@ namespace SynOS.Models.DTOs.Admin
         public List<string> IncludedTestCodes { get; set; } = new List<string>();
 
         public string? DefaultInterpretation { get; set; }
+        public string? ReportTitle { get; set; }
     }
 
     public class UpdateTestDto : CreateTestDto

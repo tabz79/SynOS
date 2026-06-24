@@ -42,6 +42,7 @@ namespace SynOS.Services
             }
 
             var test = _mapper.Map<Test>(dto);
+            test.ReportTitle = string.IsNullOrWhiteSpace(dto.ReportTitle) ? dto.TestName : dto.ReportTitle;
             test.TestId = Guid.NewGuid();
             test.CreatedAt = DateTimeOffset.UtcNow;
             test.IsActive = true;
@@ -187,6 +188,7 @@ namespace SynOS.Services
             test.IsProfile = dto.IsProfile;
             test.ModalityId = dto.ModalityId; // Save ModalityId
             test.ReportTemplateId = dto.ReportTemplateId; // Save ReportTemplateId
+            test.ReportTitle = string.IsNullOrWhiteSpace(dto.ReportTitle) ? (dto.TestName ?? test.TestName) : dto.ReportTitle;
             
             // _mapper.Map(dto, test); // CAUTION: If DTO has BasePrice/Department, this might try to set non-existent props? 
             // Since props are removed from Test, AutoMapper fails silently or errors depending on config.
@@ -712,7 +714,8 @@ namespace SynOS.Services
                     UpdatedAt = DateTimeOffset.UtcNow,
                     DefaultInterpretation = test.DefaultInterpretation,
                     DefaultInterpretationLastUpdatedAt = test.DefaultInterpretationLastUpdatedAt,
-                    DefaultInterpretationLastUpdatedBy = test.DefaultInterpretationLastUpdatedBy
+                    DefaultInterpretationLastUpdatedBy = test.DefaultInterpretationLastUpdatedBy,
+                    ReportTitle = string.IsNullOrWhiteSpace(test.ReportTitle) ? test.TestName : test.ReportTitle
                 };
                 _context.CatalogTests.Add(catalogTest);
             }
@@ -730,6 +733,7 @@ namespace SynOS.Services
                 catalogTest.DefaultInterpretation = test.DefaultInterpretation;
                 catalogTest.DefaultInterpretationLastUpdatedAt = test.DefaultInterpretationLastUpdatedAt;
                 catalogTest.DefaultInterpretationLastUpdatedBy = test.DefaultInterpretationLastUpdatedBy;
+                catalogTest.ReportTitle = string.IsNullOrWhiteSpace(test.ReportTitle) ? test.TestName : test.ReportTitle;
             }
             await _context.SaveChangesAsync();
 
