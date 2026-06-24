@@ -60,18 +60,25 @@ namespace SynOS.Services.Dashboard
             var today = DateTime.Today;
             var tomorrow = today.AddDays(1);
 
-            var query = _context.Visits
+            var backlogQuery = _context.Visits
                 .AsNoTracking()
-                .Where(v => v.TokenDate >= today && v.TokenDate < tomorrow)
                 .Where(v => v.Status == VisitStatus.Draft || v.Status == VisitStatus.PendingPayment);
+
+            var throughputQuery = _context.Visits
+                .AsNoTracking()
+                .Where(v => v.TokenDate >= today && v.TokenDate < tomorrow && 
+                           (v.Status == VisitStatus.Paid || v.Status == VisitStatus.FullPaid || v.Status == VisitStatus.InPhlebotomy || v.Status == VisitStatus.InLab || v.Status == VisitStatus.Completed || v.Status == VisitStatus.Finalized));
 
             if (branchId.HasValue)
             {
-                query = query.Where(v => v.BranchId == branchId.Value);
+                backlogQuery = backlogQuery.Where(v => v.BranchId == branchId.Value);
+                throughputQuery = throughputQuery.Where(v => v.BranchId == branchId.Value);
             }
 
-            var count = await query.CountAsync();
-            var rawItems = await query
+            var backlogCount = await backlogQuery.CountAsync();
+            var throughputCount = await throughputQuery.CountAsync();
+
+            var rawItems = await backlogQuery
                 .OrderBy(v => v.CreatedAt)
                 .Take(3)
                 .Select(v => new { 
@@ -92,26 +99,40 @@ namespace SynOS.Services.Dashboard
 
             return new ControlTowerCardDto
             {
-                Count = count,
-                PrimaryText = $"{count} patients waiting",
-                Status = count > 5 ? "Needs Attention" : "On Track",
+                Count = throughputCount,
+                PrimaryText = "patients billed today",
+                SecondaryText = $"{backlogCount} awaiting payment",
+                Status = backlogCount > 5 ? "Needs Attention" : "On Track",
                 Items = items
             };
         }
 
         private async Task<ControlTowerCardDto> GetPhlebotomyCardAsync(Guid? branchId)
         {
-            var query = _context.Specimens
+            var today = DateTime.Today;
+            var tomorrow = today.AddDays(1);
+            var todayOffset = new DateTimeOffset(today);
+            var tomorrowOffset = todayOffset.AddDays(1);
+
+            var backlogQuery = _context.Specimens
                 .AsNoTracking()
-                .Where(s => s.Status == SpecimenStatus.Pending);
+                .Where(s => s.Status == SpecimenStatus.Pending && s.Visit != null && 
+                           (s.Visit.Status == VisitStatus.Paid || s.Visit.Status == VisitStatus.FullPaid || s.Visit.Status == VisitStatus.InPhlebotomy));
+
+            var throughputQuery = _context.Specimens
+                .AsNoTracking()
+                .Where(s => s.Status == SpecimenStatus.Collected && s.CollectedAt >= todayOffset && s.CollectedAt < tomorrowOffset);
 
             if (branchId.HasValue)
             {
-                query = query.Where(s => s.Visit != null && s.Visit.BranchId == branchId.Value);
+                backlogQuery = backlogQuery.Where(s => s.Visit != null && s.Visit.BranchId == branchId.Value);
+                throughputQuery = throughputQuery.Where(s => s.Visit != null && s.Visit.BranchId == branchId.Value);
             }
 
-            var count = await query.CountAsync();
-            var rawItems = await query
+            var backlogCount = await backlogQuery.Select(s => s.VisitId).Distinct().CountAsync();
+            var throughputCount = await throughputQuery.Select(s => s.VisitId).Distinct().CountAsync();
+
+            var rawItems = await backlogQuery
                 .OrderBy(s => s.CreatedAt)
                 .Take(3)
                 .Select(s => new {
@@ -131,60 +152,91 @@ namespace SynOS.Services.Dashboard
 
             return new ControlTowerCardDto
             {
-                Count = count,
-                PrimaryText = $"{count} pending collections",
-                Status = count > 3 ? "Needs Attention" : "On Track",
+                Count = throughputCount,
+                PrimaryText = "patients collected today",
+                SecondaryText = $"{backlogCount} waiting collection",
+                Status = backlogCount > 3 ? "Needs Attention" : "On Track",
                 Items = items
             };
         }
 
         private async Task<ControlTowerCardDto> GetWorkbenchCardAsync(Guid? branchId)
         {
-            var query = _context.Results
+            var today = DateTime.Today;
+            var tomorrow = today.AddDays(1);
+            var todayOffset = new DateTimeOffset(today);
+            var tomorrowOffset = todayOffset.AddDays(1);
+
+            var backlogQuery = _context.Orders
                 .AsNoTracking()
-                .Where(r => r.Status == "Processing");
+                .Where(o => o.Department != "Radiology" && (o.Status == OrderStatus.Active || o.Status == OrderStatus.Collected));
+
+            var throughputQuery = _context.Orders
+                .AsNoTracking()
+                .Where(o => o.Department != "Radiology" && o.Status == OrderStatus.Completed && o.CreatedAt >= todayOffset && o.CreatedAt < tomorrowOffset);
 
             if (branchId.HasValue)
             {
-                query = query.Where(r => r.Order != null && r.Order.Visit != null && r.Order.Visit.BranchId == branchId.Value);
+                backlogQuery = backlogQuery.Where(o => o.Visit != null && o.Visit.BranchId == branchId.Value);
+                throughputQuery = throughputQuery.Where(o => o.Visit != null && o.Visit.BranchId == branchId.Value);
             }
 
-            var count = await query.CountAsync();
-            var items = await query
-                .OrderBy(r => r.EnteredAt)
+            var backlogCount = await backlogQuery.CountAsync();
+            var throughputCount = await throughputQuery.CountAsync();
+
+            var rawItems = await backlogQuery
+                .OrderBy(o => o.CreatedAt)
                 .Take(3)
-                .Select(r => new ControlTowerItemDto
-                {
-                    Id = r.ResultId,
-                    Name = r.ParameterCode ?? "Unknown Test",
-                    Detail = "In Progress",
-                    StatusBadge = "In Progress",
-                    HasAlert = false
+                .Select(o => new {
+                    o.OrderId,
+                    Name = o.TestCode,
+                    Detail = "In Progress"
                 })
                 .ToListAsync();
 
+            var items = rawItems.Select(o => new ControlTowerItemDto
+            {
+                Id = o.OrderId,
+                Name = o.Name,
+                Detail = o.Detail,
+                StatusBadge = "In Progress"
+            }).ToList();
+
             return new ControlTowerCardDto
             {
-                Count = count,
-                PrimaryText = $"{count} tests in progress",
-                Status = count > 10 ? "Needs Attention" : "On Track",
+                Count = throughputCount,
+                PrimaryText = "orders processed today",
+                SecondaryText = $"{backlogCount} in processing",
+                Status = backlogCount > 10 ? "Needs Attention" : "On Track",
                 Items = items
             };
         }
 
         private async Task<ControlTowerCardDto> GetTypistCardAsync(Guid? branchId)
         {
-            var query = _context.Reports
+            var today = DateTime.Today;
+            var tomorrow = today.AddDays(1);
+            var todayOffset = new DateTimeOffset(today);
+            var tomorrowOffset = todayOffset.AddDays(1);
+
+            var backlogQuery = _context.Reports
                 .AsNoTracking()
                 .Where(r => r.Status == "Draft");
 
+            var throughputQuery = _context.Reports
+                .AsNoTracking()
+                .Where(r => r.Status != "Draft" && r.UpdatedAt >= todayOffset && r.UpdatedAt < tomorrowOffset);
+
             if (branchId.HasValue)
             {
-                query = query.Where(r => r.Visit != null && r.Visit.BranchId == branchId.Value);
+                backlogQuery = backlogQuery.Where(r => r.Visit != null && r.Visit.BranchId == branchId.Value);
+                throughputQuery = throughputQuery.Where(r => r.Visit != null && r.Visit.BranchId == branchId.Value);
             }
 
-            var count = await query.CountAsync();
-            var rawItems = await query
+            var backlogCount = await backlogQuery.CountAsync();
+            var throughputCount = await throughputQuery.CountAsync();
+
+            var rawItems = await backlogQuery
                 .OrderBy(r => r.CreatedAt)
                 .Take(3)
                 .Select(r => new {
@@ -204,8 +256,9 @@ namespace SynOS.Services.Dashboard
 
             return new ControlTowerCardDto
             {
-                Count = count,
-                PrimaryText = $"{count} reports being typed",
+                Count = throughputCount,
+                PrimaryText = "reports typed today",
+                SecondaryText = $"{backlogCount} awaiting typing",
                 Status = "On Track",
                 Items = items
             };
@@ -213,17 +266,29 @@ namespace SynOS.Services.Dashboard
 
         private async Task<ControlTowerCardDto> GetPathologistCardAsync(Guid? branchId)
         {
-            var query = _context.Reports
+            var today = DateTime.Today;
+            var tomorrow = today.AddDays(1);
+            var todayOffset = new DateTimeOffset(today);
+            var tomorrowOffset = todayOffset.AddDays(1);
+
+            var backlogQuery = _context.Reports
                 .AsNoTracking()
                 .Where(r => r.Status == "ReadyForVerification");
 
+            var throughputQuery = _context.Reports
+                .AsNoTracking()
+                .Where(r => (r.Status == "Signed" || r.Status == "ManualVerified") && r.SignedAt >= todayOffset && r.SignedAt < tomorrowOffset);
+
             if (branchId.HasValue)
             {
-                query = query.Where(r => r.Visit != null && r.Visit.BranchId == branchId.Value);
+                backlogQuery = backlogQuery.Where(r => r.Visit != null && r.Visit.BranchId == branchId.Value);
+                throughputQuery = throughputQuery.Where(r => r.Visit != null && r.Visit.BranchId == branchId.Value);
             }
 
-            var count = await query.CountAsync();
-            var rawItems = await query
+            var backlogCount = await backlogQuery.CountAsync();
+            var throughputCount = await throughputQuery.CountAsync();
+
+            var rawItems = await backlogQuery
                 .OrderBy(r => r.UpdatedAt ?? r.CreatedAt)
                 .Take(3)
                 .Select(r => new {
@@ -243,27 +308,39 @@ namespace SynOS.Services.Dashboard
 
             return new ControlTowerCardDto
             {
-                Count = count,
-                PrimaryText = $"{count} reports waiting for you",
-                Status = count > 2 ? "Requires Review" : "On Track",
+                Count = throughputCount,
+                PrimaryText = "reports verified today",
+                SecondaryText = $"{backlogCount} awaiting verification",
+                Status = backlogCount > 2 ? "Requires Review" : "On Track",
                 Items = items
             };
         }
 
         private async Task<ControlTowerCardDto> GetDeliveryCardAsync(Guid? branchId)
         {
-            var query = _context.Reports
+            var today = DateTime.Today;
+            var tomorrow = today.AddDays(1);
+            var todayOffset = new DateTimeOffset(today);
+            var tomorrowOffset = todayOffset.AddDays(1);
+
+            var backlogQuery = _context.Reports
                 .AsNoTracking()
-                .Where(r => (r.Status == "Signed" || r.Status == "ManualVerified"))
-                .Where(r => r.Delivered == false);
+                .Where(r => (r.Status == "Signed" || r.Status == "ManualVerified") && r.Delivered == false);
+
+            var throughputQuery = _context.Reports
+                .AsNoTracking()
+                .Where(r => r.Delivered == true && r.DeliveredAt >= todayOffset && r.DeliveredAt < tomorrowOffset);
 
             if (branchId.HasValue)
             {
-                query = query.Where(r => r.Visit != null && r.Visit.BranchId == branchId.Value);
+                backlogQuery = backlogQuery.Where(r => r.Visit != null && r.Visit.BranchId == branchId.Value);
+                throughputQuery = throughputQuery.Where(r => r.Visit != null && r.Visit.BranchId == branchId.Value);
             }
 
-            var count = await query.CountAsync();
-            var rawItems = await query
+            var backlogCount = await backlogQuery.CountAsync();
+            var throughputCount = await throughputQuery.CountAsync();
+
+            var rawItems = await backlogQuery
                 .OrderBy(r => r.UpdatedAt ?? r.CreatedAt)
                 .Take(3)
                 .Select(r => new {
@@ -282,8 +359,9 @@ namespace SynOS.Services.Dashboard
 
             return new ControlTowerCardDto
             {
-                Count = count,
-                PrimaryText = $"{count} reports ready",
+                Count = throughputCount,
+                PrimaryText = "reports delivered today",
+                SecondaryText = $"{backlogCount} awaiting dispatch",
                 Status = "On Track",
                 Items = items
             };
@@ -338,17 +416,29 @@ namespace SynOS.Services.Dashboard
 
         private async Task<ControlTowerCardDto> GetXRayTechCardAsync(Guid? branchId)
         {
-            var query = _context.RadiologyStudies
+            var today = DateTime.Today;
+            var tomorrow = today.AddDays(1);
+            var todayOffset = new DateTimeOffset(today);
+            var tomorrowOffset = todayOffset.AddDays(1);
+
+            var backlogQuery = _context.RadiologyStudies
                 .AsNoTracking()
                 .Where(s => !s.IsSoftDeleted && (s.Status == "PendingImaging" || s.Status == "Assigned") && s.Modality == "X-Ray");
 
+            var throughputQuery = _context.RadiologyStudies
+                .AsNoTracking()
+                .Where(s => !s.IsSoftDeleted && s.Modality == "X-Ray" && s.Status != "PendingImaging" && s.Status != "Assigned" && s.LastActivityAt >= todayOffset && s.LastActivityAt < tomorrowOffset);
+
             if (branchId.HasValue)
             {
-                query = query.Where(s => s.Visit != null && s.Visit.BranchId == branchId.Value);
+                backlogQuery = backlogQuery.Where(s => s.Visit != null && s.Visit.BranchId == branchId.Value);
+                throughputQuery = throughputQuery.Where(s => s.Visit != null && s.Visit.BranchId == branchId.Value);
             }
 
-            var count = await query.CountAsync();
-            var rawItems = await query
+            var backlogCount = await backlogQuery.CountAsync();
+            var throughputCount = await throughputQuery.CountAsync();
+
+            var rawItems = await backlogQuery
                 .OrderBy(s => s.CreatedAt)
                 .Take(3)
                 .Select(s => new {
@@ -369,26 +459,39 @@ namespace SynOS.Services.Dashboard
 
             return new ControlTowerCardDto
             {
-                Count = count,
-                PrimaryText = $"{count} scans pending",
-                Status = count > 3 ? "Needs Attention" : "On Track",
+                Count = throughputCount,
+                PrimaryText = "scans completed today",
+                SecondaryText = $"{backlogCount} pending scans",
+                Status = backlogCount > 3 ? "Needs Attention" : "On Track",
                 Items = items
             };
         }
 
         private async Task<ControlTowerCardDto> GetUSTechCardAsync(Guid? branchId)
         {
-            var query = _context.RadiologyStudies
+            var today = DateTime.Today;
+            var tomorrow = today.AddDays(1);
+            var todayOffset = new DateTimeOffset(today);
+            var tomorrowOffset = todayOffset.AddDays(1);
+
+            var backlogQuery = _context.RadiologyStudies
                 .AsNoTracking()
                 .Where(s => !s.IsSoftDeleted && (s.Status == "PendingImaging" || s.Status == "Assigned") && s.Modality == "Ultrasound");
 
+            var throughputQuery = _context.RadiologyStudies
+                .AsNoTracking()
+                .Where(s => !s.IsSoftDeleted && s.Modality == "Ultrasound" && s.Status != "PendingImaging" && s.Status != "Assigned" && s.LastActivityAt >= todayOffset && s.LastActivityAt < tomorrowOffset);
+
             if (branchId.HasValue)
             {
-                query = query.Where(s => s.Visit != null && s.Visit.BranchId == branchId.Value);
+                backlogQuery = backlogQuery.Where(s => s.Visit != null && s.Visit.BranchId == branchId.Value);
+                throughputQuery = throughputQuery.Where(s => s.Visit != null && s.Visit.BranchId == branchId.Value);
             }
 
-            var count = await query.CountAsync();
-            var rawItems = await query
+            var backlogCount = await backlogQuery.CountAsync();
+            var throughputCount = await throughputQuery.CountAsync();
+
+            var rawItems = await backlogQuery
                 .OrderBy(s => s.CreatedAt)
                 .Take(3)
                 .Select(s => new {
@@ -409,26 +512,39 @@ namespace SynOS.Services.Dashboard
 
             return new ControlTowerCardDto
             {
-                Count = count,
-                PrimaryText = $"{count} scans pending",
-                Status = count > 3 ? "Needs Attention" : "On Track",
+                Count = throughputCount,
+                PrimaryText = "scans completed today",
+                SecondaryText = $"{backlogCount} pending scans",
+                Status = backlogCount > 3 ? "Needs Attention" : "On Track",
                 Items = items
             };
         }
 
         private async Task<ControlTowerCardDto> GetCTTechCardAsync(Guid? branchId)
         {
-            var query = _context.RadiologyStudies
+            var today = DateTime.Today;
+            var tomorrow = today.AddDays(1);
+            var todayOffset = new DateTimeOffset(today);
+            var tomorrowOffset = todayOffset.AddDays(1);
+
+            var backlogQuery = _context.RadiologyStudies
                 .AsNoTracking()
                 .Where(s => !s.IsSoftDeleted && (s.Status == "PendingImaging" || s.Status == "Assigned") && s.Modality == "CT Scan");
 
+            var throughputQuery = _context.RadiologyStudies
+                .AsNoTracking()
+                .Where(s => !s.IsSoftDeleted && s.Modality == "CT Scan" && s.Status != "PendingImaging" && s.Status != "Assigned" && s.LastActivityAt >= todayOffset && s.LastActivityAt < tomorrowOffset);
+
             if (branchId.HasValue)
             {
-                query = query.Where(s => s.Visit != null && s.Visit.BranchId == branchId.Value);
+                backlogQuery = backlogQuery.Where(s => s.Visit != null && s.Visit.BranchId == branchId.Value);
+                throughputQuery = throughputQuery.Where(s => s.Visit != null && s.Visit.BranchId == branchId.Value);
             }
 
-            var count = await query.CountAsync();
-            var rawItems = await query
+            var backlogCount = await backlogQuery.CountAsync();
+            var throughputCount = await throughputQuery.CountAsync();
+
+            var rawItems = await backlogQuery
                 .OrderBy(s => s.CreatedAt)
                 .Take(3)
                 .Select(s => new {
@@ -449,26 +565,39 @@ namespace SynOS.Services.Dashboard
 
             return new ControlTowerCardDto
             {
-                Count = count,
-                PrimaryText = $"{count} scans pending",
-                Status = count > 3 ? "Needs Attention" : "On Track",
+                Count = throughputCount,
+                PrimaryText = "scans completed today",
+                SecondaryText = $"{backlogCount} pending scans",
+                Status = backlogCount > 3 ? "Needs Attention" : "On Track",
                 Items = items
             };
         }
 
         private async Task<ControlTowerCardDto> GetMriTechCardAsync(Guid? branchId)
         {
-            var query = _context.RadiologyStudies
+            var today = DateTime.Today;
+            var tomorrow = today.AddDays(1);
+            var todayOffset = new DateTimeOffset(today);
+            var tomorrowOffset = todayOffset.AddDays(1);
+
+            var backlogQuery = _context.RadiologyStudies
                 .AsNoTracking()
                 .Where(s => !s.IsSoftDeleted && (s.Status == "PendingImaging" || s.Status == "Assigned") && s.Modality == "MRI");
 
+            var throughputQuery = _context.RadiologyStudies
+                .AsNoTracking()
+                .Where(s => !s.IsSoftDeleted && s.Modality == "MRI" && s.Status != "PendingImaging" && s.Status != "Assigned" && s.LastActivityAt >= todayOffset && s.LastActivityAt < tomorrowOffset);
+
             if (branchId.HasValue)
             {
-                query = query.Where(s => s.Visit != null && s.Visit.BranchId == branchId.Value);
+                backlogQuery = backlogQuery.Where(s => s.Visit != null && s.Visit.BranchId == branchId.Value);
+                throughputQuery = throughputQuery.Where(s => s.Visit != null && s.Visit.BranchId == branchId.Value);
             }
 
-            var count = await query.CountAsync();
-            var rawItems = await query
+            var backlogCount = await backlogQuery.CountAsync();
+            var throughputCount = await throughputQuery.CountAsync();
+
+            var rawItems = await backlogQuery
                 .OrderBy(s => s.CreatedAt)
                 .Take(3)
                 .Select(s => new {
@@ -489,26 +618,39 @@ namespace SynOS.Services.Dashboard
 
             return new ControlTowerCardDto
             {
-                Count = count,
-                PrimaryText = $"{count} scans pending",
-                Status = count > 3 ? "Needs Attention" : "On Track",
+                Count = throughputCount,
+                PrimaryText = "scans completed today",
+                SecondaryText = $"{backlogCount} pending scans",
+                Status = backlogCount > 3 ? "Needs Attention" : "On Track",
                 Items = items
             };
         }
 
         private async Task<ControlTowerCardDto> GetRadiologistCardAsync(Guid? branchId)
         {
-            var query = _context.RadiologyStudies
+            var today = DateTime.Today;
+            var tomorrow = today.AddDays(1);
+            var todayOffset = new DateTimeOffset(today);
+            var tomorrowOffset = todayOffset.AddDays(1);
+
+            var backlogQuery = _context.RadiologyStudies
                 .AsNoTracking()
                 .Where(s => !s.IsSoftDeleted && (s.Status == "AwaitingDictation" || s.Status == "DictationSessionStarted" || s.Status == "DraftReady" || s.Status == "AwaitingSignature"));
 
+            var throughputQuery = _context.RadiologyStudies
+                .AsNoTracking()
+                .Where(s => !s.IsSoftDeleted && s.Status == "Signed" && s.LastActivityAt >= todayOffset && s.LastActivityAt < tomorrowOffset);
+
             if (branchId.HasValue)
             {
-                query = query.Where(s => s.Visit != null && s.Visit.BranchId == branchId.Value);
+                backlogQuery = backlogQuery.Where(s => s.Visit != null && s.Visit.BranchId == branchId.Value);
+                throughputQuery = throughputQuery.Where(s => s.Visit != null && s.Visit.BranchId == branchId.Value);
             }
 
-            var count = await query.CountAsync();
-            var rawItems = await query
+            var backlogCount = await backlogQuery.CountAsync();
+            var throughputCount = await throughputQuery.CountAsync();
+
+            var rawItems = await backlogQuery
                 .OrderBy(s => s.CreatedAt)
                 .Take(3)
                 .Select(s => new {
@@ -536,9 +678,10 @@ namespace SynOS.Services.Dashboard
 
             return new ControlTowerCardDto
             {
-                Count = count,
-                PrimaryText = $"{count} reports waiting",
-                Status = count > 3 ? "Needs Attention" : "On Track",
+                Count = throughputCount,
+                PrimaryText = "scans reported today",
+                SecondaryText = $"{backlogCount} awaiting reporting",
+                Status = backlogCount > 3 ? "Needs Attention" : "On Track",
                 Items = items
             };
         }

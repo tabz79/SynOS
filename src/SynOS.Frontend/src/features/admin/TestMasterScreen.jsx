@@ -1966,84 +1966,63 @@ export function TestMasterScreen() {
   };
 
   const handleSaveAll = async () => {
-    // 1. Client-side uniqueness and modality validation
-    const codeToTestMap = new Map();
-    for (const item of catalog) {
-      const normCode = (item.code || "").trim().toUpperCase();
-      if (!normCode) {
-        alert(`Test name "${item.name}" must have a valid test code.`);
-        return;
-      }
-      if (codeToTestMap.has(normCode)) {
-        alert(`Duplicate test code detected: "${normCode}". Each test must have a unique code.`);
-        return;
-      }
-      codeToTestMap.set(normCode, item);
+    if (!selectedTest) return;
 
-      // Enforce modality validation for Radiology tests
-      const deptObj = dbDeptsList.find(d => d.name === item.department);
-      const isRadiology = deptObj ? deptObj.macroDepartment === "Radiology" : (item.department === "Radiology" || item.department === "RAD");
-      if (isRadiology && !item.modalityId) {
-        alert(`Imaging Modality is required for Radiology test "${item.name}".`);
-        return;
-      }
+    // 1. Client-side uniqueness and modality validation for selectedTest ONLY
+    const normCode = (selectedTest.code || "").trim().toUpperCase();
+    if (!normCode) {
+      alert(`Test name "${selectedTest.name}" must have a valid test code.`);
+      return;
     }
 
-    for (const item of catalog) {
-      const normCode = (item.code || "").trim().toUpperCase();
-      // Find if a test with the same code already exists in the database
-      const dbConflict = originalDbTests.find(
-        dt => (dt.testCode || dt.TestCode || dt.code || "").toUpperCase() === normCode
-      );
+    // Verify uniqueness against other tests in catalog list
+    const hasDuplicate = catalog.some(
+      item => item.id !== selectedTest.id && (item.code || "").trim().toUpperCase() === normCode
+    );
+    if (hasDuplicate) {
+      alert(`Duplicate test code detected: "${normCode}". Each test must have a unique code.`);
+      return;
+    }
 
-      if (dbConflict && dbConflict.isActive !== false) {
-        const dbConflictId = dbConflict.testId || dbConflict.TestId || dbConflict.id;
-        const isTempId = !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(item.id);
-        if (isTempId || item.id !== dbConflictId) {
-          alert(`The test code "${normCode}" is already registered in the system (associated with test "${dbConflict.testName || dbConflict.TestName || dbConflict.name}").\n\nPlease use a unique code.`);
-          return;
-        }
+    // Enforce modality validation for Radiology tests
+    const deptObj = dbDeptsList.find(d => d.name === selectedTest.department);
+    const isRadiology = deptObj ? deptObj.macroDepartment === "Radiology" : (selectedTest.department === "Radiology" || selectedTest.department === "RAD");
+    if (isRadiology && !selectedTest.modalityId) {
+      alert(`Imaging Modality is required for Radiology test "${selectedTest.name}".`);
+      return;
+    }
+
+    // Check conflict with database tests
+    const dbConflict = originalDbTests.find(
+      dt => (dt.testCode || dt.TestCode || dt.code || "").toUpperCase() === normCode
+    );
+    if (dbConflict && dbConflict.isActive !== false) {
+      const dbConflictId = dbConflict.testId || dbConflict.TestId || dbConflict.id;
+      const isTempId = !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(selectedTest.id);
+      if (isTempId || selectedTest.id !== dbConflictId) {
+        alert(`The test code "${normCode}" is already registered in the system (associated with test "${dbConflict.testName || dbConflict.TestName || dbConflict.name}").\n\nPlease use a unique code.`);
+        return;
       }
     }
 
     setIsLoadingTests(true);
     try {
-      const currentCatalog = catalog.map(item => ({
-        ...item,
-        parameters: (item.parameters || []).map(p => {
-          const minNum = p.minRange !== undefined && p.minRange !== null && p.minRange !== "" ? Number(p.minRange) : null;
-          const maxNum = p.maxRange !== undefined && p.maxRange !== null && p.maxRange !== "" ? Number(p.maxRange) : null;
+      // Format parameters for selectedTest
+      const minNum = selectedTest.minRange !== undefined && selectedTest.minRange !== null && selectedTest.minRange !== "" ? Number(selectedTest.minRange) : null;
+      const maxNum = selectedTest.maxRange !== undefined && selectedTest.maxRange !== null && selectedTest.maxRange !== "" ? Number(selectedTest.maxRange) : null;
+      
+      const formattedItem = {
+        ...selectedTest,
+        parameters: (selectedTest.parameters || []).map(p => {
+          const pMin = p.minRange !== undefined && p.minRange !== null && p.minRange !== "" ? Number(p.minRange) : null;
+          const pMax = p.maxRange !== undefined && p.maxRange !== null && p.maxRange !== "" ? Number(p.maxRange) : null;
           return {
             ...p,
-            minRange: minNum !== null && !isNaN(minNum) ? minNum : undefined,
-            maxRange: maxNum !== null && !isNaN(maxNum) ? maxNum : undefined
+            minRange: pMin !== null && !isNaN(pMin) ? pMin : undefined,
+            maxRange: pMax !== null && !isNaN(pMax) ? pMax : undefined
           };
         })
-      }));
-      const dbTestsMap = new Map();
-      originalDbTests.forEach(t => {
-        const id = t.testId || t.TestId || t.id;
-        if (id) dbTestsMap.set(id, t);
-      });
-
-      // 1. Handle Deletions
-      const deletedTests = originalDbTests.filter(ot => {
-        const otId = ot.testId || ot.TestId || ot.id;
-        return otId && !currentCatalog.some(ct => ct.id === otId);
-      });
-
-      for (const dt of deletedTests) {
-        const dtId = dt.testId || dt.TestId || dt.id;
-        try {
-          await AdminApi.deleteTest(dtId);
-        } catch (err) {
-          console.error(`Failed to delete test ${dtId}:`, err);
-        }
-      }
-
-      // We will construct the updated catalog with persisted IDs
-      let updatedCatalog = [];
-      let updatedSelectedTest = selectedTest ? { ...selectedTest } : null;
+      };
 
       const mapToDto = (item) => {
         const deptObj = dbDeptsList.find(d => d.name === item.department);
@@ -2087,130 +2066,101 @@ export function TestMasterScreen() {
             UseAdult: !!p.useAdult,
             AdultMin: p.useAdult && p.adultMin !== undefined && p.adultMin !== "" && p.adultMin !== null ? Number(p.adultMin) : null,
             AdultMax: p.useAdult && p.adultMax !== undefined && p.adultMax !== "" && p.adultMax !== null ? Number(p.adultMax) : null,
-
-            // New Category overrides
             UseNewbornMale: !!p.useNewbornMale,
             NewbornMaleMin: p.useNewbornMale && p.newbornMaleMin !== undefined && p.newbornMaleMin !== "" && p.newbornMaleMin !== null ? Number(p.newbornMaleMin) : null,
             NewbornMaleMax: p.useNewbornMale && p.newbornMaleMax !== undefined && p.newbornMaleMax !== "" && p.newbornMaleMax !== null ? Number(p.newbornMaleMax) : null,
             NewbornMaleText: p.newbornMaleText || null,
-
             UseNewbornFemale: !!p.useNewbornFemale,
             NewbornFemaleMin: p.useNewbornFemale && p.newbornFemaleMin !== undefined && p.newbornFemaleMin !== "" && p.newbornFemaleMin !== null ? Number(p.newbornFemaleMin) : null,
             NewbornFemaleMax: p.useNewbornFemale && p.newbornFemaleMax !== undefined && p.newbornFemaleMax !== "" && p.newbornFemaleMax !== null ? Number(p.newbornFemaleMax) : null,
             NewbornFemaleText: p.newbornFemaleText || null,
-
             UseInfantMale: !!p.useInfantMale,
             InfantMaleMin: p.useInfantMale && p.infantMaleMin !== undefined && p.infantMaleMin !== "" && p.infantMaleMin !== null ? Number(p.infantMaleMin) : null,
             InfantMaleMax: p.useInfantMale && p.infantMaleMax !== undefined && p.infantMaleMax !== "" && p.infantMaleMax !== null ? Number(p.infantMaleMax) : null,
             InfantMaleText: p.infantMaleText || null,
-
             UseInfantFemale: !!p.useInfantFemale,
             InfantFemaleMin: p.useInfantFemale && p.infantFemaleMin !== undefined && p.infantFemaleMin !== "" && p.infantFemaleMin !== null ? Number(p.infantFemaleMin) : null,
             InfantFemaleMax: p.useInfantFemale && p.infantFemaleMax !== undefined && p.infantFemaleMax !== "" && p.infantFemaleMax !== null ? Number(p.infantFemaleMax) : null,
             InfantFemaleText: p.infantFemaleText || null,
-
             UseChildMale: !!p.useChildMale,
             ChildMaleMin: p.useChildMale && p.childMaleMin !== undefined && p.childMaleMin !== "" && p.childMaleMin !== null ? Number(p.childMaleMin) : null,
             ChildMaleMax: p.useChildMale && p.childMaleMax !== undefined && p.childMaleMax !== "" && p.childMaleMax !== null ? Number(p.childMaleMax) : null,
             ChildMaleText: p.childMaleText || null,
-
             UseChildFemale: !!p.useChildFemale,
             ChildFemaleMin: p.useChildFemale && p.childFemaleMin !== undefined && p.childFemaleMin !== "" && p.childFemaleMin !== null ? Number(p.childFemaleMin) : null,
             ChildFemaleMax: p.useChildFemale && p.childFemaleMax !== undefined && p.childFemaleMax !== "" && p.childFemaleMax !== null ? Number(p.childFemaleMax) : null,
             ChildFemaleText: p.childFemaleText || null,
-
             UseAdultMale: !!p.useAdultMale,
             AdultMaleMin: p.useAdultMale && p.adultMaleMin !== undefined && p.adultMaleMin !== "" && p.adultMaleMin !== null ? Number(p.adultMaleMin) : null,
             AdultMaleMax: p.useAdultMale && p.adultMaleMax !== undefined && p.adultMaleMax !== "" && p.adultMaleMax !== null ? Number(p.adultMaleMax) : null,
             AdultMaleText: p.adultMaleText || null,
-
             UseAdultFemale: !!p.useAdultFemale,
             AdultFemaleMin: p.useAdultFemale && p.adultFemaleMin !== undefined && p.adultFemaleMin !== "" && p.adultFemaleMin !== null ? Number(p.adultFemaleMin) : null,
             AdultFemaleMax: p.useAdultFemale && p.adultFemaleMax !== undefined && p.adultFemaleMax !== "" && p.adultFemaleMax !== null ? Number(p.adultFemaleMax) : null,
             AdultFemaleText: p.adultFemaleText || null
           })),
           IncludedTestCodes: (item.includedTestIds || []).map(childId => {
-            const childTest = currentCatalog.find(t => t.id === childId);
+            const childTest = catalog.find(t => t.id === childId);
             return childTest ? childTest.code : null;
           }).filter(Boolean)
         };
       };
 
-      // Sort to save individual tests first, and profiles last to prevent blank child test placeholders
-      const sortedCatalog = [...currentCatalog].sort((a, b) => {
-        if (a.isProfile && !b.isProfile) return 1;
-        if (!a.isProfile && b.isProfile) return -1;
-        return 0;
-      });
+      const matchingDbTest = originalDbTests.find(
+        dt => (dt.testCode || dt.TestCode || dt.code || "").toLowerCase() === formattedItem.code.toLowerCase()
+      );
+      const dbId = matchingDbTest ? (matchingDbTest.testId || matchingDbTest.TestId || matchingDbTest.id) : null;
+      const hasValidDbId = dbId && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(dbId);
+      const isExistingInDb = (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(formattedItem.id)) || hasValidDbId;
+      const targetId = isExistingInDb ? (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(formattedItem.id) ? formattedItem.id : dbId) : formattedItem.id;
 
-      const savedItemsMap = new Map();
-      const saveErrors = [];
+      let savedItem = null;
+      let saveErrors = [];
 
-      // 2. Handle Insertions and Updates in dependency-safe order
-      for (const item of sortedCatalog) {
-        // Find if a test with the same code already exists in the DB (active or inactive) to prevent unique index constraint errors
-        const matchingDbTest = originalDbTests.find(
-          dt => (dt.testCode || dt.TestCode || dt.code || "").toLowerCase() === item.code.toLowerCase()
-        );
-
-        const dbId = matchingDbTest ? (matchingDbTest.testId || matchingDbTest.TestId || matchingDbTest.id) : null;
-        const hasValidDbId = dbId && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(dbId);
-
-        const isExistingInDb = (dbTestsMap.has(item.id) && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(item.id)) || hasValidDbId;
-        const targetId = isExistingInDb ? (dbTestsMap.has(item.id) ? item.id : dbId) : item.id;
-
-        if (isExistingInDb) {
-          const dto = {
-            ...mapToDto(item),
-            IsActive: item.isActive !== false
+      if (isExistingInDb) {
+        const dto = {
+          ...mapToDto(formattedItem),
+          IsActive: formattedItem.isActive !== false
+        };
+        try {
+          await AdminApi.updateTest(targetId, dto);
+          savedItem = {
+            ...formattedItem,
+            id: targetId
           };
-          try {
-            await AdminApi.updateTest(targetId, dto);
-            const updatedItem = {
-              ...item,
-              id: targetId
-            };
-            savedItemsMap.set(item.id, updatedItem);
-
-            if (selectedTest && (selectedTest.id === item.id || selectedTest.code === item.code)) {
-              updatedSelectedTest = updatedItem;
-            }
-          } catch (err) {
-            console.error(`Failed to update test ${item.code} (${targetId}):`, err);
-            saveErrors.push({ code: item.code, error: err.message || err.toString() || "Unknown error" });
-            savedItemsMap.set(item.id, item);
-          }
-        } else {
-          const dto = mapToDto(item);
-          try {
-            const createdTest = await AdminApi.createTest(dto);
-            const returnedId = createdTest.testId || createdTest.TestId || createdTest.id;
-            
-            const newlyCreatedItem = {
-              ...item,
-              id: returnedId
-            };
-            savedItemsMap.set(item.id, newlyCreatedItem);
-
-            if (selectedTest && (selectedTest.id === item.id || selectedTest.code === item.code)) {
-              updatedSelectedTest = newlyCreatedItem;
-            }
-          } catch (err) {
-            console.error(`Failed to create test ${item.code}:`, err);
-            saveErrors.push({ code: item.code, error: err.message || err.toString() || "Unknown error" });
-            savedItemsMap.set(item.id, item);
-          }
+        } catch (err) {
+          console.error(`Failed to update test ${formattedItem.code} (${targetId}):`, err);
+          saveErrors.push({ code: formattedItem.code, error: err.message || err.toString() || "Unknown error" });
+        }
+      } else {
+        const dto = mapToDto(formattedItem);
+        try {
+          const createdTest = await AdminApi.createTest(dto);
+          const returnedId = createdTest.testId || createdTest.TestId || createdTest.id;
+          savedItem = {
+            ...formattedItem,
+            id: returnedId
+          };
+        } catch (err) {
+          console.error(`Failed to create test ${formattedItem.code}:`, err);
+          saveErrors.push({ code: formattedItem.code, error: err.message || err.toString() || "Unknown error" });
         }
       }
 
       // Reconstruct updatedCatalog in original UI order
-      updatedCatalog = currentCatalog.map(item => savedItemsMap.get(item.id) || item);
+      let updatedCatalog = catalog;
+      let updatedSelectedTest = selectedTest;
 
-      // 3. Fetch fresh database list and update state
+      if (savedItem) {
+        updatedCatalog = catalog.map(item => item.id === selectedTest.id ? savedItem : item);
+        updatedSelectedTest = savedItem;
+      }
+
+      // Fetch fresh database list and update state
       const freshDbTests = await AdminApi.getTests();
       setOriginalDbTests(freshDbTests || []);
 
-      // 4. Update catalog and selected test states
+      // Update catalog and selected test states
       setCatalog(updatedCatalog);
 
       if (updatedSelectedTest) {
@@ -2224,7 +2174,7 @@ export function TestMasterScreen() {
 
       if (saveErrors.length > 0) {
         const errList = saveErrors.map(e => `- ${e.code}: ${e.error}`).join("\n");
-        alert(`Failed to save catalog changes for the following test(s):\n\n${errList}`);
+        alert(`Failed to save catalog changes:\n\n${errList}`);
       } else {
         setIsSavedSuccessfully(true);
         setTimeout(() => setIsSavedSuccessfully(false), 2500);

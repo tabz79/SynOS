@@ -234,7 +234,7 @@ function DepartmentCard({ title, subtitle, icon: Icon, data, btnText, onAction, 
                         <Icon className="w-6 h-6 text-zinc-500 group-hover:text-synos-primary transition-colors" />
                         <div>
                             <h3 className="type-value !text-sm leading-none mb-1">{title}</h3>
-                            <p className="type-meta">{subtitle}</p>
+                            <p className="type-meta">{data?.secondaryText || subtitle}</p>
                         </div>
                     </div>
                     {data?.status && (
