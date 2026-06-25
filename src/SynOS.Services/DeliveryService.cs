@@ -13,6 +13,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Configuration; // Added for IConfiguration // Added for logging
 using Microsoft.AspNetCore.Http; // Potentially needed for BadHttpRequestException, as observed previously
 using Microsoft.Extensions.Options;
+using SynOS.Models.Events;
 
 namespace SynOS.Services;
 
@@ -29,6 +30,7 @@ public class DeliveryService : IDeliveryService
     private readonly ILogger<DeliveryService> _logger;
     private readonly string _secureLinkBaseUrl;
     private readonly IFileStorageService _fileStorageService; // Inject IFileStorageService
+    private readonly IMiddlewareOutboxService _outboxService;
 
     public DeliveryService(
         SynOSDbContext context,
@@ -41,7 +43,8 @@ public class DeliveryService : IDeliveryService
         IPrintService printService,
         ILogger<DeliveryService> logger,
         IConfiguration configuration, // Inject IConfiguration
-        IFileStorageService fileStorageService) // Inject IFileStorageService
+        IFileStorageService fileStorageService,
+        IMiddlewareOutboxService outboxService) // Inject outbox service
     {
         _context = context;
         _reportService = reportService;
@@ -54,6 +57,7 @@ public class DeliveryService : IDeliveryService
         _logger = logger;
         _secureLinkBaseUrl = configuration["SecureLink:BaseUrl"] ?? throw new ArgumentNullException("SecureLink:BaseUrl not configured.");
         _fileStorageService = fileStorageService;
+        _outboxService = outboxService;
     }
 
     public async Task<List<DeliveryQueueItemDto>> GetDeliveryQueueAsync(string? department, string? status)
@@ -230,6 +234,7 @@ public class DeliveryService : IDeliveryService
     {
         var report = await _context.Reports
             .Include(r => r.ReportVersions)
+            .Include(r => r.Visit)
             .FirstOrDefaultAsync(r => r.ReportId == reportId);
 
         if (report == null)
@@ -266,6 +271,19 @@ public class DeliveryService : IDeliveryService
             Status = Models.Enums.DeliveryStatus.Delivered // Treat as delivered once queued
         };
         _context.DeliveryLogs.Add(deliveryLog);
+
+        // Enqueue ReportDeliveredEvent
+        _outboxService.Enqueue(new ReportDeliveredEvent(
+            report.ReportId,
+            deliveryLog.LogId,
+            "Print",
+            null,
+            null,
+            DateTimeOffset.UtcNow,
+            userId,
+            report.Visit?.BranchId
+        ));
+
         await _context.SaveChangesAsync();
 
         _logger.LogInformation("Report {ReportId} queued for printing by User {UserId}. LogId: {LogId}", reportId, userId, deliveryLog.LogId);
@@ -285,6 +303,7 @@ public class DeliveryService : IDeliveryService
         var secureLinkDto = await GenerateSecureLinkInternalAsync(reportId, userId);
         
         var report = await _context.Reports
+            .Include(r => r.Visit)
             .FirstOrDefaultAsync(r => r.ReportId == reportId);
 
         if (report == null)
@@ -351,6 +370,18 @@ public class DeliveryService : IDeliveryService
             Status = NotificationStatus.Pending
         };
         _context.NotificationQueues.Add(notificationQueue);
+
+        // Enqueue WhatsappDeliveryRequestedEvent
+        _outboxService.Enqueue(new WhatsappDeliveryRequestedEvent(
+            notificationQueue.QueueId,
+            notificationQueue.TargetId,
+            notificationQueue.Recipient,
+            notificationQueue.Content,
+            notificationQueue.Status.ToString(),
+            DateTimeOffset.UtcNow,
+            report.Visit?.BranchId
+        ));
+
         await _context.SaveChangesAsync();
 
         _logger.LogInformation("Report {ReportId} WhatsApp delivery queued for {Phone} by User {UserId}. LogId: {LogId}", reportId, phone, userId, deliveryLog.LogId);
@@ -685,7 +716,9 @@ public class DeliveryService : IDeliveryService
 
     public async Task<DeliveryResultDto> MarkHandedOverAsync(Guid reportId, Guid userId)
     {
-        var report = await _context.Reports.FirstOrDefaultAsync(r => r.ReportId == reportId);
+        var report = await _context.Reports
+            .Include(r => r.Visit)
+            .FirstOrDefaultAsync(r => r.ReportId == reportId);
         if (report == null)
         {
             _logger.LogWarning("Attempted to mark handed over non-existent report: {ReportId}", reportId);
@@ -700,6 +733,19 @@ public class DeliveryService : IDeliveryService
             Status = Models.Enums.DeliveryStatus.HandedOver
         };
         _context.DeliveryLogs.Add(deliveryLog);
+
+        // Enqueue ReportDeliveredEvent
+        _outboxService.Enqueue(new ReportDeliveredEvent(
+            report.ReportId,
+            deliveryLog.LogId,
+            "HandedOver",
+            null,
+            null,
+            DateTimeOffset.UtcNow,
+            userId,
+            report.Visit?.BranchId
+        ));
+
         await _context.SaveChangesAsync();
 
         _logger.LogInformation("Report {ReportId} marked as handed over by User {UserId}. LogId: {LogId}", reportId, userId, deliveryLog.LogId);

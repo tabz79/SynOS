@@ -21,6 +21,7 @@ using SynOS.Services.Revenue;
 using SynOS.Models.ReadModels;
 using System.Text.Json;
 using SynOS.Services.Time;
+using SynOS.Models.Events;
 
 namespace SynOS.Services
 {
@@ -36,8 +37,8 @@ namespace SynOS.Services
         private readonly IRevenueFactWriter _revenueFactWriter;
         private readonly IRevenueEngine _revenueEngine;
         private readonly IVisitLifecyclePolicy _lifecyclePolicy; // ADDED
-
         private readonly ILabTimeProvider _labTimeProvider; // ADDED
+        private readonly IMiddlewareOutboxService _outboxService;
 
         public VisitService(
             SynOSDbContext context,
@@ -50,7 +51,8 @@ namespace SynOS.Services
             IRevenueFactWriter revenueFactWriter,
             IRevenueEngine revenueEngine,
             ILabTimeProvider labTimeProvider,
-            IVisitLifecyclePolicy lifecyclePolicy) // ADDED
+            IVisitLifecyclePolicy lifecyclePolicy,
+            IMiddlewareOutboxService outboxService) // ADDED
         {
             _context = context;
             _logger = logger;
@@ -63,6 +65,7 @@ namespace SynOS.Services
             _revenueEngine = revenueEngine;
             _labTimeProvider = labTimeProvider; // ADDED
             _lifecyclePolicy = lifecyclePolicy; // ADDED
+            _outboxService = outboxService ?? throw new ArgumentNullException(nameof(outboxService));
         }
 
         public async Task<VisitTokenPrintDto> GetVisitTokenForPrintingAsync(Guid visitId)
@@ -272,6 +275,21 @@ namespace SynOS.Services
                 visit.VisitId,
                 visitMetadata
             );
+
+            // Enqueue BillCreatedEvent
+            _outboxService.Enqueue(new BillCreatedEvent(
+                invoice.InvoiceId,
+                visit.VisitId,
+                invoice.GrossAmount,
+                invoice.DiscountAmount,
+                invoice.NetAmount,
+                invoice.TaxAmount,
+                invoice.Total,
+                invoice.Status,
+                invoice.DueDate,
+                visit.BranchId
+            ));
+            await _context.SaveChangesAsync();
 
             return visit;
         }

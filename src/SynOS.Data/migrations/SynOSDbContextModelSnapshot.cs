@@ -690,6 +690,15 @@ namespace SynOS.Data.Migrations
                     b.Property<Guid>("CreatedBy")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("DefaultInterpretation")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTimeOffset?>("DefaultInterpretationLastUpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid?>("DefaultInterpretationLastUpdatedBy")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<string>("DepartmentCode")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -703,6 +712,9 @@ namespace SynOS.Data.Migrations
 
                     b.Property<decimal>("Price")
                         .HasColumnType("decimal(18, 2)");
+
+                    b.Property<string>("ReportTitle")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
@@ -3393,6 +3405,64 @@ namespace SynOS.Data.Migrations
                     b.HasIndex("VisitId");
 
                     b.ToTable("Orders");
+                });
+
+            modelBuilder.Entity("SynOS.Models.Entities.OutboxEvent", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("AggregateId")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("AggregateType")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("BranchId")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("EventType")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int>("EventVersion")
+                        .HasColumnType("int");
+
+                    b.Property<string>("LabId")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("PayloadJson")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("RetryCount")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("SentAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Status", "CreatedAt");
+
+                    b.ToTable("OutboxEvents");
                 });
 
             modelBuilder.Entity("SynOS.Models.Entities.PACS.PacsInstance", b =>
@@ -6314,6 +6384,15 @@ namespace SynOS.Data.Migrations
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("datetimeoffset");
 
+                    b.Property<string>("DefaultInterpretation")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTimeOffset?>("DefaultInterpretationLastUpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid?>("DefaultInterpretationLastUpdatedBy")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<Guid?>("DepartmentId")
                         .HasColumnType("uniqueidentifier");
 
@@ -6335,6 +6414,9 @@ namespace SynOS.Data.Migrations
 
                     b.Property<Guid?>("ReportTemplateId")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ReportTitle")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("SpecialInstructions")
                         .HasMaxLength(1000)

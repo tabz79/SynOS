@@ -15,6 +15,7 @@ using SynOS.Services.Revenue;
 using SynOS.Services.Security;
 using SynOS.Models.ReadModels; // ADDED
 using System.Text.Json; // ADDED
+using SynOS.Models.Events;
 
 namespace SynOS.Services
 {
@@ -26,6 +27,7 @@ namespace SynOS.Services
         private readonly IUserContext _userContext;
         private readonly IRevenueFactWriter _revenueFactWriter;
         private readonly IVisitService _visitService;
+        private readonly IMiddlewareOutboxService _outboxService;
 
         public InvoiceService(
             SynOSDbContext context, 
@@ -33,7 +35,8 @@ namespace SynOS.Services
             IOperationalEventWriter operationalEventWriter, 
             IUserContext userContext,
             IRevenueFactWriter revenueFactWriter,
-            IVisitService visitService)
+            IVisitService visitService,
+            IMiddlewareOutboxService outboxService)
         {
             _context = context;
             _logger = logger;
@@ -41,6 +44,7 @@ namespace SynOS.Services
             _userContext = userContext ?? throw new ArgumentNullException(nameof(userContext));
             _revenueFactWriter = revenueFactWriter ?? throw new ArgumentNullException(nameof(revenueFactWriter));
             _visitService = visitService ?? throw new ArgumentNullException(nameof(visitService));
+            _outboxService = outboxService ?? throw new ArgumentNullException(nameof(outboxService));
         }
 
         public async Task<RevenueStatsDto> GetDailyRevenueStatsAsync(Guid branchId, Guid? userId = null)
@@ -171,6 +175,18 @@ namespace SynOS.Services
                     }
                 }
             }
+
+            // Enqueue PaymentReceivedEvent
+            _outboxService.Enqueue(new PaymentReceivedEvent(
+                payment.PaymentId,
+                invoice.InvoiceId,
+                invoice.VisitId,
+                payment.Amount,
+                payment.Method,
+                payment.ReceivedByUserId,
+                payment.ReceivedAt,
+                invoice.Visit?.BranchId ?? _userContext.CurrentBranchId
+            ));
 
             await _context.SaveChangesAsync();
 

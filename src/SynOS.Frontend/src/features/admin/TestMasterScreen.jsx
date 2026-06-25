@@ -12,6 +12,7 @@ import {
   Trash2,
   List,
   Layers,
+  ChevronLeft,
   ChevronRight,
   X,
   Sparkles,
@@ -897,6 +898,61 @@ export function TestMasterScreen() {
   const [departments, setDepartments] = useState(["All", "Hematology", "Biochemistry", "Health Panels", "Microbiology", "Serology", "Radiology"]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const searchContainerRef = useRef(null);
+
+  const filterScrollContainerRef = useRef(null);
+  const [showLeftScroll, setShowLeftScroll] = useState(false);
+  const [showRightScroll, setShowRightScroll] = useState(false);
+
+  const updateScrollButtons = () => {
+    const container = filterScrollContainerRef.current;
+    if (!container) return;
+    setShowLeftScroll(container.scrollLeft > 1);
+    setShowRightScroll(container.scrollLeft < container.scrollWidth - container.clientWidth - 2);
+  };
+
+  useEffect(() => {
+    const container = filterScrollContainerRef.current;
+    if (container) {
+      updateScrollButtons();
+      
+      const handleScroll = () => {
+        updateScrollButtons();
+      };
+      
+      container.addEventListener('scroll', handleScroll);
+      window.addEventListener('resize', handleScroll);
+      
+      const resizeObserver = new ResizeObserver(() => {
+        updateScrollButtons();
+      });
+      resizeObserver.observe(container);
+      
+      const timer = setTimeout(updateScrollButtons, 100);
+      
+      return () => {
+        container.removeEventListener('scroll', handleScroll);
+        window.removeEventListener('resize', handleScroll);
+        resizeObserver.disconnect();
+        clearTimeout(timer);
+      };
+    }
+  }, [departments]);
+
+  const handleFilterWheel = (e) => {
+    const container = filterScrollContainerRef.current;
+    if (!container) return;
+    
+    const canScrollLeft = container.scrollLeft > 1;
+    const canScrollRight = container.scrollLeft < container.scrollWidth - container.clientWidth - 2;
+    
+    if (e.deltaY > 0 && canScrollRight) {
+      e.preventDefault();
+      container.scrollLeft += e.deltaY;
+    } else if (e.deltaY < 0 && canScrollLeft) {
+      e.preventDefault();
+      container.scrollLeft += e.deltaY;
+    }
+  };
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -2821,47 +2877,47 @@ export function TestMasterScreen() {
     <div className="w-full lg:h-[calc(100vh-56px)] flex flex-col overflow-hidden px-6 pt-4 pb-6 space-y-4 animate-in fade-in duration-500 relative">
       
       {/* Header bar */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-zinc-200 dark:border-zinc-800 pb-5 shrink-0">
-        <div className="flex flex-col gap-1">
-          <h1 className="text-2xl font-bold text-zinc-900 dark:text-white tracking-tight flex items-center gap-2">
-            <Beaker className="w-6 h-6 text-synos-primary" />
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-zinc-200 dark:border-zinc-800 pb-3 shrink-0">
+        <div className="flex flex-col gap-0.5">
+          <h1 className="text-xl font-semibold text-zinc-900 dark:text-white tracking-tight flex items-center gap-2">
+            <Beaker className="w-5 h-5 text-synos-primary" />
             Test Master
           </h1>
-          <p className="text-sm text-zinc-500 dark:text-zinc-400 font-medium">
+          <p className="text-xs text-zinc-500 dark:text-zinc-400 font-normal">
             Configure reference parameters, simple templates, and customer prices.
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-3 self-start md:self-auto">
+        <div className="flex flex-wrap items-center gap-2 self-start md:self-auto">
           <button
             type="button"
             onClick={handleDownloadTemplate}
-            className="px-4 py-2.5 border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-900/50 text-zinc-700 dark:text-zinc-300 font-semibold text-sm rounded-xl flex items-center gap-2 transition-all active:scale-95 shadow-sm"
+            className="px-3 py-1.5 border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-900/50 text-zinc-700 dark:text-zinc-300 font-medium text-xs rounded-lg flex items-center gap-1.5 transition-all active:scale-95 shadow-sm"
           >
-            <Download className="w-4 h-4" /> Download Template
+            <Download className="w-3.5 h-3.5" /> Download Template
           </button>
 
           <button
             type="button"
             onClick={() => setShowImportModal(true)}
-            className="px-4 py-2.5 bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 font-semibold text-sm rounded-xl flex items-center gap-2 transition-all active:scale-95 shadow-sm"
+            className="px-3 py-1.5 bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 font-medium text-xs rounded-lg flex items-center gap-1.5 transition-all active:scale-95 shadow-sm"
           >
-            <UploadCloud className="w-4 h-4" /> Import Catalog
+            <UploadCloud className="w-3.5 h-3.5" /> Import Catalog
           </button>
 
           <button
             type="button"
             onClick={handleSyncCatalogOnly}
             disabled={isSyncingCatalog}
-            className="px-4 py-2.5 border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-900/50 text-zinc-700 dark:text-zinc-300 font-semibold text-sm rounded-xl flex items-center gap-2 transition-all active:scale-95 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-3 py-1.5 border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-900/50 text-zinc-700 dark:text-zinc-300 font-medium text-xs rounded-lg flex items-center gap-1.5 transition-all active:scale-95 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isSyncingCatalog ? (
               <>
-                <Loader2 className="w-4 h-4 animate-spin" /> Syncing...
+                <Loader2 className="w-3.5 h-3.5 animate-spin" /> Syncing...
               </>
             ) : (
               <>
-                <RefreshCw className="w-4 h-4" /> Sync Catalog
+                <RefreshCw className="w-3.5 h-3.5" /> Sync Catalog
               </>
             )}
           </button>
@@ -2870,19 +2926,19 @@ export function TestMasterScreen() {
             id="btn-save-catalog-master"
             onClick={handleSaveAll}
             disabled={isLoadingTests}
-            className="px-6 py-2.5 bg-synos-primary hover:bg-synos-primary/95 text-white font-bold text-sm uppercase tracking-wider rounded-xl shadow-md shadow-synos-primary/10 active:scale-95 transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-4 py-1.5 bg-synos-primary hover:bg-synos-primary/95 text-white font-semibold text-xs uppercase tracking-wider rounded-lg shadow-sm active:scale-95 transition-all flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isLoadingTests ? (
               <>
-                <span className="w-4 h-4 rounded-full border-2 border-white border-t-transparent animate-spin" /> Saving Changes...
+                <span className="w-3.5 h-3.5 rounded-full border-2 border-white border-t-transparent animate-spin" /> Saving...
               </>
             ) : isSavedSuccessfully ? (
               <>
-                <Check className="w-4 h-4 text-white animate-bounce" /> Catalog Saved Successfully
+                <Check className="w-3.5 h-3.5 text-white animate-bounce" /> Saved Successfully
               </>
             ) : (
               <>
-                <Check className="w-4 h-4" /> Save Catalog Changes
+                <Check className="w-3.5 h-3.5" /> Save Selected Test
               </>
             )}
           </button>
@@ -2897,77 +2953,75 @@ export function TestMasterScreen() {
             <h3 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">Test Catalog</h3>
             <button 
               onClick={handleAddTest}
-              className="p-1.5 bg-synos-primary/10 text-synos-primary border border-synos-primary/20 rounded-lg hover:bg-synos-primary hover:text-white transition-colors flex items-center gap-1 text-xs font-bold px-3"
+              className="p-1 bg-synos-primary/10 text-synos-primary border border-synos-primary/20 rounded-lg hover:bg-synos-primary hover:text-white transition-colors flex items-center gap-1 text-xs font-medium px-2.5"
             >
-              <Plus className="w-3.5 h-3.5" /> Create
+              <Plus className="w-3 h-3" /> Create
             </button>
           </div>
 
           <div ref={searchContainerRef} className="relative shrink-0 flex flex-col gap-2">
             <div className="relative">
-              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-zinc-400" />
               <input
                 id="test-catalog-search-input"
                 type="text"
+                autoComplete="off"
                 placeholder="Search tests..."
-                className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl py-2.5 pl-10 pr-10 text-sm focus:outline-none focus:ring-1 focus:ring-synos-primary/50 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400"
+                className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl py-2 pl-9 pr-9 text-xs focus:outline-none focus:ring-1 focus:ring-synos-primary/50 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                onFocus={() => setShowSuggestions(true)}
               />
               {searchTerm && (
                 <button
                   onClick={() => setSearchTerm("")}
-                  className="absolute right-3.5 top-1/2 -translate-y-1/2 p-0.5 hover:bg-zinc-200 dark:hover:bg-zinc-850 rounded-md text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 hover:bg-zinc-200 dark:hover:bg-zinc-850 rounded-md text-zinc-400 hover:text-zinc-650 dark:hover:text-zinc-250 transition-colors"
                 >
                   <X className="w-3 h-3" />
                 </button>
               )}
             </div>
 
-            {/* Active Department Filter Badge */}
-            {selectedDept !== "All" && (
-              <div className="flex items-center justify-between bg-synos-primary/10 text-synos-primary border border-synos-primary/20 px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0">
-                <span className="truncate">Dept: {selectedDept}</span>
-                <button
-                  onClick={() => setSelectedDept("All")}
-                  className="hover:bg-synos-primary/25 rounded-md p-0.5 transition-colors"
-                  title="Clear filter"
-                >
-                  <X className="w-3.5 h-3.5" />
-                </button>
-              </div>
-            )}
-
-            {/* Suggestions Overlay Dropdown */}
-            {showSuggestions && (
-              <div className="absolute left-0 right-0 top-full mt-2 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-xl z-50 p-2 max-h-72 overflow-y-auto custom-scrollbar">
-                <div className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider px-3 py-2 border-b border-zinc-100 dark:border-zinc-900/50 mb-1 flex items-center justify-between">
-                  <span>Filter by Department</span>
-                  <span>Tests</span>
+            {/* Horizontal Department Filter Badges */}
+            <div className="relative group/filters mt-1">
+              {showLeftScroll && (
+                <div className="absolute left-0 top-0 bottom-0.5 w-10 bg-gradient-to-r from-white via-white/90 to-transparent dark:from-zinc-900 dark:via-zinc-900/90 dark:to-transparent z-10 flex items-center justify-start pointer-events-none">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      filterScrollContainerRef.current?.scrollBy({ left: -120, behavior: 'smooth' });
+                    }}
+                    className="pointer-events-auto p-1 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-full shadow-md text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200 hover:scale-105 transition-all flex items-center justify-center"
+                    title="Scroll left"
+                  >
+                    <ChevronLeft className="w-3.5 h-3.5" />
+                  </button>
                 </div>
+              )}
+
+              <div 
+                ref={filterScrollContainerRef}
+                onWheel={handleFilterWheel}
+                className="flex items-center gap-1.5 overflow-x-auto pb-0.5 shrink-0 scroll-smooth select-none scrollbar-none"
+                style={{ WebkitOverflowScrolling: 'touch', msOverflowStyle: 'none', scrollbarWidth: 'none' }}
+              >
                 {departments.map(dept => {
                   const count = getDeptCount(dept);
+                  const isSelected = selectedDept === dept;
                   return (
                     <button
                       key={dept}
-                      onClick={() => {
-                        setSelectedDept(dept);
-                        setShowSuggestions(false);
-                      }}
+                      onClick={() => setSelectedDept(dept)}
                       className={cn(
-                        "w-full text-left px-3 py-2 rounded-xl text-xs font-semibold transition-all flex items-center justify-between",
-                        selectedDept === dept
-                          ? "bg-synos-primary/10 text-synos-primary font-bold"
-                          : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-900/40 hover:text-zinc-900 dark:hover:text-zinc-200"
+                        "px-2.5 py-1 rounded-full text-[10px] font-medium transition-all shrink-0 border whitespace-nowrap flex items-center gap-1",
+                        isSelected
+                          ? "bg-synos-primary/10 border-synos-primary/20 text-synos-primary font-semibold"
+                          : "bg-zinc-50 dark:bg-zinc-900/40 border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800"
                       )}
                     >
                       <span>{dept}</span>
                       <span className={cn(
-                        "text-[10px] px-1.5 py-0.5 rounded font-bold font-mono",
-                        selectedDept === dept 
-                          ? "bg-synos-primary/20 text-synos-primary"
-                          : "bg-zinc-100 dark:bg-zinc-900 text-zinc-500"
+                        "text-[9px] font-mono px-1 rounded-md",
+                        isSelected ? "bg-synos-primary/20" : "bg-zinc-200/50 dark:bg-zinc-850"
                       )}>
                         {count}
                       </span>
@@ -2975,7 +3029,22 @@ export function TestMasterScreen() {
                   );
                 })}
               </div>
-            )}
+
+              {showRightScroll && (
+                <div className="absolute right-0 top-0 bottom-0.5 w-10 bg-gradient-to-l from-white via-white/90 to-transparent dark:from-zinc-900 dark:via-zinc-900/90 dark:to-transparent z-10 flex items-center justify-end pointer-events-none">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      filterScrollContainerRef.current?.scrollBy({ left: 120, behavior: 'smooth' });
+                    }}
+                    className="pointer-events-auto p-1 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-full shadow-md text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200 hover:scale-105 transition-all flex items-center justify-center"
+                    title="Scroll right"
+                  >
+                    <ChevronRight className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
 
 
@@ -2985,34 +3054,34 @@ export function TestMasterScreen() {
                 key={test.id}
                 onClick={() => handleSelectTest(test)}
                 className={cn(
-                  "w-full text-left p-4 rounded-xl border transition-all flex items-center justify-between group cursor-pointer",
+                  "w-full text-left p-2.5 rounded-xl border transition-all flex items-start justify-between group cursor-pointer",
                   selectedTest.id === test.id
                     ? "bg-synos-primary/10 border-synos-primary/30 text-zinc-900 dark:text-white"
-                    : "bg-white dark:bg-zinc-900/10 border-zinc-200 dark:border-zinc-800/80 text-zinc-600 dark:text-zinc-400 dark:text-zinc-400 hover:border-zinc-300 dark:hover:border-zinc-700"
+                    : "bg-white dark:bg-zinc-900/10 border-zinc-200 dark:border-zinc-800/80 text-zinc-655 dark:text-zinc-400 hover:border-zinc-300 dark:hover:border-zinc-700"
                 )}
               >
                 <div className="flex-1 min-w-0 pr-2">
-                  <span className="font-bold text-sm tracking-tight text-zinc-805 dark:text-zinc-200 block truncate">{test.name}</span>
-                  <div className="flex items-center gap-1.5 mt-1.5 text-[11px] font-bold">
-                    <span className="bg-synos-primary/10 text-synos-primary border border-synos-primary/20 px-1.5 py-0.5 rounded uppercase tracking-wider font-mono">{test.code}</span>
-                    <span className="bg-indigo-500/10 text-indigo-500 border border-indigo-500/20 px-1.5 py-0.5 rounded uppercase tracking-wider truncate max-w-[90px]">{test.department}</span>
+                  <span className="font-semibold text-xs tracking-tight text-zinc-800 dark:text-zinc-200 block whitespace-normal break-words leading-tight">{test.name}</span>
+                  <div className="flex flex-wrap items-center gap-1 mt-1 text-[9px] font-medium">
+                    <span className="bg-synos-primary/10 text-synos-primary border border-synos-primary/20 px-1 py-0.25 rounded uppercase tracking-wider font-mono shrink-0">{test.code}</span>
+                    <span className="bg-indigo-500/10 text-indigo-500 border border-indigo-500/20 px-1 py-0.25 rounded uppercase tracking-wider truncate max-w-[120px]" title={test.department}>{test.department}</span>
                     {test.isProfile && (
-                      <span className="bg-amber-500/10 text-amber-500 border border-amber-500/20 px-1.5 py-0.5 rounded uppercase tracking-wider flex items-center gap-0.5">
-                        <Layers className="w-2.5 h-2.5" /> Panel
+                      <span className="bg-amber-500/10 text-amber-500 border border-amber-500/20 px-1 py-0.25 rounded uppercase tracking-wider flex items-center gap-0.5 shrink-0">
+                        <Layers className="w-2 h-2" /> Panel
                       </span>
                     )}
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-semibold text-zinc-600 dark:text-zinc-400 group-hover:text-zinc-600 dark:text-zinc-400 dark:group-hover:text-zinc-800 dark:group-hover:text-zinc-200">₹{test.basePrice}</span>
+                <div className="flex items-center gap-1 shrink-0 pt-0.5">
+                  <span className="text-[11px] font-semibold text-zinc-600 dark:text-zinc-400">₹{test.basePrice}</span>
                   <button 
                     onClick={(e) => handleDeleteTest(test.id, e)}
-                    className="p-1 hover:bg-rose-500/10 text-zinc-500 dark:text-zinc-400 hover:text-rose-500 rounded-lg transition-colors opacity-0 group-hover:opacity-100"
+                    className="p-0.5 hover:bg-rose-500/10 text-zinc-400 dark:text-zinc-500 hover:text-rose-500 rounded transition-colors opacity-0 group-hover:opacity-100 flex items-center justify-center"
                     title="Delete test"
                   >
-                    <Trash2 className="w-4 h-4" />
+                    <Trash2 className="w-3.5 h-3.5" />
                   </button>
-                  <ChevronRight className="w-4 h-4 text-synos-primary translate-x-0 group-hover:translate-x-0.5 transition-transform" />
+                  <ChevronRight className="w-3.5 h-3.5 text-synos-primary translate-x-0 group-hover:translate-x-0.5 transition-transform" />
                 </div>
               </div>
             ))}
@@ -3185,18 +3254,18 @@ export function TestMasterScreen() {
                 </div>
               ) : (
                 <div>
-                  <div className="flex items-center gap-2.5">
-                    <h2 className="text-xl font-bold text-zinc-900 dark:text-white tracking-tight leading-tight">{selectedTest.name}</h2>
-                    <span className="bg-synos-primary/10 text-synos-primary border border-synos-primary/20 px-2 py-0.5 rounded text-xs font-bold uppercase tracking-wider font-mono">
+                  <div className="flex items-center gap-2">
+                    <h2 className="text-lg font-semibold text-zinc-900 dark:text-white tracking-tight leading-tight">{selectedTest.name}</h2>
+                    <span className="bg-synos-primary/10 text-synos-primary border border-synos-primary/20 px-1.5 py-0.5 rounded text-[10px] font-medium uppercase tracking-wider font-mono">
                       {selectedTest.code}
                     </span>
                     {selectedTest.isProfile && (
-                      <span className="bg-amber-500/10 text-amber-500 border border-amber-500/20 px-2 py-0.5 rounded text-xs font-bold uppercase tracking-wider flex items-center gap-0.5">
-                        <Layers className="w-3 h-3" /> Profile/Panel
+                      <span className="bg-amber-500/10 text-amber-500 border border-amber-500/20 px-1.5 py-0.5 rounded text-[10px] font-medium uppercase tracking-wider flex items-center gap-0.5">
+                        <Layers className="w-2.5 h-2.5" /> Profile/Panel
                       </span>
                     )}
                   </div>
-                  <p className="text-xs text-zinc-500 dark:text-zinc-400 font-medium uppercase tracking-wider mt-1.5">
+                  <p className="text-[11px] text-zinc-500 dark:text-zinc-400 font-medium uppercase tracking-wider mt-1.5">
                     Department: {selectedTest.department} &bull; Base Price: ₹{selectedTest.basePrice} 
                     {(() => {
                       const displayDeptObj = dbDeptsList.find(d => d.name === selectedTest.department);
@@ -3217,9 +3286,9 @@ export function TestMasterScreen() {
               <button
                 id="btn-edit-metadata-active"
                 onClick={() => setIsEditingMetadata(true)}
-                className="py-2.5 px-4 bg-zinc-50 dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 dark:border-zinc-800 rounded-xl text-zinc-600 dark:text-zinc-400 dark:text-zinc-500 dark:text-zinc-400 transition-all flex items-center gap-1.5 text-xs font-bold shadow-xs shrink-0"
+                className="py-1.5 px-3 bg-zinc-50 dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg text-zinc-600 dark:text-zinc-400 transition-all flex items-center gap-1.5 text-xs font-medium shadow-xs shrink-0"
               >
-                <Edit2 className="w-4 h-4" /> Modify Details
+                <Edit2 className="w-3.5 h-3.5" /> Modify Details
               </button>
             )}
           </div>
@@ -3230,58 +3299,58 @@ export function TestMasterScreen() {
               <button
                 onClick={() => setActiveTab("parameters")}
                 className={cn(
-                  "px-5 py-2.5 text-sm font-semibold border-b-2 transition-all flex items-center gap-1.5 -mb-px",
+                  "px-4 py-2 text-xs font-medium border-b-2 transition-all flex items-center gap-1.5 -mb-px",
                   activeTab === "parameters"
-                    ? "border-synos-primary text-synos-primary"
+                    ? "border-synos-primary text-synos-primary font-semibold"
                     : "border-transparent text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300"
                 )}
               >
-                <Beaker className="w-4 h-4" /> Parameters
+                <Beaker className="w-3.5 h-3.5" /> Parameters
               </button>
               <button
                 onClick={() => setActiveTab("report-setup")}
                 className={cn(
-                  "px-5 py-2.5 text-sm font-semibold border-b-2 transition-all flex items-center gap-1.5 -mb-px",
+                  "px-4 py-2 text-xs font-medium border-b-2 transition-all flex items-center gap-1.5 -mb-px",
                   activeTab === "report-setup"
-                    ? "border-synos-primary text-synos-primary"
+                    ? "border-synos-primary text-synos-primary font-semibold"
                     : "border-transparent text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300"
                 )}
               >
-                <FileText className="w-4 h-4" /> Report Setup
+                <FileText className="w-3.5 h-3.5" /> Report Setup
               </button>
               <button
                 onClick={() => setActiveTab("interpretation")}
                 className={cn(
-                  "px-5 py-2.5 text-sm font-semibold border-b-2 transition-all flex items-center gap-1.5 -mb-px",
+                  "px-4 py-2 text-xs font-medium border-b-2 transition-all flex items-center gap-1.5 -mb-px",
                   activeTab === "interpretation"
-                    ? "border-synos-primary text-synos-primary"
+                    ? "border-synos-primary text-synos-primary font-semibold"
                     : "border-transparent text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300"
                 )}
               >
-                <Sparkles className="w-4 h-4 text-violet-500 animate-pulse" /> Interpretation
+                <Sparkles className="w-3.5 h-3.5 text-violet-500 animate-pulse" /> Interpretation
               </button>
               <button
                 onClick={() => setActiveTab("pricing")}
                 className={cn(
-                  "px-5 py-2.5 text-sm font-semibold border-b-2 transition-all flex items-center gap-1.5 -mb-px",
+                  "px-4 py-2 text-xs font-medium border-b-2 transition-all flex items-center gap-1.5 -mb-px",
                   activeTab === "pricing"
-                    ? "border-synos-primary text-synos-primary"
+                    ? "border-synos-primary text-synos-primary font-semibold"
                     : "border-transparent text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300"
                 )}
               >
-                <IndianRupee className="w-4 h-4" /> Pricing
+                <IndianRupee className="w-3.5 h-3.5" /> Pricing
               </button>
               {selectedTest.isProfile && (
                 <button
                   onClick={() => setActiveTab("profile-builder")}
                   className={cn(
-                    "px-5 py-2.5 text-sm font-semibold border-b-2 transition-all flex items-center gap-1.5 -mb-px",
+                    "px-4 py-2 text-xs font-medium border-b-2 transition-all flex items-center gap-1.5 -mb-px",
                     activeTab === "profile-builder"
-                      ? "border-synos-primary text-synos-primary"
+                      ? "border-synos-primary text-synos-primary font-semibold"
                       : "border-transparent text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300"
                   )}
                 >
-                  <Layers className="w-4 h-4 text-amber-500 animate-pulse" /> Profile Builder
+                  <Layers className="w-3.5 h-3.5" /> Profile Builder
                 </button>
               )}
             </div>
@@ -3466,19 +3535,19 @@ export function TestMasterScreen() {
                     </div>
                   </div>
 
-                  <div className="overflow-x-auto border border-zinc-200 dark:border-zinc-800 dark:border-zinc-800 rounded-xl">
-                    <table className="w-full text-left border-collapse text-sm">
+                  <div className="overflow-x-auto border border-zinc-200 dark:border-zinc-800 rounded-xl">
+                    <table className="w-full text-left border-collapse text-xs">
                       <thead>
                         <tr className="bg-zinc-50 dark:bg-zinc-950 border-b border-zinc-200 dark:border-zinc-800">
-                          <th className="py-3 px-4 font-bold text-zinc-500 dark:text-zinc-400 text-xs uppercase w-[70px] text-center">S.No.</th>
-                          {selectedTest.isProfile && <th className="py-3 px-4 font-bold text-zinc-500 dark:text-zinc-400 text-xs uppercase w-[150px]">Source</th>}
-                          <th className="py-3 px-4 font-bold text-zinc-500 dark:text-zinc-400 text-xs uppercase w-[100px]">Code</th>
-                          <th className="py-3 px-4 font-bold text-zinc-500 dark:text-zinc-400 text-xs uppercase min-w-[170px]">Parameter Name</th>
-                          <th className="py-3 px-4 font-bold text-zinc-500 dark:text-zinc-400 text-xs uppercase w-[80px]">Unit</th>
-                          <th className="py-3 px-4 font-bold text-zinc-500 dark:text-zinc-400 text-xs uppercase w-[220px]">Default Reference Range</th>
-                          <th className="py-3 px-4 font-bold text-zinc-500 dark:text-zinc-400 text-xs uppercase w-[130px]">Methodology</th>
-                          <th className="py-3 px-4 font-bold text-zinc-500 dark:text-zinc-400 text-xs uppercase w-[120px] text-center">Settings</th>
-                          <th className="py-3 px-4 font-bold text-zinc-500 dark:text-zinc-400 text-xs uppercase w-[50px] text-center"></th>
+                          <th className="py-2.5 px-2 font-semibold text-zinc-500 dark:text-zinc-400 text-[10px] uppercase w-[60px] text-center">S.No.</th>
+                          {selectedTest.isProfile && <th className="py-2.5 px-2 font-semibold text-zinc-500 dark:text-zinc-400 text-[10px] uppercase w-[120px]">Source</th>}
+                          <th className="py-2.5 px-2 font-semibold text-zinc-500 dark:text-zinc-400 text-[10px] uppercase w-[90px]">Code</th>
+                          <th className="py-2.5 px-2 font-semibold text-zinc-500 dark:text-zinc-400 text-[10px] uppercase min-w-[150px]">Parameter Name</th>
+                          <th className="py-2.5 px-2 font-semibold text-zinc-500 dark:text-zinc-400 text-[10px] uppercase w-[70px]">Unit</th>
+                          <th className="py-2.5 px-2 font-semibold text-zinc-500 dark:text-zinc-400 text-[10px] uppercase w-[180px]">Default Reference Range</th>
+                          <th className="py-2.5 px-2 font-semibold text-zinc-500 dark:text-zinc-400 text-[10px] uppercase w-[110px]">Methodology</th>
+                          <th className="py-2.5 px-2 font-semibold text-zinc-500 dark:text-zinc-400 text-[10px] uppercase w-[100px] text-center">Settings</th>
+                          <th className="py-2.5 px-2 font-semibold text-zinc-500 dark:text-zinc-400 text-[10px] uppercase w-[40px] text-center"></th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800 bg-white/50 dark:bg-zinc-900/10">
@@ -3511,12 +3580,12 @@ export function TestMasterScreen() {
                               }}
                               className={cn("hover:bg-zinc-50/50 dark:hover:bg-zinc-800/10 group transition-colors", isFromChild && "bg-zinc-50/20 dark:bg-zinc-950/5", draggedParamIdx === nativeIdx && "opacity-40 bg-zinc-100 dark:bg-zinc-800")}
                             >
-                              <td className="py-1.5 px-2 text-center w-[70px] select-none">
+                              <td className="py-1 px-1 text-center w-[60px] select-none">
                                 {isFromChild ? (
-                                  <span className="text-zinc-450 dark:text-zinc-500 font-bold text-xs">{idx + 1}</span>
+                                  <span className="text-zinc-400 dark:text-zinc-500 font-medium text-xs">{idx + 1}</span>
                                 ) : (
                                   <div className="flex items-center gap-1 justify-center">
-                                    <GripVertical className="w-3.5 h-3.5 text-zinc-350 dark:text-zinc-650 cursor-grab active:cursor-grabbing hover:text-zinc-500 drag-handle shrink-0" />
+                                    <GripVertical className="w-3 h-3 text-zinc-350 dark:text-zinc-650 cursor-grab active:cursor-grabbing hover:text-zinc-500 drag-handle shrink-0" />
                                     <input
                                       type="number"
                                       min="1"
@@ -3530,107 +3599,107 @@ export function TestMasterScreen() {
                                           moveParameterRow(nativeIdx, targetNativeIdx);
                                         }
                                       }}
-                                      className="w-8 bg-transparent text-center focus:bg-white dark:focus:bg-zinc-950 focus:ring-1 focus:ring-synos-primary outline-none py-0.5 rounded text-zinc-800 dark:text-zinc-200 font-bold text-xs border border-transparent hover:border-zinc-200 dark:hover:border-zinc-800 focus:border-zinc-300 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none shrink-0"
+                                      className="w-7 bg-transparent text-center focus:bg-white dark:focus:bg-zinc-950 focus:ring-1 focus:ring-synos-primary outline-none py-0.25 rounded text-zinc-800 dark:text-zinc-200 font-semibold text-xs border border-transparent hover:border-zinc-200 dark:hover:border-zinc-800 focus:border-zinc-300 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none shrink-0"
                                     />
                                   </div>
                                 )}
                               </td>
                               {selectedTest.isProfile && (
-                                <td className="py-2.5 px-4">
+                                <td className="py-1 px-2">
                                   {isFromChild ? (
-                                    <span className="bg-amber-500/10 border border-amber-500/25 text-amber-600 dark:text-amber-400 px-2 py-1 rounded-md text-[9px] font-extrabold uppercase tracking-wide inline-block max-w-[130px] truncate" title={p.childTestName}>
+                                    <span className="bg-amber-500/10 border border-amber-500/25 text-amber-600 dark:text-amber-400 px-1.5 py-0.5 rounded text-[8px] font-semibold uppercase tracking-wide inline-block max-w-[100px] truncate" title={p.childTestName}>
                                       {p.childTestName}
                                     </span>
                                   ) : (
-                                    <span className="bg-synos-primary/10 border border-synos-primary/25 text-synos-primary px-2 py-1 rounded-md text-[9px] font-extrabold uppercase tracking-wide inline-block">
+                                    <span className="bg-synos-primary/10 border border-synos-primary/25 text-synos-primary px-1.5 py-0.5 rounded text-[8px] font-semibold uppercase tracking-wide inline-block">
                                       Profile Native
                                     </span>
                                   )}
                                 </td>
                               )}
-                              <td className="py-1.5 px-1.5">
+                              <td className="py-1 px-1">
                                 <input
                                   type="text"
                                   readOnly={isFromChild}
                                   className={cn(
-                                    "w-full bg-transparent hover:bg-zinc-50 dark:hover:bg-zinc-900 focus:bg-white dark:focus:bg-zinc-950 focus:ring-1 focus:ring-synos-primary outline-none px-3 py-2 rounded font-mono font-bold text-zinc-800 dark:text-zinc-200 text-sm uppercase",
+                                    "w-full bg-transparent hover:bg-zinc-50 dark:hover:bg-zinc-900 focus:bg-white dark:focus:bg-zinc-950 focus:ring-1 focus:ring-synos-primary outline-none px-2 py-1 rounded font-mono font-semibold text-zinc-800 dark:text-zinc-200 text-xs uppercase",
                                     isFromChild && "text-zinc-400 dark:text-zinc-500 font-medium cursor-not-allowed hover:bg-transparent dark:hover:bg-transparent"
                                   )}
                                   value={p.code ?? ""}
                                   onChange={(e) => !isFromChild && handleParamCellChange(nativeIdx, 'code', e.target.value)}
                                 />
                               </td>
-                              <td className="py-1.5 px-1.5">
+                              <td className="py-1 px-1">
                                 <input
                                   type="text"
                                   readOnly={isFromChild}
                                   className={cn(
-                                    "w-full bg-transparent hover:bg-zinc-50 dark:hover:bg-zinc-900 focus:bg-white dark:focus:bg-zinc-950 focus:ring-1 focus:ring-synos-primary outline-none px-3 py-2 rounded text-zinc-800 dark:text-zinc-200 font-medium text-sm",
-                                    isFromChild && "text-zinc-400 dark:text-zinc-500 cursor-not-allowed hover:bg-transparent dark:hover:bg-transparent"
+                                    "w-full bg-transparent hover:bg-zinc-50 dark:hover:bg-zinc-900 focus:bg-white dark:focus:bg-zinc-950 focus:ring-1 focus:ring-synos-primary outline-none px-2 py-1 rounded text-zinc-700 dark:text-zinc-300 font-normal text-xs",
+                                    isFromChild && "text-zinc-400 dark:text-zinc-550 cursor-not-allowed hover:bg-transparent dark:hover:bg-transparent"
                                   )}
                                   value={p.name ?? ""}
                                   onChange={(e) => !isFromChild && handleParamCellChange(nativeIdx, 'name', e.target.value)}
                                 />
                               </td>
-                              <td className="py-1.5 px-1.5">
+                              <td className="py-1 px-1">
                                 <input
                                   type="text"
                                   readOnly={isFromChild}
                                   className={cn(
-                                    "w-full bg-transparent hover:bg-zinc-50 dark:hover:bg-zinc-900 focus:bg-white dark:focus:bg-zinc-950 focus:ring-1 focus:ring-synos-primary outline-none px-3 py-2 rounded text-zinc-650 dark:text-zinc-400 text-sm",
+                                    "w-full bg-transparent hover:bg-zinc-50 dark:hover:bg-zinc-900 focus:bg-white dark:focus:bg-zinc-950 focus:ring-1 focus:ring-synos-primary outline-none px-2 py-1 rounded text-zinc-600 dark:text-zinc-450 font-normal text-xs",
                                     isFromChild && "text-zinc-400 dark:text-zinc-500 cursor-not-allowed hover:bg-transparent dark:hover:bg-transparent"
                                   )}
                                   value={p.unit ?? ""}
                                   onChange={(e) => !isFromChild && handleParamCellChange(nativeIdx, 'unit', e.target.value)}
                                 />
                               </td>
-                              <td className="py-1.5 px-1.5">
+                              <td className="py-1 px-1">
                                 <input
                                   type="text"
                                   readOnly={isFromChild}
                                   className={cn(
-                                    "w-full bg-transparent hover:bg-zinc-50 dark:hover:bg-zinc-900 focus:bg-white dark:focus:bg-zinc-950 focus:ring-1 focus:ring-synos-primary outline-none px-3 py-2 rounded text-zinc-700 dark:text-zinc-300 text-sm",
+                                    "w-full bg-transparent hover:bg-zinc-50 dark:hover:bg-zinc-900 focus:bg-white dark:focus:bg-zinc-950 focus:ring-1 focus:ring-synos-primary outline-none px-2 py-1 rounded text-zinc-605 dark:text-zinc-400 font-normal text-xs",
                                     isFromChild && "text-zinc-400 dark:text-zinc-500 cursor-not-allowed hover:bg-transparent dark:hover:bg-transparent"
                                   )}
-                                  placeholder="e.g. 13.0 - 18.0 or Negative"
+                                  placeholder="e.g. 13.0 - 18.0"
                                   value={p.referenceRange ?? ""}
                                   onChange={(e) => !isFromChild && handleParamCellChange(nativeIdx, 'referenceRange', e.target.value)}
                                 />
                               </td>
-                              <td className="py-1.5 px-1.5">
+                              <td className="py-1 px-1">
                                 <input
                                   type="text"
                                   readOnly={isFromChild}
                                   className={cn(
-                                    "w-full bg-transparent hover:bg-zinc-50 dark:hover:bg-zinc-900 focus:bg-white dark:focus:bg-zinc-950 focus:ring-1 focus:ring-synos-primary outline-none px-3 py-2 rounded text-zinc-600 dark:text-zinc-400 dark:text-zinc-400 text-sm",
+                                    "w-full bg-transparent hover:bg-zinc-50 dark:hover:bg-zinc-900 focus:bg-white dark:focus:bg-zinc-950 focus:ring-1 focus:ring-synos-primary outline-none px-2 py-1 rounded text-zinc-600 dark:text-zinc-400 font-normal text-xs",
                                     isFromChild && "text-zinc-400 dark:text-zinc-500 cursor-not-allowed hover:bg-transparent dark:hover:bg-transparent"
                                   )}
                                   value={p.method ?? ""}
                                   onChange={(e) => !isFromChild && handleParamCellChange(nativeIdx, 'method', e.target.value)}
                                 />
                               </td>
-                              <td className="py-1.5 px-1.5 text-center">
+                              <td className="py-1 px-1 text-center">
                                 <div className="flex justify-center items-center">
                                   {isFromChild ? (
                                     <button
                                       disabled
-                                      className="p-1.5 rounded-lg border border-zinc-200 dark:border-zinc-800 text-zinc-300 dark:text-zinc-700 cursor-not-allowed flex items-center justify-center"
+                                      className="p-1 rounded border border-zinc-200 dark:border-zinc-800 text-zinc-300 dark:text-zinc-700 cursor-not-allowed flex items-center justify-center"
                                       title={`Configured on child test: ${p.childTestName}`}
                                     >
-                                      <Settings className="w-4 h-4" />
+                                      <Settings className="w-3.5 h-3.5" />
                                     </button>
                                   ) : (
                                     <button
                                       onClick={() => openDrawer(p.code, p.hasFormula ? 'formula' : 'ranges')}
                                       className={cn(
-                                        "p-1.5 rounded-lg border transition-all active:scale-90 flex items-center justify-center relative",
+                                        "p-1 rounded border transition-all active:scale-90 flex items-center justify-center relative",
                                         p.hasFormula
                                           ? "bg-purple-500/10 border-purple-500/35 text-purple-600 dark:text-purple-400"
                                           : "hover:bg-zinc-100 dark:hover:bg-zinc-800 border-zinc-200 dark:border-zinc-800 text-zinc-400 dark:text-zinc-500 hover:text-synos-primary hover:border-synos-primary/20"
                                       )}
                                       title={p.hasFormula ? `Calculated formula: ${p.formula}. Click to modify.` : "Configure calculations, reference ranges, analyzer mapping, and comments."}
                                     >
-                                      <Settings className="w-4 h-4" />
+                                      <Settings className="w-3.5 h-3.5" />
                                       {p.hasFormula && (
                                         <span className="absolute -top-1 -right-1 bg-purple-500 text-white text-[7px] font-semibold px-0.5 rounded-md scale-75 leading-none">
                                           fx
@@ -3640,14 +3709,14 @@ export function TestMasterScreen() {
                                   )}
                                 </div>
                               </td>
-                              <td className="py-1.5 px-1.5 text-center">
+                              <td className="py-1 px-1 text-center">
                                 {!isFromChild && (
                                   <button
                                     onClick={() => handleDeleteParameterRow(nativeIdx)}
-                                    className="p-1.5 hover:bg-rose-500/10 text-zinc-500 dark:text-zinc-400 hover:text-rose-500 rounded-lg transition-colors opacity-0 group-hover:opacity-100 flex items-center justify-center mx-auto"
+                                    className="p-1 hover:bg-rose-500/10 text-zinc-500 dark:text-zinc-400 hover:text-rose-500 rounded transition-colors opacity-0 group-hover:opacity-100 flex items-center justify-center mx-auto"
                                     title="Delete parameter"
                                   >
-                                    <Trash2 className="w-4 h-4" />
+                                    <Trash2 className="w-3.5 h-3.5" />
                                   </button>
                                 )}
                               </td>

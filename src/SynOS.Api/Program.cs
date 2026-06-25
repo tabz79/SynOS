@@ -7,6 +7,7 @@ using Serilog;
 using Microsoft.AspNetCore.Http.Features;
 using SynOS.Data;
 using SynOS.Services;
+using SynOS.Models.Events;
 using AutoMapper; // Added for IMapper
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
@@ -222,6 +223,7 @@ builder.Services.AddAuthorization(options =>
 builder.Services.AddAutoMapper(typeof(Program)); // Scans for profiles in the assembly
 
 // Register application services
+builder.Services.AddScoped<IMiddlewareOutboxService, MiddlewareOutboxService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IAdminUserService, AdminUserService>(); 
 builder.Services.AddScoped<IOperationsEngine, OperationsEngine>(); // ADDED
@@ -384,6 +386,7 @@ builder.Services.AddHostedService<NotificationWorkerService>();
 // builder.Services.AddHostedService<ExpiredLockCleanupService>();
 // builder.Services.AddHostedService<AnalyzerTcpListenerService>();
 builder.Services.AddHostedService<OperationalStatsProjectionWorker>();
+builder.Services.AddHostedService<MiddlewareSyncWorker>();
 
 // Add SignalR
 builder.Services.AddSignalR();

@@ -108,3 +108,10 @@ generated/
 # KEEP IMPORTANT ASSETS
 # ========================================
 !src/SynOS.Frontend/public/assets/
+
+# ========================================
+# TBZ LABS
+# ========================================
+SYNOS_SUPERADMIN_CONTROL_TOWER.md
+TBZLABS_WHATSAPP_DELIVERY_MANAGER.md
+TBZLABS_HYBRID_INFRASTRUCTURE_ARCHITECTURE.md

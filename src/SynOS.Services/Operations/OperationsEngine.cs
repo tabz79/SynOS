@@ -10,6 +10,7 @@ using SynOS.Models.Entities;
 using SynOS.Models.Enums;
 using SynOS.Services.Operational;
 using System.Collections.Generic; // ADDED
+using SynOS.Models.Events;
 
 namespace SynOS.Services.Operations
 {
@@ -20,19 +21,22 @@ namespace SynOS.Services.Operations
         private readonly SynOS.Services.Security.IUserContext _userContext;
         private readonly ILabTimeProvider _labTimeProvider; // ADDED
         private readonly IVisitLifecyclePolicy _lifecyclePolicy; // ADDED
+        private readonly IMiddlewareOutboxService _outboxService;
 
         public OperationsEngine(
             SynOSDbContext context, 
             IOperationalEventWriter eventWriter, 
             SynOS.Services.Security.IUserContext userContext,
             ILabTimeProvider labTimeProvider,
-            IVisitLifecyclePolicy lifecyclePolicy)
+            IVisitLifecyclePolicy lifecyclePolicy,
+            IMiddlewareOutboxService outboxService)
         {
             _context = context;
             _eventWriter = eventWriter;
             _userContext = userContext;
             _labTimeProvider = labTimeProvider;
             _lifecyclePolicy = lifecyclePolicy;
+            _outboxService = outboxService;
         }
 
         public async Task<OperationsStatsDto> GetDailyOperationsStatsAsync(Guid branchId, Guid? userId = null)
@@ -758,6 +762,18 @@ namespace SynOS.Services.Operations
                 report.ReportId,
                 "Report"
             );
+
+            // Enqueue ReportSignedEvent
+            _outboxService.Enqueue(new ReportSignedEvent(
+                report.ReportId,
+                report.VisitId,
+                report.PatientId,
+                report.Department,
+                report.Status,
+                report.SignedByUserId,
+                report.SignedAt,
+                branchId
+            ));
 
             // Persist (Atomic State + Event)
             await _context.SaveChangesAsync();

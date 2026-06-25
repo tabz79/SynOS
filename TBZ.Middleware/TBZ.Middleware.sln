@@ -1,0 +1,62 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{C07B91F9-1FD0-4A94-91EA-B80236359482}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TBZ.Middleware.Domain", "src\TBZ.Middleware.Domain\TBZ.Middleware.Domain.csproj", "{1AAE8580-9776-47B2-9712-9AEB2A1ED5FC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TBZ.Middleware.Application", "src\TBZ.Middleware.Application\TBZ.Middleware.Application.csproj", "{303FACA8-3FF1-4AEC-9FA5-2873A2D754BC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TBZ.Middleware.Infrastructure", "src\TBZ.Middleware.Infrastructure\TBZ.Middleware.Infrastructure.csproj", "{79AEB058-120D-49F3-99C4-F27B0C48E2D5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TBZ.Middleware.Workers", "src\TBZ.Middleware.Workers\TBZ.Middleware.Workers.csproj", "{C8AC8770-0F93-4537-A981-F27D5B6C17EC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TBZ.Middleware.Api", "src\TBZ.Middleware.Api\TBZ.Middleware.Api.csproj", "{136D28BF-A8EF-43F8-991D-CD5334131982}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TBZ.Middleware.Projections", "src\TBZ.Middleware.Projections\TBZ.Middleware.Projections.csproj", "{9BAEB658-BBBF-4AEA-9146-6A449E30989E}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{1AAE8580-9776-47B2-9712-9AEB2A1ED5FC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1AAE8580-9776-47B2-9712-9AEB2A1ED5FC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1AAE8580-9776-47B2-9712-9AEB2A1ED5FC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1AAE8580-9776-47B2-9712-9AEB2A1ED5FC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{303FACA8-3FF1-4AEC-9FA5-2873A2D754BC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{303FACA8-3FF1-4AEC-9FA5-2873A2D754BC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{303FACA8-3FF1-4AEC-9FA5-2873A2D754BC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{303FACA8-3FF1-4AEC-9FA5-2873A2D754BC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{79AEB058-120D-49F3-99C4-F27B0C48E2D5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{79AEB058-120D-49F3-99C4-F27B0C48E2D5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{79AEB058-120D-49F3-99C4-F27B0C48E2D5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{79AEB058-120D-49F3-99C4-F27B0C48E2D5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C8AC8770-0F93-4537-A981-F27D5B6C17EC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C8AC8770-0F93-4537-A981-F27D5B6C17EC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C8AC8770-0F93-4537-A981-F27D5B6C17EC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C8AC8770-0F93-4537-A981-F27D5B6C17EC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{136D28BF-A8EF-43F8-991D-CD5334131982}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{136D28BF-A8EF-43F8-991D-CD5334131982}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{136D28BF-A8EF-43F8-991D-CD5334131982}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{136D28BF-A8EF-43F8-991D-CD5334131982}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9BAEB658-BBBF-4AEA-9146-6A449E30989E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9BAEB658-BBBF-4AEA-9146-6A449E30989E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9BAEB658-BBBF-4AEA-9146-6A449E30989E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9BAEB658-BBBF-4AEA-9146-6A449E30989E}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{1AAE8580-9776-47B2-9712-9AEB2A1ED5FC} = {C07B91F9-1FD0-4A94-91EA-B80236359482}
+		{303FACA8-3FF1-4AEC-9FA5-2873A2D754BC} = {C07B91F9-1FD0-4A94-91EA-B80236359482}
+		{79AEB058-120D-49F3-99C4-F27B0C48E2D5} = {C07B91F9-1FD0-4A94-91EA-B80236359482}
+		{C8AC8770-0F93-4537-A981-F27D5B6C17EC} = {C07B91F9-1FD0-4A94-91EA-B80236359482}
+		{136D28BF-A8EF-43F8-991D-CD5334131982} = {C07B91F9-1FD0-4A94-91EA-B80236359482}
+		{9BAEB658-BBBF-4AEA-9146-6A449E30989E} = {C07B91F9-1FD0-4A94-91EA-B80236359482}
+	EndGlobalSection
+EndGlobal

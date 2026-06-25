@@ -1,0 +1,6 @@
+@TBZ.Middleware.Api_HostAddress = http://localhost:5069
+
+GET {{TBZ.Middleware.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

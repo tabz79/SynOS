@@ -12,6 +12,7 @@ using SynOS.Models.Entities;
 using SynOS.Services.Operational; // ADDED
 using SynOS.Services.Security; // ADDED
 using SynOS.Models.ReadModels; // ADDED
+using SynOS.Models.Events;
 
 namespace SynOS.Services
 {
@@ -22,19 +23,22 @@ namespace SynOS.Services
         private readonly IMapper _mapper;
         private readonly IOperationalEventWriter _operationalEventWriter; // ADDED
         private readonly IUserContext _userContext; // ADDED
+        private readonly IMiddlewareOutboxService _outboxService;
 
         public PatientService(
             SynOSDbContext context, 
             IAuditService auditService, 
             IMapper mapper,
             IOperationalEventWriter operationalEventWriter,
-            IUserContext userContext)
+            IUserContext userContext,
+            IMiddlewareOutboxService outboxService)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
             _auditService = auditService ?? throw new ArgumentNullException(nameof(auditService));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             _operationalEventWriter = operationalEventWriter ?? throw new ArgumentNullException(nameof(operationalEventWriter));
             _userContext = userContext ?? throw new ArgumentNullException(nameof(userContext));
+            _outboxService = outboxService ?? throw new ArgumentNullException(nameof(outboxService));
         }
 
         // Create patient and return PatientDto (avoids returning entity with navigation properties)
@@ -72,6 +76,19 @@ namespace SynOS.Services
             }
 
             _context.Patients.Add(patient);
+
+            // Enqueue PatientRegisteredEvent
+            _outboxService.Enqueue(new PatientRegisteredEvent(
+                patient.PatientId,
+                patient.FirstName,
+                patient.LastName,
+                patient.MRN,
+                patient.Gender,
+                patient.DateOfBirth,
+                patient.CurrentPhoneNumber,
+                _userContext.CurrentBranchId
+            ));
+
             await _context.SaveChangesAsync();
 
             var dto = _mapper.Map<PatientDto>(patient);

@@ -2,6 +2,7 @@ using SynOS.Models.Entities.AR;
 using SynOS.Models.Entities.Payments;
 using Microsoft.EntityFrameworkCore;
 using SynOS.Models.Entities;
+using SynOS.Models.Events;
 using SynOS.Models.Entities.Catalog;
 using SynOS.Models.Entities.IMS;
 using SynOS.Models.Entities.CostAttribution;
@@ -23,19 +24,58 @@ namespace SynOS.Data
 {
     public class SynOSDbContext : DbContext
     {
-        public SynOSDbContext(DbContextOptions<SynOSDbContext> options) : base(options)
+        private readonly IMiddlewareOutboxService _outboxService;
+
+        public SynOSDbContext(DbContextOptions<SynOSDbContext> options) : this(options, new NullMiddlewareOutboxService())
         {
+        }
+
+        public SynOSDbContext(DbContextOptions<SynOSDbContext> options, IMiddlewareOutboxService outboxService) : base(options)
+        {
+            _outboxService = outboxService;
+        }
+
+        private void PersistPendingOutboxEvents()
+        {
+            var pendingEvents = _outboxService.GetPendingEvents();
+            if (pendingEvents.Count == 0) return;
+
+            foreach (var evt in pendingEvents)
+            {
+                var outboxEvt = new OutboxEvent
+                {
+                    Id = evt.EventId,
+                    EventVersion = 1,
+                    EventType = evt.EventType,
+                    AggregateType = evt.AggregateType,
+                    AggregateId = evt.AggregateId,
+                    LabId = "LAB001",
+                    BranchId = evt.BranchId?.ToString(),
+                    PayloadJson = System.Text.Json.JsonSerializer.Serialize(evt, evt.GetType(), new System.Text.Json.JsonSerializerOptions
+                    {
+                        ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles,
+                        DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
+                    }),
+                    CreatedAt = evt.OccurredAt,
+                    Status = "Pending"
+                };
+                OutboxEvents.Add(outboxEvt);
+            }
+
+            _outboxService.Clear();
         }
 
         public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {
             await EnsureParameterMastersExistAsync();
+            PersistPendingOutboxEvents();
             return await base.SaveChangesAsync(cancellationToken);
         }
 
         public override int SaveChanges()
         {
             EnsureParameterMastersExist();
+            PersistPendingOutboxEvents();
             return base.SaveChanges();
         }
 
@@ -123,6 +163,7 @@ namespace SynOS.Data
         public DbSet<BranchOperationalStats> BranchOperationalStats { get; set; } = null!; // ADDED: Projections
         public DbSet<VisitOperationalState> VisitOperationalStates { get; set; } = null!; // ADDED: Projections
         public DbSet<ProcessedProjectionEvent> ProcessedProjectionEvents { get; set; } = null!; // ADDED: Idempotency
+        public DbSet<OutboxEvent> OutboxEvents { get; set; } = null!;
 
         public DbSet<ReceivableFact> ReceivableFacts { get; set; } = null!;
         public DbSet<PaymentConfirmedFact> PaymentConfirmedFacts { get; set; } = null!; // ADDED: Stage 1 Financials
@@ -381,6 +422,18 @@ namespace SynOS.Data
             modelBuilder.Entity<Workspace>(entity =>
             {
                 entity.HasIndex(e => e.RoutePath).IsUnique();
+            });
+
+            // Outbox Events Configuration (with index on Status + CreatedAt)
+            modelBuilder.Entity<OutboxEvent>(entity =>
+            {
+                entity.HasIndex(e => new { e.Status, e.CreatedAt });
+                entity.Property(e => e.EventType).HasMaxLength(100);
+                entity.Property(e => e.AggregateType).HasMaxLength(100);
+                entity.Property(e => e.AggregateId).HasMaxLength(100);
+                entity.Property(e => e.LabId).HasMaxLength(50);
+                entity.Property(e => e.BranchId).HasMaxLength(50);
+                entity.Property(e => e.Status).HasMaxLength(20);
             });
 
             // Collaborative live session relationships

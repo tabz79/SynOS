@@ -12,6 +12,7 @@ using SynOS.Models.Entities.Catalog;
 using SynOS.Models.Entities.Operations;
 using SynOS.Models.Enums;
 using SynOS.Services.Security;
+using SynOS.Models.Events;
 
 namespace SynOS.Services.Operational
 {
@@ -22,19 +23,22 @@ namespace SynOS.Services.Operational
         private readonly INotifier _notifier;
         private readonly IResultService _resultService;
         private readonly ILogger<ProcessingService> _logger;
+        private readonly IMiddlewareOutboxService _outboxService;
 
         public ProcessingService(
             SynOSDbContext db,
             IUserContext userContext,
             INotifier notifier,
             IResultService resultService,
-            ILogger<ProcessingService> logger)
+            ILogger<ProcessingService> logger,
+            IMiddlewareOutboxService outboxService)
         {
             _db = db;
             _userContext = userContext;
             _notifier = notifier;
             _resultService = resultService;
             _logger = logger;
+            _outboxService = outboxService;
         }
 
         public async Task<IEnumerable<ProcessingQueueItemDto>> GetQueueAsync(bool includeHistory = false)
@@ -119,7 +123,7 @@ namespace SynOS.Services.Operational
             // 3. Snapshot for Validation & Context
             var snapshot = await _db.ProcessingAssignments
                 .Where(a => a.ProcessingAssignmentId == processingAssignmentId)
-                .Select(a => new { a.Specimen.VisitId, a.BranchId, a.DepartmentCode, a.Status, a.AssignedResourceId })
+                .Select(a => new { a.SpecimenId, a.Specimen.VisitId, a.BranchId, a.DepartmentCode, a.Status, a.AssignedResourceId })
                 .FirstOrDefaultAsync();
 
             if (snapshot == null) return ProcessingResult.NotFound;
@@ -154,6 +158,27 @@ namespace SynOS.Services.Operational
                 _logger.LogWarning("Race condition detected for ProcessingAssignment {ProcessingAssignmentId}. User {UserId} failed to claim.", processingAssignmentId, _userContext.CurrentUserId);
                 return ProcessingResult.Conflict;
             }
+
+            // Enqueue ProcessingStartedEvent for each order on the specimen
+            var orders = await _db.Orders
+                .Include(o => o.Test)
+                .Where(o => o.SpecimenId == snapshot.SpecimenId && o.Status != OrderStatus.Cancelled)
+                .ToListAsync();
+
+            foreach (var order in orders)
+            {
+                _outboxService.Enqueue(new ProcessingStartedEvent(
+                    order.OrderId,
+                    snapshot.VisitId,
+                    order.TestId,
+                    order.TestCode,
+                    order.Department ?? "Pathology",
+                    "Active",
+                    DateTime.UtcNow,
+                    snapshot.BranchId
+                ));
+            }
+            await _db.SaveChangesAsync();
 
             // 6. Emit SignalR (Only on success)
             await _notifier.NotifyAssignmentUpdateAsync(

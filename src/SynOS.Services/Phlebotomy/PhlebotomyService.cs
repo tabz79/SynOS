@@ -11,6 +11,7 @@ using SynOS.Models.Enums;
 using SynOS.Services.Operational;
 using SynOS.Services.Security;
 using SynOS.Models.DTOs.Phlebotomy;
+using SynOS.Models.Events;
 
 namespace SynOS.Services.Phlebotomy
 {
@@ -25,6 +26,7 @@ namespace SynOS.Services.Phlebotomy
         private readonly IOperationalEventWriter _operationalEventWriter;
         private readonly ITubeConsumptionService _tubeConsumptionService;
         private readonly ILogger<PhlebotomyService> _logger;
+        private readonly IMiddlewareOutboxService _outboxService;
 
         public PhlebotomyService(
             SynOSDbContext db,
@@ -35,7 +37,8 @@ namespace SynOS.Services.Phlebotomy
             ISpecimenGroupingService groupingService,
             IOperationalEventWriter operationalEventWriter,
             ITubeConsumptionService tubeConsumptionService,
-            ILogger<PhlebotomyService> logger)
+            ILogger<PhlebotomyService> logger,
+            IMiddlewareOutboxService outboxService)
         {
             _db = db;
             _userContext = userContext;
@@ -46,6 +49,7 @@ namespace SynOS.Services.Phlebotomy
             _operationalEventWriter = operationalEventWriter;
             _tubeConsumptionService = tubeConsumptionService;
             _logger = logger;
+            _outboxService = outboxService;
         }
 
         public async Task<CollectionPlanDto?> GetCollectionPlanAsync(Guid visitId)
@@ -327,6 +331,7 @@ namespace SynOS.Services.Phlebotomy
                 }
 
                 var utcNow = DateTime.UtcNow;
+                var addedSpecimens = new List<Specimen>();
 
                 // Load Reserved Accessions
                 var reservedAccessions = await _db.WorkAssignmentAccessions
@@ -379,6 +384,7 @@ namespace SynOS.Services.Phlebotomy
                         };
 
                         _db.Specimens.Add(specimen);
+                        addedSpecimens.Add(specimen);
 
                         // 8. Link Orders (Only once per instruction group, but handled within instr.Orders loop)
                         if (i == 0)
@@ -459,6 +465,17 @@ namespace SynOS.Services.Phlebotomy
                             UpdatedAt = DateTimeOffset.UtcNow
                         };
                         await _db.Reports.AddAsync(report);
+
+                        _outboxService.Enqueue(new ReportDraftedEvent(
+                            report.ReportId,
+                            report.VisitId,
+                            report.PatientId,
+                            report.Department,
+                            report.SourceType,
+                            report.SourceId,
+                            report.Status,
+                            branchInfo.BranchId.Value
+                        ));
                     }
                 }
 
@@ -466,6 +483,20 @@ namespace SynOS.Services.Phlebotomy
                 assignment.Status = WorkAssignmentStatus.Completed;
                 if (assignment.StartedAt == null) assignment.StartedAt = utcNow;
                 assignment.CompletedAt = utcNow;
+
+                // Enqueue SampleCollectedEvent for each collected specimen
+                foreach (var spec in addedSpecimens)
+                {
+                    _outboxService.Enqueue(new SampleCollectedEvent(
+                        spec.SpecimenId,
+                        spec.VisitId,
+                        spec.AccessionNumber,
+                        spec.SpecimenTypeCode,
+                        spec.CollectedAt,
+                        spec.CollectedByUserId,
+                        branchInfo.BranchId.Value
+                    ));
+                }
 
                 await _db.SaveChangesAsync();
                 await transaction.CommitAsync();

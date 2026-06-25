@@ -55,7 +55,7 @@ namespace SynOS.Api.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error starting visit for patient {PatientId}", request.PatientId);
-                return StatusCode(500, new { code = "INTERNAL_SERVER_ERROR", message = "An internal error occurred while starting the visit." });
+                return StatusCode(500, new { code = "INTERNAL_SERVER_ERROR", message = ex.Message, stack = ex.StackTrace, inner = ex.InnerException?.Message });
             }
         }
 
